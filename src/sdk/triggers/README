@@ -1,0 +1,8 @@
+A trigger is a set of action and verifications that collectively constitute a
+testcase. These actions can include removal/addition of configuration, flapping
+protocols/interfaces, perform HA events, and any other actions that can be
+performed to test your devices. Triggers can also include verifications that
+check the above actions were correctly peformed on the devices. We call those
+local verifications.
+
+

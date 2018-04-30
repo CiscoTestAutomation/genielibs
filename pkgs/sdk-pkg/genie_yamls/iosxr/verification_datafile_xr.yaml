@@ -1,0 +1,795 @@
+Verify_AdminDiagChassis:
+  devices:
+    uut: None
+Verify_BgpInstanceAfGroupConfiguration:
+  devices:
+    uut: None
+Verify_BgpInstanceAllAll_vrf_type_all:
+  devices:
+    uut: None
+  exclude:
+  - bgp_table_version
+  - rd_version
+  - nsr_initial_init_ver_status
+  - nsr_initial_initsync_version
+  parameters:
+    vrf_type: all
+Verify_BgpInstanceAllAll_vrf_type_vrf_af_type_ipv4_unicast:
+  devices:
+    uut: None
+  exclude:
+  - bgp_table_version
+  - rd_version
+  - nsr_initial_init_ver_status
+  - nsr_initial_initsync_version
+  iteration:
+    attempt: 9
+    interval: 10
+  parameters:
+    af_type: ipv4 unicast
+    vrf_type: vrf
+Verify_BgpInstanceAllAll_vrf_type_vrf_af_type_ipv6_unicast:
+  devices:
+    uut: None
+  exclude:
+  - bgp_table_version
+  - rd_version
+  - nsr_initial_init_ver_status
+  - nsr_initial_initsync_version
+  iteration:
+    attempt: 9
+    interval: 10
+  parameters:
+    af_type: ipv6 unicast
+    vrf_type: vrf
+Verify_BgpInstanceNeighborsDetail_vrf_type_all:
+  devices:
+    uut: None
+  exclude:
+  - bgp_table_version
+  - rd_version
+  - nsr_initial_init_ver_status
+  - nsr_initial_initsync_version
+  - filter_group
+  - last_ack_version
+  - neighbor_version
+  - prefix_advertised
+  - prefix_withdrawn
+  - update_group
+  - attempted
+  - keepalives
+  - opens
+  - updates
+  - connections_dropped
+  - connections_established
+  - foreign_port
+  - last_full_not_set_pulse_count
+  - last_ka_expiry_before_reset
+  - last_ka_expiry_before_second_last
+  - last_read
+  - last_read_before_reset
+  - last_write
+  - last_write_attempted
+  - last_write_before_reset
+  - last_write_pulse_rcvd
+  - last_write_pulse_rcvd_before_reset
+  - last_write_thread_event_before_reset
+  - last_write_thread_event_second_last
+  - last_write_written
+  - second_attempted
+  - second_last_write
+  - second_last_write_before_attempted
+  - second_last_write_before_reset
+  - second_last_write_before_written
+  - second_written
+  - up_time
+  - written
+  - eor_status
+  - local_port
+  - last_reset
+  - last_ka_start_before_reset
+  - last_ka_start_before_second_last
+  - totals
+  - cummulative_no_prefixes_denied
+  - route_refresh_request_sent
+  - cummulative_no_by_orf_policy
+  - cummulative_no_by_policy
+  - cummulative_no_failed_rt_match
+  - cummulative_no_no_policy
+  - route_refresh_request_sent
+  iteration:
+    attempt: 4
+    interval: 5
+  parameters:
+    vrf_type: all
+Verify_BgpInstanceNeighborsDetail_vrf_type_vrf_af_type_ipv4_unicast:
+  devices:
+    uut: None
+  exclude:
+  - last_write
+  - second_last_write
+  - last_ack_version
+  - neighbor_version
+  - keepalives
+  - local_port
+  - last_full_not_set_pulse_count
+  - last_read
+  - last_write_pulse_rcvd
+  - up_time
+  - second_attempted
+  - second_written
+  - last_reset
+  - last_ka_expiry_before_reset
+  - last_ka_expiry_before_second_last
+  - last_ka_start_before_reset
+  - last_ka_start_before_second_last
+  - last_read_before_reset
+  - last_write_before_reset
+  - last_write_pulse_rcvd_before_reset
+  - last_write_thread_event_before_reset
+  - last_write_thread_event_second_last
+  - second_last_write_before_reset
+  - cummulative_no_prefixes_denied
+  - route_refresh_request_sent
+  - cummulative_no_by_orf_policy
+  - cummulative_no_by_policy
+  - cummulative_no_failed_rt_match
+  - cummulative_no_no_policy
+  - attempted
+  - updates
+  - written
+  - filter_group
+  - prefix_advertised
+  - prefix_withdrawn
+  - totals
+  - opens
+  - sent_notifications
+  - connections_dropped
+  - connections_established
+  - foreign_port
+  - last_write_attempted
+  - last_write_written
+  - eor_status
+  - second_last_write_before_attempted
+  - second_last_write_before_written
+  parameters:
+    af_type: ipv4 unicast
+    vrf_type: vrf
+Verify_BgpInstanceNeighborsDetail_vrf_type_vrf_af_type_ipv6_unicast:
+  devices:
+    uut: None
+  exclude:
+  - last_write
+  - second_last_write
+  - last_ack_version
+  - neighbor_version
+  - keepalives
+  - local_port
+  - last_full_not_set_pulse_count
+  - last_read
+  - last_write_pulse_rcvd
+  - up_time
+  - second_attempted
+  - second_written
+  - last_reset
+  - last_ka_expiry_before_reset
+  - last_ka_expiry_before_second_last
+  - last_ka_start_before_reset
+  - last_ka_start_before_second_last
+  - last_read_before_reset
+  - last_write_before_reset
+  - last_write_pulse_rcvd_before_reset
+  - last_write_thread_event_before_reset
+  - last_write_thread_event_second_last
+  - second_last_write_before_reset
+  - cummulative_no_prefixes_denied
+  - route_refresh_request_sent
+  - cummulative_no_by_orf_policy
+  - cummulative_no_by_policy
+  - cummulative_no_failed_rt_match
+  - cummulative_no_no_policy
+  - attempted
+  - updates
+  - written
+  - filter_group
+  - prefix_advertised
+  - prefix_withdrawn
+  - totals
+  - opens
+  - sent_notifications
+  - connections_dropped
+  - connections_established
+  - foreign_port
+  - last_write_attempted
+  - last_write_written
+  - eor_status
+  - second_last_write_before_attempted
+  - second_last_write_before_written
+  parameters:
+    af_type: ipv6 unicast
+    vrf_type: vrf
+Verify_BgpInstanceNeighborsDetail_yang_vrf_type_all:
+  exclude: []
+  parameters:
+    vrf_type: all
+Verify_BgpInstanceNeighborsDetail_yang_vrf_type_vrf_af_type_ipv4_unicast:
+  exclude: []
+  parameters:
+    af_type: ipv4 unicast
+    vrf_type: vrf
+Verify_BgpInstanceNeighborsDetail_yang_vrf_type_vrf_af_type_ipv6_unicast:
+  exclude: []
+  parameters:
+    af_type: ipv6 unicast
+    vrf_type: vrf
+Verify_BgpInstanceProcessDetail_vrf_type_all:
+  devices:
+    uut: None
+  exclude:
+  - alloc
+  - free
+  - sent_notifications
+  - bgp_table_version
+  - main_table_version
+  - table_version_synced_to_rib
+  - table_version_acked_by_rib
+  - triggers
+  - tbl_ver
+  - ver
+  - node
+  - total_prefixes_scanned
+  - sent_updates
+  - allocated
+  - freed
+  - received_updates
+  - num_of_scan_segments
+  - state
+  - restart_count
+  - memory_used
+  - number
+  iteration:
+    attempt: 30
+    interval: 10
+  parameters:
+    vrf_type: all
+Verify_BgpInstanceProcessDetail_vrf_type_vrf_af_type_ipv4_unicast:
+  devices:
+    uut: None
+  exclude:
+  - alloc
+  - free
+  - sent_notifications
+  - bgp_table_version
+  - main_table_version
+  - table_version_synced_to_rib
+  - table_version_acked_by_rib
+  - triggers
+  - tbl_ver
+  - ver
+  - node
+  - total_prefixes_scanned
+  - sent_updates
+  - num_of_scan_segments
+  - state
+  - restart_count
+  - allocated
+  - freed
+  - received_updates
+  iteration:
+    attempt: 30
+    interval: 10
+  parameters:
+    af_type: ipv4 unicast
+    vrf_type: vrf
+Verify_BgpInstanceProcessDetail_vrf_type_vrf_af_type_ipv6_unicast:
+  devices:
+    uut: None
+  exclude:
+  - alloc
+  - free
+  - sent_notifications
+  - bgp_table_version
+  - main_table_version
+  - table_version_synced_to_rib
+  - table_version_acked_by_rib
+  - triggers
+  - tbl_ver
+  - ver
+  - node
+  - total_prefixes_scanned
+  - sent_updates
+  - num_of_scan_segments
+  - state
+  - restart_count
+  - received_updates
+  - memory_used
+  - number
+  - allocated
+  - freed
+  iteration:
+    attempt: 30
+    interval: 10
+  parameters:
+    af_type: ipv6 unicast
+    vrf_type: vrf
+Verify_BgpInstanceProcessDetail_yang_vrf_type_all:
+  exclude: []
+  parameters:
+    vrf_type: all
+Verify_BgpInstanceProcessDetail_yang_vrf_type_vrf_af_type_ipv4_unicast:
+  exclude: []
+  parameters:
+    af_type: ipv4 unicast
+    vrf_type: vrf
+Verify_BgpInstanceProcessDetail_yang_vrf_type_vrf_af_type_ipv6_unicast:
+  exclude: []
+  parameters:
+    af_type: ipv6 unicast
+    vrf_type: vrf
+Verify_BgpInstanceSessionGroupConfiguration:
+  devices:
+    uut: None
+Verify_BgpInstanceSummary_vrf_type_all:
+  devices:
+    uut: None
+  exclude:
+  - bgp_table_version
+  - brib_rib
+  - importver
+  - labelver
+  - rcvtblver
+  - sendtblver
+  - rd_version
+  - msg_rcvd
+  - msg_sent
+  - tbl_ver
+  - up_down
+  - nsr_initial_initsync_version
+  - nsr_initial_init_ver_status
+  iteration:
+    attempt: 4
+    interval: 5
+  parameters:
+    vrf_type: all
+Verify_BgpInstanceSummary_vrf_type_vrf_af_type_ipv4_unicast:
+  devices:
+    uut: None
+  exclude:
+  - bgp_table_version
+  - nsr_initial_initsync_version
+  - brib_rib
+  - importver
+  - labelver
+  - rcvtblver
+  - sendtblver
+  - rd_version
+  - msg_rcvd
+  - msg_sent
+  - tbl_ver
+  - up_down
+  - nsr_initial_init_ver_status
+  iteration:
+    attempt: 4
+    interval: 5
+  parameters:
+    af_type: ipv4 unicast
+    vrf_type: vrf
+Verify_BgpInstanceSummary_vrf_type_vrf_af_type_ipv6_unicast:
+  devices:
+    uut: None
+  exclude:
+  - bgp_table_version
+  - nsr_initial_initsync_version
+  - brib_rib
+  - importver
+  - labelver
+  - rcvtblver
+  - sendtblver
+  - rd_version
+  - msg_rcvd
+  - msg_sent
+  - tbl_ver
+  - up_down
+  - nsr_initial_init_ver_status
+  iteration:
+    attempt: 4
+    interval: 5
+  parameters:
+    af_type: ipv6 unicast
+    vrf_type: vrf
+Verify_BgpInstances:
+  devices:
+    uut: None
+Verify_BgpL2vpnEvpn:
+  devices:
+    uut: None
+  exclude: []
+Verify_BgpL2vpnEvpnAdvertised:
+  devices:
+    uut: None
+  exclude: []
+Verify_BgpOpenconfigYang_yang:
+  exclude: []
+Verify_BgpVrfDbVrfAll:
+  devices:
+    uut: None
+  exclude: []
+Verify_ControllersFiaDiagshellL2show:
+  devices:
+    uut: None
+  exclude: []
+Verify_Dir:
+  devices:
+    uut: None
+  exclude:
+  - size
+  - time
+  - total_free_bytes
+Verify_EthernetCfmMeps:
+  devices:
+    uut: None
+  exclude: []
+Verify_EthernetTags:
+  devices:
+    uut: None
+  exclude: []
+Verify_EthernetTags_yang:
+  exclude: []
+Verify_EthernetTrunkDetail:
+  devices:
+    uut: None
+  exclude: []
+Verify_EvpnEviMac:
+  devices:
+    uut: None
+  exclude:
+  - entries
+Verify_EvpnInternalLabelDetail:
+  devices:
+    uut: None
+  exclude: []
+Verify_HsrpDetail:
+  devices:
+    uut: None
+  exclude:
+  - last_state_change
+  - standby_expire
+  - active_expire
+  - num_state_changes
+  - last_coup_received
+  - last_coup_sent
+  - last_resign_received
+  - last_resign_sent
+Verify_HsrpSummary:
+  devices:
+    uut: None
+  exclude:
+  - total_mts_rx
+  - rx_good
+  - tx_pass
+  - pkt_unknown_groups
+Verify_InstallActiveSummary:
+  devices:
+    uut: None
+  exclude: []
+Verify_InterfaceBrief:
+  devices:
+    uut: None
+Verify_InterfaceSwitchport:
+  devices:
+    uut: None
+Verify_InterfacesDetail:
+  devices:
+    uut: None
+  exclude:
+  - in_octets
+  - in_pkts
+  - out_octets
+  - out_pkts
+  - in_rate
+  - in_rate_pkts
+  - out_rate
+  - out_rate_pkts
+  - last_link_flapped
+  - in_multicast_pkts
+  - out_multicast_pkts
+  - last_input
+  - last_output
+  - in_crc_errors
+  - in_frame_errors
+  - reliability
+  - in_discards
+  - in_broadcast_pkts
+  - out_broadcast_pkts
+  - rxload
+  - txload
+  - interface_state
+  - in_unknown_protos
+  - last_clear
+  iteration:
+    attempt: 4
+    interval: 5
+Verify_Inventory:
+  devices:
+    uut: None
+  exclude: []
+Verify_IpInterfaceBrief:
+  devices:
+    uut: None
+Verify_IpInterfaceBriefPipeVlan:
+  devices:
+    uut: None
+Verify_Ipv4VrfAllInterface:
+  devices:
+    uut: None
+Verify_Ipv6VrfAllInterface:
+  devices:
+    uut: None
+  exclude:
+  - complete_protocol_adj
+  - complete_glean_adj
+  - ipv6_groups
+  - ipv6_link_local
+  iteration:
+    attempt: 9
+    interval: 10
+Verify_L2routeEvpnMac:
+  devices:
+    uut: None
+  exclude: []
+Verify_L2routeEvpnMacIp:
+  devices:
+    uut: None
+  exclude: []
+Verify_L2routeTopology:
+  devices:
+    uut: None
+  exclude: []
+Verify_L2vpnMacLearning:
+  devices:
+    uut: None
+Verify_MribVrfRoute_vrf_all:
+  devices:
+    uut: None
+  parameters:
+    vrf: all
+Verify_MribVrfRoute_vrf_default:
+  devices:
+    uut: None
+  exclude:
+  - uptime
+Verify_OspfMplsTrafficEngLink:
+  devices:
+    uut: None
+  exclude:
+  - area_instance
+Verify_OspfVrfAllInclusive:
+  devices:
+    uut: None
+  exclude:
+  - area_scope_lsa_cksum_sum
+  - topology_version
+  - spf_runs_count
+  - external_lsa_checksum
+Verify_OspfVrfAllInclusiveDatabaseExternal:
+  devices:
+    uut: None
+  exclude:
+  - age
+  - checksum
+  - seq_num
+Verify_OspfVrfAllInclusiveDatabaseNetwork:
+  devices:
+    uut: None
+  exclude:
+  - age
+  - checksum
+  - seq_num
+Verify_OspfVrfAllInclusiveDatabaseOpaqueArea:
+  devices:
+    uut: None
+  exclude:
+  - age
+  - checksum
+  - seq_num
+Verify_OspfVrfAllInclusiveDatabaseRouter:
+  devices:
+    uut: None
+  exclude:
+  - age
+  - checksum
+  - seq_num
+Verify_OspfVrfAllInclusiveDatabaseSummary:
+  devices:
+    uut: None
+  exclude:
+  - age
+  - checksum
+  - seq_num
+Verify_OspfVrfAllInclusiveInterface:
+  devices:
+    uut: None
+  exclude:
+  - dead_timer
+  - hello_timer
+  - last_flood_scan_length
+  - max_flood_scan_length
+  - high_water_mark
+Verify_OspfVrfAllInclusiveNeighborDetail:
+  devices:
+    uut: None
+  exclude:
+  - dead_timer
+  - neighbor_uptime
+  - hello_timer
+  - total_dbd_retrans
+Verify_OspfVrfAllInclusiveShamLinks:
+  devices:
+    uut: None
+Verify_OspfVrfAllInclusiveVirtualLinks:
+  devices:
+    uut: None
+Verify_PimVrfInterfaceDetail_vrf_default_af_ipv4:
+  devices:
+    uut: None
+  exclude:
+  - hello_expiration
+  parameters:
+    af: ipv4
+Verify_PimVrfInterfaceDetail_vrf_default_af_ipv6:
+  devices:
+    uut: None
+  exclude:
+  - hello_expiration
+  - address
+  - primary_address
+  parameters:
+    af: ipv6
+  iteration:
+    attempt: 6
+    interval: 10
+Verify_PimVrfMstatic_vrf_default_af_ipv4:
+  devices:
+    uut: None
+  parameters:
+    af: ipv4
+Verify_PimVrfMstatic_vrf_default_af_ipv6:
+  devices:
+    uut: None
+  parameters:
+    af: ipv6
+Verify_PimVrfRpfSummary_vrf_default_af_ipv4:
+  devices:
+    uut: None
+  exclude:
+  - rib_convergence_time_left
+  parameters:
+    af: ipv4
+Verify_PimVrfRpfSummary_vrf_default_af_ipv6:
+  devices:
+    uut: None
+  exclude:
+  - rib_convergence_time_left
+  parameters:
+    af: ipv6
+Verify_PlacementProgramAll:
+  devices:
+    uut: None
+  exclude: []
+Verify_Platform:
+  devices:
+    uut: None
+  exclude: []
+Verify_PlatformVm:
+  devices:
+    uut: None
+  exclude: []
+Verify_ProtocolsAfiAllAll:
+  devices:
+    uut: None
+  exclude:
+  - last_update
+  - current_state
+Verify_Redundancy:
+  devices:
+    uut: None
+  exclude:
+  - node_uptime
+  - time_since_standby_boot
+  - time_since_last_reload
+  - time_since_last_switchover
+  - time_since_standby_node_not_ready
+  - time_since_standby_node_ready
+  - standby_node_not_ready
+  - standby_node_ready
+  - standby_node_timestamp
+  - node_uptime_in_seconds
+  iteration:
+    attempt: 6
+    interval: 5
+Verify_RedundancySummary:
+  devices:
+    uut: None
+  exclude: []
+  iteration:
+    attempt: 10
+    interval: 10
+Verify_RouteIpv4:
+  devices:
+    uut: None
+  exclude: []
+Verify_RouteIpv6:
+  devices:
+    uut: None
+  exclude: []
+Verify_RplRoutePolicy:
+  devices:
+    uut: None
+Verify_SdrDetail:
+  devices:
+    uut: None
+  exclude: []
+Verify_StaticTopologyDetail_vrf_all:
+  devices:
+    uut: None
+  exclude:
+  - install_date
+  - configure_date
+  - path_version
+  parameters:
+    vrf: all
+Verify_StaticTopologyDetail_vrf_all_af_ipv4:
+  devices:
+    uut: None
+  exclude:
+  - install_date
+  - configure_date
+  parameters:
+    af: ipv4
+    vrf: all
+Verify_StaticTopologyDetail_vrf_all_af_ipv6:
+  devices:
+    uut: None
+  exclude:
+  - install_date
+  - configure_date
+  parameters:
+    af: ipv6
+    vrf: all
+Verify_StaticTopologyDetail_vrf_default:
+  devices:
+    uut: None
+  exclude:
+  - install_date
+  - configure_date
+Verify_StaticTopologyDetail_vrf_default_af_ipv4:
+  devices:
+    uut: None
+  exclude:
+  - install_date
+  - configure_date
+  parameters:
+    af: ipv4
+Verify_StaticTopologyDetail_vrf_default_af_ipv6:
+  devices:
+    uut: None
+  exclude:
+  - install_date
+  - configure_date
+  parameters:
+    af: ipv6
+Verify_Version:
+  devices:
+    uut: None
+  exclude:
+  - seconds
+  - minutes
+  - hours
+  - uptime
+Verify_VlanInterface:
+  devices:
+    uut: None
+Verify_VrfAllDetail:
+  devices:
+    uut: None
+extends: '%ENV{VIRTUAL_ENV}/genie_yamls/verification_datafile.yaml'

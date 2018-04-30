@@ -1,0 +1,208 @@
+# Master PTS File for Genie
+# #########################
+
+ospf:
+    source:
+        pkg: genie.libs.ops
+        class: ospf.ospf.Ospf
+    devices:
+        uut: None
+    exclude:
+        - age
+        - uptime
+        - last_change
+        - cksum
+        - seq
+        - dead_timer
+        - hello_timer
+        - checksum
+        - seq_num
+        - statistics
+        - lsas
+
+hsrp:
+    source:
+        pkg: genie.libs.ops
+        class: hsrp.hsrp.Hsrp
+    devices:
+        uut: None
+
+vlan:
+    source:
+        pkg: genie.libs.ops
+        class: vlan.vlan.Vlan
+    devices:
+        uut: None
+
+platform:
+    source:
+        pkg: genie.libs.ops
+        class: platform.platform.Platform
+    devices:
+        uut: None
+    exclude:
+        - rp_uptime
+        - disk_free_space
+        - uptime
+        - switchover_reason
+        - disk_used_space
+        - total_free_bytes
+        - disk_total_space
+        - main_mem
+
+bgp:
+    source:
+        pkg: genie.libs.ops
+        class: bgp.bgp.Bgp
+    devices:
+        uut: None
+    exclude:
+        - keepalives
+        - last_reset
+        - reset_reason
+        - foreign_port
+        - local_port
+        - msg_rcvd
+        - msg_sent
+        - up_down
+        - bgp_table_version
+        - routing_table_version
+        - tbl_ver
+        - table_version
+        - memory_usage
+        - updates
+        - mss
+        - total
+        - total_bytes
+        - up_time
+        - bgp_negotiated_keepalive_timers
+        - hold_time
+        - keepalive_interval
+        - sent
+        - received
+        - status_codes
+        - holdtime
+        - router_id
+
+interface:
+    source:
+        pkg: genie.libs.ops
+        class: interface.interface.Interface
+    devices:
+        uut: None
+    exclude:
+        - in_octets
+        - in_pkts
+        - last_clear
+        - out_octets
+        - out_pkts
+        - in_rate
+        - out_rate
+        - in_errors
+        - in_crc_errors
+        - in_rate_pkts
+        - out_rate_pkts
+        - in_broadcast_pkts
+        - out_broadcast_pkts
+        - in_multicast_pkts
+        - out_multicast_pkts
+        - in_unicast_pkts
+        - out_unicast_pkts
+        - last_change
+        - mac_address
+        - phys_address
+        - ((t|T)unnel.*)
+        - (Null.*)
+
+mcast:
+    source:
+        pkg: genie.libs.ops
+        class: mcast.mcast.Mcast
+    devices:
+        uut: None
+    exclude:
+        - expire
+        - uptime
+        - flags
+        - incoming_interface_list
+
+pim:
+    source:
+        pkg: genie.libs.ops
+        class: pim.pim.Pim
+    devices:
+        uut: None
+    exclude:
+        - expiration
+        - hello_expiration
+        - hello_interval
+        - up_time
+        - bsr_next_bootstrap
+        - expires
+        - rp_candidate_next_advertisement
+        - genid
+        - df_address
+
+prefix_list:
+    source:
+        pkg: genie.libs.ops
+        class: prefix_list.prefix_list.PrefixList
+    devices:
+        uut: None
+
+vrf:
+    source:
+        pkg: genie.libs.ops
+        class: vrf.vrf.Vrf
+    devices:
+        uut: None
+
+mld:
+    source:
+        pkg: genie.libs.ops
+        class: mld.mld.Mld
+    devices:
+        uut: None
+
+route_policy:
+    source:
+        pkg: genie.libs.ops
+        class: route_policy.route_policy.RoutePolicy
+    devices:
+        uut: None
+
+igmp:
+    source:
+        pkg: genie.libs.ops
+        class: igmp.igmp.Igmp
+    devices:
+        uut: None
+    exclude:
+        - expire
+        - up_time
+stp:
+    source:
+        pkg: genie.libs.ops
+        class: stp.stp.Stp
+    devices:
+        uut: None
+
+static_routing:
+    source:
+        pkg: genie.libs.ops
+        class: static_routing.static_routing.StaticRoute
+    devices:
+        uut: None
+
+routing:
+    source:
+        pkg: genie.libs.ops
+        class: routing.routing.Routing
+    devices:
+        uut: None
+lldp:
+    source:
+        pkg: genie.libs.ops
+        class: lldp.lldp.Lldp
+    devices:
+        uut: None

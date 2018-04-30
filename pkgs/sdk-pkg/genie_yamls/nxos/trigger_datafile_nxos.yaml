@@ -1,0 +1,2611 @@
+extends: '%ENV{VIRTUAL_ENV}/genie_yamls/trigger_datafile.yaml'
+
+#===============================================================================
+#                                PROCESSORS
+#===============================================================================
+
+global_processors:
+  pre:
+    clear_traffic_stats:
+      method: genie.harness.libs.prepostprocessor.clear_traffic_stats
+  post:
+    verify_traffic:
+      method: genie.harness.libs.prepostprocessor.verify_traffic
+    test_case_genie_telemetry:
+      method: genie.telemetry.processors.genie_telemetry_processor
+
+TriggerSleep:
+    groups: []
+    sleep_time: 5
+    message_time: 1
+    count: 1
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+#===============================================================================
+#                                CLEAR
+#===============================================================================
+
+TriggerClearBgpAll:
+    groups: ['clear', 'bgp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerClearIpBgpSoft:
+    groups: ['clear', 'bgp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerClearBgpNeighbor:
+    groups: ['clear', 'bgp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerClearBgpNeighborIpv4:
+    groups: ['clear', 'bgp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerClearBgpNeighborIpv6:
+    groups: ['clear', 'bgp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerClearBgpNeighborSoft:
+    groups: ['clear', 'bgp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerClearBgpNeighborSoftIpv4:
+    groups: ['clear', 'bgp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerClearBgpNeighborSoftIpv6:
+    groups: ['clear', 'bgp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerClearIpRouteAll:
+    groups: ['clear', 'bgp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerClearCountersInterfaceAll:
+    groups: ['clear', 'interface', 'L3']
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+#===============================================================================
+#                                DISABLE-ENABLE
+#===============================================================================
+
+TriggerDisableEnableBgp:
+    groups: ['disable-enable', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerDisableEnableBgpWithCR:
+    groups: ['disable-enable', 'bgp', 'L3']
+    method: 'config_replace'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerDisableEnableHsrp:
+    groups: ['disable-enable', 'hsrp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 1800
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerDisableEnablePim:
+    groups: ['disable-enable', 'mcast', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerDisableEnablePim6:
+    groups: ['disable-enable', 'mcast', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerDisableEnableVlanInterface:
+    groups: ['disable-enable', 'Vlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerDisableEnableVnSegmentVlan:
+    groups: ['disable-enable', 'Vlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+#===============================================================================
+#                                 MODIFY
+#===============================================================================
+
+TriggerModifyBgpNeighborAsn:
+    groups: ['modify', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifyBgpNeighborCluster:
+    groups: ['modify', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifyHsrpIpv4StateActiveToStandby:
+    groups: ['modify', 'hsrp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifyHsrpIpv6StateActiveToStandby:
+    groups: ['modify', 'hsrp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifyBgpNeighborRoutemapIn:
+    groups: ['modify', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifyBgpNeighborRoutemapOut:
+    groups: ['modify', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifySwitchportModeTrunkToAccess:
+    groups: ['modify', 'interface', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 400
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifyVlanMtu:
+    groups: ['modify', 'Vlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifyEthernetMtu:
+    groups: ['modify', 'interface', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifyLoopbackInterfaceIp:
+    groups: ['modify', 'interface', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifySviInterfaceIp:
+    groups: ['modify', 'interface', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+       
+TriggerModifyLoopbackInterfaceIpv6:
+    groups: ['modify', 'interface', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifyBgpKeepaliveHoldtime:
+    groups: ['modify', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifyBgpKeepAliveInterval:
+    groups: ['modify', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifyBgpGracefulRestartRestartTime:
+    groups: ['modify', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifyBgpGracefulRestartStalePathTime:
+    groups: ['modify', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifyBgpNeighborKeepAliveInterval:
+    groups: ['modify', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifyBgpNeighborEbgpMultihop:
+    groups: ['modify', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifyBgpNeighborUpdateSource:
+    groups: ['modify', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifyBgpNeighborMaximumPrefix:
+    groups: ['modify', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifyBgpNeighborPassword:
+    groups: ['modify', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerModifyBgpVpnRd:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 30
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+#===============================================================================
+#                                UNCONFIG-CONFIG
+#===============================================================================
+
+TriggerUnconfigConfigVlan:
+    groups: ['unconfig-config', 'vlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgp:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpWithCR:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'config_replace'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighbor:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighborWithCR:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'config_replace'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpFastExternalFallover:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigEthernetInterface:
+    groups: ['unconfig-config', 'interface', 'L2']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 5
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigEthernetInterfaceSub:
+    groups: ['unconfig-config', 'interface', 'L2']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigVlanInterface:
+    groups: ['unconfig-config', 'interface', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 400
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigLoopbackInterface:
+    groups: ['unconfig-config', 'interface', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighborDefaultOriginate:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighborNextHopSelf:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighborTransportConnectionModePassive:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighborPassword:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighborBfd:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpGracefulRestart:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpKeepaliveHoldtime:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighborSoftReconfiguration:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighborSendCommunity:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighborSendCommunityExtended:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighborRouteReflectorClient:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighborIpv4:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 240
+      interval: 30
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighborIpv4WithCR:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'config_replace'
+    timeout:
+      max_time: 240
+      interval: 30
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighborIpv6:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 240
+      interval: 30
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpRouterId:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighborAsOverride:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighborVrf:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 240
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighborVrfWithCR:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'config_replace'
+    timeout:
+      max_time: 240
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighborIbgp:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 240
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighborIbgpWithCR:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'config_replace'
+    timeout:
+      max_time: 240
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigPhysicalTrunkInterface:
+    groups: ['unconfig-config', 'interface', 'L2']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None    
+
+TriggerUnconfigConfigVirtualTrunkInterface:
+    groups: ['unconfig-config', 'interface', 'L2']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpNeighborEbgp:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigBgpVpnRd:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+#===============================================================================
+#                                SHUT-NOSHUT
+#===============================================================================
+
+TriggerShutNoShutBgp:
+    groups: ['shut-noshut', 'bgp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerShutNoShutBgpNeighbors:
+    groups: ['shut-noshut', 'bgp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerShutNoShutVlan:
+    groups: ['shut-noshut', 'Vlan', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerShutNoShutEthernetInterface:
+    groups: ['shut-noshut', 'interface', 'L3']
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerShutNoShutLoopbackInterface:
+    groups: ['shut-noshut', 'interface', 'L3']
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerShutNoShutBgpLoopbackInterface:
+    groups: ['shut-noshut', 'bgp', 'L3']
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerShutNoShutHsrpIpv4VlanInterface:
+    groups: ['shut-noshut', 'Vlan', 'L3']
+    timeout:
+      max_time: 1800
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerShutNoShutHsrpIpv6VlanInterface:
+    groups: ['shut-noshut', 'Vlan', 'L3']
+    timeout:
+      max_time: 1800
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerShutNoShutTrunkInterface:
+    groups: ['shut-noshut', 'interface', 'L2']
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerShutNoShutVlanInterface:
+    groups: ['shut-noshut', 'interface', 'L3']
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices:
+      uut:
+        None
+
+#===============================================================================
+#                                ADD-REMOVE
+#===============================================================================
+
+TriggerAddRemoveBgpNeighborRoutemap:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNeighborRoutemapPrefixlist:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNeighborRoutemapWeight:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNeighborUpdateSource:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNeighborDescription:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNeighborDisableConnectedCheck:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNeighborBfd:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNeighborMaximumPrefix:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNeighborNextHopSelf:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNeighborDefaultOriginate:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNeighborPassword:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNeighborTransportConnectionModePassive:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNeighborCapabilitySuppress4ByteAs:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNetworkIPv4:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+TriggerAddRemoveBgpNetworkIPv6:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNeighborSendCommunity:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNeighborSendCommunityExtended:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNeighborSoftReconfiguration:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNeighborRemovePrivateAs:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpAggregateAddressIpv4:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpAggregateAddressIpv6:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNetworkIPv4:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpKeepaliveHoldtime:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpMaximumPathsEbgp:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpRedistributeConnected:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpRedistributeStatic:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpRedistributeOspf:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNeighborRouteReflectorClient:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveBgpNeighborAsOverride:
+    groups: ['add-remove', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+        
+#===============================================================================
+#                                RESTART
+#===============================================================================
+
+TriggerProcessCliRestartBgp:
+    groups: ['restart', 'bgp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartBgp:
+    groups: ['restart', 'bgp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartBgp:
+    groups: ['restart', 'bgp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCliRestartOspf:
+    groups: ['restart', 'ospf', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartOspf:
+    groups: ['restart', 'ospf', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartOspf:
+    groups: ['restart', 'ospf', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCliRestartOspfv3:
+    groups: ['restart', 'ospfv3', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartOspfv3:
+    groups: ['restart', 'ospfv3', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartOspfv3:
+    groups: ['restart', 'ospfv3', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCliRestartEigrp:
+    groups: ['restart', 'eigrp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartEigrp:
+    groups: ['restart', 'eigrp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartEigrp:
+    groups: ['restart', 'eigrp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCliRestartIsis:
+    groups: ['restart', 'isis', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartIsis:
+    groups: ['restart', 'isis', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartIsis:
+    groups: ['restart', 'isis', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCliRestartRip:
+    groups: ['restart', 'rip', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartRip:
+    groups: ['restart', 'rip', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartRip:
+    groups: ['restart', 'rip', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCliRestartMsdp:
+    groups: ['restart', 'msdp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartMsdp:
+    groups: ['restart', 'msdp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartMsdp:
+    groups: ['restart', 'msdp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCliRestartPim:
+    groups: ['restart', 'pim', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartPim:
+    groups: ['restart', 'pim', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartPim:
+    groups: ['restart', 'pim', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCliRestartPim6:
+    groups: ['restart', 'pim6', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartPim6:
+    groups: ['restart', 'pim6', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartPim6:
+    groups: ['restart', 'pim6', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCliRestartIgmp:
+    groups: ['restart', 'igmp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartIgmp:
+    groups: ['restart', 'igmp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartIgmp:
+    groups: ['restart', 'igmp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+# process Rsvp not exists on N9K 
+TriggerProcessCliRestartRsvp:
+    groups: ['restart', 'rsvp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartRsvp:
+    groups: ['restart', 'rsvp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartRsvp:
+    groups: ['restart', 'rsvp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+# the processes only can be restart from shell
+TriggerProcessCrashRestartSysmgr:
+    groups: ['restart', 'sysmgr', 'L3']
+    timeout:
+      max_time: 900
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartSysmgr:
+    groups: ['restart', 'sysmgr', 'L3']
+    timeout:
+      max_time: 900
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartMrib:
+    groups: ['restart', 'mrib', 'L3']
+    timeout:
+      max_time: 900
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartMrib:
+    groups: ['restart', 'mrib', 'L3']
+    timeout:
+      max_time: 900
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartSyslogd:
+    groups: ['restart', 'syslogd', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartSyslogd:
+    groups: ['restart', 'syslogd', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartFeatureMgr:
+    groups: ['restart', 'feature_mgr', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartFeatureMgr:
+    groups: ['restart', 'feature_mgr', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+        
+TriggerProcessKillRestartVdcMgr:
+    groups: ['restart', 'vdc_mgr', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartVdcMgr:
+    groups: ['restart', 'vdc_mgr', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+        
+TriggerProcessKillRestartLacp:
+    groups: ['restart', 'lacp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartLacp:
+    groups: ['restart', 'lacp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+        
+TriggerProcessKillRestartCfs:
+    groups: ['restart', 'cfg', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartCfs:
+    groups: ['restart', 'cfg', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartAclmgr:
+    groups: ['restart', 'aclmgr', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartAclmgr:
+    groups: ['restart', 'aclmgr', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+   
+# process Monitorc not exists on N9K     
+TriggerProcessKillRestartMonitorc:
+    groups: ['restart', 'monitorc', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartMonitorc:
+    groups: ['restart', 'monitorc', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+        
+TriggerProcessKillRestartTunnel:
+    groups: ['restart', 'tunnel', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartTunnel:
+    groups: ['restart', 'tunnel', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+        
+TriggerProcessKillRestartEltm:
+    groups: ['restart', 'eltm', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartEltm:
+    groups: ['restart', 'eltm', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+        
+TriggerProcessKillRestartVlanMgr:
+    groups: ['restart', 'vlan_mgr', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartVlanMgr:
+    groups: ['restart', 'vlan_mgr', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+        
+# process Plugin not exists on N9K
+TriggerProcessKillRestartPlugin:
+    groups: ['restart', 'plugin', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartPlugin:
+    groups: ['restart', 'plugin', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartFsDaemon:
+    groups: ['restart', 'fs-daemon', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartFsDaemon:
+    groups: ['restart', 'fs-daemon', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartConfCheck:
+    groups: ['restart', 'conf_check', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartConfCheck:
+    groups: ['restart', 'conf_check', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartGlbp:
+    groups: ['restart', 'glbp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartGlbp:
+    groups: ['restart', 'glbp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartBfd:
+    groups: ['restart', 'bfd', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartBfd:
+    groups: ['restart', 'bfd', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartL2rib:
+    groups: ['restart', 'l2rib', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartL2rib:
+    groups: ['restart', 'l2rib', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartNetstack:
+    groups: ['restart', 'netstack', 'L3']
+    timeout:
+      max_time: 900
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartNetstack:
+    groups: ['restart', 'netstack', 'L3']
+    timeout:
+      max_time: 900
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartNve:
+    groups: ['restart', 'nve', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartNve:
+    groups: ['restart', 'nve', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartStp:
+    groups: ['restart', 'stp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartStp:
+    groups: ['restart', 'stp', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartUrib:
+    groups: ['restart', 'urib', 'L3']
+    timeout:
+      max_time: 900
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartUrib:
+    groups: ['restart', 'urib', 'L3']
+    timeout:
+      max_time: 900
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessCrashRestartVpc:
+    groups: ['restart', 'vpc', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+TriggerProcessKillRestartVpc:
+    groups: ['restart', 'vpc', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices:
+      uut:
+        None
+
+#===============================================================================
+#                               SWITCHOVER
+#===============================================================================
+
+TriggerSwitchover:
+    groups: ['ha', 'switchover', 'L3']
+    update_verifications: ['Verify_Module',
+                           'Verify_Boot',
+                           'Verify_Dir',
+                           'Verify_InstallActive',
+                           'Verify_Inventory',
+                           'Verify_RedundancyStatus',
+                           'Verify_SystemRedundancyStatus',
+                           'Verify_VdcCurrent',
+                           'Verify_VdcDetail',
+                           'Verify_VdcMembershipStatus',
+                           'Verify_Version']
+    update_pts_features: ['platform']
+    timeout:
+      max_time: 900
+      interval: 60
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+#===============================================================================
+#                               RELOAD
+#===============================================================================
+
+TriggerReload:
+    groups: ['ha', 'reload', 'L3']
+    update_verifications: ['Verify_Module',
+                           'Verify_Boot',
+                           'Verify_Dir',
+                           'Verify_InstallActive',
+                           'Verify_Inventory',
+                           'Verify_RedundancyStatus',
+                           'Verify_SystemRedundancyStatus',
+                           'Verify_VdcCurrent',
+                           'Verify_VdcDetail',
+                           'Verify_VdcMembershipStatus',
+                           'Verify_Version']
+    update_pts_features: ['platform']
+    timeout:
+      max_time: 900
+      interval: 60
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerReloadFabricModule:
+    groups: ['ha', 'reload', 'L3']
+    timeout:
+      max_time: 400
+      interval: 60
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerReloadActiveSystemController:
+    groups: ['ha', 'reload', 'L3']
+    update_verifications: ['Verify_Module',
+                           'Verify_Boot',
+                           'Verify_Dir',
+                           'Verify_InstallActive',
+                           'Verify_Inventory',
+                           'Verify_RedundancyStatus',
+                           'Verify_SystemRedundancyStatus',
+                           'Verify_VdcCurrent',
+                           'Verify_VdcDetail',
+                           'Verify_VdcMembershipStatus',
+                           'Verify_Version']
+    update_pts_features: ['platform']
+    lcRole: active
+    timeout:
+      max_time: 400
+      interval: 60
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerReloadStandbySystemController:
+    groups: ['ha', 'reload', 'L3']
+    update_verifications: ['Verify_Module',
+                           'Verify_Boot',
+                           'Verify_Dir',
+                           'Verify_InstallActive',
+                           'Verify_Inventory',
+                           'Verify_RedundancyStatus',
+                           'Verify_SystemRedundancyStatus',
+                           'Verify_VdcCurrent',
+                           'Verify_VdcDetail',
+                           'Verify_VdcMembershipStatus',
+                           'Verify_Version']
+    update_pts_features: ['platform']
+    timeout:
+      max_time: 400
+      interval: 60
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerReloadEthernetModule:
+    groups: ['ha', 'reload', 'L3']
+    timeout:
+      max_time: 500
+      interval: 60
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    verifications:
+      Verify_Interface:
+        devices:
+          uut: None
+        iteration:
+          attempt: 6
+          interval: 5
+    devices:
+      uut:
+        None
+
+TriggerReloadActiveRP:
+    groups: ['ha', 'reload', 'L3']
+    update_verifications: ['Verify_Module',
+                           'Verify_Boot',
+                           'Verify_Dir',
+                           'Verify_InstallActive',
+                           'Verify_Inventory',
+                           'Verify_RedundancyStatus',
+                           'Verify_SystemRedundancyStatus',
+                           'Verify_VdcCurrent',
+                           'Verify_VdcDetail',
+                           'Verify_VdcMembershipStatus',
+                           'Verify_Version']
+    update_pts_features: ['platform']
+    lcRole: active
+    timeout:
+      max_time: 900
+      interval: 60
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerReloadStandbyRP:
+    groups: ['ha', 'reload', 'L3']
+    timeout:
+      max_time: 900
+      interval: 60
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None

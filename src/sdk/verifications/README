@@ -1,0 +1,15 @@
+A verification is the execution of a command to retrieve the current state of a
+device. Verifications could be show commands, YANG, xml, REST, and so on.
+
+Verifications are of two types: Global and Local.
+
+Global Verifications are first run right after the common setup. At this stage,
+the information retrieved is saved as a snapshot. After each consequent trigger
+the same set of verifications are executed again, and their state is compared
+to the previously taken snapshot.
+
+Local verifications are indepedent of the Global verifications. They are run as
+subsections of a trigger. A first set of snapshots are taken before performing
+the trigger action. A second set of snapshots are taken after the trigger
+action and then compared to the first set of snapshots.
+

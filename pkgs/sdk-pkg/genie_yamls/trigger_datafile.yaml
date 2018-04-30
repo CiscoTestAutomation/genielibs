@@ -1,0 +1,1124 @@
+# =============================
+# Master Trigger File for Genie
+# =============================
+
+# -----
+# SLEEP
+# -----
+
+TriggerSleep:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.sleep.sleep.TriggerSleep
+    sleep_time: 5
+    message_time: 3
+
+# ==============================================================================
+#                               FEATURE: OSPF
+# ==============================================================================
+
+# ----------------
+# UNCONFIG-CONFIG
+# ----------------
+
+TriggerUnconfigureConfigureOspf:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfconf.ospf.unconfconf.TriggerUnconfigureConfigureOspf
+
+# ==============================================================================
+#                               FEATURE: BGP
+# ==============================================================================
+
+# -----
+# CLEAR
+# -----
+
+TriggerClearBgpAll:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.bgp.clear.TriggerClearBgpAll
+
+TriggerClearIpBgpSoft:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.bgp.clear.TriggerClearIpBgpSoft
+
+TriggerClearBgpNeighbor:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.bgp.clear.TriggerClearBgpNeighbor
+
+TriggerClearBgpNeighborSoft:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.bgp.clear.TriggerClearBgpNeighborSoft
+
+TriggerClearBgpNeighborIpv4:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.bgp.clear.TriggerClearBgpNeighborIpv4
+
+TriggerClearBgpNeighborIpv6:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.bgp.clear.TriggerClearBgpNeighborIpv6
+
+TriggerClearBgpNeighborSoftIpv4:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.bgp.clear.TriggerClearBgpNeighborSoftIpv4
+
+TriggerClearBgpNeighborSoftIpv6:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.bgp.clear.TriggerClearBgpNeighborSoftIpv6
+
+TriggerClearIpRouteAll:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.bgp.clear.TriggerClearIpRouteAll
+# ---------------
+# UNCONFIG-CONFIG
+# ---------------
+TriggerUnconfigConfigBgpFastExternalFallover:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpFastExternalFallover
+
+TriggerUnconfigConfigBgpKeepaliveHoldtime:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpKeepaliveHoldtime
+
+TriggerUnconfigConfigBgpNeighborSoftReconfiguration:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborSoftReconfiguration
+
+TriggerUnconfigConfigBgpNeighborSendCommunity:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborSendCommunity
+
+TriggerUnconfigConfigBgpNeighborSendCommunityExtended:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborSendCommunityExtended
+
+
+TriggerUnconfigConfigBgp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgp
+
+TriggerUnconfigConfigBgpWithCR:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgp
+
+TriggerUnconfigConfigBgpGracefulRestart:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpGracefulRestart
+
+TriggerUnconfigConfigBgpNeighbor:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighbor
+
+TriggerUnconfigConfigBgpNeighborWithCR:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighbor
+
+TriggerUnconfigConfigBgpNeighborDefaultOriginate:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborDefaultOriginate
+
+TriggerUnconfigConfigBgpNeighborNextHopSelf:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborNextHopSelf
+
+TriggerUnconfigConfigBgpNeighborTransportConnectionModePassive:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborTransportConnectionModePassive
+
+TriggerUnconfigConfigBgpNeighborPassword:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborPassword
+
+TriggerUnconfigConfigBgpNeighborBfd:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborBfd
+
+TriggerUnconfigConfigBgpNeighborRouteReflectorClient:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborRouteReflectorClient
+
+TriggerUnconfigConfigBgpNeighborIpv4:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborIpv4
+
+TriggerUnconfigConfigBgpNeighborIpv4WithCR:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborIpv4
+
+TriggerUnconfigConfigBgpNeighborIpv6:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborIpv6
+
+TriggerUnconfigConfigBgpNeighborIbgp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborIbgp
+
+TriggerUnconfigConfigBgpNeighborIbgpWithCR:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborIbgp
+
+TriggerUnconfigConfigBgpRouterId:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpRouterId
+
+TriggerUnconfigConfigBgpNeighborVrf:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborVrf
+
+TriggerUnconfigConfigBgpNeighborVrfWithCR:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborVrf
+
+TriggerUnconfigConfigBgpNeighborAsOverride:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborAsOverride
+
+TriggerUnconfigConfigBgpVpnRd:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpVpnRd
+
+TriggerUnconfigConfigBgpNeighborEbgp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborEbgp
+
+# --------------
+# DISABLE-ENABLE
+# --------------
+TriggerDisableEnableBgp:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.disableenable.bgp.disableenable.TriggerDisableEnableBgp
+
+TriggerDisableEnableBgpWithCR:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.disableenable.bgp.disableenable.TriggerDisableEnableBgp
+
+TriggerDisableEnableVlanInterface:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.disableenable.vlan.disableenable.TriggerDisableEnableVlanInterface
+
+TriggerDisableEnableVnSegmentVlan:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.disableenable.vlan.disableenable.TriggerDisableEnableVnSegmentVlan
+
+# ----------
+# ADD-REMOVE
+# ----------
+
+TriggerAddRemoveBgpNeighborRoutemap:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNeighborRoutemap
+
+TriggerAddRemoveBgpNeighborCapabilitySuppress4ByteAs:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNeighborCapabilitySuppress4ByteAs
+
+TriggerAddRemoveBgpNetworkIPv4:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNetworkIPv4
+
+TriggerAddRemoveBgpNetworkIPv6:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNetworkIPv6
+
+TriggerAddRemoveBgpNeighborSendCommunity:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNeighborSendCommunity
+
+TriggerAddRemoveBgpNeighborSendCommunityExtended:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNeighborSendCommunityExtended
+
+TriggerAddRemoveBgpNeighborSoftReconfiguration:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNeighborSoftReconfiguration
+
+TriggerAddRemoveBgpNeighborRemovePrivateAs:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNeighborRemovePrivateAs
+
+TriggerAddRemoveBgpAggregateAddressIpv4:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpAggregateAddressIpv4
+
+
+TriggerAddRemoveBgpAggregateAddressIpv6:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpAggregateAddressIpv6
+
+TriggerAddRemoveBgpNetworkIPv4:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNetworkIPv4
+
+TriggerAddRemoveBgpKeepaliveHoldtime:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpKeepaliveHoldtime
+
+TriggerAddRemoveBgpMaximumPathsEbgp:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpMaximumPathsEbgp
+
+TriggerAddRemoveBgpNeighborRoutemapPrefixlist:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNeighborRoutemapPrefixlist
+
+TriggerAddRemoveBgpNeighborRoutemapWeight:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNeighborRoutemapWeight
+
+TriggerAddRemoveBgpNeighborUpdateSource:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNeighborUpdateSource
+
+TriggerAddRemoveBgpNeighborDescription:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNeighborDescription
+
+TriggerAddRemoveBgpNeighborDisableConnectedCheck:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNeighborDisableConnectedCheck
+
+TriggerAddRemoveBgpNeighborBfd:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNeighborBfd
+
+TriggerAddRemoveBgpNeighborMaximumPrefix:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNeighborMaximumPrefix
+
+TriggerAddRemoveBgpNeighborNextHopSelf:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNeighborNextHopSelf
+
+TriggerAddRemoveBgpNeighborDefaultOriginate:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNeighborDefaultOriginate
+
+TriggerAddRemoveBgpNeighborPassword:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNeighborPassword
+
+TriggerAddRemoveBgpNeighborTransportConnectionModePassive:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNeighborTransportConnectionModePassive
+
+TriggerAddRemoveBgpRedistributeConnected:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpRedistributeConnected
+
+TriggerAddRemoveBgpRedistributeStatic:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpRedistributeStatic      
+      
+TriggerAddRemoveBgpNeighborRouteReflectorClient:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNeighborRouteReflectorClient
+
+TriggerAddRemoveBgpRedistributeOspf:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpRedistributeOspf
+      
+TriggerAddRemoveBgpNeighborAsOverride:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.bgp.addremove.TriggerAddRemoveBgpNeighborAsOverride
+# -----------
+# SHUT-NOSHUT
+# -----------
+
+TriggerShutNoShutBgp:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.shutnoshut.bgp.shutnoshut.TriggerShutNoShutBgp
+
+TriggerShutNoShutBgpNeighbors:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.shutnoshut.bgp.shutnoshut.TriggerShutNoShutBgpNeighbors
+
+TriggerShutNoShutBgpLoopbackInterface:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.shutnoshut.bgp.shutnoshut.TriggerShutNoShutBgpLoopbackInterface
+
+# -----------
+# MODIFY
+# -----------
+TriggerModifyBgpKeepaliveHoldtime:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.bgp.modify.TriggerModifyBgpKeepaliveHoldtime
+
+TriggerModifyBgpNeighborAsn:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.bgp.modify.TriggerModifyBgpNeighborAsn
+
+TriggerModifyBgpNeighborCluster:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.bgp.modify.TriggerModifyBgpNeighborCluster
+
+TriggerModifyBgpNeighborRoutemapIn:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.bgp.modify.TriggerModifyBgpNeighborRoutemapIn
+
+TriggerModifyBgpNeighborRoutemapOut:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.bgp.modify.TriggerModifyBgpNeighborRoutemapOut
+
+TriggerModifyBgpKeepAliveInterval:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.bgp.modify.TriggerModifyBgpKeepAliveInterval
+
+TriggerModifyBgpGracefulRestartRestartTime:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.bgp.modify.TriggerModifyBgpGracefulRestartRestartTime
+
+TriggerModifyBgpGracefulRestartStalePathTime:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.bgp.modify.TriggerModifyBgpGracefulRestartStalePathTime
+
+TriggerModifyBgpNeighborKeepAliveInterval:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.bgp.modify.TriggerModifyBgpNeighborKeepAliveInterval
+
+TriggerModifyBgpNeighborEbgpMultihop:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.bgp.modify.TriggerModifyBgpNeighborEbgpMultihop
+
+TriggerModifyBgpNeighborUpdateSource:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.bgp.modify.TriggerModifyBgpNeighborUpdateSource
+
+TriggerModifyBgpNeighborMaximumPrefix:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.bgp.modify.TriggerModifyBgpNeighborMaximumPrefix
+
+TriggerModifyBgpNeighborPassword:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.bgp.modify.TriggerModifyBgpNeighborPassword
+
+TriggerModifyBgpVpnRd:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.modify.bgp.modify.TriggerModifyBgpVpnRd
+
+# ==============================================================================
+#                               FEATURE: HSRP
+# ==============================================================================
+# --------------
+# DISABLE-ENABLE
+# --------------
+
+TriggerDisableEnableHsrp:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.disableenable.hsrp.disableenable.TriggerDisableEnableHsrp
+
+# -----------
+# MODIFY
+# -----------
+TriggerModifyHsrpIpv4StateActiveToStandby:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.hsrp.modify.TriggerModifyHsrpIpv4StateActiveToStandby
+
+TriggerModifyHsrpIpv6StateActiveToStandby:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.hsrp.modify.TriggerModifyHsrpIpv6StateActiveToStandby
+
+
+# ==============================================================================
+#                               FEATURE: VLAN
+# ==============================================================================
+
+# ---------------
+# UNCONFIG-CONFIG
+# ---------------
+
+TriggerUnconfigConfigVlan:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.unconfigconfig.vlan.unconfigconfig.TriggerUnconfigConfigVlan
+
+# -----------
+# SHUT-NOSHUT
+# -----------
+TriggerShutNoShutVlan:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.shutnoshut.vlan.shutnoshut.TriggerShutNoShutVlan
+
+# ==============================================================================
+#                               FEATURE: MULTICAST
+# ==============================================================================
+# --------------
+# DISABLE-ENABLE
+# --------------
+
+TriggerDisableEnablePim:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.disableenable.mcast.disableenable.TriggerDisableEnablePim
+
+TriggerDisableEnablePim6:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.disableenable.mcast.disableenable.TriggerDisableEnablePim6
+
+
+# ==============================================================================
+#                               FEATURE: PIM
+# ==============================================================================
+
+# ==============================================================================
+#                               FEATURE: INTERFACE
+# ==============================================================================
+
+# ------
+# CLEAR
+# ------
+TriggerClearCountersInterfaceAll:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.interface.clear.TriggerClearCountersInterfaceAll
+
+# -----------
+# SHUT-NOSHUT
+# -----------
+TriggerShutNoShutEthernetInterface:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.shutnoshut.interface.shutnoshut.TriggerShutNoShutEthernetInterface
+
+TriggerShutNoShutTrunkInterface:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.shutnoshut.interface.shutnoshut.TriggerShutNoShutTrunkInterface
+
+TriggerShutNoShutVlanInterface:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.shutnoshut.interface.shutnoshut.TriggerShutNoShutVlanInterface
+
+TriggerShutNoShutLoopbackInterface:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.shutnoshut.interface.shutnoshut.TriggerShutNoShutLoopbackInterface
+
+TriggerShutNoShutHsrpIpv4VlanInterface:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.shutnoshut.interface.shutnoshut.TriggerShutNoShutHsrpIpv4VlanInterface
+
+TriggerShutNoShutHsrpIpv6VlanInterface:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.shutnoshut.interface.shutnoshut.TriggerShutNoShutHsrpIpv6VlanInterface
+
+
+# ------
+# MODIFY
+# ------
+TriggerModifySwitchportModeTrunkToAccess:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.interface.modify.TriggerModifySwitchportModeTrunkToAccess
+
+TriggerModifyEthernetMtu:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.interface.modify.TriggerModifyEthernetMtu
+      
+TriggerModifyLoopbackInterfaceIp:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.interface.modify.TriggerModifyLoopbackInterfaceIp
+      
+TriggerModifyLoopbackInterfaceIpv6:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.interface.modify.TriggerModifyLoopbackInterfaceIpv6
+
+TriggerModifySviInterfaceIp:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.interface.modify.TriggerModifySviInterfaceIp
+
+TriggerModifyVlanMtu:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.modify.interface.modify.TriggerModifyVlanMtu
+
+# ---------------
+# UNCONFIG-CONFIG
+# ---------------
+
+TriggerUnconfigConfigLoopbackInterface:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.interface.unconfigconfig.TriggerUnconfigConfigLoopbackInterface
+
+TriggerUnconfigConfigPhysicalTrunkInterface:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.interface.unconfigconfig.TriggerUnconfigConfigPhysicalTrunkInterface
+
+TriggerUnconfigConfigVirtualTrunkInterface:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.interface.unconfigconfig.TriggerUnconfigConfigVirtualTrunkInterface
+
+TriggerUnconfigConfigEthernetInterface:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.interface.unconfigconfig.TriggerUnconfigConfigEthernetInterface
+
+TriggerUnconfigConfigEthernetInterfaceSub:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.interface.unconfigconfig.TriggerUnconfigConfigEthernetInterfaceSub
+
+TriggerUnconfigConfigVlanInterface:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.interface.unconfigconfig.TriggerUnconfigConfigVlanInterface
+
+# -------
+# Restart
+# -------
+
+TriggerProcessCliRestartBgp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.bgp.processrestart.TriggerProcessCliRestartBgp
+
+TriggerProcessCrashRestartBgp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.bgp.processrestart.TriggerProcessCrashRestartBgp
+
+TriggerProcessKillRestartBgp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.bgp.processrestart.TriggerProcessKillRestartBgp
+
+TriggerProcessCliRestartOspf:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.ospf.processrestart.TriggerProcessCliRestartOspf
+
+TriggerProcessCrashRestartOspf:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.ospf.processrestart.TriggerProcessCrashRestartOspf
+
+TriggerProcessKillRestartOspf:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.ospf.processrestart.TriggerProcessKillRestartOspf
+
+TriggerProcessCrashRestartSysmgr:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.sysmgr.processrestart.TriggerProcessCrashRestartSysmgr
+
+TriggerProcessKillRestartSysmgr:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.sysmgr.processrestart.TriggerProcessKillRestartSysmgr
+
+TriggerProcessCrashRestartMrib:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.mrib.processrestart.TriggerProcessCrashRestartMrib
+
+TriggerProcessKillRestartMrib:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.mrib.processrestart.TriggerProcessKillRestartMrib
+
+TriggerProcessCliRestartOspfv3:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.ospfv3.processrestart.TriggerProcessCliRestartOspfv3
+
+TriggerProcessCrashRestartOspfv3:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.ospfv3.processrestart.TriggerProcessCrashRestartOspfv3
+
+TriggerProcessKillRestartOspfv3:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.ospfv3.processrestart.TriggerProcessKillRestartOspfv3
+
+TriggerProcessCliRestartEigrp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.eigrp.processrestart.TriggerProcessCliRestartEigrp
+
+TriggerProcessCrashRestartEigrp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.eigrp.processrestart.TriggerProcessCrashRestartEigrp
+
+TriggerProcessKillRestartEigrp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.eigrp.processrestart.TriggerProcessKillRestartEigrp
+
+TriggerProcessCliRestartIsis:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.isis.processrestart.TriggerProcessCliRestartIsis
+
+TriggerProcessCrashRestartIsis:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.isis.processrestart.TriggerProcessCrashRestartIsis
+
+TriggerProcessKillRestartIsis:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.isis.processrestart.TriggerProcessKillRestartIsis
+
+TriggerProcessCliRestartRip:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.rip.processrestart.TriggerProcessCliRestartRip
+
+TriggerProcessCrashRestartRip:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.rip.processrestart.TriggerProcessCrashRestartRip
+
+TriggerProcessKillRestartRip:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.rip.processrestart.TriggerProcessKillRestartRip
+
+TriggerProcessCliRestartMsdp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.msdp.processrestart.TriggerProcessCliRestartMsdp
+
+TriggerProcessCrashRestartMsdp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.msdp.processrestart.TriggerProcessCrashRestartMsdp
+
+TriggerProcessKillRestartMsdp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.msdp.processrestart.TriggerProcessKillRestartMsdp
+
+TriggerProcessCliRestartPim:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.pim.processrestart.TriggerProcessCliRestartPim
+
+TriggerProcessCrashRestartPim:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.pim.processrestart.TriggerProcessCrashRestartPim
+
+TriggerProcessKillRestartPim:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.pim.processrestart.TriggerProcessKillRestartPim
+
+TriggerProcessCliRestartPim6:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.pim6.processrestart.TriggerProcessCliRestartPim6
+
+TriggerProcessCrashRestartPim6:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.pim6.processrestart.TriggerProcessCrashRestartPim6
+
+TriggerProcessKillRestartPim6:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.pim6.processrestart.TriggerProcessKillRestartPim6
+
+TriggerProcessCliRestartIgmp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.igmp.processrestart.TriggerProcessCliRestartIgmp
+
+TriggerProcessCrashRestartIgmp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.igmp.processrestart.TriggerProcessCrashRestartIgmp
+
+TriggerProcessKillRestartIgmp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.igmp.processrestart.TriggerProcessKillRestartIgmp
+
+TriggerProcessCliRestartRsvp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.rsvp.processrestart.TriggerProcessCliRestartRsvp
+
+TriggerProcessCrashRestartRsvp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.rsvp.processrestart.TriggerProcessCrashRestartRsvp
+
+TriggerProcessKillRestartRsvp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.rsvp.processrestart.TriggerProcessKillRestartRsvp
+
+# The processes only can be restart from shell
+TriggerProcessCrashRestartSyslogd:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.syslogd.processrestart.TriggerProcessCrashRestartSyslogd
+
+TriggerProcessKillRestartSyslogd:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.syslogd.processrestart.TriggerProcessKillRestartSyslogd
+
+TriggerProcessCrashRestartFeatureMgr:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.feature_mgr.processrestart.TriggerProcessCrashRestartFeatureMgr
+
+TriggerProcessKillRestartFeatureMgr:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.feature_mgr.processrestart.TriggerProcessKillRestartFeatureMgr
+
+TriggerProcessCrashRestartVdcMgr:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.vdc_mgr.processrestart.TriggerProcessCrashRestartVdcMgr
+
+TriggerProcessKillRestartVdcMgr:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.vdc_mgr.processrestart.TriggerProcessKillRestartVdcMgr
+
+TriggerProcessCrashRestartLacp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.lacp.processrestart.TriggerProcessCrashRestartLacp
+
+TriggerProcessKillRestartLacp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.lacp.processrestart.TriggerProcessKillRestartLacp
+
+TriggerProcessCrashRestartCfs:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.cfs.processrestart.TriggerProcessCrashRestartCfs
+
+TriggerProcessKillRestartCfs:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.cfs.processrestart.TriggerProcessKillRestartCfs
+
+TriggerProcessCrashRestartAclmgr:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.aclmgr.processrestart.TriggerProcessCrashRestartAclmgr
+
+TriggerProcessKillRestartAclmgr:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.aclmgr.processrestart.TriggerProcessKillRestartAclmgr
+
+TriggerProcessCrashRestartMonitorc:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.monitorc.processrestart.TriggerProcessCrashRestartMonitorc
+
+TriggerProcessKillRestartMonitorc:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.monitorc.processrestart.TriggerProcessKillRestartMonitorc
+
+TriggerProcessCrashRestartTunnel:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.tunnel.processrestart.TriggerProcessCrashRestartTunnel
+
+TriggerProcessKillRestartTunnel:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.tunnel.processrestart.TriggerProcessKillRestartTunnel
+
+TriggerProcessCrashRestartEltm:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.eltm.processrestart.TriggerProcessCrashRestartEltm
+
+TriggerProcessKillRestartEltm:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.eltm.processrestart.TriggerProcessKillRestartEltm
+
+TriggerProcessCrashRestartVlanMgr:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.vlan_mgr.processrestart.TriggerProcessCrashRestartVlanMgr
+
+TriggerProcessKillRestartVlanMgr:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.vlan_mgr.processrestart.TriggerProcessKillRestartVlanMgr
+
+TriggerProcessCrashRestartPlugin:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.plugin.processrestart.TriggerProcessCrashRestartPlugin
+
+TriggerProcessKillRestartPlugin:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.plugin.processrestart.TriggerProcessKillRestartPlugin
+
+TriggerProcessCrashRestartFsDaemon:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.fs_daemon.processrestart.TriggerProcessCrashRestartFsDaemon
+
+TriggerProcessKillRestartFsDaemon:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.fs_daemon.processrestart.TriggerProcessKillRestartFsDaemon
+
+TriggerProcessCrashRestartConfCheck:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.confcheck.processrestart.TriggerProcessCrashRestartConfCheck
+
+TriggerProcessKillRestartConfCheck:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.confcheck.processrestart.TriggerProcessKillRestartConfCheck
+
+TriggerProcessCrashRestartGlbp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.glbp.processrestart.TriggerProcessCrashRestartGlbp
+
+TriggerProcessKillRestartGlbp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.glbp.processrestart.TriggerProcessKillRestartGlbp
+
+TriggerProcessCrashRestartBfd:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.bfd.processrestart.TriggerProcessCrashRestartBfd
+
+TriggerProcessKillRestartBfd:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.bfd.processrestart.TriggerProcessKillRestartBfd
+
+TriggerProcessCrashRestartL2rib:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.l2rib.processrestart.TriggerProcessCrashRestartL2rib
+
+TriggerProcessKillRestartL2rib:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.l2rib.processrestart.TriggerProcessKillRestartL2rib
+
+TriggerProcessCrashRestartNetstack:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.netstack.processrestart.TriggerProcessCrashRestartNetstack
+
+TriggerProcessKillRestartNetstack:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.netstack.processrestart.TriggerProcessKillRestartNetstack
+
+TriggerProcessCrashRestartNve:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.nve.processrestart.TriggerProcessCrashRestartNve
+
+TriggerProcessKillRestartNve:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.nve.processrestart.TriggerProcessKillRestartNve
+
+TriggerProcessCrashRestartStp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.stp.processrestart.TriggerProcessCrashRestartStp
+
+TriggerProcessKillRestartStp:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.stp.processrestart.TriggerProcessKillRestartStp
+
+TriggerProcessCrashRestartUrib:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.urib.processrestart.TriggerProcessCrashRestartUrib
+
+TriggerProcessKillRestartUrib:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.urib.processrestart.TriggerProcessKillRestartUrib
+
+TriggerProcessCrashRestartVpc:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.vpc.processrestart.TriggerProcessCrashRestartVpc
+
+TriggerProcessKillRestartVpc:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.vpc.processrestart.TriggerProcessKillRestartVpc
+
+
+# ==============================================================================
+#                               FEATURE: HA
+# ==============================================================================
+
+TriggerSwitchover:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.ha.switchover.switchover.TriggerSwitchover
+
+TriggerReload:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.ha.reload.reload.TriggerReload
+
+TriggerReloadFabricModule:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.ha.reload.reload.TriggerReloadFabricModule
+
+TriggerReloadActiveSystemController:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.ha.reload.reload.TriggerReloadActiveSystemController
+
+TriggerReloadStandbySystemController:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.ha.reload.reload.TriggerReloadStandbySystemController
+
+TriggerReloadEthernetModule:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.ha.reload.reload.TriggerReloadEthernetModule
+
+TriggerReloadActiveRP:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.ha.reload.reload.TriggerReloadActiveRP
+
+TriggerReloadStandbyRP:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.ha.reload.reload.TriggerReloadStandbyRP
+
+TriggerReloadActiveFP:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.ha.reload.reload.TriggerReloadActiveFP
+
+TriggerReloadMember:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.ha.reload.reload.TriggerReloadMember
+
+TriggerReloadOirEdge:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.ha.reload.reload.TriggerReloadOirEdge

@@ -1,0 +1,252 @@
+''' 
+Interface Genie Ops Object for NXOS - CLI.
+'''
+
+import re
+
+# Genie
+from genie.ops.base import Base
+from genie.ops.base import Context
+
+# nxos show_interface
+from genie.libs.parser.nxos.show_interface import ShowInterface, ShowVrfAllInterface,\
+                                 ShowIpv6InterfaceVrfAll, ShowIpInterfaceVrfAll,\
+                                 ShowInterfaceSwitchport
+from genie.libs.parser.nxos.show_routing import ShowRoutingIpv6VrfAll, ShowRoutingVrfAll
+
+
+class Interface(Base):
+    '''Interface Genie Ops Object'''
+
+    def learn(self):
+        '''Learn Interface Ops'''
+        
+        ########################################################################
+        #                               info
+        ########################################################################
+        # Global source
+        src = '[(?P<interface>.*)]'
+        dest = 'info[(?P<interface>.*)]'
+        req_keys_path = {'[description]': '[description]',
+                        '[types]': '[type]',
+                        '[oper_status]': '[oper_status]',
+                        '[last_link_flapped]': '[last_change]',
+                        '[phys_address]': '[phys_address]',
+                        '[port_speed]': '[port_speed]',
+                        '[mtu]': '[mtu]',
+                        '[enabled]': '[enabled]',
+                        '[encapsulations][first_dot1q]': '[vlan_id]',
+                        '[mac_address]': '[mac_address]',
+                        '[auto_negotiate]': '[auto_negotiate]',
+                        '[duplex_mode]': '[duplex_mode]',
+                        '[medium]': '[medium]',
+                        '[delay]': '[delay]',
+                        '[bandwidth]': '[bandwidth]',
+                   }
+
+        for src_key_path, dest_key_path in req_keys_path.items():
+            self.add_leaf(cmd=ShowInterface,
+                          src=src + src_key_path,
+                          dest=dest + dest_key_path)
+
+        # vrf
+        self.add_leaf(cmd=ShowVrfAllInterface,
+                      src=src + '[vrf]',
+                      dest=dest + '[vrf]')
+
+        req_keys = ['access_vlan', 'trunk_vlans', 'switchport_mode',
+                    'switchport_enable']
+
+        for key in req_keys:
+            self.add_leaf(cmd=ShowInterfaceSwitchport,
+                          src=src + '[{}]'.format(key),
+                          dest=dest + '[{}]'.format(key))
+
+        # ======================================================================
+        #                           flow_control
+        # ======================================================================
+
+        # flow_control
+        self.add_leaf(cmd=ShowInterface,
+                      src=src + '[flow_control]',
+                      dest=dest + '[flow_control]')
+
+        # ======================================================================
+        #                           port_channel
+        # ======================================================================
+
+        # port_channel
+        self.add_leaf(cmd=ShowInterface,
+                      src=src + '[port_channel]',
+                      dest=dest + '[port_channel]')
+
+        # ======================================================================
+        #                           counters
+        # ======================================================================
+        # Global source
+        src = '[(?P<interface>.*)][counters]'
+        dest = 'info[(?P<interface>.*)][counters]'
+
+        req_keys = ['in_pkts', 'in_octets', 'in_unicast_pkts',
+                    'in_broadcast_pkts', 'in_multicast_pkts',
+                    'in_discards', 'in_errors', 'in_unknown_protos',
+                    'in_mac_pause_frames', 'in_oversize_frames',
+                    'in_crc_errors', 'out_pkts', 'out_octets', 'out_unicast_pkts',
+                    'out_broadcast_pkts', 'out_multicast_pkts', 'out_discard',
+                    'out_errors', 'last_clear','out_mac_pause_frames']
+
+        for key in req_keys:
+            self.add_leaf(cmd=ShowInterface,
+                          src=src + '[{}]'.format(key),
+                          dest=dest + '[{}]'.format(key))
+
+
+        # Global source - counters | rate
+        src = '[(?P<interface>.*)][counters][rate]'
+        dest = 'info[(?P<interface>.*)][counters][rate]'        
+
+        req_keys = ['load_interval', 'in_rate', 'in_rate_pkts',
+                    'out_rate', 'out_rate_pkts']
+
+        for key in req_keys:
+            self.add_leaf(cmd=ShowInterface,
+                          src=src + '[{}]'.format(key),
+                          dest=dest + '[{}]'.format(key))
+
+        # ======================================================================
+        #                           encapsulation
+        # ======================================================================
+        
+
+        # Global source
+        src = '[(?P<interface>.*)][encapsulations]'
+        dest = 'info[(?P<interface>.*)][encapsulation]'
+
+        req_keys = ['encapsulation', 'first_dot1q', 'native_vlan']
+
+        for key in req_keys:
+            self.add_leaf(cmd=ShowInterface,
+                          src=src + '[{}]'.format(key),
+                          dest=dest + '[{}]'.format(key))
+
+        # ======================================================================
+        #                           ipv4
+        # ======================================================================
+        
+
+        # Global source
+        src = '[(?P<interface>.*)][ipv4][(?P<ipv4>.*)]'
+        dest = 'info[(?P<interface>.*)][ipv4][(?P<ipv4>.*)]'
+
+        req_keys = ['ip', 'prefix_length', 'secondary']
+
+        for key in req_keys:
+            self.add_leaf(cmd=ShowIpInterfaceVrfAll,
+                          src=src + '[{}]'.format(key),
+                          dest=dest + '[{}]'.format(key))
+        
+        # route_tag
+        self.add_leaf(cmd=ShowInterface,
+                      src=src + '[route_tag]',
+                      dest=dest + '[route_tag]')
+        
+        # secondary_vrf   --- This is not supported on NXOS
+        
+        # unnumbered
+        self.add_leaf(cmd=ShowIpInterfaceVrfAll,
+                      src='[(?P<interface>.*)][ipv4][unnumbered]',
+                      dest='info[(?P<interface>.*)][ipv4][unnumbered]')
+
+
+        # ======================================================================
+        #                           ipv6
+        # ======================================================================
+        
+
+        # Global source
+        src = '[(?P<interface>.*)][ipv6][(?P<ipv6>.*)]'
+        dest = 'info[(?P<interface>.*)][ipv6][(?P<ipv6>.*)]'
+
+        req_keys = ['ip', 'prefix_length', 'anycast', 'status']
+
+        for key in req_keys:
+            self.add_leaf(cmd=ShowIpv6InterfaceVrfAll,
+                          src=src + '[{}]'.format(key),
+                          dest=dest + '[{}]'.format(key))
+
+
+        # get routing output
+        self.add_leaf(cmd=ShowRoutingIpv6VrfAll,
+                      src='[vrf][(?P<vrf>.*)][address_family][(?P<af>.*)][ip]',
+                      dest='info[routing_v6][(?P<vrf>.*)]')
+
+        self.add_leaf(cmd=ShowRoutingVrfAll,
+                      src='[vrf][(?P<vrf>.*)][address_family][(?P<af>.*)][ip]',
+                      dest='info[routing_v4][(?P<vrf>.*)]')
+        # make to write in cache
+        self.make()
+
+        # eui_64
+        # if has ip like 2001:db8::5054:ff:fed5:63f9, eui_64 is True
+        p = re.compile(r'([a-z0-9]+):([\w\:]+)?ff:([a-z0-9]+):([a-z0-9]+)')
+        if hasattr(self, 'info'): 
+            for intf in self.info:
+                # check vrf
+                if 'vrf' in self.info[intf]:                  
+                    if 'routing_v4' in self.info and \
+                      self.info[intf]['vrf'] in self.info['routing_v4']:
+                        dict_v4 = self.info['routing_v4'][self.info[intf]['vrf']]
+                    else:
+                        dict_v4 = {}
+
+                    if 'routing_v6' in self.info and \
+                      self.info[intf]['vrf'] in self.info['routing_v6']:
+                          dict_v6 = self.info['routing_v6'][self.info[intf]['vrf']]
+                    else:
+                        dict_v6 = {}
+                else:
+                    continue
+
+                for key in self.info[intf]:
+                    if key == 'ipv4' or key == 'ipv6':
+                        for ip in self.info[intf][key].keys():
+                            if p.match(ip):
+                                self.info[intf][key][ip]['eui_64'] = True
+
+                            # route_tag and origin of ipv4/ipv6
+                            self.ret_dict = {}
+                            routing_dict = dict_v4 if key == 'ipv4' else dict_v6
+
+                            if ip in routing_dict:
+                                self._match_keys(dic=routing_dict[ip],
+                                                 match={'interface': intf})
+
+                            for protocol in self.ret_dict:
+                                if 'tag' in self.ret_dict[protocol]:
+                                    self.info[intf][key][ip]['route_tag'] = \
+                                      self.ret_dict[protocol]['tag']
+                                self.info[intf][key][ip]['origin'] = protocol
+
+            # delete the routing attribute which is only used 
+            # for getting route_tag and origin
+            for key in ['routing_v4', 'routing_v6']:
+                if key in self.info:
+                    del(self.info[key])
+
+    def _match_keys(self, dic, match):
+        '''find entry in the dic when values are same to match.
+           will return the upper level dictionary contains those values
+        '''
+        if isinstance(dic, dict):
+            for key, value in match.items():
+                for dic_key in dic:
+                    if key in dic[dic_key] and dic[dic_key][key] == value:
+                        self.ret_dict.update(dic)
+                        break
+                    elif not isinstance(dic[dic_key], dict):
+                        pass
+                    else:
+                        self._match_keys(dic=dic[dic_key], match=match)
+        return(self.ret_dict)
+
+

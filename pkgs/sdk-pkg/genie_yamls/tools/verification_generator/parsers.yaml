@@ -1,0 +1,164 @@
+
+ShowBgpVrfAllNeighbors:
+    vrf: ['default']
+
+ShowBgpInstanceProcessDetail:
+    vrf_type: ['all', 'vrf', 'vrf']
+    af_type: ['', 'ipv4 unicast', 'ipv6 unicast']
+
+ShowBgpInstanceNeighborsDetail:
+    vrf_type: ['all', 'vrf', 'vrf']
+    af_type: ['', 'ipv4 unicast', 'ipv6 unicast']
+
+ShowBgpInstanceSummary:
+    vrf_type: ['vrf', 'vrf', 'all']
+    af_type: ['ipv4 unicast', 'ipv6 unicast', '']
+
+ShowBgpInstanceAllAll:
+    vrf_type: ['all', 'vrf', 'vrf']
+    af_type: ['', 'ipv4 unicast', 'ipv6 unicast']
+
+ShowBgpPolicyStatisticsRedistribute:
+    vrf: ['all', 'all', 'all', 'all', 'default', 'default', 'default', 'default']
+    address_family: ['ipv4 unicast', 'ipv4 multicast', 'ipv6 unicast', 
+                     'ipv6 multicast', 'ipv4 unicast', 'ipv4 multicast',
+                     'ipv6 unicast', 'ipv6 multicast']
+
+ShowBgpPolicyStatisticsNeighbor:
+    vrf: ['all', 'all', 'all', 'all', 'all', 'default', 'default',
+          'default', 'default', 'default']
+    address_family: ['ipv4 unicast', 'ipv4 multicast', 'ipv6 unicast', 
+                     'ipv6 multicast', 'vpnv4 unicast', 'ipv4 unicast',
+                     'ipv4 multicast',
+                     'ipv6 unicast', 'ipv6 multicast', 'vpnv4 unicast']
+
+ShowBgpPolicyStatisticsDampening:
+    vrf: ['all', 'all', 'all', 'all', 'default', 'default', 'default', 'default']
+    address_family: ['ipv4 unicast', 'ipv4 multicast', 'ipv6 unicast', 
+                     'ipv6 multicast',  'ipv4 unicast', 'ipv4 multicast',
+                     'ipv6 unicast', 'ipv6 multicast']
+
+ShowPimVrfMstatic:
+   vrf: ['default', 'default']
+   af: ['ipv4', 'ipv6']
+
+ShowPimVrfRpfSummary:
+   vrf: ['default', 'default']
+   af: ['ipv4', 'ipv6']
+
+ShowPimVrfInterfaceDetail:
+   vrf: ['default', 'default']
+   af: ['ipv4', 'ipv6']
+
+ShowMribVrfRoute:
+   vrf: ['default', 'default']
+   af: ['ipv4', 'ipv6']
+
+ShowStaticTopologyDetail:
+    vrf: ['all', 'all', 'all', 'default', 'default', 'default']
+    af: ['ipv4', 'ipv6', '', 'ipv4', 'ipv6', '']
+
+# nxos
+ShowMribVrfRoute:
+   vrf: ['all', 'default']
+
+ShowIpIgmpInterface:
+   zos: ['iosxe', 'nxos']
+   vrf: [['default'], ['all', 'default']]
+   
+ShowIpIgmpGroups:
+   vrf: ['all', 'default']
+
+ShowIpIgmpLocalGroups:
+   vrf: ['all', 'default']
+
+ShowIpv6MldInterface:
+   zos: ['iosxe', 'nxos']
+   vrf: [['default'], ['all', 'default']]
+
+ShowIpv6MldGroups:
+   vrf: ['all', 'default']
+
+ShowIpv6MldLocalGroups:
+   vrf: ['all', 'default']
+
+ShowIpPimRp:
+   vrf: ['all', 'default']
+
+ShowIpv6PimRp:
+   vrf: ['all', 'default']
+
+ShowIpPimNeighbor:
+   zos: ['iosxe', 'nxos']
+   vrf: [['default'], ['all', 'default']]
+
+ShowIpv6PimNeighbor:
+   zos: ['iosxe', 'nxos']
+   vrf: [['default'], ['all', 'default']]
+
+ShowIpStaticRoute:
+   zos: ['iosxe', 'nxos']
+   vrf: [['default'], ['all', 'default']]
+
+ShowIpv6StaticRoute:
+   zos: ['iosxe', 'nxos']
+   vrf: [['default'], ['all', 'default']]
+
+ShowIpOspf:
+   zos: ['iosxe', 'nxos']
+   vrf: [['default'], ['all', 'default']]
+
+ShowIpOspfMplsLdpInterface:
+   zos: ['iosxe', 'nxos']
+   vrf: [['default'], ['all', 'default']]
+
+ShowIpOspfVirtualLinks:
+   zos: ['iosxe', 'nxos']
+   vrf: [['default'], ['all', 'default']]
+
+ShowIpOspfShamLinks:
+   zos: ['iosxe', 'nxos']
+   vrf: [['default'], ['all', 'default']]
+
+ShowIpOspfInterface:
+   zos: ['iosxe', 'nxos']
+   vrf: [['default'], ['all', 'default']]
+
+ShowIpOspfNeighborDetail:
+   zos: ['iosxe', 'nxos']
+   vrf: [['default'], ['all', 'default']]
+
+ShowIpOspfDatabaseExternalDetail:
+   vrf: ['all', 'default']
+
+ShowIpOspfDatabaseNetworkDetail:
+   vrf: ['all', 'default']
+
+ShowIpOspfDatabaseSummaryDetail:
+   vrf: ['all', 'default']
+
+ShowIpOspfDatabaseRouterDetail:
+   vrf: ['all', 'default']
+
+ShowIpOspfDatabaseOpaqueAreaDetail:
+   vrf: ['all', 'default']
+
+ShowIpRoute:
+   show_routing: 
+     zos: ['iosxe', 'nxos']
+     vrf: [['default'], ['all', 'default']]
+   show_ip_route: 
+     protocol: ['bgp', 'ospf']
+
+ShowIpv6Route:
+   show_routing: 
+     zos: ['iosxe', 'nxos']
+     vrf: [['default'], ['all', 'default']]
+   show_ip_route: 
+     protocol: ['bgp', 'ospf']
+ShowBgpLabels:
+    vrf: ['all', 'all', 'all', 'all', 'default', 'default', 'default', 'default']
+    address_family: ['ipv4 unicast', 'ipv4 multicast', 'ipv6 unicast',
+                     'ipv6 multicast',  'ipv4 unicast', 'ipv4 multicast',
+                     'ipv6 unicast', 'ipv6 multicast']
+
