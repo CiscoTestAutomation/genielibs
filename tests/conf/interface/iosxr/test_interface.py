@@ -19,9 +19,6 @@ from genie.libs.conf.vrf import Vrf
 # vni
 from genie.libs.conf.evpn.vni import Vni
 
-# vni
-from genie_libs.conf.evpn.vni import Vni
-
 
 class test_interface(TestCase):
 
