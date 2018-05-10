@@ -1013,8 +1013,9 @@ class Ospf(Base):
         #         bdr_ip_addr
         #         state
         #         dead_timer
+        #         last_state_change
         for key in ['neighbor_router_id', 'address', 'dr_ip_addr', 'bdr_ip_addr',
-                    'state', 'dead_timer']:
+                    'state', 'dead_timer','last_state_change']:
             self.add_leaf(cmd=ShowIpOspfNeighborDetail,
                           src=intf_src+'[neighbors][(?P<neighbor>(.*))][{key}]'.format(key=key),
                           dest=intf_dest+'[neighbors][(?P<neighbor>(.*))][{key}]'.format(key=key),

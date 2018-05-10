@@ -681,11 +681,13 @@ class Bgp(Base):
                 # address_family
                 #   nbr_af_name
                 #     bgp_table_version
-                self.add_leaf(cmd=ShowBgpVrfAllNeighbors,
-                              src=nbr_src+'[address_family][(?P<address_family>.*)][bgp_table_version]',
-                              dest=nbr_dest+'[address_family][(?P<address_family>.*)][bgp_table_version]',
-                              vrf=vrf_name)
-
+                #     session_state
+                req_keys = ['bgp_table_version','session_state']
+                for key in req_keys:
+                    self.add_leaf(cmd=ShowBgpVrfAllNeighbors,
+                                  src=nbr_src+'[address_family][(?P<address_family>.*)][{}]'.format(key),
+                                  dest=nbr_dest+'[address_family][(?P<address_family>.*)][{}]'.format(key),
+                                  vrf=vrf_name)
                 # address_family
                 #   nbr_af_name
                 #     routing_table_version - N/A

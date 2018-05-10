@@ -48,13 +48,13 @@ class TriggerClearBgp(TriggerClear):
                                      '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
                                      'up_time', '(.*)'])]}
 
+
 class TriggerClearBgpAll(TriggerClearBgp):
     pass
 class TriggerClearIpBgpSoft(TriggerClearBgp):
     pass
 
 class TriggerClearBgpNeighbor(TriggerClearBgp):
-
     mapping = Mapping(requirements={'ops.bgp.bgp.Bgp':{
                                           'requirements':[\
                                               ['info', 'instance', '(?P<instance>.*)',
@@ -100,3 +100,80 @@ class TriggerClearBgpNeighborSoftIpv6(TriggerClearBgpNeighborIpv6):
 
 class TriggerClearIpRouteAll(TriggerClearBgp):
     pass
+
+class TriggerClearBgpVpnv4UnicastVrfAll(TriggerClearBgp):
+
+    mapping = Mapping(requirements={'ops.bgp.bgp.Bgp': {
+                                            'requirements': [ \
+                                                [['info', 'instance', '(?P<instance>.*)',
+                                                 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
+                                                 'address_family','(?P<af>(vpnv4 unicast).*)',
+                                                 'session_state', 'established']],
+                                                [['routes_per_peer', 'instance', 'default',\
+                                                 'vrf', '(?P<vrf>.*)','neighbor','(?P<neighbor>.*)',\
+                                                 'address_family', '(?P<af>(vpnv4 unicast).*)','(.*)']]],
+                                            'all_keys': True,
+                                            'kwargs': {'attributes': ['routes_per_peer','info']},
+                                            'exclude': exclude + ['msg_sent','msg_rcvd','up_down','tbl_ver']}},
+                       num_values={'vrf': 'all','neighbor': 'all', 'af': 'all'})
+
+    verify_func_args = {'r_obj': [R(['routes_per_peer', 'instance', 'default',
+                                     'vrf', '(?P<vrf>.*)','neighbor','(?P<neighbor>.*)',
+                                     'address_family', '(?P<af>vpnv4 unicast.*)',
+                                     'up_down', '(.*)'])]}
+
+class TriggerClearBgpVpnv6UnicastVrfAll(TriggerClearBgp):
+    mapping = Mapping(requirements={'ops.bgp.bgp.Bgp': {
+                                            'requirements': [ \
+                                                [['info', 'instance', '(?P<instance>.*)',
+                                                 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
+                                                 'address_family', '(?P<af>(vpnv6 unicast).*)',
+                                                 'session_state', 'established']],
+                                                [['routes_per_peer', 'instance', 'default', \
+                                                 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', \
+                                                 'address_family', '(?P<af>(vpnv6 unicast).*)', '(.*)']]],
+                                            'all_keys': True,
+                                            'kwargs': {'attributes': ['routes_per_peer','info']},
+                                            'exclude': exclude + ['msg_sent', 'msg_rcvd', 'up_down', 'tbl_ver']}},
+                                            num_values={'vrf': 'all', 'neighbor': 'all', 'af': 'all'})
+
+    verify_func_args = {'r_obj': [R(['routes_per_peer', 'instance', 'default',
+                                     'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
+                                     'address_family', '(?P<af>vpnv6 unicast.*)',
+                                     'up_down', '(.*)'])]}
+
+class TriggerClearIpBgpVrfAll(TriggerClearBgp):
+    mapping = Mapping(requirements={'ops.bgp.bgp.Bgp': {
+                                            'requirements': [ \
+                                                [['info', 'instance', '(?P<instance>.*)',
+                                                 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
+                                                 'address_family', '(?P<af>.*)',
+                                                 'session_state', 'established']],
+                                                [['routes_per_peer', 'instance', '(?P<instance>.*)', \
+                                                 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', \
+                                                 'address_family', '(?P<af>ipv4.*)', '(.*)']]],
+                                            'all_keys': True,
+                                            'kwargs': {'attributes': ['info','routes_per_peer']},
+                                            'exclude': exclude + ['msg_sent', 'msg_rcvd', 'up_down', 'tbl_ver']}},
+                                            num_values={'vrf': 'all', 'neighbor': 'all', 'af': 'all'})
+
+    verify_func_args = {'r_obj': [R(['routes_per_peer', 'instance', 'default',
+                                     'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
+                                     'address_family', '(?P<af>ipv4.*)',
+                                     'up_down', '(.*)'])]}
+
+class TriggerRestartBgp(TriggerClearBgp):
+
+    mapping = Mapping(requirements={'ops.bgp.bgp.Bgp': {
+                                            'requirements': [ \
+                                                ['info', 'instance', '(?P<instance>.*)',
+                                                 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
+                                                 'address_family', '(?P<af>.*)',
+                                                 'session_state', 'established'],
+                                                ['info','instance','(?P<instance>.*)','bgp_id', '(?P<bgp_id>.*)']
+                                            ],
+                                            'all_keys': True ,
+                                            'kwargs': {'attributes': ['info']},
+                                            'exclude': exclude}},
+                                            num_values={'vrf': 'all', 'instance': 'all',
+                                                        'neighbor': 'all', 'bgp_id': 'all'})

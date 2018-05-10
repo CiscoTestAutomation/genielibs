@@ -148,6 +148,92 @@ TriggerClearCountersInterfaceAll:
       uut:
         None
 
+TriggerClearIpRouteVrfAll:
+    groups: ['clear', 'routing', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 280
+       interval: 10
+    devices:
+      uut:
+        None
+
+TriggerClearIpv6RouteVrfAll:
+    groups: ['clear', 'routing', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 280
+       interval: 10
+    devices:
+      uut:
+        None
+
+TriggerClearBgpVpnv4UnicastVrfAll:
+    groups: ['clear', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 280
+       interval: 10
+    devices:
+      uut:
+        None
+
+TriggerClearBgpVpnv6UnicastVrfAll:
+    groups: ['clear', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 280
+       interval: 10
+    devices:
+      uut:
+        None
+
+TriggerClearIpBgpVrfAll:
+    groups: ['clear', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 280
+       interval: 10
+    devices:
+      uut:
+        None
+
+TriggerClearIpOspfNeighborVrfAll:
+    groups: ['clear', 'ospf', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    timeout_recovery:
+      max_time: 600
+      interval: 15
+    devices:
+      uut:
+        None
+
+TriggerRestartBgp:
+    groups: ['clear', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    devices:
+      uut:
+        None
+
+TriggerRestartOspf:
+    groups: ['clear', 'ospf', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    timeout_recovery:
+      max_time: 600
+      interval: 15
+    devices:
+      uut:
+        None
+
 #===============================================================================
 #                                DISABLE-ENABLE
 #===============================================================================

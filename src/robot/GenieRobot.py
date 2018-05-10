@@ -367,8 +367,7 @@ class GenieRobot(object):
     def verify_count(self, number, structure, device):
         '''Verify that a specific number of <...> is <...> on a device.
 
-           For example: Verify that there is 15 up interfaces
-           verify count "15" "interface up" on device "PE1"
+           Supports the same functionality as the alias keyword.
         '''
         return self.verify_count_alias(number, structure, device)
 
@@ -378,9 +377,13 @@ class GenieRobot(object):
         '''Verify that a specific number of <...> is <...> on a device using a
         specific alias
 
-           For example: Verify that there is 15 up interfaces
+           verify count "<number>" "bgp neighbors" on device "<device>"
 
-           verify count "15" "interface up" on device "PE1"
+           verify count "<number>" "bgp routes" on device "<device>"
+
+           verify count "<number>" "ospf neighbors" on device "<device>"
+
+           verify count "<number>" "interfaces neighbors" on device "<device>"
         '''
         # First word of action is the protocol
         # Last word is the expected value

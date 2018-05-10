@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 try:
     from ats.tcl import tclstr, TclCommand
-except (ImportError, OSError):
+except Exception:
     pass
 
 from genie.decorator import managedattribute

@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 try:
     from ats.tcl import tclstr
     item_cast = tclstr
-except (ImportError, OSError):
+except Exception:
     item_cast = None
 
 from genie.utils.cisco_collections import Range

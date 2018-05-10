@@ -21,7 +21,7 @@ try:
     from ats.tcl import tclstr
     import ats.tcl
     str_type = tclstr
-except (ImportError, OSError):
+except Exception:
     str_type = str
 
 from genie.decorator import managedattribute

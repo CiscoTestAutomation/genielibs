@@ -1,6 +1,7 @@
 import os
 import sys
 import yaml
+import shutil
 import logging
 import inspect
 import argparse
@@ -37,6 +38,8 @@ EXCLUDE_PARSERS = ['ShowDir', 'ShowBgpPolicyStatistics', 'ShowBgpVrfAllNeighbors
                    'ShowL2VpnBridgeDomainDetail', 'ShowL2VpnBridgeDomainSummary', 'ShowEvpnEthernetSegment',
                    'ShowIpRouteWord', 'ShowIpv6RouteWord', 'ShowInterfacesCounters','ShowPowerInlineInterface',
                    'ShowProcessesCpuSorted','ShowVlanOld']
+
+EXCLUDE_DEVICES = ['Verify_BgpOpenconfigYang_yang', 'Verify_BgpProcessVrfAll_yang', 'Verify_BgpVrfAllNeighbors_yang_vrf_default']
 CONTEXTS = ['cli', 'yang', 'xml', 'rest']
 
 OSES = ['iosxe', 'iosxr', 'nxos']
@@ -246,11 +249,12 @@ class CreateVerificationDataFiles(object):
                             main_file[veri_name]['source'] = {'class':'genie.harness.base.Template'}
                             main_file[veri_name]['context'] = context
                             main_file[veri_name]['cmd'] = {}
-                            main_file[veri_name]['cmd']['pkg'] = 'parser'
+                            main_file[veri_name]['cmd']['pkg'] = 'genie.libs.parser'
                             main_file[veri_name]['cmd']['class'] = '{f}.{p}'.format(f=file, p=parser.__name__)
 
                             os_file[veri_name] = {}
-                            os_file[veri_name]['devices'] = {'uut':'None'}
+                            if veri_name not in EXCLUDE_DEVICES:
+                                os_file[veri_name]['devices'] = {'uut':'None'}
 
                             if value is not None:
                                 for i in range(0,len(value),2):
@@ -281,15 +285,17 @@ class CreateVerificationDataFiles(object):
         with open('verification_datafile.yaml', 'w') as f:
             yaml.dump(main_file, f, default_flow_style=False)
 
+        self.clean_up('nxos')
         with open('nxos/verification_datafile_nxos.yaml', 'w') as f:
             yaml.dump(nxos_file, f, default_flow_style=False)
 
+        self.clean_up('iosxe')
         with open('iosxe/verification_datafile_iosxe.yaml', 'w') as f:
             yaml.dump(iosxe_file, f, default_flow_style=False)
 
+        self.clean_up('iosxr')
         with open('iosxr/verification_datafile_xr.yaml', 'w') as f:
             yaml.dump(iosxr_file, f, default_flow_style=False)
-
 
         log.info(banner('nxos'))
         log.info('\n'.join(nxos))
@@ -300,6 +306,11 @@ class CreateVerificationDataFiles(object):
         log.info(banner('iosxr'))
         log.info('\n'.join(iosxr))
         return main_file
+
+    def clean_up(self, dir):
+        if os.path.isdir(dir):
+            shutil.rmtree(dir)
+        os.makedirs(dir)
 
 
 if __name__ == '__main__':

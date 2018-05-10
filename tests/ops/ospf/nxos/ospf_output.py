@@ -1544,6 +1544,7 @@ class OspfOutput(object):
                                                         'bdr_ip_addr': '20.2.6.2',
                                                         'dead_timer': '00:00:38',
                                                         'dr_ip_addr': '20.2.6.6',
+                                                        'last_state_change': '08:38:39',
                                                         'neighbor_router_id': '66.66.66.66',
                                                         'state': 'full',
                                                         'statistics': 
@@ -1874,6 +1875,7 @@ class OspfOutput(object):
                                                         'bdr_ip_addr': '10.2.3.2',
                                                         'dead_timer': '00:00:39',
                                                         'dr_ip_addr': '10.2.3.3',
+                                                        'last_state_change': '08:38:40',
                                                         'neighbor_router_id': '3.3.3.3',
                                                         'state': 'full',
                                                         'statistics': 
@@ -1906,6 +1908,7 @@ class OspfOutput(object):
                                                         'bdr_ip_addr': '10.2.4.2',
                                                         'dead_timer': '00:00:33',
                                                         'dr_ip_addr': '10.2.4.4',
+                                                        "last_state_change": "08:38:42",
                                                         'neighbor_router_id': '4.4.4.4',
                                                         'state': 'full',
                                                         'statistics': 
@@ -1938,6 +1941,7 @@ class OspfOutput(object):
                                                         'bdr_ip_addr': '10.1.2.2',
                                                         'dead_timer': '00:00:35',
                                                         'dr_ip_addr': '10.1.2.1',
+                                                        'last_state_change': '08:38:41',
                                                         'neighbor_router_id': '1.1.1.1',
                                                         'state': 'full',
                                                         'statistics': 

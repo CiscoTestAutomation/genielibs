@@ -26,6 +26,20 @@ TriggerUnconfigureConfigureOspf:
         pkg: genie.libs.sdk
         class: triggers.unconfconf.ospf.unconfconf.TriggerUnconfigureConfigureOspf
 
+
+# ------------------
+#   CLEAR
+# ------------------
+TriggerClearIpOspfNeighborVrfAll:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.ospf.clear.TriggerClearIpOspfNeighborVrfAll
+
+TriggerRestartOspf:
+     source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.ospf.clear.TriggerRestartOspf
+
 # ==============================================================================
 #                               FEATURE: BGP
 # ==============================================================================
@@ -33,6 +47,25 @@ TriggerUnconfigureConfigureOspf:
 # -----
 # CLEAR
 # -----
+TriggerRestartBgp:
+     source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.bgp.clear.TriggerRestartBgp
+
+TriggerClearBgpVpnv4UnicastVrfAll:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.bgp.clear.TriggerClearBgpVpnv4UnicastVrfAll
+
+TriggerClearBgpVpnv6UnicastVrfAll:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.bgp.clear.TriggerClearBgpVpnv6UnicastVrfAll
+
+TriggerClearIpBgpVrfAll:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.bgp.clear.TriggerClearIpBgpVrfAll
 
 TriggerClearBgpAll:
     source:
@@ -1122,3 +1155,23 @@ TriggerReloadOirEdge:
     source:
         pkg: genie.libs.sdk
         class: triggers.ha.reload.reload.TriggerReloadOirEdge
+
+
+# =========================================================
+#                   FEATURE: ROUTING
+# =========================================================
+
+# ------------------
+#   CLEAR
+# ------------------
+TriggerClearIpRouteVrfAll:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.routing.clear.TriggerClearIpRouteVrfAll
+
+TriggerClearIpv6RouteVrfAll:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.routing.clear.TriggerClearIpv6RouteVrfAll
+
+

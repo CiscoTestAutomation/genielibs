@@ -1477,6 +1477,7 @@ class BgpOutput(object):
                                     {'ipv4 unicast':
                                         {'bgp_table_version': 21,
                                         'default_originate': True,
+                                         'session_state':'idle',
                                         'default_originate_route_map': 'SOMENAME',
                                         'soo': 'SOO:100:100'}},
                                 'bgp_negotiated_keepalive_timers':
@@ -1563,12 +1564,14 @@ class BgpOutput(object):
                                 {'address_family':
                                     {'vpnv4 unicast':
                                         {'bgp_table_version': 11,
+                                        'session_state': 'established',
                                         'maximum_prefix_max_prefix_no': 300000,
                                         'route_map_name_in': 'genie_redistribution',
                                         'route_map_name_out': 'genie_redistribution',
                                         'send_community': "both"},
                                     'vpnv6 unicast':
                                         {'bgp_table_version': 10,
+                                        'session_state': 'established',
                                         'send_community': "both"}},
                                 'bgp_negotiated_capabilities':
                                     {'dynamic_capability': 'advertised '

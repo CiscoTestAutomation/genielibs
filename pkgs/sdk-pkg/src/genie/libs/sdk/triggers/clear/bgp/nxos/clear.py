@@ -8,7 +8,11 @@ from ..clear import TriggerClearBgp, \
                     TriggerClearBgpNeighborIpv6,\
                     TriggerClearBgpNeighborSoftIpv6,\
                     TriggerClearBgpNeighborSoftIpv4, \
-                    TriggerClearIpRouteAll
+                    TriggerClearIpRouteAll,\
+                    TriggerClearBgpVpnv4UnicastVrfAll,\
+                    TriggerClearBgpVpnv6UnicastVrfAll,\
+                    TriggerClearIpBgpVrfAll,\
+                    TriggerRestartBgp
 
 
 class TriggerClearBgpAll(TriggerClearBgp):
@@ -310,3 +314,125 @@ class TriggerClearIpRouteAll(TriggerClearIpRouteAll):
     # Operator representing the relation between uptime and
     # waiting time for waiting, for the device to be steady
     sign='>'
+
+
+class TriggerClearBgpVpnv4UnicastVrfAll(TriggerClearBgpVpnv4UnicastVrfAll):
+    """Reset the BGP connections for vpnv4 uncast address family sessions with using CLI
+        command "clear bgp vpnv4 unicast * vrf all".
+
+               trigger_datafile:
+                   Mandatory:
+                       timeout:
+                           max_time (`int`): Maximum wait time for the trigger,
+                                           in second. Default: 180
+                           interval (`int`): Wait time between iterations when looping is needed,
+                                           in second. Default: 15
+                   Optional:
+                       tgn_timeout (`int`): Maximum wait time for all traffic threads to be
+                                            restored to the reference rate,
+                                            in second. Default: 60
+                       tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,
+                                          in second. Default: 10
+
+               steps:
+                   1. Learn BGP Ops object and store the "established" BGP neighbor(s)
+                      for vpnv4 unicast address family
+                      if has any, otherwise, SKIP the trigger
+                   2. Reset all the BGP connections with command "clear bgp vpnv4 unicast * vrf all"
+                   3. Learn BGP Ops again and verify it is the same as the Ops in step 1
+        """
+    clear_cmd = ['clear bgp vpnv4 unicast * vrf all']
+
+    # Operator representing the relation between uptime and
+    # waiting time for waiting, for the device to be steady
+    sign='<'
+
+class TriggerClearBgpVpnv6UnicastVrfAll(TriggerClearBgpVpnv6UnicastVrfAll):
+    """Reset the BGP connections for vpnv6 uncast address family sessions with using CLI
+           command "clear bgp vpnv6 unicast * vrf all".
+
+                  trigger_datafile:
+                      Mandatory:
+                          timeout:
+                              max_time (`int`): Maximum wait time for the trigger,
+                                              in second. Default: 180
+                              interval (`int`): Wait time between iterations when looping is needed,
+                                              in second. Default: 15
+                      Optional:
+                          tgn_timeout (`int`): Maximum wait time for all traffic threads to be
+                                               restored to the reference rate,
+                                               in second. Default: 60
+                          tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,
+                                             in second. Default: 10
+
+                  steps:
+                      1. Learn BGP Ops object and store the "established" BGP neighbor(s)
+                         for vpnv6 unicast address family
+                         if has any, otherwise, SKIP the trigger
+                      2. Reset all the BGP connections with command "clear bgp vpnv6 unicast * vrf all"
+                      3. Learn BGP Ops again and verify it is the same as the Ops in step 1
+           """
+    clear_cmd = ['clear bgp vpnv6 unicast * vrf all']
+
+    # Operator representing the relation between uptime and
+    # waiting time for waiting, for the device to be steady
+    sign='<'
+
+class TriggerClearIpBgpVrfAll(TriggerClearIpBgpVrfAll):
+    """Reset the BGP connections for IPv4 VRF address family sessions with using CLI command "clear ip bgp vrf all *".
+
+           trigger_datafile:
+               Mandatory:
+                   timeout:
+                       max_time (`int`): Maximum wait time for the trigger,
+                                       in second. Default: 180
+                       interval (`int`): Wait time between iterations when looping is needed,
+                                       in second. Default: 15
+               Optional:
+                   tgn_timeout (`int`): Maximum wait time for all traffic threads to be
+                                        restored to the reference rate,
+                                        in second. Default: 60
+                   tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,
+                                      in second. Default: 10
+
+           steps:
+               1. Learn BGP Ops object and store the "established" BGP neighbor(s)
+                  if has any, otherwise, SKIP the trigger
+               2. Reset all the BGP connections with command "clear ip route *"
+               3. Learn BGP Ops again and verify it is the same as the Ops in step 1
+    """
+    clear_cmd = ['clear ip bgp vrf all *']
+
+    # Operator representing the relation between uptime and
+    # waiting time for waiting, for the device to be steady
+    sign='<'
+
+class TriggerRestartBgp(TriggerRestartBgp):
+    """Restart the BGP instance using CLI command "restart bgp <bgp_id>".
+
+       trigger_datafile:
+           Mandatory:
+               timeout:
+                   max_time (`int`): Maximum wait time for the trigger,
+                                   in second. Default: 180
+                   interval (`int`): Wait time between iterations when looping is needed,
+                                   in second. Default: 15
+           Optional:
+               tgn_timeout (`int`): Maximum wait time for all traffic threads to be
+                                    restored to the reference rate,
+                                    in second. Default: 60
+               tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,
+                                  in second. Default: 10
+
+       steps:
+           1. Learn BGP Ops object and store the "established" BGP neighbor(s)
+              if has any, otherwise, SKIP the trigger
+           2. Soft reset all the BGP connections with command "clear ip route *"
+           3. Learn BGP Ops again and verify it is the same as the Ops in step 1
+    """
+
+    clear_cmd = ['restart bgp (?P<bgp_id>.*)']
+
+    # Operator representing the relation between uptime and
+    # waiting time for waiting, for the device to be steady
+    sign='<'

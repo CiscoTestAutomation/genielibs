@@ -10,7 +10,7 @@ import time
 # ATS
 try:
     from ats import tcl
-except (ImportError, OSError):
+except Exception:
     pass
 from ats.log.utils import banner
 from ats.connections import BaseConnection

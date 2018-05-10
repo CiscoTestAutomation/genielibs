@@ -29,3 +29,9 @@ Detailed installation guide can be found on [our website].
 ```
 $ pip install genie
 ```
+
+# ChangeLog
+
+* [conf](pkgs/conf-pkg/changelog/CHANGELOG.md)
+* [sdk](pkgs/sdk-pkg/changelog/CHANGELOG.md)
+* [ops](pkgs/ops-pkg/changelog/CHANGELOG.md)

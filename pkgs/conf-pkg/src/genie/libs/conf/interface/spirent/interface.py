@@ -24,7 +24,7 @@ from netaddr import mac_cisco, EUI
 from ipaddress import IPv4Interface, IPv6Interface
 try:
     from ats.tcl import tclstr
-except (ImportError, OSError):
+except Exception:
     pass
 
 from genie.decorator import managedattribute, mixedmethod

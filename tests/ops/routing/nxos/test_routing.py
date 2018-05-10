@@ -28,6 +28,8 @@ class test_route_all(unittest.TestCase):
 
     def test_full_route(self):
         f = Routing(device=self.device)
+        # Get outputs
+        f.maker.outputs[ShowVrfDetail] = {'': {}}
         # Get 'show ip static route' output
         f.maker.outputs[ShowIpRoute] = {'': RouteOutput.showIpRoute}
         f.maker.outputs[ShowIpv6Route] = {'': RouteOutput.showIpv6Route}

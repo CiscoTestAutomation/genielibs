@@ -10,7 +10,6 @@ class Routing(Base):
 
     def learn(self):
         '''Learn Routing object'''
-
         # vrf
         #    af
         #     route
@@ -46,16 +45,16 @@ class Routing(Base):
         for key in req_key:
             self.add_leaf(cmd=ShowIpRoute,
                           src=src_routing_route + '[{}]'.format(key),
-                          dest=dest_routing_route + '[{}]'.format(key)
-                          )
+                          dest=dest_routing_route + '[{}]'.format(key),
+                          vrf='all')
 
         src_routing_intf = src_routing_route +'[next_hop][outgoing_interface][(?P<intf>.*)]'
         dest_routing_intf = 'info' + src_routing_intf
 
         self.add_leaf(cmd=ShowIpRoute,
                       src=src_routing_intf + '[outgoing_interface]',
-                      dest=dest_routing_intf + '[outgoing_interface]')
-
+                      dest=dest_routing_intf + '[outgoing_interface]',
+                      vrf='all')
 
         src_routing_hop = src_routing_route +'[next_hop][next_hop_list][(?P<index>.*)]'
         dest_routing_hop = 'info' + src_routing_hop
@@ -64,8 +63,8 @@ class Routing(Base):
         for key in req_key:
             self.add_leaf(cmd=ShowIpRoute,
                           src=src_routing_hop + '[{}]'.format(key),
-                          dest=dest_routing_hop + '[{}]'.format(key))
-
+                          dest=dest_routing_hop + '[{}]'.format(key),
+                          vrf='all')
 
         ##############################################
         ####            Ipv6                ##########
@@ -74,15 +73,19 @@ class Routing(Base):
         for key in req_key:
             self.add_leaf(cmd=ShowIpv6Route,
                           src=src_routing_route + '[{}]'.format(key),
-                          dest=dest_routing_route + '[{}]'.format(key)
-                          )
+                          dest=dest_routing_route + '[{}]'.format(key),
+                          vrf='all')
+
         self.add_leaf(cmd=ShowIpv6Route,
                       src=src_routing_intf + '[outgoing_interface]',
-                      dest=dest_routing_intf + '[outgoing_interface]')
+                      dest=dest_routing_intf + '[outgoing_interface]',
+                      vrf='all')
 
         req_key = ['index', 'next_hop', 'updated','outgoing_interface']
         for key in req_key:
             self.add_leaf(cmd=ShowIpv6Route,
                           src=src_routing_hop + '[{}]'.format(key),
-                          dest=dest_routing_hop + '[{}]'.format(key))
+                          dest=dest_routing_hop + '[{}]'.format(key),
+                          vrf='all')
+
         self.make()
