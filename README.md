@@ -35,3 +35,4 @@ $ pip install genie
 * [conf](pkgs/conf-pkg/changelog/CHANGELOG.md)
 * [sdk](pkgs/sdk-pkg/changelog/CHANGELOG.md)
 * [ops](pkgs/ops-pkg/changelog/CHANGELOG.md)
+* [robot](pkgs/robot-pkg/changelog/CHANGELOG.md)
