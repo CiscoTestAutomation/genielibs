@@ -30,6 +30,9 @@ Detailed installation guide can be found on [our website].
 $ pip install genie
 ```
 
+##### As a genielibs contributor (developer mode), you will need to install ***cisco-distutils*** package as below,
+* pip install cisco-distutils
+
 # ChangeLog
 
 * [conf](pkgs/conf-pkg/changelog/CHANGELOG.md)
