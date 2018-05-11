@@ -133,12 +133,12 @@ class GenieRobot(object):
         # We dont know which of the python path is the package,
         # or even if there is an abstract package. It would be easy to fix, but
         # would need to ask for package name in Robot. It is decided to not
-        # ask, but only support parser.<...> for abstraction, and everything
+        # ask, but only support genie.libs.parser.<...> for abstraction, and everything
         # else would be just straight import 
-        package, attr_name = parser.split('.', 1)
-
-        # Make sure package is parser
-        if package != 'parser':
+        package = 'genie.libs.parser'
+        if package in parser:
+            attr_name = parser.replace(package+'.', '')
+        else:
             # then no abstraction, just load it
             package = None
             attr_name = parser
@@ -205,7 +205,7 @@ class GenieRobot(object):
         #    Where the class is capitalized but the directory/files arent.
 
         # First import genie.libs for abstraction
-        package = 'genie.libs'
+        package = 'genie.libs.ops'
 
         try:
             mod = importlib.import_module(package)
@@ -215,7 +215,7 @@ class GenieRobot(object):
                               .format(f=feature)) from e
 
         # Now find the right library
-        attr_name = '.'.join(['ops', feature.lower(), feature.lower(),
+        attr_name = '.'.join([feature.lower(), feature.lower(),
                               feature.title()])
 
         # Find the right library with abstraction if needed
@@ -345,7 +345,6 @@ class GenieRobot(object):
         '''
 
         # Set the variables to find the trigger
-        #import pdb,sys; pdb.Pdb(stdout=sys.__stdout__).set_trace()
         device_handle = self._search_device(device)
 
         self.testscript.trigger_uids = Or(name)
