@@ -1,3 +1,4 @@
+
 import re
 import os
 import yaml
@@ -20,6 +21,7 @@ from ats.results import (Passed, Failed, Aborted, Errored,
                          Skipped, Blocked, Passx)
 
 from genie.conf import Genie
+from genie.utils.diff import Diff
 from genie.conf.base import loader
 from genie.conf.base import Testbed
 from genie.harness.script import TestScript
@@ -420,6 +422,124 @@ class GenieRobot(object):
         if count != int(number):
             self.builtin.fail("Expected {e}, but found '{f}'".format(e=number,
                                                                      f=count ))
+
+    @keyword('Profile the system for "${feature:[^"]+}" on devices '
+             '"${device:[^"]+}" at "${location:[^"]+}"')
+    def profile_system(self, feature, device, location):
+        '''Profile system as per the provided features on the devices
+        '''
+        return self._profile_the_system(feature=feature,
+                                        device=device,
+                                        context='cli',
+                                        location=location,
+                                        alias=None)
+
+    @keyword('Profile the system for "${feature:[^"]+}" on devices '
+             '"${device:[^"]+}" at "${location:[^"]+}" '
+             'using alias "${alias:[^"]+}"')
+    def profile_system_alias(self, feature, device, location, alias=None):
+        '''Profile system as per the provided features on the devices
+           filtered using alias
+        '''
+
+        try:
+            device = self._search_device(alias).name
+        except KeyError:
+            msg = ["'{alias}' is not found in the testbed yaml file.".format(
+                alias=alias)]
+
+            self.builtin.fail('\n'.join(msg))
+
+        return self._profile_the_system(feature=feature,
+                                        device=device,
+                                        context='cli',
+                                        location=location,
+                                        alias=alias)
+
+    def _profile_the_system(self, feature, device, context, location, alias):
+        '''Profile system as per the provided features on the devices
+        '''
+        profiled = {}
+
+        for dev in device.split(';'):
+
+            for fet in feature.split(';'):
+
+                if fet not in profiled:
+                    profiled[fet] = {}
+                if dev not in profiled[fet]:
+                    profiled[fet][dev] = {}
+
+                log.info("Start learning feature {f}".format(f=fet))
+                learnt_feature = self.genie_ops_on_device_alias_context(
+                    feature=fet.strip(), alias=None, device=dev)
+
+                profiled[fet][dev] = learnt_feature
+
+        if os.path.isdir(location):
+            self.testscript.pickle(profiled, location)
+        else:
+            self.testscript.parameters[location] = profiled
+
+    @keyword('Compare profile "${pts:[^"]+}" with "${pts_compare:[^"]+}" on '
+             'devices "${devices:[^"]+}" using "${datafile:[^"]+}"')
+    def compare_profile(self, pts, pts_compare, devices, datafile):
+        '''Compare system profiles taken as snapshots during the run
+        '''
+
+        if os.path.isfile(pts):
+            compare1 = self.testscript.unpickle(pts)
+        else:
+            compare1 = self.testscript.parameters[pts]
+
+        compare2 = self.testscript.parameters[pts_compare]
+
+        exclude_list = ['device', 'maker', 'diff_ignore', 'callables',
+                   '(Current configuration.*)']
+
+        pts_datafile = self.testscript._load(datafile)
+
+        if 'exclude' in pts_datafile:
+            exclude_list.extend(pts_datafile['exclude'])
+
+        for fet in compare1:
+            failed = []
+            feature_exclude_list = exclude_list
+
+            # Get the information too from the pts_data
+            try:
+                feature_exclude_list.extend(pts_datafile[fet]['exclude'])
+            except KeyError:
+                pass
+
+            for dev in compare1[fet]:
+                # Only compare for the specified devices
+                if dev not in devices:
+                    continue
+
+                diff = Diff(compare1[fet][dev], compare2[fet][dev],
+                    exclude=feature_exclude_list)
+
+                diff.findDiff()
+
+                if len(diff.diffs):
+                    failed.append((dev, diff))
+
+            if failed:
+                msg = ["Comparison between {pts} and "
+                       "{OPS} is different for feature '{f}' "
+                       "for device:\n".format(pts=compare1, OPS=compare2, f=fet)]
+                for device, diff in failed:
+                    msg.append("'{d}'\n{diff}".format(d=device,
+                                                      diff=diff))
+
+                self.builtin.fail('\n'.join(msg))
+            else:
+                msg = ["Comparison between {pts} and "
+                       "{OPS} is identical\n".format(pts=compare1,
+                        OPS=compare2)]
+
+                self.builtin.pass_execution('\n'.join(msg))
 
     def _run_genie_trigger_verification(self, alias, device, context,
                                             name):

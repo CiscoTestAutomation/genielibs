@@ -250,6 +250,11 @@ TriggerUnconfigConfigBgpNeighborEbgp:
         pkg: genie.libs.sdk
         class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborEbgp
 
+TriggerUnconfigConfigBgpL2vpnCapability:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpL2vpnCapability
+
 # --------------
 # DISABLE-ENABLE
 # --------------
@@ -628,6 +633,11 @@ TriggerShutNoShutHsrpIpv6VlanInterface:
       pkg: genie.libs.sdk
       class: triggers.shutnoshut.interface.shutnoshut.TriggerShutNoShutHsrpIpv6VlanInterface
 
+TriggerShutNoShutNveOverlayInterface:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.shutnoshut.interface.shutnoshut.TriggerShutNoShutNveOverlayInterface
+
 
 # ------
 # MODIFY
@@ -695,6 +705,11 @@ TriggerUnconfigConfigVlanInterface:
     source:
         pkg: genie.libs.sdk
         class: triggers.unconfigconfig.interface.unconfigconfig.TriggerUnconfigConfigVlanInterface
+
+TriggerUnconfigConfigVxlanNveOverlayInterface:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.interface.unconfigconfig.TriggerUnconfigConfigVxlanNveOverlayInterface
 
 # -------
 # Restart

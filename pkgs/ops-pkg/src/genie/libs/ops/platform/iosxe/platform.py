@@ -3,8 +3,10 @@ import re
 import copy
 from genie.ops.base import Base
 
-# Genie Xbu_shared
+# Genie Parsers
 from genie.libs.parser.iosxe import show_platform
+from genie.libs.parser.iosxe.show_issu import ShowIssuStateDetail,\
+                                              ShowIssuRollbackTimer
 
 
 class Platform(Base):
@@ -31,7 +33,7 @@ class Platform(Base):
                         '((?P<minute>\d+) +(minute|minutes))|'
                         '((?P<second>\d+) +(seconds|seconds))$')
         m = p.match(item)
-        if m:            
+        if m:
             time_in_seconds = 0
             if m.groupdict()['day']:
                 time_in_seconds += int(m.groupdict()['day']) * 86400
@@ -42,8 +44,6 @@ class Platform(Base):
             if m.groupdict()['second']:
                 time_in_seconds += int(m.groupdict()['second'])
         return time_in_seconds
-
-
 
     def learn(self):
         '''Learn Platform object'''
@@ -130,6 +130,16 @@ class Platform(Base):
                       src='[main][swstack]',
                       dest='swstack')
 
+        # issu_rollback_timer_state
+        self.add_leaf(cmd=ShowIssuRollbackTimer,
+                      src='[rollback_timer_state]',
+                      dest='issu_rollback_timer_state')
+
+        # issu_rollback_timer_reason
+        self.add_leaf(cmd=ShowIssuRollbackTimer,
+                      src='[rollback_timer_reason]',
+                      dest='issu_rollback_timer_reason')
+
         # sdr_owner
         # N/A
 
@@ -194,6 +204,20 @@ class Platform(Base):
         self.add_leaf(cmd=show_platform.ShowInventory,
                       src='[slot][(?P<slot>.*)][rp][(?P<pid>.*)][sn]',
                       dest='[slot][rp][(?P<slot>.*)][sn]')
+
+        # === issu ===
+
+        # issu
+        #   in_progress
+        #   last_operation
+        #   terminal_state_reached
+        #   runversion_executed
+        for src_key in ['issu_in_progress', 'last_operation',
+                        'terminal_state_reached', 'runversion_executed']:
+            dest_key = src_key if src_key is not 'issu_in_progress' else 'in_progress'
+            self.add_leaf(cmd=ShowIssuStateDetail,
+                      src='[slot][(?P<slot>.*)][{key}]'.format(key=src_key),
+                      dest='[slot][rp][(?P<slot>.*)][issu][{key}]'.format(key=dest_key))
 
         # === SubSlotAttributes ===
         # === DaughterCardAttributes ===

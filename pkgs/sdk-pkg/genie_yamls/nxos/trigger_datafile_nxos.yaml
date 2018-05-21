@@ -1063,6 +1063,33 @@ TriggerUnconfigConfigBgpVpnRd:
     devices:
       uut:
         None
+        
+TriggerUnconfigConfigBgpL2vpnCapability:
+    groups: ['unconfig-config', 'bgp', 'vxlan']
+    method: 'checkpoint'
+    timeout:
+      max_time: 60
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigVxlanNveOverlayInterface:
+    groups: ['unconfig-config', 'interface', 'vxlan']
+    method: 'checkpoint'
+    timeout:
+      max_time: 60
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
 
 #===============================================================================
 #                                SHUT-NOSHUT
@@ -1183,6 +1210,19 @@ TriggerShutNoShutVlanInterface:
       interval: 10
     tgn_timeout: 300
     tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+        
+TriggerShutNoShutNveOverlayInterface:
+    groups: ['shut-noshut', 'interface', 'vxlan']
+    timeout:
+      max_time: 40
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
     devices:
       uut:
         None

@@ -160,8 +160,11 @@ class GroupKeys():
                         # It's possible the regex has multiple group
                         matched = com.match(str(item))
                         if matched:
+                            origin_type = type(item)
                             for k, v in matched.groupdict().items():
-                                ret_source[k] = v
+                                # If issue with type, we can use ast.literal_eval. 
+                                # But its not recommended, so trying with type first
+                                ret_source[k] = origin_type(v)
                         else:
                             # I don't understand how it could
                             # go here; so raise an exception

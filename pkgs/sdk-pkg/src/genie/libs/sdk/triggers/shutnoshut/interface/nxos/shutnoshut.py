@@ -21,6 +21,8 @@ hsrp_exclude = ['maker', 'active_ip_address', 'standby_ip_address',
                 'hello_msec', 'hold_msec', 'hello_sec', 'hold_sec',
                 'active_ipv6_address', 'standby_ipv6_address']
 
+nve_exclude = ['maker', ]
+
 
 class TriggerShutNoShutVlanInterface(TriggerShutNoShut):
 
@@ -163,3 +165,62 @@ class TriggerShutNoShutHsrpIpv6VlanInterface(TriggerShutNoShut):
                                        'exclude': interface_exclude + ['ipv4','status']}},
                       num_values={'name': 1})
 
+
+
+class TriggerShutNoShutNveOverlayInterface(TriggerShutNoShut):
+    """Shut and unshut the dynamically learned Nve onverlay interface(s)."""
+
+    __description__ = """Shut and unshut the dynamically learned Nve onverlay interface(s).
+
+    trigger_datafile:
+        Mandatory:
+            timeout: 
+                max_time (`int`): Maximum wait time for the trigger,
+                                in second. Default: 180
+                interval (`int`): Wait time between iteration when looping is needed,
+                                in second. Default: 15
+        Optional:
+            tgn_timeout (`int`): Maximum wait time for all traffic threads to be
+                                 restored to the reference rate,
+                                 in second. Default: 60
+            tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,
+                               in second. Default: 10
+            timeout_recovery: 
+                Buffer recovery timeout make sure devices are recovered at the end
+                of the trigger execution. Used when previous timeouts have been exhausted.
+
+                max_time (`int`): Maximum wait time for the last step of the trigger,
+                                in second. Default: 180
+                interval (`int`): Wait time between iteration when looping is needed,
+                                in second. Default: 15
+
+    steps:
+        1. Learn VxLan Ops object and verify if has any "up" Nve interface(s),
+           otherwise, SKIP the trigger
+        2. Shut the learned Nve interface(s) from step 1 with Interface Conf object
+        3. Verify the state of learned Nve interface(s) from step 2 is "down"
+        4. Unshut the Nve interface(s) with Interface Conf object
+        5. Learn VxLan Ops again and verify it is the same as the Ops in step 1
+        
+    """
+
+    # Mapping of Information between Ops and Conf
+    # Also permit to dictate which key to verify
+    mapping = Mapping(requirements={'ops.vxlan.vxlan.Vxlan': {
+                                        'requirements': [['nve', '(?P<name>.*)', 'if_state', 'up']],
+                                        'kwargs': {'attributes': [
+                                                      'nve[(.*)][if_state]',
+                                                      'nve[(.*)][vni][(.*)][vni]']},
+                                        'exclude': nve_exclude}},
+                      config_info={'conf.interface.Interface':{
+                                        'requirements':[['enabled', False]],
+                                        'verify_conf':False,
+                                        'kwargs':{'mandatory':{'name': '(?P<name>.*)',
+                                                               'attach': False}}}},
+                      verify_ops={'ops.vxlan.vxlan.Vxlan':{
+                                        'requirements':[['nve', '(?P<name>.*)', 'if_state', 'down']],
+                                        'kwargs': {'attributes': [
+                                                      'nve[(.*)][if_state]',
+                                                      'nve[(.*)][vni][(.*)][vni]']},
+                                        'exclude': nve_exclude}},
+                      num_values={'name': 1})

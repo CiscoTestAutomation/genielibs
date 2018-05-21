@@ -12,6 +12,8 @@ from genie.libs.parser.iosxe.show_platform import ShowVersion, \
                                                   ShowRedundancy, \
                                                   ShowInventory, \
                                                   ShowPlatform
+from genie.libs.parser.iosxe.show_issu import ShowIssuStateDetail,\
+                                              ShowIssuRollbackTimer
 
 
 class test_platform_all(unittest.TestCase):
@@ -19,12 +21,14 @@ class test_platform_all(unittest.TestCase):
     def setUp(self):
         self.device = Device(name='aDevice')
         self.device.os = 'iosxe'
-        self.device.mapping = {}
-        self.device.mapping['cli'] = 'cli'
-        self.device.connectionmgr.connections['cli'] = '5'
+        self.device.mapping={}
+        self.device.mapping['cli']='cli'
+        # Give the device as a connection type
+        # This is done in order to call the parser on the output provided
+        self.device.connectionmgr.connections['cli'] = self.device
 
-    def test_sample_asr1k(self):
-
+    def test_complete_asr1k(self):
+        self.maxDiff = None
         f = Platform(device=self.device)
 
         f.maker.outputs[ShowVersion] = \
@@ -37,6 +41,10 @@ class test_platform_all(unittest.TestCase):
             {'':PlatformOutput.showInventoryAsr1k}
         f.maker.outputs[ShowPlatform] = \
             {'':PlatformOutput.showPlatformAsr1k}
+        f.maker.outputs[ShowIssuStateDetail] = \
+            {'':PlatformOutput.ShowIssuStateDetailAsr1k}
+        f.maker.outputs[ShowIssuRollbackTimer] = \
+            {'':PlatformOutput.ShowIssuRollbackTimerAsr1k}
 
         f.learn()
 
@@ -53,8 +61,8 @@ class test_platform_all(unittest.TestCase):
         self.assertEqual(f.switchover_reason, PlatformOutput.platform_all_asr1k['switchover_reason'])
         self.assertEqual(f.redundancy_communication, PlatformOutput.platform_all_asr1k['redundancy_communication'])
         self.assertEqual(f.rp_uptime, PlatformOutput.platform_all_asr1k['rp_uptime'])
-
-        self.maxDiff = None
+        self.assertEqual(f.issu_rollback_timer_reason, PlatformOutput.platform_all_asr1k['issu_rollback_timer_reason'])
+        self.assertEqual(f.issu_rollback_timer_state, PlatformOutput.platform_all_asr1k['issu_rollback_timer_state'])
         self.assertEqual(f.slot, PlatformOutput.platform_all_asr1k['slot'])
 
     def test_missing_attributes_asr1k(self):
@@ -71,6 +79,10 @@ class test_platform_all(unittest.TestCase):
             {'':PlatformOutput.showInventoryAsr1k}
         f.maker.outputs[ShowPlatform] = \
             {'':PlatformOutput.showPlatformAsr1k}
+        f.maker.outputs[ShowIssuStateDetail] = \
+            {'':PlatformOutput.ShowIssuStateDetailAsr1k}
+        f.maker.outputs[ShowIssuRollbackTimer] = \
+            {'':PlatformOutput.ShowIssuRollbackTimerAsr1k}
 
         f.learn()
         with self.assertRaises(KeyError):
@@ -92,6 +104,10 @@ class test_platform_all(unittest.TestCase):
             {'':PlatformOutput.showInventoryAsr1k}
         f.maker.outputs[ShowPlatform] = \
             {'':PlatformOutput.showPlatformAsr1k}
+        f.maker.outputs[ShowIssuStateDetail] = \
+            {'':PlatformOutput.ShowIssuStateDetailAsr1k}
+        f.maker.outputs[ShowIssuRollbackTimer] = \
+            {'':PlatformOutput.ShowIssuRollbackTimerAsr1k}
 
         g.maker.outputs[ShowVersion] = \
             {'':PlatformOutput.showVersionAsr1k}
@@ -103,6 +119,10 @@ class test_platform_all(unittest.TestCase):
             {'':PlatformOutput.showInventoryAsr1k}
         g.maker.outputs[ShowPlatform] = \
             {'':PlatformOutput.showPlatformAsr1k}
+        g.maker.outputs[ShowIssuStateDetail] = \
+            {'':PlatformOutput.ShowIssuStateDetailAsr1k}
+        g.maker.outputs[ShowIssuRollbackTimer] = \
+            {'':PlatformOutput.ShowIssuRollbackTimerAsr1k}
 
         f.learn()
         g.learn()
@@ -130,6 +150,10 @@ class test_platform_all(unittest.TestCase):
             {'':PlatformOutput.showInventoryAsr1k}
         f.maker.outputs[ShowPlatform] = \
             {'':PlatformOutput.showPlatformAsr1k}
+        f.maker.outputs[ShowIssuStateDetail] = \
+            {'':PlatformOutput.ShowIssuStateDetailAsr1k}
+        f.maker.outputs[ShowIssuRollbackTimer] = \
+            {'':PlatformOutput.ShowIssuRollbackTimerAsr1k}
 
         f.learn()
 
@@ -151,13 +175,17 @@ class test_platform_all(unittest.TestCase):
             {'':PlatformOutput.showInventoryAsr1k}
         f.maker.outputs[ShowPlatform] = \
             {'':PlatformOutput.showPlatformAsr1k}
+        f.maker.outputs[ShowIssuStateDetail] = \
+            {'':PlatformOutput.ShowIssuStateDetailAsr1k}
+        f.maker.outputs[ShowIssuRollbackTimer] = \
+            {'':PlatformOutput.ShowIssuRollbackTimerAsr1k}
 
         f.learn()
 
         self.maxDiff = None
         self.assertEqual(f.slot, PlatformOutput.platform_all_empty_dir_asr1k['slot'])
 
-    def test_sample_c3850(self):
+    def test_complete_c3850(self):
 
         f = Platform(device=self.device)
 
@@ -171,6 +199,10 @@ class test_platform_all(unittest.TestCase):
             {'':PlatformOutput.showInventoryC3850}
         f.maker.outputs[ShowPlatform] = \
             {'':PlatformOutput.showPlatformC3850}
+        f.maker.outputs[ShowIssuStateDetail] = \
+            {'':PlatformOutput.ShowIssuStateDetailC3850}
+        f.maker.outputs[ShowIssuRollbackTimer] = \
+            {'':PlatformOutput.ShowIssuRollbackTimerC3850}
 
         f.learn()
 
@@ -205,6 +237,10 @@ class test_platform_all(unittest.TestCase):
             {'':PlatformOutput.showInventoryC3850}
         f.maker.outputs[ShowPlatform] = \
             {'':PlatformOutput.showPlatformC3850}
+        f.maker.outputs[ShowIssuStateDetail] = \
+            {'':PlatformOutput.ShowIssuStateDetailC3850}
+        f.maker.outputs[ShowIssuRollbackTimer] = \
+            {'':PlatformOutput.ShowIssuRollbackTimerC3850}
 
         f.learn()
         with self.assertRaises(KeyError):
@@ -226,6 +262,10 @@ class test_platform_all(unittest.TestCase):
             {'':PlatformOutput.showInventoryC3850}
         f.maker.outputs[ShowPlatform] = \
             {'':PlatformOutput.showPlatformC3850}
+        f.maker.outputs[ShowIssuStateDetail] = \
+            {'':PlatformOutput.ShowIssuStateDetailC3850}
+        f.maker.outputs[ShowIssuRollbackTimer] = \
+            {'':PlatformOutput.ShowIssuRollbackTimerC3850}
 
         g.maker.outputs[ShowVersion] = \
             {'':PlatformOutput.showVersionC3850}
@@ -237,6 +277,10 @@ class test_platform_all(unittest.TestCase):
             {'':PlatformOutput.showInventoryC3850}
         g.maker.outputs[ShowPlatform] = \
             {'':PlatformOutput.showPlatformC3850}
+        g.maker.outputs[ShowIssuStateDetail] = \
+            {'':PlatformOutput.ShowIssuStateDetailC3850}
+        g.maker.outputs[ShowIssuRollbackTimer] = \
+            {'':PlatformOutput.ShowIssuRollbackTimerC3850}
 
         f.learn()
         g.learn()
@@ -264,6 +308,10 @@ class test_platform_all(unittest.TestCase):
             {'':PlatformOutput.showInventoryC3850}
         f.maker.outputs[ShowPlatform] = \
             {'':PlatformOutput.showPlatformC3850}
+        f.maker.outputs[ShowIssuStateDetail] = \
+            {'':PlatformOutput.ShowIssuStateDetailC3850}
+        f.maker.outputs[ShowIssuRollbackTimer] = \
+            {'':PlatformOutput.ShowIssuRollbackTimerC3850}
 
         f.learn()
 
@@ -285,6 +333,10 @@ class test_platform_all(unittest.TestCase):
             {'':PlatformOutput.showInventoryC3850}
         f.maker.outputs[ShowPlatform] = \
             {'':PlatformOutput.showPlatformC3850}
+        f.maker.outputs[ShowIssuStateDetail] = \
+            {'':PlatformOutput.ShowIssuStateDetailC3850}
+        f.maker.outputs[ShowIssuRollbackTimer] = \
+            {'':PlatformOutput.ShowIssuRollbackTimerC3850}
 
         f.learn()
 

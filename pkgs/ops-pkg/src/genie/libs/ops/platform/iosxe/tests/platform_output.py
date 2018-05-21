@@ -1,4 +1,10 @@
+
 class PlatformOutput(object):
+
+    # ==========================================================================
+    #                               ASR1K
+    # ==========================================================================
+
     showVersionAsr1k = {
                     'version': {
                         'version_short': '16.3',
@@ -438,13 +444,129 @@ class PlatformOutput(object):
                         }
                     }
 
+    ShowIssuStateDetailAsr1k = {
+        'slot': 
+            {'R1': 
+                {'issu_in_progress': True,
+                'context': 'vty 0',
+                'last_operation': 'runversion',
+                'loadversion_time': '20180430 19:13:51',
+                'operating_mode': 'sso',
+                'original_rollback_image': 'harddisk:asr1000rpx86-universalk9.16.08.01sprd1.SPA.bin',
+                'rollback_state': 'automatic',
+                'rollback_time': '00:24:26',
+                'running_image': 'harddisk:asr1000rpx86-universalk9.BLD_V168_1_THROTTLE_LATEST_20180426_165658_V16_8_0_265.SSA.bin',
+                'runversion_executed': True,
+                'terminal_state_reached': False}}}
+
+    ShowIssuRollbackTimerAsr1k = {
+        'rollback_timer_reason': 'timer canceled by acceptversion',
+        'rollback_timer_state': 'inactive'}
+
     platform_all_asr1k = {
+        'chassis': 'ASR1006',
+        'chassis_sn': 'FOX1444GPXU',
+        'rtr_type': 'ASR1K',
+        'os': 'iosxe',
+        'version': '16.3.20170410:103306',
+        'image': 'harddisk:test-image-PE1-13113029',
+        'issu_rollback_timer_reason': 'timer canceled by acceptversion',
+        'issu_rollback_timer_state': 'inactive',
+        'config_register': '0x2000',
+        'main_mem': '4138965',
+        'dir': 'bootflash:/',
+        'redundancy_mode': 'sso',
+        'switchover_reason': 'none',
+        'redundancy_communication': True,
+        'rp_uptime': 54240,
+        'slot': {
+            'lc': {
+                '0': {
+                    'name': 'ASR1000-SIP40',
+                    'state': 'ok',
+                    'sn': 'JAE200609WP',
+                    'subslot': {
+                        '0': {
+                            'name': 'SPA-5X1GE-V2',
+                            'state': 'ok',
+                            'sn': 'JAE151203T2',
+                        },
+                        '0 transceiver 0': {
+                            'name': 'SP7041-E',
+                            'sn': 'MTC164204VE',
+                        },
+                        '0 transceiver 1': {
+                            'name': 'SP7041-E',
+                            'sn': 'MTC164204F0',
+                        },
+                        '0 transceiver 2': {
+                            'name': 'SP7041-E',
+                            'sn': 'MTC164206U2',
+                        },
+                        '0 transceiver 3': {
+                            'name': 'SP7041-E',
+                            'sn': 'MTC1644033S',
+                        },
+                    }
+                }
+            },
+            'rp': {
+                'R0': {
+                    'name': 'ASR1000-RP2',
+                    'state': 'ok, active',
+                    'redundancy_state': 'ACTIVE',
+                    'rp_uptime': '15 hours, 4 minutes',
+                    'system_image': 'Cisco IOS Software [Everest], ASR1000 Software (X86_64_LINUX_IOSD-UNIVERSALK9-M), Experimental Version 16.4.20170425:070036 [v164_throttle-BLD-BLD_V164_THROTTLE_LATEST_20170425_075354 141]',
+                    'boot_image': 'harddisk:test-image-PE1-13116843,12;',
+                    'config_register': '0x2102',
+                    'sn': 'JAE153408NJ',
+                },
+                'R1': {
+                    'name': 'ASR1000-RP2',
+                    'state': 'ok, standby',
+                    'redundancy_state': 'STANDBY HOT',
+                    'rp_uptime': '15 hours, 1 minute',
+                    'system_image': 'Cisco IOS Software [Everest], ASR1000 Software (X86_64_LINUX_IOSD-UNIVERSALK9-M), Experimental Version 16.4.20170425:070036 [v164_throttle-BLD-BLD_V164_THROTTLE_LATEST_20170425_075354 141]',
+                    'boot_image': 'harddisk:test-image-PE1-13116843,12;',
+                    'config_register': '0x2102',
+                    'sn': 'JAE1703094H',
+                    'issu': {
+                        'in_progress': True,
+                        'last_operation': 'runversion',
+                        'runversion_executed': True,
+                        'terminal_state_reached': False,
+                    },
+                }
+            },
+            'oc': {
+                'F0': {
+                    'name': 'ASR1000-ESP20',
+                    'state': 'ok, active',
+                    'sn': 'JAE1239W7G6',
+                },
+                'P0': {
+                    'name': 'ASR1006-PWR-AC',
+                    'state': 'ok',
+                    'sn': 'ART1210Q049',
+                },
+                'P1': {
+                    'name': 'ASR1006-PWR-AC',
+                    'state': 'ps, fail',
+                    'sn': 'ART1210Q04C',
+                }
+            }
+        }
+    }
+
+    platform_all_empty_dir_asr1k = {
                     'chassis': 'ASR1006',
                     'chassis_sn': 'FOX1444GPXU',
                     'rtr_type': 'ASR1K',
                     'os': 'iosxe',
                     'version': '16.3.20170410:103306',
                     'image': 'harddisk:test-image-PE1-13113029',
+                    'issu_rollback_timer_reason': 'timer canceled by acceptversion',
+                    'issu_rollback_timer_state': 'inactive',
                     'config_register': '0x2000',
                     'main_mem': '4138965',
                     'dir': 'bootflash:/',
@@ -503,6 +625,12 @@ class PlatformOutput(object):
                                 'boot_image': 'harddisk:test-image-PE1-13116843,12;',
                                 'config_register': '0x2102',
                                 'sn': 'JAE1703094H',
+                                'issu': {
+                                    'in_progress': True,
+                                    'last_operation': 'runversion',
+                                    'runversion_executed': True,
+                                    'terminal_state_reached': False,
+                                },
                             }
                         },
                         'oc': {
@@ -525,92 +653,9 @@ class PlatformOutput(object):
                     }
                 }
 
-    platform_all_empty_dir_asr1k = {
-                    'chassis': 'ASR1006',
-                    'chassis_sn': 'FOX1444GPXU',
-                    'rtr_type': 'ASR1K',
-                    'os': 'iosxe',
-                    'version': '16.3.20170410:103306',
-                    'image': 'harddisk:test-image-PE1-13113029',
-                    'config_register': '0x2000',
-                    'main_mem': '4138965',
-                    'dir': 'bootflash:/',
-                    'redundancy_mode': 'sso',
-                    'switchover_reason': 'none',
-                    'redundancy_communication': True,
-                    'rp_uptime': 54240,
-                    'slot': {
-                        'lc': {
-                            '0': {
-                                'name': 'ASR1000-SIP40',
-                                'state': 'ok',
-                                'sn': 'JAE200609WP',
-                                'subslot': {
-                                    '0': {
-                                        'name': 'SPA-5X1GE-V2',
-                                        'state': 'ok',
-                                        'sn': 'JAE151203T2',
-                                    },
-                                    '0 transceiver 0': {
-                                        'name': 'SP7041-E',
-                                        'sn': 'MTC164204VE',
-                                    },
-                                    '0 transceiver 1': {
-                                        'name': 'SP7041-E',
-                                        'sn': 'MTC164204F0',
-                                    },
-                                    '0 transceiver 2': {
-                                        'name': 'SP7041-E',
-                                        'sn': 'MTC164206U2',
-                                    },
-                                    '0 transceiver 3': {
-                                        'name': 'SP7041-E',
-                                        'sn': 'MTC1644033S',
-                                    },
-                                }
-                            }
-                        },
-                        'rp': {
-                            'R0': {
-                                'name': 'ASR1000-RP2',
-                                'state': 'ok, active',
-                                'redundancy_state': 'ACTIVE',
-                                'rp_uptime': '15 hours, 4 minutes',
-                                'system_image': 'Cisco IOS Software [Everest], ASR1000 Software (X86_64_LINUX_IOSD-UNIVERSALK9-M), Experimental Version 16.4.20170425:070036 [v164_throttle-BLD-BLD_V164_THROTTLE_LATEST_20170425_075354 141]',
-                                'boot_image': 'harddisk:test-image-PE1-13116843,12;',
-                                'config_register': '0x2102',
-                                'sn': 'JAE153408NJ',
-                            },
-                            'R1': {
-                                'name': 'ASR1000-RP2',
-                                'state': 'ok, standby',
-                                'redundancy_state': 'STANDBY HOT',
-                                'rp_uptime': '15 hours, 1 minute',
-                                'system_image': 'Cisco IOS Software [Everest], ASR1000 Software (X86_64_LINUX_IOSD-UNIVERSALK9-M), Experimental Version 16.4.20170425:070036 [v164_throttle-BLD-BLD_V164_THROTTLE_LATEST_20170425_075354 141]',
-                                'boot_image': 'harddisk:test-image-PE1-13116843,12;',
-                                'config_register': '0x2102',
-                                'sn': 'JAE1703094H',
-                            }
-                        },
-                        'oc': {
-                            'F0': {
-                                'name': 'ASR1000-ESP20',
-                                'state': 'ok, active',
-                                'sn': 'JAE1239W7G6',
-                            },
-                            'P0': {
-                                'name': 'ASR1006-PWR-AC',
-                                'state': 'ok',
-                                'sn': 'ART1210Q049',
-                            },
-                            'P1': {
-                                'name': 'ASR1006-PWR-AC',
-                                'state': 'ps, fail',
-                                'sn': 'ART1210Q04C',
-                            }
-                        }
-                    }
-                }
+    # ==========================================================================
+    #                               C3850
+    # ==========================================================================
 
     showVersionC3850 = {
                         'version': {
@@ -1218,6 +1263,10 @@ class PlatformOutput(object):
                                 }
                             }
                         }
+
+    ShowIssuStateDetailC3850 = {}
+
+    ShowIssuRollbackTimerC3850 = {}
 
     platform_all_C3850 = {
                             'chassis': 'WS-C3850-24P',
