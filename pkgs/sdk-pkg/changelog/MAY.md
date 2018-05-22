@@ -12,3 +12,7 @@
 	* TriggerClearIpBgpVrfAll
 	* TriggerClearBgpVpnv6UnicastVrfAll
 	* TriggerClearBgpVpnv4UnicastVrfAll
+
+# May 22nd
+
+* Added package library to CesMonitor.
