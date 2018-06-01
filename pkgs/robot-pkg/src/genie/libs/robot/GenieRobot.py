@@ -27,7 +27,8 @@ from genie.conf.base import Testbed
 from genie.harness.script import TestScript
 from genie.harness.discovery import GenieScriptDiscover
 from genie.harness.datafile.loader import TriggerdatafileLoader,\
-                                          VerificationdatafileLoader
+                                          VerificationdatafileLoader,\
+                                          PtsdatafileLoader
 
 log = logging.getLogger(__name__)
 
@@ -57,9 +58,6 @@ class GenieRobot(object):
         finally:
             self._genie_testscript = TestScript(Testscript)
 
-        # Load Genie Datafiles (Trigger and Verification)
-        self._load_genie_datafile()
-
     @property
     def testscript(self):
         try:
@@ -86,6 +84,10 @@ class GenieRobot(object):
                                               'pyATSRobot').testbed =\
                                               self.testbed
         self.testscript.parameters['testbed'] = self.testbed
+
+        # Load Genie Datafiles (Trigger, Verification and PTS)
+        self._load_genie_datafile()
+
 
     # Metaparser
     @keyword('parse "${parser:[^"]+}" on device "${device:[^"]+}"')
@@ -482,10 +484,9 @@ class GenieRobot(object):
             self.testscript.parameters[location] = profiled
 
     @keyword('Compare profile "${pts:[^"]+}" with "${pts_compare:[^"]+}" on '
-             'devices "${devices:[^"]+}" using "${datafile:[^"]+}"')
-    def compare_profile(self, pts, pts_compare, devices, datafile):
-        '''Compare system profiles taken as snapshots during the run
-        '''
+             'devices "${devices:[^"]+}"')
+    def compare_profile(self, pts, pts_compare, devices):
+        '''Compare system profiles taken as snapshots during the run'''
 
         if os.path.isfile(pts):
             compare1 = self.testscript.unpickle(pts)
@@ -497,10 +498,8 @@ class GenieRobot(object):
         exclude_list = ['device', 'maker', 'diff_ignore', 'callables',
                    '(Current configuration.*)']
 
-        pts_datafile = self.testscript._load(datafile)
-
-        if 'exclude' in pts_datafile:
-            exclude_list.extend(pts_datafile['exclude'])
+        if 'exclude' in self.pts_datafile:
+            exclude_list.extend(self.pts_datafile['exclude'])
 
         for fet in compare1:
             failed = []
@@ -508,7 +507,7 @@ class GenieRobot(object):
 
             # Get the information too from the pts_data
             try:
-                feature_exclude_list.extend(pts_datafile[fet]['exclude'])
+                feature_exclude_list.extend(self.pts_datafile[fet]['exclude'])
             except KeyError:
                 pass
 
@@ -678,27 +677,31 @@ class GenieRobot(object):
         variables = self.builtin.get_variables()
         datafiles = []
 
-        Datafile = namedtuple('Datafile', ['cls', 'name', 'padding'])
-        datafiles.append(Datafile(cls=VerificationdatafileLoader,
-                                  name='verification_datafile',
-                                  padding='${verification_datafile}'))
+        trigger_datafile = None
+        if '${trigger_datafile}' in variables:
+            trigger_datafile = variables['${trigger_datafile}']
 
-        datafiles.append(Datafile(cls=TriggerdatafileLoader,
-                                  name='trigger_datafile',
-                                  padding='${trigger_datafile}'))
+        verification_datafile = None
+        if '${verification_datafile}' in variables:
+            verification_datafile = variables['${verification_datafile}']
 
-        for variable in datafiles:
-            if variable.padding not in variables:
-                continue
+        pts_datafile = None
+        if '${pts_datafile}' in variables:
+            pts_datafile = variables['${pts_datafile}']
 
-            datafile = variables[variable.padding]
-            try:
-                loader = variable.cls()
-                # Remove the extra padding for variable
-                setattr(self, variable.name, loader.load(datafile))
-            except Exception as e:
-                raise DatafileError("Failed to load the datafile '%s'"
-                                    % datafile) from e
+        trigger_datafile, verification_datafile, pts_datafile , *_ =\
+             self.testscript._validate_datafiles(self.testbed,
+                                                 trigger_datafile,
+						 verification_datafile,
+						 pts_datafile,
+						 None, None)
+
+        self.trigger_datafile = self.testscript._load(trigger_datafile,
+                                                      TriggerdatafileLoader)
+        self.verification_datafile = self.testscript._load(verification_datafile,
+                                                           VerificationdatafileLoader)
+        self.pts_datafile = self.testscript._load(pts_datafile,
+                                                  PtsdatafileLoader)
 
 
 def load_attribute(pkg, attr_name, device=None):

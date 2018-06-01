@@ -423,12 +423,74 @@ class Interface(genie.libs.conf.interface.Interface):
 
 class PhysicalInterface(Interface, genie.libs.conf.interface.PhysicalInterface):
 
+    def _build_config_interface_submode(self, configurations, attributes, unconfig):
+
+        # Virtual interfaces can be fully unconfigured
+        if unconfig and attributes.iswildcard:
+            configurations.submode_unconfig()
+
+        super()._build_config_interface_submode(configurations, attributes, unconfig)
+        
+        # ----- LagMemberInterface configure ---------#
+
+        # channel-group <lag_bundle_id> mode auto [non-silent]
+        # channel-group <lag_bundle_id> mode desirable [non-slilent]
+        # channel-group <lag_bundle_id> mode on
+        # channel-group <lag_bundle_id> mode active
+        # channel-group <lag_bundle_id> mode passive
+        if attributes.value('lag_bundle_id'):
+            if attributes.value('lag_activity') and \
+               ('active' in attributes.value('lag_activity') or \
+                'passive' in attributes.value('lag_activity') or \
+                'on' in attributes.value('lag_activity')):
+                configurations.append_line(
+                    attributes.format(
+                        'channel-group {lag_bundle_id} mode {lag_activity}'))
+            elif attributes.value('lag_activity') and \
+               ('auto' in attributes.value('lag_activity') or \
+                'desirable' in attributes.value('lag_activity')):
+                cmd = 'channel-group {lag_bundle_id} mode {lag_activity}'
+                if attributes.value('lag_non_silent'):
+                    cmd += ' non-silent'
+                configurations.append_line(
+                    attributes.format(cmd))
+
+        # lacp port-priority <lag_lacp_port_priority>
+        configurations.append_line(
+            attributes.format('lacp port-priority {lag_lacp_port_priority}'))
+
+        # pagp port-priority <lag_pagp_port_priority>
+        configurations.append_line(
+            attributes.format('pagp port-priority {lag_pagp_port_priority}'))
+
+
+
     @abc.abstractmethod
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
 
 class VirtualInterface(Interface, genie.libs.conf.interface.VirtualInterface):
+
+    def build_config(self, apply=True, attributes=None, unconfig=False,
+                     **kwargs):
+        assert not kwargs
+        attributes = AttributesHelper(self, attributes)
+        configurations = CliConfigBuilder(unconfig=unconfig)
+
+        # lacp system-priority <lag_lacp_system_priority>
+        configurations.append_line(
+            attributes.format('lacp system-priority {lag_lacp_system_priority}'))
+
+        with self._build_config_create_interface_submode_context(configurations):
+            self._build_config_interface_submode(configurations=configurations, attributes=attributes, unconfig=unconfig)
+
+        if apply:
+            if configurations:
+                self.device.configure(configurations, fail_invalid=True)
+        else:
+            return CliConfig(device=self.device, unconfig=unconfig,
+                             cli_config=configurations)
 
     def _build_config_interface_submode(self, configurations, attributes, unconfig):
 
@@ -453,7 +515,7 @@ class LoopbackInterface(VirtualInterface, genie.libs.conf.interface.LoopbackInte
         super().__init__(*args, **kwargs)
 
 
-class PortchannelInterface(VirtualInterface):
+class PortchannelInterface(VirtualInterface, genie.libs.conf.interface.LagInterface):
     """ PortchannelInterface class, presenting port-channel type of `Interface`
     objects
 
@@ -471,6 +533,22 @@ class PortchannelInterface(VirtualInterface):
         'port-channel',
         'Port-channel',
     )
+
+    def _build_config_interface_submode(self, configurations, attributes, unconfig):
+
+        # Virtual interfaces can be fully unconfigured
+        if unconfig and attributes.iswildcard:
+            configurations.submode_unconfig()
+
+        super()._build_config_interface_submode(configurations, attributes, unconfig)
+
+        # lacp max-bundle <lag_lacp_max_bundle>
+        configurations.append_line(
+            attributes.format('lacp max-bundle {lag_lacp_max_bundle}'))
+
+        # lacp min-bundle <lag_lacp_min_bundle>
+        configurations.append_line(
+            attributes.format('lacp min-bundle {lag_lacp_min_bundle}'))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -213,6 +213,7 @@ Verify_Interfaces:
   - out_lost_carrier
   - (Tunnel.*)
   - input_queue_flushes
+  - reliability
   iteration:
     attempt: 5
     interval: 10

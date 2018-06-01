@@ -63,8 +63,8 @@ class Stp(Base):
                           src='[(?P<mode>.*)][%s]' % key,
                           dest='info[(?P<mode>.*)][default][%s]' % key)
             self.add_leaf(cmd=ShowSpanningTreeDetail,
-                          src='[(?P<mode_valn>(pvst|rapid_pvst))][vlans][(?P<vlans>.*)][%s]' % key,
-                          dest='info[(?P<mode_valn>.*)][default][vlans][(?P<vlans>.*)][%s]' % key)
+                          src='[(?P<mode_vlan>(pvst|rapid_pvst))][vlans][(?P<vlans>.*)][%s]' % key,
+                          dest='info[(?P<mode_vlan>(pvst|rapid_pvst))][default][vlans][(?P<vlans>.*)][%s]' % key)
 
         # ----------------- Instance/Vlans Attributes -----------------
         # mst_id, vlan, bridge_priority, bridge_address, topology_changes,

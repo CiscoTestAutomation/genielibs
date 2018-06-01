@@ -491,6 +491,88 @@ class test_interface(TestCase):
             ' exit',
         ]))
 
+    def test_lag_interafce(self):
+        Genie.testbed = Testbed()
+        dev1 = Device(name='PE1', os='iosxe')
+        intf1 = Interface(device=dev1, name='GigabitEthernet1/0/1')
+        intf2 = Interface(device=dev1, name='GigabitEthernet1/0/2')
+        intf3 = Interface(device=dev1, name='Port-channel10')
+
+        # lacp
+        intf1.lag_bundle_id = 10
+        intf1.lag_activity = 'active'
+        intf1.lag_lacp_port_priority = 30
+        # pagp
+        intf2.lag_bundle_id = 20
+        intf2.lag_activity = 'auto'
+        intf2.lag_non_silent = True
+        intf2.lag_pagp_port_priority = 50
+
+        # virtual lagInterface        
+        intf3.lag_lacp_system_priority = 100
+        intf3.lag_lacp_max_bundle = 20
+        intf3.lag_lacp_min_bundle = 15
+
+        # error assigned attributes, shouldn't in the configuration
+        intf2.lag_lacp_max_bundle = 123
+        
+        # Check config
+        cfg1 = intf1.build_config(apply=False)
+        self.assertMultiLineEqual(str(cfg1), '\n'.join([
+            'interface GigabitEthernet1/0/1',
+            ' channel-group 10 mode active',
+            ' lacp port-priority 30',
+            ' exit',
+        ]))
+
+        cfg2 = intf2.build_config(apply=False)
+        self.assertMultiLineEqual(str(cfg2), '\n'.join([
+	        'interface GigabitEthernet1/0/2',
+			' channel-group 20 mode auto non-silent',
+			' pagp port-priority 50',
+			' exit',
+        ]))
+
+        cfg3 = intf3.build_config(apply=False)
+        self.assertMultiLineEqual(str(cfg3), '\n'.join([
+            'lacp system-priority 100',
+            'interface Port-channel10',
+            ' lacp max-bundle 20',
+            ' lacp min-bundle 15',
+            ' exit',
+        ]))
+
+        # Check unconfig
+        uncfg1 = intf1.build_unconfig(apply=False)
+        self.assertMultiLineEqual(str(uncfg1), '\n'.join([
+            'default interface GigabitEthernet1/0/1',
+			'interface GigabitEthernet1/0/1',
+			'shutdown',
+        ]))
+
+        uncfg2 = intf2.build_unconfig(apply=False)
+        self.assertMultiLineEqual(str(uncfg2), '\n'.join([
+            'default interface GigabitEthernet1/0/2',
+			'interface GigabitEthernet1/0/2',
+			'shutdown',
+        ]))
+
+        # Check unconfig with attributes
+        uncfg1 = intf1.build_unconfig(apply=False, attributes={'lag_activity': None, 
+        	                                                   'lag_bundle_id': None})
+        self.assertMultiLineEqual(str(uncfg1), '\n'.join([
+	        'interface GigabitEthernet1/0/1',
+			' no channel-group 10 mode active',
+			' exit',
+        ]))
+
+        uncfg2 = intf2.build_unconfig(apply=False, attributes="lag_pagp_port_priority")
+        self.assertMultiLineEqual(str(uncfg2), '\n'.join([
+	        'interface GigabitEthernet1/0/2',
+			' no pagp port-priority 50',
+			' exit',
+        ]))
+
 if __name__ == '__main__':
     unittest.main()
 

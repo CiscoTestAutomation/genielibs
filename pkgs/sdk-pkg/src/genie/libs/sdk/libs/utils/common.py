@@ -118,26 +118,30 @@ class UpdateLearntDatabase(object):
                 # TODO
                     
                 # update local verififations
-                if self.obj.verf and self.obj.verf[self.device.name] and \
+                if self.obj.verf and self.device.name in self.obj.verf and \
+                   self.obj.verf[self.device.name] and \
                    ver in self.obj.verf[self.device.name]:
                     if parser_output:
                         self.obj.verf[self.device.name][ver].name = parser_output
                     elif isinstance(execute_obj, object):
                         self.obj.verf[self.device.name][ver] = execute_obj
                 else:
-                    log.warning('Local verification "{}" is '
-                        'not learned before, Skip updating local'.format(ver))
+                    log.warning('Local verification "{v}" is '
+                        'not learned before on device {d}, Skip updating local'
+                        .format(v=ver, d=self.device.name))
 
                 # update global verififations
-                if self.obj.parent.verf[self.device.name] and \
+                if self.device.name in self.obj.parent.verf and \
+                   self.obj.parent.verf[self.device.name] and \
                    ver in self.obj.parent.verf[self.device.name]:
                     if parser_output:
                         self.obj.parent.verf[self.device.name][ver].name = parser_output
                     elif isinstance(execute_obj, object):
                         self.obj.parent.verf[self.device.name][ver] = execute_obj
                 else:
-                    log.warning('Global verification "{}" is '
-                        'not learned before, Skip updating global'.format(ver))
+                    log.warning('Global verification "{v}" is '
+                        'not learned before on device {d}, Skip updating global'
+                        .format(v=ver, d=self.device.name))
 
 
     def update_pts(self, abstract, update_feature_list, update_attributes=None):
@@ -178,26 +182,34 @@ class UpdateLearntDatabase(object):
                         .format(feature))
                     continue
                    
-                log.info("Update {} pts".format(feature))
+                log.info("Update {f} pts on {d}".format(f=feature, d=self.device))
 
-                # learn the ops again
-                try:
-                    module = self.obj.parent.parameters['pts'][feature]['uut']\
-                        .__class__(self.device)
-                    module.learn()
-                except Exception as e:
-                    log.warning('Feature {} cannot be learned, Skip updating'
-                                 .format(feature))
-                    log.warning(str(e))
-                    continue
+                # check if pts runs on this device before
+                if self.device.alias in self.obj.parent.parameters['pts'][feature]:
 
-                # update the given keys
-                for attr in update_attributes[feature]:
+                    # learn the ops again
                     try:
-                        setattr(self.obj.parent.parameters['pts'][feature]['uut'],
-                                   attr, (getattr(module, attr)))
+                        module = self.obj.parent.parameters['pts'][feature][self.device.alias]\
+                            .__class__(self.device)
+                        module.learn()
                     except Exception as e:
-                        pass
+                        log.warning('Feature {} cannot be learned, Skip updating'
+                                     .format(feature))
+                        log.warning(str(e))
+                        continue
+
+                    # update the given keys
+                    for attr in update_attributes[feature]:
+                        try:
+                            setattr(self.obj.parent.parameters['pts'][feature][self.device.alias],
+                                       attr, (getattr(module, attr)))
+                        except Exception as e:
+                            pass
+                else:
+                    log.warning(
+                        'Feature {f} was not learned on {d} before, Skip updating'
+                        .format(f=feature, d=self.device))
+
         else:
             log.info('There is no PTS learned previously, Skip updating the PTS')
 

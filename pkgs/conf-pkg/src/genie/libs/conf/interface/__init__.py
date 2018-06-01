@@ -860,7 +860,6 @@ class VirtualInterface(Interface,
     Example:
         lo_intf = LoopbackInterface.generate_interface(device=dev)
     '''
-
     _interface_name_number_range = range(0, 2147483647 + 1)
 
     @abc.abstractmethod
@@ -934,6 +933,32 @@ class EmulatedInterface(Interface):
 
     def build_unconfig(self, *args, **kwargs):
         return ''
+
+class LagInterface(VirtualInterface):
+
+    enabled_lacp = managedattribute(
+        name='enabled_lacp',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)),
+        doc= 'enabled_lacp')
+
+    lag_lacp_system_priority = managedattribute(
+        name='lag_lacp_system_priority',
+        default=None,
+        type=(None, managedattribute.test_istype(int)),
+        doc= 'lag_lacp_system_priority')
+
+    lag_lacp_max_bundle = managedattribute(
+        name='lag_lacp_max_bundle',
+        default=None,
+        type=(None, managedattribute.test_istype(int)),
+        doc= 'lag_lacp_max_bundle')
+
+    lag_lacp_min_bundle = managedattribute(
+        name='lag_lacp_min_bundle',
+        default=None,
+        type=(None, managedattribute.test_istype(int)),
+        doc= 'lag_lacp_min_bundle')
 
 
 class LoopbackInterface(VirtualInterface,
@@ -1108,6 +1133,42 @@ class EthernetInterface(PhysicalInterface):
         default=None,
         type=(None, managedattribute.test_istype(bool)),
         doc='Send pause frames')
+
+    lag_bundle_id = managedattribute(
+        name='lag_bundle_id',
+        default=None,
+        type=(None, managedattribute.test_istype(int)),
+        doc= 'lag_bundle_id')
+
+    lag_activity = managedattribute(
+        name='lag_activity',
+        default=None,
+        type=(None, managedattribute.test_in(['active','passive','on','auto','desirable'])),
+        doc= 'lag_activity')
+
+    lag_non_silent = managedattribute(
+        name='lag_non_silent',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)),
+        doc= 'lag_non_silent')
+
+    lag_force = managedattribute(
+        name='lag_force',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)),
+        doc= 'lag_force')
+
+    lag_lacp_port_priority = managedattribute(
+        name='lag_lacp_port_priority',
+        default=None,
+        type=(None, managedattribute.test_istype(int)),
+        doc= 'lag_lacp_port_priority')
+
+    lag_pagp_port_priority = managedattribute(
+        name='lag_pagp_port_priority',
+        default=None,
+        type=(None, managedattribute.test_istype(int)),
+        doc= 'lag_pagp_port_priority')
 
     @abc.abstractmethod
     def __init__(self, *args, **kwargs):

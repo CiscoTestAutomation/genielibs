@@ -11,7 +11,7 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 log = logging.getLogger(__name__)
 
-def save_device_information(device):
+def save_device_information(device, **kwargs):
     """Install the commit packages. This is for IOSXR devices.
 
     Args:

@@ -29,10 +29,8 @@ class test_route_all(unittest.TestCase):
     def test_full_route(self):
         f = Routing(device=self.device)
         # Get outputs
-        f.maker.outputs[ShowVrfDetail] = {'': {}}
-        # Get 'show ip static route' output
-        f.maker.outputs[ShowIpRoute] = {'': RouteOutput.showIpRoute}
-        f.maker.outputs[ShowIpv6Route] = {'': RouteOutput.showIpv6Route}
+        f.maker.outputs[ShowIpRoute] = {"{'vrf':'all'}": RouteOutput.showIpRoute}
+        f.maker.outputs[ShowIpv6Route] = {"{'vrf':'all'}": RouteOutput.showIpv6Route}
         self.device.execute = Mock()
         # Learn the feature
         f.learn()
@@ -45,8 +43,8 @@ class test_route_all(unittest.TestCase):
         f = Routing(device=self.device)
 
         # Get 'show ipv4 static route' output
-        f.maker.outputs[ShowIpRoute] = {'': RouteOutput.showIpRoute}
-        f.maker.outputs[ShowIpv6Route] = {'': RouteOutput.showIpv6Route}
+        f.maker.outputs[ShowIpRoute] = {"{'vrf':'all'}": RouteOutput.showIpRoute}
+        f.maker.outputs[ShowIpv6Route] = {"{'vrf':'all'}": RouteOutput.showIpv6Route}
         # Learn the feature
         f.learn()
         # Check match
@@ -60,8 +58,8 @@ class test_route_all(unittest.TestCase):
 
     def test_missing_attributes_route(self):
         f = Routing(device=self.device)
-        f.maker.outputs[ShowIpRoute] = {'': RouteOutput.showIpRoute}
-        f.maker.outputs[ShowIpv6Route] = {'': RouteOutput.showIpv6Route}
+        f.maker.outputs[ShowIpRoute] = {"{'vrf':'all'}": RouteOutput.showIpRoute}
+        f.maker.outputs[ShowIpv6Route] = {"{'vrf':'all'}": RouteOutput.showIpv6Route}
 
         # Learn the feature
         f.learn()
@@ -75,8 +73,8 @@ class test_route_all(unittest.TestCase):
         f = Routing(device=self.device)
 
         # Get outputs
-        f.maker.outputs[ShowIpRoute] = {'': {}}
-        f.maker.outputs[ShowIpv6Route] = {'': {}}
+        f.maker.outputs[ShowIpRoute] = {"{'vrf':'all'}": {}}
+        f.maker.outputs[ShowIpv6Route] = {"{'vrf':'all'}": {}}
 
         # Learn the feature
         f.learn()

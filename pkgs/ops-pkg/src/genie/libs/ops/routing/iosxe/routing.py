@@ -11,14 +11,22 @@ class Routing(Base):
 
     def learn(self):
         '''Learn Routing object'''
-
-        # get vrf list        
+        
+        # get vrf list
         self.add_leaf(cmd=ShowVrfDetail,
                       src='',
                       dest='list_of_vrfs',
                       action=lambda x: list(x.keys()))
+        # when show vrf details return nothing
+        # initial vrf list
+        try:
+            self.make()
+        except Exception:
+            self.list_of_vrfs = []
 
-        self.make()
+        # incase attribtues are specified that show vrf won't be executed
+        if not hasattr(self, 'list_of_vrfs'):
+            self.list_of_vrfs = []
 
         # loop for vrfs
         for vrf in self.list_of_vrfs + ['default']:

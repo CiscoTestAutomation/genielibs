@@ -159,7 +159,7 @@ class Restore(object):
                 # delete the archive file
                 dialog = Dialog([
                     Statement(pattern=r'Delete filename.*',
-                              action='sendline(y)',
+                              action='sendline()',
                               loop_continue=True,
                               continue_timer=False),
                     Statement(pattern=r'Do you want to delete.*',
@@ -167,11 +167,11 @@ class Restore(object):
                               loop_continue=True,
                               continue_timer=False),
                     Statement(pattern=r'Delete {}.*'.format(location),
-                              action='sendline(y)',
+                              action='sendline()',
                               loop_continue=True,
                               continue_timer=False),
                     Statement(pattern=r'\[confirm\]',
-                              action='sendline(y)',
+                              action='sendline()',
                               loop_continue=True,
                               continue_timer=False),
                     ])

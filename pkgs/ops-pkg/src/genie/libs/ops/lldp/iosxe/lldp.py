@@ -25,7 +25,7 @@ class Lldp(Base):
             return False
 
     def learn(self):
-        '''Learn Spanning-tree Ops'''
+        '''Learn lldp Ops'''
         
         ########################################################################
         #                               info

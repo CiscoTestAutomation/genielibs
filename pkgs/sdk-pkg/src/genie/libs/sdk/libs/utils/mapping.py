@@ -168,6 +168,12 @@ class Mapping(object):
 
         # Loop over each requirement
         all_requirements = []
+
+        # store hardcode values if provided
+        # pop out the provided_values to leave the ops path only
+        provided_values = self.requirements.pop('provided_values') \
+            if 'provided_values' in self.requirements else {}
+
         for base, requirements in self.requirements.items():
             name = base.split('.')[-1]
 
@@ -201,6 +207,11 @@ class Mapping(object):
 
             with steps.start('Verifying requirements') as step:
 
+                # print out the log to show which are the hardcode values
+                if provided_values:
+                    log.info('Updating the requirements with the information provided: {}'
+                        .format(provided_values))
+
                 reqs = requirements['requirements']
 
                 if not any(isinstance(el, list) for el in reqs[0]):
@@ -214,17 +225,35 @@ class Mapping(object):
 
                 for reqs in reqs_list:
                     # Needed for [[ ]] requirements
+
                     if isinstance(reqs[0], list):
                         all_requirements.extend(reqs)
                     req_msg = '\n'.join([str(re) for re in reqs])
                     log.info("Requirements pattern to "
                              "verify:\n{r}\n\n".format(r=req_msg))
 
+                    # To populate the path first with hardcode values
+                    # to only store the attributes that contains the hardcoded values
+                    reqs = self._populate_path(reqs, device, keys=[provided_values])
+
                     # Populate the keys into R object
                     # Useful if want to learn from previously learnt requirements
                     reqs = self._populate_path(reqs, device, keys=self.keys, device_only=True)
 
                     all_keys = requirements.get('all_keys', False)
+
+                    # Check if the requirements is [Operator('info')]
+                    # if so, it will check if the ops output is empty
+                    # TODO - this particular case will be enhanced in find
+                    expect_empty = False
+                    for i in reqs:
+                        if len(i) < 2:
+                            attr = i[0] if isinstance(i[0], str) else i[0].value
+                            if not hasattr(o, attr):
+                                expect_empty = True
+                                step.passed('The ops attribute {} is empty as expected'
+                                    .format(attr))
+
                     rs = [R(requirement) for requirement in reqs]
 
                     if not isinstance(o, list):
@@ -254,8 +283,16 @@ class Mapping(object):
                         self.keys = temp_keys.copy()
 
         with steps.start('Merge requirements') as step:
+            # update the self.keys with hardcode values for following needs
+            if not self.keys:
+                self.keys.append(provided_values)
+            else:
+                for item in self.keys:
+                    item.update(provided_values)
+
             self.keys = GroupKeys.max_amount(self.keys, self.num_values)
             req = self._populate_path(all_requirements, device, keys=self.keys)
+
             if not req:
                 step.skipped('Could not merge the requirements '
                              'together\n{k}'.format(k=self.keys))
@@ -268,10 +305,14 @@ class Mapping(object):
             # Search if any regex remaining.
             for item in ret_reqs:
                 for elem in item:
-                    if isinstance(elem, str) and elem.startswith('(?P<'):
+                    # expect_empty useage reason:
+                    # When requirements is [Operator('info')]
+                    # the ops output is empty, the full path won't be populated
+                    # it could contain ('(?P<'), in this case pass the step
+                    # TODO - will remove expect_empty when find is enhanced
+                    if isinstance(elem, str) and elem.startswith('(?P<') and not expect_empty:
                         step.skipped('Could not satisfy all requirement\n{k}'
                                          .format(k=self.keys))
-
 
         return self._ops_ret
 
@@ -425,19 +466,34 @@ class Mapping(object):
         # Requirement to verify for a specific Ops object
         for obj, requirements in self._verify_ops_dict.items():
             name = obj.split('.')[-1]
+            # reset the missing depending on settings from trigger mapping file
+            # when attributes missing when doing triggers using the verify_ops
+            # in this, users don't have to overwrite the subsection
+            missing = missing if 'missing' not in requirements else requirements['missing']
             with steps.start("Verifying '{n}' state with {obj}"
                              .format(n=name, obj=obj)) as step:
                 # Create attrgetter for abstract which would find the right obj
                 # object
                 abstracted_obj = attrgetter(obj)(abstract)
 
+                # seperate callable path and list path
+                reqs = {}
+                reqs['list'] = []
+                reqs['callable'] = []
+                for item in requirements['requirements']:
+                    if callable(item[0]):
+                        reqs['callable'].append(item)
+                    elif isinstance(item[0], str):
+                        reqs['list'].append(item)
+
                 # Instantiate the abstracted Ops object
                 kwargs = self._populate_kwargs(device, requirements)
-                reqs = self._populate_path(requirements['requirements'], device, self.keys)
+                reqs['list'] = self._populate_path(reqs['list'], device, self.keys)
 
-                msg = '\n'.join([str(re) for re in reqs])
-                log.info("Verifying that the following requirements "
-                         "are satisfied\n{rs}".format(rs=msg))
+                msg = '\n'.join([str(re) for re in reqs['list']])
+                log.info("Verifying the following requirements "
+                         "are {condition}\n{rs}".format(rs=msg,
+                            condition='not presented' if missing else 'satisfied'))
 
                 if not kwargs:
                     try:
@@ -491,7 +547,7 @@ class Mapping(object):
 
         # Make sure that configured path is correctly configured
         try:
-            self._verify_finds_ops(ops=o[0], requirements=reqs,
+            self._verify_finds_ops(ops=o[0], requirements=reqs['list'],
                                    missing=missing, obj_mod=ops,
                                    org_req=requirements)
         except ValueError as e:
@@ -502,9 +558,11 @@ class Mapping(object):
                             "{e}".format(e=e))
 
     def _verify_ops(self, device, o, reqs, missing, ops, requirements):
+
+        # verify the ops paths values
         try:
             o.learn_poll(verify=self._verify_finds_ops,
-                         requirements=reqs,
+                         requirements=reqs['list'],
                          timeout=self.timeout,
                          missing=missing,
                          obj_mod=ops,
@@ -514,6 +572,16 @@ class Mapping(object):
             self.verify_ops_object = o
         except Exception as e:
             raise e
+
+        # verify callable if requirements path
+        # contains customized verify functions
+        if reqs.get('callable', None):
+            for item in reqs['callable']:
+                try:
+                    o.learn_poll(verify=item[0].func,
+                                 timeout=self.timeout, **item[0].keywords)
+                except Exception as e:
+                    raise e
 
     def _modify_ops_snapshot(self, original, current, path):
         # First does path exists in original, except the value
@@ -549,7 +617,7 @@ class Mapping(object):
         if _cur_path is None:
             _cur_path = []
 
-        if device_only and not keys:
+        if device_only or not keys:
             # Just so it goes through the loop below
             keys = [None]
 
@@ -568,6 +636,18 @@ class Mapping(object):
                             item = item(self.keys)
                         if item == '{uut}' or\
                            hasattr(item, 'value') and item.value == '{uut}':
+                            loc.append(device.name)
+                        else:
+                            loc.append(item)
+                        continue
+
+                    if not key:
+                        if isinstance(item, Operator):
+                            loc.append(item)
+                            continue
+
+                        if item == '{uut}' or\
+                           (hasattr(item, 'value') and item.value == '{uut}'):
                             loc.append(device.name)
                         else:
                             loc.append(item)
@@ -763,6 +843,7 @@ class Mapping(object):
 
     def _config(self, conf_obj, configures, device, name_,
                 unconfig=False, one_to_many=None, standard_keys=None):
+        paths = []
         if 'requirements' in configures:
             # Take the path and populate the keys if possible
             paths = self._path_population(configures['requirements'], device,

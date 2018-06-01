@@ -428,3 +428,181 @@ TriggerReloadMember:
     devices:
       uut:
         None
+
+TriggerShutNoShutNativeIpv4SviInterface:
+   groups: ['interface', 'xe_sanity']
+   timeout:
+      max_time: 180
+      interval: 10
+   devices:
+       uut: None
+
+TriggerShutNoShutIpv4SviInterface:
+   groups: ['interface', 'xe_sanity']
+   timeout:
+      max_time: 180
+      interval: 10
+   devices:
+       uut: None
+
+TriggerModifyPvstDesgToRoot:
+    groups: ['stp', 'xe_sanity']
+    timeout:
+       max_time: 240
+       interval: 20
+    timeout_recovery:
+       max_time: 90
+       interval: 20
+    method: 'checkpoint'
+    devices:
+        uut: None
+
+TriggerModifyRapidPvstDesgToRoot:
+    groups: ['stp', 'xe_sanity']
+    timeout:
+       max_time: 240
+       interval: 20
+    timeout_recovery:
+       max_time: 90
+       interval: 20
+    method: 'checkpoint'
+    devices:
+        uut: None
+
+TriggerAddRemoveIpv4StaticRoutes:
+    groups: ['interface', 'xe_sanity']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 10
+    devices:
+       uut: None
+
+TriggerAddRemoveIpv6StaticRoutes:
+    groups: ['interface', 'xe_sanity']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 10
+    devices:
+       uut: None
+
+TriggerAddRemoveEthernetMacAcl:
+   groups: ['stp', 'xe_sanity']
+   timeout:
+      max_time: 180
+      interval: 10
+   timeout_recovery:
+      max_time: 90
+      interval: 10
+   method: 'checkpoint'
+   devices:
+       uut: None
+
+TriggerAddRemoveEthernetIpAclPermit:
+   groups: ['stp', 'xe_sanity']
+   timeout:
+      max_time: 180
+      interval: 10
+   timeout_recovery:
+      max_time: 90
+      interval: 10
+   method: 'checkpoint'
+   devices:
+       uut: None
+
+TriggerAddRemoveEthernetIpAclDeny:
+   groups: ['stp', 'xe_sanity']
+   timeout:
+      max_time: 180
+      interval: 10
+   timeout_recovery:
+      max_time: 90
+      interval: 10
+   method: 'checkpoint'
+   devices:
+       uut: None
+
+TriggerAddRemoveVlanIpAclPermit:
+   groups: ['stp', 'xe_sanity']
+   timeout:
+      max_time: 180
+      interval: 10
+   timeout_recovery:
+      max_time: 90
+      interval: 10
+   method: 'checkpoint'
+   devices:
+       uut: None
+
+# peer is the alias of uut's peer device
+TriggerModifyLldpTimer:
+   groups: ['stp', 'xe_sanity']
+   timeout:
+      max_time: 60
+      interval: 10
+   timeout_recovery:
+      max_time: 60
+      interval: 10
+   method: 'checkpoint'
+   devices:
+       uut: None
+
+TriggerAddRemoveTrunkEtherchannelLacp:
+    groups: ['interface', 'xe_sanity']
+    method: 'checkpoint'
+    timeout:
+      max_time: 240
+      interval: 20
+    timeout_recovery:
+      max_time: 120
+      interval: 20
+    devices:
+       uut: None
+
+TriggerAddRemoveAccessEtherchannelPagp:
+    groups: ['interface', 'xe_sanity']
+    method: 'checkpoint'
+    timeout:
+      max_time: 200
+      interval: 20
+    timeout_recovery:
+      max_time: 120
+      interval: 20
+    devices:
+       uut: None
+
+TriggerAddRemoveL3EtherchannelPagp:
+    groups: ['interface', 'xe_sanity']
+    method: 'checkpoint'
+    timeout:
+      max_time: 80
+      interval: 20
+    timeout_recovery:
+      max_time: 120
+      interval: 20
+    devices:
+       uut: None
+       
+TriggerShutNoShutDot1xInterface:
+    groups: ['interface', 'xe_sanity']
+    timeout:
+      max_time: 120
+      interval: 10
+    timeout_recovery:
+      max_time: 60
+      interval: 10
+    devices:
+       uut: None
+
+TriggerModifyDot1xUserCredential:
+    groups: ['interface', 'xe_sanity']
+    method: 'archive'
+    timeout:
+      max_time: 90
+      interval: 10
+    timeout_recovery:
+      max_time: 60
+      interval: 10
+    devices:
+       uut: None

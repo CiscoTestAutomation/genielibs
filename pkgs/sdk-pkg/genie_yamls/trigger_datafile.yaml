@@ -633,11 +633,25 @@ TriggerShutNoShutHsrpIpv6VlanInterface:
       pkg: genie.libs.sdk
       class: triggers.shutnoshut.interface.shutnoshut.TriggerShutNoShutHsrpIpv6VlanInterface
 
+TriggerShutNoShutNativeIpv4SviInterface:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.shutnoshut.interface.shutnoshut.TriggerShutNoShutNativeIpv4SviInterface
+
+TriggerShutNoShutIpv4SviInterface:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.shutnoshut.interface.shutnoshut.TriggerShutNoShutIpv4SviInterface
+
+TriggerShutNoShutDot1xInterface:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.shutnoshut.interface.shutnoshut.TriggerShutNoShutDot1xInterface
+
 TriggerShutNoShutNveOverlayInterface:
     source:
       pkg: genie.libs.sdk
       class: triggers.shutnoshut.interface.shutnoshut.TriggerShutNoShutNveOverlayInterface
-
 
 # ------
 # MODIFY
@@ -1171,6 +1185,118 @@ TriggerReloadOirEdge:
         pkg: genie.libs.sdk
         class: triggers.ha.reload.reload.TriggerReloadOirEdge
 
+# ==============================================================================
+#                               XE SANITY
+# ==============================================================================
+
+TriggerCheckCommands:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.xe_sanity.checkcommands.checkcommands.TriggerCheckCommands
+
+
+# ==============================================================================
+#                               SPANNING TREE
+# ==============================================================================
+# -----------
+# MODIFY
+# -----------
+
+TriggerModifyPvstDesgToRoot:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.modify.stp.modify.TriggerModifyPvstDesgToRoot
+
+TriggerModifyRapidPvstDesgToRoot:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.modify.stp.modify.TriggerModifyRapidPvstDesgToRoot
+
+# ==============================================================================
+#                               STATIC ROUTING
+# ==============================================================================
+# -----------
+# ADD-REMOVE
+# -----------
+TriggerAddRemoveIpv4StaticRoutes:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.routing.addremove.TriggerAddRemoveIpv4StaticRoutes
+
+TriggerAddRemoveIpv6StaticRoutes:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.routing.addremove.TriggerAddRemoveIpv6StaticRoutes
+
+# ==============================================================================
+#                               ACCESS LIST
+# ==============================================================================
+# -----------
+# ADD-REMOVE
+# -----------
+TriggerAddRemoveEthernetMacAcl:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.acl.addremove.TriggerAddRemoveEthernetMacAcl
+      
+TriggerAddRemoveEthernetIpAclPermit:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.acl.addremove.TriggerAddRemoveEthernetIpAclPermit
+      
+TriggerAddRemoveEthernetIpAclDeny:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.acl.addremove.TriggerAddRemoveEthernetIpAclDeny
+      
+TriggerAddRemoveVlanIpAclPermit:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.acl.addremove.TriggerAddRemoveVlanIpAclPermit
+
+# ==============================================================================
+#                               LLDP
+# ==============================================================================
+# -----------
+# MODIFY
+# -----------
+TriggerModifyLldpTimer:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.modify.lldp.modify.TriggerModifyLldpTimer
+
+# ==============================================================================
+#                               LAG
+# ==============================================================================
+# -----------
+# ADD-REMOVE
+# -----------
+TriggerAddRemoveTrunkEtherchannelLacp:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.lag.addremove.TriggerAddRemoveTrunkEtherchannelLacp
+
+TriggerAddRemoveAccessEtherchannelPagp:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.lag.addremove.TriggerAddRemoveAccessEtherchannelPagp
+
+TriggerAddRemoveL3EtherchannelPagp:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.lag.addremove.TriggerAddRemoveL3EtherchannelPagp
+
+
+# ==============================================================================
+#                               DOT1X
+# ==============================================================================
+# ------
+# MODIFY
+# ------
+TriggerModifyDot1xUserCredential:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.dot1x.modify.TriggerModifyDot1xUserCredential
 
 # =========================================================
 #                   FEATURE: ROUTING
@@ -1188,5 +1314,3 @@ TriggerClearIpv6RouteVrfAll:
     source:
       pkg: genie.libs.sdk
       class: triggers.clear.routing.clear.TriggerClearIpv6RouteVrfAll
-
-

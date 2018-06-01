@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 # parser
 from genie.libs.parser.iosxe.show_platform import ShowVersion, ShowRedundancy
 
-def save_device_information(device):
+def save_device_information(device, **kwargs):
     """Check boot variable from show version and show reedundancy
     to see if they are consistent. Configure boot var if not same,
     and save running-configuration to startup-config.

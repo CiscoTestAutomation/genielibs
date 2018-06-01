@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 
 # Trigger required data settings
 # Which key to exclude for Platform Ops comparison
-platform_exclude = ['maker', 'main_mem', 'switchover_reason',
+platform_exclude = ['maker', 'main_mem', 'switchover_reason', 'issu',
                     'sn', 'config_register', 'rp_uptime', 'chassis_sn']
 
 
@@ -102,16 +102,16 @@ class TriggerSwitchover(CommonSwitchover):
                     priority_list = sorted(priority_dict.items(), key=lambda x: x[1])
 
                     # update the verify_ops requirements
-                    for ops, requirements in self.mapping._verify_ops.items():
+                    for ops, requirements in self.mapping._verify_ops_dict.items():
                         if 'platform' in ops:
-                            self.mapping._verify_ops[ops]['requirements'].append(
+                            self.mapping._verify_ops_dict[ops]['requirements'].append(
                                 ['slot', 'rp', '{}'.format(priority_list[-1][0]),
                                  'swstack_role', 'Standby'])
                 else:                    
                     # update the verify_ops requirements
-                    for ops, requirements in self.mapping._verify_ops.items():
+                    for ops, requirements in self.mapping._verify_ops_dict.items():
                         if 'platform' in ops:
-                            self.mapping._verify_ops[ops]['requirements'].append(
+                            self.mapping._verify_ops_dict[ops]['requirements'].append(
                                 ['slot', 'rp', '(?P<members>.*)',
                                  'swstack_role', '(Standby|Member)'])
         except Exception as e:
