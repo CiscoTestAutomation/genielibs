@@ -33,7 +33,10 @@ URL = _EXTERNAL_URL if is_devnet_build() else _INTERNAL_URL
 # compute version range
 version, version_range = version_info('src', 'genie', 'libs', 'robot', '__init__.py')
 
-install_requires = ['robotframework', 'ats.robot']
+if is_devnet_build():
+    install_requires = ['robotframework', 'pyats.robot']
+else:
+    install_requires = ['robotframework', 'ats.robot']
 
 # launch setup
 setup(
