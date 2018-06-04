@@ -527,7 +527,7 @@ class GenieRobot(object):
             if failed:
                 msg = ["Comparison between {pts} and "
                        "{OPS} is different for feature '{f}' "
-                       "for device:\n".format(pts=compare1, OPS=compare2, f=fet)]
+                       "for device:\n".format(pts=pts, OPS=pts_compare, f=fet)]
                 for device, diff in failed:
                     msg.append("'{d}'\n{diff}".format(d=device,
                                                       diff=diff))
@@ -535,8 +535,8 @@ class GenieRobot(object):
                 self.builtin.fail('\n'.join(msg))
             else:
                 msg = ["Comparison between {pts} and "
-                       "{OPS} is identical\n".format(pts=compare1,
-                        OPS=compare2)]
+                       "{OPS} is identical\n".format(pts=pts,
+                        OPS=pts_compare)]
 
                 self.builtin.pass_execution('\n'.join(msg))
 
