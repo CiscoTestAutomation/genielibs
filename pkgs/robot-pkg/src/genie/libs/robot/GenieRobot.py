@@ -426,20 +426,20 @@ class GenieRobot(object):
                                                                      f=count ))
 
     @keyword('Profile the system for "${feature:[^"]+}" on devices '
-             '"${device:[^"]+}" at "${location:[^"]+}"')
-    def profile_system(self, feature, device, location):
+             '"${device:[^"]+}" as "${name:[^"]+}"')
+    def profile_system(self, feature, device, name):
         '''Profile system as per the provided features on the devices
         '''
         return self._profile_the_system(feature=feature,
                                         device=device,
                                         context='cli',
-                                        location=location,
+                                        name=name,
                                         alias=None)
 
     @keyword('Profile the system for "${feature:[^"]+}" on devices '
-             '"${device:[^"]+}" at "${location:[^"]+}" '
+             '"${device:[^"]+}" as "${name:[^"]+}" '
              'using alias "${alias:[^"]+}"')
-    def profile_system_alias(self, feature, device, location, alias=None):
+    def profile_system_alias(self, feature, device, name, alias=None):
         '''Profile system as per the provided features on the devices
            filtered using alias
         '''
@@ -455,10 +455,10 @@ class GenieRobot(object):
         return self._profile_the_system(feature=feature,
                                         device=device,
                                         context='cli',
-                                        location=location,
+                                        name=name,
                                         alias=alias)
 
-    def _profile_the_system(self, feature, device, context, location, alias):
+    def _profile_the_system(self, feature, device, context, name, alias):
         '''Profile system as per the provided features on the devices
         '''
         profiled = {}
@@ -478,10 +478,14 @@ class GenieRobot(object):
 
                 profiled[fet][dev] = learnt_feature
 
-        if os.path.isdir(location):
-            self.testscript.pickle(profiled, location)
+
+        if os.path.isdir(os.path.dirname(name)):
+            # the user provided a file to save as pickle
+            pickle_file = self.testscript.pickle(profiled, file = name)
+            log.info('Saved system profile as file: %s' % pickle_file)
         else:
-            self.testscript.parameters[location] = profiled
+            self.testscript.parameters[name] = profiled
+            log.info('Saved system profile as variable %s' % name)
 
     @keyword('Compare profile "${pts:[^"]+}" with "${pts_compare:[^"]+}" on '
              'devices "${devices:[^"]+}"')
