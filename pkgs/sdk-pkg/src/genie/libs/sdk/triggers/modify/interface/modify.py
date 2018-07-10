@@ -16,7 +16,7 @@ interface_exclude = ['maker', 'last_change','in_rate','in_rate_pkts',
                      'in_pkts', 'in_unicast_pkts', 'out_octets',
                      'out_pkts', 'out_unicast_pkts', 'out_multicast_pkts',
                      'in_multicast_pkts', 'last_clear', 'in_broadcast_pkts',
-                     'out_broadcast_pkts', 'in_discards']
+                     'out_broadcast_pkts', 'in_discards', 'accounting']
 
 
 class TriggerModifyEthernetMtu(TriggerModify):

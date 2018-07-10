@@ -14,13 +14,13 @@ from genie.libs.parser.iosxe.show_interface import ShowEtherchannelSummary
 class Interface(CommonInterface):
     '''Interface Genie Ops Object'''
 
-    def learn(self):
+    def learn(self, custom=None):
         '''Learn Interface Ops'''
         
         # ======================================================================
         #                           common keys
         # ======================================================================
-        super().learn()  
+        super().learn(custom)
 
         # switchport_enable   -- default values
         if hasattr(self, 'info'):

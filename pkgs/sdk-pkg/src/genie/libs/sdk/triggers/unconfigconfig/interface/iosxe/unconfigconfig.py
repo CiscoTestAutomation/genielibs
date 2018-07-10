@@ -17,7 +17,7 @@ interface_exclude = ['maker', 'last_change','in_rate','in_rate_pkts',
                      'in_multicast_pkts', 'last_clear', 'in_broadcast_pkts',
                      'out_broadcast_pkts', 'bandwidth', 'load_interval',
                      'port_speed', 'in_crc_errors', 'in_errors',
-                     'in_discards', '(Tunnel.*)']
+                     'in_discards', '(Tunnel.*)', 'accounting']
 
 
 

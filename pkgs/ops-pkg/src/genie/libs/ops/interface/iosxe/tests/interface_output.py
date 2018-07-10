@@ -954,9 +954,98 @@ class InterfaceOutput(object):
          }
     }
 
+    ShowInterfacesAccounting = {
+        "GigabitEthernet1/0/1": {
+            "accounting": {
+                "arp": {
+                    "chars_in": 4590030,
+                    "chars_out": 120,
+                    "pkts_in": 109280,
+                    "pkts_out": 2
+                },
+                "ip": {
+                    "chars_in": 2173570,
+                    "chars_out": 2167858,
+                    "pkts_in": 22150,
+                    "pkts_out": 22121
+                },
+                "ipv6": {
+                    "chars_in": 1944,
+                    "chars_out": 0,
+                    "pkts_in": 24,
+                    "pkts_out": 0
+                },
+                "other": {
+                    "chars_in": 5306164,
+                    "chars_out": 120,
+                    "pkts_in": 112674,
+                    "pkts_out": 2
+                }
+            }
+        },
+        "GigabitEthernet1/0/2": {
+            "accounting": {
+                "arp": {
+                    "chars_in": 5460,
+                    "chars_out": 5520,
+                    "pkts_in": 91,
+                    "pkts_out": 92
+                },
+                "ip": {
+                    "chars_in": 968690,
+                    "chars_out": 1148402,
+                    "pkts_in": 11745,
+                    "pkts_out": 10821
+                },
+                "ipv6": {
+                    "chars_in": 70,
+                    "chars_out": 0,
+                    "pkts_in": 1,
+                    "pkts_out": 0
+                },
+                "other": {
+                    "chars_in": 741524,
+                    "chars_out": 5520,
+                    "pkts_in": 3483,
+                    "pkts_out": 92
+                }
+            }
+        }
+    }
+
+    ShowInterfacesAccountingCustom = {
+        "GigabitEthernet1/0/1": {
+            "accounting": {
+                "arp": {
+                    "chars_in": 4590030,
+                    "chars_out": 120,
+                    "pkts_in": 109280,
+                    "pkts_out": 2
+                },
+                "ip": {
+                    "chars_in": 2173570,
+                    "chars_out": 2167858,
+                    "pkts_in": 22150,
+                    "pkts_out": 22121
+                },
+                "ipv6": {
+                    "chars_in": 1944,
+                    "chars_out": 0,
+                    "pkts_in": 24,
+                    "pkts_out": 0
+                },
+                "other": {
+                    "chars_in": 5306164,
+                    "chars_out": 120,
+                    "pkts_in": 112674,
+                    "pkts_out": 2
+                }
+            }
+        }
+    }
+
     InterfaceOpsOutput_info = {
         "Port-channel12": {
-            "switchport_enable": False,
             "type": "EtherChannel",
             "oper_status": "up",
             "mac_address": "0057.d228.1a02",
@@ -1006,7 +1095,6 @@ class InterfaceOutput(object):
             }
             },
         "Loopback0": {
-            "switchport_enable": False,
             "type": "Loopback",
             "oper_status": "up",
             "encapsulation": {
@@ -1040,7 +1128,6 @@ class InterfaceOutput(object):
             "delay": 5000
             },
         "Vlan211": {
-            'switchport_enable': False,
             "ipv6": {
                "2001:10::14:1/112": {
                     "ip": "2001:10::14:1",
@@ -1059,7 +1146,32 @@ class InterfaceOutput(object):
             }
             },
         "GigabitEthernet1/0/1": {
-            "switchport_enable": False,
+            "accounting": {
+              "arp": {
+                "chars_in": 4590030,
+                "chars_out": 120,
+                "pkts_in": 109280,
+                "pkts_out": 2
+              },
+              "ip": {
+                "chars_in": 2173570,
+                "chars_out": 2167858,
+                "pkts_in": 22150,
+                "pkts_out": 22121
+              },
+              "ipv6": {
+                "chars_in": 1944,
+                "chars_out": 0,
+                "pkts_in": 24,
+                "pkts_out": 0
+              },
+              "other": {
+                "chars_in": 5306164,
+                "chars_out": 120,
+                "pkts_in": 112674,
+                "pkts_out": 2
+              }
+            },
             "type": "Gigabit Ethernet",
             "oper_status": "down",
             "ipv4": {
@@ -1150,7 +1262,32 @@ class InterfaceOutput(object):
             }
             },
         "GigabitEthernet1/0/2": {
-            "switchport_enable": False,
+            "accounting": {
+              "arp": {
+                "chars_in": 5460,
+                "chars_out": 5520,
+                "pkts_in": 91,
+                "pkts_out": 92
+              },
+              "ip": {
+                "chars_in": 968690,
+                "chars_out": 1148402,
+                "pkts_in": 11745,
+                "pkts_out": 10821
+              },
+              "ipv6": {
+                "chars_in": 70,
+                "chars_out": 0,
+                "pkts_in": 1,
+                "pkts_out": 0
+              },
+              "other": {
+                "chars_in": 741524,
+                "chars_out": 5520,
+                "pkts_in": 3483,
+                "pkts_out": 92
+              }
+            },
             "type": "Gigabit Ethernet",
             "oper_status": "up",
             "mac_address": "0057.d228.1a02",
@@ -1195,7 +1332,6 @@ class InterfaceOutput(object):
             "bandwidth": 1000000
             },
         "Vlan100": {
-            "switchport_enable": False,
             "type": "Ethernet SVI",
             "oper_status": "up",
             "ipv4": {
@@ -1238,7 +1374,6 @@ class InterfaceOutput(object):
             "bandwidth": 1000000
             },
         "GigabitEthernet0/0": {
-            "switchport_enable": False,
             "ipv4": {
                "10.1.8.134/24": {
                     "secondary": False,
@@ -1249,7 +1384,6 @@ class InterfaceOutput(object):
             "vrf": "Mgmt-vrf"
             },
         "GigabitEthernet3": {
-            "switchport_enable": False,
             "type": "CSR vNIC",
             "oper_status": "up",
             "ipv4": {
@@ -1305,25 +1439,4 @@ class InterfaceOutput(object):
                "encapsulation": "arpa"
             }
         },
-        "Port-channel2": {
-              "port_channel": {
-                   "port_channel_member": True,
-                   "port_channel_member_intfs": [
-                        "GigabitEthernet0/0/0",
-                        "GigabitEthernet0/0/1"
-                   ]
-              },
-         },
-         "GigabitEthernet0/0/0": {
-              "port_channel": {
-                   "port_channel_member": True,
-                   "port_channel_int": "Port-channel2"
-              },
-         },
-         "GigabitEthernet0/0/1": {
-              "port_channel": {
-                   "port_channel_member": True,
-                   "port_channel_int": "Port-channel2"
-              },
-         }
     }

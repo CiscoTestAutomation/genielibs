@@ -1,7 +1,7 @@
-'''IOSXE implementation of ManagemntInterface class'''
+'''IOSXE implementation of ManagementInterface class'''
 
 # parser
-from genie.libs.parser.iosxe.show_interface import ShowInterfaces
+from genie.libs.parser.iosxe.show_interface import ShowIpInterfaceBriefPipeIp
 
 # ManagementInterface
 from ..management_interface import ManagementInterface as ManagementInterface_main
@@ -47,11 +47,9 @@ class ManagementInterface(ManagementInterface_main):
 
         """
 
-        # Calling parser
-        parser_obj = ShowInterfaces(device=device)
-        parsed_output = parser_obj.parse()
+        # Create parser object
+        parser_obj = ShowIpInterfaceBriefPipeIp(device=device)
 
-        # Get the corresponding interface name
-        interface_name = self.parse_the_name(ipaddress, parsed_output)
+        intf_name = super().get_interface_name(ipaddress, parser_obj)
 
-        return interface_name
+        return intf_name

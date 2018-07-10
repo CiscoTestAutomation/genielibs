@@ -217,6 +217,14 @@ Verify_Interfaces:
   iteration:
     attempt: 5
     interval: 10
+Verify_InterfacesAccounting:
+  devices:
+    uut: None
+  exclude:
+  - pkts_in
+  - pkts_out
+  - chars_in
+  - chars_out
 Verify_InterfacesSwitchport:
   devices:
     uut: None

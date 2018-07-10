@@ -1,7 +1,7 @@
-'''NXOS implementation of ManagemntInterface class'''
+'''NXOS implementation of ManagementInterface class'''
 
 # parser
-from genie.libs.parser.nxos.show_interface import ShowInterface
+from genie.libs.parser.nxos.show_interface import ShowIpInterfaceBriefVrfAll
 
 # ManagementInterface
 from ..management_interface import ManagementInterface as ManagementInterface_main
@@ -47,11 +47,9 @@ class ManagementInterface(ManagementInterface_main):
 
         """
 
-        # Calling parser
-        parser_obj = ShowInterface(device=device)
-        parsed_output = parser_obj.parse()
+        # Create parser object
+        parser_obj = ShowIpInterfaceBriefVrfAll(device=device)
 
-        # Get the corresponding interface name
-        interface_name = self.parse_the_name(ipaddress, parsed_output)
+        intf_name = super().get_interface_name(ipaddress, parser_obj)
 
-        return interface_name
+        return intf_name

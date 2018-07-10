@@ -3593,7 +3593,8 @@ class NamedTunnelTeInterface(NamedTunnelInterface, TunnelTeInterface, genie.libs
         super().__init__(*args, **kwargs)
 
 
-class BundleInterface(VirtualInterface, genie.libs.conf.interface.AggregatedInterface):
+class BundleInterface(VirtualInterface, genie.libs.conf.interface.AggregatedInterface,
+    genie.libs.conf.interface.LagInterface):
 
     _interface_name_number_range = range(1, 65535 + 1)
 
@@ -3640,6 +3641,26 @@ class BundleInterface(VirtualInterface, genie.libs.conf.interface.AggregatedInte
 
         # iosxr: interface {name} / mlacp port-priority 1
         configurations.append_line(attributes.format('mlacp port-priority {mlacp_port_priority}'))
+
+        # iosxr: interface {name} / bfd address-family ipv4 destination 5.0.0.97
+        configurations.append_line(attributes.format('bfd address-family ipv4 destination {lag_bfd_v4_destination}'))
+
+        # iosxr: interface {name} / bfd address-family ipv4 fast-detect
+        if attributes.value('lag_bfd_v4_fast_detect'):
+            configurations.append_line(attributes.format('bfd address-family ipv4 fast-detect'))
+
+        # iosxr: interface {name} / bfd address-family ipv4 minimum-interval 100
+        configurations.append_line(attributes.format('bfd address-family ipv4 minimum-interval {lag_bfd_v4_min_interval}'))
+
+        # iosxr: interface {name} / bfd address-family ipv6 destination 5.0.0.97
+        configurations.append_line(attributes.format('bfd address-family ipv6 destination {lag_bfd_v6_destination}'))
+
+        # iosxr: interface {name} / bfd address-family ipv6 fast-detect
+        if attributes.value('lag_bfd_v6_fast_detect'):
+            configurations.append_line(attributes.format('bfd address-family ipv6 fast-detect'))
+
+        # iosxr: interface {name} / bfd address-family ipv6 minimum-interval 100
+        configurations.append_line(attributes.format('bfd address-family ipv6 minimum-interval {lag_bfd_v6_min_interval}'))
 
         # iosxr: interface {name} / mlacp switchover ... TODO
 

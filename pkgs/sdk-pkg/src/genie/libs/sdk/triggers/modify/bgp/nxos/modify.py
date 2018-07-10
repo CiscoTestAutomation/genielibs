@@ -777,6 +777,7 @@ class TriggerModifyBgpNeighborPassword(TriggerModify):
                         'requirements':[\
                             ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'password_text', '(?P<password_text>.*)'],
                             ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'session_state', 'established'],
+                            ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'address_family', '(?P<address_family>.*)', 'session_state', 'established'],
                             ['info', 'instance', '(?P<instance>.*)', 'bgp_id', '(?P<bgp_id>.*)']],
                         'all_keys': True,
                         'kwargs':{'attributes':['info']},
@@ -791,11 +792,11 @@ class TriggerModifyBgpNeighborPassword(TriggerModify):
                     'ops.bgp.bgp.Bgp':{
                         'requirements':[\
                             ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'session_state', 'idle'],
+                            ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'address_family', '(?P<address_family>.*)', 'session_state', 'idle'],
                             ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'password_text', 'set (disabled)']],
                         'kwargs':{'attributes':['info']},
                         'exclude': bgp_exclude}},
                 num_values={'instance':1, 'vrf':1, 'neighbor':1})
-
 
 
 class TriggerModifyBgpVpnRd(TriggerModify):

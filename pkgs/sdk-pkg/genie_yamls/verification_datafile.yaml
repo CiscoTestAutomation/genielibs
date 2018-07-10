@@ -887,6 +887,13 @@ Verify_Interfaces:
   context: cli
   source:
     class: genie.harness.base.Template
+Verify_InterfacesAccounting:
+  cmd:
+    class: show_interface.ShowInterfacesAccounting
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
 Verify_InterfacesDetail:
   cmd:
     class: show_interface.ShowInterfacesDetail

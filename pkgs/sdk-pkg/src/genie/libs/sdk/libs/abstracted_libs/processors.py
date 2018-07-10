@@ -149,7 +149,7 @@ def learn_free_interfaces(section, configs):
                 conf['config'] = conf['config'].format(intf=peer_intf)
                 conf['unconfig'] = conf['unconfig'].format(intf=peer_intf)
 
-def load_config_precessor(section, configs, unconfig=False):
+def load_config_precessor(section, configs, unconfig=False, sleep=None):
     '''load configuration prepostprocessor
 
     Can be controlled via sections parameters which is provided by the
@@ -161,6 +161,7 @@ def load_config_precessor(section, configs, unconfig=False):
         configs (`dict`) : Contains the configuration file location
         unconfig (`bool`) : True when apply the unconfigurations
                             Default as False
+        sleep (`int`) : Sleep time after unconfiguration.
 
     Returns:
         AETEST results
@@ -266,32 +267,9 @@ def load_config_precessor(section, configs, unconfig=False):
                              "seconds for waiting system is stable "
                              "after loading the configuration".format(s=conf['sleep']))
                     time.sleep(conf['sleep'])
-
-
-def load_unconfig_precessor(section, configs, unconfig=False, sleep=None):
-    '''load_unconfig_precessor prepostprocessor. Will remove the configuration
-
-    Can be controlled via sections parameters which is provided by the
-    triggers/verification datafile
-
-    Args:
-      Mandatory:
-        section (`obj`): Aetest Subsection object.
-        configs (`dict`) : Contains the configuration file location
-        unconfig (`bool`) : True when apply the unconfigurations
-                            Default as False
-        sleep (`int`) : Sleep time after unconfiguration.
-
-    Returns:
-        AETEST results
-
-
-    Raises:
-        None
-
-    '''
-    load_config_precessor(section, configs, unconfig=True)
-    time.sleep(sleep) if sleep else None
+        # extral sleep if sleep in config file is not enough
+        # can change it from trigger yaml
+        time.sleep(sleep) if sleep else None
 
 
 def ping_devices(section, ping_parameters, expect_result='passed'):

@@ -2426,6 +2426,7 @@ class BgpOutput(object):
                                 {'address_family': 
                                     {'ipv4 unicast': 
                                         {'bgp_table_version': 21,
+                                         'session_state': 'idle',
                                          'soo': 'SOO:100:100'}},
                                 'bgp_negotiated_keepalive_timers': 
                                     {'hold_time': 180,
@@ -2525,9 +2526,11 @@ class BgpOutput(object):
                                         'maximum_prefix_max_prefix_no': 300000,
                                         'route_map_name_in': 'genie_redistribution',
                                         'route_map_name_out': 'genie_redistribution',
+                                        'session_state': 'established',
                                         'send_community': 'both'},
                                     'vpnv6 unicast': 
                                         {'bgp_table_version': 10,
+                                        'session_state': 'established',
                                         'send_community': 'both'}},
                                 'bgp_negotiated_capabilities': 
                                     {'dynamic_capability': 'advertised '
@@ -2654,6 +2657,7 @@ class BgpOutput(object):
                                         'route_map_name_in': 'test-map',
                                         'route_map_name_out': 'test-map',
                                         'send_community': 'both',
+                                        'session_state': 'shut (admin)',
                                         'soft_configuration': True}},
                                 'bgp_negotiated_keepalive_timers': 
                                     {'hold_time': 45,

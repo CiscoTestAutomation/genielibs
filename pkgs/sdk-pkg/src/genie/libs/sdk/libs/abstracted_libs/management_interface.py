@@ -1,4 +1,8 @@
-'''ManagemntInterface class'''
+'''ManagementInterface class'''
+
+# metaparser
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
+
 
 class ManagementInterface(object):
     """ManagementInterface class
@@ -24,26 +28,33 @@ class ManagementInterface(object):
 
     """
 
-    def parse_the_name(self, ipaddress, output):
-        """Method to identify the interface name from the output dictionary
-        using the given ip address
+    def get_interface_name(self, ipaddress, parser_obj):
+        """Method to return the ip address corresponding interface name
 
         Args:
             ipaddress (`str`): connection ip address
-            output (`dict`): Dictionary of the parsed output
+            parser_obj (`obj`): Os specific parser object
 
         Returns:
             `str`: a `str` of the interface name
 
         Examples:
-            >>> interface_name = managment_interface_instance.\
-                parse_the_name(ipaddress, parsed_output)
+            >>> managment_interface_instance.\
+                get_interface_name(ipaddress, parser_obj)
 
         """
 
-        # Return the interface name whose ip matches the ip address
-        for intf, value in output.items():
-            if 'ipv4' in value.keys():
-            	for val in output[intf]['ipv4'].values():
-                    if 'ip' in val and val['ip'] in ipaddress:
-                        return intf
+        # Calling parser
+        try:
+            parsed_output = parser_obj.parse(ip=ipaddress)
+        except SchemaEmptyParserError:
+            # We are looping over all the ips provided in the testbed yaml file
+            # Show command output will be empty in some cases.
+            return None
+
+        # Get the corresponding interface name
+        for intf in parsed_output['interface'].keys():
+            # Parser structure only has one interface
+            interface_name = intf
+
+        return interface_name

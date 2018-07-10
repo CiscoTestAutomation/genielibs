@@ -7,14 +7,15 @@ from unittest.mock import Mock
 from ats.topology import Device
 
 # Genie
-from genie.libs.ops.interface.iosxe.asr1k.interface import Interface
-from genie.libs.ops.interface.iosxe.asr1k.tests.interface_output import InterfaceOutput
+from genie.libs.ops.interface.iosxe.interface import Interface
+from genie.libs.ops.interface.iosxe.tests.interface_output import InterfaceOutput
 
 # iosxe show_interface
 from genie.libs.parser.iosxe.show_interface import ShowInterfaces, \
                                         ShowEtherchannelSummary, \
                                         ShowIpInterface,  \
-                                        ShowIpv6Interface
+                                        ShowIpv6Interface, \
+                                        ShowInterfacesAccounting
                                         
 from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
 
@@ -28,7 +29,7 @@ class test_interface(unittest.TestCase):
         self.device.mapping['cli']='cli'
         # Give the device as a connection type
         # This is done in order to call the parser on the output provided
-        self.device.connectionmgr.connections['cli'] = self.device
+        self.device.connectionmgr.connections['cli'] = '5'
 
     def test_complete_output(self):
         self.maxDiff = None
@@ -49,9 +50,11 @@ class test_interface(unittest.TestCase):
         intf.maker.outputs[ShowVrfDetail] = \
             {'':InterfaceOutput.ShowVrfDetail}
 
+        intf.maker.outputs[ShowInterfacesAccounting] = \
+            {'':InterfaceOutput.ShowInterfacesAccounting}
+
         # Learn the feature
         intf.learn()
-
         # Verify Ops was created successfully
         self.assertEqual(intf.info, InterfaceOutput.InterfaceOpsOutput_info)
 
@@ -64,7 +67,8 @@ class test_interface(unittest.TestCase):
         intf.maker.outputs[ShowIpInterface] = {'':''}
         intf.maker.outputs[ShowIpv6Interface] = {'':''}
         intf.maker.outputs[ShowVrfDetail] = {'':''}
-        
+        intf.maker.outputs[ShowInterfacesAccounting] = {'':''}
+
         # Learn the feature
         intf.learn()
 
@@ -91,6 +95,9 @@ class test_interface(unittest.TestCase):
 
         intf.maker.outputs[ShowVrfDetail] = \
             {'':InterfaceOutput.ShowVrfDetail}
+
+        intf.maker.outputs[ShowInterfacesAccounting] = \
+            {'':InterfaceOutput.ShowInterfacesAccounting}
 
         # Learn the feature
         intf.learn()        
@@ -119,17 +126,30 @@ class test_interface(unittest.TestCase):
         intf.maker.outputs[ShowVrfDetail] = \
             {'':InterfaceOutput.ShowVrfDetail}
 
+        custom = {
+            'ShowInterfacesAccounting': {
+                '': 'GigabitEthernet1/0/1',
+            }
+        }
+
+        # intf.maker.outputs[ShowInterfacesAccounting] = \
+        #     {"{'intf': 'GigabitEthernet1/0/1'}":InterfaceOutput.ShowInterfacesAccountingCustom}
+
+        intf.maker.outputs[ShowInterfacesAccounting] = \
+            {'':InterfaceOutput.ShowInterfacesAccountingCustom}
+
         # Learn the feature
-        intf.learn()        
+        intf.learn(custom=custom)
 
         # Delete missing specific attribute values
         expect_dict = deepcopy(InterfaceOutput.InterfaceOpsOutput_info)
         del(expect_dict['GigabitEthernet1/0/1']['ipv4'])
+        del(expect_dict['GigabitEthernet1/0/2']['accounting'])
         del(expect_dict['GigabitEthernet0/0']['ipv4'])
         del(expect_dict['Vlan100']['ipv4'])
-                
+
         # Verify Ops was created successfully
-        self.assertEqual(intf.info, expect_dict)
+        self.assertDictEqual(intf.info, expect_dict)
 
 
 if __name__ == '__main__':

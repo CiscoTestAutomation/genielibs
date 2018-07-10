@@ -1003,6 +1003,37 @@ class InterfaceOutput(object):
          }
     }
 
+    ShowInterfacesAccounting = {
+        'GigabitEthernet1/0/1': {
+            "accounting": {
+                "arp": {
+                    "chars_in": 4590030,
+                    "chars_out": 120,
+                    "pkts_in": 109280,
+                    "pkts_out": 2
+                },
+                "ip": {
+                    "chars_in": 2173570,
+                    "chars_out": 2167858,
+                    "pkts_in": 22150,
+                    "pkts_out": 22121
+                },
+                "ipv6": {
+                    "chars_in": 1944,
+                    "chars_out": 0,
+                    "pkts_in": 24,
+                    "pkts_out": 0
+                },
+                "other": {
+                    "chars_in": 5306164,
+                    "chars_out": 120,
+                    "pkts_in": 112674,
+                    "pkts_out": 2
+                }
+            }
+        }
+    }
+
     InterfaceOpsOutput_info = {
         "GigabitEthernet3": {
               "phys_address": "5254.0072.9b0c",
@@ -1212,6 +1243,32 @@ class InterfaceOutput(object):
               "mtu": 1514
          },
          "GigabitEthernet1/0/1": {
+              "accounting": {
+                  "arp": {
+                      "chars_in": 4590030,
+                      "chars_out": 120,
+                      "pkts_in": 109280,
+                      "pkts_out": 2
+                  },
+                  "ip": {
+                      "chars_in": 2173570,
+                      "chars_out": 2167858,
+                      "pkts_in": 22150,
+                      "pkts_out": 22121
+                  },
+                  "ipv6": {
+                      "chars_in": 1944,
+                      "chars_out": 0,
+                      "pkts_in": 24,
+                      "pkts_out": 0
+                  },
+                  "other": {
+                      "chars_in": 5306164,
+                      "chars_out": 120,
+                      "pkts_in": 112674,
+                      "pkts_out": 2
+                  }
+              },
               "phys_address": "0057.d228.1a64",
               "enabled": False,
               "access_vlan": "1",

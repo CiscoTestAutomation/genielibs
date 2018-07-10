@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 
 # Trigger required data settings
 # Which key to exclude for Platform Ops comparison
-platform_exclude = ['maker', 'main_mem', 'switchover_reason', 'issu',
+platform_exclude = ['maker', 'main_mem', 'switchover_reason', 'issu', 'oc',
                     'sn', 'config_register', 'rp_uptime', 'chassis_sn']
 
 

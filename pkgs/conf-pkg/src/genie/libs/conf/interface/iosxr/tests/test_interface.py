@@ -186,6 +186,12 @@ class test_interface(TestCase):
         self.assertEqual(bundle.interface_number, 1)
         bundle.ipv4 = '14.14.14.14/24'
         bundle.ipv6 = '14:14:14::4/64'
+        bundle.lag_bfd_v4_destination = '5.0.0.97'
+        bundle.lag_bfd_v4_fast_detect = True
+        bundle.lag_bfd_v4_min_interval = 100
+        bundle.lag_bfd_v6_destination = '6.0.0.98'
+        bundle.lag_bfd_v6_fast_detect = True
+        bundle.lag_bfd_v6_min_interval = 200
 
         intf1.bundle = bundle
         intf1.bundle_mode = 'active'
@@ -197,6 +203,12 @@ class test_interface(TestCase):
             'interface Bundle-Ether1',
             ' ipv4 address 14.14.14.14/24',
             ' ipv6 address 14:14:14::4/64',
+            ' bfd address-family ipv4 destination 5.0.0.97',
+            ' bfd address-family ipv4 fast-detect',
+            ' bfd address-family ipv4 minimum-interval 100',
+            ' bfd address-family ipv6 destination 6.0.0.98',
+            ' bfd address-family ipv6 fast-detect',
+            ' bfd address-family ipv6 minimum-interval 200',
             ' exit',
         ]))
 

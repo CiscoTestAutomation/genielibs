@@ -6,21 +6,21 @@ from functools import partial
 # import genie.libs
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.addremove.addremove import TriggerAddRemove
-from genie.libs.sdk.libs.abstracted_libs.processors import ping_devices, traceroute_loopback
 
 # ATS
 from ats import aetest
 from ats.utils.objects import NotExists, Not
 
 # Which key to exclude for ACL Ops comparison
-acl_exclude = ['maker', ]
+acl_exclude = ['maker', 'attributes']
 
 interface_exclude = ['maker', 'last_change','in_rate','in_rate_pkts',
                      'out_rate', 'out_rate_pkts', 'in_octets',
                      'in_pkts', 'in_unicast_pkts', 'out_octets',
                      'out_pkts', 'out_unicast_pkts', 'out_multicast_pkts',
                      'in_multicast_pkts', 'last_clear', 'in_broadcast_pkts',
-                     'out_broadcast_pkts', 'in_errors', '(Tunnel.*)', 'status']
+                     'out_broadcast_pkts', 'in_errors', '(Tunnel.*)', 'status',
+                     'accounting']
 
 
 class TriggerAddRemoveEthernetMacAcl(TriggerAddRemove):
@@ -181,26 +181,6 @@ class TriggerAddRemoveEthernetIpAclPermit(TriggerAddRemove):
     ADD_ACL_NAME = 'ethernet_ip_acl_permit_add'
     ACTION = 'permit'
 
-    ping_info = [{'src': 'helper',
-                  'dest': 'uut',
-                  'ping': {
-                     'proto': 'ip',
-                     'count': 5,
-                     'size': 64,
-                     'extd_ping': 'n',
-                     'ping_packet_timeout': 2
-                  },
-                  'timeout_interval': 5,
-                  'timeout_max_time': 60,
-                  'exp_succ_perc': 100,
-                  'peer_num': 2}]
-    EXPECT_RES = 'passed'
-
-    @aetest.processors.post(partial(ping_devices, ping_parameters=ping_info, expect_result=EXPECT_RES))
-    @aetest.test
-    def verify_configuration(self, uut, abstract, steps):
-        super().verify_configuration(uut, abstract, steps)
-
     mapping = Mapping(requirements={'ops.acl.acl.Acl':{
                                             'requirements':[['info', 'acls', NotExists(ADD_ACL_NAME)]],
                                             'exclude': acl_exclude},
@@ -308,26 +288,6 @@ class TriggerAddRemoveEthernetIpAclDeny(TriggerAddRemove):
     """
     ADD_ACL_NAME = 'ethernet_ip_acl_deny_add'
     ACTION = 'deny'
-    EXPECT_RES = 'failed'
-
-    ping_info = [{'src': 'helper',
-                  'dest': 'uut',
-                  'ping': {
-                     'proto': 'ip',
-                     'count': 5,
-                     'size': 64,
-                     'extd_ping': 'n',
-                     'ping_packet_timeout': 2
-                  },
-                  'timeout_interval': 5,
-                  'timeout_max_time': 60,
-                  'exp_succ_perc': 100,
-                  'peer_num': 2}]
-
-    @aetest.processors.post(partial(ping_devices, ping_parameters=ping_info, expect_result=EXPECT_RES))
-    @aetest.test
-    def verify_configuration(self, uut, abstract, steps):
-        super().verify_configuration(uut, abstract, steps)
 
     mapping = Mapping(requirements={'ops.acl.acl.Acl':{
                                             'requirements':[['info', 'acls', NotExists(ADD_ACL_NAME)]],
@@ -437,19 +397,6 @@ class TriggerAddRemoveVlanIpAclPermit(TriggerAddRemove):
     """
     ADD_ACL_NAME = 'vlan_ip_acl_permit_add'
     ACTION = 'permit'
-    traceroute_info = [{'src': 'helper',
-                        'dest': 'uut',
-                        'protocol': 'ip',
-                        'dest_route': '',
-                        'timeout_interval': 5,
-                        'timeout_max_time': 60,
-                        'peer_num': 1}]
-    EXPECT_RES = 'passed'
-
-    @aetest.processors.post(partial(traceroute_loopback, traceroute_args=traceroute_info, action='ping'))
-    @aetest.test
-    def verify_configuration(self, uut, abstract, steps):
-        super().verify_configuration(uut, abstract, steps)
 
     mapping = Mapping(requirements={'ops.acl.acl.Acl':{
                                             'requirements':[['info', 'acls', NotExists(ADD_ACL_NAME)]],

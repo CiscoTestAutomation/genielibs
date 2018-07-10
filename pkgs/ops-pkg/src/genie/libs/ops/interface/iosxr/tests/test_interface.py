@@ -11,8 +11,11 @@ from genie.libs.ops.interface.iosxr.interface import Interface
 from genie.libs.ops.interface.iosxr.tests.interface_output import InterfaceOutput
 
 # nxos show_interface
-from genie.libs.parser.iosxr.show_interface import ShowInterfacesDetail, ShowEthernetTags, \
-                                 ShowIpv4VrfAllInterface, ShowIpv6VrfAllInterface
+from genie.libs.parser.iosxr.show_interface import ShowInterfacesDetail, \
+                                    ShowEthernetTags, \
+                                    ShowIpv4VrfAllInterface, \
+                                    ShowIpv6VrfAllInterface, \
+                                    ShowInterfacesAccounting
 
 from genie.libs.parser.iosxr.show_vrf import ShowVrfAllDetail
 
@@ -21,7 +24,7 @@ class test_interface(unittest.TestCase):
 
     def setUp(self):
         self.device = Device(name='aDevice')
-        self.device.os = 'nxos'
+        self.device.os = 'iosxr'
         self.device.mapping={}
         self.device.mapping['cli']='cli'
         # Give the device as a connection type
@@ -47,6 +50,9 @@ class test_interface(unittest.TestCase):
         intf.maker.outputs[ShowVrfAllDetail] = \
             {'':InterfaceOutput.ShowVrfAllDetail}
 
+        intf.maker.outputs[ShowInterfacesAccounting] = \
+            {'':InterfaceOutput.ShowInterfacesAccounting}
+
         # Learn the feature
         intf.learn()
 
@@ -62,7 +68,8 @@ class test_interface(unittest.TestCase):
         intf.maker.outputs[ShowIpv6VrfAllInterface] = {'':''}
         intf.maker.outputs[ShowVrfAllDetail] = {'':''}            
         intf.maker.outputs[ShowEthernetTags] = {'':''}
-        
+        intf.maker.outputs[ShowInterfacesAccounting] = {'':''}
+
         # Learn the feature
         intf.learn()
 
@@ -90,6 +97,9 @@ class test_interface(unittest.TestCase):
         intf.maker.outputs[ShowVrfAllDetail] = \
             {'':InterfaceOutput.ShowVrfAllDetail}
 
+        intf.maker.outputs[ShowInterfacesAccounting] = \
+            {'':InterfaceOutput.ShowInterfacesAccounting}
+
         # Learn the feature
         intf.learn()        
 
@@ -114,6 +124,9 @@ class test_interface(unittest.TestCase):
 
         intf.maker.outputs[ShowVrfAllDetail] = \
             {'':InterfaceOutput.ShowVrfAllDetail}
+
+        intf.maker.outputs[ShowInterfacesAccounting] = \
+            {'':InterfaceOutput.ShowInterfacesAccounting}
 
         # Learn the feature
         intf.learn()

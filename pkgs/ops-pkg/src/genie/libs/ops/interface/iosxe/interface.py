@@ -11,7 +11,8 @@ from genie.ops.base import Context
 # iosxe show_interface
 from genie.libs.parser.iosxe.show_interface import ShowInterfaces, \
                                         ShowIpInterface,  \
-                                        ShowIpv6Interface
+                                        ShowIpv6Interface, \
+                                        ShowInterfacesAccounting
                                         
 from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
 
@@ -19,7 +20,7 @@ from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
 class Interface(Base):
     '''Interface Genie Ops Object'''
 
-    def learn(self):
+    def learn(self, custom=None):
         '''Learn Interface Ops'''
         
         ########################################################################
@@ -126,6 +127,31 @@ class Interface(Base):
             self.add_leaf(cmd=ShowInterfaces,
                           src=src + '[{}]'.format(key),
                           dest=dest + '[{}]'.format(key))
+
+        # ======================================================================
+        #                           accounting
+        # ======================================================================
+
+        # Global source
+        src = '[(?P<interface>.*)]'
+        dest = 'info[(?P<interface>.*)]'
+
+        cmd = 'ShowInterfacesAccounting'
+        if custom and cmd in custom.keys():
+            if 'intf' in custom[cmd].keys():
+                self.add_leaf(cmd=ShowInterfacesAccounting,
+                              src=src + '[accounting]',
+                              dest=dest + '[accounting]',
+                              intf=custom[cmd]['intf'])
+            else:
+                self.add_leaf(cmd=ShowInterfacesAccounting,
+                              src=src + '[accounting]',
+                              dest=dest + '[accounting]')
+        else:
+            self.add_leaf(cmd=ShowInterfacesAccounting,
+                          src=src + '[accounting]',
+                          dest=dest + '[accounting]')
+
 
         # ======================================================================
         #                           ipv4

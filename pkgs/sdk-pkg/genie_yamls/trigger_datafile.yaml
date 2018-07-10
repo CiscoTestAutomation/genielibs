@@ -1130,6 +1130,11 @@ TriggerProcessKillRestartVpc:
 #                               FEATURE: HA
 # ==============================================================================
 
+TriggerIssu:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.ha.issu.issu.TriggerIssu
+
 TriggerSwitchover:
     source:
         pkg: genie.libs.sdk

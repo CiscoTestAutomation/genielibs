@@ -5,13 +5,12 @@ from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.shutnoshut.shutnoshut import TriggerShutNoShut
 
 # Which key to exclude for BGP Ops comparison
-# Those keys need to be verified with Takashi
 interface_exclude = ['maker', 'last_change','in_rate','in_rate_pkts',
                      'out_rate', 'out_rate_pkts', 'in_octets',
                      'in_pkts', 'in_unicast_pkts', 'out_octets',
                      'out_pkts', 'out_unicast_pkts', 'out_multicast_pkts',
                      'in_multicast_pkts', 'last_clear', 'in_broadcast_pkts',
-                     'out_broadcast_pkts']
+                     'out_broadcast_pkts', 'accounting']
 
 ## IOSXR TriggerShutNoShutTrunkInterface implemented seperately since it
 ## doesn't need port_channel_member = False as in NXOS.

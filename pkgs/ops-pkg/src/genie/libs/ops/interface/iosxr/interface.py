@@ -9,8 +9,11 @@ from genie.ops.base import Base
 from genie.ops.base import Context
 
 # iosxr show_interface
-from genie.libs.parser.iosxr.show_interface import ShowInterfacesDetail, ShowEthernetTags, \
-                                 ShowIpv4VrfAllInterface, ShowIpv6VrfAllInterface
+from genie.libs.parser.iosxr.show_interface import ShowInterfacesDetail, \
+                                    ShowEthernetTags, \
+                                    ShowIpv4VrfAllInterface, \
+                                    ShowIpv6VrfAllInterface, \
+                                    ShowInterfacesAccounting
 
 from genie.libs.parser.iosxr.show_vrf import ShowVrfAllDetail
 
@@ -18,7 +21,7 @@ from genie.libs.parser.iosxr.show_vrf import ShowVrfAllDetail
 class Interface(Base):
     '''Interface Genie Ops Object'''
 
-    def learn(self):
+    def learn(self, custom=None):
         '''Learn Interface Ops'''
         
         ########################################################################
@@ -79,6 +82,26 @@ class Interface(Base):
                       src=src + '[flow_control]',
                       dest=dest + '[flow_control]')
 
+        # ======================================================================
+        #                           accounting
+        # ======================================================================
+
+        # accounting
+        cmd = 'ShowInterfacesAccounting'
+        if custom and cmd in custom.keys():
+            if 'intf' in custom[cmd].keys():
+                self.add_leaf(cmd=ShowInterfacesAccounting,
+                              src=src + '[accounting]',
+                              dest=dest + '[accounting]',
+                              intf=custom[cmd]['intf'])
+            else:
+                self.add_leaf(cmd=ShowInterfacesAccounting,
+                              src=src + '[accounting]',
+                              dest=dest + '[accounting]')
+        else:
+            self.add_leaf(cmd=ShowInterfacesAccounting,
+                          src=src + '[accounting]',
+                          dest=dest + '[accounting]')
 
         # ======================================================================
         #                           counters

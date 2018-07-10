@@ -960,6 +960,41 @@ class LagInterface(VirtualInterface):
         type=(None, managedattribute.test_istype(int)),
         doc= 'lag_lacp_min_bundle')
 
+    lag_bfd_v4_destination = managedattribute(
+        name='lag_bfd_v4_destination',
+        default=None,
+        type=(None, managedattribute.test_istype(str)),
+        doc= 'lag_bfd_v4_destination')
+
+    lag_bfd_v4_fast_detect = managedattribute(
+        name='lag_bfd_v4_fast_detect',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)),
+        doc= 'lag_bfd_v4_fast_detect')
+
+    lag_bfd_v4_min_interval = managedattribute(
+        name='lag_bfd_v4_min_interval',
+        default=None,
+        type=(None, managedattribute.test_istype(int)),
+        doc= 'lag_bfd_v4_min_interval')
+
+    lag_bfd_v6_destination = managedattribute(
+        name='lag_bfd_v6_destination',
+        default=None,
+        type=(None, managedattribute.test_istype(str)),
+        doc= 'lag_bfd_v6_destination')
+
+    lag_bfd_v6_fast_detect = managedattribute(
+        name='lag_bfd_v6_fast_detect',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)),
+        doc= 'lag_bfd_v6_fast_detect')
+
+    lag_bfd_v6_min_interval = managedattribute(
+        name='lag_bfd_v6_min_interval',
+        default=None,
+        type=(None, managedattribute.test_istype(int)),
+        doc= 'lag_bfd_v6_min_interval')
 
 class LoopbackInterface(VirtualInterface,
                         genie.conf.base.interface.LoopbackInterface):

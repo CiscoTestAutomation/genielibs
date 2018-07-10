@@ -2160,9 +2160,11 @@ class BgpOutput(object):
                                         'maximum_prefix_max_prefix_no': 300000,
                                         'route_map_name_in': 'genie_redistribution',
                                         'route_map_name_out': 'genie_redistribution',
+                                        'session_state': 'established',
                                         'send_community': 'both'},
                                     'vpnv6 unicast': 
                                         {'bgp_table_version': 10,
+                                        'session_state': 'established',
                                         'send_community': 'both'}},
                                 'bgp_negotiated_capabilities': 
                                     {'dynamic_capability': 'advertised (mp, refresh, gr) received (mp, refresh, gr)',
@@ -2172,55 +2174,55 @@ class BgpOutput(object):
                                     'route_refresh_old': 'advertised received',
                                     'vpnv4_unicast': 'advertised received',
                                     'vpnv6_unicast': 'advertised received'},
-                                    'bgp_negotiated_keepalive_timers': 
-                                        {'hold_time': 99,
-                                        'keepalive_interval': 33},
-                                    'bgp_neighbor_counters':
-                                        {'messages': 
-                                            {'received': 
-                                                {'bytes_in_queue': 0,
-                                                'capability': 0,
-                                                'keepalives': 256,
-                                                'notifications': 0,
-                                                'opens': 1,
-                                                'route_refresh': 0,
-                                                'total': 261,
-                                                'total_bytes': 5139,
-                                                'updates': 4},
-                                            'sent': 
-                                                {'bytes_in_queue': 0,
-                                                'capability': 0,
-                                                'keepalives': 256,
-                                                'notifications': 0,
-                                                'opens': 1,
-                                                'route_refresh': 0,
-                                                'total': 263,
-                                                'total_bytes': 5311,
-                                                'updates': 6}}},
-                                    'bgp_session_transport': 
-                                        {'connection': 
-                                            {'last_reset': 'never',
-                                            'reset_reason': 'no error',
-                                            'state': 'established'},
-                                        'transport': 
-                                            {'foreign_host': 'unspecified',
-                                            'foreign_port': '4.4.4.4',
-                                            'local_host': '0.0.0.0',
-                                            'local_port': 'unspecified'}},
-                                    'bgp_version': 4,
-                                    'description': 'None',
-                                    'fall_over_bfd': True,
-                                    'holdtime': 99,
-                                    'keepalive_interval': 33,
-                                    'local_as_as_no': 'None',
-                                    'remote_as': 100,
-                                    'remove_private_as': False,
-                                    'session_state': 'established',
-                                    'shutdown': False,
-                                    'suppress_four_byte_as_capability': True,
-                                    'up_time': '02:20:02',
-                                    'update_source': 'loopback0'}},
-                                'router_id': '0.0.0.0'},
+                                'bgp_negotiated_keepalive_timers': 
+                                    {'hold_time': 99,
+                                    'keepalive_interval': 33},
+                                'bgp_neighbor_counters':
+                                    {'messages': 
+                                        {'received': 
+                                            {'bytes_in_queue': 0,
+                                            'capability': 0,
+                                            'keepalives': 256,
+                                            'notifications': 0,
+                                            'opens': 1,
+                                            'route_refresh': 0,
+                                            'total': 261,
+                                            'total_bytes': 5139,
+                                            'updates': 4},
+                                        'sent': 
+                                            {'bytes_in_queue': 0,
+                                            'capability': 0,
+                                            'keepalives': 256,
+                                            'notifications': 0,
+                                            'opens': 1,
+                                            'route_refresh': 0,
+                                            'total': 263,
+                                            'total_bytes': 5311,
+                                            'updates': 6}}},
+                                'bgp_session_transport': 
+                                    {'connection': 
+                                        {'last_reset': 'never',
+                                        'reset_reason': 'no error',
+                                        'state': 'established'},
+                                    'transport': 
+                                        {'foreign_host': 'unspecified',
+                                        'foreign_port': '4.4.4.4',
+                                        'local_host': '0.0.0.0',
+                                        'local_port': 'unspecified'}},
+                                'bgp_version': 4,
+                                'description': 'None',
+                                'fall_over_bfd': True,
+                                'holdtime': 99,
+                                'keepalive_interval': 33,
+                                'local_as_as_no': 'None',
+                                'remote_as': 100,
+                                'remove_private_as': False,
+                                'session_state': 'established',
+                                'shutdown': False,
+                                'suppress_four_byte_as_capability': True,
+                                'up_time': '02:20:02',
+                                'update_source': 'loopback0'}},
+                        'router_id': '0.0.0.0'},
                     'vpn1': 
                         {'address_family': 
                             {'ipv4 unicast': 

@@ -25,7 +25,7 @@ interface_exclude = ['maker', 'last_change','in_rate','in_rate_pkts',
                      'in_pkts', 'in_unicast_pkts', 'out_octets',
                      'out_pkts', 'out_unicast_pkts', 'out_multicast_pkts',
                      'in_multicast_pkts', 'last_clear', 'in_broadcast_pkts',
-                     'out_broadcast_pkts']
+                     'out_broadcast_pkts', 'accounting']
 
 
 class TriggerShutNoShutBgp(TriggerShutNoShut):
@@ -106,8 +106,6 @@ class TriggerShutNoShutBgp(TriggerShutNoShut):
                       num_values={'instance':'all', 'vrf':'all', 'neighbor':'all'})
 
 
-
-
 class TriggerShutNoShutBgpNeighbors(TriggerShutNoShut):
     """Shut and unshut dynamically learned BGP neighbor(s)."""
 
@@ -159,6 +157,10 @@ class TriggerShutNoShutBgpNeighbors(TriggerShutNoShut):
                         ['info', 'instance', '(?P<instance>.*)',
                         'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
                         'session_state', 'established'],
+                        ['info', 'instance', '(?P<instance>.*)',
+                        'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
+                        'address_family', '(?P<address_family>.*)',
+                        'session_state', 'established'],
                         ['info', 'instance', '(?P<instance>.*)', 'bgp_id', '(?P<bgp_id>.*)']],
                     'all_keys':True,
                     'kwargs':
@@ -176,6 +178,10 @@ class TriggerShutNoShutBgpNeighbors(TriggerShutNoShut):
                     'requirements':[\
                         ['info', 'instance', '(?P<instance>.*)', 'vrf',
                         '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
+                        'session_state', 'shut (admin)'],
+                        ['info', 'instance', '(?P<instance>.*)', 'vrf',
+                        '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
+                        'address_family', '(?P<address_family>.*)',
                         'session_state', 'shut (admin)'],
                         ['info', 'instance', '(?P<instance>.*)', 'vrf',
                         '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',

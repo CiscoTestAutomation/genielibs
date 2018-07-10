@@ -14,7 +14,8 @@ from genie.libs.ops.interface.iosxe.c3850.tests.interface_output import Interfac
 from genie.libs.parser.iosxe.show_interface import ShowInterfaces, \
                                         ShowInterfacesSwitchport, \
                                         ShowIpInterface,  \
-                                        ShowIpv6Interface
+                                        ShowIpv6Interface, \
+                                        ShowInterfacesAccounting
                                         
 from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
 
@@ -49,6 +50,9 @@ class test_interface(unittest.TestCase):
         intf.maker.outputs[ShowVrfDetail] = \
             {'':InterfaceOutput.ShowVrfDetail}
 
+        intf.maker.outputs[ShowInterfacesAccounting] = \
+            {'':InterfaceOutput.ShowInterfacesAccounting}
+
         # Learn the feature
         intf.learn()
 
@@ -64,7 +68,8 @@ class test_interface(unittest.TestCase):
         intf.maker.outputs[ShowIpInterface] = {'':''}
         intf.maker.outputs[ShowIpv6Interface] = {'':''}
         intf.maker.outputs[ShowVrfDetail] = {'':''}
-        
+        intf.maker.outputs[ShowInterfacesAccounting] = {'':''}
+
         # Learn the feature
         intf.learn()
 
@@ -92,6 +97,9 @@ class test_interface(unittest.TestCase):
         intf.maker.outputs[ShowVrfDetail] = \
             {'':InterfaceOutput.ShowVrfDetail}
 
+        intf.maker.outputs[ShowInterfacesAccounting] = \
+            {'':InterfaceOutput.ShowInterfacesAccounting}
+
         # Learn the feature
         intf.learn()        
 
@@ -118,6 +126,9 @@ class test_interface(unittest.TestCase):
 
         intf.maker.outputs[ShowVrfDetail] = \
             {'':InterfaceOutput.ShowVrfDetail}
+
+        intf.maker.outputs[ShowInterfacesAccounting] = \
+            {'':InterfaceOutput.ShowInterfacesAccounting}
 
         # Learn the feature
         intf.learn()        

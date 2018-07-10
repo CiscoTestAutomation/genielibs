@@ -146,7 +146,7 @@ class HA(object):
                             interval=15),
                          lc = '27')
         """
-        
+
         with steps.start('Reload LC {}'.format(lc), continue_=True) as step:
             try:
                 self._reloadLc(lc=lc)
@@ -161,6 +161,70 @@ class HA(object):
             self.device.execute('show clock')
         except:
             self._reconnect(steps=steps, timeout=timeout)
+
+    def prepare_issu(self, steps, upgrade_image):
+        """Prepare the device to be ready to perform ISSU.
+
+        Args:
+          Mandatory:
+            steps (`obj`) : Step object to represent each step taken.
+            timeout (`obj`) :
+                max_time (int): Maximum wait time for the trigger,
+                                in second. Default: 180
+                interval (int): Wait time between iterations when looping is needed,
+                                in second. Default: 15
+
+        Returns:
+            AETEST Step Result
+
+        Raises:
+            None
+
+        Example:
+            >>> prepare_issu(steps=ats.aetest.Steps(),
+                             timeout=genie.utils.timeout.Timeout(
+                             max_time=180,
+                             interval=15))
+        """
+
+        with steps.start('Prepare device for ISSU', continue_=True) as step:
+            try:
+                self._prepare_issu(steps=steps, upgrade_image=upgrade_image)
+            except SubCommandFailure:
+                pass
+            except Exception as e:
+                raise Exception(str(e))
+
+    def perform_issu(self, steps, upgrade_image):
+        """Perform all the ISSU steps in sequence and reconnect to the device
+
+        Args:
+          Mandatory:
+            steps (`obj`) : Step object to represent each step taken.
+            timeout (`obj`) :
+                max_time (int): Maximum wait time for the trigger,
+                                in second. Default: 180
+                interval (int): Wait time between iterations when looping is needed,
+                                in second. Default: 15
+
+        Returns:
+            AETEST Step Result
+
+        Raises:
+            None
+
+        Example:
+            >>> perform_issu(steps=ats.aetest.Steps(),
+                             timeout=genie.utils.timeout.Timeout(
+                             max_time=180,
+                             interval=15))
+        """
+
+        with steps.start('Perform ISSU', continue_=True) as step:
+            try:
+                self._perform_issu(steps=steps, upgrade_image=upgrade_image)
+            except Exception as e:
+                raise Exception(str(e))
 
     def _reconnect(self, steps, timeout, sleep_disconnect=30):
         """Disconnect and reconnect to router within given timeout.

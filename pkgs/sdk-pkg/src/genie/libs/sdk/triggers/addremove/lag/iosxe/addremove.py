@@ -6,7 +6,6 @@ from functools import partial
 # import genie.libs
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.addremove.addremove import TriggerAddRemove
-from genie.libs.sdk.libs.abstracted_libs.processors import ping_devices, debug_dumper
 from genie.libs.sdk.libs.abstracted_libs.iosxe.processors import check_interface_counters
 
 # ATS
@@ -21,7 +20,8 @@ interface_exclude = ['maker', 'last_change','in_rate','in_rate_pkts',
                      'in_pkts', 'in_unicast_pkts', 'out_octets',
                      'out_pkts', 'out_unicast_pkts', 'out_multicast_pkts',
                      'in_multicast_pkts', 'last_clear', 'in_broadcast_pkts',
-                     'out_broadcast_pkts', 'in_errors', '(Tunnel.*)', 'status']
+                     'out_broadcast_pkts', 'in_errors', '(Tunnel.*)', 'status',
+                     'accounting']
 
 
 class TriggerAddRemoveTrunkEtherchannelLacp(TriggerAddRemove):
@@ -76,80 +76,8 @@ class TriggerAddRemoveTrunkEtherchannelLacp(TriggerAddRemove):
     BUNDLE_ID = 10
     BUNDLE_ID_INTF = 'Port-channel' + str(BUNDLE_ID)
 
-    # debug_dumper commands
-    # Will be moved to trigger yaml file when feature is ready
-    pre_commands = {'uut': {'pass': ["show int trunk",
-                                "show ip int br | inc up",
-                                "sh plat soft fed sw 1 etherchannel {} group-mask".format(BUNDLE_ID),
-                                "sh plat soft fed sw 1 port summary",
-                                "sh plat soft fed sw 2 etherchannel {} group-mask".format(BUNDLE_ID),
-                                "sh plat soft fed sw 2 port summary",
-                                "sh plat soft fed sw 3 etherchannel {} group-mask".format(BUNDLE_ID),
-                                "sh plat soft fed sw 3 port summary"]}}
 
-    post_commands = {'uut': {'fail': ["sh arp",
-                                      "show run",
-                                      "show cdp nei",
-                                      "show ip inter brief | inc up",
-                                      "sh int trunk",
-                                      "sh interface counter error",
-                                      "sh interface counter etherchannel",
-                                      "show plat software fed switch 1 port summary",
-                                      "Show plat software vp switch 1 r0 summary",
-                                      "show plat software vp switch 2 r0 summary",
-                                      "show plat software matm f0 table 1 content",
-                                      "show plat software fed sw active punt cpuq 2",
-                                      "show plat software fed sw active punt cpuq 0",
-                                      "show log | red flash:/tracelogs/lacp_stack_ping_check.log",
-                                      "show switch",
-                                      "sh int {}".format(BUNDLE_ID_INTF),
-                                      "show etherchannel detail",
-                                      "sh plat soft fed sw 1 etherchannel {} group-mask".format(BUNDLE_ID),
-                                      "sh plat soft fed sw 2 etherchannel {} group-mask".format(BUNDLE_ID),
-                                      "sh plat soft fed sw 3 etherchannel {} group-mask".format(BUNDLE_ID)]},
-                 'helper': {'fail': ["show run",
-                                "show arp",
-                                "show cdp nei",
-                                "sh int trunk",
-                                "show log | red flash:lacp_stack_ping_check.log",
-                                "sh int {}".format(BUNDLE_ID_INTF),
-                                "sh ip int br | inc up",
-                                "show int trunk",
-                                "show etherchannel detail"]}}
-
-    # ping info
-    # Will be moved to trigger yaml file when feature is ready
-    pre_ping_info = [{'src': 'uut',
-                        'dest': 'helper',
-                        'ping': {
-                           'proto': 'ip',
-                           'count': 20,
-                           'size': 64,
-                           'extd_ping': 'n',
-                           'ping_packet_timeout': 2
-                        },
-                        'timeout_interval': 5,
-                        'timeout_max_time': 60,
-                        'exp_succ_perc': 100,
-                        'peer_num': 1},
-                        {'src': 'helper',
-                        'dest': 'uut',
-                        'ping': {
-                           'proto': 'ip',
-                           'count': 100,
-                           'size': 64,
-                           'extd_ping': 'n',
-                           'ping_packet_timeout': 2
-                        },
-                        'timeout_interval': 5,
-                        'timeout_max_time': 60,
-                        'exp_succ_perc': 100,
-                        'peer_num': 1}]
-
-    @aetest.processors(pre=[partial(debug_dumper, commands=pre_commands),
-                            partial(ping_devices, ping_parameters=pre_ping_info),
-                            partial(debug_dumper, commands=post_commands)],
-                       post=[partial(check_interface_counters, ports=[BUNDLE_ID_INTF],
+    @aetest.processors(post=[partial(check_interface_counters, ports=[BUNDLE_ID_INTF],
                                         keys = [['interface', BUNDLE_ID_INTF, 'out', 'ucast_pkts', '(.*)']],
                                         threshold='islargerthan(100)')])
     @aetest.test
@@ -383,36 +311,7 @@ class TriggerAddRemoveL3EtherchannelPagp(TriggerAddRemove):
     counters_port = []
     counters_keys = [['interface', '(?P<bundle_intf>.*)', 'out', 'ucast_pkts', '(.*)']]
 
-    # ping info
-    pre_ping_info = [{'src': 'uut',
-                        'dest': 'helper',
-                        'ping': {
-                           'proto': 'ip',
-                           'count': 20,
-                           'size': 64,
-                           'extd_ping': 'n',
-                           'ping_packet_timeout': 2
-                        },
-                        'timeout_interval': 5,
-                        'timeout_max_time': 60,
-                        'exp_succ_perc': 100,
-                        'peer_num': 1},
-                        {'src': 'helper',
-                        'dest': 'uut',
-                        'ping': {
-                           'proto': 'ip',
-                           'count': 100,
-                           'size': 64,
-                           'extd_ping': 'n',
-                           'ping_packet_timeout': 2
-                        },
-                        'timeout_interval': 5,
-                        'timeout_max_time': 60,
-                        'exp_succ_perc': 100,
-                        'peer_num': 1}]
-
-    @aetest.processors(pre=[partial(ping_devices, ping_parameters=pre_ping_info)],
-                       post=[partial(check_interface_counters, ports=counters_port,
+    @aetest.processors(post=[partial(check_interface_counters, ports=counters_port,
                                         keys =counters_keys, threshold='islargerthan(100)')])
     @aetest.test
     def verify_configuration(self, uut, abstract, steps):
