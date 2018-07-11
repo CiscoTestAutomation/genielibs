@@ -288,7 +288,7 @@ class GenieRobot(object):
            on device using a specific alias with a context (cli, xml, yang, ...)
         '''
         # Set the variables to find the verification
-        self.testscript.verification_uids = Or(name)
+        self.testscript.verification_uids = Or(name+'$')
         self.testscript.verification_groups = None
         self.testscript.verifications = deepcopy(self.verification_datafile)
         self.testscript.triggers = None
@@ -351,7 +351,7 @@ class GenieRobot(object):
         # Set the variables to find the trigger
         device_handle = self._search_device(device)
 
-        self.testscript.trigger_uids = Or(name)
+        self.testscript.trigger_uids = Or(name+'$')
         self.testscript.trigger_groups = None
         self.testscript.triggers = deepcopy(self.trigger_datafile)
         self.testscript.verifications = None

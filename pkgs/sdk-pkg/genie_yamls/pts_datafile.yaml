@@ -83,6 +83,8 @@ bgp:
         - status_codes
         - holdtime
         - router_id
+        - connections_dropped
+        - connections_established
 
 interface:
     source:

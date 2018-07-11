@@ -64,7 +64,8 @@ class Restore(object):
                           action='sendline(y)',
                           loop_continue=True,
                           continue_timer=False)])
-            cfg ='load disk0:{name} commit replace'.format(name=self.ckname)
+            cfg ='load disk0:{name}\n'\
+                 'commit replace'.format(name=self.ckname)
             device.configure(cfg, reply=dialog)
 
             # need to delete the config file on the device
