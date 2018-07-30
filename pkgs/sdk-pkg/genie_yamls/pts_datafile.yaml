@@ -49,6 +49,8 @@ platform:
         - total_free_bytes
         - disk_total_space
         - main_mem
+        - date
+        - index
 
 bgp:
     source:
@@ -115,6 +117,10 @@ interface:
         - phys_address
         - ((t|T)unnel.*)
         - (Null.*)
+        - chars_out
+        - chars_in
+        - pkts_out
+        - pkts_in
 
 mcast:
     source:

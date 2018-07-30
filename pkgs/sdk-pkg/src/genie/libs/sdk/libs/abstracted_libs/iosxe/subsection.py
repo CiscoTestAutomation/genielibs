@@ -95,7 +95,7 @@ def exit_shell(device):
     device.execute('exit')
 
 
-def save_device_information(device):
+def save_device_information(device, **kwargs):
     """Save running-configuration to startup-config.
     This is for general IOSXE devices.
 
