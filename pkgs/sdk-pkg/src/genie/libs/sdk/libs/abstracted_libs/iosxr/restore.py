@@ -65,6 +65,7 @@ class Restore(object):
                           action='sendline(y)',
                           loop_continue=True,
                           continue_timer=False)])
+<<<<<<< HEAD
 
             for i in range(1,iteration):
                 # replace config with checkpoint
@@ -79,6 +80,11 @@ class Restore(object):
                     log.info('Rollback checkpoint failed: sleeping {} seconds '
                              'and retrying...'.format(interval))
                     time.sleep(interval)
+=======
+            cfg ='load disk0:{name}\n'\
+                 'commit replace'.format(name=self.ckname)
+            device.configure(cfg, reply=dialog)
+>>>>>>> 52077bb96b9fe38662c5be4c54dd716ba29de872
 
             # need to delete the config file on the device
             dialog = Dialog([

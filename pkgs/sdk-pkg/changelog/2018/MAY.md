@@ -2,7 +2,11 @@
 
 * Normalized all the ats.tcl imports in the package.
 
+<<<<<<< HEAD
 * New clear triggers added.
+=======
+* New triggers added.
+>>>>>>> 52077bb96b9fe38662c5be4c54dd716ba29de872
 	* TriggerClearIPv6NeighborVrfAll
 	* TriggerClearIpOspfNeighborVrfAll
 	* TriggerRestartOspf
@@ -15,6 +19,7 @@
 
 # May 22nd
 
+<<<<<<< HEAD
 * Added package library to CesMonitor.
 
 # May 23nd
@@ -32,3 +37,6 @@
     - TriggerUnconfigConfigNveVniMcastgroup
     - TriggerAddRemoveNveAdvertiseVirtualRmac
     - TriggerAddRemoveEvpnMsiteBgwDelayRestoreTime
+=======
+* Added package library to CesMonitor.
+>>>>>>> 52077bb96b9fe38662c5be4c54dd716ba29de872

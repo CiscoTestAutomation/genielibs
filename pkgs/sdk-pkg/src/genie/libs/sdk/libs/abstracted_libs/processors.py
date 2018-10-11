@@ -273,6 +273,10 @@ def load_config_precessor(section, configs, unconfig=False, sleep=None):
         # extral sleep if sleep in config file is not enough
         # can change it from trigger yaml
         time.sleep(sleep) if sleep else None
+<<<<<<< HEAD
+=======
+
+>>>>>>> 52077bb96b9fe38662c5be4c54dd716ba29de872
 
 def ping_devices(section, ping_parameters, expect_result='passed'):
     '''PING prepostprocessor. Will ping two ends ip addresses 

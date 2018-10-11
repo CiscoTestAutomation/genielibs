@@ -2357,6 +2357,7 @@ class BgpOutput(object):
         'instance':
             {'default':
                 {'bgp_id': 333,
+<<<<<<< HEAD
                           'peer_policy': {'PEER-POLICY': {'allowas_in': True,
                                                           'as_override': True,
                                                           'default_originate': True,
@@ -2658,6 +2659,384 @@ class BgpOutput(object):
                                            'cluster_id': '0.0.0.0',
                                            'confederation_identifier': 0,
                                            'router_id': '0.0.0.0'}}}}}
+=======
+                'peer_policy':
+                    {'PEER-POLICY':
+                        {'allowas_in': True,
+                        'as_override': True,
+                        'default_originate': True,
+                        'default_originate_route_map': 'test',
+                        'maximum_prefix_max_prefix_no': 300,
+                        'route_map_name_in': 'test-map',
+                        'route_map_name_out': 'test-map',
+                        'route_reflector_client': True,
+                        'send_community': True,
+                        'soft_reconfiguration': True,
+                        'soo': True}},
+                'peer_session':
+                    {'PEER-SESSION':
+                        {'description': 'PEER-SESSION',
+                        'disable_connected_check': True,
+                        'ebgp_multihop_enable': True,
+                        'ebgp_multihop_max_hop': 255,
+                        'fall_over_bfd': True,
+                        'holdtime': 111,
+                        'keepalive_interval': 222,
+                        'local_as_as_no': True,
+                        'password_text': True,
+                        'remote_as': True,
+                        'shutdown': True,
+                        'suppress_four_byte_as_capability': True,
+                        'transport_connection_mode': 'Passive',
+                        'update_source': 'interface: '
+                                         'loopback0'}},
+                'protocol_state': 'running',
+                'vrf':
+                    {'VRF1': 
+                        {'address_family': 
+                            {'ipv4 unicast': 
+                                {'aggregate_address_as_set': True,
+                                'aggregate_address_ipv4_address': '11.0.0.0',
+                                'aggregate_address_ipv4_mask': '8',
+                                'aggregate_address_summary_only': True,
+                                'dampening': 'True',
+                                'dampening_half_life_time': '45',
+                                'dampening_max_suppress_time': '255',
+                                'dampening_reuse_time': '10000',
+                                'dampening_route_map': 'dampening1',
+                                'dampening_suppress_time': '20000',
+                                'nexthop_trigger_delay_critical': 2222,
+                                'nexthop_trigger_delay_non_critical': 3333,
+                                'nexthop_trigger_enable': True},
+                            'ipv6 unicast': 
+                                {'dampening': 'True',
+                                'dampening_half_life_time': '45',
+                                'dampening_max_suppress_time': '255',
+                                'dampening_reuse_time': '9999',
+                                'dampening_route_map': 'dampening2',
+                                'dampening_suppress_time': '19999',
+                                'nexthop_trigger_delay_critical': 3000,
+                                'nexthop_trigger_delay_non_critical': 10000,
+                                'nexthop_trigger_enable': True,
+                                'v6_aggregate_address_as_set': True,
+                                'v6_aggregate_address_ipv6_address': '2000::/8',
+                                'v6_aggregate_address_summary_only': True},
+                            'vpnv4 unicast': 
+                                {'distance_internal_as': 33,
+                                'distance_local': 55}},
+                        'neighbor': 
+                            {'2.2.2.10': 
+                                {'address_family': 
+                                    {'ipv4 unicast': 
+                                        {'bgp_table_version': 21,
+                                         'session_state': 'idle',
+                                         'soo': 'SOO:100:100'}},
+                                'bgp_negotiated_keepalive_timers': 
+                                    {'hold_time': 180,
+                                    'keepalive_interval': 60},
+                                'bgp_neighbor_counters': 
+                                    {'messages': 
+                                        {'received': 
+                                            {'bytes_in_queue': 0,
+                                            'capability': 0,
+                                            'keepalives': 0,
+                                            'notifications': 0,
+                                            'opens': 0,
+                                            'route_refresh': 0,
+                                            'total': 0,
+                                            'total_bytes': 0,
+                                            'updates': 0},
+                                        'sent': 
+                                            {'bytes_in_queue': 0,
+                                            'capability': 0,
+                                            'keepalives': 0,
+                                            'notifications': 0,
+                                            'opens': 0,
+                                            'route_refresh': 0,
+                                            'total': 0,
+                                            'total_bytes': 0,
+                                            'updates': 0}}},
+                                'bgp_session_transport': 
+                                    {'connection': 
+                                        {'last_reset': 'never',
+                                        'reset_reason': 'no '
+                                                        'error',
+                                        'state': 'idle'}},
+                                'bgp_version': 4,
+                                'holdtime': 180,
+                                'keepalive_interval': 60,
+                                'local_as_as_no': 'None',
+                                'remote_as': 0,
+                                'session_state': 'idle',
+                                'shutdown': False,
+                                'up_time': '02:19:37'}}},
+                    'ac': 
+                        {'address_family': 
+                            {'ipv4 unicast': {},
+                            'ipv6 unicast': {}},
+                        'cluster_id': '0.0.0.0',
+                        'confederation_identifier': 0,
+                        'router_id': '0.0.0.0'},
+                    'default': 
+                        {'address_family': 
+                            {'ipv4 label unicast': {},
+                            'ipv4 multicast': {},
+                            'ipv4 unicast': 
+                                {'dampening': 'True',
+                                'dampening_half_life_time': '45',
+                                'dampening_max_suppress_time': '255',
+                                'dampening_reuse_time': '1111',
+                                'dampening_suppress_time': '2222',
+                                'distance_extern_as': 20,
+                                'distance_internal_as': 200,
+                                'label_allocation_mode': 'per-prefix',
+                                'nexthop_trigger_delay_critical': 3000,
+                                'nexthop_trigger_delay_non_critical': 10000,
+                                'nexthop_trigger_enable': True},
+                            'ipv6 label unicast': 
+                                {'nexthop_trigger_delay_critical': 3000,
+                                'nexthop_trigger_delay_non_critical': 10000,
+                                'nexthop_trigger_enable': True},
+                            'ipv6 multicast': {},
+                            'ipv6 unicast': 
+                                {'nexthop_trigger_delay_critical': 3000,
+                                'nexthop_trigger_delay_non_critical': 10000,
+                                'nexthop_trigger_enable': True},
+                            'link-state': {},
+                            'vpnv4 unicast': 
+                                {'aggregate_address_as_set': True,
+                                'aggregate_address_ipv4_address': '11.0.0.0',
+                                'aggregate_address_ipv4_mask': '8',
+                                'aggregate_address_summary_only': True,
+                                'dampening': 'True',
+                                'nexthop_trigger_delay_critical': 3000,
+                                'nexthop_trigger_delay_non_critical': 10000,
+                                'nexthop_trigger_enable': True},
+                            'vpnv6 unicast': 
+                                {'nexthop_trigger_delay_critical': 3000,
+                                'nexthop_trigger_delay_non_critical': 10000,
+                                'nexthop_trigger_enable': True,
+                                'v6_aggregate_address_as_set': True,
+                                'v6_aggregate_address_ipv6_address': '2000::/8',
+                                'v6_aggregate_address_summary_only': True}},
+                        'cluster_id': '0.0.0.0',
+                        'confederation_identifier': 0,
+                        'neighbor': 
+                            {'2.2.2.2': 
+                                {'address_family': 
+                                    {'vpnv4 unicast': 
+                                        {'bgp_table_version': 11,
+                                        'maximum_prefix_max_prefix_no': 300000,
+                                        'route_map_name_in': 'genie_redistribution',
+                                        'route_map_name_out': 'genie_redistribution',
+                                        'session_state': 'established',
+                                        'send_community': 'both'},
+                                    'vpnv6 unicast': 
+                                        {'bgp_table_version': 10,
+                                        'session_state': 'established',
+                                        'send_community': 'both'}},
+                                'bgp_negotiated_capabilities': 
+                                    {'dynamic_capability': 'advertised '
+                                                           '(mp, '
+                                                           'refresh, '
+                                                           'gr) '
+                                                           'received '
+                                                           '(mp, '
+                                                           'refresh, '
+                                                           'gr)',
+                                    'dynamic_capability_old': 'advertised '
+                                                              'received',
+                                    'graceful_restart': 'advertised '
+                                                        'received',
+                                    'route_refresh': 'advertised '
+                                                     'received',
+                                    'route_refresh_old': 'advertised '
+                                                         'received',
+                                    'vpnv4_unicast': 'advertised '
+                                                     'received',
+                                    'vpnv6_unicast': 'advertised '
+                                                     'received'},
+                                'bgp_negotiated_keepalive_timers': 
+                                    {'hold_time': 99,
+                                    'keepalive_interval': 33},
+                                'bgp_neighbor_counters': 
+                                    {'messages': 
+                                        {'received': 
+                                            {'bytes_in_queue': 0,
+                                            'capability': 0,
+                                            'keepalives': 256,
+                                            'notifications': 0,
+                                            'opens': 1,
+                                            'route_refresh': 0,
+                                            'total': 261,
+                                            'total_bytes': 5139,
+                                            'updates': 4},
+                                        'sent': 
+                                            {'bytes_in_queue': 0,
+                                            'capability': 0,
+                                            'keepalives': 256,
+                                            'notifications': 0,
+                                            'opens': 1,
+                                            'route_refresh': 0,
+                                            'total': 263,
+                                            'total_bytes': 5311,
+                                            'updates': 6}}},
+                                'bgp_session_transport': 
+                                    {'connection': 
+                                        {'last_reset': 'never',
+                                        'reset_reason': 'no '
+                                                        'error',
+                                        'state': 'established'},
+                                    'transport': 
+                                        {'foreign_host': '2.2.2.2',
+                                        'foreign_port': '179',
+                                        'local_host': '1.1.1.1',
+                                        'local_port': '57144'}},
+                                'bgp_version': 4,
+                                'description': 'nei_desc',
+                                'fall_over_bfd': True,
+                                'holdtime': 99,
+                                'keepalive_interval': 33,
+                                'local_as_as_no': 'None',
+                                'remote_as': 100,
+                                'session_state': 'established',
+                                'shutdown': False,
+                                'suppress_four_byte_as_capability': True,
+                                'up_time': '02:20:02',
+                                'update_source': 'loopback0'},
+                            '2.2.2.25': 
+                                {'bgp_negotiated_keepalive_timers': 
+                                    {'hold_time': 45,
+                                    'keepalive_interval': 15},
+                                'bgp_neighbor_counters': 
+                                    {'messages': 
+                                        {'received': 
+                                            {'bytes_in_queue': 0,
+                                            'capability': 0,
+                                            'keepalives': 0,
+                                            'notifications': 0,
+                                            'opens': 0,
+                                            'route_refresh': 0,
+                                            'total': 0,
+                                            'total_bytes': 0,
+                                            'updates': 0},
+                                        'sent': 
+                                            {'bytes_in_queue': 0,
+                                            'capability': 0,
+                                            'keepalives': 0,
+                                            'notifications': 0,
+                                            'opens': 0,
+                                            'route_refresh': 0,
+                                            'total': 0,
+                                            'total_bytes': 0,
+                                            'updates': 0}}},
+                                'bgp_session_transport': 
+                                    {'connection': 
+                                        {'last_reset': 'never',
+                                        'reset_reason': 'no '
+                                                     'error',
+                                        'state': 'idle'}},
+                                'bgp_version': 4,
+                                'holdtime': 45,
+                                'keepalive_interval': 15,
+                                'local_as_as_no': 'None',
+                                'remote_as': 0,
+                                'session_state': 'idle',
+                                'shutdown': False,
+                                'up_time': '02:20:08'},
+                            '2.2.2.5': 
+                                {'address_family': 
+                                    {'ipv4 unicast': 
+                                        {'as_override': True,
+                                        'bgp_table_version': 2,
+                                        'inherit_peer_policy': 
+                                            {'PEER-POLICY': 
+                                                {'inherit_peer_seq': 10},
+                                            'PEER-POLICY2': 
+                                                {'inherit_peer_seq': 20}},
+                                        'maximum_prefix_max_prefix_no': 300,
+                                        'default_originate': True,
+                                        'next_hop_self': True,
+                                        'route_map_name_in': 'test-map',
+                                        'route_map_name_out': 'test-map',
+                                        'send_community': 'both',
+                                        'session_state': 'shut (admin)',
+                                        'soft_configuration': True}},
+                                'bgp_negotiated_keepalive_timers': 
+                                    {'hold_time': 45,
+                                    'keepalive_interval': 15},
+                                'bgp_neighbor_counters': 
+                                    {'messages': 
+                                        {'received': 
+                                            {'bytes_in_queue': 0,
+                                            'capability': 0,
+                                            'keepalives': 0,
+                                            'notifications': 0,
+                                            'opens': 0,
+                                            'route_refresh': 0,
+                                            'total': 0,
+                                            'total_bytes': 0,
+                                            'updates': 0},
+                                        'sent': {'bytes_in_queue': 0,
+                                            'capability': 0,
+                                            'keepalives': 0,
+                                            'notifications': 0,
+                                            'opens': 0,
+                                            'route_refresh': 0,
+                                            'total': 0,
+                                            'total_bytes': 0,
+                                            'updates': 0}}},
+                                'bgp_session_transport': 
+                                    {'connection': 
+                                        {'last_reset': 'never',
+                                        'mode': 'passive',
+                                        'reset_reason': 'no '
+                                                        'error',
+                                        'state': 'shut '
+                                                 '(admin)'}},
+                                'bgp_version': 4,
+                                'description': 'PEER-SESSION',
+                                'disable_connected_check': True,
+                                'ebgp_multihop': True,
+                                'ebgp_multihop_max_hop': 255,
+                                'fall_over_bfd': True,
+                                'holdtime': 45,
+                                'inherit_peer_session': 'PEER-SESSION',
+                                'keepalive_interval': 15,
+                                'local_as_as_no': '333',
+                                'password_text': 'enabled',
+                                'remote_as': 200,
+                                'session_state': 'shut '
+                                            '(admin)',
+                                'shutdown': True,
+                                'up_time': '02:20:09',
+                                'update_source': 'loopback0'}},
+                        'router_id': '3.3.3.3'},
+                    'management': 
+                        {'cluster_id': '0.0.0.0',
+                        'confederation_identifier': 0,
+                        'router_id': '0.0.0.0'},
+                    'vpn1': 
+                        {'address_family': 
+                            {'ipv4 multicast': {},
+                            'ipv4 unicast': 
+                                {'label_allocation_mode': 'per-vrf'},
+                            'ipv6 multicast': {},
+                            'ipv6 unicast': 
+                                {'label_allocation_mode': 'per-vrf'}},
+                        'cluster_id': '0.0.0.0',
+                        'confederation_identifier': 0,
+                        'router_id': '0.0.0.0'},
+                    'vpn2': 
+                        {'address_family': 
+                            {'ipv4 unicast': 
+                                {'label_allocation_mode': 'per-vrf'},
+                                'ipv6 unicast': 
+                                    {'label_allocation_mode': 'per-vrf'}},
+                        'cluster_id': '0.0.0.0',
+                        'confederation_identifier': 0,
+                        'router_id': '0.0.0.0'}}}}}
+>>>>>>> 52077bb96b9fe38662c5be4c54dd716ba29de872
 
     BgpOpsOutput_table = {
         'instance':
