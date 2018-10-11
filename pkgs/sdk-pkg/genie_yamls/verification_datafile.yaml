@@ -243,6 +243,41 @@ Verify_BgpL2vpnEvpnAdvertised:
   context: cli
   source:
     class: genie.harness.base.Template
+Verify_BgpL2vpnEvpnNeighbors:
+  cmd:
+    class: show_bgp.ShowBgpL2vpnEvpnNeighbors
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpL2vpnEvpnRouteType_route_type_1:
+  cmd:
+    class: show_bgp.ShowBgpL2vpnEvpnRouteType
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpL2vpnEvpnRouteType_route_type_2:
+  cmd:
+    class: show_bgp.ShowBgpL2vpnEvpnRouteType
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpL2vpnEvpnRouteType_route_type_4:
+  cmd:
+    class: show_bgp.ShowBgpL2vpnEvpnRouteType
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpL2vpnEvpnSummary:
+  cmd:
+    class: show_bgp.ShowBgpL2vpnEvpnSummary
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
 Verify_BgpLabels_vrf_all_address_family_ipv4_multicast:
   cmd:
     class: show_bgp.ShowBgpLabels
@@ -756,7 +791,7 @@ Verify_ErrdisableRecovery:
     class: genie.harness.base.Template
 Verify_EtherchannelSummary:
   cmd:
-    class: show_interface.ShowEtherchannelSummary
+    class: show_lag.ShowEtherchannelSummary
     pkg: genie.libs.parser
   context: cli
   source:
@@ -770,7 +805,7 @@ Verify_EthernetCfmMeps:
     class: genie.harness.base.Template
 Verify_EthernetTags:
   cmd:
-    class: show_interface.ShowEthernetTags
+    class: show_ethernet.ShowEthernetTags
     pkg: genie.libs.parser
   context: cli
   source:
@@ -883,6 +918,13 @@ Verify_InterfaceSwitchport:
 Verify_Interfaces:
   cmd:
     class: show_interface.ShowInterfaces
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_InterfacesAccounting:
+  cmd:
+    class: show_interface.ShowInterfacesAccounting
     pkg: genie.libs.parser
   context: cli
   source:
@@ -1058,6 +1100,48 @@ Verify_IpMrouteStatic:
 Verify_IpMrouteVrfAll:
   cmd:
     class: show_mcast.ShowIpMrouteVrfAll
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_IpMsdpPeerVrf_vrf_all:
+  cmd:
+    class: show_msdp.ShowIpMsdpPeerVrf
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_IpMsdpPeerVrf_vrf_default:
+  cmd:
+    class: show_msdp.ShowIpMsdpPeerVrf
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_IpMsdpSaCacheDetailVrf_vrf_all:
+  cmd:
+    class: show_msdp.ShowIpMsdpSaCacheDetailVrf
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_IpMsdpSaCacheDetailVrf_vrf_default:
+  cmd:
+    class: show_msdp.ShowIpMsdpSaCacheDetailVrf
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_IpMsdpSummary_vrf_all:
+  cmd:
+    class: show_msdp.ShowIpMsdpSummary
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_IpMsdpSummary_vrf_default:
+  cmd:
+    class: show_msdp.ShowIpMsdpSummary
     pkg: genie.libs.parser
   context: cli
   source:
@@ -1426,6 +1510,13 @@ Verify_Ipv4VrfAllInterface:
   context: cli
   source:
     class: genie.harness.base.Template
+Verify_Ipv6IcmpNeighborDetail:
+  cmd:
+    class: show_nd.ShowIpv6IcmpNeighborDetail
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
 Verify_Ipv6Interface:
   cmd:
     class: show_interface.ShowIpv6Interface
@@ -1499,6 +1590,20 @@ Verify_Ipv6Mroute:
 Verify_Ipv6MrouteVrfAll:
   cmd:
     class: show_mcast.ShowIpv6MrouteVrfAll
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_Ipv6NdInterface:
+  cmd:
+    class: show_nd.ShowIpv6NdInterface
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_Ipv6NeighborDetail:
+  cmd:
+    class: show_nd.ShowIpv6NeighborDetail
     pkg: genie.libs.parser
   context: cli
   source:
@@ -1636,6 +1741,13 @@ Verify_Ipv6Route_vrf_default:
   context: cli
   source:
     class: genie.harness.base.Template
+Verify_Ipv6Routers:
+  cmd:
+    class: show_nd.ShowIpv6Routers
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
 Verify_Ipv6StaticDetail:
   cmd:
     class: show_static_routing.ShowIpv6StaticDetail
@@ -1671,6 +1783,13 @@ Verify_Ipv6VrfAllInterface:
   context: cli
   source:
     class: genie.harness.base.Template
+Verify_L2routeEvpnEternetSegmentAll:
+  cmd:
+    class: show_vxlan.ShowL2routeEvpnEternetSegmentAll
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
 Verify_L2routeEvpnMac:
   cmd:
     class: show_l2route.ShowL2routeEvpnMac
@@ -1685,6 +1804,34 @@ Verify_L2routeEvpnMacIp:
   context: cli
   source:
     class: genie.harness.base.Template
+Verify_L2routeFlAll:
+  cmd:
+    class: show_vxlan.ShowL2routeFlAll
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_L2routeMacAllDetail:
+  cmd:
+    class: show_vxlan.ShowL2routeMacAllDetail
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_L2routeMacIpAllDetail:
+  cmd:
+    class: show_vxlan.ShowL2routeMacIpAllDetail
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_L2routeSummary:
+  cmd:
+    class: show_vxlan.ShowL2routeSummary
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
 Verify_L2routeTopology:
   cmd:
     class: show_l2route.ShowL2routeTopology
@@ -1692,9 +1839,226 @@ Verify_L2routeTopology:
   context: cli
   source:
     class: genie.harness.base.Template
+Verify_L2routeTopologyDetail:
+  cmd:
+    class: show_vxlan.ShowL2routeTopologyDetail
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
 Verify_L2vpnMacLearning:
   cmd:
     class: show_l2vpn.ShowL2vpnMacLearning
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispSession:
+  cmd:
+    class: show_lisp.ShowLispSession
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispPlatform:
+  cmd:
+    class: show_lisp.ShowLispPlatform
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispDynamicEidDetail:
+  cmd:
+    class: show_lisp.ShowLispDynamicEidDetail
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceIpv4:
+  cmd:
+    class: show_lisp.ShowLispService
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceIpv6:
+  cmd:
+    class: show_lisp.ShowLispService
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceEthernet:
+  cmd:
+    class: show_lisp.ShowLispService
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceIpv4Database:
+  cmd:
+    class: show_lisp.ShowLispServiceDatabase
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceIpv6Database:
+  cmd:
+    class: show_lisp.ShowLispServiceDatabase
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceEthernetDatabase:
+  cmd:
+    class: show_lisp.ShowLispServiceDatabase
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceIpv4MapCache:
+  cmd:
+    class: show_lisp.ShowLispServiceMapCache
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceIpv6MapCache:
+  cmd:
+    class: show_lisp.ShowLispServiceMapCache
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceEthernetMapCache:
+  cmd:
+    class: show_lisp.ShowLispServiceMapCache
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceIpv4RlocMembers:
+  cmd:
+    class: show_lisp.ShowLispServiceRlocMembers
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceIpv6RlocMembers:
+  cmd:
+    class: show_lisp.ShowLispServiceRlocMembers
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceEthernetRlocMembers:
+  cmd:
+    class: show_lisp.ShowLispServiceRlocMembers
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceIpv4ServerDetailInternal:
+  cmd:
+    class: show_lisp.ShowLispServiceServerDetailInternal
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceIpv6ServerDetailInternal:
+  cmd:
+    class: show_lisp.ShowLispServiceServerDetailInternal
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceEthernetServerDetailInternal:
+  cmd:
+    class: show_lisp.ShowLispServiceServerDetailInternal
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceIpv4ServerSummary:
+  cmd:
+    class: show_lisp.ShowLispServiceServerSummary
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceIpv6ServerSummary:
+  cmd:
+    class: show_lisp.ShowLispServiceServerSummary
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceEthernetServerSummary:
+  cmd:
+    class: show_lisp.ShowLispServiceServerSummary
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceIpv4Smr:
+  cmd:
+    class: show_lisp.ShowLispServiceSmr
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceIpv6Smr:
+  cmd:
+    class: show_lisp.ShowLispServiceSmr
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceEthernetSmr:
+  cmd:
+    class: show_lisp.ShowLispServiceSmr
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceIpv4Statistics:
+  cmd:
+    class: show_lisp.ShowLispServiceStatistics
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceIpv6Statistics:
+  cmd:
+    class: show_lisp.ShowLispServiceStatistics
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceEthernetStatistics:
+  cmd:
+    class: show_lisp.ShowLispServiceStatistics
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceIpv4Summary:
+  cmd:
+    class: show_lisp.ShowLispServiceSummary
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceIpv6Summary:
+  cmd:
+    class: show_lisp.ShowLispServiceSummary
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_LispServiceEthernetSummary:
+  cmd:
+    class: show_lisp.ShowLispServiceSummary
     pkg: genie.libs.parser
   context: cli
   source:
@@ -1758,6 +2122,62 @@ Verify_MribVrfRoute_vrf_all:
 Verify_MribVrfRoute_vrf_default:
   cmd:
     class: show_mrib.ShowMribVrfRoute
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_NveEthernetSegment:
+  cmd:
+    class: show_vxlan.ShowNveEthernetSegment
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_NveInterface:
+  cmd:
+    class: show_vxlan.ShowNveInterface
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_NveInterfaceDetail:
+  cmd:
+    class: show_vxlan.ShowNveInterfaceDetail
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_NveMultisiteDciLinks:
+  cmd:
+    class: show_vxlan.ShowNveMultisiteDciLinks
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_NveMultisiteFabricLinks:
+  cmd:
+    class: show_vxlan.ShowNveMultisiteFabricLinks
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_NvePeers:
+  cmd:
+    class: show_vxlan.ShowNvePeers
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_NveVni:
+  cmd:
+    class: show_vxlan.ShowNveVni
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_NveVniSummary:
+  cmd:
+    class: show_vxlan.ShowNveVniSummary
     pkg: genie.libs.parser
   context: cli
   source:
@@ -1912,13 +2332,6 @@ Verify_PlatformSoftwareStatusControl:
 Verify_PlatformVm:
   cmd:
     class: show_platform.ShowPlatformVm
-    pkg: genie.libs.parser
-  context: cli
-  source:
-    class: genie.harness.base.Template
-Verify_PowerInlineInterface:
-  cmd:
-    class: show_power.ShowPowerInlineInterface
     pkg: genie.libs.parser
   context: cli
   source:
@@ -2182,13 +2595,6 @@ Verify_Version:
   context: cli
   source:
     class: genie.harness.base.Template
-Verify_Version_yang:
-  cmd:
-    class: show_platform.ShowVersion
-    pkg: genie.libs.parser
-  context: yang
-  source:
-    class: genie.harness.base.Template
 Verify_Vlan:
   cmd:
     class: show_vlan.ShowVlan
@@ -2234,13 +2640,6 @@ Verify_VlanInternalInfo:
 Verify_VlanMtu:
   cmd:
     class: show_vlan.ShowVlanMtu
-    pkg: genie.libs.parser
-  context: cli
-  source:
-    class: genie.harness.base.Template
-Verify_VlanOld:
-  cmd:
-    class: show_vlan.ShowVlanOld
     pkg: genie.libs.parser
   context: cli
   source:

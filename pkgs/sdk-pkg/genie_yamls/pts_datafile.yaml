@@ -19,6 +19,7 @@ ospf:
         - seq_num
         - statistics
         - lsas
+        - last_state_change
 
 hsrp:
     source:
@@ -49,6 +50,12 @@ platform:
         - total_free_bytes
         - disk_total_space
         - main_mem
+        - date
+        - index
+        - chassis_sn
+        - image
+        - sn
+        - rp_boot_image
 
 bgp:
     source:
@@ -83,6 +90,10 @@ bgp:
         - status_codes
         - holdtime
         - router_id
+        - connections_dropped
+        - connections_established
+        - advertised
+        - prefixes
 
 interface:
     source:
@@ -113,6 +124,11 @@ interface:
         - phys_address
         - ((t|T)unnel.*)
         - (Null.*)
+        - chars_out
+        - chars_in
+        - pkts_out
+        - pkts_in
+        - mgmt0
 
 mcast:
     source:
@@ -206,3 +222,54 @@ lldp:
         class: lldp.lldp.Lldp
     devices:
         uut: None
+
+vxlan:
+    source:
+        pkg: genie.libs.ops
+        class: vxlan.vxlan.Vxlan
+    devices:
+        uut: None
+    exclude:
+        - bytesrecvd
+        - bytessent
+        - capabilitiesrecvd
+        - capabilitiessent
+        - connsdropped
+        - connsestablished
+        - elapsedtime
+        - fd
+        - keepalive
+        - keepaliverecvd
+        - keepalivesent
+        - lastread
+        - lastwrite
+        - msgrecvd
+        - msgsent
+        - neighbortableversion
+        - notificationssent
+        - opensrecvd
+        - openssent
+        - tableversion
+        - remoteport
+        - rtrefreshsent
+        - updatesrecvd
+        - updatessent
+        - prefixversion
+        - tx_id
+        - uptime
+        - localport
+        - resetreason
+        - resettime
+        - client_nfn
+        - pathnr
+        - bestpathnr
+        - peer_id
+        - bytesattrs
+        - memoryused
+        - prefixreceived
+        - numberattrs
+        - advertisedto
+        - totalnetworks
+        - totalpaths
+        - flags
+

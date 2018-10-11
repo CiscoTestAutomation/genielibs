@@ -37,7 +37,8 @@ EXCLUDE_PARSERS = ['ShowDir', 'ShowBgpPolicyStatistics', 'ShowBgpVrfAllNeighbors
                    'ShowL2VpnXconnectDetail', 'ShowL2VpnBridgeDomain', 'ShowL2VpnBridgeDomainBrief',
                    'ShowL2VpnBridgeDomainDetail', 'ShowL2VpnBridgeDomainSummary', 'ShowEvpnEthernetSegment',
                    'ShowIpRouteWord', 'ShowIpv6RouteWord', 'ShowInterfacesCounters','ShowPowerInlineInterface',
-                   'ShowProcessesCpuSorted','ShowVlanOld']
+                   'ShowProcessesCpuSorted','ShowVlanOld', 'ShowIpMsdpPolicyStatisticsSaPolicyIn',
+                   'ShowIpMsdpPolicyStatisticsSaPolicyInOut', 'ShowIpMsdpPolicyStatisticsSaPolicyOut']
 
 EXCLUDE_DEVICES = ['Verify_BgpOpenconfigYang_yang', 'Verify_BgpProcessVrfAll_yang', 'Verify_BgpVrfAllNeighbors_yang_vrf_default']
 CONTEXTS = ['cli', 'yang', 'xml', 'rest']

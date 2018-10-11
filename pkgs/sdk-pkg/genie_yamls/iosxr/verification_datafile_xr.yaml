@@ -478,6 +478,14 @@ Verify_InterfaceBrief:
 Verify_InterfaceSwitchport:
   devices:
     uut: None
+Verify_InterfacesAccounting:
+  devices:
+    uut: None
+  exclude:
+  - pkts_in
+  - pkts_out
+  - chars_in
+  - chars_out
 Verify_InterfacesDetail:
   devices:
     uut: None

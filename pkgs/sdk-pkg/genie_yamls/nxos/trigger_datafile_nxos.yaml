@@ -5,9 +5,10 @@ extends: '%ENV{VIRTUAL_ENV}/genie_yamls/trigger_datafile.yaml'
 #===============================================================================
 
 global_processors:
-  pre:
-    clear_traffic_stats:
-      method: genie.harness.libs.prepostprocessor.clear_traffic_stats
+# commented due to it makes issue for clearing statistic
+#  pre:
+#    clear_traffic_stats:
+#      method: genie.harness.libs.prepostprocessor.clear_traffic_stats
   post:
     verify_traffic:
       method: genie.harness.libs.prepostprocessor.verify_traffic
@@ -27,6 +28,60 @@ TriggerSleep:
 #===============================================================================
 #                                CLEAR
 #===============================================================================
+
+TriggerClearMsdpPeer:
+    groups: ['clear', 'msdp', 'L3']
+    timeout:
+       max_time: 120
+       interval: 15
+    devices:
+      uut:
+        None
+
+TriggerClearMsdpStatistics:
+    groups: ['clear', 'msdp', 'L3']
+    timeout:
+       max_time: 120
+       interval: 15
+    devices:
+      uut:
+        None
+
+TriggerClearMsdpPolicyStatisticsSaPolicyIn:
+    groups: ['clear', 'msdp', 'L3']
+    timeout:
+       max_time: 120
+       interval: 15
+    devices:
+      uut:
+        None
+
+TriggerClearMsdpPolicyStatisticsSaPolicyOut:
+    groups: ['clear', 'msdp', 'L3']
+    timeout:
+       max_time: 120
+       interval: 15
+    devices:
+      uut:
+        None
+
+TriggerClearMsdpSaCache:
+    groups: ['clear', 'msdp', 'L3']
+    timeout:
+       max_time: 120
+       interval: 15
+    devices:
+      uut:
+        None
+
+TriggerClearMsdpRoute:
+    groups: ['clear', 'msdp', 'L3']
+    timeout:
+       max_time: 120
+       interval: 15
+    devices:
+      uut:
+        None
 
 TriggerClearBgpAll:
     groups: ['clear', 'bgp', 'L3']
@@ -234,6 +289,115 @@ TriggerRestartOspf:
       uut:
         None
 
+TriggerClearIpRoute:
+    groups: ['clear', 'routing', 'L3']
+    timeout:
+       max_time: 280
+       interval: 10
+    devices:
+      uut:
+        None
+
+TriggerClearIpv6Route:
+    groups: ['clear', 'routing', 'L3']
+    timeout:
+       max_time: 280
+       interval: 10
+    devices:
+      uut:
+        None
+
+TriggerClearIpRouting:
+    groups: ['clear', 'routing', 'L3']
+    timeout:
+       max_time: 280
+       interval: 10
+    devices:
+      uut:
+        None
+
+TriggerClearRouting:
+    groups: ['clear', 'routing', 'L3']
+    timeout:
+       max_time: 280
+       interval: 10
+    devices:
+      uut:
+        None
+
+TriggerClearIpMroute:
+    groups: ['clear', 'routing', 'L3']
+    timeout:
+       max_time: 280
+       interval: 10
+    devices:
+      uut:
+        None
+
+TriggerClearIpv6Mroute:
+    groups: ['clear', 'routing', 'L3']
+    timeout:
+       max_time: 280
+       interval: 10
+    devices:
+      uut:
+        None
+
+TriggerClearIpMrouteVrfAll:
+    groups: ['clear', 'routing', 'L3']
+    timeout:
+       max_time: 280
+       interval: 10
+    devices:
+      uut:
+        None
+
+TriggerClearIpv6MrouteVrfAll:
+    groups: ['clear', 'routing', 'L3']
+    timeout:
+       max_time: 280
+       interval: 10
+    devices:
+      uut:
+        None
+
+TriggerClearIpv6Routing:
+    groups: ['clear', 'routing', 'L3']
+    timeout:
+       max_time: 280
+       interval: 10
+    devices:
+      uut:
+        None
+
+TriggerClearRoutingUnicast:
+    groups: ['clear', 'routing', 'L3']
+    timeout:
+       max_time: 280
+       interval: 10
+    devices:
+      uut:
+        None
+
+TriggerClearIpRoutingUnicast:
+    groups: ['clear', 'routing', 'L3']
+    timeout:
+       max_time: 280
+       interval: 10
+    devices:
+      uut:
+        None
+
+TriggerClearIpv6RoutingUnicast:
+    groups: ['clear', 'routing', 'L3']
+    timeout:
+       max_time: 280
+       interval: 10
+    devices:
+      uut:
+        None
+
+
 #===============================================================================
 #                                DISABLE-ENABLE
 #===============================================================================
@@ -332,6 +496,34 @@ TriggerDisableEnableVnSegmentVlan:
 #===============================================================================
 #                                 MODIFY
 #===============================================================================
+TriggerModifyEvpnMsiteBgwDelayRestoreTime:
+    groups: ['modify', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    devices:
+      uut:
+        None
+
+TriggerModifyNveVniMcastGroup:
+    groups: ['modify', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 300
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    timeout_recovery:
+        max_time: 400
+        interval: 20
+    devices:
+      uut:
+        None
 
 TriggerModifyBgpNeighborAsn:
     groups: ['modify', 'bgp', 'L3']
@@ -606,8 +798,180 @@ TriggerModifyBgpNeighborPassword:
       uut:
         None
 
+TriggerModifyNveMultisiteBgwInterface:
+    groups: ['modify', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    timeout_recovery:
+      max_time: 300
+      interval: 20
+    devices:
+      uut:
+        None
+
+TriggerModifyVlanVnsegment:
+    groups: ['modify', 'vlan', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    devices:
+      uut:
+        None
+
 TriggerModifyBgpVpnRd:
-    groups: ['unconfig-config', 'bgp', 'L3']
+    groups: ['modify', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 30
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+      
+TriggerModifyMsdpOriginatorId:
+    groups: ['modify', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 30
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+      
+TriggerModifyMsdpSaFilterIn:
+    groups: ['modify', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 30
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+      
+TriggerModifyMsdpSaFilterOut:
+    groups: ['modify', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 30
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+      
+TriggerModifyMsdpSaLimit:
+    groups: ['modify', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 30
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+      
+TriggerModifyMsdpMeshGroup:
+    groups: ['modify', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 30
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+      
+TriggerModifyMsdpKeepaliveHoldtime:
+    groups: ['modify', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 30
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+      
+TriggerModifyMsdpReconnectInterval:
+    groups: ['modify', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 30
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+      
+TriggerModifyMsdpDescription:
+    groups: ['modify', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 30
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+      
+TriggerModifyMsdpPeerConnectedSource:
+    groups: ['modify', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 30
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+      
+TriggerModifyMsdpPeerAs:
+    groups: ['modify', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 30
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+      
+TriggerModifyPimNeighborFilter:
+    groups: ['modify', 'pim', 'L3']
     method: 'checkpoint'
     timeout:
       max_time: 120
@@ -622,6 +986,48 @@ TriggerModifyBgpVpnRd:
 #===============================================================================
 #                                UNCONFIG-CONFIG
 #===============================================================================
+TriggerUnconfigConfigBgpAfL2vpnEvpnRewriteEvpnRtAsn:
+    groups: ['unconfig-config', 'vxlan']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    devices:
+      uut:
+        None
+
+
+TriggerUnconfigConfigEvpnMsiteBgw:
+    groups: ['unconfig-config', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    timeout_recovery:
+      max_time: 300
+      interval: 20
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigNveVniMultisiteIngressReplication:
+    groups: ['unconfig-config', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    devices:
+      uut:
+        None
 
 TriggerUnconfigConfigVlan:
     groups: ['unconfig-config', 'vlan', 'L3']
@@ -1072,7 +1478,7 @@ TriggerUnconfigConfigBgpL2vpnCapability:
       interval: 20
     tgn_timeout: 300
     tgn_delay: 10
-    tgn_max_outage: 120
+    tgn_max_outage: 300
     devices:
       uut:
         None
@@ -1081,7 +1487,252 @@ TriggerUnconfigConfigVxlanNveOverlayInterface:
     groups: ['unconfig-config', 'interface', 'vxlan']
     method: 'checkpoint'
     timeout:
-      max_time: 60
+      max_time: 360
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    timeout_recovery:
+      max_time: 500
+      interval: 20
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigEvpn:
+    groups: ['unconfig-config', 'vxlan']
+    method: 'checkpoint'
+    timeout:
+      max_time: 300
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    timeout_recovery:
+      max_time: 500
+      interval: 20
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigEvpnVni:
+    groups: ['unconfig-config', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigNvOverlayEvpn:
+    groups: ['unconfig-config', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 400
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    timeout_recovery:
+      max_time: 1000
+      interval: 20
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigNveVniMcastGroup:
+    groups: ['unconfig-config', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigEvpnMsiteBgwDelayRestoreTime:
+    groups: ['unconfig-config', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigEvpnMsiteDciTracking:
+    groups: ['unconfig-config', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    timeout_recovery:
+      max_time: 600
+      interval: 20
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigEvpnMsiteFabricTracking:
+    groups: ['unconfig-config', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 400
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    timeout_recovery:
+      max_time: 600
+      interval: 20
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigNveVniAssociateVrf:
+    groups: ['unconfig-config', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigNveSourceInterfaceLoopback:
+    groups: ['unconfig-config', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 500
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 900
+    timeout_recovery:
+      max_time: 400
+      interval: 15
+    devices:
+      uut:
+        None
+# removed from vxlan trigger list due to it makes changes on config
+#TriggerUnconfigConfigNveAdvertiseVirtualRmac:
+#    groups: ['unconfig-config', 'L3']
+#    method: 'checkpoint'
+#    timeout:
+#      max_time: 360
+#      interval: 20
+#    tgn_timeout: 300
+#    tgn_delay: 10
+#    tgn_max_outage: 300
+#    timeout_recovery:
+#      max_time: 750
+#      interval: 20
+#    devices:
+#      uut:
+#        None
+
+TriggerUnconfigConfigNveVniMcastGroup:
+    groups: ['unconfig-config', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    timeout_recovery:
+      max_time: 300
+      interval: 20
+    devices:
+      uut:
+        None
+        
+TriggerUnconfigConfigBsrRpInterface:
+    groups: ['unconfig-config', 'interface', 'pim', 'multicast']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+        
+TriggerUnconfigConfigBsrRpVrfInterface:
+    groups: ['unconfig-config', 'interface', 'pim', 'multicast']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+        
+TriggerUnconfigConfigStaticRpInterface:
+    groups: ['unconfig-config', 'interface', 'pim', 'multicast']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+        
+TriggerUnconfigConfigStaticRpVrfInterface:
+    groups: ['unconfig-config', 'interface', 'pim', 'multicast']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+        
+TriggerUnconfigConfigPimNbrInterface:
+    groups: ['unconfig-config', 'interface', 'pim', 'multicast']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+        
+TriggerUnconfigConfigPimNbrVrfInterface:
+    groups: ['unconfig-config', 'interface', 'pim', 'multicast']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
       interval: 20
     tgn_timeout: 300
     tgn_delay: 10
@@ -1090,6 +1741,177 @@ TriggerUnconfigConfigVxlanNveOverlayInterface:
       uut:
         None
 
+TriggerUnconfigConfigAutoRpInterface:
+    groups: ['unconfig-config', 'pim', 'multicast', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+        
+TriggerUnconfigConfigAutoRpVrfInterface:
+    groups: ['unconfig-config', 'pim', 'multicast', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigVlanVnsegment:
+    groups: ['unconfig-config', 'vlan', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    timeout_recovery:
+      max_time: 300
+      interval: 20
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigMsdpPeer:
+    groups: ['unconfig-config', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigMsdpSaFilterIn:
+    groups: ['unconfig-config', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+        
+TriggerUnconfigConfigMsdpSaFilterOut:
+    groups: ['unconfig-config', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigMsdpSaLimit:
+    groups: ['unconfig-config', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigMsdpDescription:
+    groups: ['unconfig-config', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigMsdpMeshGroup:
+    groups: ['unconfig-config', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigMsdpKeepaliveHoldtime:
+    groups: ['unconfig-config', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigMsdpReconnectInterval:
+    groups: ['unconfig-config', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigMsdpOriginatorId:
+    groups: ['unconfig-config', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerUnconfigConfigPimNeighborFilter:
+    groups: ['unconfig-config', 'pim', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
 
 #===============================================================================
 #                                SHUT-NOSHUT
@@ -1218,6 +2040,117 @@ TriggerShutNoShutVlanInterface:
 TriggerShutNoShutNveOverlayInterface:
     groups: ['shut-noshut', 'interface', 'vxlan']
     timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    timeout_recovery:
+      max_time: 300
+      interval: 20
+    devices:
+      uut:
+        None
+        
+TriggerShutNoShutAutoRpInterface:
+    groups: ['shut-noshut', 'interface', 'pim', 'multicast']
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerShutNoShutBsrRpInterface:
+    groups: ['shut-noshut', 'interface', 'pim', 'multicast']
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+        
+TriggerShutNoShutAutoRpVrfInterface:
+    groups: ['shut-noshut', 'interface', 'pim', 'multicast']
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerShutNoShutBsrRpVrfInterface:
+    groups: ['shut-noshut', 'interface', 'pim', 'multicast']
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+        
+TriggerShutNoShutStaticRpInterface:
+    groups: ['shut-noshut', 'interface', 'pim', 'multicast']
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+        
+TriggerShutNoShutStaticRpVrfInterface:
+    groups: ['shut-noshut', 'interface', 'pim', 'multicast']
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+        
+TriggerShutNoShutPimNbrInterface:
+    groups: ['shut-noshut', 'interface', 'pim', 'multicast']
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+        
+TriggerShutNoShutPimNbrVrfInterface:
+    groups: ['shut-noshut', 'interface', 'pim', 'multicast']
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerShutNoShutMsdp:
+    groups: ['shut-noshut', 'msdp']
+    timeout:
       max_time: 40
       interval: 10
     tgn_timeout: 300
@@ -1230,6 +2163,177 @@ TriggerShutNoShutNveOverlayInterface:
 #===============================================================================
 #                                ADD-REMOVE
 #===============================================================================
+# cannot be added to vxlan trigger list because it will affect other multisite triggers
+TriggerAddRemoveNveMultisiteBgwInterface:
+    groups: ['add-remove', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+
+#TriggerAddRemoveBgpAfL2vpnEvpnRewriteEvpnRtAsn:
+#    groups: ['add-remove', 'vxlan']
+#    method: 'checkpoint'
+#    timeout:
+#       max_time: 180
+#       interval: 10
+#    tgn_timeout: 300
+#    tgn_delay: 10
+#    tgn_max_outage: 300
+#    devices:
+#      uut:
+#        None
+
+TriggerAddRemoveNveVniMcastGroup:
+    groups: ['add-remove', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    devices:
+      uut:
+        None
+
+#TriggerDisableEnableNveOverlay:
+#    groups: ['disable-enable', 'vxlan', 'L3']
+#    method: 'checkpoint'
+#    timeout:
+#      max_time: 180
+#      interval: 10
+#    tgn_timeout: 300
+#    tgn_delay: 10
+#    tgn_max_outage: 300
+#    timeout_recovery:
+#      max_time: 400
+#      interval: 20
+#    devices:
+#      uut:
+#        None
+
+TriggerDisableEnableVnSegmentVlanWithNvOverlay:
+    groups: ['disable-enable', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 360
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 600
+    timeout_recovery:
+      max_time: 800
+      interval: 30
+    devices:
+      uut:
+        None
+
+TriggerModifyNveSourceInterfaceLoopback:
+    groups: ['modify', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 400
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    timeout_recovery:
+      max_time: 600
+      interval: 20
+    devices:
+      uut:
+        None
+
+TriggerShutNoShutNveLoopbackInterface:
+    groups: ['shut-noshut', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 360
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    timeout_recovery:
+      max_time: 1200
+      interval: 20
+    devices:
+      uut:
+        None
+
+TriggerModifyEvpnRd:
+    groups: ['modify', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    devices:
+      uut:
+        None
+
+#TriggerUnconfigConfigNveMultisiteBgwInterface:
+#    groups: ['add-remove', 'vxlan', 'L3']
+#    method: 'checkpoint'
+#    timeout:
+#      max_time: 180
+#      interval: 10
+#    tgn_timeout: 300
+#    tgn_delay: 10
+#    tgn_max_outage: 300
+#    devices:
+#      uut:
+#        None
+
+TriggerAddRemoveNveVniMultisiteIngressReplication:
+    groups: ['add-remove', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveEvpnMsiteBgwDelayRestoreTime:
+    groups: ['add-remove', 'vxlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 360
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    timeout_recovery:
+      max_time: 1000
+      interval: 20
+    devices:
+      uut:
+        None
+# removed from vxlan trigger list due to it makes changes on config
+#TriggerAddRemoveNveAdvertiseVirtualRmac:
+#    groups: ['add-remove', 'L3']
+#    method: 'checkpoint'
+#    timeout:
+#      max_time: 360
+#      interval: 10
+#    tgn_timeout: 300
+#    tgn_delay: 10
+#    tgn_max_outage: 300
+#    timeout_recovery:
+#      max_time: 500
+#      interval: 20
+#    devices:
+#      R8:
+#        None
 
 TriggerAddRemoveBgpNeighborRoutemap:
     groups: ['add-remove', 'bgp', 'L3']
@@ -1606,7 +2710,137 @@ TriggerAddRemoveBgpNeighborAsOverride:
     devices:
       uut:
         None
-        
+
+TriggerAddRemoveMsdpPeer:
+    groups: ['add-remove', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 150
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveMsdpOriginatorId:
+    groups: ['add-remove', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoteMsdpSaFilterIn:
+    groups: ['add-remove', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveMsdpSaFilterOut:
+    groups: ['add-remove', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveMsdpSaLimit:
+    groups: ['add-remove', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveMsdpMeshGroup:
+    groups: ['add-remove', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveMsdpKeepaliveHoldtime:
+    groups: ['add-remove', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveMsdpReconnectInterval:
+    groups: ['add-remove', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemoveMsdpDescription:
+    groups: ['add-remove', 'msdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
+TriggerAddRemovePimNeighborFilter:
+    groups: ['add-remove', 'pim', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 20
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices:
+      uut:
+        None
+
 #===============================================================================
 #                                RESTART
 #===============================================================================

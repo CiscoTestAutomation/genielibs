@@ -358,6 +358,22 @@ TriggerReload:
       uut:
         None
 
+TriggerIssu:
+    groups: ['ha', 'issu', 'L3']
+    update_verifications: ['Verify_Boot',
+                           'Verify_Dir',
+                           'Verify_Inventory',
+                           'Verify_Platform',
+                           'Verify_Redundancy',
+                           'Verify_Version']
+    update_pts_features: ['platform']
+    timeout:
+       max_time: 3600
+       interval: 60
+    devices:
+      uut:
+        None
+
 TriggerSwitchover:
     groups: ['ha', 'switchover', 'L3']
     update_verifications: ['Verify_Boot',

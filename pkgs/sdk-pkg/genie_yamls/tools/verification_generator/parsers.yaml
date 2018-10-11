@@ -161,4 +161,10 @@ ShowBgpLabels:
     address_family: ['ipv4 unicast', 'ipv4 multicast', 'ipv6 unicast',
                      'ipv6 multicast',  'ipv4 unicast', 'ipv4 multicast',
                      'ipv6 unicast', 'ipv6 multicast']
+ShowIpMsdpPeerVrf:
+   vrf: ['all', 'default']
+ShowIpMsdpSaCacheDetailVrf:
+   vrf: ['all', 'default']
+ShowIpMsdpSummary:
+   vrf: ['all', 'default']
 
