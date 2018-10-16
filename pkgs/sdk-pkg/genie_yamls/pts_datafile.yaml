@@ -52,13 +52,10 @@ platform:
         - main_mem
         - date
         - index
-<<<<<<< HEAD
         - chassis_sn
         - image
         - sn
         - rp_boot_image
-=======
->>>>>>> 52077bb96b9fe38662c5be4c54dd716ba29de872
 
 bgp:
     source:
@@ -95,11 +92,8 @@ bgp:
         - router_id
         - connections_dropped
         - connections_established
-<<<<<<< HEAD
         - advertised
         - prefixes
-=======
->>>>>>> 52077bb96b9fe38662c5be4c54dd716ba29de872
 
 interface:
     source:
@@ -134,10 +128,7 @@ interface:
         - chars_in
         - pkts_out
         - pkts_in
-<<<<<<< HEAD
         - mgmt0
-=======
->>>>>>> 52077bb96b9fe38662c5be4c54dd716ba29de872
 
 mcast:
     source:
@@ -231,7 +222,6 @@ lldp:
         class: lldp.lldp.Lldp
     devices:
         uut: None
-<<<<<<< HEAD
 
 vxlan:
     source:
@@ -283,5 +273,3 @@ vxlan:
         - totalpaths
         - flags
 
-=======
->>>>>>> 52077bb96b9fe38662c5be4c54dd716ba29de872

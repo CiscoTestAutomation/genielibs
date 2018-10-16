@@ -1,6 +1,19 @@
-# August 20th
-  
-* Added Vxlan triggers (NXOS)
+
+| Module                  | Version       |
+| ------------------------|:-------------:|
+| ``genie.libs.sdk``      | 3.1.0         |
+
+Features
+========
+* Added learn_system in sdk/libs subsection.py to learn specific attributes
+* Added get_uut, get_uut_neighbor in sdk/libs prepostprocessors to get uut/uut neighbors
+* Added learn_config built up from ShowRunPim in Pim conf object.
+
+--------------------------------------------------------------------------------
+                                VXLAN
+--------------------------------------------------------------------------------
+
+* Triggers (NXOS)
     * TriggerAddRemoveEvpnMsiteBgwDelayRestoreTime
     * TriggerAddRemoveNveVniMcastGroup
     * TriggerAddRemoveNveVniMultisiteIngressReplication
@@ -29,7 +42,7 @@
     * TriggerUnconfigConfigVlanVnsegment
     * TriggerUnconfigConfigVxlanNveOverlayInterface
 
-* Added Vxlan verification (NXOS)
+* verification (NXOS)
     * Verify_L2routeEvpnEternetSegmentAll
     * Verify_BgpL2vpnEvpnNeighbors
     * Verify_BgpL2vpnEvpnRouteType
@@ -48,31 +61,11 @@
     * Verify_NveVni
     * Verify_NveVniSummary
 
-# August 21st
+--------------------------------------------------------------------------------
+                                MSDP
+--------------------------------------------------------------------------------
 
-* New triggers added.
-	* TriggerClearIpRoute
-	* TriggerClearIpv6Route
-	* TriggerClearIpRouting
-	* TriggerClearRouting
-	* TriggerClearIpMroute
-	* TriggerClearIpv6Mroute
-	* TriggerUnconfigConfigBsrRpInterface
-	* TriggerUnconfigConfigBsrRpVrfInterface
-	* TriggerUnconfigConfigStaticRpInterface
-	* TriggerUnconfigConfigStaticRpVrfInterface
-	* triggerUnconfigConfigPimNbrInterface
-	* triggerUnconfigConfigPimNbrVrfInterface
-	* TriggerShutNoShutBsrRpInterface
-	* TriggerShutNoShutBsrRpVrfInterface
-	* TriggerShutNoShutStaticRpInterface
-	* TriggerShutNoShutStaticRpVrfInterface
-	* triggerShutNoShutPimNbrInterface
-	* triggerShutNoShutPimNbrVrfInterface
-
-# September 10th
-  
-* Added Msdp Triggers (NXOS)
+* Triggers (NXOS)
     * TriggerUnconfigConfigMsdpPeer
     * TriggerUnconfigConfigMsdpSaFilterIn
     * TriggerUnconfigConfigMsdpSaFilterOut
@@ -100,34 +93,15 @@
     * TriggerAddRemoveMsdpKeepaliveHoldtime
     * TriggerAddRemoveMsdpReconnectInterval
     * TriggerAddRemoveMsdpDescription
-
-# September 11th
-  
-* Added Msdp Triggers (NXOS)
     * TriggerClearMsdpPeer
     * TriggerClearMsdpStatistics
     * TriggerClearMsdpPolicyStatisticsSaPolicyIn
     * TriggerClearMsdpPolicyStatisticsSaPolicyOut
     * TriggerClearMsdpSaCache
     * TriggerClearMsdpRoute
-
-# September 13th
-  
-* Added Pim Triggers (NXOS)
-    * TriggerShutNoShutAutoRpInterface
-    * TriggerShutNoShutAutoRpVrfInterface
-    * TriggerUnconfigConfigAutoRpInterface
-    * TriggerUnconfigConfigAutoRpVrfInterface  
-* Added Msdp triggers (NXOS)
     * TriggerAddRemoveMsdpPeer
-    
-* Added learn_system in sdk/libs subsection.py to learn specific attributes
-* Added get_uut, get_uut_neighbor in sdk/libs prepostprocessors to get uut/uut neighbors
-* Added learn_config built up from ShowRunPim in Pim conf object.
 
-# September 14th
-  
-* Added Msdp Verifications (NXOS)
+* Verifications (NXOS)
     * Verify_IpMsdpPeerVrf_vrf_all
     * Verify_IpMsdpPeerVrf_vrf_default
     * Verify_IpMsdpSaCacheDetailVrf_vrf_all
@@ -135,16 +109,28 @@
     * Verify_IpMsdpSummary_vrf_all
     * Verify_IpMsdpSummary_vrf_default
 
-# September 18th
-  
-* Added Pim Triggers (NXOS)
+--------------------------------------------------------------------------------
+                                 PIM
+--------------------------------------------------------------------------------
+
+* Triggers (NXOS)
+    * TriggerShutNoShutAutoRpInterface
+    * TriggerShutNoShutAutoRpVrfInterface
+    * TriggerUnconfigConfigAutoRpInterface
+    * TriggerUnconfigConfigAutoRpVrfInterface  
     * TriggerModifyPimNeighborFilter
     * TriggerUnconfigConfigPimNeighborFilter
     * TriggerAddRemovePimNeighborFilter
+    * TriggerUnconfigConfigPimNbrInterface
+    * TriggerUnconfigConfigPimNbrVrfInterface
+    * TriggerShutNoShutPimNbrInterface
+    * TriggerShutNoShutPimNbrVrfInterface
 
-# September 21st
+--------------------------------------------------------------------------------
+                                 LISP
+--------------------------------------------------------------------------------
 
-* Added Lisp Verifications (IOSXE)
+* Verifications (IOSXE)
     * Verify_LispSession
     * Verify_LispPlatform
     * Verify_LispDynamicEidDetail
@@ -175,3 +161,27 @@
     * Verify_LispServiceIpv4Summary
     * Verify_LispServiceIpv6Summary
     * Verify_LispServiceEthernetSummary
+
+--------------------------------------------------------------------------------
+                                 MCAST
+--------------------------------------------------------------------------------
+* Triggers
+    * TriggerClearIpMroute
+    * TriggerClearIpv6Mroute
+    * TriggerUnconfigConfigBsrRpInterface
+    * TriggerUnconfigConfigBsrRpVrfInterface
+    * TriggerShutNoShutBsrRpInterface
+    * TriggerShutNoShutBsrRpVrfInterface
+    * TriggerUnconfigConfigStaticRpInterface
+    * TriggerUnconfigConfigStaticRpVrfInterface
+    * TriggerShutNoShutStaticRpInterface
+    * TriggerShutNoShutStaticRpVrfInterface
+
+--------------------------------------------------------------------------------
+                                 ROUTING
+--------------------------------------------------------------------------------
+* Triggers
+    * TriggerClearIpRoute
+    * TriggerClearIpv6Route
+    * TriggerClearIpRouting
+    * TriggerClearRouting

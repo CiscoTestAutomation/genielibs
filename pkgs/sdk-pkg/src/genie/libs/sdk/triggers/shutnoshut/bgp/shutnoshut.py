@@ -185,10 +185,6 @@ class TriggerShutNoShutBgpNeighbors(TriggerShutNoShut):
                         'session_state', 'shut'],
                         ['info', 'instance', '(?P<instance>.*)', 'vrf',
                         '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
-                        'address_family', '(?P<address_family>.*)',
-                        'session_state', 'shut (admin)'],
-                        ['info', 'instance', '(?P<instance>.*)', 'vrf',
-                        '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
                         'shutdown', True]],
                     'kwargs':
                         {'attributes':['info']},

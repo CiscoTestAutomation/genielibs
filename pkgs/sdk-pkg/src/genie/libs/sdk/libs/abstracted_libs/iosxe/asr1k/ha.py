@@ -73,14 +73,11 @@ class HA(HA_iosxe):
         device = self.device
         filetransfer = FileUtils.from_device(device)
 
-<<<<<<< HEAD
         if not device.filetransfer_attributes['protocol']:
             raise Exception("Unable to continue ISSU process, file transfer "
                 "'protocol' is missing. Check the testbed yaml file and the "
                 "provided arguments.")
 
-=======
->>>>>>> 52077bb96b9fe38662c5be4c54dd716ba29de872
         for disk in ['harddisk:', 'stby-harddisk:']:
 
             # Check for space on RP and SRP
