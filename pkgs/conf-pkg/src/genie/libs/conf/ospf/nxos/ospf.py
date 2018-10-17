@@ -253,8 +253,6 @@ class Ospf(ABC):
                             #   timers throttle lsa 5000 10000 20000
                             if attributes.value('spf_lsa_start'):
 
-                                import pdb ; pdb.set_trace()
-
                                 # timers throttle {spf_lsa_start}
                                 throttle_lsa = 'timers throttle lsa {spf_lsa_start}'
 
