@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /bin/env python
 
 '''Setup file for libs.conf
 
@@ -15,10 +15,11 @@ from setuptools import setup, find_packages
 _INTERNAL_SUPPORT = 'asg-genie-support@cisco.com'
 _EXTERNAL_SUPPORT = 'pyats-support-ext@cisco.com'
 
-def read(*paths):
-    '''read and return txt content of file'''
-    with open(os.path.join(*paths)) as fp:
-        return fp.read()
+_INTERNAL_LICENSE = 'Cisco Systems, Inc. Cisco Confidential',
+_EXTERNAL_LICENSE = 'Apache 2.0'
+
+_INTERNAL_URL = 'http://wwwin-genie.cisco.com/'
+_EXTERNAL_URL = 'https://developer.cisco.com/site/pyats/'
 
 DEVNET_CMDLINE_OPT = '--devnet'
 devnet = False
@@ -67,7 +68,7 @@ def version_info(*paths):
     return version, build_version_range(version)
 
 # compute version range
-version = find_version('src', 'genie', 'libs', 'conf', '__init__.py')
+version, version_range = version_info('src', 'genie', 'libs', 'conf', '__init__.py')
 
 install_requires = []
 
@@ -81,14 +82,14 @@ setup(
     long_description = read('DESCRIPTION.rst'),
 
     # the project's main homepage.
-    url = 'https://developer.cisco.com/site/pyats/',
+    url = URL,
 
     # author details
     author = 'Cisco Systems Inc.',
-    author_email = 'pyats-support-ext@cisco.com',
+    author_email = SUPPORT,
 
     # project licensing
-    license = 'Apache 2.0',
+    license = LICENSE,
 
     # see https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
