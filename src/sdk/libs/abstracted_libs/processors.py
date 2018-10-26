@@ -575,7 +575,7 @@ def traceroute_loopback(section, traceroute_args, action='traceroute'):
         if not ping_pass:
             section.passx('TRACEROUTE PRE POST PROCESSOR FAILED, SKIPPED THE TRIGGER')
 
-def get_uut(section, feature, **kwargs):
+def get_uut(section, attribute, **kwargs):
     '''Get uut with provided features from learned LTS in common_setup
 
     Can be controlled via sections parameters which is provided by the
@@ -584,7 +584,7 @@ def get_uut(section, feature, **kwargs):
     Args:
       Mandatory:
         section (`obj`): Aetest Subsection object.
-        feature (`str`) : feature that want to get on device
+        attribute (`str`) : attribute that want to get on device
         vrf(`str`): vrf name specific.
                     If nothing give, choose any non-default vrfs
 
@@ -596,7 +596,8 @@ def get_uut(section, feature, **kwargs):
         None
 
     '''
-    log.info(banner('Finding device which has feature "%s"' % feature))
+    log.info(banner('Finding device which has feature "%s"' % attribute))
+
     if section and getattr(section, 'parameters', {}):
         # get testbed
         testbed = section.parameters.get('testbed', {})
@@ -604,40 +605,56 @@ def get_uut(section, feature, **kwargs):
         # get default uut
         uut = testbed.devices['uut']
 
+        # check if feature uut has previously learned
+        if section.parent.parameters.get('%s_uut' % attribute, None):
+            section.parameters['uut'] = getattr(uut, '%s_uut' % attribute)
+            
+            log.info('Feature %s has previously learned\n'
+                'Found device: %s' % (attribute, section.parameters['uut'].name))
+            return
+
         # get LTS
         lts_dict = section.parent.parameters.get('lts', None)
         if not lts_dict:
-            log.info('No LTS is learned, Use default uut %s for testcase %s' % (uut.name, section.uid))
+            log.info('No LTS is learned, Use default uut %s '
+                'for testcase %s' % (uut.name, section.uid))
             return 
 
-        # check default uut has the specific feature,
-        # if not, learn the other devices
-        # change the section uut
-        if feature == 'auto_rp_interface':
-            # check if uut has auto_rp feature
-            if not kwargs.get('vrf', None):
-                vrf = '(?P<vrf>^(?!default)\w+$)'
-            else:
-                vrf = kwargs['vrf']
-            reqs = [['conf.pim.Pim', '(?P<dev>.*)', 'device_attr',
-                     '(?P<dev>.*)', '_vrf_attr', vrf, '_address_family_attr',
-                     'ipv4', 'send_rp_announce_intf', '(?P<intf>.*)']]
-            rs = [R(r) for r in reqs]
-
+        # get devices specific feature R object,
+        try:
+            rs = globals()['_get_%s_device' % attribute](kwargs.get('vrf', None))
+        except Exception as e:
+            section.skipped('%s device cannot be found:\n%s' %(attribute, str(e)))
+            
+        # find the returned feature 
+        req_msg = '\n'.join([str(re.args) for re in rs])
+        log.info('Find requirements from LTS:\n{}'.format(req_msg))
         ret = find([lts_dict], *rs, filter_=False)
+
         if not ret:
-            log.info('LTS does not have feature "%s", will use default uut %s' % (feature, uut.name))
+            log.info('Feature "%s" is not found in LTS, will '
+                'use default uut %s' % (attribute, uut.name))
             return
 
         # unchange uut if uut in the lts
         if True in [uut.name in i[1] for i in ret]:
-            log.info('Finding device which has feature "%s"\n[Unchanged] device: uut %s' % (feature, uut.name))
+            log.info('Finding device which has feature '
+                '"%s"\n[Unchanged] device: uut %s' % (attribute, uut.name))
             return
 
         # choose one from it to change uut for this section
-        section.uut = testbed.devices[ret[0][1][1]]
-        log.info('Finding device which has feature "%s"\n[Changed] device: %s' % (feature, section.uut.name))
-        section.uid = '%s.%s' % (section.uid.split('.')[0], section.uut.name)
+        section.parameters['uut'] = testbed.devices[ret[0][1][1]]
+
+        # assign feature uut to uut object -- 
+        # in case multiple triggers looks for the same uut, save time
+        section.parent.parameters['%s_uut' % attribute] = section.parameters['uut']
+
+        # change secion id
+        section.uid = '%s.%s' % (section.uid.split('.')[0], section.parameters['uut'].name)
+
+        # print logger
+        log.info('Finding device which has feature '
+            '"%s"\n[Changed] device: %s' % (attribute, section.parameters['uut'].name))
 
 def get_uut_neighbor(section, **kwargs):
     '''Get uut neighbors from learned LTS in common_setup
@@ -708,7 +725,7 @@ def get_uut_neighbor(section, **kwargs):
         testbed = section.parameters.get('testbed', {})
 
         # get default uut
-        uut = testbed.devices['uut']
+        uut = section.parameters.get('uut', getattr(section, 'uut', testbed.devices['uut']))
 
         # get LTS
         lts_dict = section.parent.parameters.get('lts', {})\
@@ -737,3 +754,114 @@ def get_uut_neighbor(section, **kwargs):
         [uut.neighbors.update(i) for i in ret]
 
         log.info('Get uut {u} neighbors information \n{d}'.format(u=uut.name, d=yaml.dump(uut.neighbors)))
+
+
+def _get_auto_rp_interface_device(vrf):
+    '''Get device which has auto-rp 'up' interface from learned LTS in common_setup
+
+    Can be controlled via sections parameters which is provided by the
+    triggers/verification datafile
+
+    Args:
+      Mandatory:
+        vrf (`str`) : vrf information that want the feaure on
+
+    Returns:
+        AETEST results
+
+
+    Raises:
+        None
+
+    '''
+    # check if uut has auto_rp feature
+    if not vrf:
+        vrf = '(?P<vrf>^(?!default)\w+$)'
+
+    reqs = [['conf.pim.Pim', '(?P<dev>.*)', 'device_attr',
+             '(?P<dev>.*)', '_vrf_attr', vrf, '_address_family_attr',
+             'ipv4', 'send_rp_announce_intf', '(?P<intf>.*)']]
+
+    rs = [R(r) for r in reqs]
+    return rs
+
+def _get_bsr_rp_device(vrf):
+    '''Get device which has bsr_rp from learned LTS in common_setup
+
+    Can be controlled via sections parameters which is provided by the
+    triggers/verification datafile
+
+    Args:
+      Mandatory:
+        vrf (`str`) : vrf information that want the feaure on
+
+    Returns:
+        AETEST results
+
+
+    Raises:
+        None
+
+    '''    
+    # check if uut has bsr_rp feature
+    if not vrf:
+        vrf = '(?P<vrf>^(?!default)\w+$)'
+
+    reqs = [['ops.pim.pim.Pim', 'vrf', vrf, 'address_family',
+             '(.*)', 'rp', 'bsr', '(?P<bsr>.*)']]
+    rs = [R(r) for r in reqs]
+    return rs
+
+def _get_static_rp_device(vrf):
+    '''Get device which has static_rp from learned LTS in common_setup
+
+    Can be controlled via sections parameters which is provided by the
+    triggers/verification datafile
+
+    Args:
+      Mandatory:
+        vrf (`str`) : vrf information that want the feaure on
+
+    Returns:
+        AETEST results
+
+
+    Raises:
+        None
+
+    '''    
+    # check if uut has bsr_rp feature
+    if not vrf:
+        vrf = '(?P<vrf>^(?!default)\w+$)'
+
+    reqs = [['ops.pim.pim.Pim', 'vrf', vrf, 'address_family',
+             '(.*)', 'rp', 'static_rp', '(?P<static_rp>.*)']]
+    rs = [R(r) for r in reqs]
+    return rs
+
+def _get_msdp_device(vrf):
+    '''Get device which has msdp from learned LTS in common_setup
+
+    Can be controlled via sections parameters which is provided by the
+    triggers/verification datafile
+
+    Args:
+      Mandatory:
+        vrf (`str`) : vrf information that want the feaure on
+
+    Returns:
+        AETEST results
+
+
+    Raises:
+        None
+
+    '''    
+    # check if uut has msdp feature
+    if not vrf:
+        vrf = '(?P<vrf>.*)'
+
+    reqs = [['ops.msdp.msdp.Msdp', '(?P<dev>.*)', 'info', 'vrf', vrf, 'peer',
+             '(?P<peer>.*)', 'session_state', 'established']]
+    rs = [R(r) for r in reqs]
+    return rs

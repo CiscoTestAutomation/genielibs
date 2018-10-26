@@ -1945,12 +1945,12 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
 
     _interface_name_types = (
         'FastEthernet',
+        'FASTETHERNET',
         'GigabitEthernet',
         'TenGigE',
         'TwentyFiveGigE',
         'HundredGigE',
         'FortyGigE',
-        # TODO more?
     )
 
     # Restrict to only IOS-XR strings

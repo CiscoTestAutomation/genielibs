@@ -13,7 +13,6 @@ class test_bridge_domain(unittest.TestCase):
 
     def test_init(self):
 
-        # import pdb; pdb.set_trace()
         testbed = Genie.testbed = Testbed()
         dev1 = Device(testbed=testbed, name='PE1', os='iosxr')
         intf1 = Interface(device=dev1, name='GigabitEthernet0/0/0/1')

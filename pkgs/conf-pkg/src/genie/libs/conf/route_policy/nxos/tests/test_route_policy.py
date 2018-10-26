@@ -41,7 +41,6 @@ class test_route_policy(TestCase):
              ' exit'
             ]))
 
-        # import pdb; pdb.set_trace()
         rpl2 = RoutePolicy(policy_definition='rpl2',
                            route_disposition='deny')
         dev2.add_feature(rpl2)

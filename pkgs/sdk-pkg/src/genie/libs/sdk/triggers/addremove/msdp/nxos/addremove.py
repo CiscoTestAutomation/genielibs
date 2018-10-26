@@ -17,8 +17,8 @@ log = logging.getLogger(__name__)
 
 # Which key to exclude for Msdp Ops comparison
 msdp_exclude = ['maker', 'elapsed_time', 'discontinuity_time',
-           'keepalive', 'total', 'up_time', 'expire',
-           'last_message_received', 'num_of_comparison',
+           'keepalive', 'total', 'up_time', 'expire', 'remote',
+           'last_message_received', 'num_of_comparison', 'rpf_failure',
            'total_accept_count', 'total_reject_count', 'notification']
 
 # Which key to exclude for Interface Ops comparison
@@ -464,8 +464,7 @@ class TriggerAddRemoveMsdpKeepaliveHoldtime(TriggerAddRemove):
                                                '_peer_attr', '(?P<peer>.*)', NotExists('holdtime_interval')]],
                                           'all_keys': True,
                                           'kwargs':{'attributes': [
-                                              'msdp[vrf_attr][(.*)][peer_attr][(.*)][holdtime_interval]',
-                                              'msdp[vrf_attr][(.*)][peer_attr][(.*)][keepalive_interval]']},
+                                              'msdp[vrf_attr][(.*)][peer_attr][(.*)]']},
                                           'exclude': msdp_exclude},
                                     'ops.msdp.msdp.Msdp':{
                                           'requirements':[\
@@ -554,7 +553,7 @@ class TriggerAddRemoveMsdpReconnectInterval(TriggerAddRemove):
                                               ['device_attr', '{uut}', '_vrf_attr', '(?P<vrf>.*)',
                                                NotExists('global_connect_retry_interval')]],
                                           'kwargs':{'attributes': [
-                                              'msdp[vrf_attr][(.*)][global_connect_retry_interval]']},
+                                              'msdp[vrf_attr][(.*)]']},
                                           'exclude': msdp_exclude},
                                     'ops.msdp.msdp.Msdp':{
                                           'requirements':[\
@@ -633,7 +632,7 @@ class TriggerAddRemoveMsdpDescription(TriggerAddRemove):
                                                '_peer_attr', '(?P<peer>.*)', NotExists('description')]],
                                           'all_keys': True,
                                           'kwargs':{'attributes': [
-                                              'msdp[vrf_attr][(.*)][peer_attr][(.*)][description]']},
+                                              'msdp[vrf_attr][(.*)][peer_attr][(.*)]']},
                                           'exclude': msdp_exclude}},
                       config_info={'conf.msdp.Msdp':{
                                        'requirements':[

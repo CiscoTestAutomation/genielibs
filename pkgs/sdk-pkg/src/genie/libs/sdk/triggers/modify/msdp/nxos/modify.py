@@ -1,5 +1,11 @@
 '''NXOS Implementation for Msdp modify triggers'''
 
+# python
+from copy import deepcopy 
+
+# pyats
+from ats import aetest
+
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.modify.modify import TriggerModify
@@ -9,8 +15,8 @@ from ats.utils.objects import Not, NotExists
 
 # Which key to exclude for Msdp Ops comparison
 msdp_exclude = ['maker', 'elapsed_time', 'discontinuity_time',
-           'keepalive', 'total', 'up_time', 'expire',
-           'last_message_received', 'num_of_comparison',
+           'keepalive', 'total', 'up_time', 'expire', 'remote',
+           'last_message_received', 'num_of_comparison', 'rpf_failure',
            'total_accept_count', 'total_reject_count', 'notification']
 
 # Which key to exclude for Interface Ops comparison
@@ -85,12 +91,15 @@ class TriggerModifyMsdpOriginatorId(TriggerModify):
                                               ['info', '(?P<modify_originator_id>.*)', 'ipv4',
                                                '(?P<ipv4>.*)', 'ip', '(?P<diff_originator_ip>.*)'],
                                               ['info', '(?P<modify_originator_id>.*)', 'vrf',
-                                               '(?P<vrf>.*)']],
+                                               '(?P<vrf>.*)'],
+                                              ['info', '(?P<modify_originator_id>.*)', 'oper_status',
+                                               'up']],
                                           'all_keys': True,
                                           'kwargs':{'attributes': [
                                               'info[(.*)][ipv4][(.*)][ip]',
-                                              'info[(.*)][vrf]']},
-                                          'exclude': interface_exclude},},
+                                              'info[(.*)][vrf]',
+                                              'info[(.*)][oper_status]']},
+                                          'exclude': interface_exclude}},
                       config_info={'conf.msdp.Msdp':{
                                        'requirements':[
                                          ['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)',
@@ -104,7 +113,17 @@ class TriggerModifyMsdpOriginatorId(TriggerModify):
                                           'kwargs':{'attributes': [
                                               'info[vrf][(.*)][global][originator_id]',
                                               'info[vrf][(.*)][peer][(.*)][session_state]']},
-                                          'exclude': msdp_exclude}},
+                                          'exclude': msdp_exclude},
+                                  'ops.interface.interface.Interface':{
+                                        'requirements':[\
+                                            ['info', '(?P<modify_originator_id>.*)', 'oper_status',
+                                             'up']],
+                                        'all_keys': True,
+                                        'kwargs':{'attributes': [
+                                            'info[(.*)][ipv4][(.*)][ip]',
+                                            'info[(.*)][vrf]',
+                                            'info[(.*)][oper_status]']},
+                                        'exclude': interface_exclude}},
                       num_values={'vrf': 1, 'peer': 1, 'modify_originator_id': 1})
 
 
@@ -692,6 +711,40 @@ class TriggerModifyMsdpPeerConnectedSource(TriggerModify):
         6. Learn Msdp Ops again and verify it is the same as the Ops in step 1
 
     """
+    @aetest.test
+    def modify_configuration(self, uut, abstract, steps):
+        # shut no-shut msdp to make the change get effected
+        original_conf = deepcopy(self.mapping.config_info['conf.msdp.Msdp']['requirements'])
+
+        # shutdown the peer first        
+        self.mapping.config_info['conf.msdp.Msdp']['requirements'] = \
+          [['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)', 'peer_attr', '(?P<peer>.*)', 'enable', False]]
+        super().modify_configuration(uut, abstract, steps)
+
+        # modify connected-source
+        self.mapping.config_info['conf.msdp.Msdp']['requirements'] = deepcopy(original_conf)
+        super().modify_configuration(uut, abstract, steps)
+
+        # unshut the peer
+        self.mapping.config_info['conf.msdp.Msdp']['requirements'] = \
+          [['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)', 'peer_attr', '(?P<peer>.*)', 'enable', True]]
+        super().modify_configuration(uut, abstract, steps)
+
+        # revert the requirements
+        self.mapping.config_info['conf.msdp.Msdp']['requirements'] = original_conf
+
+    @aetest.test
+    def restore_configuration(self, uut, method, abstract, steps):
+        # before rollback, need to shutdown the modified peer to
+        # let the rollback successfull  
+        self.mapping.config_info['conf.msdp.Msdp']['requirements'] = \
+          [['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)', 'peer_attr', '(?P<peer>.*)', 'enable', False]]
+        super().modify_configuration(uut, abstract, steps)
+
+        # retore the router
+        super().restore_configuration(uut, method, abstract)
+
+
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.msdp.msdp.Msdp':{
@@ -709,18 +762,22 @@ class TriggerModifyMsdpPeerConnectedSource(TriggerModify):
                                               ['info', '(?P<modify_connect_source>.*)', 'ipv4',
                                                '(?P<ipv4>.*)', 'ip', '(?P<ip>.*)'],
                                               ['info', '(?P<modify_connect_source>.*)', 'vrf',
-                                               '(?P<vrf>.*)']],
+                                               '(?P<vrf>.*)'],
+                                              ['info', '(?P<modify_connect_source>.*)', 'oper_status',
+                                               'up']],
                                           'all_keys': True,
                                           'kwargs':{'attributes': [
                                               'info[(.*)][ipv4][(.*)][ip]',
-                                              'info[(.*)][vrf]']},
-                                          'exclude': msdp_exclude},
+                                              'info[(.*)][vrf]',
+                                              'info[(.*)][oper_status]']},
+                                          'exclude': interface_exclude},
                                     'conf.msdp.Msdp':{
                                           'requirements':[\
                                               ['device_attr', '{uut}', '_vrf_attr', '(?P<vrf>.*)',
                                                '_peer_attr', '(?P<peer>.*)', NotExists('peer_as')]],
                                           'kwargs':{'attributes': [
-                                              'msdp[vrf_attr][(.*)][peer_attr][(.*)][peer_as]']},
+                                              'msdp[vrf_attr][(.*)][peer_attr][(.*)][peer_as]',
+                                              'msdp[vrf_attr][(.*)][peer_attr][(.*)][connected_source]']},
                                           'exclude': msdp_exclude}},
                       config_info={'conf.msdp.Msdp':{
                                        'requirements':[
@@ -736,7 +793,17 @@ class TriggerModifyMsdpPeerConnectedSource(TriggerModify):
                                       ['info', 'vrf', '(?P<vrf>.*)', 'peer',
                                        '(?P<peer>.*)', 'session_state', '(^(?!established).*)']],
                                     'kwargs':{'attributes': ['info[vrf][(.*)][peer][(.*)]']},
-                                    'exclude': msdp_exclude}},
+                                    'exclude': msdp_exclude},
+                                  'ops.interface.interface.Interface':{
+                                    'requirements':[\
+                                              ['info', '(?P<modify_connect_source>.*)', 'oper_status',
+                                               'up']],
+                                          'all_keys': True,
+                                          'kwargs':{'attributes': [
+                                              'info[(.*)][ipv4][(.*)][ip]',
+                                              'info[(.*)][vrf]',
+                                              'info[(.*)][oper_status]']},
+                                          'exclude': interface_exclude}},
                       num_values={'vrf': 1, 'peer': 1, 'modify_connect_source': 1})
 
 

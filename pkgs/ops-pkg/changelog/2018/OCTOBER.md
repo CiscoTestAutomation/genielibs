@@ -1,7 +1,3 @@
-# August 20th
-
+# v3.1.0
 * Added Vxlan ops (NXOS)
-
-# September 25th
-
 * Added LISP ops (IOSXE)

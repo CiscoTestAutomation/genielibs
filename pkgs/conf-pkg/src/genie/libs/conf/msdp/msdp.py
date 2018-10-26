@@ -304,7 +304,7 @@ class Msdp(DeviceFeature, LinkFeature):
 
         # Take a copy of the object dictionary
         if not hasattr(maker, 'msdp'):
-            maker.pim = {}
+            maker.msdp = {}
         new_msdp = maker.msdp
 
         # List of mapped conf objects

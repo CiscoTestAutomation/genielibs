@@ -508,6 +508,7 @@ class VirtualInterface(Interface, genie.libs.conf.interface.VirtualInterface):
 class LoopbackInterface(VirtualInterface, genie.libs.conf.interface.LoopbackInterface):
 
     _interface_name_types = (
+        'loopback',
         'Loopback',
     )
 
@@ -556,14 +557,20 @@ class PortchannelInterface(VirtualInterface, genie.libs.conf.interface.LagInterf
 class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInterface):
 
     _interface_name_types = (
-        'Ethernet',  # TODO verify
+        'ethernet',
+        'Ethernet',
+        'fastethernet',
         'FastEthernet',
+        'gigabitethernet',
         'GigabitEthernet',
+        'tengigabitethernet',
         'TenGigabitEthernet',
-        'TwentyFiveGigabitEthernet',  # TODO verify
+        'twentyfivegigabitethernet',
+        'TwentyFiveGigabitEthernet',
+        'hundredgigabitethernet',
         'HundredGigabitEthernet',
+        'fortygigabitethernet',
         'FortyGigabitEthernet',
-        # TODO more?
     )
 
 
@@ -711,6 +718,7 @@ class PseudowireInterface(VirtualInterface):
 
     _interface_name_types = (
         'pseudowire',
+        'Pseudowire',
     )
 
     pseudowire_neighbor = managedattribute(
@@ -767,6 +775,7 @@ class PseudowireInterface(VirtualInterface):
 class TunnelInterface(VirtualInterface, genie.libs.conf.interface.TunnelInterface):
 
     _interface_name_types = (
+        'tunnel',
         'Tunnel',
     )
 
@@ -1019,6 +1028,7 @@ class VlanInterface(
     """
 
     _interface_name_types = (
+        'vlan',
         'Vlan',
     )
 

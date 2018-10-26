@@ -34,7 +34,7 @@ class TriggerClearIpMroute(TriggerClear):
                                               ['table', 'vrf', '(?P<vrf>^default$)',
                                                'address_family', '(?P<af>ipv4)',
                                                'multicast_group', '(?P<group>.*)',
-                                               'source_address', '(?P<source>.*)', 'uptime', '(.*)']],
+                                               'source_address', '(?P<source>.*)', 'uptime', '(?P<uptime>.*)']],
                                           'kwargs':{'attributes': [
                                               'table[vrf][(.*)][address_family][ipv4][multicast_group][(.*)][source_address][(.*)]']},
                                           'exclude': exclude}},
@@ -70,7 +70,7 @@ class TriggerClearIpv6Mroute(TriggerClear):
                                               ['table', 'vrf', '(?P<vrf>^default$)',
                                                'address_family', '(?P<af>ipv6)',
                                                'multicast_group', '(?P<group>.*)',
-                                               'source_address', '(?P<source>.*)', 'uptime', '(.*)']],
+                                               'source_address', '(?P<source>.*)', 'uptime', '(?P<uptime>.*)']],
                                           'kwargs':{'attributes': [
                                               'table[vrf][(.*)][address_family][ipv6][multicast_group][(.*)][source_address][(.*)]']},
                                           'exclude': exclude}},
@@ -106,7 +106,7 @@ class TriggerClearIpMrouteVrfAll(TriggerClear):
                                               ['table', 'vrf', '(?P<vrf>.*)',
                                                'address_family', '(?P<af>ipv4)',
                                                'multicast_group', '(?P<group>.*)',
-                                               'source_address', '(?P<source>.*)', 'uptime', '(.*)']],
+                                               'source_address', '(?P<source>.*)', 'uptime', '(?P<uptime>.*)']],
                                           'kwargs':{'attributes': [
                                               'table[vrf][(.*)][address_family][ipv4][multicast_group][(.*)][source_address][(.*)]']},
                                           'exclude': exclude}},
@@ -142,7 +142,7 @@ class TriggerClearIpv6MrouteVrfAll(TriggerClear):
                                               ['table', 'vrf', '(?P<vrf>.*)',
                                                'address_family', '(?P<af>ipv6)',
                                                'multicast_group', '(?P<group>.*)',
-                                               'source_address', '(?P<source>.*)', 'uptime', '(.*)']],
+                                               'source_address', '(?P<source>.*)', 'uptime', '(?P<uptime>.*)']],
                                           'kwargs':{'attributes': [
                                               'table[vrf][(.*)][address_family][ipv6][multicast_group][(.*)][source_address][(.*)]']},
                                           'exclude': exclude}},

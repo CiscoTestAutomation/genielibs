@@ -216,6 +216,10 @@ class test_nx_interface(TestCase):
         # make intf2 as L2 interface
         intf1.switchport_enable = True
 
+        intf2.enabled = True
+        intf2.switchport_enable = True
+        intf2.switchport_mode = 'trunk'
+        intf2.trunk_add_vlans = '1,2,3'
 
         # Build config
         cfgs = intf1.build_config(apply=False)
@@ -246,6 +250,19 @@ class test_nx_interface(TestCase):
                 ' exit'
                 ]))
 
+        cfgs = intf2.build_config(apply=False)
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(cfgs),
+            '\n'.join([
+                'interface Ethernet3/9',
+                ' no shutdown',
+                ' switchport',
+                ' switchport mode trunk',
+                ' switchport trunk allowed vlan add 1,2,3',
+                ' exit'
+                ]))
+
         # Build unconfig
         uncfgs = intf1.build_unconfig(apply=False, attributes={'mtu': True, 'enabled':True})
         # Check config build correctly
@@ -255,6 +272,16 @@ class test_nx_interface(TestCase):
                 'interface Ethernet3/7',
                 ' no mtu',
                 ' no shutdown',
+                ' exit'
+                ]))
+
+        uncfgs = intf2.build_unconfig(apply=False, attributes={'trunk_add_vlans': True})
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(uncfgs),
+            '\n'.join([
+                'interface Ethernet3/9',
+                ' switchport trunk allowed vlan remove 1,2,3',
                 ' exit'
                 ]))
 

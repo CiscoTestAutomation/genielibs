@@ -23,11 +23,11 @@ naming convention as Yang model.
 3. List of all the show commands that can be used to extract the attribute
 values. These commands will be used for both Conf and Ops structure
 
-![neighbor](showcommands.png)
+![neighbor](_static/showcommands.png)
 
 4. Ops structure should be python dictionary style.
 
-![self_info](self_info.png)
+![self_info](_static/self_info.png)
 
 
 ***Here are some key points when creating above Ops structure.***

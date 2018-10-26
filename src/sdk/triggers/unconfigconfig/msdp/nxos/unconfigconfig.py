@@ -6,8 +6,8 @@ from genie.libs.sdk.triggers.unconfigconfig.unconfigconfig import TriggerUnconfi
 
 # Which key to exclude for Msdp Ops comparison
 msdp_exclude = ['maker', 'elapsed_time', 'discontinuity_time',
-           'keepalive', 'total', 'up_time', 'expire',
-           'last_message_received', 'num_of_comparison',
+           'keepalive', 'total', 'up_time', 'expire', 'remote',
+           'last_message_received', 'num_of_comparison', 'rpf_failure',
            'total_accept_count', 'total_reject_count', 'notification']
 
 
@@ -439,7 +439,7 @@ class TriggerUnconfigConfigMsdpOriginatorId(TriggerUnconfigConfig):
                                               ['device_attr', '{uut}', '_vrf_attr', '(?P<vrf>.*)',
                                                'originating_rp', '(?P<originating_rp>.*)']],
                                           'kwargs':{'attributes': [
-                                              'info[vrf][(.*)][originating_rp]']},
+                                              'msdp[vrf_attr][(.*)][originating_rp]']},
                                           'exclude': msdp_exclude}},
                       config_info={'conf.msdp.Msdp':{
                                        'requirements':[
@@ -516,8 +516,7 @@ class TriggerUnconfigConfigMsdpKeepaliveHoldtime(TriggerUnconfigConfig):
                                                '(?P<holdtime_interval>.*)']],
                                           'all_keys': True,
                                           'kwargs':{'attributes': [
-                                              'msdp[vrf_attr][(.*)][peer_attr][(.*)][holdtime_interval]',
-                                              'msdp[vrf_attr][(.*)][peer_attr][(.*)][keepalive_interval]']},
+                                              'msdp[vrf_attr][(.*)][peer_attr][(.*)]']},
                                           'exclude': msdp_exclude},
                                     'ops.msdp.msdp.Msdp':{
                                           'requirements':[\
@@ -688,7 +687,7 @@ class TriggerUnconfigConfigMsdpDescription(TriggerUnconfigConfig):
                                                '_peer_attr', '(?P<peer>.*)', 'description',
                                                '(?P<description>.*)']],
                                           'kwargs':{'attributes': [
-                                              'msdp[vrf_attr][(.*)][peer_attr][(.*)][description]']},
+                                              'msdp[vrf_attr][(.*)][peer_attr][(.*)]']},
                                           'exclude': msdp_exclude},
                                     'ops.msdp.msdp.Msdp':{
                                           'requirements':[\

@@ -138,7 +138,6 @@ class test_vrf(unittest.TestCase):
 '    </address-family>\n'
 '  </definition>\n'
 '</vrf>\n']))
-        # import pdb;pdb.set_trace()
         # uncfg1 = ospf.build_unconfig(apply=False)
         # self.assertCountEqual(uncfg1.keys(), ['PE1', 'PE2'])
         # self.assertMultiLineEqual(uncfg1['PE1'], '\n'.join([

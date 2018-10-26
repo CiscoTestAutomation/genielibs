@@ -2,6 +2,7 @@
 import logging
 from copy import deepcopy
 from operator import attrgetter
+from json import dumps
 
 # Genie Libs
 from genie.libs import sdk
@@ -35,6 +36,9 @@ from genie.libs.sdk.libs.utils.normalize import merge_dict
 
 log = logging.getLogger(__name__)
 
+EXCLUDED_DEVICE_TYPES = ['tgn']
+
+
 @aetest.subsection
 def save_bootvar(self, testbed):
     """Check boot information and save bootvar to startup-config
@@ -48,13 +52,18 @@ def save_bootvar(self, testbed):
        Raises:
            pyATS Results
     """
-    devices = []
-    for dev in self.parent.mapping_data['devices']:
-        device = testbed.devices[dev]
-        devices.append(device)
 
     # Create Summary
     summary = Summary(title='Summary', width=90)
+
+    devices = []
+    for dev in self.parent.mapping_data['devices']:
+        device = testbed.devices[dev]
+        if device.type in EXCLUDED_DEVICE_TYPES:
+            msg = "    - This subsection is not supported for 'TGN' devices"
+            summarize(summary, message=msg, device=dev)
+            continue
+        devices.append(device)
 
     device_dict = {}
     failed = False
@@ -222,30 +231,22 @@ def learn_the_system_from_conf_ops(self, testbed, steps, features=None):
         devices.append(dev)
 
     # create the abstract object list
-    worker_ops_devs = []
-    worker_conf_devs = []
-    worker_ops_features = []
-    worker_conf_features = []
-    for device in devices:
-        for ft in features:
-            if 'ops' in ft:
-                worker_ops_devs.append(device)
-                worker_ops_features.append({ft: features[ft]})
-            elif 'conf' in ft:
-                worker_conf_devs.append(device)
-                worker_conf_features.append({ft: features[ft]})
-
-    # pcall on ops
     merged_dict = {}
-    if worker_ops_devs and worker_ops_features:
-        ret = pcall(store_structure, device=worker_ops_devs, feature=worker_ops_features)
+    for ft in features:
+        worker_devs = []
+        worker_features = []
+        for device in devices:
+            worker_devs.append(device)
+            worker_features.append({ft: features[ft]})
+        # pcall for each feature
+        ret = pcall(store_structure, device=worker_devs, feature=worker_features)
         [merge_dict(merged_dict, i) for i in ret]
 
-    # pcall on conf
-    if worker_conf_devs and worker_conf_features:
-        ret = pcall(store_structure, device=worker_conf_devs, feature=worker_conf_features)
-        [merge_dict(merged_dict, i) for i in ret]
-        self.parent.parameters.update(merged_dict)
+
+    self.parent.parameters.update(merged_dict)
+
+    # print out what we learned in LTS
+    log.info('LTS information is \n{d}'.format(d=dumps(merged_dict, indent=5)))
 
 @aetest.subsection
 def load_config_as_string(self, testbed, steps, configs, connect=False):
@@ -299,10 +300,20 @@ def learn_system_defaults(self, testbed):
         dev = testbed.devices[device]
         lookup = Lookup.from_device(dev)
 
+        # Skip in case of TGN device
+        if dev.type in EXCLUDED_DEVICE_TYPES:
+            log.info("This subsection is not supported for "
+                     "TGN device '{}'".format(dev.name))
+            msg = "    - This subsection is not supported for 'TGN' devices"
+            summarize(summary, message=msg, device=dev.name)
+            continue
+
         try:
             self.parent.default_file_system[dev.name] = lookup.sdk.libs.\
                             abstracted_libs.subsection.get_default_dir(
                                 device=dev)
+            msg = "    - Successfully learnt system default directroy"
+            summarize(summary, message=msg, device=device)
         except LookupError as e:
             log.info('Cannot find device {d} correspoding get_default_dir'.\
                 format(d=dev.name))
@@ -316,8 +327,6 @@ def learn_system_defaults(self, testbed):
             self.failed('Unable to learn system default directory',
                 from_exception=e)
 
-        msg = "    - Successfully learnt system default directroy"
-        summarize(summary, message=msg, device=device)
     summary.print()
 
     if not self.parent.default_file_system:

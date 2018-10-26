@@ -117,6 +117,10 @@ class Mld(Routing, DeviceFeature, InterfaceFeature):
 
             
             class InterfaceAttributes(InterfaceSubAttributes):
+
+                def __init__(self, parent, key):
+                    self.intf = key
+                    super().__init__(parent, key)
                 
                 groups = managedattribute(
                     name='groups',

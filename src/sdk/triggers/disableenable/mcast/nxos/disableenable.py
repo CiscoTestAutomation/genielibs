@@ -65,7 +65,7 @@ class TriggerDisableEnablePim(TriggerDisableEnable):
                                         'kwargs':{'attributes':['info']},
                                         'exclude': mcast_exclude}},
                       config_info={'conf.mcast.Mcast':{
-                                    'requirements':[['device_attr', '{uut}', 'vrf_attr', None, 'address_family_attr', 'ipv4', 'enable', True]],
+                                    'requirements':[['device_attr', '{uut}', 'vrf_attr', None, 'address_family_attr', 'ipv4', 'enabled', True]],
                                     'verify_conf':False}},
                       verify_ops={'ops.mcast.mcsat.Mcast':{
                                     'requirements':[\
@@ -127,7 +127,7 @@ class TriggerDisableEnablePim6(TriggerDisableEnable):
                                         'kwargs':{'attributes':['info']},
                                         'exclude': mcast_exclude}},
                       config_info={'conf.mcast.Mcast':{
-                                    'requirements':[['device_attr', '{uut}', 'vrf_attr', None, 'address_family_attr', 'ipv6', 'enable', True]],
+                                    'requirements':[['device_attr', '{uut}', 'vrf_attr', None, 'address_family_attr', 'ipv6', 'enabled', True]],
                                     'verify_conf':False}},
                       verify_ops={'ops.mcast.mcsat.Mcast':{
                                     'requirements':[\

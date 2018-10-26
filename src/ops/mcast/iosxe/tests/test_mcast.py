@@ -132,13 +132,11 @@ class test_mcast(unittest.TestCase):
         mcast.learn()
 
         # Delete missing specific attribute values
-        # import pdb; pdb.set_trace()
         expect_dict = deepcopy(McastOutput.McastInfo)
         del(expect_dict['vrf']['default']['address_family']['ipv4']['enable'])
         del(expect_dict['vrf']['default']['address_family']['ipv4']['multipath'])
                 
         # Verify Ops was created successfully
-        # import pdb; pdb.set_trace()
         self.assertEqual(mcast.info, expect_dict)
         self.assertEqual(mcast.table, McastOutput.McastTable)
 

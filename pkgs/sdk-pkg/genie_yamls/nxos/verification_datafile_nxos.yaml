@@ -41,6 +41,101 @@ Verify_BgpAllNexthopDatabase_xml:
   iteration:
     attempt: 12
     interval: 10
+Verify_BgpIpMvpn:
+  devices:
+    uut: None
+Verify_BgpIpMvpnRouteType_vrf_all_route_type_1:
+  devices:
+    uut: None
+  parameters:
+    route_type: '1'
+    vrf: all
+Verify_BgpIpMvpnRouteType_vrf_all_route_type_2:
+  devices:
+    uut: None
+  parameters:
+    route_type: '2'
+    vrf: all
+Verify_BgpIpMvpnRouteType_vrf_all_route_type_3:
+  devices:
+    uut: None
+  parameters:
+    route_type: '3'
+    vrf: all
+Verify_BgpIpMvpnRouteType_vrf_all_route_type_4:
+  devices:
+    uut: None
+  parameters:
+    route_type: '4'
+    vrf: all
+Verify_BgpIpMvpnRouteType_vrf_all_route_type_5:
+  devices:
+    uut: None
+  parameters:
+    route_type: '5'
+    vrf: all
+Verify_BgpIpMvpnRouteType_vrf_all_route_type_6:
+  devices:
+    uut: None
+  parameters:
+    route_type: '6'
+    vrf: all
+Verify_BgpIpMvpnRouteType_vrf_all_route_type_7:
+  devices:
+    uut: None
+  parameters:
+    route_type: '7'
+    vrf: all
+Verify_BgpIpMvpnRouteType_vrf_default_route_type_1:
+  devices:
+    uut: None
+  parameters:
+    route_type: '1'
+    vrf: default
+Verify_BgpIpMvpnRouteType_vrf_default_route_type_2:
+  devices:
+    uut: None
+  parameters:
+    route_type: '2'
+    vrf: default
+Verify_BgpIpMvpnRouteType_vrf_default_route_type_3:
+  devices:
+    uut: None
+  parameters:
+    route_type: '3'
+    vrf: default
+Verify_BgpIpMvpnRouteType_vrf_default_route_type_4:
+  devices:
+    uut: None
+  parameters:
+    route_type: '4'
+    vrf: default
+Verify_BgpIpMvpnRouteType_vrf_default_route_type_5:
+  devices:
+    uut: None
+  parameters:
+    route_type: '5'
+    vrf: default
+Verify_BgpIpMvpnRouteType_vrf_default_route_type_6:
+  devices:
+    uut: None
+  parameters:
+    route_type: '6'
+    vrf: default
+Verify_BgpIpMvpnRouteType_vrf_default_route_type_7:
+  devices:
+    uut: None
+  parameters:
+    route_type: '7'
+    vrf: default
+Verify_BgpIpMvpnSaadDetail:
+  devices:
+    uut: None
+Verify_BgpL2vpnEvpn:
+  devices:
+    uut: None
+  exclude:
+  - table_version
 Verify_BgpL2vpnEvpnNeighbors:
   devices:
     uut: None
@@ -73,24 +168,34 @@ Verify_BgpL2vpnEvpnNeighbors:
   - resettime
   - rtrefreshsent
   - rtrefreshrecvd
+  - retry
   iteration:
     attempt: 12
     interval: 10
-Verify_BgpL2vpnEvpnRouteType_route_type_1: 
-  devices: 
-   uut: None
-  parameters: 
-   route_type: 1
+Verify_BgpL2vpnEvpnRouteType_route_type_1:
+  devices:
+    uut: None
+  exclude:
+  - prefixversion
+  - extcommunity
+  parameters:
+    route_type: '1'
 Verify_BgpL2vpnEvpnRouteType_route_type_2: 
-  devices: 
-   uut: None
-  parameters: 
-   route_type: 2
-Verify_BgpL2vpnEvpnRouteType_route_type_4: 
-  devices: 
-   uut: None
-  parameters: 
-   route_type: 4
+  devices:
+    uut: None
+  exclude:
+  - prefixversion
+  - extcommunity
+  parameters:
+    route_type: '2'
+Verify_BgpL2vpnEvpnRouteType_route_type_4:
+  devices:
+    uut: None
+  exclude:
+  - prefixversion
+  - extcommunity
+  parameters:
+    route_type: '4'
 Verify_BgpL2vpnEvpnSummary:
   devices:
     uut: None
@@ -731,10 +836,28 @@ Verify_Dir:
   iteration:
     attempt: 12
     interval: 10
+Verify_FabricMulticastGlobals:
+  devices:
+    uut: None
+Verify_FabricMulticastIpL2Mroute_vni_all:
+  devices:
+    uut: None
+  parameters:
+    vni: all
+Verify_FabricMulticastIpSaAdRoute_vrf_all:
+  devices:
+    uut: None
+  exclude:
+  - uptime
+  parameters:
+    vrf: all
 Verify_Feature:
   devices:
     uut: None
 Verify_FeatureSet:
+  devices:
+    uut: None
+Verify_ForwardingDistributionMulticastRoute:
   devices:
     uut: None
 Verify_HsrpAll:
@@ -802,6 +925,7 @@ Verify_Interface:
   - evpn
   - native
   - vxlan
+  - multicast
   iteration:
     attempt: 25
     interval: 20
@@ -831,8 +955,8 @@ Verify_IpIgmpGroups_vrf_all:
   - up_time
   - last_reporter
   iteration:
-    attempt: 6
-    interval: 5
+    attempt: 30
+    interval: 10
   parameters:
     vrf: all
 Verify_IpIgmpGroups_vrf_default:
@@ -843,8 +967,8 @@ Verify_IpIgmpGroups_vrf_default:
   - up_time
   - last_reporter
   iteration:
-    attempt: 6
-    interval: 5
+    attempt: 12
+    interval: 10
 Verify_IpIgmpInterface_vrf_all:
   devices:
     uut: None
@@ -855,9 +979,12 @@ Verify_IpIgmpInterface_vrf_all:
   - v2_leaves
   - enable_refcount
   - pim_dr
+  - received
+  - sent
+  - expires
   iteration:
-    attempt: 6
-    interval: 5
+    attempt: 30
+    interval: 10
   parameters:
     vrf: all
 Verify_IpIgmpInterface_vrf_default:
@@ -870,6 +997,9 @@ Verify_IpIgmpInterface_vrf_default:
   - v2_leaves
   - enable_refcount
   - pim_dr
+  - received
+  - sent
+  - expires
   iteration:
     attempt: 30
     interval: 10
@@ -889,7 +1019,7 @@ Verify_IpIgmpLocalGroups_vrf_default:
   exclude:
   - last_reporter
   iteration:
-    attempt: 6
+    attempt: 12
     interval: 10
 Verify_IpIgmpSnooping:
   devices:
@@ -958,6 +1088,8 @@ Verify_IpMrouteVrfAll:
   iteration:
     attempt: 30
     interval: 10
+  groups:
+  - multicast
 Verify_IpMsdpPeerVrf_vrf_all:
   groups:
   - msdp
@@ -974,6 +1106,7 @@ Verify_IpMsdpPeerVrf_vrf_all:
   - local
   - received
   - sent
+  - rpf_failure
   iteration:
     attempt: 5
     interval: 10
@@ -995,6 +1128,7 @@ Verify_IpMsdpPeerVrf_vrf_default:
   - local
   - received
   - sent
+  - rpf_failure
   iteration:
     attempt: 5
     interval: 10
@@ -1007,7 +1141,7 @@ Verify_IpMsdpSaCacheDetailVrf_vrf_all:
   - expire
   - up_time
   iteration:
-    attempt: 5
+    attempt: 12
     interval: 10
   parameters:
     vrf: all
@@ -1020,7 +1154,7 @@ Verify_IpMsdpSaCacheDetailVrf_vrf_default:
   - expire
   - up_time
   iteration:
-    attempt: 5
+    attempt: 12
     interval: 10
 Verify_IpMsdpSummary_vrf_all:
   groups:
@@ -1280,6 +1414,8 @@ Verify_IpPimNeighbor_vrf_all:
     interval: 5
   parameters:
     vrf: all
+  groups:
+  - multicast
 Verify_IpPimNeighbor_vrf_default:
   devices:
     uut: None
@@ -1315,9 +1451,11 @@ Verify_IpPimRp_vrf_all:
   - up_time
   - rp_candidate_next_advertisement
   - expiration
+  - bsr_next_bootstrap
+  - bsr_next_discovery
   iteration:
-    attempt: 6
-    interval: 5
+    attempt: 20
+    interval: 20
   parameters:
     vrf: all
 Verify_IpPimRp_vrf_default:
@@ -1328,9 +1466,11 @@ Verify_IpPimRp_vrf_default:
   - up_time
   - rp_candidate_next_advertisement
   - expiration
+  - bsr_next_bootstrap
+  - bsr_next_discovery
   iteration:
-    attempt: 6
-    interval: 5
+    attempt: 18
+    interval: 10
 Verify_IpPimVrfDetail:
   devices:
     uut: None
@@ -1350,6 +1490,8 @@ Verify_IpRoute_vrf_all:
     interval: 10
   parameters:
     vrf: all
+  groups:
+  - multicast
 Verify_IpRoute_vrf_default:
   devices:
     uut: None
@@ -1404,9 +1546,23 @@ Verify_Ipv6MldGroups_vrf_all:
     uut: None
   parameters:
     vrf: all
+  exclude:
+  - expire
+  - up_time
+  - last_reporter
+  iteration:
+    attempt: 15
+    interval: 5
 Verify_Ipv6MldGroups_vrf_default:
   devices:
     uut: None
+  exclude:
+  - expire
+  - up_time
+  - last_reporter
+  iteration:
+    attempt: 15
+    interval: 5
 Verify_Ipv6MldInterface_vrf_all:
   devices:
     uut: None
@@ -1430,6 +1586,14 @@ Verify_Ipv6MldLocalGroups_vrf_all:
     uut: None
   parameters:
     vrf: all
+  exclude:
+  - last_reported
+  - uptime
+  - oil_uptime
+  - incoming_interface_list
+  iteration:
+    attempt: 6
+    interval: 5
 Verify_Ipv6MldLocalGroups_vrf_default:
   devices:
     uut: None
@@ -1437,12 +1601,15 @@ Verify_Ipv6MrouteVrfAll:
   devices:
     uut: None
   exclude:
+  - last_reported
   - uptime
   - oil_uptime
   - incoming_interface_list
   iteration:
-    attempt: 2
-    interval: 5
+    attempt: 12
+    interval: 20
+  groups:
+  - multicast
 Verify_Ipv6NdInterface:
   devices:
     uut: None
@@ -1485,12 +1652,20 @@ Verify_Ipv6PimNeighbor_vrf_all:
   - up_time
   parameters:
     vrf: all
+  groups:
+  - multicast
+  iteration:
+    attempt: 18
+    interval: 10
 Verify_Ipv6PimNeighbor_vrf_default:
   devices:
     uut: None
   exclude:
   - expiration
   - up_time
+  iteration:
+    attempt: 18
+    interval: 10
 Verify_Ipv6PimRoute:
   devices:
     uut: None
@@ -1501,23 +1676,33 @@ Verify_Ipv6PimRoute:
   - rpf_neighbor
   - rp_bit
   iteration:
-    attempt: 12
+    attempt: 15
     interval: 5
 Verify_Ipv6PimRp_vrf_all:
   devices:
     uut: None
   exclude:
   - up_time
+  - bsr_next_discovery
   parameters:
     vrf: all
+  iteration:
+    attempt: 15
+    interval: 5
 Verify_Ipv6PimRp_vrf_default:
   devices:
     uut: None
   exclude:
   - up_time
+  iteration:
+    attempt: 15
+    interval: 5
 Verify_Ipv6PimVrfAllDetail:
   devices:
     uut: None
+  iteration:
+    attempt: 15
+    interval: 5
 Verify_Ipv6PrefixList:
   devices:
     uut: None
@@ -1526,13 +1711,23 @@ Verify_Ipv6Route_vrf_all:
     uut: None
   exclude:
   - updated
+  - metric
+  - next_hop
+  - outgoing_interface
+  - incoming_interface
   parameters:
     vrf: all
+  groups:
+  - multicast
 Verify_Ipv6Route_vrf_default:
   devices:
     uut: None
   exclude:
   - updated
+  - metric
+  - next_hop
+  - outgoing_interface
+  - incoming_interface
 Verify_Ipv6Routers:
   devices:
     uut: None
@@ -1587,6 +1782,7 @@ Verify_Module:
   - evpn
   - native
   - vxlan
+  - multicast
 Verify_NveEthernetSegment:
   devices:
     uut: None

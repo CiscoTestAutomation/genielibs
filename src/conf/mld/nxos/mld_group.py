@@ -17,7 +17,6 @@ class MldGroup(ABC):
     def build_config(self, apply=True, attributes=None, unconfig=False,
                      **kwargs):
         assert not kwargs, kwargs
-        assert not apply
         attributes = AttributesHelper(self, attributes)
         configurations = CliConfigBuilder(unconfig=unconfig)
 
@@ -33,7 +32,8 @@ class MldGroup(ABC):
             cmd_str = 'ipv6 mld join-group {join_group}'
 
             # build up configuration string
-            if attributes.value('join_group_source_addr'):
+            if attributes.value('join_group_source_addr') and \
+               attributes.value('join_group_source_addr') != '*':
                 cmd_str += ' source {join_group_source_addr}'
 
             configurations.append_line(attributes.format(cmd_str))
@@ -43,7 +43,8 @@ class MldGroup(ABC):
             cmd_str = 'ipv6 mld static-oif {static_group}'
             
             # build up configuration string
-            if attributes.value('static_group_source_addr'):
+            if attributes.value('static_group_source_addr') and \
+               attributes.value('static_group_source_addr') != '*':
                 cmd_str += ' source {static_group_source_addr}'
 
             configurations.append_line(attributes.format(cmd_str))

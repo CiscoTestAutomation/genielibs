@@ -885,7 +885,7 @@ class VirtualInterface(Interface,
         if not interface_name_types:
             raise TypeError('No interface name types supported by %r' % (
                 cls.__qualname__))
-        if len(interface_name_types) > 1:
+        if len(interface_name_types) > 2:
             raise TypeError('Too many interface name types supported by %r: %r' % (
                 cls.__qualname__, set(interface_name_types)))
         interface_name_type = interface_name_types.pop()

@@ -88,16 +88,17 @@ class Restore(object):
         elif method == 'config_replace':
             for i in range(1,iteration):
                 # configure replace location:<filename>
-                output = device.execute('configure replace {}'.format(self.to_url))
-                if 'fail' not in output:
+                output = device.execute('configure replace {}'.\
+                                        format(self.to_url))
+                if 'Configure replace completed successfully' in output:
                     break
                 elif i == iteration-1:
-                    # Execute 'show config-replace log exec'
-                    device.execute('show config-replace log exec')
                     raise Exception('Unable to execute config replace')
                 else:
-                    log.info('Config replace failed: sleeping {} seconds and '
-                             'retrying...'.format(interval))
+                    log.info('Config replace failed: sleeping {} seconds before'
+                             ' retrying.'. format(interval))
+                    # Execute 'show config-replace log exec'
+                    output = device.execute('show config-replace log exec')
                     time.sleep(interval)
 
             # Execute 'show config-replace log exec'

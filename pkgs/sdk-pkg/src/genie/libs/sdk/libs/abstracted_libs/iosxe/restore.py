@@ -98,13 +98,13 @@ class Restore(object):
                 # configure replace location:<filename>
                 output = device.execute('configure replace {}'.\
                             format(self.to_url), reply=dialog)
-                if 'fail' not in output:
+                if 'Rollback Done' in output:
                     break
                 elif i == iteration-1:
                     raise Exception('Unable to execute config replace')
                 else:
-                    log.info('Config replace failed: sleeping {} seconds and '
-                             'retrying...'.format(interval))
+                    log.info('Config replace failed: sleeping {} seconds before'
+                             ' retrying.'.format(interval))
                     time.sleep(interval)
 
             # Delete location:<filename>

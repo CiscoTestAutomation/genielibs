@@ -104,8 +104,8 @@ class HA(HA_main):
             filename=filename)
 
         self.filetransfer.copyfile(device=self.device,
-                                   from_file_url=from_URL,
-                                   to_file_url=to_URL)
+                                   source=from_URL,
+                                   destination=to_URL)
 
     def get_upload_cmd(self, module, pid, instance, date, process):
         """Compose the cores upload location

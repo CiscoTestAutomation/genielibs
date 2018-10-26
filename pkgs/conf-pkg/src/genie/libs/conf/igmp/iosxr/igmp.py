@@ -58,7 +58,6 @@ class Igmp(ABC):
 
             def build_config(self, apply=True, attributes=None, unconfig=False,
                              **kwargs):
-                assert not apply
                 assert not kwargs, kwargs
                 attributes = AttributesHelper(self, attributes)
                 configurations = CliConfigBuilder(unconfig=unconfig)
@@ -102,7 +101,6 @@ class Igmp(ABC):
 
                 def build_config(self, apply=True, attributes=None, unconfig=False,
                                  **kwargs):
-                    assert not apply
                     assert not kwargs, kwargs
                     attributes = AttributesHelper(self, attributes)
                     configurations = CliConfigBuilder(unconfig=unconfig)

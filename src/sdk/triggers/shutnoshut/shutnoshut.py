@@ -36,7 +36,7 @@ class TriggerShutNoShut(ShutNoShutTemplate):
         '''
         self.timeout = timeout
         try:
-            self.pre_snap = self.mapping.learn_ops(device=getattr(self, 'uut', None) or uut,
+            self.pre_snap = self.mapping.learn_ops(device=uut,
                                                    abstract=abstract,
                                                    steps=steps,
                                                    lts=self.parent.parameters.get('lts', {}),
@@ -64,8 +64,7 @@ class TriggerShutNoShut(ShutNoShutTemplate):
                pyATS Results
         '''
         try:
-            self.mapping.configure(device=getattr(self, 'uut', None) or uut,
-                                   abstract=abstract, steps=steps)
+            self.mapping.configure(device=uut, abstract=abstract, steps=steps)
         except Exception as e:
             self.failed('Failed to shut the feature', from_exception=e)
 
@@ -86,7 +85,7 @@ class TriggerShutNoShut(ShutNoShutTemplate):
                pyATS Results
         '''
         try:
-            self.mapping.verify_ops(device=getattr(self, 'uut', None) or uut,
+            self.mapping.verify_ops(device=uut,
                                     abstract=abstract,
                                     steps=steps)
         except Exception as e:
@@ -109,8 +108,7 @@ class TriggerShutNoShut(ShutNoShutTemplate):
                pyATS Results
         '''
         try:
-            self.mapping.unconfigure(device=getattr(self, 'uut', None) or uut,
-                                     abstract=abstract, steps=steps)
+            self.mapping.unconfigure(device=uut, abstract=abstract, steps=steps)
         except Exception as e:
             self.failed('Failed to unshut the feature', from_exception=e)
 
@@ -132,7 +130,7 @@ class TriggerShutNoShut(ShutNoShutTemplate):
         '''
         try:
             self.post_snap = self.mapping.verify_with_initial(\
-                                                   device=getattr(self, 'uut', None) or uut,
+                                                   device=uut,
                                                    abstract=abstract,
                                                    steps=steps,
                                                    timeout_recovery=timeout_recovery)

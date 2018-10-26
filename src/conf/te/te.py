@@ -11,7 +11,6 @@ from genie.conf.base.attributes import SubAttributes, SubAttributesDict, Attribu
 from ats.datastructures import WeakList
 from genie.libs.conf.address_family import AddressFamily
 from genie.libs.conf.vrf import VrfSubAttributes
-import pdb
 
 
 class Te(DeviceFeature, LinkFeature):

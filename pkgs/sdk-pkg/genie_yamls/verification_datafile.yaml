@@ -236,6 +236,146 @@ Verify_BgpL2vpnEvpn:
   context: cli
   source:
     class: genie.harness.base.Template
+Verify_BgpIpMvpn:
+  cmd:
+    class: show_bgp.ShowBgpIpMvpn
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpIpMvpnRouteType_vrf_default_route_type_1:
+  cmd:
+    class: show_bgp.ShowBgpIpMvpnRouteType
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpIpMvpnRouteType_vrf_default_route_type_2:
+  cmd:
+    class: show_bgp.ShowBgpIpMvpnRouteType
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpIpMvpnRouteType_vrf_default_route_type_3:
+  cmd:
+    class: show_bgp.ShowBgpIpMvpnRouteType
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpIpMvpnRouteType_vrf_default_route_type_4:
+  cmd:
+    class: show_bgp.ShowBgpIpMvpnRouteType
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpIpMvpnRouteType_vrf_default_route_type_5:
+  cmd:
+    class: show_bgp.ShowBgpIpMvpnRouteType
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpIpMvpnRouteType_vrf_default_route_type_6:
+  cmd:
+    class: show_bgp.ShowBgpIpMvpnRouteType
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpIpMvpnRouteType_vrf_default_route_type_7:
+  cmd:
+    class: show_bgp.ShowBgpIpMvpnRouteType
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpIpMvpnRouteType_vrf_all_route_type_1:
+  cmd:
+    class: show_bgp.ShowBgpIpMvpnRouteType
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpIpMvpnRouteType_vrf_all_route_type_2:
+  cmd:
+    class: show_bgp.ShowBgpIpMvpnRouteType
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpIpMvpnRouteType_vrf_all_route_type_3:
+  cmd:
+    class: show_bgp.ShowBgpIpMvpnRouteType
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpIpMvpnRouteType_vrf_all_route_type_4:
+  cmd:
+    class: show_bgp.ShowBgpIpMvpnRouteType
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpIpMvpnRouteType_vrf_all_route_type_5:
+  cmd:
+    class: show_bgp.ShowBgpIpMvpnRouteType
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpIpMvpnRouteType_vrf_all_route_type_6:
+  cmd:
+    class: show_bgp.ShowBgpIpMvpnRouteType
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpIpMvpnRouteType_vrf_all_route_type_7:
+  cmd:
+    class: show_bgp.ShowBgpIpMvpnRouteType
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpIpMvpnSaadDetail:
+  cmd:
+    class: show_bgp.ShowBgpIpMvpnSaadDetail
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_BgpL2vpnEvpn:
+  cmd:
+    class: show_bgp.ShowBgpL2vpnEvpn
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_FabricMulticastGlobals:
+  cmd:
+    class: show_vxlan.ShowFabricMulticastGlobals
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_FabricMulticastIpL2Mroute_vni_all:
+  cmd:
+    class: show_vxlan.ShowFabricMulticastIpL2Mroute
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_FabricMulticastIpSaAdRoute_vrf_all:
+  cmd:
+    class: show_vxlan.ShowFabricMulticastIpSaAdRoute
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
 Verify_BgpL2vpnEvpnAdvertised:
   cmd:
     class: show_bgp.ShowBgpL2vpnEvpnAdvertised
@@ -904,6 +1044,13 @@ Verify_Interface:
 Verify_InterfaceBrief:
   cmd:
     class: show_interface.ShowInterfaceBrief
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_ForwardingDistributionMulticastRoute:
+  cmd:
+    class: show_mcast.ShowForwardingDistributionMulticastRoute
     pkg: genie.libs.parser
   context: cli
   source:

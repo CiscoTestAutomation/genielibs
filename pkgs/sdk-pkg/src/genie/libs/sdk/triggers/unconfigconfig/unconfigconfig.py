@@ -41,7 +41,7 @@ class TriggerUnconfigConfig(UnconfigConfigTemplate):
         self.timeout = timeout
 
         try:
-            self.pre_snap = self.mapping.learn_ops(device=getattr(self, 'uut', None) or uut,
+            self.pre_snap = self.mapping.learn_ops(device=uut,
                                                    abstract=abstract,
                                                    steps=steps,
                                                    lts=self.parent.parameters.get('lts', {}),
@@ -73,8 +73,7 @@ class TriggerUnconfigConfig(UnconfigConfigTemplate):
         self.lib = abstract.sdk.libs.abstracted_libs.restore.Restore()
         default_dir = getattr(self.parent, 'default_file_system', {})
         try:
-            self.lib.save_configuration(getattr(self, 'uut', None) or uut,
-                                        method, abstract, default_dir)
+            self.lib.save_configuration(uut, method, abstract, default_dir)
         except Exception as e:
             self.failed('Saving the configuration failed', from_exception=e,
                         goto=['next_tc'])
@@ -95,8 +94,7 @@ class TriggerUnconfigConfig(UnconfigConfigTemplate):
                pyATS Results
         '''
         try:
-            self.mapping.unconfigure(device=getattr(self, 'uut', None) or uut,
-                                     abstract=abstract, steps=steps)
+            self.mapping.unconfigure(device=uut, abstract=abstract, steps=steps)
         except Exception as e:
             self.failed('Failed to unconfigure feature', from_exception=e)
 
@@ -118,7 +116,7 @@ class TriggerUnconfigConfig(UnconfigConfigTemplate):
         '''
 
         try:
-            self.mapping.verify_missing_ops(device=getattr(self, 'uut', None) or uut,
+            self.mapping.verify_missing_ops(device=uut,
                                             abstract=abstract,
                                             steps=steps)
         except Exception as e:
@@ -143,7 +141,7 @@ class TriggerUnconfigConfig(UnconfigConfigTemplate):
                pyATS Results
         '''
         try:
-            self.lib.restore_configuration(getattr(self, 'uut', None) or uut, method, abstract)
+            self.lib.restore_configuration(uut, method, abstract)
         except GenieConfigReplaceWarning as e:
             self.passx('Configure replace requires device reload')
         except Exception as e:
@@ -168,7 +166,7 @@ class TriggerUnconfigConfig(UnconfigConfigTemplate):
 
         try:
             self.post_snap = self.mapping.verify_with_initial(\
-                                                   device=getattr(self, 'uut', None) or uut,
+                                                   device=uut,
                                                    abstract=abstract,
                                                    steps=steps,
                                                    timeout_recovery=timeout_recovery)

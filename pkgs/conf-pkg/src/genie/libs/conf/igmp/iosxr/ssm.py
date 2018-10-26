@@ -17,7 +17,6 @@ class Ssm(ABC):
     def build_config(self, apply=True, attributes=None, unconfig=False,
                      **kwargs):
         assert not kwargs, kwargs
-        assert not apply
         attributes = AttributesHelper(self, attributes)
         configurations = CliConfigBuilder(unconfig=unconfig)
 

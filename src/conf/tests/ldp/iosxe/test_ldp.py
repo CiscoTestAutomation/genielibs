@@ -3,7 +3,6 @@
 import unittest
 from unittest.mock import Mock
 import re
-import pdb
 
 from genie.conf import Genie
 from genie.conf.base import Testbed, Device, Link, Interface

@@ -6,7 +6,7 @@ from genie.conf.base.attributes import AttributesHelper
 from genie.conf.base.cli import CliConfigBuilder
 from genie.conf.base.config import CliConfig
 
-import pdb, re
+import re
 
 class Te(ABC):
 

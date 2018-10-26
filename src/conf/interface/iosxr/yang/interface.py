@@ -311,7 +311,6 @@ class GigabitEthernetInterface(PhysicalInterface):
         attributes = AttributesHelper(self, attributes)
         configurations = CliConfigBuilder(unconfig=unconfig)
         interface_configurations = xr_ifmgr_cfg.InterfaceConfigurations()
-        # import pdb;pdb.set_trace()
         # crud_service = CRUDService()
         # ncp = NetconfServiceProvider(self.device)
         # x = crud_service.read(ncp, interface_configurations)

@@ -430,7 +430,6 @@ class Pim(ABC):
                         configurations = CliConfigBuilder(unconfig=unconfig)
 
                         # if self.vrf_name != 'default':
-                        #     import pdb; pdb.set_trace()
                         #     configurations.append_line('exit')
 
                         # the interface should have vrf(name = vrf_name) attached

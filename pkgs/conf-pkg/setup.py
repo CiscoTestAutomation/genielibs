@@ -8,14 +8,38 @@ See:
 
 import os
 import re
+import sys
 
 from setuptools import setup, find_packages
+
+_INTERNAL_SUPPORT = 'asg-genie-support@cisco.com'
+_EXTERNAL_SUPPORT = 'pyats-support-ext@cisco.com'
 
 def read(*paths):
     '''read and return txt content of file'''
     with open(os.path.join(*paths)) as fp:
         return fp.read()
 
+DEVNET_CMDLINE_OPT = '--devnet'
+devnet = False
+if DEVNET_CMDLINE_OPT in sys.argv:
+    # avoiding argparse complexity :o
+    sys.argv.remove(DEVNET_CMDLINE_OPT)
+    devnet = True
+
+# pyats support mailer
+SUPPORT = _EXTERNAL_SUPPORT if devnet else _INTERNAL_SUPPORT
+
+# license statement
+LICENSE = _EXTERNAL_LICENSE if devnet else _INTERNAL_LICENSE
+
+# project url
+URL = _EXTERNAL_URL if devnet else _INTERNAL_URL
+
+def read(*paths):
+    '''read and return txt content of file'''
+    with open(os.path.join(*paths)) as fp:
+        return fp.read()
 
 def find_version(*paths):
     '''reads a file and returns the defined __version__ value'''
@@ -24,6 +48,23 @@ def find_version(*paths):
     if version_match:
         return version_match.group(1)
     raise RuntimeError("Unable to find version string.")
+
+def build_version_range(version):
+    '''
+    for any given version, return the major.minor version requirement range
+    eg: for version '3.4.7', return '>=3.4.0, <3.5.0'
+    '''
+    req_ver = version.split('.')
+    version_range = '>= %s.%s.0, < %s.%s.0' % \
+        (req_ver[0], req_ver[1], req_ver[0], int(req_ver[1])+1)
+
+    return version_range
+
+def version_info(*paths):
+    '''returns the result of find_version() and build_version_range() tuple'''
+
+    version = find_version(*paths)
+    return version, build_version_range(version)
 
 # compute version range
 version = find_version('src', 'genie', 'libs', 'conf', '__init__.py')

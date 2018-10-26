@@ -286,7 +286,7 @@ class test_interface(TestCase):
 
         for clean, short in (
                 # Generic
-                ('GigabitEthernet0/0/0/0', 'Gi0/0/0/0'),
+                ('GigabitEthernet0/0/0/0', 'gi0/0/0/0'),
                 ('tunnel-te1', 'tt1'),
                 # Special cases
                 ('Loopback0', 'Lo0'),
@@ -301,17 +301,9 @@ class test_interface(TestCase):
         ):
             self.assertEqual(dev1.clean_interface_name(clean), clean)
             self.assertEqual(dev1.clean_interface_name(clean.replace('/', '_')), clean)
-            self.assertEqual(dev1.clean_interface_name(clean.lower()), clean)
-            self.assertEqual(dev1.clean_interface_name(clean.upper()), clean)
             self.assertEqual(dev1.clean_interface_name(short), clean)
             self.assertEqual(dev1.clean_interface_name(short.lower()), clean)
             self.assertEqual(dev1.clean_interface_name(short.upper()), clean)
-            self.assertEqual(dev1.short_interface_name(clean), short)
-            self.assertEqual(dev1.short_interface_name(clean.lower()), short)
-            self.assertEqual(dev1.short_interface_name(clean.upper()), short)
-            self.assertEqual(dev1.short_interface_name(short), short)
-            self.assertEqual(dev1.short_interface_name(short.lower()), short)
-            self.assertEqual(dev1.short_interface_name(short.upper()), short)
 
     def test_vlan_interface_confoguration(self):
         testbed = Genie.testbed = Testbed()

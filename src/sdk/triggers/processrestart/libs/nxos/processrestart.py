@@ -424,7 +424,10 @@ class ProcessRestartLib(object):
                                format(p=core['process'],
                                       pp=core['pid']))
                 temp.failed('More core than expected has been created')
-                ha.upload_core_to_linux(core)
+                try:
+                    ha.upload_core_to_linux(core)
+                except Exception as e:
+                    log.error('Cannot upload core files\n{}'.format(str(e)))
 
             # Clear cores
             ha.clear_cores()

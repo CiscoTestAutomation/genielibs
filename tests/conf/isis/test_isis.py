@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import unittest, pdb
+import unittest
 from unittest.mock import Mock
 
 from genie.conf import Genie

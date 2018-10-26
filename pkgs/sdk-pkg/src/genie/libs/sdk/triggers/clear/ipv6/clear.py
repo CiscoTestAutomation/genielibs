@@ -29,7 +29,7 @@ class TriggerClearIPv6NeighborVrfAll(TriggerClear):
     mapping = Mapping(requirements={'ops.nd.nd.Nd':{
                                           'requirements':[\
                                               ['info', 'interfaces', '(?P<interface>.*)'
-                                               ,'neighbors', '(?P<neighbor>.*)','(.*)']],
+                                               ,'neighbors', '(?P<neighbor>.*)','(?P<nbr_contents>.*)']],
                                           'kwargs': {'attributes': ['info[interfaces][(.*)][neighbors][(.*)][age]']},
                                           'exclude': exclude}},
                       verify_ops={'ops.nd.nd.Nd':{

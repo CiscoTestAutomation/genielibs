@@ -10,9 +10,9 @@ from genie.libs.sdk.triggers.shutnoshut.shutnoshut import \
 
 
 exclude = ['maker', 'elapsed_time', 'discontinuity_time',
-           'keepalive', 'total', 'up_time', 'expire',
-           'last_message_received', 'num_of_comparison',
-           'total_accept_count']
+           'keepalive', 'total', 'up_time', 'expire', 'remote',
+           'last_message_received', 'num_of_comparison', 'rpf_failure',
+           'total_accept_count', 'total_reject_count', 'notification']
 
 
 class TriggerShutNoShutMsdp(TriggerShutNoShut):

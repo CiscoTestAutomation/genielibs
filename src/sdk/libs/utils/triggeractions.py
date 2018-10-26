@@ -157,25 +157,9 @@ class Configure(object):
             # the device.
             if 'interface' not in conf.__class__.__name__.lower():
                 device.add_feature(conf)
-        for structure in conf_structure:
-            if len(structure) == 2:
-                # Then its value
-                try:
-                    setattr(conf, structure[0], structure[1])
-                except AttributeError:
-                    getattr(conf, structure[0])[structure[1]]
-                except ValueError as e:
-                    if 'int' in str(e):
-                        setattr(conf, structure[0], int(structure[1]))
-            else:
-                item = structure[0]
-                try:
-                    c_item = getattr(conf, structure[0])
-                except (AttributeError, TypeError):
-                    c_item = conf[structure[0]]
-                Configure.conf_configure(device, c_item,
-                                         conf_structure=[structure[1:]],
-                                         unconfig=unconfig, _first=False)
+
+        self._set_conf_attribute(conf, conf_structure)
+
         if _first:
             if unconfig:
                 # Could be done in the above for loop, but I believe it would
@@ -186,6 +170,33 @@ class Configure(object):
                 conf.build_unconfig(attributes=attributes)
             else:
                 conf.build_config()
+
+    @classmethod
+    def _set_conf_attribute(self, conf, conf_structure, return_attr=False):
+        returned_attr = None
+        for structure in conf_structure:
+            if len(structure) == 2:
+                # Then its value
+                try:
+                    setattr(conf, structure[0], structure[1])
+                except AttributeError:
+                    getattr(conf, structure[0])[structure[1]]
+                    if return_attr:
+                        return getattr(conf, structure[0])[structure[1]]
+                except ValueError as e:
+                    if 'int' in str(e):
+                        setattr(conf, structure[0], int(structure[1]))
+            else:
+                item = structure[0]
+                try:
+                    c_item = getattr(conf, structure[0])
+                except (AttributeError, TypeError):
+                    c_item = conf[structure[0]]
+                returned_attr=self._set_conf_attribute(c_item,
+                                         conf_structure=[structure[1:]],
+                                         return_attr=return_attr)
+        if return_attr:
+            return returned_attr
 
     @classmethod
     def _build_attribute(self, structures):
@@ -265,3 +276,39 @@ class CompareCounters(object):
                 raise Exception('Fail - {n}: {t}s is not {r} {tt}s'
                                 .format(n=items[1][1:],
                   r=relation, t=counter, tt=threshold_counter))
+
+
+def configure_add_attributes(add_obj, base, add_attribute, add_method, **kwargs):
+
+    # initial configuration attributes
+    attrs = {}
+
+    # populate base and add_attribute
+    # loop for mapping.keys due to base and add_attribute
+    # are seperate, cannot group the keys together
+    for item in kwargs['self'].keys:        
+        base_paths = kwargs['self']._populate_path(
+                    base, kwargs['device'], keys=[item])
+        add_attr_paths = kwargs['self']._populate_path(
+                    add_attribute, kwargs['device'], keys=[item])
+        # create add object instance
+        add_inst = add_obj(device=kwargs['device'])
+
+        for attr in add_attr_paths:
+            if len(attr) == 2:
+                setattr(add_inst, attr[0], attr[1])
+            # TODO - when multiple lines class has more then 2 levels attributes
+        
+        ret = Configure._set_conf_attribute(conf=kwargs['conf_obj'],
+                                 conf_structure=base_paths,
+                                 return_attr=True)
+
+        # add add_obj to the returned base conf object
+        getattr(ret, add_method)(add_inst)
+        attrs.update(Configure._build_attribute(base_paths))
+
+    # apply configurations on devices
+    if kwargs['unconfig']:
+        kwargs['conf_obj'].build_unconfig(attributes=attrs)
+    else:
+        kwargs['conf_obj'].build_config(attributes=attrs)

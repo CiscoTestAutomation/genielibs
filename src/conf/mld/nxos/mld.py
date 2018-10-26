@@ -53,7 +53,6 @@ class Mld(ABC):
 
             def build_config(self, apply=True, attributes=None, unconfig=False,
                              **kwargs):
-                assert not apply
                 assert not kwargs, kwargs
                 attributes = AttributesHelper(self, attributes)
                 configurations = CliConfigBuilder(unconfig=unconfig)
@@ -94,13 +93,12 @@ class Mld(ABC):
 
                 def build_config(self, apply=True, attributes=None, unconfig=False,
                                  **kwargs):
-                    assert not apply
                     assert not kwargs, kwargs
                     attributes = AttributesHelper(self, attributes)
                     configurations = CliConfigBuilder(unconfig=unconfig)
 
                     with configurations.submode_context(
-                        attributes.format('interface {interface.name}', force=True)):
+                        attributes.format('interface {intf}', force=True)):
 
                         # enable
                         if attributes.value('enable'):

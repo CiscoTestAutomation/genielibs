@@ -57,7 +57,6 @@ class Igmp(ABC):
 
             def build_config(self, apply=True, attributes=None, unconfig=False,
                              **kwargs):
-                assert not apply
                 assert not kwargs, kwargs
                 attributes = AttributesHelper(self, attributes)
                 configurations = CliConfigBuilder(unconfig=unconfig)
@@ -66,7 +65,7 @@ class Igmp(ABC):
 
                 with configurations.submode_context(
                     attributes.format('vrf context {vrf_id}' if 
-                            self.vrf_id != 'default' else '', force=True)):                    
+                            self.vrf_id != 'default' else '', force=True)):
                     if unconfig and attributes.iswildcard and self.vrf_id != 'default':
                         configurations.submode_unconfig()
 
@@ -98,7 +97,6 @@ class Igmp(ABC):
 
                 def build_config(self, apply=True, attributes=None, unconfig=False,
                                  **kwargs):
-                    assert not apply
                     assert not kwargs, kwargs
                     attributes = AttributesHelper(self, attributes)
                     configurations = CliConfigBuilder(unconfig=unconfig)

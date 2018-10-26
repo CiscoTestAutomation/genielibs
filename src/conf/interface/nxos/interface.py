@@ -525,6 +525,7 @@ class LoopbackInterface(VirtualInterface, genie.libs.conf.interface.LoopbackInte
 
     _interface_name_types = (
         'loopback',
+        'Loopback',
     )
 
     def __init__(self, *args, **kwargs):
@@ -561,6 +562,7 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
     """
 
     _interface_name_types = (
+        'ethernet',
         'Ethernet',
     )
 
@@ -741,15 +743,15 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
                 unconfig_cmd='no switchport trunk allowed vlan')
 
             # switchport trunk allowed vlan add <trunk_add_vlans>
-            cmd = 'switchport trunk allowed add vlan {trunk_add_vlans}'
-            uncmd = 'switchport trunk allowed remove vlan {trunk_add_vlans}'
+            cmd = 'switchport trunk allowed vlan add {trunk_add_vlans}'
+            uncmd = 'switchport trunk allowed vlan remove {trunk_add_vlans}'
             configurations.append_line(
                 attributes.format(cmd),
                 unconfig_cmd=attributes.format(uncmd))
 
             # switchport trunk allowed vlan remove <trunk_remove_vlans>
-            cmd = 'switchport trunk allowed remote vlan {trunk_remove_vlans}'
-            uncmd = 'switchport trunk allowed add vlan {trunk_remove_vlans}'
+            cmd = 'switchport trunk allowed vlan remove {trunk_remove_vlans}'
+            uncmd = 'switchport trunk allowed vlan add {trunk_remove_vlans}'
             configurations.append_line(
                 attributes.format(cmd),
                 unconfig_cmd=attributes.format(uncmd))
@@ -989,6 +991,7 @@ class PortchannelInterface(VirtualInterface, genie.libs.conf.interface.Aggregate
     _interface_name_types = (
         'port-channel',
         'Port-channel',
+        'Port-Channel',
     )
 
     members = managedattribute(
@@ -1106,6 +1109,7 @@ class NveInterface(VirtualInterface, genie.libs.conf.interface.NveInterface):
 
     _interface_name_types = (
         'nve',
+        'Nve',
     )
 
     vnis_map = managedattribute(

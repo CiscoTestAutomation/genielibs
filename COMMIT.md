@@ -155,9 +155,9 @@ We welcome any contribution to Genie. Here's how
 * Go to the github/bitbucket repository
 * Click on 'create fork' on the top of the page (Make sure you are on dev branch).
 
-![bitbucketfork](bitbucketfork.png)
+![bitbucketfork](_static/bitbucketfork.png)
 
-![githubfork](githubfork.png)
+![githubfork](_static/githubfork.png)
 
 * That will allow you to have a local repository.
 

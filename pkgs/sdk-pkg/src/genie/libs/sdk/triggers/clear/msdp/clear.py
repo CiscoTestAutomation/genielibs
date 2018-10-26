@@ -11,9 +11,9 @@ from genie.libs.sdk.libs.utils.triggeractions import CompareUptime, CompareCount
 # Ignore keys when doing the diff with Ops objects for save_snapshot and
 # verify_clear, it will be used for LearnPollDiff.ops_diff callable
 exclude = ['maker', 'elapsed_time', 'discontinuity_time',
-           'keepalive', 'total', 'up_time', 'expire',
-           'last_message_received', 'num_of_comparison',
-           'total_accept_count', 'total_reject_count']
+           'keepalive', 'total', 'up_time', 'expire', 'remote',
+           'last_message_received', 'num_of_comparison', 'rpf_failure',
+           'total_accept_count', 'total_reject_count', 'notification']
 
 
 class TriggerClearMsdpPeer(TriggerClear):

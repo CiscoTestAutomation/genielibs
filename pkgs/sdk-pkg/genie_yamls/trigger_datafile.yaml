@@ -1640,6 +1640,28 @@ TriggerClearIpv6RoutingUnicast:
       pkg: genie.libs.sdk
       class: triggers.clear.routing.clear.TriggerClearIpv6RoutingUnicast
 
+TriggerClearIpRoutingMulticast:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.mcast.clear.TriggerClearIpRoutingMulticast
+
+TriggerClearRoutingMulticast:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.mcast.clear.TriggerClearRoutingMulticast
+
+
+TriggerClearV4RouteMulticast:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.mcast.clear.TriggerClearV4RouteMulticast
+
+
+TriggerClearV6RouteMulticast:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.clear.mcast.clear.TriggerClearV6RouteMulticast
+
 TriggerClearIpMroute:
     source:
       pkg: genie.libs.sdk
@@ -1854,3 +1876,107 @@ TriggerAddRemoveMsdpDescription:
     source:
       pkg: genie.libs.sdk
       class: triggers.addremove.msdp.addremove.TriggerAddRemoveMsdpDescription
+
+      
+# =========================================================
+#                   FEATURE: IGMP(ipv4) / MLD(ipv6)
+# =========================================================
+
+# ----------------
+# UNCONFIG-CONFIG
+# ----------------
+TriggerUnconfigConfigIgmpEnable:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.unconfigconfig.igmp.unconfigconfig.TriggerUnconfigConfigIgmpEnable
+
+TriggerUnconfigConfigMldEnable:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.unconfigconfig.mld.unconfigconfig.TriggerUnconfigConfigMldEnable
+
+TriggerUnconfigConfigIgmpVersion:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.unconfigconfig.igmp.unconfigconfig.TriggerUnconfigConfigIgmpVersion
+
+TriggerUnconfigConfigMldVersion:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.unconfigconfig.mld.unconfigconfig.TriggerUnconfigConfigMldVersion
+      
+TriggerUnconfigConfigIgmpJoinGroup:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.unconfigconfig.igmp.unconfigconfig.TriggerUnconfigConfigIgmpJoinGroup
+
+TriggerUnconfigConfigMldJoinGroup :
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.unconfigconfig.mld.unconfigconfig.TriggerUnconfigConfigMldJoinGroup
+      
+TriggerUnconfigConfigIgmpStaticGroup:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.unconfigconfig.igmp.unconfigconfig.TriggerUnconfigConfigIgmpStaticGroup
+
+TriggerUnconfigConfigMldStaticGroup:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.unconfigconfig.mld.unconfigconfig.TriggerUnconfigConfigMldStaticGroup
+
+# -----------
+# MODIFY
+# -----------
+TriggerModifyIgmpVersion:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.igmp.modify.TriggerModifyIgmpVersion
+
+TriggerModifyMldVersion:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.modify.mld.modify.TriggerModifyMldVersion
+
+# ----------
+# ADD-REMOVE
+# ----------
+TriggerAddRemoveIgmpEnable:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.igmp.addremove.TriggerAddRemoveIgmpEnable
+
+TriggerAddRemoveIgmpVersion:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.igmp.addremove.TriggerAddRemoveIgmpVersion
+      
+TriggerAddRemoveIgmpJoinGroup:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.igmp.addremove.TriggerAddRemoveIgmpJoinGroup
+      
+TriggerAddRemoveIgmpStaticGroup:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.igmp.addremove.TriggerAddRemoveIgmpStaticGroup
+
+TriggerAddRemoveMldEnable:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.mld.addremove.TriggerAddRemoveMldEnable
+      
+TriggerAddRemoveMldVersion:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.mld.addremove.TriggerAddRemoveMldVersion
+      
+TriggerAddRemoveMldJoinGroup:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.mld.addremove.TriggerAddRemoveMldJoinGroup
+      
+TriggerAddRemoveMldStaticGroup:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.addremove.mld.addremove.TriggerAddRemoveMldStaticGroup

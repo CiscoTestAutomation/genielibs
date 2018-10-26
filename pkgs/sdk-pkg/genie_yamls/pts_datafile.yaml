@@ -20,6 +20,11 @@ ospf:
         - statistics
         - lsas
         - last_state_change
+        - bdr_ip_addr
+        - dr_ip_addr
+        - state
+        - bdr_router_id
+        - dr_router_id
 
 hsrp:
     source:
@@ -158,6 +163,9 @@ pim:
         - rp_candidate_next_advertisement
         - genid
         - df_address
+        - gen_id
+        - incoming_interface
+        - rpf_neighbor
 
 prefix_list:
     source:
@@ -177,6 +185,10 @@ mld:
     source:
         pkg: genie.libs.ops
         class: mld.mld.Mld
+    exclude:
+        - expire
+        - up_time
+        - last_reporter
     devices:
         uut: None
 
@@ -272,4 +284,14 @@ vxlan:
         - totalnetworks
         - totalpaths
         - flags
-
+msdp:
+    source:
+        pkg: genie.libs.ops
+        class: msdp.msdp.Msdp
+    devices:
+        uut: None
+    exclude:
+        - statistics
+        - elapsed_time
+        - up_time
+        - expire

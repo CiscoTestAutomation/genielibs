@@ -98,13 +98,14 @@ class Restore(object):
                 cmd = "load {}\n"\
                       "commit replace".format(self.to_url)
                 output = device.configure(cmd)
-                if 'fail' not in output:
+                if 'Failed to commit' not in output:
                     break
                 elif i == iteration-1:
-                    raise Exception('Failed to rollback config to checkpoint')
+                    raise Exception('Unable to execute commit replace')
                 else:
-                    log.info('Rollback checkpoint failed: sleeping {} '
-                             'seconds and retrying...'.format(interval))
+                    log.info('Commit replace failed: sleeping {} seconds before'
+                             ' retrying.'.format(interval))
+                    device.execute('show configuration failed')
                     time.sleep(interval)
 
             # Delete location:<filename>

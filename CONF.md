@@ -62,7 +62,7 @@ configuration style on each platform as its hierarchy needs to be considered
 for configuration mode such as router configuration mode(config-router),
 interface configuration mode(config-if).
 
-![bgp_conf](bgp_conf.png)
+![bgp_conf](_static/bgp_conf.png)
 
 Attribute Column:  List all the configuration attributes at most left column then create the Platform Columns for each supported OS (XE, XR and NX) . 
 
@@ -133,13 +133,13 @@ Command Rerences:
 
 [verify]: http://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_bgp/command/irg-cr-book/bgp-m1.html#wp7418204620
 
-![neighbor](neighbor.png)
+![neighbor](_static/neighbor.png)
 
 3. Provide list of all the show commands that can be used to extract the
 attribute values. These commands will be used for both Conf and Ops structure
 (Guideline Ops structure). 
 
-  ![show](show.png)
+  ![show](_static/show.png)
 
   You can find related show commands from above command reference (In step3) or
   below configuration guides.
@@ -157,7 +157,7 @@ attribute values. These commands will be used for both Conf and Ops structure
   [example].
 
 [example]: http://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/6-x/unicast/configuration/guide/l3_cli_nxos/l3_bgp.html
-  ![basicbgp](basicbgp.png)
+  ![basicbgp](_static/basicbgp.png)
  
 
 4. You may raise a pull request for Genie team to review your structure before it is 

@@ -3,7 +3,6 @@
 import unittest
 from unittest.mock import Mock
 import re
-import pdb
 
 from genie.conf import Genie
 from genie.conf.base import Testbed, Device, Link, Interface
@@ -829,7 +828,6 @@ class test_ldp(unittest.TestCase):
         out = ldp.build_config(apply=False)
         #print("\n PE1 CONFIG\n" + str(out['PE1']))
         #print("\n PE2 CONFIG\n" + str(out['PE2']))
-        #pdb.set_trace()
         if 1:
             self.assertRegex(str(out['PE1']), '(?s)address-family ipv4\n.*neighbor 1.2.3.4 targeted')
             self.assertRegex(str(out['PE1']), '(?s)address-family ipv4\n.*neighbor 1.2.3.5 targeted')
@@ -879,7 +877,6 @@ class test_ldp(unittest.TestCase):
         out = ldp.build_config(apply=False)
         #print("\n PE1 CONFIG\n" + str(out['PE1']))
         #print("\n PE2 CONFIG\n" + str(out['PE2']))
-        #pdb.set_trace()
         if 1:
             self.assertRegex(str(out['PE1']), '(?s)vrf1.*address-family ipv4.*discovery transport-address 1.2.3.4')
             self.assertRegex(str(out['PE1']), '(?s)vrf1.*address-family ipv4.*label.*local.*advertise.*disable')
