@@ -58,18 +58,11 @@ ALL_PKGS       = $(PYPI_PKGS)
 # force cythonize if uploading to pypi
 ifeq ($(UPLOADPYPI), true)
     DEVNET = true
-    CYTHONIZE = true
 endif
 
 ifeq ($(MAKECMDGOALS), devnet)
     DEVNET = true
-    CYTHONIZE = true
     INCLUDE_TESTS = false
-endif
-
-# build options
-ifeq ($(CYTHONIZE), true)
-    BUILD_CMD += --cythonize
 endif
 
 ifeq ($(INCLUDE_TESTS), true)
@@ -81,8 +74,8 @@ ifeq ($(DEVNET), true)
     BUILD_CMD += --devnet
 endif
 
-# add upload flag ONLY if it's a devnet build, cythonized and asked for upload
-ifeq ($(DEVNET)$(CYTHONIZE)$(UPLOADPYPI), truetruetrue)
+# add upload flag ONLY if it's a devnet build asked for upload
+ifeq ($(DEVNET)$(UPLOADPYPI), truetruetrue)
     BUILD_CMD += upload -r $(PYPIREPO)
 endif
 
@@ -125,7 +118,6 @@ help:
 	@echo ""
 	@echo "     --- build arguments ---"
 	@echo " DEVNET=true              build for devnet style (cythonized, no ut)"
-	@echo " CYTHONIZE=true           build cythonized package"
 	@echo " INCLUDE_TESTS=true       build include unittests in cythonized pkgs"
 
 docs:
