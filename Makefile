@@ -75,7 +75,7 @@ ifeq ($(DEVNET), true)
 endif
 
 # add upload flag ONLY if it's a devnet build asked for upload
-ifeq ($(DEVNET)$(UPLOADPYPI), truetruetrue)
+ifeq ($(DEVNET)$(UPLOADPYPI), truetrue)
     BUILD_CMD += upload -r $(PYPIREPO)
 endif
 
