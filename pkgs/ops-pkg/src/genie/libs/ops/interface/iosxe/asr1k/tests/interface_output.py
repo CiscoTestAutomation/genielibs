@@ -510,41 +510,43 @@ class InterfaceOutput(object):
             "reliability": "255/255"
        }
     }
-
-
+    
     ShowEtherchannelSummary = {
-        "num_channel_groups_in_use": 1,
-         "aggregators_number": 1,
-         'interfaces': {
-             "Port-channel2": {
-                  "flags": "RU",
-                  "port_channel": {
-                       "protocol": "lacp",
-                       "port_channel_member": True,
-                       "port_channel_member_intfs": [
-                            "GigabitEthernet0/0/0",
-                            "GigabitEthernet0/0/1"
-                       ]
-                  },
-                  "group": "2"
-             },
-             "GigabitEthernet0/0/0": {
-                  "flags": "bndl",
-                  "port_channel": {
-                       "port_channel_member": True,
-                       "port_channel_int": "Port-channel2"
-                  },
-                  "group": "2"
-             },
-             "GigabitEthernet0/0/1": {
-                  "flags": "bndl",
-                  "port_channel": {
-                       "port_channel_member": True,
-                       "port_channel_int": "Port-channel2"
-                  },
-                  "group": "2"
-             }
-        }
+        'number_of_lag_in_use': 2,
+        'number_of_aggregators': 2,
+        'interfaces': {
+            'Port-channel2': {
+                'name': 'Port-channel2',
+                'bundle_id': 2,
+                'protocol': 'lacp',
+                'flags': 'RU',
+                'oper_status': 'up',
+                'members': {
+                    'GigabitEthernet0/0/0': {
+                        'interface': 'GigabitEthernet0/0/0',
+                        'flags': 'bndl',
+                        'bundled': True,
+                        'port_channel': {
+                           "port_channel_member": True,
+                           "port_channel_int": "Port-channel2"
+                        },
+                    },
+                    'GigabitEthernet0/0/1': {
+                        'interface': 'GigabitEthernet0/0/1',
+                        'flags': 'hot-sby',
+                        'bundled': False,
+                        'port_channel': {
+                           "port_channel_member": True,
+                           "port_channel_int": "Port-channel2"
+                        },
+                    },
+                },
+                'port_channel': {
+                    'port_channel_member': True,
+                    'port_channel_member_intfs': ['GigabitEthernet0/0/0', 'GigabitEthernet0/0/1'],
+                }
+            },
+        },
     }
 
     ShowIpInterface = {

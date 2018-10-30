@@ -8,7 +8,7 @@ from operator import attrgetter
 from collections import OrderedDict, defaultdict
 
 from genie.utils.diff import Diff
-from ats.utils.objects import find, R, Operator
+from ats.utils.objects import find, R, Operator, NotExists, Not
 from ats.aetest.utils import format_filter_exception
 
 from genie.conf.base import Base as ConfBase
@@ -25,6 +25,7 @@ log = logging.getLogger(__name__)
 
 # TODO: Better handling of Errors vs Failures
 
+VOWEL = set(['a', 'e', 'i', 'o', 'u'])
 
 class Mapping(object):
     def __init__(self, config_info=None, verify_ops=None, requirements=None,
@@ -310,6 +311,7 @@ class Mapping(object):
 
             with steps.start("Learning '{n}' {t}".format(n=name,
                                                          t=type_)) as step:
+                requirements_printer(base, requirements)
 
                 # if LTS has value, get from LTS, don't learn
                 if kwargs.get('lts', {}).get(base, {}).get(device.name, {}):
@@ -1220,3 +1222,114 @@ class Different(object):
         ret = '(?P<{name}>^(?!{regexes}$).*$)'.format(name='not_'+self.value,
                                                       regexes=regexes)
         return ret
+
+def requirements_printer(base, requirements):
+    '''Convert triggers requirements into English requirements
+
+    Care about the Leafs and the Regex. The rest are considered path to get
+    where we want, but non important
+    '''
+
+    # All requirements; used internally
+    all_reqs_name = set()
+
+    # Contains all the leaves
+    leafs = []
+
+    # Contains all the Regexs
+    regexs = []
+
+    # Make sure no triple level of requirements
+    if isinstance(requirements['requirements'][0][0], list):
+        new_reqs = []
+        for reqs in requirements['requirements']:
+            for req in reqs:
+                new_reqs.append(req)
+        requirements['requirements'] = new_reqs
+
+    # Loops over the requirements
+    for reqs in requirements['requirements']:
+        if not reqs:
+            continue
+
+        prev_key = None
+
+        # To keep track if we reached the end of the requirements
+        lenght = len(reqs)
+
+        for i, req in enumerate(reqs):
+
+            value = req
+
+            # We dont want to show leafs of regex in both lists (regexs and
+            # leafs)
+            regex = False
+
+            # If the requirements is a regex, then keep the name of the regex
+            # and add to regex list
+            if isinstance(req, str) and req.startswith('(?P<'):
+                try:
+                    com = re.compile(req)
+                    value = list(com.groupindex)[0]
+                    if value not in all_reqs_name:
+                        regexs.append([value, com.pattern])
+                        all_reqs_name.add(value)
+
+                    # So we dont add to the leafs list if already in regex list
+                    regex = True
+                except Exception as e:
+                    # We dont want to boom the trigger
+                    log.info('Could not print the trigger requirements\n{}'
+                             .format(e))
+
+            # Last and not regex?
+            if i == lenght - 1 and not regex:
+                leafs.append([prev_key, value])
+                continue
+
+            # Saving those so we can deal with end of key
+            prev_key = value
+
+    # Get class name
+    base = base.rsplit('.', 1)[-1]
+
+    # Is is a or an
+    a = 'an' if base[0].lower() in VOWEL else 'a'
+
+    log.info("Find {} '{}' that satisfy the following requirements:"
+             .format(a, base))
+
+    # Print all the leafs
+    for end in leafs:
+        # Convert NotExists/Not to english
+        end1 = key_convertor(end[0])
+        end2 = value_convertor(end[1])
+
+        if end1 is None:
+            # Maybe we want to search for the first level of the object
+            log.info("'{}'".format(end2))
+        else:
+            log.info("{} {}".format(end1, end2))
+
+    # Print all the regexs
+    for regex in regexs:
+        log.info("'{}' that match the following regular expression '{}'"
+               .format(regex[0], regex[1]))
+
+def key_convertor(word):
+    if not isinstance(word, Operator):
+        return "'{}'".format(word)
+    return word_convertor(word)
+
+def value_convertor(word):
+    if not isinstance(word, Operator):
+        return "which is equal to '{}'".format(word)
+    return word_convertor(word)
+
+def word_convertor(word):
+    if isinstance(word, NotExists):
+        return "does not have key '{}'".format(word.value)
+    if isinstance(word, Not):
+        return "which is not of value '{}'".format(word.value)
+    pass
+

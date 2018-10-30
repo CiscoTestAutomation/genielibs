@@ -25,7 +25,7 @@ EXCLUDE_PARSERS = ['ShowDir', 'ShowBgpPolicyStatistics', 'ShowBgpVrfAllNeighbors
                    'ShowIpv6RipInterfaceVrfAll', 'ShowIpv6RipNeighborVrfAll', 'ShowIpv6RipStatistics',
                    'ShowIpv6RipVrfAll', 'ShowRunRip', 'ShowSystemInternalSysmgrServiceName',
                    'ShowIpIgmpSsmMapping', 'ShowIpv6MldSsmMap', 'ShowPimRp', 'ShowPimNeighbor',
-                   'ShowIpOspf', 'ShowBgpAllNeighborsAdvertisedRoutes',
+                   'ShowIpOspf', 'ShowBgpAllNeighborsAdvertisedRoutes', 'ShowRunningConfigInterface',
                    'ShowBgpAllNeighborsPolicy', 'ShowBgpAllNeighborsReceivedRoutes',
                    'ShowBgpAllNeighborsRoutes', 'ShowBgpInstanceNeighborsAdvertisedRoutes',
                    'ShowBgpInstanceNeighborsReceivedRoutes', 'ShowBgpInstanceNeighborsRoutes',
@@ -38,9 +38,25 @@ EXCLUDE_PARSERS = ['ShowDir', 'ShowBgpPolicyStatistics', 'ShowBgpVrfAllNeighbors
                    'ShowL2VpnBridgeDomainDetail', 'ShowL2VpnBridgeDomainSummary', 'ShowEvpnEthernetSegment',
                    'ShowIpRouteWord', 'ShowIpv6RouteWord', 'ShowInterfacesCounters','ShowPowerInlineInterface',
                    'ShowProcessesCpuSorted','ShowVlanOld', 'ShowIpMsdpPolicyStatisticsSaPolicyIn',
-                   'ShowIpMsdpPolicyStatisticsSaPolicyInOut', 'ShowIpMsdpPolicyStatisticsSaPolicyOut']
+                   'ShowIpMsdpPolicyStatisticsSaPolicyInOut', 'ShowIpMsdpPolicyStatisticsSaPolicyOut',
+                   'ShowBgpL2vpnEvpnWord', 'ShowL2routeEvpnMacEvi', 'ShowMacAddressTableVni',
+                   'ShowIpInterfaceBriefPipeIp', 'ShowLispExtranet', 'ShowBgpPolicyStatisticsParser']
 
-EXCLUDE_DEVICES = ['Verify_BgpOpenconfigYang_yang', 'Verify_BgpProcessVrfAll_yang', 'Verify_BgpVrfAllNeighbors_yang_vrf_default']
+EXCLUDE_DEVICES = ['Verify_BgpOpenconfigYang_yang',
+                   'Verify_BgpProcessVrfAll_yang', 
+                   'Verify_BgpVrfAllNeighbors_yang_vrf_default',
+                   'Verify_BgpInstanceNeighborsDetail_yang_vrf_type_all',
+                   'Verify_BgpInstanceNeighborsDetail_yang_vrf_type_vrf_af_type_ipv4_unicast',
+                   'Verify_BgpInstanceNeighborsDetail_yang_vrf_type_vrf_af_type_ipv6_unicast',
+                   'Verify_BgpInstanceProcessDetail_yang_vrf_type_all',
+                   'Verify_BgpInstanceProcessDetail_yang_vrf_type_vrf_af_type_ipv4_unicast',
+                   'Verify_BgpInstanceProcessDetail_yang_vrf_type_vrf_af_type_ipv6_unicast',
+                   'Verify_EthernetTags_yang',
+                   'Verify_BgpPolicyStatisticsParser_xml',
+                   'Verify_IpInterfaceBrief_yang', 'Verify_StandbyAll_yang',
+                   'Verify_IpInterfaceBriefPipeVlan_yang',
+                   'Verify_NveInterface']
+
 CONTEXTS = ['cli', 'yang', 'xml', 'rest']
 
 OSES = ['iosxe', 'iosxr', 'nxos']

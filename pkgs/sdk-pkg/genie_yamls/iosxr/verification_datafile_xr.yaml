@@ -97,9 +97,11 @@ Verify_BgpInstanceNeighborsDetail_vrf_type_all:
   - cummulative_no_failed_rt_match
   - cummulative_no_no_policy
   - route_refresh_request_sent
+  groups:
+  - bgp
   iteration:
-    attempt: 4
-    interval: 5
+    attempt: 6
+    interval: 15
   parameters:
     vrf_type: all
 Verify_BgpInstanceNeighborsDetail_vrf_type_vrf_af_type_ipv4_unicast:
@@ -346,9 +348,13 @@ Verify_BgpInstanceSummary_vrf_type_all:
   - up_down
   - nsr_initial_initsync_version
   - nsr_initial_init_ver_status
+  - nsr_issu_sync_group_versions
+  - standbyver
+  groups:
+  - bgp
   iteration:
-    attempt: 4
-    interval: 5
+    attempt: 6
+    interval: 15
   parameters:
     vrf_type: all
 Verify_BgpInstanceSummary_vrf_type_vrf_af_type_ipv4_unicast:
@@ -368,6 +374,8 @@ Verify_BgpInstanceSummary_vrf_type_vrf_af_type_ipv4_unicast:
   - tbl_ver
   - up_down
   - nsr_initial_init_ver_status
+  - nsr_issu_sync_group_versions
+  - standbyver
   iteration:
     attempt: 4
     interval: 5
@@ -391,6 +399,8 @@ Verify_BgpInstanceSummary_vrf_type_vrf_af_type_ipv6_unicast:
   - tbl_ver
   - up_down
   - nsr_initial_init_ver_status
+  - nsr_issu_sync_group_versions
+  - standbyver
   iteration:
     attempt: 4
     interval: 5
@@ -514,6 +524,8 @@ Verify_InterfacesDetail:
   - interface_state
   - in_unknown_protos
   - last_clear
+  groups:
+  - bgp
   iteration:
     attempt: 4
     interval: 5
@@ -651,11 +663,11 @@ Verify_PimVrfInterfaceDetail_vrf_default_af_ipv6:
   - hello_expiration
   - address
   - primary_address
-  parameters:
-    af: ipv6
   iteration:
     attempt: 6
     interval: 10
+  parameters:
+    af: ipv6
 Verify_PimVrfMstatic_vrf_default_af_ipv4:
   devices:
     uut: None
@@ -725,7 +737,8 @@ Verify_RedundancySummary:
 Verify_RouteIpv4:
   devices:
     uut: None
-  exclude: []
+  exclude: 
+  - updated
 Verify_RouteIpv6:
   devices:
     uut: None

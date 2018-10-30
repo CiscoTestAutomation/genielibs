@@ -541,8 +541,10 @@ class GenieRobot(object):
                 msg = ["Comparison between {pts} and "
                        "{OPS} is identical\n".format(pts=pts,
                         OPS=pts_compare)]
+                # print out message
+                log.info('\n'.join(msg))
 
-                self.builtin.pass_execution('\n'.join(msg))
+        self.builtin.pass_execution('\n'.join(msg))
 
     def _run_genie_trigger_verification(self, alias, device, context,
                                             name):

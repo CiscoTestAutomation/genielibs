@@ -1,3 +1,9 @@
+Verify_AccessLists:
+  devices:
+    uut: None
+Verify_AccessSession:
+  devices:
+    uut: None
 Verify_Archive:
   devices:
     uut: None
@@ -118,6 +124,21 @@ Verify_Dir:
   - last_modified_date
   - bytes_free
   - files
+Verify_Dot1x:
+  devices:
+    uut: None
+Verify_Dot1xAllCount:
+  devices:
+    uut: None
+Verify_Dot1xAllDetail:
+  devices:
+    uut: None
+Verify_Dot1xAllStatistics:
+  devices:
+    uut: None
+Verify_Dot1xAllSummary:
+  devices:
+    uut: None
 Verify_EnvironmentAll:
   devices:
     uut: None
@@ -536,217 +557,265 @@ Verify_Ipv6Route_protocol_ospf:
 Verify_Ipv6StaticDetail:
   devices:
     uut: None
+Verify_IssuRollbackTimer:
+  devices:
+    uut: None
+Verify_IssuStateDetail:
+  devices:
+    uut: None
+Verify_LacpCounters:
+  devices:
+    uut: None
+Verify_LacpInternal:
+  devices:
+    uut: None
+Verify_LacpNeighbor:
+  devices:
+    uut: None
+Verify_LacpSysId:
+  devices:
+    uut: None
+Verify_LispDynamicEidDetail_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+  groups:
+  - lisp
+Verify_LispPlatform:
+  devices:
+    uut: None
+  groups:
+  - lisp
+Verify_LispServiceDatabase_service_ethernet_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ethernet
+  groups:
+  - lisp
+Verify_LispServiceDatabase_service_ipv4_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ipv4
+  groups:
+  - lisp
+Verify_LispServiceDatabase_service_ipv6_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ipv6
+  groups:
+  - lisp
+Verify_LispServiceMapCache_service_ethernet_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ethernet
+  exclude:
+  - creation_time
+  groups:
+  - lisp
+Verify_LispServiceMapCache_service_ipv4_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ipv4
+  exclude:
+  - creation_time
+  groups:
+  - lisp
+Verify_LispServiceMapCache_service_ipv6_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ipv6
+  exclude:
+  - creation_time
+  groups:
+  - lisp
+Verify_LispServiceRlocMembers_service_ethernet_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ethernet
+  groups:
+  - lisp
+Verify_LispServiceRlocMembers_service_ipv4_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ipv4
+  groups:
+  - lisp
+Verify_LispServiceRlocMembers_service_ipv6_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ipv6
+  groups:
+  - lisp
+Verify_LispServiceServerDetailInternal_service_ethernet_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ethernet
+  groups:
+  - lisp
+Verify_LispServiceServerDetailInternal_service_ipv4_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ipv4
+  groups:
+  - lisp
+Verify_LispServiceServerDetailInternal_service_ipv6_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ipv6
+  groups:
+  - lisp
+Verify_LispServiceServerSummary_service_ethernet_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ethernet
+  groups:
+  - lisp
+Verify_LispServiceServerSummary_service_ipv4_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ipv4
+  groups:
+  - lisp
+Verify_LispServiceServerSummary_service_ipv6_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ipv6
+  groups:
+  - lisp
+Verify_LispServiceSmr_service_ethernet_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ethernet
+  groups:
+  - lisp
+Verify_LispServiceSmr_service_ipv4_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ipv4
+  groups:
+  - lisp
+Verify_LispServiceSmr_service_ipv6_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ipv6
+  groups:
+  - lisp
+Verify_LispServiceStatistics_service_ethernet_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ethernet
+  exclude:
+  - map_register_records_out
+  groups:
+  - lisp
+Verify_LispServiceStatistics_service_ipv4_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ipv4
+  exclude:
+  - map_register_records_out
+  groups:
+  - lisp
+Verify_LispServiceStatistics_service_ipv6_instance_id_*:
+  devices:
+    uut: None
+  parameters:
+    instance_id: '*'
+    service: ipv6
+  exclude:
+  - map_register_records_out
+  groups:
+  - lisp
+Verify_LispServiceSummary_service_ethernet:
+  devices:
+    uut: None
+  parameters:
+    service: ethernet
+  groups:
+  - lisp
+Verify_LispServiceSummary_service_ipv4:
+  devices:
+    uut: None
+  parameters:
+    service: ipv4
+  groups:
+  - lisp
+Verify_LispServiceSummary_service_ipv6:
+  devices:
+    uut: None
+  parameters:
+    service: ipv6
+  groups:
+  - lisp
+Verify_LispService_service_ethernet:
+  devices:
+    uut: None
+  parameters:
+    service: ethernet
+  groups:
+  - lisp
+Verify_LispService_service_ipv4:
+  devices:
+    uut: None
+  parameters:
+    service: ipv4
+  groups:
+  - lisp
+Verify_LispService_service_ipv6:
+  devices:
+    uut: None
+  parameters:
+    service: ipv6
+  groups:
+  - lisp
 Verify_LispSession:
-  groups: ['lisp']
   devices:
     uut: None
   exclude:
   - time
-Verify_LispPlatform:
-  groups: ['lisp']
-  devices:
-    uut: None
-Verify_LispDynamicEidDetail:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-Verify_LispServiceIpv4:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    service: 'ipv4'
-Verify_LispServiceIpv6:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    service: 'ipv6'
-Verify_LispServiceEthernet:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    service: 'ethernet'
-Verify_LispServiceIpv4Database:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ipv4'
-Verify_LispServiceIpv6Database:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ipv6'
-Verify_LispServiceEthernetDatabase:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ethernet'
-Verify_LispServiceIpv4MapCache:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ipv4'
-  exclude:
-  - creation_time
-Verify_LispServiceIpv6MapCache:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ipv6'
-  exclude:
-  - creation_time
-Verify_LispServiceEthernetMapCache:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ethernet'
-  exclude:
-  - creation_time
-Verify_LispServiceIpv4RlocMembers:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ipv4'
-Verify_LispServiceIpv6RlocMembers:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ipv6'
-Verify_LispServiceEthernetRlocMembers:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ethernet'
-Verify_LispServiceIpv4ServerDetailInternal:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ipv4'
-Verify_LispServiceIpv6ServerDetailInternal:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ipv6'
-Verify_LispServiceEthernetServerDetailInternal:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ethernet'
-Verify_LispServiceIpv4ServerSummary:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ipv4'
-Verify_LispServiceIpv6ServerSummary:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ipv6'
-Verify_LispServiceEthernetServerSummary:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ethernet'
-Verify_LispServiceIpv4Smr:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ipv4'
-Verify_LispServiceIpv6Smr:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ipv6'
-Verify_LispServiceEthernetSmr:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ethernet'
-Verify_LispServiceIpv4Statistics:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ipv4'
-  exclude:
-  - map_register_records_out
-Verify_LispServiceIpv6Statistics:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ipv6'
-  exclude:
-  - map_register_records_out
-Verify_LispServiceEthernetStatistics:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    instance_id: '*'
-    service: 'ethernet'
-  exclude:
-  - map_register_records_out
-Verify_LispServiceIpv4Summary:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    service: 'ipv4'
-Verify_LispServiceIpv6Summary:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    service: 'ipv6'
-Verify_LispServiceEthernetSummary:
-  groups: ['lisp']
-  devices:
-    uut: None
-  parameters:
-    service: 'ethernet'
+  groups:
+  - lisp
 Verify_Lldp:
   devices:
     uut: None
@@ -767,6 +836,15 @@ Verify_LldpTraffic:
   devices:
     uut: None
   exclude: []
+Verify_MacAddressTable:
+  devices:
+    uut: None
+Verify_MacAddressTableAgingTime:
+  devices:
+    uut: None
+Verify_MacAddressTableLearning:
+  devices:
+    uut: None
 Verify_MemoryStatistics:
   devices:
     uut: None
@@ -777,10 +855,20 @@ Verify_Module:
   devices:
     uut: None
   exclude: []
+Verify_PagpCounters:
+  devices:
+    uut: None
+Verify_PagpInternal:
+  devices:
+    uut: None
+Verify_PagpNeighbor:
+  devices:
+    uut: None
 Verify_Platform:
   devices:
     uut: None
-  exclude: []
+  exclude:
+  - insert_time
 Verify_PlatformSoftwareSlotActiveMonitorMem:
   devices:
     uut: None

@@ -180,7 +180,7 @@ Verify_BgpL2vpnEvpnRouteType_route_type_1:
   - extcommunity
   parameters:
     route_type: '1'
-Verify_BgpL2vpnEvpnRouteType_route_type_2: 
+Verify_BgpL2vpnEvpnRouteType_route_type_2:
   devices:
     uut: None
   exclude:
@@ -1041,6 +1041,9 @@ Verify_IpInterfaceBriefPipeVlan:
   devices:
     uut: None
   exclude: []
+Verify_IpInterfaceBriefVrfAll:
+  devices:
+    uut: None
 Verify_IpInterfaceVrfAll:
   devices:
     uut: None
@@ -1085,14 +1088,12 @@ Verify_IpMrouteVrfAll:
   - outgoing_interface_list
   - flags
   - incoming_interface_list
+  groups:
+  - multicast
   iteration:
     attempt: 30
     interval: 10
-  groups:
-  - multicast
 Verify_IpMsdpPeerVrf_vrf_all:
-  groups:
-  - msdp
   devices:
     uut: None
   exclude:
@@ -1107,14 +1108,14 @@ Verify_IpMsdpPeerVrf_vrf_all:
   - received
   - sent
   - rpf_failure
+  groups:
+  - msdp
   iteration:
     attempt: 5
     interval: 10
   parameters:
     vrf: all
 Verify_IpMsdpPeerVrf_vrf_default:
-  groups:
-  - msdp
   devices:
     uut: None
   exclude:
@@ -1129,54 +1130,56 @@ Verify_IpMsdpPeerVrf_vrf_default:
   - received
   - sent
   - rpf_failure
+  groups:
+  - msdp
   iteration:
     attempt: 5
     interval: 10
 Verify_IpMsdpSaCacheDetailVrf_vrf_all:
-  groups:
-  - msdp
   devices:
     uut: None
   exclude:
   - expire
   - up_time
+  groups:
+  - msdp
   iteration:
     attempt: 12
     interval: 10
   parameters:
     vrf: all
 Verify_IpMsdpSaCacheDetailVrf_vrf_default:
-  groups:
-  - msdp
   devices:
     uut: None
   exclude:
   - expire
   - up_time
+  groups:
+  - msdp
   iteration:
     attempt: 12
     interval: 10
 Verify_IpMsdpSummary_vrf_all:
-  groups:
-  - msdp
   devices:
     uut: None
   exclude:
   - elapsed_time
   - last_message_received
+  groups:
+  - msdp
   iteration:
     attempt: 5
     interval: 10
   parameters:
     vrf: all
 Verify_IpMsdpSummary_vrf_default:
-  groups:
-  - msdp
   devices:
     uut: None
   exclude:
   - elapsed_time
   - last_message_received
+  groups:
+  - msdp
   iteration:
     attempt: 5
     interval: 10
@@ -1409,13 +1412,13 @@ Verify_IpPimNeighbor_vrf_all:
   exclude:
   - expiration
   - up_time
+  groups:
+  - multicast
   iteration:
     attempt: 6
     interval: 5
   parameters:
     vrf: all
-  groups:
-  - multicast
 Verify_IpPimNeighbor_vrf_default:
   devices:
     uut: None
@@ -1485,13 +1488,13 @@ Verify_IpRoute_vrf_all:
     uut: None
   exclude:
   - updated
+  groups:
+  - multicast
   iteration:
     attempt: 12
     interval: 10
   parameters:
     vrf: all
-  groups:
-  - multicast
 Verify_IpRoute_vrf_default:
   devices:
     uut: None
@@ -1544,8 +1547,6 @@ Verify_Ipv6InterfaceVrfAll:
 Verify_Ipv6MldGroups_vrf_all:
   devices:
     uut: None
-  parameters:
-    vrf: all
   exclude:
   - expire
   - up_time
@@ -1553,6 +1554,8 @@ Verify_Ipv6MldGroups_vrf_all:
   iteration:
     attempt: 15
     interval: 5
+  parameters:
+    vrf: all
 Verify_Ipv6MldGroups_vrf_default:
   devices:
     uut: None
@@ -1584,8 +1587,6 @@ Verify_Ipv6MldInterface_vrf_default:
 Verify_Ipv6MldLocalGroups_vrf_all:
   devices:
     uut: None
-  parameters:
-    vrf: all
   exclude:
   - last_reported
   - uptime
@@ -1594,6 +1595,8 @@ Verify_Ipv6MldLocalGroups_vrf_all:
   iteration:
     attempt: 6
     interval: 5
+  parameters:
+    vrf: all
 Verify_Ipv6MldLocalGroups_vrf_default:
   devices:
     uut: None
@@ -1605,11 +1608,11 @@ Verify_Ipv6MrouteVrfAll:
   - uptime
   - oil_uptime
   - incoming_interface_list
+  groups:
+  - multicast
   iteration:
     attempt: 12
     interval: 20
-  groups:
-  - multicast
 Verify_Ipv6NdInterface:
   devices:
     uut: None
@@ -1650,13 +1653,13 @@ Verify_Ipv6PimNeighbor_vrf_all:
   exclude:
   - expiration
   - up_time
-  parameters:
-    vrf: all
   groups:
   - multicast
   iteration:
     attempt: 18
     interval: 10
+  parameters:
+    vrf: all
 Verify_Ipv6PimNeighbor_vrf_default:
   devices:
     uut: None
@@ -1684,11 +1687,11 @@ Verify_Ipv6PimRp_vrf_all:
   exclude:
   - up_time
   - bsr_next_discovery
-  parameters:
-    vrf: all
   iteration:
     attempt: 15
     interval: 5
+  parameters:
+    vrf: all
 Verify_Ipv6PimRp_vrf_default:
   devices:
     uut: None
@@ -1715,10 +1718,10 @@ Verify_Ipv6Route_vrf_all:
   - next_hop
   - outgoing_interface
   - incoming_interface
-  parameters:
-    vrf: all
   groups:
   - multicast
+  parameters:
+    vrf: all
 Verify_Ipv6Route_vrf_default:
   devices:
     uut: None
@@ -1746,6 +1749,9 @@ Verify_Ipv6StaticRoute_vrf_default:
   devices:
     uut: None
 Verify_L2routeEvpnEternetSegmentAll:
+  devices:
+    uut: None
+Verify_L2routeEvpnMac:
   devices:
     uut: None
 Verify_L2routeFlAll:
@@ -1788,8 +1794,7 @@ Verify_NveEthernetSegment:
     uut: None
   exclude: []
 Verify_NveInterface:
-  devices:
-    uut: None
+  exclude: []
 Verify_NveInterfaceDetail:
   devices:
     uut: None
@@ -1810,6 +1815,9 @@ Verify_NvePeers:
   groups:
   - vxlan
 Verify_NveVni:
+  devices:
+    uut: None
+Verify_NveVniIngressReplication:
   devices:
     uut: None
 Verify_NveVniSummary:
@@ -1860,6 +1868,18 @@ Verify_RunningConfigBgp:
   devices:
     uut: None
   exclude: []
+Verify_RunningConfigMsdp:
+  devices:
+    uut: None
+Verify_RunningConfigNvOverlay:
+  devices:
+    uut: None
+Verify_RunningConfigPim:
+  devices:
+    uut: None
+Verify_SystemInternalL2fwderMac:
+  devices:
+    uut: None
 Verify_SystemRedundancyStatus:
   devices:
     uut: None
@@ -1934,4 +1954,7 @@ Verify_VrfInterface:
   iteration:
     attempt: 3
     interval: 10
+Verify_Vxlan:
+  devices:
+    uut: None
 extends: '%ENV{VIRTUAL_ENV}/genie_yamls/verification_datafile.yaml'
