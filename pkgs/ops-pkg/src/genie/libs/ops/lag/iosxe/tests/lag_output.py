@@ -100,14 +100,26 @@ class LagOutput(object):
                         'interface': 'GigabitEthernet2',
                         'flags': 'bndl',
                         'bundled': True,
+                        'port_channel': {
+                           "port_channel_member": True,
+                           "port_channel_int": "Port-channel1"
+                        },
                         },
                     'GigabitEthernet3': {
                         'interface': 'GigabitEthernet3',
                         'flags': 'bndl',
                         'bundled': True,
-                       },
+                        'port_channel': {
+                           "port_channel_member": True,
+                           "port_channel_int": "Port-channel1"
+                        },
                     },
                 },
+                'port_channel': {
+                    'port_channel_member': True,
+                    'port_channel_member_intfs': ['GigabitEthernet2', 'GigabitEthernet3'],
+                }
+            },
             'Port-channel2': {
                 'name': 'Port-channel2',
                 'bundle_id': 2,
@@ -119,18 +131,34 @@ class LagOutput(object):
                         'interface': 'GigabitEthernet4',
                         'flags': 'bndl',
                         'bundled': True,
+                        'port_channel': {
+                           "port_channel_member": True,
+                           "port_channel_int": "Port-channel2"
+                        },
                     },
                     'GigabitEthernet5': {
                         'interface': 'GigabitEthernet5',
                         'flags': 'hot-sby',
                         'bundled': False,
+                        'port_channel': {
+                           "port_channel_member": True,
+                           "port_channel_int": "Port-channel2"
+                        },
                     },
                     'GigabitEthernet6': {
                         'interface': 'GigabitEthernet6',
                         'flags': 'bndl',
                         'bundled': True,
+                        'port_channel': {
+                           "port_channel_member": True,
+                           "port_channel_int": "Port-channel2"
+                        },
                     },
                 },
+                'port_channel': {
+                    'port_channel_member': True,
+                    'port_channel_member_intfs': ['GigabitEthernet4', 'GigabitEthernet5', 'GigabitEthernet6'],
+                }
             },
         },
     }

@@ -8,7 +8,7 @@ import re
 from ..interface import Interface as CommonInterface
 
 # iosxe show_interface
-from genie.libs.parser.iosxe.show_interface import ShowEtherchannelSummary
+from genie.libs.parser.iosxe.show_lag import ShowEtherchannelSummary
 
 
 class Interface(CommonInterface):
@@ -32,24 +32,24 @@ class Interface(CommonInterface):
         #                           switchport related
         # ======================================================================
         # Global source
+        # port-channel interfaces
         src = '[interfaces][(?P<interface>.*)][port_channel]'
         dest = 'info[(?P<interface>.*)][port_channel]'
 
         # vlan_id
-        for key in ['port_channel_member_intfs', 'port_channel_int']:
+        for key in ['port_channel_member_intfs', 'port_channel_member']:
+            self.add_leaf(cmd=ShowEtherchannelSummary,
+                          src=src + '[{}]'.format(key),
+                          dest=dest + '[{}]'.format(key))
+
+        # Ethernet interfaces
+        src = '[interfaces][(?P<port_intf>.*)][members][(?P<interface>.*)][port_channel]'
+        dest = 'info[(?P<interface>.*)][port_channel]'
+
+        # vlan_id
+        for key in ['port_channel_int', 'port_channel_member']:
             self.add_leaf(cmd=ShowEtherchannelSummary,
                           src=src + '[{}]'.format(key),
                           dest=dest + '[{}]'.format(key))
 
         self.make()
-
-        # overwrite the port_channel_member
-        if hasattr(self, 'info'):
-            for intf in self.info:
-                if 'port_channel' not in self.info[intf]:
-                    continue
-                if ('port_channel_int' in self.info[intf]['port_channel'] and \
-                    self.info[intf]['port_channel']['port_channel_int']) or \
-                   ('port_channel_member_intfs' in self.info[intf]['port_channel'] and \
-                    self.info[intf]['port_channel']['port_channel_member_intfs']):
-                    self.info[intf]['port_channel']['port_channel_member'] = True

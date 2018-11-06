@@ -25,6 +25,7 @@ from genie.utils.diff import Diff
 from genie.conf.base import loader
 from genie.conf.base import Testbed
 from genie.harness.script import TestScript
+from genie.harness._commons_internal import pickle, unpickle
 from genie.harness.discovery import GenieScriptDiscover
 from genie.harness.datafile.loader import TriggerdatafileLoader,\
                                           VerificationdatafileLoader,\
@@ -301,14 +302,19 @@ class GenieRobot(object):
             if 'devices' in self.testscript.verifications[name]:
                 # For each device add context
                 for dev in self.testscript.verifications[name]['devices']:
-                    if self.testscript.verifications[name]['devices'][dev] == \
-                       'None':
-                        self.testscript.verifications[name]['devices'][dev] = {}
-                    self.testscript.verifications[name]['devices'][dev]\
-                                                 ['context'] = context
+                    # To shorten the variable
+                    verf = self.testscript.verifications[name]
+                    if 'devices_attributes' not in verf or\
+                        verf['devices_attributes'][dev] == 'None':
+                        verf.setdefault('devices_attributes', {})
+                        verf['devices_attributes'].setdefault(dev, {})
+                        verf['devices_attributes'][dev] = {}
+
+                    self.testscript.verifications[name]\
+                                ['devices_attributes'][dev]['context'] = context
 
         self._run_genie_trigger_verification(name=name, alias=alias,
-                                                 device=device, context=context)
+                                             device=device, context=context)
 
     @keyword('Run trigger "${name:[^"]+}" on device "${device:[^"]+}" '
              'using alias "${alias:[^"]+}"')
@@ -317,9 +323,9 @@ class GenieRobot(object):
         using a specific alias
         '''
         return self.genie_run_trigger_alias_context(name=name,
-                                                          alias=alias,
-                                                          device=device,
-                                                          context='cli')
+                                                    alias=alias,
+                                                    device=device,
+                                                    context='cli')
 
     @keyword('Run trigger "${name:[^"]+}" on device "${device:[^"]+}" '
              'with context "${context:[^"]+}"')
@@ -328,18 +334,18 @@ class GenieRobot(object):
         with a context (cli, xml, yang, ...)
         '''
         return self.genie_run_trigger_alias_context(name=name,
-                                                          alias=None,
-                                                          device=device,
-                                                          context=context)
+                                                    alias=None,
+                                                    device=device,
+                                                    context=context)
 
     @keyword('Run trigger "${name:[^"]+}" on device "${device:[^"]+}"')
     def genie_run_trigger(self, name, device):
         '''Call any trigger defined in the trigger datafile on device
         '''
         return self.genie_run_trigger_alias_context(name=name,
-                                                        alias=None,
-                                                        device=device,
-                                                        context='cli')
+                                                    alias=None,
+                                                    device=device,
+                                                    context='cli')
 
     @keyword('Run trigger "${name}" on device "${device:[^"]+}" '
              'using alias "${alias:[^"]+}" with context "${context:[^"]+}"')
@@ -481,7 +487,7 @@ class GenieRobot(object):
 
         if os.path.isdir(os.path.dirname(name)):
             # the user provided a file to save as pickle
-            pickle_file = self.testscript.pickle(profiled, file = name)
+            pickle_file = pickle(profiled, file = name)
             log.info('Saved system profile as file: %s' % pickle_file)
         else:
             self.testscript.parameters[name] = profiled
@@ -493,14 +499,17 @@ class GenieRobot(object):
         '''Compare system profiles taken as snapshots during the run'''
 
         if os.path.isfile(pts):
-            compare1 = self.testscript.unpickle(pts)
+            compare1 = unpickle(pts)
         else:
             compare1 = self.testscript.parameters[pts]
 
-        compare2 = self.testscript.parameters[pts_compare]
+        if os.path.isfile(pts_compare):
+            compare2 = unpickle(pts_compare)
+        else:
+            compare2 = self.testscript.parameters[pts_compare]
 
         exclude_list = ['device', 'maker', 'diff_ignore', 'callables',
-                   '(Current configuration.*)']
+                        '(Current configuration.*)']
 
         if 'exclude' in self.pts_datafile:
             exclude_list.extend(self.pts_datafile['exclude'])
@@ -541,8 +550,10 @@ class GenieRobot(object):
                 msg = ["Comparison between {pts} and "
                        "{OPS} is identical\n".format(pts=pts,
                         OPS=pts_compare)]
+                # print out message
+                log.info('\n'.join(msg))
 
-                self.builtin.pass_execution('\n'.join(msg))
+        self.builtin.pass_execution('\n'.join(msg))
 
     def _run_genie_trigger_verification(self, alias, device, context,
                                             name):
@@ -616,8 +627,9 @@ class GenieRobot(object):
 
         # Nothing under device
         # Or device does not have abstraction
-        if datafile[name]['devices'][dev] == 'None' or\
-           'abstraction' not in datafile[name]['devices'][dev]:
+        if 'devices_attributes' not in datafile[name] or\
+           datafile[name]['devices_attributes'] == 'None' or\
+           'abstraction' not in datafile[name]['devices_attributes']:
             # Then add it at the trigger/verification level
             self._add_abstraction_at_level(datafile=datafile[name],
                                            context=context)
@@ -625,7 +637,7 @@ class GenieRobot(object):
             # This there is information at device level and abstraction is there
             # Then add at device level
             self._add_abstraction_at_level(\
-                    datafile=datafile[name]['devices'][dev],
+                    datafile=datafile[name]['devices_attributes'][dev],
                     context=context)
         return datafile
 

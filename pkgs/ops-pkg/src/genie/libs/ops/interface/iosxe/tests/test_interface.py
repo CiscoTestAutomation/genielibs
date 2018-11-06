@@ -12,12 +12,12 @@ from genie.libs.ops.interface.iosxe.tests.interface_output import InterfaceOutpu
 
 # iosxe show_interface
 from genie.libs.parser.iosxe.show_interface import ShowInterfaces, \
-                                        ShowEtherchannelSummary, \
                                         ShowIpInterface,  \
                                         ShowIpv6Interface, \
                                         ShowInterfacesAccounting
                                         
 from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
+from genie.libs.parser.iosxe.show_lag import ShowEtherchannelSummary
 
 
 class test_interface(unittest.TestCase):

@@ -8,7 +8,7 @@ from operator import attrgetter
 from collections import OrderedDict, defaultdict
 
 from genie.utils.diff import Diff
-from ats.utils.objects import find, R, Operator
+from ats.utils.objects import find, R, Operator, NotExists, Not
 from ats.aetest.utils import format_filter_exception
 
 from genie.conf.base import Base as ConfBase
@@ -25,6 +25,7 @@ log = logging.getLogger(__name__)
 
 # TODO: Better handling of Errors vs Failures
 
+VOWEL = set(['a', 'e', 'i', 'o', 'u'])
 
 class Mapping(object):
     def __init__(self, config_info=None, verify_ops=None, requirements=None,
@@ -310,6 +311,15 @@ class Mapping(object):
 
             with steps.start("Learning '{n}' {t}".format(n=name,
                                                          t=type_)) as step:
+
+                # Is is a or an
+                a = 'an' if name[0].lower() in VOWEL else 'a'
+
+                log.info("Find {} '{}' that satisfy the following requirements:"
+                         .format(a, base))
+                msgs = self._requirements_printer(name, requirements, device,
+                                                  populate=False)
+                log.info('\n'.join(msgs))
 
                 # if LTS has value, get from LTS, don't learn
                 if kwargs.get('lts', {}).get(base, {}).get(device.name, {}):
@@ -627,6 +637,13 @@ class Mapping(object):
         # Requirement to verify for a specific Ops object
         for obj, requirements in self._verify_ops_dict.items():
             name = obj.split('.')[-1]
+            a = 'an' if name[0].lower() in VOWEL else 'a'
+            log.info("Verify the '{}' state to make sure the following "
+                     "requirements are respected:"
+                     .format(a, name))
+            msgs = self._requirements_printer(name, requirements, device,
+                                              populate=True)
+            log.info('\n'.join(msgs))
             # reset the missing depending on settings from trigger mapping file
             # when attributes missing when doing triggers using the verify_ops
             # in this, users don't have to overwrite the subsection
@@ -1026,8 +1043,6 @@ class Mapping(object):
                                         standard_keys=standard_keys)
 
             config = '\n'.join([str(conf_path) for conf_path in paths])
-            log.info('With following configuration:\n{c}'
-                     .format(n=name_, c=config))
 
         Configure.conf_configure(device=device,
                                  conf=conf_obj,
@@ -1062,6 +1077,23 @@ class Mapping(object):
         self.conf_mandatory_key = {}
 
         for conf, configures in self.config_info.items():
+
+            # check conf_info reqruiements brackets
+            # should be two-dimensional list
+            try:
+                if configures.get('requirements') and isinstance(configures['requirements'][0][0], list):
+                    raise IndexError('conf_info reqruiements are not two-dimensional list')
+            except Exception as e:
+                raise IndexError('conf_info reqruiements are not two-dimensional list.\n%s' % str(e))
+
+            base_name = conf.split('.')[-1]
+            if not unconfig and not any(callable(item[0]) for item in configures.get('requirements',[])):
+                a = 'an' if base_name[0].lower() in VOWEL else 'a'
+                log.info("Configure {} '{}' with the following requirements:"
+                         .format(a, base_name))
+                msgs = self._requirements_printer(base_name, configures, device,
+                                                  populate=True)
+                log.info('\n'.join(msgs))
             # Create attrgetter for abstract which would find the right conf
             # object
             abstracted_ops = attrgetter(conf)(abstract)
@@ -1155,6 +1187,117 @@ class Mapping(object):
         if err_msg:
             raise ValueError('\n'.join(err_msg))
 
+    def _requirements_printer(self, base, requirements, device, populate=False):
+        '''Convert triggers requirements into English requirements
+
+        Care about the Leafs and the Regex. The rest are considered path to get
+        where we want, but non important
+        '''
+
+        # All requirements; used internally
+        all_reqs_name = set()
+
+        # Contains all the leaves
+        leafs = []
+
+        # Contains all the Regexs
+        regexs = []
+
+        # Make sure no triple level of requirements
+        if isinstance(requirements['requirements'][0][0], list):
+            new_reqs = []
+            for reqs in requirements['requirements']:
+                for req in reqs:
+                    new_reqs.append(req)
+            requirements['requirements'] = new_reqs
+
+        # Loops over the requirements
+        if populate:
+            requirements = self._populate_path(requirements['requirements'],
+                                               device, keys=self.keys)
+        else:
+            requirements = requirements['requirements']
+
+        for reqs in requirements:
+            if not reqs:
+                continue
+
+            prev_key = None
+
+            # To keep track if we reached the end of the requirements
+            lenght = len(reqs)
+
+            for i, req in enumerate(reqs):
+
+                value = req
+
+                # We dont want to show leafs of regex in both lists (regexs and
+                # leafs)
+                regex = False
+
+                # If the requirements is a regex, then keep the name of the regex
+                # and add to regex list
+                if isinstance(req, str) and req.startswith('(?P<'):
+                    try:
+                        com = re.compile(req)
+                        value = list(com.groupindex)[0]
+                        if value not in all_reqs_name:
+                            regexs.append([value, com.pattern])
+                            all_reqs_name.add(value)
+
+                        # So we dont add to the leafs list if already in regex list
+                        regex = True
+                    except Exception as e:
+                        # We dont want to boom the trigger
+                        log.info('Could not print the trigger requirements\n{}'
+                                 .format(e))
+
+                # Last and not regex?
+                if i == lenght - 1 and not regex:
+                    leafs.append([prev_key, value])
+                    continue
+
+                # Saving those so we can deal with end of key
+                prev_key = value
+
+
+        msgs = []
+        # Print all the leafs
+        for end in leafs:
+            # Convert NotExists/Not to english
+            end1 = self._key_convertor(end[0])
+            end2 = self._value_convertor(end[1])
+
+            if end1 is None:
+                # Maybe we want to search for the first level of the object
+                msgs.append("'{}'".format(end2))
+            else:
+                msgs.append("{} {}".format(end1, end2))
+
+        # Print all the regexs
+        for regex in regexs:
+            msgs.append("'{}' that match the following regular expression '{}'"
+                   .format(regex[0], regex[1]))
+        return msgs
+
+    def _key_convertor(self, word):
+        if not isinstance(word, Operator):
+            return "'{}'".format(word)
+        return self._word_convertor(word)
+
+    def _value_convertor(self, word):
+        if not isinstance(word, Operator):
+            return "which is equal to '{}'".format(word)
+        return self._word_convertor(word)
+
+    def _word_convertor(self, word):
+        if isinstance(word, NotExists):
+            return "does not have key '{}'".format(word.value)
+        if isinstance(word, Not):
+            return "which is not of value '{}'".format(word.value)
+        pass
+
+
 
 class FilterFindValue():
     ''' Filter the outputs from base output with some control R objects.'''
@@ -1220,3 +1363,4 @@ class Different(object):
         ret = '(?P<{name}>^(?!{regexes}$).*$)'.format(name='not_'+self.value,
                                                       regexes=regexes)
         return ret
+

@@ -5,8 +5,7 @@ ospf:
     source:
         pkg: genie.libs.ops
         class: ospf.ospf.Ospf
-    devices:
-        uut: None
+    devices: ['uut']
     exclude:
         - age
         - uptime
@@ -30,22 +29,19 @@ hsrp:
     source:
         pkg: genie.libs.ops
         class: hsrp.hsrp.Hsrp
-    devices:
-        uut: None
+    devices: ['uut']
 
 vlan:
     source:
         pkg: genie.libs.ops
         class: vlan.vlan.Vlan
-    devices:
-        uut: None
+    devices: ['uut']
 
 platform:
     source:
         pkg: genie.libs.ops
         class: platform.platform.Platform
-    devices:
-        uut: None
+    devices: ['uut']
     exclude:
         - rp_uptime
         - disk_free_space
@@ -66,9 +62,9 @@ bgp:
     source:
         pkg: genie.libs.ops
         class: bgp.bgp.Bgp
-    devices:
-        uut: None
+    devices: ['uut']
     exclude:
+        - if_handle
         - keepalives
         - last_reset
         - reset_reason
@@ -104,9 +100,9 @@ interface:
     source:
         pkg: genie.libs.ops
         class: interface.interface.Interface
-    devices:
-        uut: None
+    devices: ['uut']
     exclude:
+        - in_discards
         - in_octets
         - in_pkts
         - last_clear
@@ -139,8 +135,7 @@ mcast:
     source:
         pkg: genie.libs.ops
         class: mcast.mcast.Mcast
-    devices:
-        uut: None
+    devices: ['uut']
     exclude:
         - expire
         - uptime
@@ -151,8 +146,7 @@ pim:
     source:
         pkg: genie.libs.ops
         class: pim.pim.Pim
-    devices:
-        uut: None
+    devices: ['uut']
     exclude:
         - expiration
         - hello_expiration
@@ -171,15 +165,13 @@ prefix_list:
     source:
         pkg: genie.libs.ops
         class: prefix_list.prefix_list.PrefixList
-    devices:
-        uut: None
+    devices: ['uut']
 
 vrf:
     source:
         pkg: genie.libs.ops
         class: vrf.vrf.Vrf
-    devices:
-        uut: None
+    devices: ['uut']
 
 mld:
     source:
@@ -189,22 +181,19 @@ mld:
         - expire
         - up_time
         - last_reporter
-    devices:
-        uut: None
+    devices: ['uut']
 
 route_policy:
     source:
         pkg: genie.libs.ops
         class: route_policy.route_policy.RoutePolicy
-    devices:
-        uut: None
+    devices: ['uut']
 
 igmp:
     source:
         pkg: genie.libs.ops
         class: igmp.igmp.Igmp
-    devices:
-        uut: None
+    devices: ['uut']
     exclude:
         - expire
         - up_time
@@ -212,35 +201,30 @@ stp:
     source:
         pkg: genie.libs.ops
         class: stp.stp.Stp
-    devices:
-        uut: None
+    devices: ['uut']
 
 static_routing:
     source:
         pkg: genie.libs.ops
         class: static_routing.static_routing.StaticRoute
-    devices:
-        uut: None
+    devices: ['uut']
 
 routing:
     source:
         pkg: genie.libs.ops
         class: routing.routing.Routing
-    devices:
-        uut: None
+    devices: ['uut']
 lldp:
     source:
         pkg: genie.libs.ops
         class: lldp.lldp.Lldp
-    devices:
-        uut: None
+    devices: ['uut']
 
 vxlan:
     source:
         pkg: genie.libs.ops
         class: vxlan.vxlan.Vxlan
-    devices:
-        uut: None
+    devices: ['uut']
     exclude:
         - bytesrecvd
         - bytessent
@@ -284,12 +268,13 @@ vxlan:
         - totalnetworks
         - totalpaths
         - flags
+        - (0.0.0.0.*)
+        - prefix
 msdp:
     source:
         pkg: genie.libs.ops
         class: msdp.msdp.Msdp
-    devices:
-        uut: None
+    devices: ['uut']
     exclude:
         - statistics
         - elapsed_time

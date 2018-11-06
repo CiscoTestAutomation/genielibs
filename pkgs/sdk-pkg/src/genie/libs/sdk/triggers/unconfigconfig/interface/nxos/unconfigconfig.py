@@ -581,18 +581,18 @@ class TriggerUnconfigConfigPimNbrInterface(TriggerUnconfigConfig):
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.pim.pim.Pim': {
                                         'requirements': [['info', 'vrf', '(?P<vrf>^default$)',
-                                                          'interfaces','(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                                          'interfaces','(?P<pim_intf>.*)',
                                                           'address_family', '(?P<af>.*)', 'oper_status', 'up'],
                                                          ['info', 'vrf', '(?P<vrf>^default$)',
-                                                          'interfaces','(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                                          'interfaces','(?P<pim_intf>.*)',
                                                           'address_family', '(?P<af>.*)', 'neighbors', '(?P<address>.*)']],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][default][interfaces][(.*)][address_family][(.*)][oper_status]',
                                                       'info[vrf][default][interfaces][(.*)][address_family][(.*)][neighbors]']},
                                         'exclude': pim_exclude },
                                   'ops.interface.interface.Interface': {
-                                        'requirements': [['info', '(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))', 'vrf', '(?P<vrf>.*)'],
-                                                         ['info', '(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))', 'oper_status', 'up']],
+                                        'requirements': [['info', '(?P<pim_intf>.*)', 'vrf', '(?P<vrf>.*)'],
+                                                         ['info', '(?P<pim_intf>.*)', 'oper_status', 'up']],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][vrf]',
                                                       'info[(.*)][oper_status]']},

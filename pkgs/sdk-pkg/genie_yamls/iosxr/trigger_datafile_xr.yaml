@@ -14,8 +14,7 @@ TriggerSleep:
     groups: []
     sleep_time: 5
     message_time: 10
-    devices:
-       uut: None
+    devices: ['uut']
 
 TriggerClearBgpAll:
     groups: ['clear', 'bgp', 'L3']
@@ -24,9 +23,7 @@ TriggerClearBgpAll:
        interval: 10
     tgn_timeout: 600
     tgn_delay: 10
-    devices:
-       uut:
-         None
+    devices: ['uut']
 
 TriggerModifyBgpNeighborAsn:
     groups: ['modify', 'bgp', 'L3']
@@ -36,9 +33,7 @@ TriggerModifyBgpNeighborAsn:
        interval: 10
     tgn_timeout: 600
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerModifyBgpNeighborCluster:
     groups: ['modify', 'bgp', 'L3']
@@ -48,9 +43,7 @@ TriggerModifyBgpNeighborCluster:
        interval: 10
     tgn_timeout: 600
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerModifyBgpNeighborRoutemapIn:
     groups: ['modify', 'bgp', 'L3']
@@ -60,9 +53,7 @@ TriggerModifyBgpNeighborRoutemapIn:
        interval: 10
     tgn_timeout: 600
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerModifyBgpNeighborRoutemapOut:
     groups: ['modify', 'bgp', 'L3']
@@ -72,9 +63,7 @@ TriggerModifyBgpNeighborRoutemapOut:
        interval: 10
     tgn_timeout: 600
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerUnconfigConfigBgp:
     groups: ['unconfig-config', 'bgp', 'L3']
@@ -84,9 +73,7 @@ TriggerUnconfigConfigBgp:
        interval: 10
     tgn_timeout: 600
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighbor:
     groups: ['unconfig-config', 'bgp', 'L3']
@@ -96,9 +83,7 @@ TriggerUnconfigConfigBgpNeighbor:
        interval: 10
     tgn_timeout: 600
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 # CSCtr26693 
 TriggerShutNoShutBgp:
@@ -118,9 +103,7 @@ TriggerAddRemoveBgpNeighborRoutemapPrefixlist:
        interval: 10
     tgn_timeout: 600
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerAddRemoveBgpNeighborRoutemapWeight:
     groups: ['add-remove', 'bgp','L3']
@@ -130,9 +113,7 @@ TriggerAddRemoveBgpNeighborRoutemapWeight:
        interval: 10
     tgn_timeout: 600
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerUnconfigConfigEthernetInterface:
     groups: ['unconfig-config', 'interface', 'L2']
@@ -142,9 +123,7 @@ TriggerUnconfigConfigEthernetInterface:
        interval: 10
     tgn_timeout: 600
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerUnconfigConfigEthernetInterfaceSub:
     groups: ['unconfig-config', 'interface', 'L2']
@@ -154,9 +133,7 @@ TriggerUnconfigConfigEthernetInterfaceSub:
        interval: 10
     tgn_timeout: 600
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerModifyEthernetMtu:
     groups: ['modify', 'interface', 'L3']
@@ -166,9 +143,7 @@ TriggerModifyEthernetMtu:
        interval: 10
     tgn_timeout: 600
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerSwitchover:
     groups: ['ha', 'switchover', 'L3']
@@ -189,9 +164,7 @@ TriggerSwitchover:
        interval: 60
     tgn_timeout: 600
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerReload:
     groups: ['ha', 'reload', 'L3']
@@ -212,9 +185,7 @@ TriggerReload:
        interval: 60
     tgn_timeout: 600
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerReloadActiveRP:
     groups: ['ha', 'reload', 'L3']
@@ -234,9 +205,7 @@ TriggerReloadActiveRP:
     timeout:
        max_time: 900
        interval: 60
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerReloadStandbyRP:
     groups: ['ha', 'reload', 'L3']
@@ -256,9 +225,7 @@ TriggerReloadStandbyRP:
     timeout:
        max_time: 900
        interval: 60
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerReloadOirEdge:
     groups: ['ha', 'reload', 'L3']
@@ -266,6 +233,4 @@ TriggerReloadOirEdge:
     timeout:
        max_time: 600
        interval: 60
-    devices:
-      uut:
-        None
+    devices: ['uut']

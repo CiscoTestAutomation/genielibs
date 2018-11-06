@@ -34,20 +34,14 @@ def save_device_information(device, **kwargs):
     # if not configure 0x2
     # RP/0/RSP1/CPU0:PE1#admin config-register 0x2
 
-
     if device.is_ha:
         conn = device.active
     else:
         conn = device
 
-    # go to admin prompt
-    conn.state_machine.go_to('admin', conn.spawn)
-
     # Install commit ( when thre are package to bring up features)
-    out = conn.execute('install commit')
-
-    # go back to enable prompt
-    conn.state_machine.go_to('enable', conn.spawn)
+    # from admin prompt
+    conn.admin_execute('install commit')
 
 
 def get_default_dir(device):

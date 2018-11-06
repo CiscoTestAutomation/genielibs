@@ -15,8 +15,7 @@ TriggerSleep:
     sleep_time: 5
     message_time: 1
     count: 1
-    devices:
-       uut: None
+    devices: ['uut']
 
 TriggerShutNoShutLoopbackInterface:
     groups: ['shut-noshut', 'interface', 'L3']
@@ -25,9 +24,7 @@ TriggerShutNoShutLoopbackInterface:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerUnconfigConfigLoopbackInterface:
     groups: ['unconfig-config', 'interface', 'L3']
@@ -37,9 +34,7 @@ TriggerUnconfigConfigLoopbackInterface:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 # Not supported on ASR1K
 TriggerShutNoShutTrunkInterface:
@@ -49,9 +44,7 @@ TriggerShutNoShutTrunkInterface:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 # Not supported on ASR1K
 TriggerShutNoShutVlanInterface:
@@ -61,9 +54,7 @@ TriggerShutNoShutVlanInterface:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 # Not supported on Edison(c3850)
 TriggerModifyEthernetMtu:
@@ -74,9 +65,7 @@ TriggerModifyEthernetMtu:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 # Not supported on ASR1K
 TriggerModifySwitchportModeTrunkToAccess:
@@ -87,9 +76,7 @@ TriggerModifySwitchportModeTrunkToAccess:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 
 # Not supported on ASR1K
@@ -101,9 +88,7 @@ TriggerUnconfigConfigPhysicalTrunkInterface:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None    
+    devices: ['uut']    
 
 # Not supported on ASR1K
 TriggerUnconfigConfigVirtualTrunkInterface:
@@ -114,9 +99,7 @@ TriggerUnconfigConfigVirtualTrunkInterface:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerModifyLoopbackInterfaceIp:
     groups: ['modify', 'interface', 'L3']
@@ -126,9 +109,7 @@ TriggerModifyLoopbackInterfaceIp:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 # Not supported on ASR1K
 TriggerModifySviInterfaceIp:
@@ -139,9 +120,7 @@ TriggerModifySviInterfaceIp:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerUnconfigConfigEthernetInterface:
     groups: ['unconfig-config', 'interface', 'L2']
@@ -151,9 +130,7 @@ TriggerUnconfigConfigEthernetInterface:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 # Not supported on Edison(c3850)
 TriggerUnconfigConfigEthernetInterfaceSub:
@@ -164,9 +141,7 @@ TriggerUnconfigConfigEthernetInterfaceSub:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
         
 TriggerModifyLoopbackInterfaceIpv6:
     groups: ['modify', 'interface', 'L3']
@@ -176,9 +151,7 @@ TriggerModifyLoopbackInterfaceIpv6:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
         
 TriggerShutNoShutEthernetInterface:
     groups: ['shut', 'interface', 'L3']
@@ -187,9 +160,7 @@ TriggerShutNoShutEthernetInterface:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerClearCountersInterfaceAll:
     groups: ['clear', 'interface', 'L3']
@@ -198,9 +169,7 @@ TriggerClearCountersInterfaceAll:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighbor:
     groups: ['unconfig-config', 'bgp', 'L3']
@@ -210,9 +179,7 @@ TriggerUnconfigConfigBgpNeighbor:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerUnconfigConfigBgp:
     groups: ['unconfig-config', 'bgp', 'L3']
@@ -222,9 +189,7 @@ TriggerUnconfigConfigBgp:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerShutNoShutBgpNeighbors:
     groups: ['shut-noshut', 'bgp', 'L3']
@@ -233,9 +198,7 @@ TriggerShutNoShutBgpNeighbors:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerModifyBgpNeighborRoutemapIn:
     groups: ['modify', 'bgp', 'L3']
@@ -245,9 +208,7 @@ TriggerModifyBgpNeighborRoutemapIn:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerModifyBgpNeighborRoutemapOut:
     groups: ['modify', 'bgp', 'L3']
@@ -257,9 +218,7 @@ TriggerModifyBgpNeighborRoutemapOut:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerModifyBgpNeighborAsn:
     groups: ['modify', 'bgp', 'L3']
@@ -269,9 +228,7 @@ TriggerModifyBgpNeighborAsn:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerModifyBgpNeighborCluster:
     groups: ['modify', 'bgp', 'L3']
@@ -281,9 +238,7 @@ TriggerModifyBgpNeighborCluster:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerUnconfigConfigVlan:
     groups: ['unconfig-config', 'vlan', 'L3']
@@ -293,9 +248,7 @@ TriggerUnconfigConfigVlan:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerShutNoShutVlan:
     groups: ['shut-noshut', 'vlan', 'L3']
@@ -304,9 +257,7 @@ TriggerShutNoShutVlan:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerShutNoShutHsrpIpv4VlanInterface:
     groups: ['shut-noshut', 'vlan', 'L3']
@@ -315,9 +266,7 @@ TriggerShutNoShutHsrpIpv4VlanInterface:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerShutNoShutHsrpIpv6VlanInterface:
     groups: ['shut-noshut', 'vlan', 'L3']
@@ -326,9 +275,7 @@ TriggerShutNoShutHsrpIpv6VlanInterface:
        interval: 10
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerUnconfigConfigVlanInterface:
     groups: ['unconfig-config', 'interface', 'L3']
@@ -338,9 +285,7 @@ TriggerUnconfigConfigVlanInterface:
        interval: 15
     tgn_timeout: 300
     tgn_delay: 10
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerReload:
     groups: ['ha', 'reload', 'L3']
@@ -354,9 +299,7 @@ TriggerReload:
     timeout:
        max_time: 1500
        interval: 60
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerIssu:
     groups: ['ha', 'issu', 'L3']
@@ -370,9 +313,7 @@ TriggerIssu:
     timeout:
        max_time: 3600
        interval: 60
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerSwitchover:
     groups: ['ha', 'switchover', 'L3']
@@ -386,9 +327,7 @@ TriggerSwitchover:
     timeout:
        max_time: 1500
        interval: 60
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerReloadActiveRP:
     groups: ['ha', 'reload', 'L3']
@@ -403,9 +342,7 @@ TriggerReloadActiveRP:
     timeout:
        max_time: 1500
        interval: 60
-    devices:
-      uut:
-        None    
+    devices: ['uut']    
 
 TriggerReloadStandbyRP:
     groups: ['ha', 'reload', 'L3']
@@ -420,9 +357,7 @@ TriggerReloadStandbyRP:
     timeout:
        max_time: 900
        interval: 60
-    devices:
-      uut:
-        None
+    devices: ['uut']
         
 # Not supported on Edison(c3850)
 TriggerReloadActiveFP:
@@ -431,9 +366,7 @@ TriggerReloadActiveFP:
     timeout:
        max_time: 900
        interval: 60
-    devices:
-      uut:
-        None
+    devices: ['uut']
       
 # Not supported on ASR1K
 TriggerReloadMember:
@@ -441,25 +374,21 @@ TriggerReloadMember:
     timeout:
        max_time: 900
        interval: 60
-    devices:
-      uut:
-        None
+    devices: ['uut']
 
 TriggerShutNoShutNativeIpv4SviInterface:
    groups: ['interface', 'xe_sanity']
    timeout:
       max_time: 180
       interval: 10
-   devices:
-       uut: None
+   devices: ['uut']
 
 TriggerShutNoShutIpv4SviInterface:
    groups: ['interface', 'xe_sanity']
    timeout:
       max_time: 180
       interval: 10
-   devices:
-       uut: None
+   devices: ['uut']
 
 TriggerModifyPvstDesgToRoot:
     groups: ['stp', 'xe_sanity']
@@ -470,8 +399,7 @@ TriggerModifyPvstDesgToRoot:
        max_time: 90
        interval: 20
     method: 'checkpoint'
-    devices:
-        uut: None
+    devices: ['uut']
 
 TriggerModifyRapidPvstDesgToRoot:
     groups: ['stp', 'xe_sanity']
@@ -482,8 +410,7 @@ TriggerModifyRapidPvstDesgToRoot:
        max_time: 90
        interval: 20
     method: 'checkpoint'
-    devices:
-        uut: None
+    devices: ['uut']
 
 TriggerAddRemoveIpv4StaticRoutes:
     groups: ['interface', 'xe_sanity']
@@ -491,8 +418,7 @@ TriggerAddRemoveIpv4StaticRoutes:
     timeout:
       max_time: 120
       interval: 10
-    devices:
-       uut: None
+    devices: ['uut']
 
 TriggerAddRemoveIpv6StaticRoutes:
     groups: ['interface', 'xe_sanity']
@@ -500,8 +426,7 @@ TriggerAddRemoveIpv6StaticRoutes:
     timeout:
       max_time: 120
       interval: 10
-    devices:
-       uut: None
+    devices: ['uut']
 
 TriggerAddRemoveEthernetMacAcl:
    groups: ['stp', 'xe_sanity']
@@ -512,8 +437,7 @@ TriggerAddRemoveEthernetMacAcl:
       max_time: 90
       interval: 10
    method: 'checkpoint'
-   devices:
-       uut: None
+   devices: ['uut']
 
 TriggerAddRemoveEthernetIpAclPermit:
    groups: ['stp', 'xe_sanity']
@@ -524,8 +448,7 @@ TriggerAddRemoveEthernetIpAclPermit:
       max_time: 90
       interval: 10
    method: 'checkpoint'
-   devices:
-       uut: None
+   devices: ['uut']
 
 TriggerAddRemoveEthernetIpAclDeny:
    groups: ['stp', 'xe_sanity']
@@ -536,8 +459,7 @@ TriggerAddRemoveEthernetIpAclDeny:
       max_time: 90
       interval: 10
    method: 'checkpoint'
-   devices:
-       uut: None
+   devices: ['uut']
 
 TriggerAddRemoveVlanIpAclPermit:
    groups: ['stp', 'xe_sanity']
@@ -548,8 +470,7 @@ TriggerAddRemoveVlanIpAclPermit:
       max_time: 90
       interval: 10
    method: 'checkpoint'
-   devices:
-       uut: None
+   devices: ['uut']
 
 # peer is the alias of uut's peer device
 TriggerModifyLldpTimer:
@@ -561,8 +482,7 @@ TriggerModifyLldpTimer:
       max_time: 60
       interval: 10
    method: 'checkpoint'
-   devices:
-       uut: None
+   devices: ['uut']
 
 TriggerAddRemoveTrunkEtherchannelLacp:
     groups: ['interface', 'xe_sanity']
@@ -573,8 +493,7 @@ TriggerAddRemoveTrunkEtherchannelLacp:
     timeout_recovery:
       max_time: 120
       interval: 20
-    devices:
-       uut: None
+    devices: ['uut']
 
 TriggerAddRemoveAccessEtherchannelPagp:
     groups: ['interface', 'xe_sanity']
@@ -585,8 +504,7 @@ TriggerAddRemoveAccessEtherchannelPagp:
     timeout_recovery:
       max_time: 120
       interval: 20
-    devices:
-       uut: None
+    devices: ['uut']
 
 TriggerAddRemoveL3EtherchannelPagp:
     groups: ['interface', 'xe_sanity']
@@ -597,8 +515,7 @@ TriggerAddRemoveL3EtherchannelPagp:
     timeout_recovery:
       max_time: 120
       interval: 20
-    devices:
-       uut: None
+    devices: ['uut']
        
 TriggerShutNoShutDot1xInterface:
     groups: ['interface', 'xe_sanity']
@@ -608,8 +525,7 @@ TriggerShutNoShutDot1xInterface:
     timeout_recovery:
       max_time: 60
       interval: 10
-    devices:
-       uut: None
+    devices: ['uut']
 
 TriggerModifyDot1xUserCredential:
     groups: ['interface', 'xe_sanity']
@@ -620,5 +536,4 @@ TriggerModifyDot1xUserCredential:
     timeout_recovery:
       max_time: 60
       interval: 10
-    devices:
-       uut: None
+    devices: ['uut']

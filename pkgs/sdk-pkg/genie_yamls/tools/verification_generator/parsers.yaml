@@ -182,3 +182,42 @@ ShowFabricMulticastIpL2Mroute:
 
 ShowFabricMulticastIpSaAdRoute:
     vrf: ['all']
+
+
+#  iosxe lisp related
+ShowLispDynamicEidDetail:
+  instance_id: ['*']
+
+ShowLispService:
+   service: ['ipv4', 'ipv6', 'ethernet']
+
+ShowLispServiceDatabase:
+   service: ['ipv4', 'ipv6', 'ethernet']
+   instance_id: ['*', '*', '*']
+
+ShowLispServiceMapCache:
+   service: ['ipv4', 'ipv6', 'ethernet']
+   instance_id: ['*', '*', '*']
+
+ShowLispServiceRlocMembers:
+  service: ['ipv4', 'ipv6', 'ethernet']
+  instance_id: ['*', '*', '*']
+
+ShowLispServiceServerDetailInternal:
+  service: ['ipv4', 'ipv6', 'ethernet']
+  instance_id: ['*', '*', '*']
+
+ShowLispServiceServerSummary:
+  service: ['ipv4', 'ipv6', 'ethernet']
+  instance_id: ['*', '*', '*']
+
+ShowLispServiceSmr:
+  service: ['ipv4', 'ipv6', 'ethernet']
+  instance_id: ['*', '*', '*']
+
+ShowLispServiceStatistics:
+  service: ['ipv4', 'ipv6', 'ethernet']
+  instance_id: ['*', '*', '*']
+
+ShowLispServiceSummary:
+  service: ['ipv4', 'ipv6', 'ethernet']

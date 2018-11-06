@@ -288,6 +288,7 @@ class TriggerUnconfigConfigBgpKeepaliveHoldtime(TriggerUnconfigConfig):
                     'requirements': [\
                         [['device_attr', '{uut}', '_vrf_attr', '(?P<vrf>.*)', 'keepalive_interval', '(?P<keepalive_interval>.*)']],
                         [['device_attr', '{uut}', '_vrf_attr', '(?P<vrf>.*)', 'holdtime', '(?P<holdtime>.*)']]],
+                    'all_keys':True,
                     'exclude': bgp_exclude},
                 'ops.bgp.bgp.Bgp': {
                     'requirements': [\
