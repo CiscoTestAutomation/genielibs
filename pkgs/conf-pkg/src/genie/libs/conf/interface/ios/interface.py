@@ -129,16 +129,30 @@ class Interface(genie.libs.conf.interface.Interface):
             attributes.format('ip address {ipv4.ip} {ipv4.netmask}'))
 
         # ios: interface {name} / shutdown
-        shutdown = attributes.value('shutdown')
-        if shutdown is not None:
-            if unconfig:
-                # Special case: unconfiguring always applies shutdown
-                configurations.append_line('shutdown', raw=True)
-            elif shutdown:
-                configurations.append_line('shutdown', raw=True)
+        # enabled
+        enabled = attributes.value('enabled')
+        if enabled is not None:
+            if enabled:
+                config_cmd = 'no shutdown'
+                unconfig_cmd = 'shutdown'
             else:
-                configurations.append_line('no shutdown', raw=True)
-
+                config_cmd = 'shutdown'
+                unconfig_cmd = 'no shutdown'
+            configurations.append_line(
+                attributes.format(config_cmd),
+                unconfig_cmd=unconfig_cmd)
+        # Compatibility
+        else:
+            shutdown = attributes.value('shutdown')
+            if shutdown is not None:
+                if unconfig:
+                    # Special case: unconfiguring always applies shutdown
+                    configurations.append_line('shutdown', raw=True)
+                elif shutdown:
+                    configurations.append_line('shutdown', raw=True)
+                else:
+                    configurations.append_line('no shutdown', raw=True)
+                    
     @abc.abstractmethod
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -8,7 +8,9 @@ __all__ = (
 import re
 import functools
 from enum import Enum
-
+from enum import Enum
+from genie.libs import parser
+from genie.abstract import Lookup
 # ats
 from ats.datastructures import WeakList
 
@@ -28,6 +30,8 @@ from genie.libs.conf.base import RouteDistinguisher, RouteTarget
 from genie.libs.conf.route_policy import RoutePolicy
 from .vpn_id import VpnId
 
+from genie.ops.base import Base as ops_Base
+from genie.ops.base import Context
 
 class VrfSubAttributes(KeyedSubAttributes):
 
@@ -280,7 +284,7 @@ class Vrf(DeviceFeature):
         type=(None, managedattribute.test_istype(int)))
 
     simple_alert = managedattribute(
-        name='simple_alert ',
+        name='simple_alert',
         default=None,
         type=(None, managedattribute.test_istype(bool)))
 
@@ -294,6 +298,26 @@ class Vrf(DeviceFeature):
         default=None,
         type=(None, RTTYPE),
         doc='import export or both')
+
+    rt_mvpn = managedattribute(
+        name='rt_mvpn',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)))
+
+    rt_evpn = managedattribute(
+        name='rt_evpn',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)))
+
+    class PROTOCOL(Enum):
+        type1 = 'mvpn'
+        type2 = 'evpn'
+
+    protocol = managedattribute(
+        name='protocol',
+        default=None,
+        type=(None, PROTOCOL),
+        doc='set mvpn or evpn ')
 
     vni = managedattribute(
         name='vni',
@@ -347,6 +371,21 @@ class Vrf(DeviceFeature):
                 def __init__(self, parent, key):
                     self.rt = key
                     super().__init__(parent)
+
+                # ProtocolAttribute
+                class ProtocolAttributes(KeyedSubAttributes):
+                    def __init__(self, key, *args, **kwargs):
+                        self.protocol = key
+                        super().__init__(*args, **kwargs)
+
+                protocol_attr = managedattribute(
+                    name='protocol_attr',
+                    read_only=True,
+                    doc=ProtocolAttributes.__doc__)
+
+                @protocol_attr.initter
+                def protocol_attr(self):
+                    return SubAttributesDict(self.ProtocolAttributes, parent=self)
 
             route_target_attr = managedattribute(
                 name='route_target_attr',
@@ -431,6 +470,101 @@ class Vrf(DeviceFeature):
             self.testbed.config_on_devices(cfgs, fail_invalid=True)
         else:
             return cfgs
+
+    @classmethod
+    def learn_config(self, device, **kwargs):
+        '''
+            A method that learn the device configurational state and create
+            a conf object with the same configuration.
+
+            Args:
+                self (`obj`): Conf object.
+                device (`obj`): The device that will be used to parse the
+                    command.
+        '''
+
+        # Abstracting the show running vrf as per device os
+        ret = Lookup.from_device(device)
+        cmd = ret.parser.show_vrf.ShowRunningConfigVrf
+        maker = ops_Base(device=device)
+
+        maker.add_leaf(cmd=cmd,
+                       src='[vrf][(?P<vrf>.*)][rd]',
+                       dest='vrf[vrf][(?P<vrf>.*)][rd]')
+
+        maker.add_leaf(cmd=cmd,
+                       src='[vrf][(?P<vrf>.*)]'
+                           '[vni]',
+                       dest='vrf[vrf][(?P<vrf>.*)]'
+                            '[vni]')
+        maker.add_leaf(cmd=cmd,
+                       src='[vrf][(?P<vrf>.*)]'
+                           '[vrf_name]',
+                       dest='vrf[vrf][(?P<vrf>.*)]'
+                            '[vrf_name]')
+        maker.add_leaf(cmd=cmd,
+                       src='[vrf][(?P<vrf>.*)][address_family]'
+                           '[(?P<af_name>.*)]',
+                       dest='vrf[vrf][(?P<vrf>.*)][address_family_attr]'
+                            '[(?P<af_name>.*)]')
+
+        maker.add_leaf(cmd=cmd,
+                       src='[vrf][(?P<vrf>.*)][address_family]'
+                           '[(?P<af_name>.*)][route_target][(?P<rt>.*)][rt_type]',
+                       dest='vrf[vrf][(?P<vrf>.*)][address_family_attr]'
+                            '[(?P<af_name>.*)][route_target_attr][(?P<rt>.*)]'
+                            '[rt_type]')
+
+        maker.add_leaf(cmd=cmd,
+                       src='[vrf][(?P<vrf>.*)][address_family]'
+                           '[(?P<af_name>.*)][route_target][(?P<rt>.*)]'
+                           '[protocol][(?P<protocol>.*)]',
+                       dest='vrf[vrf][(?P<vrf>.*)][address_family_attr]'
+                            '[(?P<af_name>.*)][route_target_attr][(?P<rt>.*)]'
+                            '[protocol_attr][(?P<protocol>.*)]')
+
+        # A workaround to pass the context as in maker it expects Context.cli
+        # not just a string 'cli.
+        maker.context_manager[cmd] = Context.cli
+
+        maker.make()
+        # Take a copy of the object dictionary
+        if not hasattr(maker, 'vrf'):
+            maker.vrf= {}
+        new_vrf = maker.vrf
+
+        # List of mapped conf objects
+        conf_obj_list = []
+
+        # Main structure attributes in the conf object
+        structure_keys = ['address_family_attr',
+                          'route_target_attr',
+                          'protocol_attr']
+        if len(new_vrf):
+            for vrf in new_vrf['vrf'].keys():
+                if 'address_family_attr' in new_vrf['vrf'][vrf]:
+                    for af_name in new_vrf['vrf'][vrf]['address_family_attr'].keys():
+                        if 'route_target' in new_vrf['vrf'][vrf]['address_family_attr'][af_name]:
+                            del new_vrf['vrf'][vrf]['address_family_attr'][af_name]['route_target']
+
+            for i in list(new_vrf['vrf']):
+                if 'address_family_attr' not in new_vrf['vrf'][i]:
+                    new_vrf['vrf'].pop(i)
+
+
+
+            for vrf in new_vrf['vrf'].keys():
+                conf_obj = self(name=vrf)
+                # Pass the class method not the instnace.
+                maker.dict_to_obj(conf=conf_obj, \
+                                  struct=structure_keys, \
+                                  struct_to_map=new_vrf['vrf'][vrf])
+
+                conf_obj_list.append(conf_obj)
+
+        # List of mapped conf objects
+        return conf_obj_list
+
 
 Vrf.fallback_vrf = Vrf.fallback_vrf.copy(
     type=(None, managedattribute.test_isinstance(Vrf)))

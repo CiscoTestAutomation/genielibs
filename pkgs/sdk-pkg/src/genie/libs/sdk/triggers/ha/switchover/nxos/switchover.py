@@ -56,15 +56,16 @@ class TriggerSwitchover(CommonSwitchover):
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.platform.platform.Platform':{
                                         'requirements': [\
-                                            [['slot', 'rp', '(?P<active_rp>.*)',
+                                            ['slot', 'rp', '(?P<active_rp>.*)',
                                               'redundancy_state', 'active'],
-                                             ['slot', 'rp', '(?P<active_rp>.*)',
-                                              'state', 'active']],
-                                            [['slot', 'rp', '(?P<standby_rp>.*)',
+                                            ['slot', 'rp', '(?P<active_rp>.*)',
+                                              'state', 'active'],
+                                            ['slot', 'rp', '(?P<standby_rp>.*)',
                                               'redundancy_state', 'ha-standby'],
-                                             ['slot', 'rp', '(?P<standby_rp>.*)',
-                                              'state', 'ha-standby']],
+                                            ['slot', 'rp', '(?P<standby_rp>.*)',
+                                              'state', 'ha-standby'],
                                           ],
+                                        'all_keys': True,
                                         'exclude': platform_exclude}},
                       verify_ops={'ops.platform.platform.Platform':{
                                       'requirements': [\

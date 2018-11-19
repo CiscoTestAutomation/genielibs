@@ -2682,3 +2682,1782 @@ class VxlanOutput(object):
         }
 
     }
+
+    ##################################################################
+    #         TRM  - Fabric                                          #
+    ##################################################################
+    showFabricMulticastGlobals ={
+        "multicast": {
+            "globals": {
+                "pruning": "segment-based",
+                "switch_role": "",
+                "fabric_control_seg": "Null",
+                "peer_fabric_ctrl_addr": "0.0.0.0",
+                "advertise_vpc_rpf_routes": "disabled",
+                "created_vni_list": "-",
+                "fwd_encap": "(null)",
+                "overlay_distributed_dr": False,
+                "overlay_spt_only": True,
+            },
+        },
+    }
+
+    showFabricMulticastIpSaAdRoute = {
+        "multicast": {
+            "vrf": {
+                "default": {
+                    "vnid": '0',
+                },
+                "vni_10100": {
+                    "vnid": "10100",
+                    "address_family": {
+                        "ipv4": {
+                            "sa_ad_routes": {
+                                "gaddr": {
+                                    "238.8.4.101/32": {
+                                        "grp_len": 32,
+                                        "saddr": {
+                                            "100.101.1.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:01:01",
+                                                "interested_fabric_nodes": {
+                                                    "This node": {
+                                                        "uptime": "00:01:01",
+                                                    }
+                                                }
+                                            },
+                                            "100.101.1.4/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:01:01",
+                                                "interested_fabric_nodes": {
+                                                    "This node": {
+                                                        "uptime": "00:01:01",
+                                                    }
+                                                }
+                                            },
+                                            "100.101.6.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:49:39",
+                                                "interested_fabric_nodes": {
+                                                    "6.6.6.6": {
+                                                        "uptime": "00:49:39",
+                                                    }
+                                                }
+                                            },
+                                            "100.101.6.4/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:49:39",
+                                                "interested_fabric_nodes": {
+                                                    "6.6.6.6": {
+                                                        "uptime": "00:49:39",
+                                                    }
+                                                }
+                                            },
+                                            "100.101.7.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:02:38",
+                                                "interested_fabric_nodes": {
+                                                    "7.7.7.7": {
+                                                        "uptime": "00:02:38",
+                                                    }
+                                                }
+                                            },
+                                            "100.101.8.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:49:39",
+                                                "interested_fabric_nodes": {
+                                                    "8.8.8.8": {
+                                                        "uptime": "00:49:39",
+                                                    }
+                                                }
+                                            },
+                                        }
+                                    },
+                                    "238.8.4.102/32": {
+                                        "grp_len": 32,
+                                        'saddr': {
+                                            "100.102.1.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:00:10",
+                                                "interested_fabric_nodes": {
+                                                    "This node": {
+                                                        "uptime": "00:00:10",
+                                                    }
+                                                }
+                                            },
+                                            "100.102.2.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:47:51",
+                                                "interested_fabric_nodes": {
+                                                    "This node": {
+                                                        "uptime": "00:47:51",
+                                                    }
+                                                }
+                                            },
+                                            "100.102.6.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:49:39",
+                                                "interested_fabric_nodes": {
+                                                    "6.6.6.6": {
+                                                        "uptime": "00:49:39",
+                                                    }
+                                                }
+                                            },
+                                        },
+                                    },
+                                }
+                            }
+                        }
+                    }
+                },
+                "vni_10200": {
+                    "vnid": "10200",
+                    "address_family": {
+                        "ipv4": {
+                            "sa_ad_routes": {
+                                "gaddr": {
+                                    "238.8.4.201/32": {
+                                        "grp_len": 32,
+                                        "saddr": {
+                                            "200.201.1.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:03:24",
+                                                "interested_fabric_nodes": {
+                                                    "This node": {
+                                                        "uptime": "00:03:24",
+                                                    }
+                                                }
+                                            },
+                                            "200.201.2.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:07:48",
+                                                "interested_fabric_nodes": {
+                                                    "This node": {
+                                                        "uptime": "00:07:48",
+                                                    }
+                                                }
+                                            },
+                                            "200.201.6.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:49:39",
+                                                "interested_fabric_nodes": {
+                                                    "6.6.6.6": {
+                                                        "uptime": "00:49:39",
+                                                    }
+                                                }
+                                            },
+
+                                        }
+                                    },
+                                    "238.8.4.202/32": {
+                                        "grp_len": 32,
+                                        "saddr": {
+                                            "200.202.1.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:02:10",
+                                                "interested_fabric_nodes": {
+                                                    "This node": {
+                                                        "uptime": "00:02:10",
+                                                    }
+                                                }
+                                            },
+                                            "200.202.2.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:49:39",
+                                                "interested_fabric_nodes": {
+                                                    "This node": {
+                                                        "uptime": "00:49:39",
+                                                    }
+                                                }
+                                            },
+                                            "200.202.6.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:49:39",
+                                                "interested_fabric_nodes": {
+                                                    "6.6.6.6": {
+                                                        "uptime": "00:49:39",
+                                                    }
+                                                }
+                                            },
+
+                                        }
+                                    },
+                                }
+                            }
+                        }
+                    }
+                },
+                "vpc-keepalive": {
+                    "vnid": '0',
+                },
+            }
+        }
+    }
+
+    showFabricMulticastIpL2Mroute = {
+        "multicast": {
+            "l2_mroute": {
+                "vni": {
+                    "10101":{
+                        "vnid": "10101",
+                        'fabric_l2_mroutes': {
+                            "gaddr": {
+                                "231.1.3.101/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "This node":{
+                                                    "node": "This node"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                                "231.1.4.101/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "This node":{
+                                                    "node": "This node"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                                "232.2.3.101/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "This node": {
+                                                    "node": "This node"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                                "232.2.4.101/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "This node": {
+                                                    "node": "This node"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                                "233.3.3.101/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "This node": {
+                                                    "node": "This node"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                                "233.3.4.101/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "This node": {
+                                                    "node": "This node"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                                "236.6.3.101/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "6.6.6.6": {
+                                                    "node": "6.6.6.6"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                                "236.6.4.101/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "6.6.6.6":{
+                                                    "node": "6.6.6.6"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                                "237.7.3.101/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "8.8.8.8": {
+                                                    "node": "8.8.8.8"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                            }
+                        },
+                    },
+                    "10102": {
+                        "vnid": "10102",
+                        'fabric_l2_mroutes': {
+                            "gaddr": {
+                                "238.8.4.102/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "8.8.8.8": {
+                                                    "node": "8.8.8.8"
+                                                },
+                                            },
+                                        }
+                                    },
+                                }
+                            }
+                        },
+                    },
+                    "10201": {
+                        "vnid": "10201",
+                        'fabric_l2_mroutes': {
+                            "gaddr": {
+                                "238.8.4.201/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "8.8.8.8": {
+                                                    "node": "8.8.8.8"
+                                                    }
+                                                },
+                                            },
+                                        }
+                                    },
+                                }
+                            }
+                        },
+                    "10202": {
+                        "vnid": "10202",
+                        'fabric_l2_mroutes': {
+                            "gaddr": {
+                                "238.8.4.202/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "8.8.8.8": {
+                                                    "node": "8.8.8.8"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                            }
+                        },
+                    }
+                }
+            }
+        }
+    }
+
+    fabricOpsOutput = {
+        "multicast": {
+            "globals": {
+                "pruning": "segment-based",
+                "switch_role": "",
+                "fabric_control_seg": "Null",
+                "peer_fabric_ctrl_addr": "0.0.0.0",
+                "advertise_vpc_rpf_routes": "disabled",
+                "created_vni_list": "-",
+                "fwd_encap": "(null)",
+                "overlay_distributed_dr": False,
+                "overlay_spt_only": True,
+            },
+            "vrf": {
+                "default": {
+                    "vnid": '0',
+                },
+                "vni_10100": {
+                    "vnid": "10100",
+                    "address_family": {
+                        "ipv4": {
+                            "sa_ad_routes": {
+                                "gaddr": {
+                                    "238.8.4.101/32": {
+                                        "grp_len": 32,
+                                        "saddr": {
+                                            "100.101.1.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:01:01",
+                                                "interested_fabric_nodes": {
+                                                    "This node": {
+                                                        "uptime": "00:01:01",
+                                                    }
+                                                }
+                                            },
+                                            "100.101.1.4/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:01:01",
+                                                "interested_fabric_nodes": {
+                                                    "This node": {
+                                                        "uptime": "00:01:01",
+                                                    }
+                                                }
+                                            },
+                                            "100.101.6.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:49:39",
+                                                "interested_fabric_nodes": {
+                                                    "6.6.6.6": {
+                                                        "uptime": "00:49:39",
+                                                    }
+                                                }
+                                            },
+                                            "100.101.6.4/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:49:39",
+                                                "interested_fabric_nodes": {
+                                                    "6.6.6.6": {
+                                                        "uptime": "00:49:39",
+                                                    }
+                                                }
+                                            },
+                                            "100.101.7.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:02:38",
+                                                "interested_fabric_nodes": {
+                                                    "7.7.7.7": {
+                                                        "uptime": "00:02:38",
+                                                    }
+                                                }
+                                            },
+                                            "100.101.8.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:49:39",
+                                                "interested_fabric_nodes": {
+                                                    "8.8.8.8": {
+                                                        "uptime": "00:49:39",
+                                                    }
+                                                }
+                                            },
+                                        }
+                                    },
+                                    "238.8.4.102/32": {
+                                        "grp_len": 32,
+                                        'saddr': {
+                                            "100.102.1.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:00:10",
+                                                "interested_fabric_nodes": {
+                                                    "This node": {
+                                                        "uptime": "00:00:10",
+                                                    }
+                                                }
+                                            },
+                                            "100.102.2.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:47:51",
+                                                "interested_fabric_nodes": {
+                                                    "This node": {
+                                                        "uptime": "00:47:51",
+                                                    }
+                                                }
+                                            },
+                                            "100.102.6.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:49:39",
+                                                "interested_fabric_nodes": {
+                                                    "6.6.6.6": {
+                                                        "uptime": "00:49:39",
+                                                    }
+                                                }
+                                            },
+                                        },
+                                    },
+                                }
+                            }
+                        }
+                    }
+                },
+                "vni_10200": {
+                    "vnid": "10200",
+                    "address_family": {
+                        "ipv4": {
+                            "sa_ad_routes": {
+                                "gaddr": {
+                                    "238.8.4.201/32": {
+                                        "grp_len": 32,
+                                        "saddr": {
+                                            "200.201.1.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:03:24",
+                                                "interested_fabric_nodes": {
+                                                    "This node": {
+                                                        "uptime": "00:03:24",
+                                                    }
+                                                }
+                                            },
+                                            "200.201.2.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:07:48",
+                                                "interested_fabric_nodes": {
+                                                    "This node": {
+                                                        "uptime": "00:07:48",
+                                                    }
+                                                }
+                                            },
+                                            "200.201.6.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:49:39",
+                                                "interested_fabric_nodes": {
+                                                    "6.6.6.6": {
+                                                        "uptime": "00:49:39",
+                                                    }
+                                                }
+                                            },
+
+                                        }
+                                    },
+                                    "238.8.4.202/32": {
+                                        "grp_len": 32,
+                                        "saddr": {
+                                            "200.202.1.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:02:10",
+                                                "interested_fabric_nodes": {
+                                                    "This node": {
+                                                        "uptime": "00:02:10",
+                                                    }
+                                                }
+                                            },
+                                            "200.202.2.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:49:39",
+                                                "interested_fabric_nodes": {
+                                                    "This node": {
+                                                        "uptime": "00:49:39",
+                                                    }
+                                                }
+                                            },
+                                            "200.202.6.3/32": {
+                                                "src_len": 32,
+                                                "uptime": "00:49:39",
+                                                "interested_fabric_nodes": {
+                                                    "6.6.6.6": {
+                                                        "uptime": "00:49:39",
+                                                    }
+                                                }
+                                            },
+                                        }
+                                    },
+                                }
+                            }
+                        }
+                    }
+                },
+                "vpc-keepalive": {
+                    "vnid": '0',
+                },
+            },
+            "l2_mroute": {
+                "vni": {
+                    "10101": {
+                        "vnid": "10101",
+                        'fabric_l2_mroutes': {
+                            "gaddr": {
+                                "231.1.3.101/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "This node": {
+                                                    "node": "This node"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                                "231.1.4.101/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "This node": {
+                                                    "node": "This node"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                                "232.2.3.101/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "This node": {
+                                                    "node": "This node"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                                "232.2.4.101/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "This node": {
+                                                    "node": "This node"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                                "233.3.3.101/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "This node": {
+                                                    "node": "This node"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                                "233.3.4.101/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "This node": {
+                                                    "node": "This node"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                                "236.6.3.101/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "6.6.6.6": {
+                                                    "node": "6.6.6.6"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                                "236.6.4.101/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "6.6.6.6": {
+                                                    "node": "6.6.6.6"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                                "237.7.3.101/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "8.8.8.8": {
+                                                    "node": "8.8.8.8"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                            }
+                        },
+                    },
+                    "10102": {
+                        "vnid": "10102",
+                        'fabric_l2_mroutes': {
+                            "gaddr": {
+                                "238.8.4.102/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "8.8.8.8": {
+                                                    "node": "8.8.8.8"
+                                                },
+                                            },
+                                        }
+                                    },
+                                }
+                            }
+                        },
+                    },
+                    "10201": {
+                        "vnid": "10201",
+                        'fabric_l2_mroutes': {
+                            "gaddr": {
+                                "238.8.4.201/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "8.8.8.8": {
+                                                    "node": "8.8.8.8"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                            }
+                        }
+                    },
+                    "10202": {
+                        "vnid": "10202",
+                        'fabric_l2_mroutes': {
+                            "gaddr": {
+                                "238.8.4.202/32": {
+                                    "saddr": {
+                                        "*": {
+                                            "interested_fabric_nodes": {
+                                                "8.8.8.8": {
+                                                    "node": "8.8.8.8"
+                                                }
+                                            },
+                                        },
+                                    }
+                                },
+                            }
+                        },
+                    }
+                }
+            },
+        }
+    }
+
+    #################################################################
+    #        TRM - Forwarding
+    #################################################################
+
+    showForwardingDistributionMulticastRoute = {
+        "distribution": {
+            "multicast": {
+                "route": {
+                    "vrf": {
+                        'default': {
+                            "address_family": {
+                                "ipv4": {
+                                    "num_groups": 5,
+                                    "gaddr": {
+                                        '224.0.0.0/4': {
+                                            "grp_len": 4,
+                                             "saddr": {
+                                                  '*': {
+                                                    "rpf_ifname": 'NULL',
+                                                    "flags": 'D',
+                                                    "rcv_packets": 0,
+                                                    "rcv_bytes": 0,
+                                                    "num_of_oifs": 0
+                                                    }
+                                                  }
+                                             },
+                                        '224.0.0.0/24': {
+                                            "grp_len": 24,
+                                            "saddr": {
+                                                '*': {
+                                                    "rpf_ifname": 'NULL',
+                                                    "flags": 'CP',
+                                                    "rcv_packets": 0,
+                                                    "rcv_bytes": 0,
+                                                    "num_of_oifs": 0
+                                                }
+                                            }
+                                        },
+                                        '231.100.1.1/32': {
+                                            "grp_len": 32,
+                                            "saddr": {
+                                                '*': {
+                                                    "rpf_ifname": 'Ethernet1/2',
+                                                    "flags": 'GLd',
+                                                    "rcv_packets": 0,
+                                                    "rcv_bytes": 0,
+                                                    "num_of_oifs": 1,
+                                                    "oifs": {
+                                                        "oif_index": 30,
+                                                        'nve1': {
+                                                            'oif': 'nve1',
+                                                        },
+                                                    },
+                                                },
+                                                '23.23.23.23/32': {
+                                                    "src_len": 32,
+                                                    "rpf_ifname": "loopback1",
+                                                    "rcv_packets": 0,
+                                                    "rcv_bytes": 0,
+                                                    "num_of_oifs": 1,
+                                                    "oifs": {
+                                                        "oif_index": 29,
+                                                        'Ethernet1/2': {
+                                                            'oif': 'Ethernet1/2',
+                                                        },
+                                                    },
+                                                }
+                                            }
+                                        },
+                                        '231.1.3.101/32': {
+                                            "grp_len": 32,
+                                            "saddr": {
+                                                '*': {
+                                                    "rpf_ifname": 'loopback100',
+                                                    "flags": 'GL',
+                                                    "rcv_packets": 0,
+                                                    "rcv_bytes": 0,
+                                                    "num_of_oifs": 1,
+                                                    "oifs": {
+                                                        "oif_index": 104,
+                                                        "Vlan101": {
+                                                            "oif": "Vlan101",
+                                                            "mem_l2_ports": "port-channel1 nve1",
+                                                            "l2_oiflist_index": 44,
+                                                        },
+                                                    },
+                                                },
+                                            }
+                                        },
+                                        "238.8.4.101/32": {
+                                            "grp_len": 32,
+                                            "saddr": {
+                                                "100.101.1.3/32": {
+                                                    "src_len": 32,
+                                                    "rpf_ifname": 'Vlan101',
+                                                    "rcv_packets": 0,
+                                                    "rcv_bytes": 0,
+                                                    "num_of_oifs": 2,
+                                                    "oifs": {
+                                                        "oif_index": 54,
+                                                        'Vlan100': {
+                                                            "oif": "Vlan100",
+                                                            "encap": 'vxlan',
+                                                            "mem_l2_ports": "nve1",
+                                                            "l2_oiflist_index": 19,
+                                                        },
+                                                        'Vlan101': {
+                                                            "oif": 'Vlan101',
+                                                            "mem_l2_ports": "nve1",
+                                                            "l2_oiflist_index": 19,
+                                                        },
+                                                    },
+                                                },
+                                            }
+                                        },
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    forwardingOpsOutput = {
+        "distribution": {
+            "multicast": {
+                "route": {
+                    "vrf": {
+                        'default': {
+                            "address_family": {
+                                "ipv4": {
+                                    "num_groups": 5,
+                                    "gaddr": {
+                                        '224.0.0.0/4': {
+                                            "grp_len": 4,
+                                             "saddr": {
+                                                  '*': {
+                                                    "rpf_ifname": 'NULL',
+                                                    "flags": 'D',
+                                                    "rcv_packets": 0,
+                                                    "rcv_bytes": 0,
+                                                    "num_of_oifs": 0
+                                                    }
+                                                  }
+                                             },
+                                        '224.0.0.0/24': {
+                                            "grp_len": 24,
+                                            "saddr": {
+                                                '*': {
+                                                    "rpf_ifname": 'NULL',
+                                                    "flags": 'CP',
+                                                    "rcv_packets": 0,
+                                                    "rcv_bytes": 0,
+                                                    "num_of_oifs": 0
+                                                }
+                                            }
+                                        },
+                                        '231.100.1.1/32': {
+                                            "grp_len": 32,
+                                            "saddr": {
+                                                '*': {
+                                                    "rpf_ifname": 'Ethernet1/2',
+                                                    "flags": 'GLd',
+                                                    "rcv_packets": 0,
+                                                    "rcv_bytes": 0,
+                                                    "num_of_oifs": 1,
+                                                    "oifs": {
+                                                        "oif_index": 30,
+                                                        'nve1': {
+                                                            'oif': 'nve1',
+                                                        },
+                                                    },
+                                                },
+                                                '23.23.23.23/32': {
+                                                    "src_len": 32,
+                                                    "rpf_ifname": "loopback1",
+                                                    "rcv_packets": 0,
+                                                    "rcv_bytes": 0,
+                                                    "num_of_oifs": 1,
+                                                    "oifs": {
+                                                        "oif_index": 29,
+                                                        'Ethernet1/2': {
+                                                            'oif': 'Ethernet1/2',
+                                                        },
+                                                    },
+                                                }
+                                            }
+                                        },
+                                        '231.1.3.101/32': {
+                                            "grp_len": 32,
+                                            "saddr": {
+                                                '*': {
+                                                    "rpf_ifname": 'loopback100',
+                                                    "flags": 'GL',
+                                                    "rcv_packets": 0,
+                                                    "rcv_bytes": 0,
+                                                    "num_of_oifs": 1,
+                                                    "oifs": {
+                                                        "oif_index": 104,
+                                                        "Vlan101": {
+                                                            "oif": "Vlan101",
+                                                            "mem_l2_ports": "port-channel1 nve1",
+                                                            "l2_oiflist_index": 44,
+                                                        },
+                                                    },
+                                                },
+                                            }
+                                        },
+                                        "238.8.4.101/32": {
+                                            "grp_len": 32,
+                                            "saddr": {
+                                                "100.101.1.3/32": {
+                                                    "src_len": 32,
+                                                    "rpf_ifname": 'Vlan101',
+                                                    "rcv_packets": 0,
+                                                    "rcv_bytes": 0,
+                                                    "num_of_oifs": 2,
+                                                    "oifs": {
+                                                        "oif_index": 54,
+                                                        'Vlan100': {
+                                                            "oif": "Vlan100",
+                                                            "encap": 'vxlan',
+                                                            "mem_l2_ports": "nve1",
+                                                            "l2_oiflist_index": 19,
+                                                        },
+                                                        'Vlan101': {
+                                                            "oif": 'Vlan101',
+                                                            "mem_l2_ports": "nve1",
+                                                            "l2_oiflist_index": 19,
+                                                        },
+                                                    },
+                                                },
+                                            }
+                                        },
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }}
+
+    #################################################################
+    #        TRM - bgp_mvpn
+    #################################################################
+
+    showBgpIpMvpnRouteType_1 ={
+        'instance': {
+            'default': {
+                'vrf': {
+                    'default': {
+                        'vrf_name_out': 'default',
+                        'address_family': {
+                            'ipv4 mvpn': {
+                                'af_name': 'ipv4 mvpn',
+                                'table_version': '390',
+                                'router_id': '2.2.2.2',
+                                'rd': {
+                                    '2.2.2.2:3': {
+                                        'rd_val': '2.2.2.2:3',
+                                        'rd_vrf': '10100',
+                                        'prefix': {
+                                            '[1][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[1][100.101.1.3][238.8.4.101]/64',
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'statuscode': '*',
+                                                        'bestcode': '>',
+                                                        'typecode': 'l',
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'weight': 32768,
+                                                        'origin': 'igp',
+                                                        'localpref': 100,
+                                                    }
+                                                }
+                                            },
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    showBgpIpMvpnRouteType_2 = {
+        'instance': {
+            'default': {
+                'vrf': {
+                    'default': {
+                        'vrf_name_out': 'default',
+                        'address_family': {
+                            'ipv4 mvpn': {
+                                'af_name': 'ipv4 mvpn',
+                                'table_version': '390',
+                                'router_id': '2.2.2.2',
+                                'rd': {
+                                    '2.2.2.2:3': {
+                                        'rd_val': '2.2.2.2:3',
+                                        'rd_vrf': '10100',
+                                        'prefix': {
+                                            '[2][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[2][100.101.1.3][238.8.4.101]/64',
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'statuscode': '*',
+                                                        'bestcode': '>',
+                                                        'typecode': 'l',
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'weight': 32768,
+                                                        'origin': 'igp',
+                                                        'localpref': 100,
+                                                    }
+                                                }
+                                            },
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    showBgpIpMvpnRouteType_3 = {
+        'instance': {
+            'default': {
+                'vrf': {
+                    'default': {
+                        'vrf_name_out': 'default',
+                        'address_family': {
+                            'ipv4 mvpn': {
+                                'af_name': 'ipv4 mvpn',
+                                'table_version': '390',
+                                'router_id': '2.2.2.2',
+                                'rd': {
+                                    '2.2.2.2:3': {
+                                        'rd_val': '2.2.2.2:3',
+                                        'rd_vrf': '10100',
+                                        'prefix': {
+                                            '[3][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[3][100.101.1.3][238.8.4.101]/64',
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'statuscode': '*',
+                                                        'bestcode': '>',
+                                                        'typecode': 'l',
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'weight': 32768,
+                                                        'origin': 'igp',
+                                                        'localpref': 100,
+                                                    }
+                                                }
+                                            },
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    showBgpIpMvpnRouteType_4 = {
+        'instance': {
+            'default': {
+                'vrf': {
+                    'default': {
+                        'vrf_name_out': 'default',
+                        'address_family': {
+                            'ipv4 mvpn': {
+                                'af_name': 'ipv4 mvpn',
+                                'table_version': '390',
+                                'router_id': '2.2.2.2',
+                                'rd': {
+                                    '2.2.2.2:3': {
+                                        'rd_val': '2.2.2.2:3',
+                                        'rd_vrf': '10100',
+                                        'prefix': {
+                                            '[4][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[4][100.101.1.3][238.8.4.101]/64',
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'statuscode': '*',
+                                                        'bestcode': '>',
+                                                        'typecode': 'l',
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'weight': 32768,
+                                                        'origin': 'igp',
+                                                        'localpref': 100,
+                                                    }
+                                                }
+                                            },
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    showBgpIpMvpnRouteType_5 = {
+        'instance': {
+            'default': {
+                'vrf': {
+                    'default': {
+                        'vrf_name_out': 'default',
+                        'address_family': {
+                            'ipv4 mvpn': {
+                                'af_name': 'ipv4 mvpn',
+                                'table_version': '390',
+                                'router_id': '2.2.2.2',
+                                'rd': {
+                                    '2.2.2.2:3': {
+                                        'rd_val': '2.2.2.2:3',
+                                        'rd_vrf': '10100',
+                                        'prefix': {
+                                            '[5][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[5][100.101.1.3][238.8.4.101]/64',
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'statuscode': '*',
+                                                        'bestcode': '>',
+                                                        'typecode': 'l',
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'weight': 32768,
+                                                        'origin': 'igp',
+                                                        'localpref': 100,
+                                                    }
+                                                }
+                                            },
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+    showBgpIpMvpnRouteType_6 = {
+        'instance': {
+            'default': {
+                'vrf': {
+                    'default': {
+                        'vrf_name_out': 'default',
+                        'address_family': {
+                            'ipv4 mvpn': {
+                                'af_name': 'ipv4 mvpn',
+                                'table_version': '390',
+                                'router_id': '2.2.2.2',
+                                'rd': {
+                                    '2.2.2.2:3': {
+                                        'rd_val': '2.2.2.2:3',
+                                        'rd_vrf': '10100',
+                                        'prefix': {
+                                            '[6][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[6][100.101.1.3][238.8.4.101]/64',
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'statuscode': '*',
+                                                        'bestcode': '>',
+                                                        'typecode': 'l',
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'weight': 32768,
+                                                        'origin': 'igp',
+                                                        'localpref': 100,
+                                                    }
+                                                }
+                                            },
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+    showBgpIpMvpnRouteType_7 = {
+        'instance': {
+            'default': {
+                'vrf': {
+                    'default': {
+                        'vrf_name_out': 'default',
+                        'address_family': {
+                            'ipv4 mvpn': {
+                                'af_name': 'ipv4 mvpn',
+                                'table_version': '390',
+                                'router_id': '2.2.2.2',
+                                'rd': {
+                                    '2.2.2.2:3': {
+                                        'rd_val': '2.2.2.2:3',
+                                        'rd_vrf': '10100',
+                                        'prefix': {
+                                            '[7][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[7][100.101.1.3][238.8.4.101]/64',
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'statuscode': '*',
+                                                        'bestcode': '>',
+                                                        'typecode': 'l',
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'weight': 32768,
+                                                        'origin': 'igp',
+                                                        'localpref': 100,
+                                                    }
+                                                }
+                                            },
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+    showBgpIpMvpnSaadDetail = {
+        'instance': {
+            'default': {
+                'vrf': {
+                    'default': {
+                        'vrf_name_out': 'default',
+                        'address_family': {
+                            'ipv4 mvpn': {
+                                'af_name': 'ipv4 mvpn',
+                                'rd': {
+                                    '2.2.2.2:3': {
+                                        'rd_val': '2.2.2.2:3',
+                                        'rd_vrf': '10100',
+                                        'prefix': {
+                                            '[1][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[1][100.101.1.3][238.8.4.101]/64',
+                                                'prefixversion': 7,
+                                                'totalpaths': 1,
+                                                'bestpathnr': 1,
+                                                'on_xmitlist': True,
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'pathtype': 'local',
+                                                        'pathvalid': True,
+                                                        'pathbest': True,
+                                                        'pathnolabeledrnh': True,
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'nexthopmetric': 0,
+                                                        'neighbor': '0.0.0.0',
+                                                        'neighborid': '2.2.2.2',
+                                                        'origin': 'i',
+                                                        'localpref': 100,
+                                                        'weight': 32768,
+                                                        'extcommunity': [
+                                                            'RT:100:10100'
+                                                        ],
+                                                        'advertisedto': [
+                                                            '4.4.4.4',
+                                                            '5.5.5.5'
+                                                        ],
+                                                    }
+                                                },
+                                            },
+                                            '[2][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[2][100.101.1.3][238.8.4.101]/64',
+                                                'prefixversion': 7,
+                                                'totalpaths': 1,
+                                                'bestpathnr': 1,
+                                                'on_xmitlist': True,
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'pathtype': 'local',
+                                                        'pathvalid': True,
+                                                        'pathbest': True,
+                                                        'pathnolabeledrnh': True,
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'nexthopmetric': 0,
+                                                        'neighbor': '0.0.0.0',
+                                                        'neighborid': '2.2.2.2',
+                                                        'origin': 'i',
+                                                        'localpref': 100,
+                                                        'weight': 32768,
+                                                        'extcommunity': [
+                                                            'RT:100:10100'
+                                                        ],
+                                                        'advertisedto': [
+                                                            '4.4.4.4',
+                                                            '5.5.5.5'
+                                                        ],
+                                                    }
+                                                },
+                                            },
+                                            '[3][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[3][100.101.1.3][238.8.4.101]/64',
+                                                'prefixversion': 7,
+                                                'totalpaths': 1,
+                                                'bestpathnr': 1,
+                                                'on_xmitlist': True,
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'pathtype': 'local',
+                                                        'pathvalid': True,
+                                                        'pathbest': True,
+                                                        'pathnolabeledrnh': True,
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'nexthopmetric': 0,
+                                                        'neighbor': '0.0.0.0',
+                                                        'neighborid': '2.2.2.2',
+                                                        'origin': 'i',
+                                                        'localpref': 100,
+                                                        'weight': 32768,
+                                                        'extcommunity': [
+                                                            'RT:100:10100'
+                                                        ],
+                                                        'advertisedto': [
+                                                            '4.4.4.4',
+                                                            '5.5.5.5'
+                                                        ],
+                                                    }
+                                                },
+                                            },
+                                            '[4][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[4][100.101.1.3][238.8.4.101]/64',
+                                                'prefixversion': 7,
+                                                'totalpaths': 1,
+                                                'bestpathnr': 1,
+                                                'on_xmitlist': True,
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'pathtype': 'local',
+                                                        'pathvalid': True,
+                                                        'pathbest': True,
+                                                        'pathnolabeledrnh': True,
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'nexthopmetric': 0,
+                                                        'neighbor': '0.0.0.0',
+                                                        'neighborid': '2.2.2.2',
+                                                        'origin': 'i',
+                                                        'localpref': 100,
+                                                        'weight': 32768,
+                                                        'extcommunity': [
+                                                            'RT:100:10100'
+                                                        ],
+                                                        'advertisedto': [
+                                                            '4.4.4.4',
+                                                            '5.5.5.5'
+                                                        ],
+                                                    }
+                                                },
+                                            },
+                                            '[5][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[5][100.101.1.3][238.8.4.101]/64',
+                                                'prefixversion': 7,
+                                                'totalpaths': 1,
+                                                'bestpathnr': 1,
+                                                'on_xmitlist': True,
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'pathtype': 'local',
+                                                        'pathvalid': True,
+                                                        'pathbest': True,
+                                                        'pathnolabeledrnh': True,
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'nexthopmetric': 0,
+                                                        'neighbor': '0.0.0.0',
+                                                        'neighborid': '2.2.2.2',
+                                                        'origin': 'i',
+                                                        'localpref': 100,
+                                                        'weight': 32768,
+                                                        'extcommunity': [
+                                                            'RT:100:10100'
+                                                        ],
+                                                        'advertisedto': [
+                                                            '4.4.4.4',
+                                                            '5.5.5.5'
+                                                        ],
+                                                    }
+                                                },
+                                            },
+                                            '[6][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[6][100.101.1.3][238.8.4.101]/64',
+                                                'prefixversion': 7,
+                                                'totalpaths': 1,
+                                                'bestpathnr': 1,
+                                                'on_xmitlist': True,
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'pathtype': 'local',
+                                                        'pathvalid': True,
+                                                        'pathbest': True,
+                                                        'pathnolabeledrnh': True,
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'nexthopmetric': 0,
+                                                        'neighbor': '0.0.0.0',
+                                                        'neighborid': '2.2.2.2',
+                                                        'origin': 'i',
+                                                        'localpref': 100,
+                                                        'weight': 32768,
+                                                        'extcommunity': [
+                                                            'RT:100:10100'
+                                                        ],
+                                                        'advertisedto': [
+                                                            '4.4.4.4',
+                                                            '5.5.5.5'
+                                                        ],
+                                                    }
+                                                },
+                                            },
+                                            '[7][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[7][100.101.1.3][238.8.4.101]/64',
+                                                'prefixversion': 7,
+                                                'totalpaths': 1,
+                                                'bestpathnr': 1,
+                                                'on_xmitlist': True,
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'pathtype': 'local',
+                                                        'pathvalid': True,
+                                                        'pathbest': True,
+                                                        'pathnolabeledrnh': True,
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'nexthopmetric': 0,
+                                                        'neighbor': '0.0.0.0',
+                                                        'neighborid': '2.2.2.2',
+                                                        'origin': 'i',
+                                                        'localpref': 100,
+                                                        'weight': 32768,
+                                                        'extcommunity': [
+                                                            'RT:100:10100'
+                                                        ],
+                                                        'advertisedto': [
+                                                            '4.4.4.4',
+                                                            '5.5.5.5'
+                                                        ],
+                                                    }
+                                                },
+                                            },
+                                        }
+                                    },
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    bgpMvpnOpsOutput = {
+        'instance': {
+            'default': {
+                'vrf': {
+                    'default': {
+                        'vrf_name_out': 'default',
+                        'address_family': {
+                            'ipv4 mvpn': {
+                                'af_name': 'ipv4 mvpn',
+                                'table_version': '390',
+                                'router_id': '2.2.2.2',
+                                'rd': {
+                                    '2.2.2.2:3': {
+                                        'rd_val': '2.2.2.2:3',
+                                        'rd_vrf': '10100',
+                                        'prefix': {
+                                            '[1][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[1][100.101.1.3][238.8.4.101]/64',
+                                                'prefixversion': 7,
+                                                'totalpaths': 1,
+                                                'bestpathnr': 1,
+                                                'on_xmitlist': True,
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'statuscode': '*',
+                                                        'bestcode': '>',
+                                                        'typecode': 'l',
+                                                        'pathtype': 'local',
+                                                        'pathvalid': True,
+                                                        'pathbest': True,
+                                                        'pathnolabeledrnh': True,
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'nexthopmetric': 0,
+                                                        'neighbor': '0.0.0.0',
+                                                        'neighborid': '2.2.2.2',
+                                                        'origin': 'igp',
+                                                        'localpref': 100,
+                                                        'weight': 32768,
+                                                        'extcommunity': [
+                                                            'RT:100:10100'
+                                                        ],
+                                                        'advertisedto': [
+                                                            '4.4.4.4',
+                                                            '5.5.5.5'
+                                                        ],
+                                                    }
+                                                },
+                                            },
+                                            '[2][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[2][100.101.1.3][238.8.4.101]/64',
+                                                'prefixversion': 7,
+                                                'totalpaths': 1,
+                                                'bestpathnr': 1,
+                                                'on_xmitlist': True,
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'statuscode': '*',
+                                                        'bestcode': '>',
+                                                        'typecode': 'l',
+                                                        'pathtype': 'local',
+                                                        'pathvalid': True,
+                                                        'pathbest': True,
+                                                        'pathnolabeledrnh': True,
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'nexthopmetric': 0,
+                                                        'neighbor': '0.0.0.0',
+                                                        'neighborid': '2.2.2.2',
+                                                        'origin': 'igp',
+                                                        'localpref': 100,
+                                                        'weight': 32768,
+                                                        'extcommunity': [
+                                                            'RT:100:10100'
+                                                        ],
+                                                        'advertisedto': [
+                                                            '4.4.4.4',
+                                                            '5.5.5.5'
+                                                        ],
+                                                    }
+                                                },
+                                            },
+                                            '[3][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[3][100.101.1.3][238.8.4.101]/64',
+                                                'prefixversion': 7,
+                                                'totalpaths': 1,
+                                                'bestpathnr': 1,
+                                                'on_xmitlist': True,
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'statuscode': '*',
+                                                        'bestcode': '>',
+                                                        'typecode': 'l',
+                                                        'pathtype': 'local',
+                                                        'pathvalid': True,
+                                                        'pathbest': True,
+                                                        'pathnolabeledrnh': True,
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'nexthopmetric': 0,
+                                                        'neighbor': '0.0.0.0',
+                                                        'neighborid': '2.2.2.2',
+                                                        'origin': 'igp',
+                                                        'localpref': 100,
+                                                        'weight': 32768,
+                                                        'extcommunity': [
+                                                            'RT:100:10100'
+                                                        ],
+                                                        'advertisedto': [
+                                                            '4.4.4.4',
+                                                            '5.5.5.5'
+                                                        ],
+                                                    }
+                                                },
+                                            },
+                                            '[4][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[4][100.101.1.3][238.8.4.101]/64',
+                                                'prefixversion': 7,
+                                                'totalpaths': 1,
+                                                'bestpathnr': 1,
+                                                'on_xmitlist': True,
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'statuscode': '*',
+                                                        'bestcode': '>',
+                                                        'typecode': 'l',
+                                                        'pathtype': 'local',
+                                                        'pathvalid': True,
+                                                        'pathbest': True,
+                                                        'pathnolabeledrnh': True,
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'nexthopmetric': 0,
+                                                        'neighbor': '0.0.0.0',
+                                                        'neighborid': '2.2.2.2',
+                                                        'origin': 'igp',
+                                                        'localpref': 100,
+                                                        'weight': 32768,
+                                                        'extcommunity': [
+                                                            'RT:100:10100'
+                                                        ],
+                                                        'advertisedto': [
+                                                            '4.4.4.4',
+                                                            '5.5.5.5'
+                                                        ],
+                                                    }
+                                                },
+                                            },
+                                            '[5][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[5][100.101.1.3][238.8.4.101]/64',
+                                                'prefixversion': 7,
+                                                'totalpaths': 1,
+                                                'bestpathnr': 1,
+                                                'on_xmitlist': True,
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'statuscode': '*',
+                                                        'bestcode': '>',
+                                                        'typecode': 'l',
+                                                        'pathtype': 'local',
+                                                        'pathvalid': True,
+                                                        'pathbest': True,
+                                                        'pathnolabeledrnh': True,
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'nexthopmetric': 0,
+                                                        'neighbor': '0.0.0.0',
+                                                        'neighborid': '2.2.2.2',
+                                                        'origin': 'igp',
+                                                        'localpref': 100,
+                                                        'weight': 32768,
+                                                        'extcommunity': [
+                                                            'RT:100:10100'
+                                                        ],
+                                                        'advertisedto': [
+                                                            '4.4.4.4',
+                                                            '5.5.5.5'
+                                                        ],
+                                                    }
+                                                },
+                                            },
+                                            '[6][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[6][100.101.1.3][238.8.4.101]/64',
+                                                'prefixversion': 7,
+                                                'totalpaths': 1,
+                                                'bestpathnr': 1,
+                                                'on_xmitlist': True,
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'statuscode': '*',
+                                                        'bestcode': '>',
+                                                        'typecode': 'l',
+                                                        'pathtype': 'local',
+                                                        'pathvalid': True,
+                                                        'pathbest': True,
+                                                        'pathnolabeledrnh': True,
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'nexthopmetric': 0,
+                                                        'neighbor': '0.0.0.0',
+                                                        'neighborid': '2.2.2.2',
+                                                        'origin': 'igp',
+                                                        'localpref': 100,
+                                                        'weight': 32768,
+                                                        'extcommunity': [
+                                                            'RT:100:10100'
+                                                        ],
+                                                        'advertisedto': [
+                                                            '4.4.4.4',
+                                                            '5.5.5.5'
+                                                        ],
+                                                    }
+                                                },
+                                            },
+                                            '[7][100.101.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[7][100.101.1.3][238.8.4.101]/64',
+                                                'prefixversion': 7,
+                                                'totalpaths': 1,
+                                                'bestpathnr': 1,
+                                                'on_xmitlist': True,
+                                                'path': {
+                                                    1: {
+                                                        'pathnr': 0,
+                                                        'statuscode': '*',
+                                                        'bestcode': '>',
+                                                        'typecode': 'l',
+                                                        'pathtype': 'local',
+                                                        'pathvalid': True,
+                                                        'pathbest': True,
+                                                        'pathnolabeledrnh': True,
+                                                        'ipnexthop': '0.0.0.0',
+                                                        'nexthopmetric': 0,
+                                                        'neighbor': '0.0.0.0',
+                                                        'neighborid': '2.2.2.2',
+                                                        'origin': 'igp',
+                                                        'localpref': 100,
+                                                        'weight': 32768,
+                                                        'extcommunity': [
+                                                            'RT:100:10100'
+                                                        ],
+                                                        'advertisedto': [
+                                                            '4.4.4.4',
+                                                            '5.5.5.5'
+                                                        ],
+                                                    }
+                                                },
+                                            },
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+

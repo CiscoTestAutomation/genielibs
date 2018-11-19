@@ -68,7 +68,8 @@ class TriggerShutNoShutNveOverlayInterface(TriggerShutNoShut):
                                                 'kwargs': {'attributes': [
                                                                 'nve[(.*)][if_state]',
                                                                 'nve[(.*)][vni][(.*)][vni]','l2route']},
-                                                'exclude': nve_exclude + ['peer_id','tx_id','total_memory']}},
+                                                'exclude': nve_exclude + ['peer_id','tx_id','total_memory','mac','prefix',
+                                                                          'memory','objects','total_mem','total_obj']}},
                     config_info={'conf.interface.Interface': {
                                                 'requirements': [['enabled', False]],
                                                 'verify_conf': False,

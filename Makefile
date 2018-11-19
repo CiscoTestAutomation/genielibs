@@ -31,10 +31,10 @@
 ################################################################################
 
 # Variables
-PKG_NAME      = genie/libs
-BUILD_ROOT    = $(shell pwd)/__build__
-OUTPUT_DIR    = $(BUILD_ROOT)/dist
-BUILD_CMD     = python setup.py bdist_wheel --dist-dir=$(OUTPUT_DIR)
+PKG_NAME      = genie.libs
+BUILD_DIR     = $(shell pwd)/__build__
+DIST_DIR      = $(BUILD_DIR)/dist
+BUILD_CMD     = python setup.py bdist_wheel --dist-dir=$(DIST_DIR)
 PROD_USER     = pyadm@pyats-ci
 PROD_PKGS     = /auto/pyats/packages/cisco-shared
 PROD_SCRIPTS  = /auto/pyats/bin
@@ -55,33 +55,13 @@ PYPI_PKGS      = conf ops robot sdk
 
 ALL_PKGS       = $(PYPI_PKGS)
 
-# force cythonize if uploading to pypi
-ifeq ($(UPLOADPYPI), true)
-    DEVNET = true
-endif
-
 ifeq ($(MAKECMDGOALS), devnet)
-    DEVNET = true
-    INCLUDE_TESTS = false
+	BUILD_CMD += --devnet
 endif
 
-ifeq ($(INCLUDE_TESTS), true)
-    BUILD_CMD += --include-tests
-endif
-
-# build options
-ifeq ($(DEVNET), true)
-    BUILD_CMD += --devnet
-endif
-
-# add upload flag ONLY if it's a devnet build asked for upload
-ifeq ($(DEVNET)$(UPLOADPYPI), truetrue)
-    BUILD_CMD += upload -r $(PYPIREPO)
-endif
-
-
-.PHONY: help docs distribute_docs clean check\
-        develop undevelop distribute test $(ALL_PKGS)
+.PHONY: help docs distribute_docs clean check devnet\
+	develop undevelop distribute test install_build_deps
+	uninstall_build_deps $(ALL_PKGS)
 
 help:
 	@echo "Please use 'make <target>' where <target> is one of"
@@ -89,11 +69,14 @@ help:
 	@echo "     --- common actions ---"
 	@echo ""
 	@echo "    check                check setup.py content"
-	@echo " clean                remove the build directory ($(BUILD_ROOT))"
+	@echo " clean                remove the build directory ($(BUILD_DIR))"
 	@echo " help                 display this help"
 	@echo " test                 run all unittests in an efficient manner"
 	@echo " develop              set all package to development mode"
 	@echo " undevelop            unset the above development mode"
+	@echo "devnet                Build DevNet package."
+	@echo "install_build_deps    install pyats-distutils"
+	@echo "uninstall_build_deps  remove pyats-distutils"
 	@echo ""
 	@echo "     --- build all targets ---"
 	@echo ""
@@ -120,14 +103,31 @@ help:
 	@echo " DEVNET=true              build for devnet style (cythonized, no ut)"
 	@echo " INCLUDE_TESTS=true       build include unittests in cythonized pkgs"
 
+devnet: all
+	@echo "Completed building DevNet packages"
+	@echo ""
+
+install_build_deps:
+	@echo "--------------------------------------------------------------------"
+	@echo "Installing cisco-distutils"
+	@pip install --index-url=http://pyats-pypi.cisco.com/simple \
+	             --trusted-host=pyats-pypi.cisco.com \
+	             cisco-distutils
+
+uninstall_build_deps:
+	@echo "--------------------------------------------------------------------"
+	@echo "Uninstalling pyats-distutils"
+	@pip uninstall cisco-distutils
+
+
 docs:
 	@echo "No documentation to build for genie.libs"
 
 clean:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
-	@echo "Removing make directory: $(BUILD_ROOT)"
-	@rm -rf $(BUILD_ROOT)
+	@echo "Removing make directory: $(BUILD_DIR)"
+	@rm -rf $(BUILD_DIR)
 	@$(foreach dir,$(ALL_PKGS),(cd pkgs/$(dir)-pkg && python setup.py clean) &&) :
 	@echo "Removing *.pyc *.c and __pycache__/ files"
 	@find . -type f -name "*.pyc" | xargs rm -vrf
@@ -163,9 +163,9 @@ distribute:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
 	@echo "Copying all distributable to $(PROD_PKGS)"
-	@test -d $(OUTPUT_DIR) || { echo "Nothing to distribute! Exiting..."; exit 1; }
+	@test -d $(DIST_DIR) || { echo "Nothing to distribute! Exiting..."; exit 1; }
 	@ssh -q $(PROD_USER) 'test -e $(PROD_PKGS)/$(PKG_NAME) || mkdir $(PROD_PKGS)/$(PKG_NAME)'
-	@scp $(OUTPUT_DIR)/* $(PROD_USER):$(PROD_PKGS)/$(PKG_NAME)/
+	@scp $(DIST_DIR)/* $(PROD_USER):$(PROD_PKGS)/$(PKG_NAME)/
 	@echo ""
 	@echo "Done."
 	@echo ""
@@ -181,7 +181,6 @@ $(ALL_PKGS):
 	@echo "Building pyATS distributable: $@"
 	@echo ""
 
-	mkdir -p $(OUTPUT_DIR)/
 	cd pkgs/$@-pkg/; $(BUILD_CMD)
 
 	@echo "Completed building: $@"

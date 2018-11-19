@@ -1877,6 +1877,77 @@ TriggerAddRemoveMsdpDescription:
       pkg: genie.libs.sdk
       class: triggers.addremove.msdp.addremove.TriggerAddRemoveMsdpDescription
 
+# ====================================================================
+#                       TRM
+# ====================================================================
+#--------------------
+#   Disable - Enable
+#---------------------
+TriggerDisableEnableNgmvpn:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.disableenable.trm.disableenable.TriggerDisableEnableNgmvpn
+
+# ---------------------
+#     Restart
+# ---------------------
+
+TriggerProcessCrashRestartNgmvpn:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.trm.processrestart.TriggerProcessCrashRestartNgmvpn
+
+TriggerProcessKillRestartNgmvpn:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.trm.processrestart.TriggerProcessKillRestartNgmvpn
+
+# -------------------------------
+#    Unconfig - Config
+# -------------------------------
+
+TriggerUnconfigConfigBgpAddressFamilyIpv4Mvpn:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpAddressFamilyIpv4Mvpn
+
+TriggerUnconfigConfigBgpNeighborAddressFamilyIpv4Mvpn:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.bgp.unconfigconfig.TriggerUnconfigConfigBgpNeighborAddressFamilyIpv4Mvpn
+
+TriggerUnconfigConfigRouteTargetMvpn:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.trm.unconfigconfig.TriggerUnconfigConfigRouteTargetMvpn
+
+TriggerUnconfigConfigRouteTargetEvpn:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.trm.unconfigconfig.TriggerUnconfigConfigRouteTargetEvpn
+
+TriggerUnconfigConfigAdvertiseEvpnMulticast:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.unconfigconfig.trm.unconfigconfig.TriggerUnconfigConfigAdvertiseEvpnMulticast
+
+# ---------------------------------
+#   Add - Remove
+# ---------------------------------
+TriggerAddRemoveRouteTargetMvpn:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.addremove.trm.addremove.TriggerAddRemoveRouteTargetMvpn
+
+TriggerAddRemoveRouteTargetEvpn:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.addremove.trm.addremove.TriggerAddRemoveRouteTargetEvpn
+
+TriggerAddRemoveAdvertiseEvpnMulticast:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.addremove.trm.addremove.TriggerAddRemoveAdvertiseEvpnMulticast
       
 # =========================================================
 #                   FEATURE: IGMP(ipv4) / MLD(ipv6)

@@ -1,4 +1,4 @@
-* Please follow the template we introduced in OCTOBER.md file.
+* Please follow the template we introduced in NOVEMBER.md file.
 * Every Trigger/verification need to be added under the corresponding feature.
 
 =======
@@ -7,8 +7,5 @@
 | ``genie.libs.sdk``      |               |
 
 --------------------------------------------------------------------------------
-                               Features
+                                YAML
 --------------------------------------------------------------------------------
-* Libs
-    * Fix IOSXR subsection save_bootvar by using unicon conn.admin_execute()
-      for executing admin commands

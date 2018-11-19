@@ -84,7 +84,9 @@ class TriggerUnconfigConfigVxlanNveOverlayInterface(TriggerUnconfigConfig):
                                                       'nve[(.*)][if_state]',
                                                       'nve[(.*)][vni][(.*)][vni]','l2route','bgp_l2vpn_evpn']},
                                         'exclude': nve_exclude + multisite_exclude+ ['tx_id','flags','peer_id','pathnr',
-                                                                                     'bestpathnr','advertisedto','prefixversion','prefixreceived']}},
+                                                                                     'bestpathnr','advertisedto','prefixversion',
+                                                                                     'prefixreceived','mac','prefix','bytesattrs',
+                                                                                     'memoryused', 'numberattrs']}},
                       config_info={'conf.interface.Interface':{
                                         'requirements':[],
                                         'verify_conf':False,

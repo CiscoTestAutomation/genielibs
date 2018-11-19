@@ -508,6 +508,7 @@ TriggerDisableEnableVnSegmentVlan:
     tgn_max_outage: 120
     devices: ['uut']
 
+
 #===============================================================================
 #                                 MODIFY
 #===============================================================================
@@ -949,6 +950,61 @@ TriggerModifyMldVersion:
 #===============================================================================
 #                                UNCONFIG-CONFIG
 #===============================================================================
+TriggerUnconfigConfigBgpAddressFamilyIpv4Mvpn:
+    groups: ['unconfig-config', 'l3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    devices: ['uut']
+
+TriggerUnconfigConfigBgpNeighborAddressFamilyIpv4Mvpn:
+    groups: ['unconfig-config', 'l3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    devices: ['uut']
+
+TriggerUnconfigConfigRouteTargetMvpn:
+    groups: ['unconfig-config', 'l3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    devices: ['uut']
+
+TriggerUnconfigConfigRouteTargetEvpn:
+    groups: ['unconfig-config', 'l3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    devices: ['uut']
+
+TriggerUnconfigConfigAdvertiseEvpnMulticast:
+    groups: ['unconfig-config', 'l3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    devices: ['uut']
+
 TriggerUnconfigConfigBgpAfL2vpnEvpnRewriteEvpnRtAsn:
     groups: ['unconfig-config', 'vxlan']
     method: 'checkpoint'
@@ -959,7 +1015,6 @@ TriggerUnconfigConfigBgpAfL2vpnEvpnRewriteEvpnRtAsn:
     tgn_delay: 10
     tgn_max_outage: 300
     devices: ['uut']
-
 
 TriggerUnconfigConfigEvpnMsiteBgw:
     groups: ['unconfig-config', 'vxlan', 'L3']
@@ -1380,7 +1435,7 @@ TriggerUnconfigConfigVxlanNveOverlayInterface:
     tgn_delay: 10
     tgn_max_outage: 300
     timeout_recovery:
-      max_time: 500
+      max_time: 800
       interval: 20
     devices: ['uut']
 
@@ -1499,9 +1554,7 @@ TriggerUnconfigConfigNveSourceInterfaceLoopback:
 #    timeout_recovery:
 #      max_time: 750
 #      interval: 20
-#    devices:
-#      uut:
-#        None
+#    devices: ['uut']
 
 TriggerUnconfigConfigNveVniMcastGroup:
     groups: ['unconfig-config', 'vxlan', 'L3']
@@ -1925,13 +1978,13 @@ TriggerShutNoShutVlanInterface:
 TriggerShutNoShutNveOverlayInterface:
     groups: ['shut-noshut', 'interface', 'vxlan']
     timeout:
-      max_time: 180
+      max_time: 300
       interval: 10
     tgn_timeout: 300
     tgn_delay: 10
     tgn_max_outage: 300
     timeout_recovery:
-      max_time: 300
+      max_time: 500
       interval: 20
     devices: ['uut']
         
@@ -2048,9 +2101,7 @@ TriggerAddRemoveNveMultisiteBgwInterface:
 #    tgn_timeout: 300
 #    tgn_delay: 10
 #    tgn_max_outage: 300
-#    devices:
-#      uut:
-#        None
+#    devices: ['uut']
 
 TriggerAddRemoveNveVniMcastGroup:
     groups: ['add-remove', 'vxlan', 'L3']
@@ -2075,9 +2126,7 @@ TriggerAddRemoveNveVniMcastGroup:
 #    timeout_recovery:
 #      max_time: 400
 #      interval: 20
-#    devices:
-#      uut:
-#        None
+#    devices: ['uut']
 
 TriggerDisableEnableVnSegmentVlanWithNvOverlay:
     groups: ['disable-enable', 'vxlan', 'L3']
@@ -2090,6 +2139,20 @@ TriggerDisableEnableVnSegmentVlanWithNvOverlay:
     tgn_max_outage: 600
     timeout_recovery:
       max_time: 800
+      interval: 30
+    devices: ['uut']
+
+TriggerDisableEnableNgmvpn:
+    groups: ['disable-enable', 'trm']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 600
+    timeout_recovery:
+      max_time: 180
       interval: 30
     devices: ['uut']
 
@@ -2141,9 +2204,7 @@ TriggerModifyEvpnRd:
 #    tgn_timeout: 300
 #    tgn_delay: 10
 #    tgn_max_outage: 300
-#    devices:
-#      uut:
-#        None
+#    devices: ['uut']
 
 TriggerAddRemoveNveVniMultisiteIngressReplication:
     groups: ['add-remove', 'vxlan', 'L3']
@@ -2700,6 +2761,39 @@ TriggerAddRemoveMldStaticGroup:
     tgn_timeout: 300
     tgn_delay: 10
     tgn_max_outage: 120
+    devices: ['uut']
+
+TriggerAddRemoveRouteTargetMvpn:
+    groups: ['add-remove', 'trm']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    devices: ['uut']
+
+TriggerAddRemoveRouteTargetEvpn:
+    groups: ['add-remove', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
+    devices: ['uut']
+
+TriggerAddRemoveAdvertiseEvpnMulticast:
+    groups: ['add-remove', 'l3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 300
     devices: ['uut']
 
 #===============================================================================
@@ -3382,6 +3476,26 @@ TriggerProcessKillRestartBfd:
 
 TriggerProcessCrashRestartL2rib:
     groups: ['restart', 'l2rib', 'L3']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices: ['uut']
+
+TriggerProcessCrashRestartNgmvpn:
+    groups: ['restart', 'trm']
+    timeout:
+      max_time: 180
+      interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 180
+    devices: ['uut']
+
+TriggerProcessKillRestartNgmvpn:
+    groups: ['restart', 'trm']
     timeout:
       max_time: 180
       interval: 15

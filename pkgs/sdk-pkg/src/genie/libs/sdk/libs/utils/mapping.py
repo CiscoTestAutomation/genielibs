@@ -248,11 +248,18 @@ class Mapping(object):
                     o = cls.learn_config(device=device, attributes=kwargs.get('attributes', None))
                     # convert from conf instance to dictionary
                     o = [_to_dict(item) for item in o]
-
                     if verify:
                         # sort both list
-                        initial = sorted(self._conf_ret[base])[:1]
-                        restore = sorted(o)[:1]
+                        initial = self._conf_ret[base]
+                        try:
+                            restore = sorted(o)
+                        except Exception as e:
+                            try:
+                                restore = o
+                            except Exception as e:
+                                raise Exception("Current Object can not "
+                                            "be verified\n{}".format(e))
+
                         # compare lengh to begin with
                         len_initial = len(initial)
                         len_restore = len(restore)
@@ -269,7 +276,7 @@ class Mapping(object):
                         for item in o:
                             # verify requirements
                             self._verify_find(item, requirements_, all_keys)
-                    return o[:1]
+                    return o
         except Exception as e:
             raise
 
@@ -311,7 +318,6 @@ class Mapping(object):
 
             with steps.start("Learning '{n}' {t}".format(n=name,
                                                          t=type_)) as step:
-                requirements_printer(base, requirements)
 
                 # Is is a or an
                 a = 'an' if name[0].lower() in VOWEL else 'a'
@@ -409,43 +415,53 @@ class Mapping(object):
 
                     if not isinstance(o, list):
                         o = [o]
-                    for item in sorted(o)[:1]:
+
+                    failed_list = []
+                    ret = []
+                    for item in o:
                         # exclude the managemnet interface from the selected
                         # interfaces
                         find_obj = self.exclude_management_interface(device,
                             requirements, item)
-                        ret = find([find_obj], *rs, filter_=False, all_keys=all_keys)
+                        ret1 = find([find_obj], *rs, filter_=False, all_keys=all_keys)
 
-                        if not ret:
-                            # Requirements are not satisfied
-                            err_msg = '\n'.join([str(re) for re in reqs])
-                            # If static then it should fail - what they
-                            # provided couldnt be found
-                            if self._static:
-                                step.failed("Could not find a '{n}' which "
-                                            "satisfies the requirement:\n{e}"
-                                            .format(n=name, e=err_msg))
-                            else:
-                                step.skipped("Following requirements were not "
-                                             "satisfied for '{n}':\n{e}"
-                                             .format(n=name, e=err_msg))
+                        if not ret1:
+                            failed_list.append("0")
+                        ret.extend([ret1])
 
-                        if not self._static_learn:
-                            continue
-                        # Either no static keys were provided or
-                        # Static keys were provided but not all regex keys
-                        # were staticly provided
-                        # So still need to learn
+
+                    if len(failed_list) == len(o):
+                        # Requirements are not satisfied
+                        err_msg = '\n'.join([str(re) for re in reqs])
+                        # If static then it should fail - what they
+                        # provided couldnt be found
+                        if self._static:
+                            step.failed("Could not find a '{n}' which "
+                                        "satisfies the requirement:\n{e}"
+                                        .format(n=name, e=err_msg))
+                        else:
+                            step.skipped("Following requirements were not "
+                                         "satisfied for '{n}':\n{e}"
+                                         .format(n=name, e=err_msg))
+
+                    if not self._static_learn:
+                        continue
+
+                    temp_keys = []
+                    key_list = []
+                    for ret1 in ret:
                         group_keys = GroupKeys.group_keys(
                                         reqs=reqs,
                                         ret_num={},
-                                        source=ret,
+                                        source=ret1,
                                         all_keys=all_keys)
 
-                        temp_keys = []
                         for key in group_keys:
                             temp_keys.extend(GroupKeys.merge_all_keys(self.keys, [], key))
-                        self.keys = temp_keys.copy()
+                        tmp_keys = temp_keys.copy()
+
+                        key_list.extend(tmp_keys)
+                    self.keys = key_list
 
         with steps.start('Merge requirements') as step:
             # update the self.keys with hardcode values for following needs
@@ -453,7 +469,12 @@ class Mapping(object):
                 self.keys.append(provided_values)
             else:
                 for item in self.keys:
-                    item.update(provided_values)
+                    if not isinstance(item,list):
+                       item.update(provided_values)
+                    else:
+                        for i in item:
+                            i.update(provided_values)
+
 
             self.keys = GroupKeys.max_amount(self.keys, self.num_values)
             req = self._populate_path(all_requirements, device, keys=self.keys)
@@ -1364,114 +1385,4 @@ class Different(object):
         ret = '(?P<{name}>^(?!{regexes}$).*$)'.format(name='not_'+self.value,
                                                       regexes=regexes)
         return ret
-
-def requirements_printer(base, requirements):
-    '''Convert triggers requirements into English requirements
-
-    Care about the Leafs and the Regex. The rest are considered path to get
-    where we want, but non important
-    '''
-
-    # All requirements; used internally
-    all_reqs_name = set()
-
-    # Contains all the leaves
-    leafs = []
-
-    # Contains all the Regexs
-    regexs = []
-
-    # Make sure no triple level of requirements
-    if isinstance(requirements['requirements'][0][0], list):
-        new_reqs = []
-        for reqs in requirements['requirements']:
-            for req in reqs:
-                new_reqs.append(req)
-        requirements['requirements'] = new_reqs
-
-    # Loops over the requirements
-    for reqs in requirements['requirements']:
-        if not reqs:
-            continue
-
-        prev_key = None
-
-        # To keep track if we reached the end of the requirements
-        lenght = len(reqs)
-
-        for i, req in enumerate(reqs):
-
-            value = req
-
-            # We dont want to show leafs of regex in both lists (regexs and
-            # leafs)
-            regex = False
-
-            # If the requirements is a regex, then keep the name of the regex
-            # and add to regex list
-            if isinstance(req, str) and req.startswith('(?P<'):
-                try:
-                    com = re.compile(req)
-                    value = list(com.groupindex)[0]
-                    if value not in all_reqs_name:
-                        regexs.append([value, com.pattern])
-                        all_reqs_name.add(value)
-
-                    # So we dont add to the leafs list if already in regex list
-                    regex = True
-                except Exception as e:
-                    # We dont want to boom the trigger
-                    log.info('Could not print the trigger requirements\n{}'
-                             .format(e))
-
-            # Last and not regex?
-            if i == lenght - 1 and not regex:
-                leafs.append([prev_key, value])
-                continue
-
-            # Saving those so we can deal with end of key
-            prev_key = value
-
-    # Get class name
-    base = base.rsplit('.', 1)[-1]
-
-    # Is is a or an
-    a = 'an' if base[0].lower() in VOWEL else 'a'
-
-    log.info("Find {} '{}' that satisfy the following requirements:"
-             .format(a, base))
-
-    # Print all the leafs
-    for end in leafs:
-        # Convert NotExists/Not to english
-        end1 = key_convertor(end[0])
-        end2 = value_convertor(end[1])
-
-        if end1 is None:
-            # Maybe we want to search for the first level of the object
-            log.info("'{}'".format(end2))
-        else:
-            log.info("{} {}".format(end1, end2))
-
-    # Print all the regexs
-    for regex in regexs:
-        log.info("'{}' that match the following regular expression '{}'"
-               .format(regex[0], regex[1]))
-
-def key_convertor(word):
-    if not isinstance(word, Operator):
-        return "'{}'".format(word)
-    return word_convertor(word)
-
-def value_convertor(word):
-    if not isinstance(word, Operator):
-        return "which is equal to '{}'".format(word)
-    return word_convertor(word)
-
-def word_convertor(word):
-    if isinstance(word, NotExists):
-        return "does not have key '{}'".format(word.value)
-    if isinstance(word, Not):
-        return "which is not of value '{}'".format(word.value)
-    pass
 

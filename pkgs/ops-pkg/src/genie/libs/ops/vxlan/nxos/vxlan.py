@@ -14,14 +14,21 @@ from genie.libs.parser.nxos.show_vxlan import ShowNvePeers,\
                                    ShowL2routeMacIpAllDetail,\
                                    ShowL2routeSummary,\
                                    ShowL2routeFlAll,\
+                                   ShowRunningConfigNvOverlay, \
+                                   ShowFabricMulticastGlobals, \
+                                   ShowFabricMulticastIpSaAdRoute, \
+                                   ShowFabricMulticastIpL2Mroute,\
                                    ShowRunningConfigNvOverlay,\
                                    ShowNveVniIngressReplication
 
 from genie.libs.parser.nxos.show_bgp import ShowBgpL2vpnEvpnSummary,\
                                    ShowBgpL2vpnEvpnRouteType,\
-                                   ShowBgpL2vpnEvpnNeighbors
+                                   ShowBgpL2vpnEvpnNeighbors,\
+                                   ShowBgpIpMvpnRouteType, \
+                                   ShowBgpIpMvpnSaadDetail
 
 from genie.libs.parser.nxos.show_feature import ShowFeature
+from genie.libs.parser.nxos.show_mcast import ShowForwardingDistributionMulticastRoute
 
 class Vxlan(Base):
     '''Vxlan Ops Object'''
@@ -140,6 +147,12 @@ class Vxlan(Base):
         self.add_leaf(cmd=ShowRunningConfigNvOverlay,
                       src='[evpn_multisite_border_gateway]',
                       dest='nve[evpn_multisite_border_gateway]')
+
+        # ngmvpn - enbaled
+        self.add_leaf(cmd=ShowFeature,
+                      src='[feature][ngmvpn][instance][(?P<instance>.*)][state]',
+                      dest='nve[enabled_ngmvpn]',
+                      action=self.set_enable)
 
         # vni
         #   summary
@@ -754,5 +767,312 @@ class Vxlan(Base):
                                   src=src_tunnel + '[{}]'.format(key),
                                   dest=dest_tunnel + '[{}]'.format(key),
                                   route_type=rt)
+
+        self.make()
+        ###############################################################
+        #                   TRM - Fabric                              #
+        ###############################################################
+        # multicast
+        #   globals
+        #       pruning
+        #       switch_role
+        #       fabric_control_seg
+        #       peer_fabric_ctrl_addr
+        #       advertise_vpc_rpf_routes
+        #       created_vni_list
+        #       fwd_encap
+        #       overlay_distributed_dr
+        #       overlay_spt_only
+
+        src_fabric_multicast = '[multicast][globals]'
+        dest_fabric_multicast= 'fabric' + src_fabric_multicast
+
+        req_key = ['pruning', 'switch_role', 'fabric_control_seg','peer_fabric_ctrl_addr',
+                   'advertise_vpc_rpf_routes', 'created_vni_list', 'fwd_encap',
+                   'overlay_distributed_dr','overlay_spt_only']
+        for key in req_key:
+            self.add_leaf(cmd=ShowFabricMulticastGlobals,
+                          src=src_fabric_multicast + '[{}]'.format(key),
+                          dest=dest_fabric_multicast + '[{}]'.format(key))
+
+        # multicast
+        #   vrf
+        #     <vrf>
+        #        vnid
+        #        address_family
+        #           <af_name>
+        #             sa_ad_routes
+        #               gaddr
+        #                 <gaddr>
+        #                   grp_len
+        #                     saddr
+        #                       <saddr>
+        #                         src_len
+        #                         uptime
+        #                         interested_fabric_nodes
+        #                             <interested_fabric_nodes>
+        #                                 uptime
+
+        src_fabric_vrf = '[multicast][vrf][(?P<vrf_name>.*)]'
+        dest_fabric_vrf = 'fabric' + src_fabric_vrf
+
+        self.add_leaf(cmd=ShowFabricMulticastIpSaAdRoute,
+                      src=src_fabric_vrf + '[vnid]',
+                      dest=dest_fabric_vrf + '[vnid]',
+                      vrf='all')
+
+        src_fabric_vrf_gaddr = src_fabric_vrf + '[address_family][(?P<af>.*)][sa_ad_routes][gaddr][(?P<gaddr>.*)]'
+        dest_fabric_vrf_gaddr = 'fabric' + src_fabric_vrf_gaddr
+
+        self.add_leaf(cmd=ShowFabricMulticastIpSaAdRoute,
+                      src=src_fabric_vrf_gaddr + '[grp_len]',
+                      dest=dest_fabric_vrf_gaddr + '[grp_len]',
+                      vrf='all')
+
+        src_fabric_vrf_saddr = src_fabric_vrf_gaddr + '[saddr][(?P<saddr>.*)]'
+        dest_fabric_vrf_saddr = 'fabric' + src_fabric_vrf_saddr
+
+        req_key = ['src_len', 'uptime']
+        for key in req_key:
+            self.add_leaf(cmd=ShowFabricMulticastIpSaAdRoute,
+                          src=src_fabric_vrf_saddr + '[{}]'.format(key),
+                          dest=dest_fabric_vrf_saddr + '[{}]'.format(key),
+                          vrf='all')
+
+        src_fabric_vrf_intersted = src_fabric_vrf_saddr + '[interested_fabric_nodes][(?P<interested_fabric_nodes>.*)]'
+        dest_fabric_vrf_intersted = 'fabric' + src_fabric_vrf_intersted
+
+        self.add_leaf(cmd=ShowFabricMulticastIpSaAdRoute,
+                      src=src_fabric_vrf_intersted + '[uptime]',
+                      dest=dest_fabric_vrf_intersted + '[uptime]',
+                      vrf='all')
+
+        #  l2_mroute
+        #       vni
+        #         <vnid>
+        #           vnid
+        #           fabric_l2_mroutes
+        #             gaddr
+        #               <gaddr>
+        #                 saddr
+        #                   <saddr>
+        #                     interested_fabric_nodes
+        #                         <node>
+        #                             node
+        src_fabric_l2route = '[multicast][l2_mroute][vni][(?P<vni>.*)]'
+        dest_fabric_l2route = 'fabric' + src_fabric_l2route
+
+        self.add_leaf(cmd=ShowFabricMulticastIpL2Mroute,
+                      src=src_fabric_l2route + '[vnid]',
+                      dest=dest_fabric_l2route + '[vnid]',
+                      vni='all')
+
+        src_fabric_l2route_saddr = src_fabric_l2route + '[fabric_l2_mroutes][gaddr][(?P<gaddr>.*)]' \
+                                                        '[saddr][(?P<saddr>.*)][interested_fabric_nodes]' \
+                                                        '[(?P<interested_fabric_nodes>.*)]'
+        dest_fabric_l2route_saddr = 'fabric' + src_fabric_l2route_saddr
+
+        self.add_leaf(cmd=ShowFabricMulticastIpL2Mroute,
+                      src=src_fabric_l2route_saddr + '[node]',
+                      dest=dest_fabric_l2route_saddr + '[node]',
+                      vni='all')
+
+        ######################################################################
+        #           TRM - Forwarding                                         #
+        ######################################################################
+
+        # distribution
+        #     multicast
+        #        route
+        #           vrf
+        #              <vrf>
+        #                  address_family
+        #                     <af>
+        #                         num_groups
+        #                         gaddr
+        #                             <gaddr>
+        #                                 grp_len
+        #                                 saddr
+        #                                    <saddr>
+        #                                         rpf_ifname
+        #                                         src_len
+        #                                         flags
+        #                                         rcv_packets
+        #                                         rcv_bytes
+        #                                         num_of_oifs
+        #                                         oifs
+        #                                            oif_index
+        #                                            <oif>
+        #                                               oif
+        #                                               encap
+        #                                               mem_l2_ports
+        #                                               l2_oiflist_index
+        src_forwarding_af = '[distribution][multicast][route][vrf][(?P<vrf_name>.*)][address_family][(?P<af>.*)]'
+        dest_forwarding_af = 'forwarding' + src_forwarding_af
+
+        self.add_leaf(cmd=ShowForwardingDistributionMulticastRoute,
+                      src=src_forwarding_af + '[num_groups]',
+                      dest=dest_forwarding_af+ '[num_groups]',
+                      vrf='all')
+
+        src_forwarding_gaddr = src_forwarding_af + '[gaddr][(?P<gaddr>.*)]'
+        dest_forwarding_gaddr = 'forwarding' + src_forwarding_gaddr
+
+        self.add_leaf(cmd=ShowForwardingDistributionMulticastRoute,
+                      src=src_forwarding_gaddr + '[grp_len]',
+                      dest=dest_forwarding_gaddr + '[grp_len]',
+                      vrf='all')
+
+        src_forwarding_saddr = src_forwarding_gaddr + '[saddr][(?P<saddr>.*)]'
+        dest_forwarding_saddr = 'forwarding' + src_forwarding_saddr
+
+        req_key = ['rpf_ifname', 'src_len', 'flags', 'rcv_packets', 'rcv_bytes', 'num_of_oifs']
+        for key in req_key:
+            self.add_leaf(cmd=ShowForwardingDistributionMulticastRoute,
+                        src=src_forwarding_saddr + '[{}]'.format(key),
+                        dest=dest_forwarding_saddr + '[{}]'.format(key),
+                        vrf='all')
+
+        src_forwarding_oifs = src_forwarding_saddr + '[oifs]'
+        dest_forwarding_oifs = 'forwarding' + src_forwarding_oifs
+
+        self.add_leaf(cmd=ShowForwardingDistributionMulticastRoute,
+                      src=src_forwarding_oifs+ '[oif_index]',
+                      dest=dest_forwarding_oifs + '[oif_index]',
+                      vrf='all')
+
+        src_forwarding_oif = src_forwarding_oifs + '[(?P<oif>.*)]'
+        dest_forwarding_oif = 'forwarding' + src_forwarding_oif
+
+        req_key = ['oif', 'encap', 'mem_l2_ports', 'l2_oiflist_index']
+        for key in req_key:
+            self.add_leaf(cmd=ShowForwardingDistributionMulticastRoute,
+                        src=src_forwarding_oif + '[{}]'.format(key),
+                        dest=dest_forwarding_oif + '[{}]'.format(key),
+                        vrf='all')
+
+        #######################################################################
+        #               TRM - bgp_mvpn                                        #
+        #######################################################################
+        # instance
+        #     <instance>
+        #         vrf
+        #            <vrf_name_out>
+        #                 vrf_name_out
+        #                 address_family
+        #                     <af_name>
+        #                         af_name
+        #                         table_version
+        #                         router_id
+        #                         rd
+        #                            <rd_val>
+        #                                 rd_val
+        #                                 rd_vrf
+        #                                 prefix
+        #                                     <nonipprefix>
+        #                                         nonipprefix
+        #                                         path
+        #                                             <index>
+        #                                                 pathnr
+        #                                                 policyincomplete        N/A
+        #                                                 pathdeleted             N/A
+        #                                                 pathstaled              N/A
+        #                                                 pathhistory             N/A
+        #                                                 pathovermaxaslimit      N/A
+        #                                                 pathmultipath           N/A
+        #                                                 statuscode
+        #                                                 bestcode
+        #                                                 typecode
+        #                                                 ipnexthop
+        #                                                 weight
+        #                                                 origin
+        #                                                 localpref
+        #                                                 pathvalid
+        #                                                 pathbest
+        #                                                 pathnolabeledrnh
+        #                                                 status
+        #                                                 best
+        #                                                 type
+        #                                                 nexthopmetric
+        #                                                 neighbor
+        #                                                 neighborid
+        #                                                 extcommunity
+        #                                                 advertisedto
+
+        route_types = ["1", "2", "3", "4", "5", "6", "7"]
+        for rt in route_types:
+            src_bgp_mvpn_vrf = '[instance][(?P<instance>.*)][vrf][(?P<vrf_name>.*)]'
+            dest_bgp_mvpn_vrf = 'bgp_mvpn' + src_bgp_mvpn_vrf
+
+            self.add_leaf(cmd=ShowBgpIpMvpnRouteType,
+                          src=src_bgp_mvpn_vrf + '[vrf_name_out]',
+                          dest=dest_bgp_mvpn_vrf + '[vrf_name_out]',
+                          route_type=rt,
+                          vrf='all')
+
+            src_bgp_mvpn_af = src_bgp_mvpn_vrf+ '[address_family][(?P<af>.*)]'
+            dest_bgp_mvpn_af = 'bgp_mvpn' + src_bgp_mvpn_af
+
+            req_key = ['af_name', 'table_version', 'router_id']
+            for key in req_key:
+                self.add_leaf(cmd=ShowBgpIpMvpnRouteType,
+                              src=src_bgp_mvpn_af + '[{}]'.format(key),
+                              dest=dest_bgp_mvpn_af + '[{}]'.format(key),
+                              route_type=rt,
+                              vrf='all')
+
+
+            src_bgp_mvpn_rd = src_bgp_mvpn_af + '[rd][(?P<rd_val>.*)]'
+            dest_bgp_mvpn_rd = 'bgp_mvpn' + src_bgp_mvpn_rd
+
+            req_key = ['rd_val', 'rd_vrf']
+            for key in req_key:
+                self.add_leaf(cmd=ShowBgpIpMvpnRouteType,
+                              src=src_bgp_mvpn_rd + '[{}]'.format(key),
+                              dest=dest_bgp_mvpn_rd + '[{}]'.format(key),
+                              route_type=rt,
+                              vrf='all')
+
+            #                                 prefix
+            #                                     <nonipprefix>
+            #                                         nonipprefix
+            #                                         prefixversion
+            #                                         totalpaths
+            #                                         bestpathnr
+            #                                         on_newlist          N/A
+            #                                         on_xmitlist
+            #                                         suppressed          N/A
+            #                                         needsresync         N/A
+            #                                         locked              N/A
+
+            src_bgp_mvpn_prefix = src_bgp_mvpn_rd + '[prefix][(?P<nonipprefix>.*)]'
+            dest_bgp_mvpn_prefix = 'bgp_mvpn' + src_bgp_mvpn_prefix
+
+            req_key = ['nonipprefix','prefixversion', 'totalpaths', 'bestpathnr', 'on_xmitlist']
+            for key in req_key:
+                self.add_leaf(cmd=ShowBgpIpMvpnSaadDetail,
+                              src=src_bgp_mvpn_prefix + '[{}]'.format(key),
+                              dest=dest_bgp_mvpn_prefix + '[{}]'.format(key),
+                              vrf='all')
+
+            src_bgp_mvpn_path = src_bgp_mvpn_prefix + '[path][(?P<index>.*)]'
+            dest_bgp_mvpn_path = 'bgp_mvpn' + src_bgp_mvpn_path
+
+            req_key = ['pathnr', 'statuscode','bestcode','typecode','ipnexthop',
+                       'weight','origin','localpref']
+            for key in req_key:
+                self.add_leaf(cmd=ShowBgpIpMvpnRouteType,
+                              src=src_bgp_mvpn_path + '[{}]'.format(key),
+                              dest=dest_bgp_mvpn_path + '[{}]'.format(key),
+                              route_type=rt,
+                              vrf='all')
+
+            req_key = ['pathtype', 'pathvalid', 'pathbest', 'pathnolabeledrnh', 'nexthopmetric',
+                       'neighbor', 'neighborid', 'extcommunity', 'advertisedto']
+            for key in req_key:
+                self.add_leaf(cmd=ShowBgpIpMvpnSaadDetail,
+                              src=src_bgp_mvpn_path + '[{}]'.format(key),
+                              dest=dest_bgp_mvpn_path + '[{}]'.format(key),
+                              vrf='all')
 
         self.make()

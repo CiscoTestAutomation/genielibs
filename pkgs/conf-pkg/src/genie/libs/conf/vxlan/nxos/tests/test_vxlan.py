@@ -43,6 +43,33 @@ class test_vxlan(TestCase):
              'no nv overlay evpn',
              ]))
 
+    def test_trm_cfg(self):
+        Genie.testbed = testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='R2', os='nxos')
+
+        vxlan = Vxlan()
+        vxlan.device_attr[dev1].enabled_ngmvpn = True
+        vxlan.device_attr[dev1].advertise_evpn_multicast = True
+
+        self.assertIs(vxlan.testbed, testbed)
+        dev1.add_feature(vxlan)
+
+        cfgs = vxlan.build_config(apply=False)
+        self.assertCountEqual(cfgs.keys(), [dev1.name])
+        self.maxDiff = None
+        self.assertMultiLineEqual(str(cfgs[dev1.name]), '\n'.join(
+            ['feature ngmvpn',
+             'advertise evpn multicast',
+             ]))
+
+        un_cfgs = vxlan.build_unconfig(apply=False)
+        self.assertCountEqual(un_cfgs.keys(), [dev1.name])
+        self.maxDiff = None
+        self.assertEqual(str(un_cfgs[dev1.name]), '\n'.join(
+            ['no feature ngmvpn',
+             'no advertise evpn multicast',
+             ]))
+
     def test_vxlan_basic_cfg(self):
         Genie.testbed = testbed = Testbed()
         dev1 = Device(testbed=testbed, name='PE1', os='nxos')

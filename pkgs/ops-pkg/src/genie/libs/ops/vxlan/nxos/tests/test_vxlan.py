@@ -22,12 +22,19 @@ from genie.libs.parser.nxos.show_vxlan import ShowNvePeers,\
                                    ShowL2routeSummary,\
                                    ShowL2routeFlAll,\
                                    ShowRunningConfigNvOverlay,\
+                                   ShowFabricMulticastGlobals,\
+                                   ShowFabricMulticastIpSaAdRoute,\
+                                   ShowFabricMulticastIpL2Mroute,\
                                    ShowNveVniIngressReplication
 
 from genie.libs.parser.nxos.show_feature import ShowFeature
 from genie.libs.parser.nxos.show_bgp import ShowBgpL2vpnEvpnSummary,\
                                    ShowBgpL2vpnEvpnRouteType,\
-                                   ShowBgpL2vpnEvpnNeighbors
+                                   ShowBgpL2vpnEvpnNeighbors,\
+                                   ShowBgpIpMvpnRouteType, \
+                                   ShowBgpIpMvpnSaadDetail
+
+from genie.libs.parser.nxos.show_mcast import ShowForwardingDistributionMulticastRoute
 
 class test_vxlan_all(unittest.TestCase):
 
@@ -74,6 +81,33 @@ class test_vxlan_all(unittest.TestCase):
         route_type.update(route_4)
         f.maker.outputs[ShowBgpL2vpnEvpnRouteType] = route_type
 
+        ####   TRM  ###############
+        f.maker.outputs[ShowFabricMulticastGlobals] = {'': VxlanOutput.showFabricMulticastGlobals}
+        f.maker.outputs[ShowFabricMulticastIpL2Mroute] = {"{'vni':'all'}": VxlanOutput.showFabricMulticastIpL2Mroute}
+        f.maker.outputs[ShowFabricMulticastIpSaAdRoute] = {"{'vrf':'all'}": VxlanOutput.showFabricMulticastIpSaAdRoute}
+
+        f.maker.outputs[ShowForwardingDistributionMulticastRoute] = \
+            {"{'vrf':'all'}":VxlanOutput.showForwardingDistributionMulticastRoute}
+
+        bgp_mvpn_route_1 = {"{'route_type':'1','vrf':'all'}": VxlanOutput.showBgpIpMvpnRouteType_1}
+        bgp_mvpn_route_2 = {"{'route_type':'2','vrf':'all'}": VxlanOutput.showBgpIpMvpnRouteType_2}
+        bgp_mvpn_route_3 = {"{'route_type':'3','vrf':'all'}": VxlanOutput.showBgpIpMvpnRouteType_3}
+        bgp_mvpn_route_4 = {"{'route_type':'4','vrf':'all'}": VxlanOutput.showBgpIpMvpnRouteType_4}
+        bgp_mvpn_route_5 = {"{'route_type':'5','vrf':'all'}": VxlanOutput.showBgpIpMvpnRouteType_5}
+        bgp_mvpn_route_6 = {"{'route_type':'6','vrf':'all'}": VxlanOutput.showBgpIpMvpnRouteType_6}
+        bgp_mvpn_route_7 = {"{'route_type':'7','vrf':'all'}": VxlanOutput.showBgpIpMvpnRouteType_7}
+
+        bgp_mvpn_route_type = bgp_mvpn_route_1.copy()
+        bgp_mvpn_route_type.update(bgp_mvpn_route_2)
+        bgp_mvpn_route_type.update(bgp_mvpn_route_3)
+        bgp_mvpn_route_type.update(bgp_mvpn_route_4)
+        bgp_mvpn_route_type.update(bgp_mvpn_route_5)
+        bgp_mvpn_route_type.update(bgp_mvpn_route_6)
+        bgp_mvpn_route_type.update(bgp_mvpn_route_7)
+        f.maker.outputs[ShowBgpIpMvpnRouteType] = bgp_mvpn_route_type
+
+        f.maker.outputs[ShowBgpIpMvpnSaadDetail] = {"{'vrf':'all'}": VxlanOutput.showBgpIpMvpnSaadDetail}
+
         self.device.execute = Mock()
         # Learn the feature
         f.learn()
@@ -82,7 +116,9 @@ class test_vxlan_all(unittest.TestCase):
         self.assertEqual(f.nve, VxlanOutput.vxlanVniOpsOutput)
         self.assertEqual(f.l2route, VxlanOutput.vxlanL2routeOpsOutput)
         self.assertEqual(f.bgp_l2vpn_evpn, VxlanOutput.vxlanBgpL2vpnEvpnOpsOutput)
-
+        self.assertEqual(f.fabric, VxlanOutput.fabricOpsOutput)
+        self.assertEqual(f.forwarding, VxlanOutput.forwardingOpsOutput)
+        self.assertEqual(f.bgp_mvpn, VxlanOutput.bgpMvpnOpsOutput)
 
     def test_selective_attribute_vxlan(self):
         f = Vxlan(device=self.device)
@@ -117,6 +153,34 @@ class test_vxlan_all(unittest.TestCase):
         route_type.update(route_3)
         route_type.update(route_4)
         f.maker.outputs[ShowBgpL2vpnEvpnRouteType] = route_type
+
+        ####   TRM  ###############
+        f.maker.outputs[ShowFabricMulticastGlobals] = {'': VxlanOutput.showFabricMulticastGlobals}
+        f.maker.outputs[ShowFabricMulticastIpL2Mroute] = {"{'vni':'all'}": VxlanOutput.showFabricMulticastIpL2Mroute}
+        f.maker.outputs[ShowFabricMulticastIpSaAdRoute] = {"{'vrf':'all'}": VxlanOutput.showFabricMulticastIpSaAdRoute}
+
+        f.maker.outputs[ShowForwardingDistributionMulticastRoute] = \
+            {"{'vrf':'all'}": VxlanOutput.showForwardingDistributionMulticastRoute}
+
+        bgp_mvpn_route_1 = {"{'route_type':'1','vrf':'all'}": VxlanOutput.showBgpIpMvpnRouteType_1}
+        bgp_mvpn_route_2 = {"{'route_type':'2','vrf':'all'}": VxlanOutput.showBgpIpMvpnRouteType_2}
+        bgp_mvpn_route_3 = {"{'route_type':'3','vrf':'all'}": VxlanOutput.showBgpIpMvpnRouteType_3}
+        bgp_mvpn_route_4 = {"{'route_type':'4','vrf':'all'}": VxlanOutput.showBgpIpMvpnRouteType_4}
+        bgp_mvpn_route_5 = {"{'route_type':'5','vrf':'all'}": VxlanOutput.showBgpIpMvpnRouteType_5}
+        bgp_mvpn_route_6 = {"{'route_type':'6','vrf':'all'}": VxlanOutput.showBgpIpMvpnRouteType_6}
+        bgp_mvpn_route_7 = {"{'route_type':'7','vrf':'all'}": VxlanOutput.showBgpIpMvpnRouteType_7}
+
+        bgp_mvpn_route_type = bgp_mvpn_route_1.copy()
+        bgp_mvpn_route_type.update(bgp_mvpn_route_2)
+        bgp_mvpn_route_type.update(bgp_mvpn_route_3)
+        bgp_mvpn_route_type.update(bgp_mvpn_route_4)
+        bgp_mvpn_route_type.update(bgp_mvpn_route_5)
+        bgp_mvpn_route_type.update(bgp_mvpn_route_6)
+        bgp_mvpn_route_type.update(bgp_mvpn_route_7)
+        f.maker.outputs[ShowBgpIpMvpnRouteType] = bgp_mvpn_route_type
+
+        f.maker.outputs[ShowBgpIpMvpnSaadDetail] = {"{'vrf':'all'}": VxlanOutput.showBgpIpMvpnSaadDetail}
+
         # Learn the feature
         f.learn()
         # Check match
@@ -130,6 +194,17 @@ class test_vxlan_all(unittest.TestCase):
         self.assertNotEqual(5, f.bgp_l2vpn_evpn['instance']['default']['vrf']['default']['address_family'] \
             ['l2vpn evpn']['neighbor']['191.13.1.8']['version'])
         self.assertNotEqual('down', f.nve['nve1']['peer_ip']['201.202.1.1']['peer_state'])
+
+        self.assertNotEqual('50', f.fabric['multicast']['vrf']['vni_10100']['address_family']['ipv4']\
+            ['sa_ad_routes']['gaddr']['238.8.4.101/32'])
+
+        self.assertNotEqual('PC', f.forwarding['distribution']['multicast']['route']['vrf']['default']['address_family']['ipv4']\
+            ['gaddr']['224.0.0.0/4']['saddr']['*']['flags'])
+
+        self.assertNotEqual(False,
+                            f.bgp_mvpn['instance']['default']['vrf']['default']['address_family'][
+                                'ipv4 mvpn'] \
+                                ['rd']['2.2.2.2:3']['prefix']['[1][100.101.1.3][238.8.4.101]/64']['on_xmitlist'])
 
     def test_empty_output_vxlan(self):
         self.maxDiff = None
@@ -166,6 +241,34 @@ class test_vxlan_all(unittest.TestCase):
         route_type.update(route_3)
         route_type.update(route_4)
         f.maker.outputs[ShowBgpL2vpnEvpnRouteType] = route_type
+
+        ####   TRM  ###############
+        f.maker.outputs[ShowFabricMulticastGlobals] = {'': {}}
+        f.maker.outputs[ShowFabricMulticastIpL2Mroute] = {"{'vni':'all'}": {}}
+        f.maker.outputs[ShowFabricMulticastIpSaAdRoute] = {"{'vrf':'all'}":{}}
+
+        f.maker.outputs[ShowForwardingDistributionMulticastRoute] = \
+            {"{'vrf':'all'}": {}}
+
+        bgp_mvpn_route_1 = {"{'route_type':'1','vrf':'all'}": {}}
+        bgp_mvpn_route_2 = {"{'route_type':'2','vrf':'all'}": {}}
+        bgp_mvpn_route_3 = {"{'route_type':'3','vrf':'all'}": {}}
+        bgp_mvpn_route_4 = {"{'route_type':'4','vrf':'all'}": {}}
+        bgp_mvpn_route_5 = {"{'route_type':'5','vrf':'all'}": {}}
+        bgp_mvpn_route_6 = {"{'route_type':'6','vrf':'all'}": {}}
+        bgp_mvpn_route_7 = {"{'route_type':'7','vrf':'all'}": {}}
+
+        bgp_mvpn_route_type = bgp_mvpn_route_1.copy()
+        bgp_mvpn_route_type.update(bgp_mvpn_route_2)
+        bgp_mvpn_route_type.update(bgp_mvpn_route_3)
+        bgp_mvpn_route_type.update(bgp_mvpn_route_4)
+        bgp_mvpn_route_type.update(bgp_mvpn_route_5)
+        bgp_mvpn_route_type.update(bgp_mvpn_route_6)
+        bgp_mvpn_route_type.update(bgp_mvpn_route_7)
+        f.maker.outputs[ShowBgpIpMvpnRouteType] = bgp_mvpn_route_type
+
+        f.maker.outputs[ShowBgpIpMvpnSaadDetail] = {"{'vrf':'all'}": {}}
+
         # Learn the feature
         f.learn()
 
@@ -173,6 +276,10 @@ class test_vxlan_all(unittest.TestCase):
         with self.assertRaises(AttributeError):
             f.nve['instance']
             f.bgp_l2vpn_evpn['instance']
+            f.bgp_mvpn['instance']
+            f.forwarding['distribution']
+            f.fabric['multicast']
+
 
 if __name__ == '__main__':
     unittest.main()

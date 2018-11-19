@@ -253,6 +253,7 @@ vxlan:
         - prefixversion
         - tx_id
         - uptime
+        - up_time
         - localport
         - resetreason
         - resettime
@@ -268,8 +269,17 @@ vxlan:
         - totalnetworks
         - totalpaths
         - flags
+        - index
+        - total_mem
+        - memory
+        - total_memory
+        - mac
+        - mac_ip
+        - oif_index
         - (0.0.0.0.*)
         - prefix
+        - objects
+        - total_obj
 msdp:
     source:
         pkg: genie.libs.ops
@@ -280,3 +290,12 @@ msdp:
         - elapsed_time
         - up_time
         - expire
+
+ntp:
+    source:
+        pkg: genie.libs.ops
+        class: ntp.ntp.Ntp
+    devices: ['uut']
+    exclude:
+        - root_delay
+        - delay

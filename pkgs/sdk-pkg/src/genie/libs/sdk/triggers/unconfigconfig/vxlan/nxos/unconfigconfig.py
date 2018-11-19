@@ -619,7 +619,10 @@ class TriggerUnconfigConfigNvOverlayEvpn(TriggerUnconfigConfig):
                                             'kwargs': {'attributes': ['bgp_l2vpn_evpn[instance][(.*)][vrf][(.*)]'
                                                                       '[address_family][(.*)][rd]','l2route']},
                                             'all_keys': True,
-                                            'exclude': vxlan_base_exclude + ['sent_to','prefixversion','pathnr','bestpathnr','advertisedto','client_nfn']}},
+                                            'exclude': vxlan_base_exclude + ['sent_to','prefixversion','pathnr',
+                                                                             'bestpathnr','advertisedto','client_nfn',
+                                                                             'prefix','memory','objects','total_mem',
+                                                                             'total_obj','total_memory','mac']}},
                         config_info={'conf.vxlan.Vxlan': {
                                             'requirements': [['device_attr', '{uut}', 'enabled_nv_overlay_evpn', True]],
                                             'verify_conf': False,

@@ -15,7 +15,6 @@ from genie.conf.tests import TestCase
 from genie.conf.base import Testbed, Device
 from genie.libs.conf.vrf.vrf import Vrf
 
-
 class test_vrf(TestCase):
 
     def setUp(self):
@@ -55,7 +54,174 @@ class test_vrf(TestCase):
                 ' exit',
             ]))
 
-    def test_cli_config_v4(self):        
+    def test_cli_trm_config(self):
+        vrf_conf = Vrf('VRF1')
+        self.dev1.add_feature(vrf_conf)
+
+        # Apply configuration
+        vrf_conf.device_attr[self.dev1].address_family_attr['ipv4 mvpn']. \
+            route_target_attr['200:1'].rt_type = 'import'
+        vrf_conf.device_attr[self.dev1].address_family_attr['ipv4 mvpn']. \
+            route_target_attr['200:1'].protocol_attr['mvpn'].rt_mvpn = True
+
+        # Build config
+        cfgs = vrf_conf.build_config(apply=False)
+
+        # Check config built correctly
+        self.assertMultiLineEqual(
+            str(cfgs[self.dev1.name]),
+            '\n'.join([
+                'vrf context VRF1',
+                ' address-family ipv4 mvpn',
+                '  route-target import 200:1',
+                '  route-target import 200:1 mvpn',
+                '  exit',
+                ' exit',
+            ]))
+
+        # # Build unconfig for selected attributes
+        uncfgs = vrf_conf.build_unconfig(apply=False,
+                                       attributes={'device_attr': {
+                                           self.dev1: {
+                                                'address_family_attr': {
+                                                    'ipv4 mvpn': {
+                                                        'route_target_attr': {
+                                                            '200:1': {
+                                                                'rt_type': 'both',
+                                                                'protocol_attr':{
+                                                                    'mvpn':{
+                                                                        'rt_mvpn': None,
+                                                                        }
+                                                                    }
+                                                                }
+                                                          }
+                                                    }}}}})
+
+        # Check config correctly unconfigured
+        self.assertMultiLineEqual(
+            str(uncfgs[self.dev1.name]),
+            '\n'.join([
+                'vrf context VRF1',
+                ' address-family ipv4 mvpn',
+                '  route-target import 200:1',
+                '  route-target export 200:1',
+                '  no route-target both 200:1 mvpn',
+                '  exit',
+                ' exit',
+            ]))
+    def test_cli_trm_mvpn_config(self):
+        vrf_conf = Vrf('VRF1')
+        self.dev1.add_feature(vrf_conf)
+
+        # Apply configuration
+        vrf_conf.device_attr[self.dev1].address_family_attr['ipv4 mvpn']. \
+            route_target_attr['200:1'].rt_type = 'import'
+        vrf_conf.device_attr[self.dev1].address_family_attr['ipv4 mvpn']. \
+            route_target_attr['200:1'].protocol_attr['mvpn'].rt_mvpn = True
+
+        # Build config
+        cfgs = vrf_conf.build_config(apply=False)
+
+        # Check config built correctly
+        self.assertMultiLineEqual(
+            str(cfgs[self.dev1.name]),
+            '\n'.join([
+                'vrf context VRF1',
+                ' address-family ipv4 mvpn',
+                '  route-target import 200:1',
+                '  route-target import 200:1 mvpn',
+                '  exit',
+                ' exit',
+            ]))
+
+        # # Build unconfig for selected attributes
+        uncfgs = vrf_conf.build_unconfig(apply=False,
+                                       attributes={'device_attr': {
+                                           self.dev1: {
+                                                'address_family_attr': {
+                                                    'ipv4 mvpn': {
+                                                        'route_target_attr': {
+                                                            '200:1': {
+                                                                'rt_type': 'import',
+                                                                'protocol_attr':{
+                                                                    'mvpn':{
+                                                                        'rt_mvpn': None,
+                                                                        }
+                                                                    }
+                                                                }
+                                                          }
+                                                    }}}}})
+
+        # Check config correctly unconfigured
+        self.assertMultiLineEqual(
+            str(uncfgs[self.dev1.name]),
+            '\n'.join([
+                'vrf context VRF1',
+                ' address-family ipv4 mvpn',
+                '  route-target import 200:1',
+                '  no route-target import 200:1 mvpn',
+                '  exit',
+                ' exit',
+            ]))
+
+    def test_cli_vxlan_evpn_config(self):
+        vrf_conf = Vrf('VRF1')
+        self.dev1.add_feature(vrf_conf)
+
+        # Apply configuration
+        vrf_conf.device_attr[self.dev1].address_family_attr['ipv4 unicast']. \
+            route_target_attr['200:1'].rt_type = 'both'
+        vrf_conf.device_attr[self.dev1].address_family_attr['ipv4 unicast']. \
+            route_target_attr['200:1'].protocol_attr['evpn'].rt_evpn = True
+
+        # Build config
+        cfgs = vrf_conf.build_config(apply=False)
+
+        # Check config built correctly
+        self.assertMultiLineEqual(
+            str(cfgs[self.dev1.name]),
+            '\n'.join([
+                'vrf context VRF1',
+                ' address-family ipv4 unicast',
+                '  route-target import 200:1',
+                '  route-target export 200:1',
+                '  route-target both 200:1 evpn',
+                '  exit',
+                ' exit',
+            ]))
+
+        # Build unconfig for selected attributes
+        uncfgs = vrf_conf.build_unconfig(apply=False,
+                                         attributes={'device_attr': {
+                                             self.dev1: {
+                                                 'address_family_attr': {
+                                                     'ipv4 unicast': {
+                                                         'route_target_attr': {
+                                                             '200:1': {
+                                                                 'rt_type': 'both',
+                                                                 'protocol_attr': {
+                                                                     'evpn': {
+                                                                         'rt_evpn': None,
+                                                                     }
+                                                                 }
+                                                             }
+                                                         }
+                                                     }}}}})
+
+        # Check config correctly unconfigured
+        self.assertMultiLineEqual(
+            str(uncfgs[self.dev1.name]),
+            '\n'.join([
+                'vrf context VRF1',
+                ' address-family ipv4 unicast',
+                '  route-target import 200:1',
+                '  route-target export 200:1',
+                '  no route-target both 200:1 evpn',
+                '  exit',
+                ' exit',
+            ]))
+
+    def test_cli_config_v4(self):
         # prefix-list conf
         vrf_conf = Vrf('VRF1')
         self.dev1.add_feature(vrf_conf)
@@ -141,7 +307,6 @@ class test_vrf(TestCase):
                 '  exit',
                 ' exit',
             ]))
-
         # Build unconfig for selected attributes
         cfgs = vrf_conf.build_unconfig(apply=False,
                                        attributes={'device_attr': {self.dev1: {
@@ -162,7 +327,7 @@ class test_vrf(TestCase):
                 ' exit',
             ]))
 
-    def test_cli_config_v6(self):        
+    def test_cli_config_v6(self):
         # prefix-list conf
         vrf_conf = Vrf('VRF2')
         self.dev1.add_feature(vrf_conf)
@@ -256,11 +421,41 @@ class test_vrf(TestCase):
             '\n'.join([
                 'vrf context VRF2',
                 ' address-family ipv6 unicast',
+                '  no route-target import 200:1',
                 '  no route-target export 200:1',
                 '  exit',
                 ' exit',
             ]))
 
+
+    def test_learn_config(self):
+
+        testbed = Testbed()
+        dev = Device(testbed=testbed, name='PE1', os='nxos')
+        dev.custom = {'abstraction': {'order': ['os'], 'context': 'cli'}}
+
+        golden_output = {'return_value': '''
+R2# show run vrf vni_10100 | sec '^vrf'
+vrf context vni_10100
+  vni 10100
+  rd auto
+  address-family ipv4 unicast
+    route-target both auto
+    route-target both auto mvpn
+    route-target both auto evpn
+ '''}
+
+        vrf = Vrf('vni_10100')
+
+        # Return outputs above as inputs to parser when called
+        dev.execute = Mock(**golden_output)
+
+        vrf.device_attr[dev]
+
+        learn = Vrf.learn_config(device=dev)
+        if learn:
+            self.assertEqual(learn[0].device_attr[dev].address_family_attr['ipv4 unicast'].\
+                         route_target_attr['auto'].protocol_attr['mvpn'].rt_mvpn, True)
 
 if __name__ == '__main__':
     unittest.main()

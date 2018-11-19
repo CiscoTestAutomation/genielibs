@@ -49,6 +49,14 @@ class Vxlan(ABC):
             if attributes.value('enabled_nv_overlay_evpn'):
                 configurations.append_line('nv overlay evpn')
 
+            # nxos: feature ngmvpn
+            if attributes.value('enabled_ngmvpn'):
+                configurations.append_line('feature ngmvpn')
+
+            # nxos: advertise evpn multicast
+            if attributes.value('advertise_evpn_multicast'):
+                configurations.append_line('advertise evpn multicast')
+
             # nxos: abric forwarding anycast-gateway-mac <str>
             if attributes.value('fabric_fwd_anycast_gw_mac'):
                 if not unconfig:

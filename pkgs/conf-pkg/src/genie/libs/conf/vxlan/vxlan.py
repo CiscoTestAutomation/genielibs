@@ -1,6 +1,7 @@
 # Python
 from enum import Enum
 
+
 # Genie package
 from genie.decorator import managedattribute
 from genie.conf.base import Base, \
@@ -12,7 +13,10 @@ from genie.conf.base.attributes import SubAttributes, \
                                        SubAttributesDict, \
                                        AttributesHelper, \
                                        KeyedSubAttributes
-
+from genie.libs import parser
+from genie.abstract import Lookup
+from genie.ops.base import Base as ops_Base
+from genie.ops.base import Context
 # Genie Xbu_shared
 from genie.libs.conf.base.feature import consolidate_feature_args
 
@@ -176,6 +180,18 @@ class Vxlan(DeviceFeature, LinkFeature):
         type=(None, routeType),
         doc='vni route target type')
 
+    enabled_ngmvpn = managedattribute(
+        name='enabled_ngmvpn',
+        default=None,
+        type=managedattribute.test_istype(bool),
+        doc='activate features ngmvpn')
+
+    advertise_evpn_multisite = managedattribute(
+        name='advertise_evpn_multisite',
+        default=None,
+        type=managedattribute.test_istype(bool),
+        doc='advertise evpn multisite')
+
     # =========================================================
     #   build_config
     # =========================================================
@@ -216,3 +232,53 @@ class Vxlan(DeviceFeature, LinkFeature):
                 self.testbed.config_on_devices(cfg, fail_invalid=True)
         else:
             return cfgs
+
+
+    @classmethod
+    def learn_config(self, device, **kwargs):
+        '''
+            A method that learn the device configurational state and create
+            a conf object with the same configuration.
+
+            Args:
+                self (`obj`): Conf object.
+                device (`obj`): The device that will be used to parse the
+                    command.
+        '''
+
+        # Abstracting the show running trm as per device os
+        ret = Lookup.from_device(device)
+        cmd = ret.parser.show_trm.ShowRunningConfigTrm
+        maker = ops_Base(device=device)
+
+        maker.add_leaf(cmd=cmd,
+                       src='[advertise_evpn_multicast]',
+                       dest='trm[advertise_evpn_multicast]')
+
+
+        # A workaround to pass the context as in maker it expects Context.cli
+        # not just a string 'cli.
+        maker.context_manager[cmd] = Context.cli
+        maker.make()
+        # Take a copy of the object dictionary
+        if not hasattr(maker, 'trm'):
+            maker.trm= {}
+        new_trm = maker.trm
+
+        # List of mapped conf objects
+        conf_obj_list = []
+
+        # Main structure attributes in the conf object
+        structure_keys = ['']
+
+        conf_obj = self()
+        # Pass the class method.
+        maker.dict_to_obj(conf=conf_obj, \
+                          struct=structure_keys, \
+                          struct_to_map=new_trm)
+
+
+        conf_obj_list.append(conf_obj)
+
+        # List of mapped conf objects
+        return conf_obj_list

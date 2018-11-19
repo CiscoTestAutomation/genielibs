@@ -652,6 +652,7 @@ class Bgp(Base):
                 #   four_octets_asn
                 #   vpnv4_unicast
                 #   vpnv6_unicast
+                #   ipv4_mvpn
                 #   graceful_restart
                 #   enhanced_refresh
                 #   multisession

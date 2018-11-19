@@ -1,0 +1,27 @@
+extends: '%ENV{VIRTUAL_ENV}/genie_yamls/trigger_datafile.yaml'
+
+global_processors:
+  pre:
+    clear_traffic_stats:
+      method: genie.harness.libs.prepostprocessor.clear_traffic_stats
+  post:
+    verify_traffic:
+      method: genie.harness.libs.prepostprocessor.verify_traffic
+    test_case_genie_telemetry:
+      method: genie.telemetry.processors.genie_telemetry_processor
+
+TriggerSleep:
+    groups: ['sleep']
+    sleep_time: 5
+    message_time: 1
+    count: 1
+    devices: ['uut']
+
+TriggerShutNoShutLoopbackInterface:
+    groups: ['shut-noshut', 'interface', 'L3']
+    timeout:
+       max_time: 120
+       interval: 30
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']

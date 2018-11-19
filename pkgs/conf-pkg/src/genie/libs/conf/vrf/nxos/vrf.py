@@ -196,22 +196,102 @@ class Vrf(ABC):
                     attributes = AttributesHelper(self, attributes)
                     configurations = CliConfigBuilder(unconfig=unconfig)
 
-                    # route-target <rt_type> <rt>
-                    if attributes.value('rt_type'):
-                        if attributes.value('rt_type').value == 'both':
+                    if unconfig:
+                        if attributes.attributes['rt_type'] == {'both': None} or\
+                            attributes.attributes['rt_type'] == {'import': None} or\
+                            attributes.attributes['rt_type'] == {'export': None}:
+                            for key, value in attributes.attributes['rt_type'].items():
+                                self.tmp_rt_type = key
+                        else:
+                            self.tmp_rt_type = attributes.attributes['rt_type']
+
+                        if not self.tmp_rt_type:
                             configurations.append_line(
                                 'route-target import {rt}'.format(rt=self.rt))
                             configurations.append_line(
                                 'route-target export {rt}'.format(rt=self.rt))
                         else:
+                            if self.tmp_rt_type == 'both' and self.rt != "auto":
+                                configurations.append_line(
+                                    'route-target import {rt}'.format(rt=self.rt), raw=True)
+                                configurations.append_line(
+                                    'route-target export {rt}'.format(rt=self.rt), raw=True)
+                            else:
+                                # route-target <rt_type> <rt>
+                                configurations.append_line(
+                                    'route-target {type} {rt}'.format(
+                                        rt=self.rt,
+                                        type=self.tmp_rt_type), raw=True)
+
+                    # route-target <rt_type> <rt>
+                    if not unconfig and attributes.value('rt_type'):
+                        if attributes.value('rt_type').value == 'both' and self.rt != "auto":
+                            configurations.append_line(
+                                'route-target import {rt}'.format(rt=self.rt))
+                            configurations.append_line(
+                                'route-target export {rt}'.format(rt=self.rt))
+                        else:
+                            # route-target <rt_type> <rt>
                             configurations.append_line(
                                 'route-target {type} {rt}'.format(
                                     rt=self.rt,
                                     type=attributes.value('rt_type').value))
 
+                    for sub, attributes2 in attributes.mapping_values('protocol_attr',
+                                                                      sort=True,
+                                                                      keys=self.protocol_attr):
+                        configurations.append_block(
+                            sub.build_config(apply=False,
+                                             attributes=attributes2,
+                                             unconfig=unconfig))
+
+                    if apply:
+                        if configurations:
+                            self.device.configure(configurations)
+                    else:
+                        return CliConfig(device=self.device, unconfig=unconfig,
+                                         cli_config=configurations)
                     return str(configurations)
 
                 def build_unconfig(self, apply=True, attributes=None, **kwargs):
                     return self.build_config(apply=apply, attributes=attributes,
                                              unconfig=True, **kwargs)
 
+                class ProtocolAttributes(ABC):
+
+                    def build_config(self, apply=True, attributes=None,
+                                     unconfig=False, **kwargs):
+                        assert not apply
+                        attributes = AttributesHelper(self, attributes)
+                        configurations = CliConfigBuilder(unconfig=unconfig)
+                        if unconfig and attributes.iswildcard:
+                            configurations.submode_unconfig()
+
+                        # route-target <rt_type> <rt> mvpn
+                        if attributes.value('rt_mvpn'):
+                            self.protocol = 'mvpn'
+                        # route-target <rt_type> <rt> evpn
+                        if attributes.value('rt_evpn'):
+                            self.protocol = 'evpn'
+
+                        if unconfig:
+                            if self.protocol:
+                                if self.tmp_rt_type:
+                                    configurations.append_line(
+                                        'route-target {rt_type} {rt} {protocol}'.format(
+                                            rt_type=self.tmp_rt_type,
+                                            rt=self.rt,
+                                            protocol=self.protocol))
+
+                        if not unconfig and self.protocol:
+                            configurations.append_line(
+                                'route-target {rt_type} {rt} {protocol}'.format(
+                                    rt_type=attributes.value('rt_type').value,
+                                    rt=self.rt,
+                                    protocol=self.protocol))
+
+                        return str(configurations)
+
+                def build_unconfig(self, apply=True, attributes=None, **kwargs):
+                    return self.build_config(apply=apply, attributes=attributes,
+                                             unconfig=True, **kwargs)

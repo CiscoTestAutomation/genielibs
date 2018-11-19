@@ -59,7 +59,7 @@ EXCLUDE_DEVICES = ['Verify_BgpOpenconfigYang_yang',
 
 CONTEXTS = ['cli', 'yang', 'xml', 'rest']
 
-OSES = ['iosxe', 'iosxr', 'nxos']
+OSES = ['iosxe', 'ios', 'iosxr', 'nxos']
 YAMLS = os.path.join(os.environ['VIRTUAL_ENV'], 'genie_yamls')
 
 class CreateVerificationDataFiles(object):
@@ -142,9 +142,11 @@ class CreateVerificationDataFiles(object):
         main_file = {}
         nxos_file = {'extends': '%ENV{VIRTUAL_ENV}/genie_yamls/verification_datafile.yaml'}
         iosxe_file = {'extends': '%ENV{VIRTUAL_ENV}/genie_yamls/verification_datafile.yaml'}
+        ios_file = {'extends': '%ENV{VIRTUAL_ENV}/genie_yamls/verification_datafile.yaml'}
         iosxr_file = {'extends': '%ENV{VIRTUAL_ENV}/genie_yamls/verification_datafile.yaml'}
         nxos = []
         iosxe = []
+        ios = []
         iosxr = []
         # Load the file
         with open(datafile, 'r') as f:
@@ -162,6 +164,10 @@ class CreateVerificationDataFiles(object):
         with open(iosxe_yaml, 'r') as f:
             iosxe_content = yaml.safe_load(f)
 
+        ios_yaml = os.path.join(YAMLS, 'ios', 'verification_datafile_ios.yaml')
+        with open(ios_yaml, 'r') as f:
+            ios_content = yaml.safe_load(f)
+
         iosxr_yaml = os.path.join(YAMLS, 'iosxr', 'verification_datafile_xr.yaml')
         with open(iosxr_yaml, 'r') as f:
             iosxr_content = yaml.safe_load(f)
@@ -176,6 +182,10 @@ class CreateVerificationDataFiles(object):
                 os_yaml = iosxe_content
                 os_file = iosxe_file
                 triggers = iosxe
+            elif osx == 'ios':
+                os_yaml = ios_content
+                os_file = ios_file
+                triggers = ios
             elif osx == 'iosxr':
                 os_yaml = iosxr_content
                 os_file = iosxr_file
@@ -310,6 +320,10 @@ class CreateVerificationDataFiles(object):
         with open('iosxe/verification_datafile_iosxe.yaml', 'w') as f:
             yaml.dump(iosxe_file, f, default_flow_style=False)
 
+        self.clean_up('ios')
+        with open('ios/verification_datafile_ios.yaml', 'w') as f:
+            yaml.dump(ios_file, f, default_flow_style=False)
+
         self.clean_up('iosxr')
         with open('iosxr/verification_datafile_xr.yaml', 'w') as f:
             yaml.dump(iosxr_file, f, default_flow_style=False)
@@ -319,6 +333,9 @@ class CreateVerificationDataFiles(object):
 
         log.info(banner('iosxe'))
         log.info('\n'.join(iosxe))
+
+        log.info(banner('ios'))
+        log.info('\n'.join(ios))
 
         log.info(banner('iosxr'))
         log.info('\n'.join(iosxr))

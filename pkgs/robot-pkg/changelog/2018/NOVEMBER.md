@@ -2,6 +2,12 @@
 | Module                  | Version       |
 | ------------------------|:-------------:|
 | ``genie.libs.robot``    | 3.1.2         |
+
+* Now support for NTP keywords
+
+| Module                  | Version       |
+| ------------------------|:-------------:|
+| ``genie.libs.robot``    | 3.1.2         |
 | ``genie.libs.robot``    | 3.1.1         |
 
 

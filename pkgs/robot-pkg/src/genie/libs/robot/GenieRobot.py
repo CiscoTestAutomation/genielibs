@@ -238,7 +238,8 @@ class GenieRobot(object):
         try:
             cls = load_attribute(package, attr_name, device=device_handle)
         except Exception as e:
-            msg = "Could not find {p}.'{a}'".format(p=package, a=attr_name)
+            msg = "Could not find {p}.{a} for device {d}"\
+                  .format(p=package, a=attr_name, d=device_handle.name)
             raise Exception(msg) from e
 
         if added_context:
@@ -428,8 +429,62 @@ class GenieRobot(object):
 
         count = len(find([ops], *rs, filter_=False, all_keys=True))
         if count != int(number):
-            self.builtin.fail("Expected {e}, but found '{f}'".format(e=number,
-                                                                     f=count ))
+            self.builtin.fail("Expected '{e}', but found '{f}'".format(e=number,
+                                                                       f=count))
+
+    @keyword('Verify NTP is synchronized on device "${device:[^"]+}"')
+    def verify_ntp_synchronized(self, device):
+        '''Verify that NTP is synchronized on this device
+
+           Supports the same functionality as the alias keyword.
+        '''
+        return self.verify_ntp_synchronized_alias(device)
+
+    @keyword('Verify NTP is synchronized on device "${device:[^"]+}" '
+             'using alias "${alias:[^"]+}"')
+    def verify_ntp_synchronized_alias(self, device, alias=None):
+        '''Verify that NTP is synchronized on this device
+
+           verify NTP is synchronized on device "<device>"
+        '''
+
+        ops = self.genie_ops_on_device_alias('ntp', device, alias)
+        rs = [R(['info', 'clock_state', 'system_status', 'associations_address',
+                 '(?P<neighbors>.*)'])]
+        output = find([ops], *rs, filter_=False, all_keys=True)
+
+        if not output:
+            self.builtin.fail("{} does not have NTP synchronized".format(device))
+
+    @keyword('Verify NTP is synchronized with "${server:[^"]+}" on '
+             'device "${device:[^"]+}"')
+    def verify_ntp_synchronized_server(self, server, device):
+        '''Verify that a specific server is the synchronized ntp server
+
+           Supports the same functionality as the alias keyword.
+        '''
+        return self.verify_ntp_synchronized_server_alias(server, device)
+
+    @keyword('Verify NTP is synchronized with "${server:[^"]+}" on device '
+             '"${device:[^"]+}" using alias "${alias:[^"]+}"')
+    def verify_ntp_synchronized_server_alias(self, server, device, alias=None):
+        '''Verify that a specific server is the synchronized ntp server
+
+           verify "1.1.1.1" is synchronized ntp server on device "<device>"
+        '''
+
+        ops = self.genie_ops_on_device_alias('ntp', device, alias)
+        rs = [R(['info', 'clock_state', 'system_status', 'associations_address',
+                 '(?P<neighbors>.*)'])]
+        output = find([ops], *rs, filter_=False, all_keys=True)
+
+        if not output:
+            self.builtin.fail("No synchronized server could be found! Was "
+                              "expected '{}' to be synchronized".format(server))
+
+        if not output[0][0] == server:
+            self.builtin.fail("Expected synchronized server to be '{}', but "
+                              "found '{}'".format(server, output[0][0]))
 
     @keyword('Profile the system for "${feature:[^"]+}" on devices '
              '"${device:[^"]+}" as "${name:[^"]+}"')
@@ -742,6 +797,11 @@ def load_attribute(pkg, attr_name, device=None):
         for item in items:
             try:
                 attribute = getattr(attribute, item)
+            except LookupError as e:
+                if 'abstraction package' in str(e):
+                    # then could not find the abstracted package
+                    raise LookupError('Could not find {}.{} for device {}'
+                                      .format(pkg, attr_name, device.name))
             except Exception as e:
                 pass
     else:

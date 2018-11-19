@@ -115,6 +115,10 @@ Verify_BgpL2vpnEvpn:
   devices: ['uut']
   exclude:
   - table_version
+  - prefix
+  iteration:
+    attempt: 20
+    interval: 20
 Verify_BgpL2vpnEvpnNeighbors:
   devices: ['uut']
   exclude:
@@ -155,22 +159,34 @@ Verify_BgpL2vpnEvpnRouteType_route_type_1:
   exclude:
   - prefixversion
   - extcommunity
+  - prefix
   parameters:
     route_type: '1'
+  iteration:
+    attempt: 20
+    interval: 20
 Verify_BgpL2vpnEvpnRouteType_route_type_2:
   devices: ['uut']
   exclude:
   - prefixversion
   - extcommunity
+  - prefix
   parameters:
     route_type: '2'
+  iteration:
+    attempt: 20
+    interval: 20
 Verify_BgpL2vpnEvpnRouteType_route_type_4:
   devices: ['uut']
   exclude:
   - prefixversion
   - extcommunity
+  - prefix
   parameters:
     route_type: '4'
+  iteration:
+    attempt: 20
+    interval: 20
 Verify_BgpL2vpnEvpnSummary:
   devices: ['uut']
   exclude:
@@ -191,6 +207,8 @@ Verify_BgpL2vpnEvpnSummary:
   iteration:
     attempt: 20
     interval: 30
+  groups:
+    - trm
 Verify_BgpLabels_vrf_all_address_family_ipv4_multicast:
   devices: ['uut']
   exclude:
@@ -685,6 +703,7 @@ Verify_BgpVrfAllAllSummary:
   - bgp
   - evpn
   - native
+  - trm
   iteration:
     attempt: 12
     interval: 10
@@ -751,6 +770,9 @@ Verify_FabricMulticastIpL2Mroute_vni_all:
   devices: ['uut']
   parameters:
     vni: all
+  iteration:
+    attempt: 20
+    interval: 20
 Verify_FabricMulticastIpSaAdRoute_vrf_all:
   devices: ['uut']
   exclude:
@@ -762,7 +784,13 @@ Verify_Feature:
 Verify_FeatureSet:
   devices: ['uut']
 Verify_ForwardingDistributionMulticastRoute:
+  iteration:
+    attempt: 20
+    interval: 20
   devices: ['uut']
+  exclude:
+  - flags
+  - oif_index
 Verify_HsrpAll:
   devices: ['uut']
   exclude:
@@ -824,6 +852,7 @@ Verify_Interface:
   - native
   - vxlan
   - multicast
+  - trm
   iteration:
     attempt: 25
     interval: 20
@@ -972,6 +1001,7 @@ Verify_IpMrouteVrfAll:
   - incoming_interface_list
   groups:
   - multicast
+  - trm
   iteration:
     attempt: 30
     interval: 10
@@ -1441,6 +1471,7 @@ Verify_Ipv6MrouteVrfAll:
   - incoming_interface_list
   groups:
   - multicast
+  - trm
   iteration:
     attempt: 12
     interval: 20
@@ -1538,11 +1569,11 @@ Verify_Ipv6Route_vrf_all:
   - incoming_interface
   groups:
   - multicast
-  parameters:
-    vrf: all
   iteration:
     attempt: 15
     interval: 5
+  parameters:
+    vrf: all
 Verify_Ipv6Route_vrf_default:
   devices: ['uut']
   exclude:
@@ -1579,6 +1610,8 @@ Verify_L2routeFlAll:
     attempt: 30
     interval: 20
 Verify_L2routeMacAllDetail:
+  exclude:
+  - mac
   devices: ['uut']
 Verify_L2routeMacIpAllDetail:
   devices: ['uut']
@@ -1589,11 +1622,13 @@ Verify_L2routeSummary:
   - total_mem
   - total_obj
   - memory
-  groups:
-  - vxlan
+  - objects
   iteration:
     attempt: 30
     interval: 20
+  groups:
+  - vxlan
+  - trm
 Verify_L2routeTopologyDetail:
   devices: ['uut']
   exclude:
@@ -1610,11 +1645,23 @@ Verify_Module:
   - native
   - vxlan
   - multicast
+  - trm
+Verify_NtpPeerStatus:
+  devices: ['uut']
+  exclude:
+  - delay
+  groups:
+  - ntp
+Verify_NtpPeers:
+  devices: ['uut']
+  groups:
+  - ntp
 Verify_NveEthernetSegment:
   devices: ['uut']
   exclude: []
 Verify_NveInterface:
   exclude: []
+  devices: ['uut']
 Verify_NveInterfaceDetail:
   devices: ['uut']
   iteration:
@@ -1630,6 +1677,7 @@ Verify_NvePeers:
   - uptime
   groups:
   - vxlan
+  - trm
 Verify_NveVni:
   devices: ['uut']
 Verify_NveVniIngressReplication:
@@ -1638,6 +1686,7 @@ Verify_NveVniSummary:
   devices: ['uut']
   groups:
   - vxlan
+  - trm
 Verify_Processes:
   devices: ['uut']
   exclude:

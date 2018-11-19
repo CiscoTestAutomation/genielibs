@@ -873,6 +873,13 @@ Verify_Boot:
   context: cli
   source:
     class: genie.harness.base.Template
+Verify_Bootvar:
+  cmd:
+    class: show_platform.ShowBootvar
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
 Verify_CheckpointSummary:
   cmd:
     class: show_checkpoint.ShowCheckpointSummary
@@ -2385,6 +2392,20 @@ Verify_MribVrfRoute_vrf_default:
   context: cli
   source:
     class: genie.harness.base.Template
+Verify_NtpPeerStatus:
+  cmd:
+    class: show_ntp.ShowNtpPeerStatus
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_NtpPeers:
+  cmd:
+    class: show_ntp.ShowNtpPeers
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
 Verify_NveEthernetSegment:
   cmd:
     class: show_vxlan.ShowNveEthernetSegment
@@ -3015,3 +3036,4 @@ Verify_Vxlan:
   context: cli
   source:
     class: genie.harness.base.Template
+

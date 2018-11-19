@@ -216,15 +216,16 @@ class TriggerAddRemoveNveVniMcastGroup(TriggerAddRemove):
     """
 
     mapping = Mapping(requirements={'ops.vxlan.vxlan.Vxlan':{
-                                          'requirements':[[['nve', '(?P<nve_name>.*)', 'vni', '(?P<nve_vni>.*)',\
-                                                           'mcast', '(?P<mcast>unconfigured.*)']],
-                                                          [['nve', '(?P<nve_name>.*)', 'vni', '(?P<nve_vni>.*)',
-                                                            'vni_state', 'down']],
-                                                          [['nve', '(?P<nve_name>.*)', 'vni', '(?P<nve_vni>.*)', \
-                                                           'associated_vrf', False ]],
-                                                          [['nve', '(?P<nve_name>.*)', 'vni', '(?P<nve_vni_others>.*)', \
-                                                           'mcast', '(?P<mcast_group>(^(?!unconfigured|n/a).*))$']]],
+                                          'requirements':[['nve', '(?P<nve_name>.*)', 'vni', '(?P<nve_vni>.*)',\
+                                                           'mcast', '(?P<mcast>unconfigured.*)'],
+                                                          ['nve', '(?P<nve_name>.*)', 'vni', '(?P<nve_vni>.*)',
+                                                            'vni_state', 'down'],
+                                                          ['nve', '(?P<nve_name>.*)', 'vni', '(?P<nve_vni>.*)', \
+                                                           'associated_vrf', False ],
+                                                          ['nve', '(?P<nve_name>.*)', 'vni', '(?P<nve_vni_others>.*)', \
+                                                           'mcast', '(?P<mcast_group>(?!unconfigured|n/a).*)$']],
                                           'kwargs':{'attributes':['nve[(.*)][vni][(.*)]']},
+                                          'all_keys': True,
                                           'exclude': vxlan_exclude}},
                     config_info={'conf.interface.Interface': {
                                         'requirements': [['nve_vni', '(?P<nve_vni>.*)'],
