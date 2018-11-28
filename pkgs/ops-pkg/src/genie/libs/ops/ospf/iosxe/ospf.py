@@ -1003,4 +1003,4 @@ class Ospf(Base):
         ########################################################################
 
         # Make final Ops structure
-        self.make()
+        self.make(final_call=True)

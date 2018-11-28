@@ -93,4 +93,4 @@ class Routing(Base):
             self.add_leaf(cmd=ShowRouteIpv6,
                           src=src_routing_hop + '[{}]'.format(key),
                           dest=dest_routing_hop + '[{}]'.format(key))
-        self.make()
+        self.make(final_call=True)

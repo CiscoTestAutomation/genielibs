@@ -1,0 +1,37 @@
+Verify_ConfigurationSystemNtpSet: 
+  devices: [ 'uut' ]
+  groups:
+  - junos
+  iteration:
+    attempt: 3
+    interval: 10
+Verify_InterfacesTerse: 
+  devices: [ 'uut' ]
+  exclude:
+  - duration
+  groups:
+  - junos
+  iteration:
+    attempt: 3
+    interval: 10
+Verify_NtpAssociations: 
+  devices: [ 'uut' ]
+  exclude:
+  - receive_time
+  groups:
+  - junos
+  iteration:
+    attempt: 3
+    interval: 10
+Verify_NtpStatus: 
+  devices: [ 'uut' ]
+  exclude:
+  - system_status
+  - rootdispersion
+  groups:
+  - junos
+  iteration:
+    attempt: 3
+    interval: 10
+
+extends: '%ENV{VIRTUAL_ENV}/genie_yamls/verification_datafile.yaml'

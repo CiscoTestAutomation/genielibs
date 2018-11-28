@@ -21,7 +21,7 @@ multisite_exclude = ['elapsedtime','keepalive',
                      'connsestablished','fd','opensrecvd','openssent','prefixversion',
                      'bestpathnr','pathnr','advertisedto','tx_id','bytesattrs','memoryused','prefixreceived']
 
-nve_exclude = ['maker', 'uptime']
+nve_exclude = ['maker', 'uptime','up_time']
 l2route_exclude = ['total_memory','memory']
 
 class TriggerShutNoShutNveOverlayInterface(TriggerShutNoShut):

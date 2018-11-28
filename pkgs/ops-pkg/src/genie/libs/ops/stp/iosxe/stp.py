@@ -133,7 +133,7 @@ class Stp(Base):
                           dest=dest + '[{}]'.format(dest_key))
 
         # make to write in cache
-        self.make()
+        self.make(final_call=True)
 
         # pvst_id  domain
         if hasattr(self, 'info'):

@@ -1,0 +1,33 @@
+
+devices:
+
+    R1: {}
+
+    R2:
+        os: iosxr
+
+    R3: {}
+
+topology:
+
+    R1:
+        interfaces:
+            I1:
+                link: L1
+            I2:
+                link: L2
+
+    R2:
+        interfaces:
+            I1:
+                link: L1
+            I2:
+                link: L3
+
+    R3:
+        interfaces:
+            I1:
+                link: L2
+            I2:
+                link: L3
+

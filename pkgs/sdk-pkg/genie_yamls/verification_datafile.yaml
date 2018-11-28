@@ -887,6 +887,13 @@ Verify_CheckpointSummary:
   context: cli
   source:
     class: genie.harness.base.Template
+Verify_ConfigurationSystemNtpSet:
+  cmd:
+    class: show_ntp.ShowConfigurationSystemNtpSet
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
 Verify_ControllersFiaDiagshellL2show:
   cmd:
     class: show_controllers.ShowControllersFiaDiagshellL2show
@@ -1107,6 +1114,13 @@ Verify_InterfaceBrief:
 Verify_InterfaceSwitchport:
   cmd:
     class: show_interface.ShowInterfaceSwitchport
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_InterfacesTerse:
+  cmd:
+    class: show_interface.ShowInterfacesTerse
     pkg: genie.libs.parser
   context: cli
   source:
@@ -2392,6 +2406,13 @@ Verify_MribVrfRoute_vrf_default:
   context: cli
   source:
     class: genie.harness.base.Template
+Verify_NtpAssociations:
+  cmd:
+    class: show_ntp.ShowNtpAssociations
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
 Verify_NtpPeerStatus:
   cmd:
     class: show_ntp.ShowNtpPeerStatus
@@ -2402,6 +2423,13 @@ Verify_NtpPeerStatus:
 Verify_NtpPeers:
   cmd:
     class: show_ntp.ShowNtpPeers
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_NtpStatus:
+  cmd:
+    class: show_ntp.ShowNtpStatus
     pkg: genie.libs.parser
   context: cli
   source:
@@ -2752,6 +2780,20 @@ Verify_RunningConfigNvOverlay:
 Verify_RunningConfigPim:
   cmd:
     class: show_pim.ShowRunningConfigPim
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_RunningConfigTrm:
+  cmd:
+    class: show_trm.ShowRunningConfigTrm
+    pkg: genie.libs.parser
+  context: cli
+  source:
+    class: genie.harness.base.Template
+Verify_RunningConfigVrf:
+  cmd:
+    class: show_vrf.ShowRunningConfigVrf
     pkg: genie.libs.parser
   context: cli
   source:

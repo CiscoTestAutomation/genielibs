@@ -34,6 +34,7 @@ class TriggerShutNoShut(ShutNoShutTemplate):
            Raises:
                pyATS Results
         '''
+
         self.timeout = timeout
         try:
             self.pre_snap = self.mapping.learn_ops(device=uut,
@@ -47,6 +48,8 @@ class TriggerShutNoShut(ShutNoShutTemplate):
         for stp in steps.details:
             if stp.result.name == 'skipped':
                 self.skipped('Cannot learn the feature', goto=['next_tc'])
+
+        self.print_local_verifications()
 
     @aetest.test
     def shut(self, uut, abstract, steps):

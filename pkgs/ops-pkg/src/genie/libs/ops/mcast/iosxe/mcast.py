@@ -129,7 +129,7 @@ class Mcast(Base):
                                   src=info_src+'[{key}]'.format(key=key),
                                   dest=info_dest+'[{key}]'.format(key=key),
                                   vrf=vrf_name, mroute=mroute)
-            self.make()
+            self.make(final_call=True)
 
             # define attribute enable - ipv6
             # the commadn is Show ipv6 rpf, so this is only for ipv6 enabled

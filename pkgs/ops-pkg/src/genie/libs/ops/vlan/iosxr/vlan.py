@@ -33,7 +33,7 @@ class Vlan(Base):
                       src=src_ethernet_tag+'[inner_encapsulation_vlan_id]',
                       dest=dest_ethernet_tag+'[inner_encapsulation_vlan_id]')
 
-        self.make()
+        self.make(final_call=True)
         # Handling the case of having many sub_interfaces under one interface
         # so showing them as a list under the main interface.
         if hasattr(self, 'name'):

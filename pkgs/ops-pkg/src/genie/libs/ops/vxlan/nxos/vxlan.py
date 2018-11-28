@@ -1075,4 +1075,4 @@ class Vxlan(Base):
                               dest=dest_bgp_mvpn_path + '[{}]'.format(key),
                               vrf='all')
 
-        self.make()
+        self.make(final_call=True)

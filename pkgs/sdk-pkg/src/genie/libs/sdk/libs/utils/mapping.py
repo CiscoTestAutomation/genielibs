@@ -1225,20 +1225,23 @@ class Mapping(object):
         # Contains all the Regexs
         regexs = []
 
+        new_deepcopy_reqs = requirements['requirements']
         # Make sure no triple level of requirements
-        if isinstance(requirements['requirements'][0][0], list):
+        if isinstance(new_deepcopy_reqs[0], list) and isinstance(new_deepcopy_reqs[0][0], list):
+            # TODO -- deepcopy now, will remove it until find issue is fixed.
+            new_deepcopy_reqs = copy.deepcopy(requirements['requirements'])
             new_reqs = []
-            for reqs in requirements['requirements']:
+            for reqs in new_deepcopy_reqs:
                 for req in reqs:
                     new_reqs.append(req)
-            requirements['requirements'] = new_reqs
+            new_deepcopy_reqs = new_reqs
 
         # Loops over the requirements
         if populate:
-            requirements = self._populate_path(requirements['requirements'],
+            requirements = self._populate_path(new_deepcopy_reqs,
                                                device, keys=self.keys)
         else:
-            requirements = requirements['requirements']
+            requirements = new_deepcopy_reqs
 
         for reqs in requirements:
             if not reqs:
@@ -1385,4 +1388,3 @@ class Different(object):
         ret = '(?P<{name}>^(?!{regexes}$).*$)'.format(name='not_'+self.value,
                                                       regexes=regexes)
         return ret
-

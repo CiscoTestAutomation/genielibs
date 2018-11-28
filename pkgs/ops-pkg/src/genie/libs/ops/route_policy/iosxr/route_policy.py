@@ -43,4 +43,4 @@ class RoutePolicy(Base):
                       src=src+'[actions]',
                       dest=dest+'[actions]')
 
-        self.make()
+        self.make(final_call=True)

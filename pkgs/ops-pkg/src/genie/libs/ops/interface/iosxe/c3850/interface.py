@@ -59,7 +59,7 @@ class Interface(CommonInterface):
                       src='[(?P<interface>.*)][encapsulation][native_vlan]',
                       dest=dest + '[native_vlan]')
         # make
-        self.make()        
+        self.make(final_call=True)
 
         # calculate the switchport switch_enable
         if hasattr(self, 'info'):

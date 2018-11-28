@@ -175,6 +175,11 @@ all: $(ALL_PKGS)
 	@echo "Done."
 	@echo ""
 
+package: all $(ALL_PKGS)
+	@echo ""
+	@echo "Done."
+	@echo ""
+
 $(ALL_PKGS):
 	@echo ""
 	@echo "--------------------------------------------------------------------"

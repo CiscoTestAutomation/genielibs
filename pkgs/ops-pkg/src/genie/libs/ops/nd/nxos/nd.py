@@ -64,4 +64,4 @@ class Nd(Base):
                       src=src_nd_neighbor + '[neighbor_state]',
                       dest=dest_nd_neighbor + '[neighbor_state]',
                       vrf='all')
-        self.make()
+        self.make(final_call=True)

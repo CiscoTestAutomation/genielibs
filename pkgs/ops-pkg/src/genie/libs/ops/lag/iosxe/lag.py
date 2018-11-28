@@ -91,7 +91,7 @@ class Lag(Base):
                               dest=count_dst + '[{}]'.format(key))
 
         # make to write in cache
-        self.make()       
+        self.make(final_call=True)
 
         # bundle_id
         if hasattr(self, 'info'):

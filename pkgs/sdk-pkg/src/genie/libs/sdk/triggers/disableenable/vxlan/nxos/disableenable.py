@@ -10,7 +10,7 @@ from genie.libs.sdk.triggers.disableenable.disableenable import \
                                       TriggerDisableEnable
 
 # Which key to exclude Ops comparison
-vxlan_exclude = ['maker','uptime']
+vxlan_exclude = ['maker','uptime','up_time']
 
 multisite_exclude = ['elapsedtime','keepalive','remoteport',
                      'keepaliverecvd','keepalivesent','lastread','lastwrite',

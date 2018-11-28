@@ -170,7 +170,7 @@ class Platform(Base):
                       src='[next_reload_boot_variable][system_variable]',
                       dest='[rp_boot_image]')
 
-        self.make()
+        self.make(final_call=True)
 
         if 'Slot' in self.__dict__:
             line_cards = []

@@ -8,7 +8,7 @@ from ats import aetest
 from genie.libs.sdk.triggers.template.modify import \
                        TriggerModify as ModifyTemplate
 
-# Genie Exceptions
+# Genie
 from genie.harness.exceptions import GenieConfigReplaceWarning
 
 log = logging.getLogger(__name__)
@@ -36,6 +36,7 @@ class TriggerModify(ModifyTemplate):
            Raises:
                 pyATS Results
         '''
+
         self.timeout = timeout
 
         try:
@@ -49,6 +50,8 @@ class TriggerModify(ModifyTemplate):
         for stp in steps.details:
             if stp.result.name == 'skipped':
                 self.skipped('Cannot learn the feature', goto=['next_tc'])
+
+        self.print_local_verifications()
 
     @aetest.test
     def save_configuration(self, uut, method, abstract):

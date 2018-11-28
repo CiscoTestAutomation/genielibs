@@ -43,7 +43,7 @@ class RoutePolicy(Base):
                       src=src+'[actions]',
                       dest=dest+'[actions]')
 
-        self.make()
+        self.make(final_call=True)
 
         if hasattr(self, 'info'):
             # Delete 'clause' under every statement 'actions' key

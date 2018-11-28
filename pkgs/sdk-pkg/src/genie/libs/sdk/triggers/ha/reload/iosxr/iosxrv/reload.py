@@ -24,11 +24,12 @@ class TriggerReload(CommonReload):
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.platform.platform.Platform':{
                                         'requirements': [\
-                                            [['slot', 'rp', '(?P<rp>.*)',
-                                              'state', 'IOS XR RUN']],
-                                            [['slot', 'lc', '(?P<lc>.*)',
-                                              'state', '(IOS XR RUN|OK)']],
+                                            ['slot', 'rp', '(?P<rp>.*)',
+                                              'state', 'IOS XR RUN'],
+                                            ['slot', 'lc', '(?P<lc>.*)',
+                                              'state', '(?P<state>IOS XR RUN|OK)'],
                                           ],
+                                        'all_keys': True,
                                         'exclude': platform_exclude}},
                       verify_ops={'ops.platform.platform.Platform':{
                                       'requirements': [\

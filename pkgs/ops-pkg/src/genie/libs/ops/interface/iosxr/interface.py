@@ -230,6 +230,6 @@ class Interface(Base):
                       dest='info[(?P<interface>.*)][ipv6][enabled]')
 
         # make to write in cache
-        self.make()
+        self.make(final_call=True)
 
         

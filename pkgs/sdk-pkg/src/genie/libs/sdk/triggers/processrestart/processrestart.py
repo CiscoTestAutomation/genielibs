@@ -32,6 +32,7 @@ class TriggerProcessRestart(ProcessRestartTemplate):
            Raises:
                pyATS Results
         '''
+
         self.lib = abstract.sdk.triggers.processrestart.\
                             libs.processrestart.ProcessRestartLib(\
                                             device=uut,
@@ -46,6 +47,8 @@ class TriggerProcessRestart(ProcessRestartTemplate):
             self.skipped("Issue getting information about '{p}' "
                          "process".format(p=self.process), from_exception=e,
                          goto=['next_tc'])
+
+        self.print_local_verifications()
 
     @aetest.test
     def restart(self, uut, abstract, steps, repeat_restart=1, sleep_restart=0):
@@ -71,7 +74,7 @@ class TriggerProcessRestart(ProcessRestartTemplate):
                     self.skipped("ProcessCrashRestart is not supported on "
                                  "the device type: '{p}'".format(p=uut.type))
             elif self.method == 'cli':
-                if hasattr (self.lib, "crash_restart"):
+                if hasattr (self.lib, "cli_restart"):
                     output = self.lib.cli_restart()
                 else:
                     self.skipped("ProcessCliRestart is not supported on "

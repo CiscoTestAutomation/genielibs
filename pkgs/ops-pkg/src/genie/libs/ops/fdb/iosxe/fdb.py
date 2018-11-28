@@ -51,4 +51,4 @@ class Fdb(Base):
                       dest='info[total_mac_addresses]')
 
         # make to write in cache
-        self.make()
+        self.make(final_call=True)

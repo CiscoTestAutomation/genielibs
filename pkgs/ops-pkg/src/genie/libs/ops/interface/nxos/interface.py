@@ -190,7 +190,7 @@ class Interface(Base):
                       src='[vrf][(?P<vrf>.*)][address_family][(?P<af>.*)][ip]',
                       dest='info[routing_v4][(?P<vrf>.*)]')
         # make to write in cache
-        self.make()
+        self.make(final_call=True)
 
         # eui_64
         # if has ip like 2001:db8::5054:ff:fed5:63f9, eui_64 is True

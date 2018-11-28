@@ -1,0 +1,8 @@
+extends: '%ENV{VIRTUAL_ENV}/genie_yamls/trigger_datafile.yaml'
+
+TriggerSleep:
+    groups: ['sleep']
+    sleep_time: 5
+    message_time: 1
+    count: 1
+    devices: ['uut']

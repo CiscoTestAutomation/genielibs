@@ -149,4 +149,4 @@ class VxlanConsistency(Base):
                                   count1='8',
                                   count2='10')
 
-                    self.make()
+                    self.make(final_call=True)

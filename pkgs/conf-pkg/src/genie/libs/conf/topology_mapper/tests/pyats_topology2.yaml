@@ -1,0 +1,275 @@
+testbed:
+    servers:
+        tftp:
+            server: ott1lab-tftp1
+            address: 223.255.254.254
+            path: ""
+        ntp:
+            server: 5.25.0.1
+
+devices:
+
+    eVPN-PE3:
+        type: asr9000-px
+        tacacs:
+            username: cisco
+        passwords:
+            tacacs: cisco
+        connections:
+            a:
+                protocol: telnet
+                ip: 10.85.67.162
+                port: 2007
+            alt:
+                protocol: telnet
+                ip: 5.25.29.125
+
+    eVPN-PE4:
+        type: asr9000-px
+        tacacs:
+            username: cisco
+        passwords:
+            tacacs: cisco
+        connections:
+            a:
+                protocol: telnet
+                ip: 10.85.67.164
+                port: 2010
+            alt:
+                protocol: telnet
+                ip: 5.25.33.187
+
+    eVPN-PE5:
+        type: asr9000-px
+        tacacs:
+            username: cisco
+        passwords:
+            tacacs: cisco
+        connections:
+            a:
+                protocol: telnet
+                ip: 10.85.67.160
+                port: 2006
+            a_aux:
+                protocol: telnet
+                ip: 10.85.67.160
+                port: 2001
+            alt:
+                protocol: telnet
+                ip: 5.25.29.77
+
+    eVPN-Leaf1:
+        type: n9000
+        tacacs:
+            username: admin
+        passwords:
+            tacacs: cisco123
+        connections:
+            a:
+                protocol: telnet
+                ip: 10.85.67.194
+                port: 2001
+            alt:
+                protocol: telnet
+                ip: 5.25.31.201
+
+    eVPN-Spine-1:
+        type: n9000
+        tacacs:
+            username: admin
+        passwords:
+            tacacs: cisco123
+        connections:
+            a:
+                protocol: telnet
+                ip: 10.85.67.194
+                port: 2002
+            alt:
+                protocol: telnet
+                ip: 5.25.31.202
+
+    eVPN-Leaf_Spine-2:
+        type: n9000
+        tacacs:
+            username: admin
+        passwords:
+            tacacs: cisco123
+        connections:
+            a:
+                protocol: telnet
+                ip: 10.85.67.194
+                port: 2003
+            alt:
+                protocol: telnet
+                ip: 5.25.31.203
+
+    #eVPN-Leaf-2:
+    #    type: n9000
+    #    tacacs:
+    #        username: admin
+    #    passwords:
+    #        tacacs: cisco123
+    #    connections:
+    #        a:
+    #            protocol: telnet
+    #            ip: 10.85.67.194
+    #            port: 2004
+    #        alt:
+    #            protocol: telnet
+    #            ip: 5.25.31.204
+
+    ixia:
+        # Remote Desktop: 10.85.101.5 VBHAN-WS02\cisco/cisco123
+        type: ixia
+        connections:
+            ixia:
+                protocol: ixia
+                ip: 10.85.101.21
+                username: cisco
+                ixnetwork_tcl_server: 10.85.101.5:8010
+                env:
+                    IXIA_VERSION: HLTSET189
+                    IXIA_HOME: /auto/hfr-mpls/common/IXIA/IxNetworkPITclClient8.00.1027.17
+
+topology:
+
+    eVPN-PE3:
+        interfaces:
+            MgmtEth0/RSP1/CPU0/1:
+                type: MgmtEth
+                ipv4: 5.25.29.125/16
+                link: netboot
+            TenGigE0/3/0/0/2:
+                type: TenGigE
+                ipv4: 30.8.1.2/24
+                link: Link_SP2_PE3_1
+            TenGigE0/3/0/0/1:
+                type: TenGigE
+                ipv4: 30.8.2.2/24
+                link: Link_SP2_PE3_2
+            TenGigE0/3/0/0/6:
+                type: TenGigE
+                ipv4: 30.40.200.1/24
+                link: Link_PE3_PE4_1
+            TenGigE0/3/0/0/9:
+                type: TenGigE
+                ipv4: 30.50.200.1/24
+                link: Link_PE3_PE5_1
+
+    eVPN-PE4:
+        interfaces:
+            MgmtEth0/RSP1/CPU0/0:
+                type: MgmtEth
+                ipv4: 5.25.33.187/16
+                link: netboot
+            TenGigE0/2/0/0/2:
+                type: TenGigE
+                ipv4: 40.6.1.1/24
+                link: Link_SP1_PE4_1
+            TenGigE0/2/0/0/6:
+                type: TenGigE
+                ipv4: 30.40.200.2/24
+                link: Link_PE3_PE4_1
+            TenGigE0/2/0/0/0:
+                type: TenGigE
+                ipv4: 40.50.200.1/24
+                link: Link_PE4_PE5_1
+
+    eVPN-PE5:
+        interfaces:
+            MgmtEth0/RSP0/CPU0/0:
+                type: MgmtEth
+                ipv4: 5.25.29.77/16
+                link: netboot
+            TenGigE0/3/0/0/6:
+                type: TenGigE
+                link: PE5_ixvm_1
+            TenGigE0/3/0/0/7:
+                type: TenGigE
+                link: PE5_ixvm_2
+            TenGigE0/3/0/0/8:
+                type: TenGigE
+                ipv4: 50.6.1.1/24
+                link: Link_SP1_PE5_1
+            TenGigE0/3/0/0/9:
+                type: TenGigE
+                ipv4: 30.50.200.2/24
+                link: Link_PE3_PE5_1
+            TenGigE0/3/0/0/1:
+                type: TenGigE
+                ipv4: 40.50.200.2/24
+                link: Link_PE4_PE5_1
+
+    eVPN-Leaf1:
+        interfaces:
+            mgmt0:
+                type: mgmt
+                ipv4: 5.25.31.201/16
+                link: netboot
+            Ethernet1/2:
+                type: Ethernet
+                ipv4: 1.6.1.2/24
+                link: Link_SP1_LF1_1
+            Ethernet1/6:
+                type: Ethernet
+                link: Link_LF1_ixia_1
+
+    eVPN-Spine-1:
+        interfaces:
+            mgmt0:
+                type: mgmt
+                ipv4: 5.25.31.202/16
+                link: netboot
+            Ethernet1/2:
+                type: Ethernet
+                ipv4: 1.6.1.1/24
+                link: Link_SP1_LF1_1
+            Ethernet1/3:
+                type: Ethernet
+                ipv4: 50.6.1.2/24
+                link: Link_SP1_PE5_1
+            Ethernet1/4:
+                type: Ethernet
+                ipv4: 40.6.1.2/24
+                link: Link_SP1_PE4_1
+
+    eVPN-Leaf_Spine-2:
+        interfaces:
+            mgmt0:
+                type: mgmt
+                ipv4: 5.25.31.203/16
+                link: netboot
+            Ethernet1/1:
+                type: Ethernet
+                ipv4: 30.8.1.1/24
+                link: Link_SP2_PE3_1
+            Ethernet1/2:
+                type: Ethernet
+                ipv4: 30.8.2.1/24
+                link: Link_SP2_PE3_2
+            Ethernet1/6:
+                type: Ethernet
+                link: Link_SP2_ixia_1
+
+    #eVPN-Leaf-2:
+    #    interfaces:
+    #        mgmt0:
+    #            type: mgmt
+    #            ipv4: 5.25.31.204/16
+    #            link: netboot
+
+    ixia:
+        interfaces:
+            2/1:
+                type: TenGigE
+                link: Link_LF1_ixia_1
+                speed: ether10000
+            2/2:
+                type: TenGigE
+                link: Link_SP1_ixia_1
+                speed: ether10000
+            2/3:
+                type: TenGigE
+                link: Link_SP2_ixia_1
+                speed: ether10000
+

@@ -41,7 +41,6 @@ class test_ntp(TestCase):
         self.ntp.device_attr[self.dev1].enabled = True
         self.ntp.device_attr[self.dev1].master_stratum = 10
         self.ntp.device_attr[self.dev1].auth_enabled = True
-        self.ntp.device_attr[self.dev1].source_interface = 'Ethernet2/1'
 
         self.ntp.device_attr[self.dev1].vrf_attr[vrf1].server_attr['1.1.1.1']\
             .server_key_id = 1
@@ -55,6 +54,9 @@ class test_ntp(TestCase):
             .peer_key_id = 3
         self.ntp.device_attr[self.dev1].vrf_attr[vrf1].peer_attr['3.3.3.3']\
             .peer_prefer = True
+        # non-default vrf won't have source_interface configured even if 
+        # register the attribute
+        self.ntp.device_attr[self.dev1].vrf_attr[vrf1].source_interface = 'Ethernet2/1'
 
         
         vrf2 = Vrf('default')
@@ -70,6 +72,7 @@ class test_ntp(TestCase):
             .peer_maxpoll = 16
         self.ntp.device_attr[self.dev1].vrf_attr[vrf2].peer_attr['4.4.4.4']\
             .peer_prefer = True
+        self.ntp.device_attr[self.dev1].vrf_attr[vrf2].source_interface = 'Ethernet2/1'
 
 
         self.ntp.device_attr[self.dev1].auth_key_attr[1].auth_algorithm = 'md5'

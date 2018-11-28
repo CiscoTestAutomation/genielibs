@@ -116,4 +116,4 @@ class Mcast(Base):
                                   dest=tbl_dest+'[{key}]'.format(key=key))
 
         # Make final Ops structure
-        self.make()
+        self.make(final_call=True)

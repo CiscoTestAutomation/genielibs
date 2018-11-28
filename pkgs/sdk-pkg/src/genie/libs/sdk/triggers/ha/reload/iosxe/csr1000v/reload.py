@@ -55,11 +55,12 @@ class TriggerReload(CommonReload):
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.platform.platform.Platform':{
                                         'requirements': [\
-                                            [['slot', 'rp', '(?P<rp>.*)',
-                                              'state', '(ok, active|ok, standby|Ready)']],
-                                            [['slot', 'oc', '(?P<oc>.*)',
-                                              'state', '(ok, active|ok, standby|ok|ps, fail)']],
+                                            ['slot', 'rp', '(?P<rp>.*)',
+                                              'state', '(?P<state>ok, active|ok, standby|Ready)'],
+                                            ['slot', 'oc', '(?P<oc>.*)',
+                                              'state', '(?P<oc_state>ok, active|ok, standby|ok|ps, fail)'],
                                           ],
+                                        'all_keys': True,
                                         'exclude': platform_exclude}},
                       verify_ops={'ops.platform.platform.Platform':{
                                       'requirements': [\

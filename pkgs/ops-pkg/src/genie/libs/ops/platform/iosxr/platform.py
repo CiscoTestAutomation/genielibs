@@ -195,6 +195,6 @@ class Platform(Base):
                       action=self.get_active_uptime)
 
         # Make Ops object
-        self.make()
+        self.make(final_call=True)
 
 # vim: ft=python et sw=4

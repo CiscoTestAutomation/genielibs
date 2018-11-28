@@ -38,79 +38,178 @@ Verify_BgpAllNexthopDatabase_xml:
     attempt: 12
     interval: 10
 Verify_BgpIpMvpn:
+  iteration:
+    attempt: 15
+    interval: 10
+  exclude:
+  - path
+  - table_version
   devices: ['uut']
 Verify_BgpIpMvpnRouteType_vrf_all_route_type_1:
   devices: ['uut']
+  iteration:
+    attempt: 15
+    interval: 10
+  exclude:
+  - path
+  - table_version 
   parameters:
     route_type: '1'
     vrf: all
 Verify_BgpIpMvpnRouteType_vrf_all_route_type_2:
   devices: ['uut']
+  iteration:
+    attempt: 15
+    interval: 10
+  exclude:
+  - path
+  - table_version 
   parameters:
     route_type: '2'
     vrf: all
 Verify_BgpIpMvpnRouteType_vrf_all_route_type_3:
   devices: ['uut']
+  iteration:
+    attempt: 15
+    interval: 10
+  exclude:
+  - path
+  - table_version 
   parameters:
     route_type: '3'
     vrf: all
 Verify_BgpIpMvpnRouteType_vrf_all_route_type_4:
   devices: ['uut']
+  iteration:
+    attempt: 15
+    interval: 10
+  iteration:
+    attempt: 15
+    interval: 10
+  exclude:
+  - path
+  - table_version 
   parameters:
     route_type: '4'
     vrf: all
 Verify_BgpIpMvpnRouteType_vrf_all_route_type_5:
   devices: ['uut']
+  iteration:
+    attempt: 15
+    interval: 10
+  exclude:
+  - path
+  - table_version 
   parameters:
     route_type: '5'
     vrf: all
 Verify_BgpIpMvpnRouteType_vrf_all_route_type_6:
   devices: ['uut']
+  iteration:
+    attempt: 15
+    interval: 10
+  exclude:
+  - path
+  - table_version 
   parameters:
     route_type: '6'
     vrf: all
 Verify_BgpIpMvpnRouteType_vrf_all_route_type_7:
   devices: ['uut']
+  iteration:
+    attempt: 15
+    interval: 10
+  exclude:
+  - path
+  - table_version 
   parameters:
     route_type: '7'
     vrf: all
 Verify_BgpIpMvpnRouteType_vrf_default_route_type_1:
   devices: ['uut']
+  iteration:
+    attempt: 15
+    interval: 10
+  exclude:
+  - path
+  - table_version 
   parameters:
     route_type: '1'
     vrf: default
 Verify_BgpIpMvpnRouteType_vrf_default_route_type_2:
   devices: ['uut']
+  iteration:
+    attempt: 15
+    interval: 10
+  exclude:
+  - path
+  - table_version 
   parameters:
     route_type: '2'
     vrf: default
 Verify_BgpIpMvpnRouteType_vrf_default_route_type_3:
   devices: ['uut']
+  iteration:
+    attempt: 15
+    interval: 10
+  exclude:
+  - path
+  - table_version 
   parameters:
     route_type: '3'
     vrf: default
 Verify_BgpIpMvpnRouteType_vrf_default_route_type_4:
   devices: ['uut']
+  iteration:
+    attempt: 15
+    interval: 10
+  exclude:
+  - path
+  - table_version 
   parameters:
     route_type: '4'
     vrf: default
 Verify_BgpIpMvpnRouteType_vrf_default_route_type_5:
   devices: ['uut']
+  iteration:
+    attempt: 15
+    interval: 10
+  exclude:
+  - path
+  - table_version 
   parameters:
     route_type: '5'
     vrf: default
 Verify_BgpIpMvpnRouteType_vrf_default_route_type_6:
   devices: ['uut']
+  iteration:
+    attempt: 15
+    interval: 10
+  exclude:
+  - path
+  - table_version 
   parameters:
     route_type: '6'
     vrf: default
 Verify_BgpIpMvpnRouteType_vrf_default_route_type_7:
   devices: ['uut']
+  iteration:
+    attempt: 15
+    interval: 10
+  exclude:
+  - path
+  - table_version 
   parameters:
     route_type: '7'
     vrf: default
 Verify_BgpIpMvpnSaadDetail:
   devices: ['uut']
+  iteration:
+    attempt: 15
+    interval: 10
+  exclude:
+  - prefixversion
+  - bestpathnr
 Verify_BgpL2vpnEvpn:
   devices: ['uut']
   exclude:
@@ -771,26 +870,31 @@ Verify_FabricMulticastIpL2Mroute_vni_all:
   parameters:
     vni: all
   iteration:
-    attempt: 20
-    interval: 20
+    attempt: 10
+    interval: 40
 Verify_FabricMulticastIpSaAdRoute_vrf_all:
   devices: ['uut']
   exclude:
   - uptime
   parameters:
     vrf: all
+  iteration:
+    attempt: 10
+    interval: 40
 Verify_Feature:
   devices: ['uut']
 Verify_FeatureSet:
   devices: ['uut']
 Verify_ForwardingDistributionMulticastRoute:
   iteration:
-    attempt: 20
-    interval: 20
+    attempt: 10
+    interval: 40
   devices: ['uut']
   exclude:
   - flags
   - oif_index
+  - num_of_oifs
+  - oifs
 Verify_HsrpAll:
   devices: ['uut']
   exclude:
@@ -1729,6 +1833,10 @@ Verify_RunningConfigMsdp:
 Verify_RunningConfigNvOverlay:
   devices: ['uut']
 Verify_RunningConfigPim:
+  devices: ['uut']
+Verify_RunningConfigTrm:
+  devices: ['uut']
+Verify_RunningConfigVrf:
   devices: ['uut']
 Verify_SystemInternalL2fwderMac:
   devices: ['uut']

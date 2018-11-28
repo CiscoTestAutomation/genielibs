@@ -41,4 +41,4 @@ class Vrf(Base):
                           src=src+'{key}'.format(key=key),
                           dest=dest+'{key}'.format(key=key))
 
-        self.make()
+        self.make(final_call=True)

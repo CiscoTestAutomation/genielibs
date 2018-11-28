@@ -8,12 +8,12 @@ import logging
 from ats import aetest
 from ats.utils.objects import find, R
 
-# Genie Libs trigger clear template
+# Genie Libs
 from genie.libs.sdk.triggers.template.disableenable import \
                        TriggerDisableEnable as DisableEnableTemplate
 from genie.libs.sdk.libs.utils.triggeractions import CheckFeatureStatus
 
-# Genie Exceptions
+# Genie
 from genie.harness.exceptions import GenieConfigReplaceWarning
 
 log = logging.getLogger(__name__)
@@ -41,6 +41,7 @@ class TriggerDisableEnable(DisableEnableTemplate):
            Raises:
                 pyATS Results
         '''
+
         self.timeout = timeout
 
         try:
@@ -54,6 +55,8 @@ class TriggerDisableEnable(DisableEnableTemplate):
         for stp in steps.details:
             if stp.result.name == 'skipped':
                 self.skipped('Cannot learn the feature', goto=['next_tc'])
+
+        self.print_local_verifications()
 
     @aetest.test
     def save_configuration(self, uut, method, abstract):

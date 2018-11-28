@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 # Which key to exclude for Platform Ops comparison
 platform_exclude = ['maker', 'disk_used_space','disk_total_space',
                     'rp_uptime', 'sn', 'disk_free_space',
-                    'image', 'kickstart_image']
+                    'image', 'kickstart_image', 'issu']
 
 
 class TriggerSwitchover(CommonSwitchover):
@@ -64,6 +64,8 @@ class TriggerSwitchover(CommonSwitchover):
                                               'redundancy_state', 'ha-standby'],
                                             ['slot', 'rp', '(?P<standby_rp>.*)',
                                               'state', 'ha-standby'],
+                                            ['slot', 'lc', '(?P<lc>.*)',
+                                             'state', '(?P<lc_status>ok|active|standby)']
                                           ],
                                         'all_keys': True,
                                         'exclude': platform_exclude}},
@@ -76,6 +78,8 @@ class TriggerSwitchover(CommonSwitchover):
                                           ['slot', 'rp', '(?P<standby_rp>.*)',
                                            'redundancy_state', 'active'],
                                           ['slot', 'rp', '(?P<standby_rp>.*)',
-                                           'state', 'active']],
+                                           'state', 'active'],
+                                          ['slot', 'lc', '(?P<lc>.*)',
+                                           'state', '(ok|active|standby)']],
                                     'exclude': platform_exclude}},
                       num_values={'active_rp':1, 'standby_rp':1})

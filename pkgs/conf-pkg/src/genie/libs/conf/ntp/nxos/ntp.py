@@ -56,11 +56,6 @@ class Ntp(ABC):
             # auth_enabled
             if attributes.value('auth_enabled'):
                 configurations.append_line('ntp authenticate')
-
-            # source_interface
-            if attributes.value('source_interface'):
-                configurations.append_line(
-                    attributes.format('ntp source-interface {source_interface}'))
  
             # VrfAttributes
             for sub, attributes1 in attributes.mapping_values('vrf_attr',
@@ -97,6 +92,12 @@ class Ntp(ABC):
                 assert not kwargs, kwargs
                 attributes = AttributesHelper(self, attributes)
                 configurations = CliConfigBuilder(unconfig=unconfig)
+
+                # source_interface
+                if attributes.value('source_interface') and \
+                   self.vrf_name == 'default':
+                    configurations.append_line(
+                        attributes.format('ntp source-interface {source_interface}'))
 
                 # ServerAttributes
                 for sub, attributes1 in attributes.mapping_values('server_attr',

@@ -1784,11 +1784,11 @@ class TriggerUnconfigConfigBgpAddressFamilyIpv4Mvpn(TriggerUnconfigConfig):
     mapping = Mapping( \
             requirements={ \
                 'ops.bgp.bgp.Bgp': {
-                    'requirements': [[ \
-                        ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'address_family', '(?P<af>^(ipv4 mvpn).*)', '(.*)']],
-                        [['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
-                         'session_state', 'established']],
-                        [['info', 'instance', '(?P<instance>.*)', 'bgp_id', '(?P<bgp_id>.*)']]],
+                    'requirements': [ \
+                        ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'address_family', '(?P<af>(ipv4 mvpn))', '(?P<af_info>.*)'],
+                        ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
+                         'session_state', 'established'],
+                        ['info', 'instance', '(?P<instance>.*)', 'bgp_id', '(?P<bgp_id>.*)']],
                     'all_keys': True,
                     'kwargs': {'attributes': ['info']},
                     'exclude': trm_exclude +['bgp_table_version','updates']}},
@@ -1859,13 +1859,13 @@ class TriggerUnconfigConfigBgpNeighborAddressFamilyIpv4Mvpn(TriggerUnconfigConfi
         requirements={ \
             'ops.bgp.bgp.Bgp': {
                 'requirements': [\
-                    [['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
-                     'address_family', '(?P<af>^(ipv4 mvpn).*)', '(.*)']],
-                    [['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
-                      'bgp_negotiated_capabilities', 'ipv4_mvpn', '(?P<negotiated_cap>^(advertised).*)']],
-                    [['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
-                      'session_state', 'established']],
-                    [['info', 'instance', '(?P<instance>.*)', 'bgp_id', '(?P<bgp_id>.*)']]],
+                    ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
+                     'address_family', '(?P<af>(ipv4 mvpn))', '(?P<af_info>.*)'],
+                    ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
+                      'bgp_negotiated_capabilities', 'ipv4_mvpn', '(?P<negotiated_cap>^(advertised).*)'],
+                    ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
+                      'session_state', 'established'],
+                    ['info', 'instance', '(?P<instance>.*)', 'bgp_id', '(?P<bgp_id>.*)']],
                 'all_keys': True,
                 'kwargs': {'attributes': ['info']},
                 'exclude': trm_exclude + ['bgp_table_version','updates','capability']}},
@@ -1877,7 +1877,7 @@ class TriggerUnconfigConfigBgpNeighborAddressFamilyIpv4Mvpn(TriggerUnconfigConfi
                 'verify_conf': False,
                 'kwargs': {'mandatory': {'bgp_id': '(?P<bgp_id>.*)'}}}},
         verify_ops={ \
-            'conf.bgp.Bgp': {
+	    'conf.bgp.Bgp': {
                 'requirements': [ \
                     ['device_attr', '{uut}', '_vrf_attr', '(?P<vrf>.*)', '_neighbor_attr',
                      '(?P<neighbor>.*)', '_address_family_attr', Not('ipv4 mvpn')]],
@@ -1886,8 +1886,10 @@ class TriggerUnconfigConfigBgpNeighborAddressFamilyIpv4Mvpn(TriggerUnconfigConfi
             'ops.bgp.bgp.Bgp': {
                 'requirements': [ \
                     ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
-                      'bgp_negotiated_capabilities', 'ipv4_mvpn', '(?P<negotiated_cap>(?!advertised).*)']],
+                     'address_family', NotExists('ipv4 mvpn'), NotExists('(.*)') ],
+                    ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
+                      'bgp_negotiated_capabilities', 'ipv4_mvpn', Not('advertised')]],
                 'kwargs': {'attributes': ['info']},
-                'exclude': trm_exclude}},
+                'exclude': trm_exclude + ['updates','bgp_table_version','capability']}},
         num_values={'instance': 1, 'vrf': 1, 'neighbor': 1, 'af': 1, 'negotiated_cap':1})
 

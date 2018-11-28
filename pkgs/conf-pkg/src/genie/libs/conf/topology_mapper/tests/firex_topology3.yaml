@@ -1,0 +1,96 @@
+devices:
+    R1:
+        label: CE1CE2
+    R2:
+        label: PE1
+    R3:
+        label: PE2
+    R4:
+        label: PE3
+    R5:
+        label: PE4
+
+
+topology:
+    R1:
+        interfaces:
+            I1:
+                link: L1
+            I2:
+                link: L4
+            I3:
+                link: L7
+            I4:
+                link: L8
+            I5:
+                link: L9
+            I6:
+                link: L10
+            I7:
+                link: L11
+            I8:
+                link: L14
+    R2:
+        interfaces:
+            I1:
+                link: L1
+            I2:
+                link: L2
+            I3: 
+                link: L5
+            I4:
+                link: L11
+            I5:
+                link: L12
+            I6:
+                link: L15
+    R3:
+        interfaces:
+            I1:
+                link: L2
+            I2:
+                link: L3
+            I3:
+                link: L7
+            I4:
+                link: L9
+            I5:
+                link: L12                               
+            I6:
+                link: L13
+            I7:
+                link: L17
+            I8:
+                link: L18
+    R4:
+        interfaces:
+            I1:
+                link: L3
+            I2:
+                link: L4
+            I3:
+                link: L5
+            I4:
+                link: L6
+            I5:
+                link: L13
+            I6:
+                link: L14
+            I7:
+                link: L15
+            I8:
+                link: L16
+    R5:
+        interfaces:
+            I1:
+                link: L6
+            I2:
+                link: L8
+            I3:
+                link: L10
+            I4:
+                link: L16
+            I5:
+                link: L17
+            I6:
+                link: L18

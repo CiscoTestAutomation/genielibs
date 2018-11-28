@@ -38,7 +38,7 @@ class Ntp(Base):
                       dest='info[unicast_configuration][(?P<peer>.*)]')
 
         # make to write in cache
-        self.make()
+        self.make(final_call=True)
 
         # needs combine structures from ShowNtpPeerStatus and ShowNtpPeers
         if hasattr(self, 'info') and \

@@ -1915,6 +1915,16 @@ TriggerShutNoShutEthernetInterface:
     tgn_max_outage: 120
     devices: ['uut']
 
+TriggerShutNoShutPortChannelInterface:
+    groups: ['shut-noshut', 'interface', 'L3']
+    timeout:
+      max_time: 180
+      interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    devices: ['uut']
+
 TriggerShutNoShutLoopbackInterface:
     groups: ['shut-noshut', 'interface', 'L3']
     timeout:
@@ -2492,7 +2502,7 @@ TriggerAddRemoveBgpKeepaliveHoldtime:
     groups: ['add-remove', 'bgp', 'L3']
     method: 'checkpoint'
     timeout:
-      max_time: 180
+      max_time: 300
       interval: 10
     tgn_timeout: 300
     tgn_delay: 10
@@ -3663,13 +3673,13 @@ TriggerReload:
       interval: 60
     tgn_timeout: 300
     tgn_delay: 10
-    tgn_max_outage: 120
+    tgn_max_outage: 450
     devices: ['uut']
 
 TriggerReloadFabricModule:
     groups: ['ha', 'reload', 'L3']
     timeout:
-      max_time: 400
+      max_time: 600
       interval: 60
     tgn_timeout: 300
     tgn_delay: 10

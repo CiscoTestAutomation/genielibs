@@ -324,7 +324,7 @@ class Platform(Base):
                       src='[slot][(?P<slot>.*)][other][(?P<pid>.*)][subslot][(?P<subslot>.*)][(?P<pid2>.*)][sn]',
                       dest='[slot][oc][(?P<slot>.*)][subslot][(?P<subslot>.*)][sn]')
 
-        self.make()
+        self.make(final_call=True)
 
          # create new tree based on 'active' or 'standby' from 'red' dictionary
         if hasattr(self, 'red'):

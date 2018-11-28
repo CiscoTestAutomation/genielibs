@@ -680,6 +680,11 @@ TriggerShutNoShutEthernetInterface:
       pkg: genie.libs.sdk
       class: triggers.shutnoshut.interface.shutnoshut.TriggerShutNoShutEthernetInterface
 
+TriggerShutNoShutPortChannelInterface:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.shutnoshut.interface.shutnoshut.TriggerShutNoShutPortChannelInterface
+
 TriggerShutNoShutTrunkInterface:
     source:
       pkg: genie.libs.sdk

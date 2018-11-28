@@ -13,7 +13,7 @@ from genie.libs.sdk.triggers.template.ha import TriggerSwitchover as\
 from genie.libs.sdk.triggers.template.ha import TriggerReload as ReloadTemplate
 from genie.libs.sdk.triggers.template.ha import TriggerIssu as IssuTemplate
 
-# Genie Libs Utils
+# Genie
 from genie.libs.sdk.libs.utils.common import UpdateLearntDatabase
 
 log = logging.getLogger(__name__)
@@ -41,6 +41,7 @@ class TriggerSwitchover(SwitchoverTemplate):
            Raises:
                pyATS Results
         '''
+
         self.timeout = timeout
         try:
             self.pre_snap = self.mapping.learn_ops(device=uut,
@@ -53,6 +54,8 @@ class TriggerSwitchover(SwitchoverTemplate):
         for stp in steps.details:
             if stp.result.name == 'skipped':
                 self.skipped('Cannot learn the feature', goto=['next_tc'])
+
+        self.print_local_verifications()
 
     @aetest.test
     def switchover(self, uut, abstract, steps):

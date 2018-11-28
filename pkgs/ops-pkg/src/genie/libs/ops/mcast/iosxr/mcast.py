@@ -121,4 +121,4 @@ class Mcast(Base):
                                   vrf=vrf, af=af)
 
         # Make final Ops structure
-        self.make()
+        self.make(final_call=True)

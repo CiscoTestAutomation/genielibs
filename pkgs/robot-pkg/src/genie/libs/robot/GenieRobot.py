@@ -24,6 +24,7 @@ from genie.conf import Genie
 from genie.utils.diff import Diff
 from genie.conf.base import loader
 from genie.conf.base import Testbed
+from genie.utils.config import Config
 from genie.harness.script import TestScript
 from genie.harness._commons_internal import pickle, unpickle
 from genie.harness.discovery import GenieScriptDiscover
@@ -533,11 +534,15 @@ class GenieRobot(object):
                 if dev not in profiled[fet]:
                     profiled[fet][dev] = {}
 
-                log.info("Start learning feature {f}".format(f=fet))
-                learnt_feature = self.genie_ops_on_device_alias_context(
-                    feature=fet.strip(), alias=None, device=dev)
+                if fet == 'config':
+                    log.info("Start learning device configuration")
+                    profiled[fet][dev] = self._profile_config(device)
+                else:
+                    log.info("Start learning feature {f}".format(f=fet))
+                    learnt_feature = self.genie_ops_on_device_alias_context(
+                        feature=fet.strip(), alias=None, device=dev)
 
-                profiled[fet][dev] = learnt_feature
+                    profiled[fet][dev] = learnt_feature
 
 
         if os.path.isdir(os.path.dirname(name)):
@@ -547,6 +552,12 @@ class GenieRobot(object):
         else:
             self.testscript.parameters[name] = profiled
             log.info('Saved system profile as variable %s' % name)
+
+    def _profile_config(self, device):
+        device_handle = self._search_device(device)
+        config = Config(device_handle.execute('show running-config'))
+        config.tree()
+        return config
 
     @keyword('Compare profile "${pts:[^"]+}" with "${pts_compare:[^"]+}" on '
              'devices "${devices:[^"]+}"')

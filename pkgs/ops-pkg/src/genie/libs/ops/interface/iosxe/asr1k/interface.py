@@ -52,4 +52,4 @@ class Interface(CommonInterface):
                           src=src + '[{}]'.format(key),
                           dest=dest + '[{}]'.format(key))
 
-        self.make()
+        self.make(final_call=True)

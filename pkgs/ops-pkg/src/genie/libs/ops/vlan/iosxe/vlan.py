@@ -27,4 +27,4 @@ class Vlan(Base):
                           src=src_vlan + '[{}]'.format(key),
                           dest=dest_vlan + '[{}]'.format(key))
 
-        self.make()
+        self.make(final_call=True)

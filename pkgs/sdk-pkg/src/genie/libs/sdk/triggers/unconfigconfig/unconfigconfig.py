@@ -10,7 +10,7 @@ from ats import aetest
 from genie.libs.sdk.triggers.template.unconfigconfig import \
                        TriggerUnconfigConfig as UnconfigConfigTemplate
 
-# Genie Exceptions
+# Genie
 from genie.harness.exceptions import GenieConfigReplaceWarning
 
 log = logging.getLogger(__name__)
@@ -38,6 +38,7 @@ class TriggerUnconfigConfig(UnconfigConfigTemplate):
            Raises:
                 pyATS Results
         '''
+
         self.timeout = timeout
 
         try:
@@ -52,6 +53,8 @@ class TriggerUnconfigConfig(UnconfigConfigTemplate):
         for stp in steps.details:
             if stp.result.name == 'skipped':
                 self.skipped('Cannot learn the feature', goto=['next_tc'])
+
+        self.print_local_verifications()
 
     @aetest.test
     def save_configuration(self, uut, method, abstract, steps):

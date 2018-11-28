@@ -866,3 +866,60 @@ class TriggerShutNoShutPimNbrVrfInterface(TriggerShutNoShut):
                                                       'info[vrf][(.*)][interfaces][(.*)][address_family][(.*)][neighbors]']},
                                         'exclude': pim_exclude }},
                       num_values={'pim_intf': 1, 'vrf': 'all'})
+
+class TriggerShutNoShutPortChannelInterface(TriggerShutNoShut):
+    """Shut and unshut the dynamically learned Port Channel interface(s)."""
+
+    __description__ = """Shut and unshut the dynamically learned Port Channel interface(s).
+
+    trigger_datafile:
+        Mandatory:
+            timeout: 
+                max_time (`int`): Maximum wait time for the trigger,
+                                in second. Default: 180
+                interval (`int`): Wait time between iteration when looping is needed,
+                                in second. Default: 15
+        Optional:
+            tgn_timeout (`int`): Maximum wait time for all traffic threads to be
+                                 restored to the reference rate,
+                                 in second. Default: 60
+            tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,
+                               in second. Default: 10
+            timeout_recovery: 
+                Buffer recovery timeout make sure devices are recovered at the end
+                of the trigger execution. Used when previous timeouts have been exhausted.
+
+                max_time (`int`): Maximum wait time for the last step of the trigger,
+                                in second. Default: 180
+                interval (`int`): Wait time between iteration when looping is needed,
+                                in second. Default: 15
+
+    steps:
+        1. Learn Interface Ops object and store the "up" Port Channel interface(s)
+           if has any, otherwise, SKIP the trigger
+        2. Shut the learned Port Channel interface(s) from step 1 with Interface Conf object
+        3. Verify the state of learned Port Channel interface(s) from step 2 is "down"
+        4. Unshut the Port Channel interface(s) with Interface Conf object
+        5. Learn Interface Ops again and verify it is the same as the Ops in step 1
+
+    """
+
+    # Mapping of Information between Ops and Conf
+    # Also permit to dictate which key to verify
+    mapping = Mapping(requirements={'ops.interface.interface.Interface':{
+                                        'requirements':[\
+                                            ['info', '(?P<name>Ethernet(\S+))', 'oper_status', 'up'],
+                                            ['info', '(?P<name>.*)', 'enabled', True]],
+                                        'exclude': interface_exclude}},
+                      config_info={'conf.interface.Interface':{
+                                        'requirements':[['enabled', False]],
+                                        'verify_conf':False,
+                                        'kwargs':{'mandatory':{'name': '(?P<name>.*)',
+                                                               'attach': False}}}},
+                      verify_ops={'ops.interface.interface.Interface':{
+                                        'requirements':[\
+                                            ['info', '(?P<name>.*)', 'enabled', False],
+                                            ['info', '(?P<name>.*)', 'oper_status', 'down'],
+                                            ['info', '(.*)', 'enabled', False]],
+                                        'exclude': interface_exclude}},
+                      num_values={'name': 1})

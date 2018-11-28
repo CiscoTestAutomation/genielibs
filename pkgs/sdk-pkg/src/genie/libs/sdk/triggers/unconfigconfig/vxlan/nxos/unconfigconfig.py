@@ -10,7 +10,7 @@ from ats import aetest
 from collections import OrderedDict
 
 # Which key to exclude for Vxlan Ops comparison
-vxlan_base_exclude = ['maker']
+vxlan_base_exclude = ['maker','up_time']
 evpn_exclude =['bytesrecvd','bytesent','elapsedtime','keepalive','tableversion',
                'keepaliverecvd','keepalivesent','lastread','totalnetworks',
                'lastwrite','msgrecvd','msgsent','updatesrecvd','rtrefreshsent',
@@ -205,7 +205,6 @@ class TriggerUnconfigConfigEvpnMsiteBgwDelayRestoreTime(TriggerUnconfigConfig):
                                                                  [['nve', '(?P<nve_name>.*)','multisite_convergence_time',
                                                                   '(?P<delay_restore_time>.*)']]],
                                                 'kwargs': {'attributes': ['nve']},
-                                                'all_keys':True,
                                                 'exclude': vxlan_base_exclude + ['uptime','prefixversion','pathnr','bestpathnr']}},
                       config_info={'conf.vxlan.Vxlan': {
                                                 'requirements': [['device_attr','{uut}', 'evpn_msite_attr', '(?P<border_gateway>.*)',\
@@ -272,7 +271,6 @@ class TriggerUnconfigConfigEvpnMsiteDciTracking(TriggerUnconfigConfig):
                                                 'kwargs': {'attributes': ['nve[(.*)][vni][(.*)][vni]',
                                                                           'nve[(.*)][multisite_bgw_if_oper_state]',
                                                                           'nve[multisite]']},
-                                                'all_keys':True,
                                                 'exclude': vxlan_base_exclude}},
                       config_info={'conf.interface.Interface': {
                                                 'requirements': [['evpn_multisite_dci_tracking',True]],
@@ -340,7 +338,6 @@ class TriggerUnconfigConfigEvpnMsiteFabricTracking(TriggerUnconfigConfig):
                                                                           'nve[(.*)][multisite_bgw_if_oper_state]',
                                                                           'nve[multisite]',
                                                                           'bgp_l2vpn_evpn']},
-                                                'all_keys':True,
                                                 'exclude': vxlan_base_exclude + multisite_exclude +['fd','resetreason','resettime','prefixreceived',
                                                                                                     'bestpathnr','pathnr','advertisedto']}},
                       config_info={'conf.interface.Interface': {
@@ -622,7 +619,7 @@ class TriggerUnconfigConfigNvOverlayEvpn(TriggerUnconfigConfig):
                                             'exclude': vxlan_base_exclude + ['sent_to','prefixversion','pathnr',
                                                                              'bestpathnr','advertisedto','client_nfn',
                                                                              'prefix','memory','objects','total_mem',
-                                                                             'total_obj','total_memory','mac']}},
+                                                                             'total_obj','total_memory','mac','mac_ip','seq_num']}},
                         config_info={'conf.vxlan.Vxlan': {
                                             'requirements': [['device_attr', '{uut}', 'enabled_nv_overlay_evpn', True]],
                                             'verify_conf': False,
@@ -700,9 +697,9 @@ class TriggerUnconfigConfigNveVniMcastGroup(TriggerUnconfigConfig):
                         'unconfigure feature', from_exception=e)
 
     mapping = Mapping(requirements={'ops.vxlan.vxlan.Vxlan':{
-                                         'requirements':[[['nve', '(?P<nve_name>.*)', 'vni', '(?P<nve_vni>.*)', 'mcast', '(?P<mcast>.*)']],
-                                                         [['nve', '(?P<nve_name>.*)', 'vni', '(?P<nve_vni>.*)', 'vni_state', 'up']],
-                                                         [['nve', '(?P<nve_name>.*)', 'vni', '(?P<nve_vni>.*)', 'type', '(?P<type>L2.*)']]],
+                                         'requirements':[['nve', '(?P<nve_name>.*)', 'vni', '(?P<nve_vni>.*)', 'mcast', '(?P<mcast>.*)'],
+                                                         ['nve', '(?P<nve_name>.*)', 'vni', '(?P<nve_vni>.*)', 'vni_state', 'up'],
+                                                         ['nve', '(?P<nve_name>.*)', 'vni', '(?P<nve_vni>.*)', 'type', '(?P<type>L2.*)']],
                                          'kwargs':{'attributes':['nve[(.*)][vni]']},
                                          'all_keys': True,
                                          'exclude': vxlan_base_exclude}},
@@ -836,7 +833,7 @@ class TriggerUnconfigConfigEvpnMsiteBgw(TriggerUnconfigConfig):
                                         'requirements': [['nve', 'evpn_multisite_border_gateway', '(?P<border_gateway>.*)']],
                                         'kwargs': {'attributes': ['nve','l2route']},
                                         'all_keys': True,
-                                        'exclude': vxlan_base_exclude + ['uptime','peer_id','tx_id']}},
+                                        'exclude': vxlan_base_exclude + ['uptime','peer_id','tx_id','flags']}},
                         config_info={'conf.vxlan.Vxlan': {
                                         'requirements': [['device_attr', '{uut}', 'evpn_msite_attr', '(?P<border_gateway>.*)']],
                                         'verify_conf': False,

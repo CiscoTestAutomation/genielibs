@@ -214,6 +214,6 @@ class Hsrp(Base):
         #               src='info[loging][state_change_disable]',
         #               dest='info[loging][state_change_disable]')
 
-        self.make()
+        self.make(final_call=True)
 
 # vim: ft=python et sw=4

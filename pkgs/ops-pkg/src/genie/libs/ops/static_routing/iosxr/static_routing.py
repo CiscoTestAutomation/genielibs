@@ -56,4 +56,4 @@ class StaticRoute(Base):
                           src=src_static_routing_hop + '[{}]'.format(key),
                           dest=dest_static_routing_hop + '[{}]'.format(key))
 
-        self.make()
+        self.make(final_call=True)

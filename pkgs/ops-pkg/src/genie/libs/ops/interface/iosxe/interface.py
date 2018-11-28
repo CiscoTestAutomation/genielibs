@@ -200,4 +200,4 @@ class Interface(Base):
         # route_tag    --- This is not supported on IOSXE
 
         # make to write in cache
-        self.make()
+        self.make(final_call=True)

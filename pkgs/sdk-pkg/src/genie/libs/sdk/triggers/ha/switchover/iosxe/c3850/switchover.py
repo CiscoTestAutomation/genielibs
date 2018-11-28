@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 # Trigger required data settings
 # Which key to exclude for Platform Ops comparison
 platform_exclude = ['maker', 'main_mem', 'switchover_reason', 'issu', 'oc',
-                    'sn', 'config_register', 'rp_uptime', 'chassis_sn']
+                    'sn', 'config_register', 'rp_uptime', 'chassis_sn', 'issu']
 
 
 class TriggerSwitchover(CommonSwitchover):
@@ -122,20 +122,21 @@ class TriggerSwitchover(CommonSwitchover):
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.platform.platform.Platform':{
                                         'requirements': [\
-                                            [['slot', 'rp', '(?P<active_rp>.*)',
+                                            ['slot', 'rp', '(?P<active_rp>.*)',
                                               'swstack_role', 'Active'],
-                                             ['slot', 'rp', '(?P<active_rp>.*)',
-                                              'state', 'Ready']],
-                                            [['slot', 'rp', '(?P<standby_rp>.*)',
+                                            ['slot', 'rp', '(?P<active_rp>.*)',
+                                              'state', 'Ready'],
+                                            ['slot', 'rp', '(?P<standby_rp>.*)',
                                               'swstack_role', 'Standby'],
-                                             ['slot', 'rp', '(?P<standby_rp>.*)',
-                                              'state', 'Ready']],
-                                            [['slot', 'rp', '(?P<members>.*)',
+                                            ['slot', 'rp', '(?P<standby_rp>.*)',
+                                              'state', 'Ready'],
+                                            ['slot', 'rp', '(?P<members>.*)',
                                               'swstack_role', 'Member'],
-                                             ['slot', 'rp', '(?P<members>.*)',
-                                              'state', 'Ready']],
-                                            [['redundancy_communication', True]],
+                                            ['slot', 'rp', '(?P<members>.*)',
+                                              'state', 'Ready'],
+                                            ['redundancy_communication', True],
                                           ],
+                                        'all_keys': True,
                                         'exclude': platform_exclude}},
                       verify_ops={'ops.platform.platform.Platform':{
                                       'requirements': [\

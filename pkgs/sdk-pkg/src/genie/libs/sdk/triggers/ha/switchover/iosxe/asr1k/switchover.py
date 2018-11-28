@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 # Trigger required data settings
 # Which key to exclude for Platform Ops comparison
 platform_exclude = ['maker', 'rp_uptime', 'sn', 'main_mem',
-                    'switchover_reason', 'config_register']
+                    'switchover_reason', 'config_register', 'issu']
 
 
 class TriggerSwitchover(CommonSwitchover):
@@ -55,16 +55,17 @@ class TriggerSwitchover(CommonSwitchover):
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.platform.platform.Platform':{
                                         'requirements': [\
-                                            [['slot', 'rp', '(?P<active_rp>.*)',
+                                            ['slot', 'rp', '(?P<active_rp>.*)',
                                               'redundancy_state', 'ACTIVE'],
-                                             ['slot', 'rp', '(?P<active_rp>.*)',
-                                              'state', 'ok, active']],
-                                            [['slot', 'rp', '(?P<standby_rp>.*)',
+                                            ['slot', 'rp', '(?P<active_rp>.*)',
+                                              'state', 'ok, active'],
+                                            ['slot', 'rp', '(?P<standby_rp>.*)',
                                               'redundancy_state', 'STANDBY HOT'],
-                                             ['slot', 'rp', '(?P<standby_rp>.*)',
-                                              'state', 'ok, standby']],
-                                            [['redundancy_communication', True]],
+                                            ['slot', 'rp', '(?P<standby_rp>.*)',
+                                              'state', 'ok, standby'],
+                                            ['redundancy_communication', True],
                                           ],
+                                        'all_keys': True,
                                         'exclude': platform_exclude}},
                       verify_ops={'ops.platform.platform.Platform':{
                                       'requirements': [\

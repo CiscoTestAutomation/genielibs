@@ -214,6 +214,6 @@ class Hsrp(Base):
 
         # state_change_disable N/A
 
-        self.make()
+        self.make(final_call=True)
 
 # vim: ft=python et sw=4

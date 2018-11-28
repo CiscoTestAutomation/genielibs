@@ -137,7 +137,7 @@ class RoutePolicy(Base):
         # 'set_weight'
         # 'actions' - N/A
 
-        self.make()
+        self.make(final_call=True)
 
         # Delete 'clause' under every statement 'actions' key
         if hasattr(self, 'info'):

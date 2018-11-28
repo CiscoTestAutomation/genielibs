@@ -73,7 +73,7 @@ class TriggerAddRemoveRouteTargetMvpn(TriggerAddRemove):
     requirements['conf.vrf.Vrf'] = {
         'requirements': [
             ['device_attr', '{uut}', 'address_family_attr', '(?P<af>.*)', '_route_target_attr', '(?P<rt>.*)',
-              '_protocol_attr', NotExists(PROTOCOL),  NotExists('(.*)')],
+              '_protocol_attr', NotExists(PROTOCOL)],
             ['device_attr', '{uut}', 'vrf_name', '(?P<vrf>.*)']],
         'all_keys': True,
         'exclude': trm_exclude}

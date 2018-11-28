@@ -1,0 +1,90 @@
+testbed:
+
+devices:
+
+    router1:
+        type: asr9000-px
+        os: iosxr
+        connections: {}
+
+    router2:
+        type: asr9000-px
+        os: iosxr
+        connections: {}
+
+    router3:
+        type: n7000
+        os: nxos
+        connections: {}
+
+    router4:
+        type: n7000
+        os: nxos
+        connections: {}
+
+    ixia:
+        type: ixia
+        os: ixia
+        connections: {}
+
+topology:
+
+    router1:
+        interfaces:
+
+            GigabitEthernet0/0/0/0:
+                type: GigabitEthernet
+                link: link_1_2_1
+
+            GigabitEthernet0/0/0/1:
+                type: GigabitEthernet
+                link: link_1_2_2
+
+            GigabitEthernet0/0/0/2:
+                type: GigabitEthernet
+                link: link_1_3_1
+
+            GigabitEthernet0/0/0/3:
+                type: GigabitEthernet
+                link: link_1_4_1
+
+    router2:
+        interfaces:
+
+            GigabitEthernet0/0/0/0:
+                type: GigabitEthernet
+                link: link_1_2_1
+
+            GigabitEthernet0/0/0/1:
+                type: GigabitEthernet
+                link: link_1_2_2
+
+            GigabitEthernet0/0/0/2:
+                type: GigabitEthernet
+                link: link_2_4_1
+
+    router3:
+        interfaces:
+
+            Ethernet0/0:
+                type: GigabitEthernet
+                link: link_1_3_1
+
+    router4:
+        interfaces:
+
+            Ethernet0/0:
+                type: GigabitEthernet
+                link: link_1_4_1
+
+            Ethernet0/1:
+                type: GigabitEthernet
+                link: link_2_4_1
+
+    ixia:
+        interfaces:
+            1/1:
+                type: GigabitEthernet
+            1/2:
+                type: GigabitEthernet
+

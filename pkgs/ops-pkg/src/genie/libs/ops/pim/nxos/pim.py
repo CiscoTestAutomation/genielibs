@@ -404,7 +404,7 @@ class Pim(Base):
                               dest=dest + key,
                               vrf='all')
         # make to write in cache
-        self.make()
+        self.make(final_call=True)
 
         # gen_id
         if hasattr(self, 'info'):

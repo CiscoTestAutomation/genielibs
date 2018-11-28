@@ -57,11 +57,12 @@ class TriggerReload(CommonReload):
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.platform.platform.Platform':{
                                         'requirements': [\
-                                            [['slot', 'rp', '(?P<rp>.*)',
-                                             'state', '(active|ha-standby)']],
-                                            [['slot', 'lc', '(?P<lc>.*)',
-                                             'state', '(ok|active|standby)']]
+                                            ['slot', 'rp', '(?P<rp>.*)',
+                                             'state', '(?P<status>active|ha-standby)'],
+                                            ['slot', 'lc', '(?P<lc>.*)',
+                                             'state', '(?P<lc_status>ok|active|standby)']
                                           ],
+                                        'all_keys': True,
                                         'exclude': platform_exclude}},
                       verify_ops={'ops.platform.platform.Platform':{
                                       'requirements': [\
@@ -111,15 +112,16 @@ class TriggerReloadActiveSystemController(TriggerReloadLc):
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.platform.platform.Platform':{
                                         'requirements': [\
-                                            [['slot', 'lc', '(?P<active_sys_con>.*)',
+                                            ['slot', 'lc', '(?P<active_sys_con>.*)',
                                              'state', 'active'],
-                                             ['slot', 'lc', '(?P<active_sys_con>.*)',
-                                             'name', 'System Controller']],
-                                            [['slot', 'lc', '(?P<standby_sys_con>.*)',
+                                            ['slot', 'lc', '(?P<active_sys_con>.*)',
+                                             'name', 'System Controller'],
+                                            ['slot', 'lc', '(?P<standby_sys_con>.*)',
                                              'state', 'standby'],
-                                             ['slot', 'lc', '(?P<standby_sys_con>.*)',
-                                             'name', 'System Controller']],
+                                            ['slot', 'lc', '(?P<standby_sys_con>.*)',
+                                             'name', 'System Controller'],
                                           ],
+                                        'all_keys': True,
                                         'exclude': platform_exclude}},
                       verify_ops={'ops.platform.platform.Platform':{
                                       'requirements': [\
@@ -172,6 +174,7 @@ class TriggerReloadStandbySystemController(TriggerReloadLc):
                                              ['slot', 'lc', '(?P<standby_sys_con>.*)',
                                              'name', 'System Controller'],
                                           ],
+                                        'all_keys': True,
                                         'exclude': platform_exclude}},
                       verify_ops={'ops.platform.platform.Platform':{
                                       'requirements': [\
@@ -214,10 +217,10 @@ class TriggerReloadFabricModule(TriggerReloadLc):
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.platform.platform.Platform':{
                                         'requirements': [\
-                                            [['slot', 'lc', '(?P<fabric>.*)',
+                                            ['slot', 'lc', '(?P<fabric>.*)',
                                              'state', 'ok'],
-                                             ['slot', 'lc', '(?P<fabric>.*)',
-                                             'name', '(.*Fabric.*)']],
+                                            ['slot', 'lc', '(?P<fabric>.*)',
+                                             'name', '(?P<name>.*Fabric.*)'],
                                           ],
                                         'exclude': platform_exclude}},
                       verify_ops={'ops.platform.platform.Platform':{
@@ -261,10 +264,10 @@ class TriggerReloadEthernetModule(TriggerReloadLc):
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.platform.platform.Platform':{
                                         'requirements': [\
-                                            [['slot', 'lc', '(?P<ethernet>.*)',
+                                            ['slot', 'lc', '(?P<ethernet>.*)',
                                              'state', 'ok'],
-                                             ['slot', 'lc', '(?P<ethernet>.*)',
-                                             'name', '(.*Ethernet.*)']],
+                                            ['slot', 'lc', '(?P<ethernet>.*)',
+                                             'name', '(?P<name>.*Ethernet.*)'],
                                           ],
                                         'exclude': platform_exclude}},
                       verify_ops={'ops.platform.platform.Platform':{
@@ -311,15 +314,18 @@ class TriggerReloadActiveRP(TriggerReloadLc):
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.platform.platform.Platform':{
                                         'requirements': [\
-                                            [['slot', 'rp', '(?P<active_rp>.*)',
+                                            ['slot', 'rp', '(?P<active_rp>.*)',
                                               'redundancy_state', 'active'],
-                                             ['slot', 'rp', '(?P<active_rp>.*)',
-                                              'state', 'active']],
-                                            [['slot', 'rp', '(?P<standby_rp>.*)',
+                                            ['slot', 'rp', '(?P<active_rp>.*)',
+                                              'state', 'active'],
+                                            ['slot', 'rp', '(?P<standby_rp>.*)',
                                               'redundancy_state', 'ha-standby'],
-                                             ['slot', 'rp', '(?P<standby_rp>.*)',
-                                              'state', 'ha-standby']],
+                                            ['slot', 'rp', '(?P<standby_rp>.*)',
+                                              'state', 'ha-standby'],
+                                            ['slot', 'lc', '(?P<lc>.*)',
+                                             'state', '(?P<lc_status>ok|active|standby)']
                                           ],
+                                        'all_keys': True,
                                         'exclude': platform_exclude}},
                       verify_ops={'ops.platform.platform.Platform':{
                                       'requirements': [\
@@ -330,7 +336,9 @@ class TriggerReloadActiveRP(TriggerReloadLc):
                                           ['slot', 'rp', '(?P<standby_rp>.*)',
                                            'redundancy_state', 'active'],
                                           ['slot', 'rp', '(?P<standby_rp>.*)',
-                                           'state', 'active']],
+                                           'state', 'active'],
+                                          ['slot', 'lc', '(?P<lc>.*)',
+                                           'state', '(ok|active|standby)']],
                                     'exclude': platform_exclude}},
                       num_values={'active_rp':1, 'standby_rp':1})
 
@@ -374,6 +382,7 @@ class TriggerReloadStandbyRP(TriggerReloadLc):
                                              ['slot', 'rp', '(?P<standby_rp>.*)',
                                               'state', 'ha-standby'],
                                           ],
+                                        'all_keys': True,
                                         'exclude': platform_exclude}},
                       verify_ops={'ops.platform.platform.Platform':{
                                       'requirements': [\

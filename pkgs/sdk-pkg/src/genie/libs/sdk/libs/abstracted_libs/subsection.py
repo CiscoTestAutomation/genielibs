@@ -23,7 +23,7 @@ from unicon.eal.dialogs import Statement, Dialog
 
 # Genie
 from genie.utils.timeout import Timeout
-from genie.harness.utils import Summary
+from genie.utils.summary import Summary
 from genie.conf.base import Base as ConfBase
 from genie.ops.base import Base as OpsBase
 

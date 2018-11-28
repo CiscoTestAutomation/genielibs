@@ -41,4 +41,4 @@ class Vrf(Base):
                       src=src, dest=dest,
                       action=self.keys)
 
-        self.make()
+        self.make(final_call=True)

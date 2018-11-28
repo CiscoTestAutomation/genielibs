@@ -491,6 +491,8 @@ Verify_InterfacesDetail:
   - interface_state
   - in_unknown_protos
   - last_clear
+  - carrier_transitions
+  - in_giants
   groups:
   - bgp
   iteration:

@@ -211,4 +211,4 @@ class Msdp(Base):
                                   src=out_src + '[(?P<sa>.*)][(?P<match>.*)][%s]' % key,
                                   dest=out_dest + '[(?P<sa>.*)][(?P<match>.*)][%s]' % key,
                                   vrf=vrf, peer=peer)
-        self.make()
+        self.make(final_call=True)

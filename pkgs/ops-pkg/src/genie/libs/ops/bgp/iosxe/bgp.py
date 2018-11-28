@@ -663,7 +663,7 @@ class Bgp(Base):
         ########################################################################
 
         # Make final Ops structure
-        self.make()
+        self.make(final_call=True)
 
         if hasattr (self, 'routes_per_peer'):
             # Removing 'path_type' from the ops structure

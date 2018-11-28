@@ -127,4 +127,4 @@ class Routing(Base):
                 
         # delete the list_of_vrfs in the info table
         del self.list_of_vrfs
-        self.make()
+        self.make(final_call=True)

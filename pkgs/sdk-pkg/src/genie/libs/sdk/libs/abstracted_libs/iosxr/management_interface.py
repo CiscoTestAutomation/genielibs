@@ -50,6 +50,6 @@ class ManagementInterface(ManagementInterface_main):
         # Create parser object
         parser_obj = ShowIpInterfaceBrief(device=device)
 
-        intf_name = super().get_interface_name(ipaddress, parser_obj)
+        intf_name = super().get_interface_name(device, ipaddress, parser_obj)
 
         return intf_name

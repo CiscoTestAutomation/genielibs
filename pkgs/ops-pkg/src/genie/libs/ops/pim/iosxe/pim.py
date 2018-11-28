@@ -388,7 +388,7 @@ class Pim(Base):
                                   vrf=vrf_name)
 
         # make to write in cache
-        self.make()
+        self.make(final_call=True)
 
         # ---------      dm   --------------
         # ---------      bidir   -----------

@@ -3,6 +3,7 @@
 # python
 import logging
 from copy import deepcopy
+from time import sleep
 
 # import ats
 from ats import aetest
@@ -450,9 +451,29 @@ class TriggerAddRemoveMsdpKeepaliveHoldtime(TriggerAddRemove):
         7. Learn Msdp Ops again and verify it is the same as the Ops in step 1
     """
     # <1-60>  Keepalive interval in seconds
-    keepalive_interval = 33
+    keepalive_interval = 20
     # <1-90>  Keepalive timeout in seconds
-    holdtime_interval = 66
+    holdtime_interval = 40
+
+    @aetest.test
+    def add_configuration(self, uut, abstract, steps):
+        '''need to sleep for the changed time interval taken place
+        '''
+        super().add_configuration(uut, abstract, steps)
+        # sleep 
+        log.info('sleep %s for msdp re-connect after changing the '
+          'keepalive/holdtime interval' % self.holdtime_interval)
+        sleep(self.holdtime_interval)
+
+    @aetest.test
+    def remove_configuration(self, uut, abstract, steps):
+        '''need to sleep for the changed time interval taken place
+        '''
+        super().remove_configuration(uut, abstract, steps)
+        # sleep default value since it will use default when removing the keepalive configs
+        log.info('sleep %s for msdp re-connect after changing the '
+          'keepalive/holdtime interval' % '90')
+        sleep(90)
 
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify

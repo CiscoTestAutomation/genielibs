@@ -75,4 +75,4 @@ class Vlan(Base):
                       src=src_igmp + '[(?P<configuration_vlan_id>.*)][ip_igmp_snooping]',
                       dest=dest_igmp + '[configuration][(?P<configuration_vlan_id>.*)][ip_igmp_snooping]')
 
-        self.make()
+        self.make(final_call=True)

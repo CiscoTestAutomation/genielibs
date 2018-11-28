@@ -20,8 +20,9 @@ log = logging.getLogger(__name__)
 
 # Trigger required data settings
 # Which key to exclude for Platform Ops comparison
-platform_exclude = ['maker', 'rp_uptime', 'sn', 'main_mem',
-                    'switchover_reason', 'config_register', 'chassis_sn']
+platform_exclude = ['maker', 'rp_uptime', 'sn', 'main_mem', 'issu',
+                    'switchover_reason', 'config_register', 'chassis_sn',
+                    'sn', 'name']
 
 
 class TriggerReload(CommonReload):
@@ -59,9 +60,10 @@ class TriggerReload(CommonReload):
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.platform.platform.Platform':{
                                         'requirements': [\
-                                            [['slot', 'rp', '(?P<rp>.*)',
-                                              'state', '(ok, active|ok, standby|Ready)']],
+                                            ['slot', 'rp', '(?P<rp>.*)',
+                                              'state', '(?P<state>ok, active|ok, standby|Ready)'],
                                           ],
+                                        'all_keys': True,
                                         'exclude': platform_exclude}},
                       verify_ops={'ops.platform.platform.Platform':{
                                       'requirements': [\
@@ -183,20 +185,21 @@ class TriggerReloadActiveRP(TriggerReloadWithPriority):
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.platform.platform.Platform':{
                                         'requirements': [\
-                                            [['slot', 'rp', '(?P<active_rp>.*)',
+                                            ['slot', 'rp', '(?P<active_rp>.*)',
                                               'swstack_role', 'Active'],
-                                             ['slot', 'rp', '(?P<active_rp>.*)',
-                                              'state', 'Ready']],
-                                            [['slot', 'rp', '(?P<standby_rp>.*)',
+                                            ['slot', 'rp', '(?P<active_rp>.*)',
+                                              'state', 'Ready'],
+                                            ['slot', 'rp', '(?P<standby_rp>.*)',
                                               'swstack_role', 'Standby'],
-                                             ['slot', 'rp', '(?P<standby_rp>.*)',
-                                              'state', 'Ready']],
-                                            [['slot', 'rp', '(?P<members>.*)',
+                                            ['slot', 'rp', '(?P<standby_rp>.*)',
+                                              'state', 'Ready'],
+                                            ['slot', 'rp', '(?P<members>.*)',
                                               'swstack_role', 'Member'],
-                                             ['slot', 'rp', '(?P<members>.*)',
-                                              'state', 'Ready']],
-                                            [['redundancy_communication', True]],
+                                            ['slot', 'rp', '(?P<members>.*)',
+                                              'state', 'Ready'],
+                                            ['redundancy_communication', True],
                                           ],
+                                        'all_keys': True,
                                         'exclude': platform_exclude}},
                       verify_ops={'ops.platform.platform.Platform':{
                                       'requirements': [\
@@ -244,16 +247,17 @@ class TriggerReloadStandbyRP(TriggerReloadWithPriority):
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.platform.platform.Platform':{
                                         'requirements': [\
-                                            [['slot', 'rp', '(?P<standby_rp>.*)',
+                                            ['slot', 'rp', '(?P<standby_rp>.*)',
                                               'swstack_role', 'Standby'],
-                                             ['slot', 'rp', '(?P<standby_rp>.*)',
-                                              'state', 'Ready']],
-                                            [['slot', 'rp', '(?P<members>.*)',
+                                            ['slot', 'rp', '(?P<standby_rp>.*)',
+                                              'state', 'Ready'],
+                                            ['slot', 'rp', '(?P<members>.*)',
                                               'swstack_role', 'Member'],
-                                             ['slot', 'rp', '(?P<members>.*)',
-                                              'state', 'Ready']],
-                                            [['redundancy_communication', True]],
+                                            ['slot', 'rp', '(?P<members>.*)',
+                                              'state', 'Ready'],
+                                            ['redundancy_communication', True],
                                           ],
+                                        'all_keys': True,
                                         'exclude': platform_exclude}},
                       verify_ops={'ops.platform.platform.Platform':{
                                       'requirements': [\
@@ -301,6 +305,7 @@ class TriggerReloadMember(TriggerReloadLc):
                                             ['slot', 'rp', '(?P<members>.*)',
                                               'state', 'Ready']
                                           ],
+                                        'all_keys': True,
                                         'exclude': platform_exclude}},
                       verify_ops={'ops.platform.platform.Platform':{
                                       'requirements': [\

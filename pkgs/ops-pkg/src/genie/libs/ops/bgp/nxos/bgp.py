@@ -1023,7 +1023,7 @@ class Bgp(Base):
         ########################################################################
 
         # Make final Ops structure
-        self.make()
+        self.make(final_call=True)
 
         # Delete unnecessary keys
         try:

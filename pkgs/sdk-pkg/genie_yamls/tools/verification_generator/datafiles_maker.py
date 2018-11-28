@@ -58,8 +58,7 @@ EXCLUDE_DEVICES = ['Verify_BgpOpenconfigYang_yang',
                    'Verify_NveInterface']
 
 CONTEXTS = ['cli', 'yang', 'xml', 'rest']
-
-OSES = ['iosxe', 'ios', 'iosxr', 'nxos']
+OSES = ['iosxe', 'ios', 'iosxr', 'nxos', 'junos']
 YAMLS = os.path.join(os.environ['VIRTUAL_ENV'], 'genie_yamls')
 
 class CreateVerificationDataFiles(object):
@@ -144,10 +143,13 @@ class CreateVerificationDataFiles(object):
         iosxe_file = {'extends': '%ENV{VIRTUAL_ENV}/genie_yamls/verification_datafile.yaml'}
         ios_file = {'extends': '%ENV{VIRTUAL_ENV}/genie_yamls/verification_datafile.yaml'}
         iosxr_file = {'extends': '%ENV{VIRTUAL_ENV}/genie_yamls/verification_datafile.yaml'}
+        junos_file = {'extends': '%ENV{VIRTUAL_ENV}/genie_yamls/verification_datafile.yaml'}
         nxos = []
         iosxe = []
         ios = []
         iosxr = []
+        junos = []        
+        ios = []
         # Load the file
         with open(datafile, 'r') as f:
             parser_yaml = yaml.safe_load(f)
@@ -172,6 +174,10 @@ class CreateVerificationDataFiles(object):
         with open(iosxr_yaml, 'r') as f:
             iosxr_content = yaml.safe_load(f)
 
+        junos_yaml = os.path.join(YAMLS, 'junos', 'verification_datafile_junos.yaml')
+        with open(junos_yaml, 'r') as f:
+            junos_content = yaml.safe_load(f)
+
         # All parser should be in this verification datafile
         for osx in self.parsers:
             if osx == 'nxos':
@@ -190,6 +196,10 @@ class CreateVerificationDataFiles(object):
                 os_yaml = iosxr_content
                 os_file = iosxr_file
                 triggers = iosxr
+            elif osx == 'junos':
+                os_yaml = junos_content
+                os_file = junos_file
+                triggers = junos
 
             for file in self.parsers[osx]:
                 for parser in self.parsers[osx][file]:
@@ -328,6 +338,10 @@ class CreateVerificationDataFiles(object):
         with open('iosxr/verification_datafile_xr.yaml', 'w') as f:
             yaml.dump(iosxr_file, f, default_flow_style=False)
 
+        self.clean_up('junos')
+        with open('junos/verification_datafile_junos.yaml', 'w') as f:
+            yaml.dump(junos_file, f, default_flow_style=False)
+
         log.info(banner('nxos'))
         log.info('\n'.join(nxos))
 
@@ -339,6 +353,10 @@ class CreateVerificationDataFiles(object):
 
         log.info(banner('iosxr'))
         log.info('\n'.join(iosxr))
+
+        log.info(banner('junos'))
+        log.info('\n'.join(junos))
+        
         return main_file
 
     def clean_up(self, dir):

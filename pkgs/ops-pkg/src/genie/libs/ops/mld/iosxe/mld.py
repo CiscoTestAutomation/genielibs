@@ -128,4 +128,4 @@ class Mld(Base):
 
 
             # make to write in cache
-            self.make()
+            self.make(final_call=True)

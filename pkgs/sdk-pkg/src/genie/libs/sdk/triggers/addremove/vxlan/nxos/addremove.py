@@ -13,7 +13,7 @@ from functools import partial
 # ATS
 from ats.utils.objects import NotExists, Not
 
-vxlan_exclude =['maker']
+vxlan_exclude =['maker','up_time']
 interface_exclude = ['maker', 'last_change','in_rate','in_rate_pkts',
                      'out_rate', 'out_rate_pkts', 'in_octets',
                      'in_pkts', 'in_unicast_pkts', 'out_octets',
@@ -147,8 +147,8 @@ class TriggerAddRemoveEvpnMsiteBgwDelayRestoreTime(TriggerAddRemove):
                6. Learn Vxlan Ops again and verify it is the same as the Ops in step 1.
            """
     mapping = Mapping(requirements={'ops.vxlan.vxlan.Vxlan': {
-                                        'requirements': [[['nve', 'evpn_multisite_border_gateway', '(?P<border_gateway>.*)']],
-                                                         [['nve', NotExists('multisite_convergence_time')]]],
+                                        'requirements': [['nve', 'evpn_multisite_border_gateway', '(?P<border_gateway>.*)'],
+                                                         ['nve', NotExists('multisite_convergence_time')]],
                                         'kwargs': {'attributes': ['nve[(.*)][vni][(.*)]',
                                                                   'nve[evpn_multisite_border_gateway]',
                                                                   'nve[multisite_convergence_time]','bgp_l2vpn_evpn','l2route']},

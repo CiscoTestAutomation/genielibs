@@ -86,7 +86,9 @@ class TriggerUnconfigConfigVxlanNveOverlayInterface(TriggerUnconfigConfig):
                                         'exclude': nve_exclude + multisite_exclude+ ['tx_id','flags','peer_id','pathnr',
                                                                                      'bestpathnr','advertisedto','prefixversion',
                                                                                      'prefixreceived','mac','prefix','bytesattrs',
-                                                                                     'memoryused', 'numberattrs']}},
+                                                                                     'memoryused','totalpaths', 'numberattrs','mac_ip',
+                                                                                     'memory','objects','total_mem','total_obj','total_memory',
+                                                                                     'totalnetworks']}},
                       config_info={'conf.interface.Interface':{
                                         'requirements':[],
                                         'verify_conf':False,

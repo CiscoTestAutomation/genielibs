@@ -14,6 +14,7 @@ from genie.utils.diff import Diff
 from genie.conf.base.attributes import SubAttributesDict
 
 # import ats
+from ats.log.utils import banner
 from ats.utils.objects import find, R, Operator
 
 # Genie Libs

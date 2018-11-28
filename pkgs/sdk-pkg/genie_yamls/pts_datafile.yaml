@@ -95,6 +95,8 @@ bgp:
         - connections_established
         - advertised
         - prefixes
+        - routes
+        - state_pfxrcd
 
 interface:
     source:
@@ -280,6 +282,11 @@ vxlan:
         - prefix
         - objects
         - total_obj
+        - table_version
+        - l2_oiflist_index
+        - num_of_oifs
+        - oifs
+
 msdp:
     source:
         pkg: genie.libs.ops
@@ -299,3 +306,5 @@ ntp:
     exclude:
         - root_delay
         - delay
+        - root_dispersion
+        - receive_time

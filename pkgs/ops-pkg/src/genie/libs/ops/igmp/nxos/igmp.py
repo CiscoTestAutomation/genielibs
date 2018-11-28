@@ -76,4 +76,4 @@ class Igmp(Base):
                               vrf='all')
 
         # make to write in cache
-        self.make()
+        self.make(final_call=True)

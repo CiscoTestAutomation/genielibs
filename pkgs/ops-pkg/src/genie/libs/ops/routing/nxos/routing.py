@@ -97,4 +97,4 @@ class Routing(Base):
                           dest=dest_routing_hop_v6 + '[{}]'.format(key),
                           vrf='all')
 
-        self.make()
+        self.make(final_call=True)

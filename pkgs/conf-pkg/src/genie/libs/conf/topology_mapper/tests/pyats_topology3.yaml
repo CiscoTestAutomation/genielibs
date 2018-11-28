@@ -1,0 +1,155 @@
+devices:
+  enxr__R1:
+    alias: R1
+    connections:
+      a: {protocol: xrutconnect}
+    os: iosxr
+    passwords: {enable: lab, line: lab, tacacs: lab}
+    tacacs: {username: lab}
+    type: enxr
+  enxr__R2:
+    alias: R2
+    connections:
+      a: {port: 0, protocol: xrutconnect}
+      b: {port: 1, protocol: xrutconnect}
+    os: iosxr
+    passwords: {enable: lab, line: lab, tacacs: lab}
+    tacacs: {username: lab}
+    type: enxr
+  enxr__R3:
+    alias: R3
+    connections:
+      a: {protocol: xrutconnect}
+    os: iosxr
+    passwords: {enable: lab, line: lab, tacacs: lab}
+    tacacs: {username: lab}
+    type: enxr
+  enxr__R4:
+    alias: R4
+    connections:
+      a: {protocol: xrutconnect}
+    os: iosxr
+    passwords: {enable: lab, line: lab, tacacs: lab}
+    tacacs: {username: lab}
+    type: enxr
+  enxr__R5:
+    alias: R5
+    connections:
+      a: {protocol: xrutconnect}
+    os: iosxr
+    passwords: {enable: lab, line: lab, tacacs: lab}
+    tacacs: {username: lab}
+    type: enxr
+testbed:
+  bringup:
+    xrut: {base_dir: /auto/xrut/xrut-gold, sim_dir: /nobackup/bpetrovi/xr-dev}
+  name: l2vpn_ha_job.2016Nov04_16_38_25
+topology:
+  enxr__R1:
+    interfaces:
+      GigabitEthernet0/2/0/0: {alias: GE0, ipv4: 10.10.10.2/24, ipv6: '10:10:10::2/64',
+        link: R1_R2_1, type: ethernet}
+      GigabitEthernet0/2/0/1: {alias: GE1, ipv4: 11.11.11.2/24, ipv6: '11:11:11::2/64',
+        link: R1_R2_2, type: ethernet}
+      GigabitEthernet0/2/0/2: {alias: GE2, ipv4: 12.12.12.2/24, ipv6: '12:12:12::2/64',
+        link: R1_R2_3, type: ethernet}
+      GigabitEthernet0/2/0/3: {alias: GE3, ipv4: 13.13.13.2/24, ipv6: '13:13:13::2/64',
+        link: R1_R3_1, type: ethernet}
+      GigabitEthernet0/2/0/4: {alias: GE4, ipv4: 14.14.14.2/24, ipv6: '14:14:14::2/64',
+        link: R1_R3_2, type: ethernet}
+      GigabitEthernet0/2/0/5: {alias: GE5, ipv4: 15.15.15.2/24, ipv6: '15:15:15::2/64',
+        link: R1_R4_1, type: ethernet}
+      GigabitEthernet0/2/0/6: {alias: GE6, ipv4: 16.16.16.2/24, ipv6: '16:16:16::2/64',
+        link: R1_R4_2, type: ethernet}
+      GigabitEthernet0/2/0/7: {alias: GE7, ipv4: 17.17.17.2/24, ipv6: '17:17:17::2/64',
+        link: R1_R5_1, type: ethernet}
+      GigabitEthernet0/2/0/8: {alias: GE8, ipv4: 18.18.18.2/24, ipv6: '18:18:18::2/64',
+        link: R1_R5_2, type: ethernet}
+      Loopback0: {ipv4: 192.168.0.2/32, ipv6: '192::2/128', link: enxr__R1_Loopback0,
+        type: loopback}
+  enxr__R2:
+    interfaces:
+      GigabitEthernet0/2/0/0: {alias: GE0, ipv4: 10.10.10.1/24, ipv6: '10:10:10::1/64',
+        link: R1_R2_1, type: ethernet}
+      GigabitEthernet0/2/0/1: {alias: GE1, ipv4: 11.11.11.1/24, ipv6: '11:11:11::1/64',
+        link: R1_R2_2, type: ethernet}
+      GigabitEthernet0/2/0/2: {alias: GE2, ipv4: 12.12.12.1/24, ipv6: '12:12:12::1/64',
+        link: R1_R2_3, type: ethernet}
+      GigabitEthernet0/2/0/3: {alias: GE3, ipv4: 19.19.19.1/24, ipv6: '19:19:19::1/64',
+        link: R2_R3_1, type: ethernet}
+      GigabitEthernet0/2/0/4: {alias: GE4, ipv4: 20.20.20.1/24, ipv6: '20:20:20::1/64',
+        link: R2_R3_2, type: ethernet}
+      GigabitEthernet0/2/0/5: {alias: GE5, ipv4: 21.21.21.1/24, ipv6: '21:21:21::1/64',
+        link: R2_R3_3, type: ethernet}
+      GigabitEthernet0/2/0/6: {alias: GE6, ipv4: 22.22.22.1/24, ipv6: '22:22:22::1/64',
+        link: R2_R4_1, type: ethernet}
+      GigabitEthernet0/2/0/7: {alias: GE7, ipv4: 23.23.23.1/24, ipv6: '23:23:23::1/64',
+        link: R2_R4_2, type: ethernet}
+      GigabitEthernet0/2/0/8: {alias: GE8, ipv4: 24.24.24.1/24, ipv6: '24:24:24::1/64',
+        link: R2_R5_1, type: ethernet}
+      GigabitEthernet0/2/0/9: {alias: GE9, ipv4: 25.25.25.1/24, ipv6: '25:25:25::1/64',
+        link: R2_R5_2, type: ethernet}
+      Loopback0: {ipv4: 192.168.0.1/32, ipv6: '192::1/128', link: enxr__R2_Loopback0,
+        type: loopback}
+  enxr__R3:
+    interfaces:
+      GigabitEthernet0/2/0/0: {alias: GE0, ipv4: 13.13.13.3/24, ipv6: '13:13:13::3/64',
+        link: R1_R3_1, type: ethernet}
+      GigabitEthernet0/2/0/1: {alias: GE1, ipv4: 14.14.14.3/24, ipv6: '14:14:14::3/64',
+        link: R1_R3_2, type: ethernet}
+      GigabitEthernet0/2/0/2: {alias: GE2, ipv4: 19.19.19.3/24, ipv6: '19:19:19::3/64',
+        link: R2_R3_1, type: ethernet}
+      GigabitEthernet0/2/0/3: {alias: GE3, ipv4: 20.20.20.3/24, ipv6: '20:20:20::3/64',
+        link: R2_R3_2, type: ethernet}
+      GigabitEthernet0/2/0/4: {alias: GE4, ipv4: 21.21.21.3/24, ipv6: '21:21:21::3/64',
+        link: R2_R3_3, type: ethernet}
+      GigabitEthernet0/2/0/5: {alias: GE5, ipv4: 26.26.26.3/24, ipv6: '26:26:26::3/64',
+        link: R3_R4_1, type: ethernet}
+      GigabitEthernet0/2/0/6: {alias: GE6, ipv4: 27.27.27.3/24, ipv6: '27:27:27::3/64',
+        link: R3_R4_2, type: ethernet}
+      GigabitEthernet0/2/0/7: {alias: GE7, ipv4: 28.28.28.3/24, ipv6: '28:28:28::3/64',
+        link: R3_R5_1, type: ethernet}
+      GigabitEthernet0/2/0/8: {alias: GE8, ipv4: 29.29.29.3/24, ipv6: '29:29:29::3/64',
+        link: R3_R5_2, type: ethernet}
+      Loopback0: {ipv4: 192.168.0.3/32, ipv6: '192::3/128', link: enxr__R3_Loopback0,
+        type: loopback}
+  enxr__R4:
+    interfaces:
+      GigabitEthernet0/2/0/0: {alias: GE0, ipv4: 15.15.15.4/24, ipv6: '15:15:15::4/64',
+        link: R1_R4_1, type: ethernet}
+      GigabitEthernet0/2/0/1: {alias: GE1, ipv4: 16.16.16.4/24, ipv6: '16:16:16::4/64',
+        link: R1_R4_2, type: ethernet}
+      GigabitEthernet0/2/0/2: {alias: GE2, ipv4: 22.22.22.4/24, ipv6: '22:22:22::4/64',
+        link: R2_R4_1, type: ethernet}
+      GigabitEthernet0/2/0/3: {alias: GE3, ipv4: 23.23.23.4/24, ipv6: '23:23:23::4/64',
+        link: R2_R4_2, type: ethernet}
+      GigabitEthernet0/2/0/4: {alias: GE4, ipv4: 26.26.26.4/24, ipv6: '26:26:26::4/64',
+        link: R3_R4_1, type: ethernet}
+      GigabitEthernet0/2/0/5: {alias: GE5, ipv4: 27.27.27.4/24, ipv6: '27:27:27::4/64',
+        link: R3_R4_2, type: ethernet}
+      GigabitEthernet0/2/0/6: {alias: GE6, ipv4: 30.30.30.4/24, ipv6: '30:30:30::4/64',
+        link: R4_R5_1, type: ethernet}
+      GigabitEthernet0/2/0/7: {alias: GE7, ipv4: 31.31.31.4/24, ipv6: '31:31:31::4/64',
+        link: R4_R5_2, type: ethernet}
+      Loopback0: {ipv4: 192.168.0.4/32, ipv6: '192::4/128', link: enxr__R4_Loopback0,
+        type: loopback}
+  enxr__R5:
+    interfaces:
+      GigabitEthernet0/2/0/0: {alias: GE0, ipv4: 17.17.17.5/24, ipv6: '17:17:17::5/64',
+        link: R1_R5_1, type: ethernet}
+      GigabitEthernet0/2/0/1: {alias: GE1, ipv4: 18.18.18.5/24, ipv6: '18:18:18::5/64',
+        link: R1_R5_2, type: ethernet}
+      GigabitEthernet0/2/0/2: {alias: GE2, ipv4: 24.24.24.5/24, ipv6: '24:24:24::5/64',
+        link: R2_R5_1, type: ethernet}
+      GigabitEthernet0/2/0/3: {alias: GE3, ipv4: 25.25.25.5/24, ipv6: '25:25:25::5/64',
+        link: R2_R5_2, type: ethernet}
+      GigabitEthernet0/2/0/4: {alias: GE4, ipv4: 28.28.28.5/24, ipv6: '28:28:28::5/64',
+        link: R3_R5_1, type: ethernet}
+      GigabitEthernet0/2/0/5: {alias: GE5, ipv4: 29.29.29.5/24, ipv6: '29:29:29::5/64',
+        link: R3_R5_2, type: ethernet}
+      GigabitEthernet0/2/0/6: {alias: GE6, ipv4: 30.30.30.5/24, ipv6: '30:30:30::5/64',
+        link: R4_R5_1, type: ethernet}
+      GigabitEthernet0/2/0/7: {alias: GE7, ipv4: 31.31.31.5/24, ipv6: '31:31:31::5/64',
+        link: R4_R5_2, type: ethernet}
+      Loopback0: {ipv4: 192.168.0.5/32, ipv6: '192::5/128', link: enxr__R5_Loopback0,
+        type: loopback}

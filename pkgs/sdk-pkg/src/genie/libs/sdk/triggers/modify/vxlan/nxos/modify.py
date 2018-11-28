@@ -14,7 +14,7 @@ from genie.libs.conf.base import IPv4Address
 from ats import aetest
 
 # Which key to exclude for VXLAN Ops comparison
-vxlan_exclude = ['maker', 'uptime']
+vxlan_exclude = ['maker', 'uptime','up_time']
 interface_exclude = ['maker', 'last_change','in_rate','in_rate_pkts',
                      'out_rate', 'out_rate_pkts', 'in_octets',
                      'in_pkts', 'in_unicast_pkts', 'out_octets',
@@ -26,7 +26,7 @@ multisite_exclude = ['multisite_bgw_if', 'multisite_bgw_if_admin_state',
                      'multisite_bgw_if_ip', 'multisite_bgw_if_oper_state',
                      'multisite_bgw_if_oper_state_down_reason', 'vip_rmac_ro']
 
-vxlan_base_exclude = ['maker']
+vxlan_base_exclude = ['maker','uptime','up_time']
 log = logging.getLogger(__name__)
 
 class TriggerModifyNveMultisiteBgwInterface(TriggerModify):
@@ -107,9 +107,9 @@ class TriggerModifyNveMultisiteBgwInterface(TriggerModify):
             super().verify_configuration(uut, abstract, steps)
 
     mapping = Mapping(requirements={'ops.vxlan.vxlan.Vxlan': {
-                                        'requirements': [[['nve', '(?P<nve_name>.*)', 'source_if', '(?P<source_if>.*)']],
-                                                         [['nve', '(?P<nve_name>.*)', 'multisite_bgw_if', '(?P<multisite_bgw_if>.*)']],
-                                                         [['nve', '(?P<nve_name>.*)', 'vni', '(.*)', 'vni_state', 'up']]],
+                                        'requirements': [['nve', '(?P<nve_name>.*)', 'source_if', '(?P<source_if>.*)'],
+                                                         ['nve', '(?P<nve_name>.*)', 'multisite_bgw_if', '(?P<multisite_bgw_if>.*)'],
+                                                         ['nve', '(?P<nve_name>.*)', 'vni', '(?P<vni>.*)', 'vni_state', 'up']],
                                         'all_keys': True,
                                         'kwargs': {'attributes': ['nve[(.*)][vni][(.*)]',
                                                                   'nve[(.*)][source_if]',
@@ -125,7 +125,7 @@ class TriggerModifyNveMultisiteBgwInterface(TriggerModify):
                                         'verify_conf': False,
                                         'kwargs': {'mandatory': {'name': '(?P<nve_name>.*)', 'attach': False}}}},
                     verify_ops={'ops.vxlan.vxlan.Vxlan': {
-                                        'requirements': [['nve', '(?P<nve_name>.*)', 'vni', '(.*)', 'vni_state', 'down']],
+                                        'requirements': [['nve', '(?P<nve_name>.*)', 'vni', '(?P<vni>.*)', 'vni_state', 'down']],
                                         'kwargs': {'attributes': ['nve[(.*)][vni][(.*)]',
                                                                   'nve[(.*)][source_if]',
                                                                   'nve[(.*)][multisite_bgw_if]','l2route']},
@@ -212,7 +212,7 @@ class TriggerModifyNveVniMcastGroup(TriggerModify):
                                                           ['nve','(?P<nve_name>.*)','vni','(?P<nve_vni>.*)','vni_state','up']],
                                           'kwargs':{'attributes':['nve[(.*)][vni][(.*)][mcast]',
                                                                   'nve[(.*)][vni][(.*)][vni_state]']},
-                                           'all_keys':True,
+                                          'all_keys': True,
                                           'exclude': vxlan_base_exclude}},
                       config_info={'conf.interface.Interface': {
                                      'requirements':[[partial(configure_mcast_group, mcast='(?P<mcast>.*)')]],
@@ -274,7 +274,8 @@ class TriggerModifyEvpnMsiteBgwDelayRestoreTime(TriggerModify):
     """
     mapping = Mapping(requirements={'ops.vxlan.vxlan.Vxlan': {
                                         'requirements': [[['nve', 'evpn_multisite_border_gateway', '(?P<border_gateway>.*)']],
-                                                         [['nve','(?P<nve_name>.*)', 'multisite_convergence_time','(.*)']]],
+                                                         [['nve','(?P<nve_name>.*)', 'multisite_convergence_time',
+                                                          '(?P<multisite_convergence_time>.*)']]],
                                         'kwargs': {'attributes': ['nve[(.*)][multisite_convergence_time]',
                                                                   'nve[(.*)][vni][(.*)]',
                                                                   'nve[evpn_multisite_border_gateway]']},
@@ -413,9 +414,9 @@ class TriggerModifyNveSourceInterfaceLoopback(TriggerModify):
             self.failed('Failed to restore the configuration', from_exception=e)
 
     mapping = Mapping(requirements={'ops.vxlan.vxlan.Vxlan':{
-                                            'requirements': [[['nve', '(?P<nve_name>.*)', 'source_if', '(?P<source_if>.*)']],
-                                                             [['nve', '(?P<nve_name>.*)', 'src_if_state', 'up']],
-                                                             [['nve', '(?P<nve_name>.*)', 'multisite_bgw_if', '(?P<multisite_bgw_if>.*)']]],
+                                            'requirements': [['nve', '(?P<nve_name>.*)', 'source_if', '(?P<source_if>.*)'],
+                                                             ['nve', '(?P<nve_name>.*)', 'src_if_state', 'up'],
+                                                             ['nve', '(?P<nve_name>.*)', 'multisite_bgw_if', '(?P<multisite_bgw_if>.*)']],
                                             'all_keys': True,
                                             'kwargs': {'attributes': ['nve']},
                                             'exclude': vxlan_exclude},
@@ -429,7 +430,7 @@ class TriggerModifyNveSourceInterfaceLoopback(TriggerModify):
                                             'verify_conf': False,
                                             'kwargs': {'mandatory': {'name': '(?P<nve_name>.*)', 'attach': False}}}},
                         verify_ops={'ops.vxlan.vxlan.Vxlan': {
-                                            'requirements': [['nve', '(?P<nve_name>.*)', 'vni', '(.*)', 'vni_state', 'down'],
+                                            'requirements': [['nve', '(?P<nve_name>.*)', 'vni', '(?P<vni>.*)', 'vni_state', 'down'],
                                                              ['nve', '(?P<nve_name>.*)', 'if_state', 'down'],
                                                              ['nve', '(?P<nve_name>.*)', 'multisite_bgw_if_oper_state', 'down'],
                                                              ['nve', '(?P<nve_name>.*)', 'multisite_bgw_if_oper_state_down_reason', 'NVE not up.'],

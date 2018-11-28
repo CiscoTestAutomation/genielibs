@@ -75,4 +75,4 @@ class Lldp(Base):
                       action=self.tx_rx_both_enabled)
 
         # make to write in cache
-        self.make()
+        self.make(final_call=True)

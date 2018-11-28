@@ -28,7 +28,7 @@ class ManagementInterface(object):
 
     """
 
-    def get_interface_name(self, ipaddress, parser_obj):
+    def get_interface_name(self, device, ipaddress, parser_obj=None):
         """Method to return the ip address corresponding interface name
 
         Args:

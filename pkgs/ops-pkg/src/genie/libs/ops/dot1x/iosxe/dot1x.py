@@ -73,4 +73,4 @@ class Dot1x(Base):
                           dest=client_dst + '[{}]'.format(key))
 
         # make to write in cache
-        self.make()
+        self.make(final_call=True)
