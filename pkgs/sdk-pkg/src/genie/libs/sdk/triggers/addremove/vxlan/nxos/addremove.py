@@ -148,7 +148,7 @@ class TriggerAddRemoveEvpnMsiteBgwDelayRestoreTime(TriggerAddRemove):
            """
     mapping = Mapping(requirements={'ops.vxlan.vxlan.Vxlan': {
                                         'requirements': [['nve', 'evpn_multisite_border_gateway', '(?P<border_gateway>.*)'],
-                                                         ['nve', NotExists('multisite_convergence_time')]],
+                                                         ['nve', NotExists('multisite_convergence_time'), NotExists('(.*)')]],
                                         'kwargs': {'attributes': ['nve[(.*)][vni][(.*)]',
                                                                   'nve[evpn_multisite_border_gateway]',
                                                                   'nve[multisite_convergence_time]','bgp_l2vpn_evpn','l2route']},

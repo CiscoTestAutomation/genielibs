@@ -659,6 +659,7 @@ class Mapping(object):
         # Requirement to verify for a specific Ops object
         for obj, requirements in self._verify_ops_dict.items():
             name = obj.split('.')[-1]
+
             a = 'an' if name[0].lower() in VOWEL else 'a'
             log.info("Verify the '{}' state to make sure the following "
                      "requirements are respected:"
@@ -894,7 +895,14 @@ class Mapping(object):
 
                     # TODO: Make this..more unique
                     if callable(item):
-                        item = item(self.keys)
+                        # This try is for avoiding populate_path for
+                        # _requirtment_printer when conf object has
+                        # callable
+                        try:
+                            item = item(self.keys)
+                        except Exception:
+                            loc.append(item)
+                            continue
                     if not isinstance(item, str):
                         loc.append(item)
                         continue

@@ -78,6 +78,8 @@ class Ntp(Base):
                         mode_dict.setdefault('isconfigured', {}).update(self.info['vrf'][vrf]['associations']['address'][peer]['isconfigured'])
                         for configured in mode_dict['isconfigured']:
                             mode_dict['isconfigured'][configured].update(self.info['associations']['address'][peer]['local_mode'][local_mode])
+                            mode_dict['isconfigured'][configured]['vrf'] = vrf
+                            mode_dict['isconfigured'][configured]['local_mode'] = local_mode
                    
                     try:
                         del(self.info['vrf'][vrf]['associations']['address'][peer]['isconfigured'])

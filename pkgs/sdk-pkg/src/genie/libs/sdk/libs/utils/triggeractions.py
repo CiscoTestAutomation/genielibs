@@ -254,7 +254,7 @@ class CompareCounters(object):
 
         if not counters:
             raise Exception('No required counters are found. '
-                'Required: \n{}' % [r.args for r in r_obj])
+                'Required: \n{}'.format([r.args for r in r_obj]))
 
         # Compare counter
         for items in counters:

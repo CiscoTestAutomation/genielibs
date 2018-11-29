@@ -769,7 +769,7 @@ TriggerModifyBgpNeighborPassword:
     devices: ['uut']
 
 TriggerModifyNveMultisiteBgwInterface:
-    groups: ['modify', 'vxlan', 'L3']
+    groups: ['modify', 'L3']
     method: 'checkpoint'
     timeout:
        max_time: 180
@@ -1557,7 +1557,7 @@ TriggerUnconfigConfigNveSourceInterfaceLoopback:
 #    devices: ['uut']
 
 TriggerUnconfigConfigNveVniMcastGroup:
-    groups: ['unconfig-config', 'vxlan', 'L3']
+    groups: ['unconfig-config', 'L3']
     method: 'checkpoint'
     timeout:
       max_time: 180

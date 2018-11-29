@@ -194,3 +194,52 @@ class NtpOutput(object):
             }
         }
     }
+
+
+class NtpOutputNoConfig(object):
+
+    ShowNtpPeers = '''
+        --------------------------------------------------
+        Peer IP Address               Serv/Peer          
+      --------------------------------------------------
+        127.127.1.0                   Server (configured)
+    '''
+
+    ShowNtpPeerStatus = '''
+        Total peers : 1
+        * - selected for sync, + -  peer mode(active), 
+        - - peer mode(passive), = - polled in client mode 
+            remote                                 local                                   st   poll   reach delay   vrf
+        -----------------------------------------------------------------------------------------------------------------------
+        *127.127.1.0                             0.0.0.0                                  3   16       1   0.00000
+
+    '''
+
+    Ntp_info = {
+        "vrf": {
+            "default": {
+                 "unicast_configuration": {
+                      "address": {
+                           "127.127.1.0": {
+                                "type": {
+                                     "server": {
+                                          "source": "0.0.0.0",
+                                          "type": "server",
+                                          "address": "127.127.1.0",
+                                          "vrf": "default"
+                                     }
+                                }
+                           }
+                      }
+                 }
+            }
+        },
+        "clock_state": {
+            "system_status": {
+                 "clock_state": "synchronized",
+                 "clock_stratum": 3,
+                 "root_delay": 0.0,
+                 "associations_address": "127.127.1.0"
+            }
+        }
+    }

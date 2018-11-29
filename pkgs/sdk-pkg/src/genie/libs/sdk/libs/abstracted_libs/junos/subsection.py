@@ -28,7 +28,6 @@ def save_device_information(device, **kwargs):
 
     # bypass the section
     log.info('Junos device does not have bootvar.')
-    pass
 
 
 def get_default_dir(device):
