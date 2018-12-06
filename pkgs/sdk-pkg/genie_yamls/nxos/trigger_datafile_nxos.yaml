@@ -3678,6 +3678,7 @@ TriggerReload:
 
 TriggerReloadFabricModule:
     groups: ['ha', 'reload', 'L3']
+    lcRole: lc
     timeout:
       max_time: 600
       interval: 60
@@ -3700,7 +3701,7 @@ TriggerReloadActiveSystemController:
                            'Verify_VdcMembershipStatus',
                            'Verify_Version']
     update_pts_features: ['platform']
-    lcRole: active
+    lcRole: lc
     timeout:
       max_time: 400
       interval: 60
@@ -3711,6 +3712,7 @@ TriggerReloadActiveSystemController:
 
 TriggerReloadStandbySystemController:
     groups: ['ha', 'reload', 'L3']
+    lcRole: lc
     update_verifications: ['Verify_Module',
                            'Verify_Boot',
                            'Verify_Dir',
@@ -3733,6 +3735,7 @@ TriggerReloadStandbySystemController:
 
 TriggerReloadEthernetModule:
     groups: ['ha', 'reload', 'L3']
+    lcRole: lc
     timeout:
       max_time: 500
       interval: 60

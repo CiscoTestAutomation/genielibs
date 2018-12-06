@@ -79,8 +79,7 @@ def save_bootvar(self, testbed):
             if res == 'Failed':
                 failed = True
                 msg = "    - Failed to save boot variable or copy "\
-                    "running-config to startup-config, won't try for the rest"\
-                    " of the devices"
+                    "running-config to startup-config"
                 summarize(summary, message=msg, device=dev)
             else:
                 msg = "    - Successfully saved boot variable"

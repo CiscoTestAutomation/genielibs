@@ -55,8 +55,9 @@ PYPI_PKGS      = conf ops robot sdk
 
 ALL_PKGS       = $(PYPI_PKGS)
 
-ifeq ($(MAKECMDGOALS), devnet)
-	BUILD_CMD += --devnet
+# build options
+ifeq ($(DEVNET), true)
+    BUILD_CMD += --devnet
 endif
 
 .PHONY: help docs distribute_docs clean check devnet\
@@ -68,15 +69,15 @@ help:
 	@echo ""
 	@echo "     --- common actions ---"
 	@echo ""
-	@echo "    check                check setup.py content"
-	@echo " clean                remove the build directory ($(BUILD_DIR))"
-	@echo " help                 display this help"
-	@echo " test                 run all unittests in an efficient manner"
-	@echo " develop              set all package to development mode"
-	@echo " undevelop            unset the above development mode"
-	@echo "devnet                Build DevNet package."
-	@echo "install_build_deps    install pyats-distutils"
-	@echo "uninstall_build_deps  remove pyats-distutils"
+	@echo " check                 check setup.py content"
+	@echo " clean                 remove the build directory ($(BUILD_DIR))"
+	@echo " help                  display this help"
+	@echo " test                  run all unittests in an efficient manner"
+	@echo " develop               set all package to development mode"
+	@echo " undevelop             unset the above development mode"
+	@echo " devnet                Build DevNet package."
+	@echo " install_build_deps    install pyats-distutils"
+	@echo " uninstall_build_deps  remove pyats-distutils"
 	@echo ""
 	@echo "     --- build all targets ---"
 	@echo ""

@@ -57,6 +57,7 @@ platform:
         - image
         - sn
         - rp_boot_image
+        - installed_packages
 
 bgp:
     source:

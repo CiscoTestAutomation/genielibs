@@ -105,6 +105,12 @@ class TriggerReloadWithPriority(TriggerReloadLc):
         except Exception as e:
             self.skipped('Cannot learn the feature', from_exception=e,
                          goto=['next_tc'])
+            
+        for stp in steps.details:
+            if stp.result.name == 'skipped':
+                self.skipped('Cannot learn the feature', goto=['next_tc'])
+
+        self.print_local_verifications()
 
         # get and store the member priority list
         try:
@@ -130,18 +136,18 @@ class TriggerReloadWithPriority(TriggerReloadLc):
                     # update the verify_ops requirements
                     # The next standby switch will be the memeber
                     # with highest priority
-                    for ops, requirements in self.mapping._verify_ops.items():
+                    for ops, requirements in self.mapping._verify_ops_dict.items():
                         if 'platform' in ops:
-                            self.mapping._verify_ops[ops]['requirements'].append(
+                            self.mapping._verify_ops_dict[ops]['requirements'].append(
                                 ['slot', 'rp', '{}'.format(priority_list[-1][0]),
                                  'swstack_role', 'Standby'])
                 else:                    
                     # update the verify_ops requirements
                     # If all memeber with same priority, the standby will be
                     # randomly from the members
-                    for ops, requirements in self.mapping._verify_ops.items():
+                    for ops, requirements in self.mapping._verify_ops_dict.items():
                         if 'platform' in ops:
-                            self.mapping._verify_ops[ops]['requirements'].append(
+                            self.mapping._verify_ops_dict[ops]['requirements'].append(
                                 ['slot', 'rp', '(?P<members>.*)',
                                  'swstack_role', '(Standby|Member)'])
         except Exception as e:
@@ -185,19 +191,19 @@ class TriggerReloadActiveRP(TriggerReloadWithPriority):
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.platform.platform.Platform':{
                                         'requirements': [\
-                                            ['slot', 'rp', '(?P<active_rp>.*)',
+                                            [['slot', 'rp', '(?P<active_rp>.*)',
                                               'swstack_role', 'Active'],
                                             ['slot', 'rp', '(?P<active_rp>.*)',
-                                              'state', 'Ready'],
-                                            ['slot', 'rp', '(?P<standby_rp>.*)',
+                                              'state', 'Ready']],
+                                            [['slot', 'rp', '(?P<standby_rp>.*)',
                                               'swstack_role', 'Standby'],
                                             ['slot', 'rp', '(?P<standby_rp>.*)',
-                                              'state', 'Ready'],
-                                            ['slot', 'rp', '(?P<members>.*)',
+                                              'state', 'Ready']],
+                                            [['slot', 'rp', '(?P<members>.*)',
                                               'swstack_role', 'Member'],
                                             ['slot', 'rp', '(?P<members>.*)',
-                                              'state', 'Ready'],
-                                            ['redundancy_communication', True],
+                                              'state', 'Ready']],
+                                            [['redundancy_communication', True]],
                                           ],
                                         'all_keys': True,
                                         'exclude': platform_exclude}},
@@ -247,15 +253,15 @@ class TriggerReloadStandbyRP(TriggerReloadWithPriority):
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.platform.platform.Platform':{
                                         'requirements': [\
-                                            ['slot', 'rp', '(?P<standby_rp>.*)',
+                                            [['slot', 'rp', '(?P<standby_rp>.*)',
                                               'swstack_role', 'Standby'],
                                             ['slot', 'rp', '(?P<standby_rp>.*)',
-                                              'state', 'Ready'],
-                                            ['slot', 'rp', '(?P<members>.*)',
+                                              'state', 'Ready']],
+                                            [['slot', 'rp', '(?P<members>.*)',
                                               'swstack_role', 'Member'],
                                             ['slot', 'rp', '(?P<members>.*)',
-                                              'state', 'Ready'],
-                                            ['redundancy_communication', True],
+                                              'state', 'Ready']],
+                                            [['redundancy_communication', True]],
                                           ],
                                         'all_keys': True,
                                         'exclude': platform_exclude}},

@@ -82,6 +82,12 @@ class TriggerSwitchover(CommonSwitchover):
         except Exception as e:
             self.skipped('Cannot learn the feature', from_exception=e,
                          goto=['next_tc'])
+            
+        for stp in steps.details:
+            if stp.result.name == 'skipped':
+                self.skipped('Cannot learn the feature', goto=['next_tc'])
+
+        self.print_local_verifications()
 
         # get and store the member priority list
         try:
@@ -122,19 +128,19 @@ class TriggerSwitchover(CommonSwitchover):
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.platform.platform.Platform':{
                                         'requirements': [\
-                                            ['slot', 'rp', '(?P<active_rp>.*)',
+                                            [['slot', 'rp', '(?P<active_rp>.*)',
                                               'swstack_role', 'Active'],
                                             ['slot', 'rp', '(?P<active_rp>.*)',
-                                              'state', 'Ready'],
-                                            ['slot', 'rp', '(?P<standby_rp>.*)',
+                                              'state', 'Ready']],
+                                            [['slot', 'rp', '(?P<standby_rp>.*)',
                                               'swstack_role', 'Standby'],
                                             ['slot', 'rp', '(?P<standby_rp>.*)',
-                                              'state', 'Ready'],
-                                            ['slot', 'rp', '(?P<members>.*)',
+                                              'state', 'Ready']],
+                                            [['slot', 'rp', '(?P<members>.*)',
                                               'swstack_role', 'Member'],
                                             ['slot', 'rp', '(?P<members>.*)',
-                                              'state', 'Ready'],
-                                            ['redundancy_communication', True],
+                                              'state', 'Ready']],
+                                            [['redundancy_communication', True]],
                                           ],
                                         'all_keys': True,
                                         'exclude': platform_exclude}},

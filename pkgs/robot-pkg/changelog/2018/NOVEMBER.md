@@ -1,5 +1,11 @@
 | Module                  | Version       |
 | ------------------------|:-------------:|
+| ``genie.libs.ops``      |     v3.1.6    |
+
+* Fix for the package pyats/ats dependency
+
+| Module                  | Version       |
+| ------------------------|:-------------:|
 | ``genie.libs.ops``      |     v3.1.5    |
 
 * Enahnce keyword to learn configuration now.

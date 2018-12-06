@@ -19,6 +19,7 @@ Verify_BgpAllNexthopDatabase:
   - refcount
   - igp_cost
   - igp_preference
+  - current_penalty
   groups:
   - bgp
   iteration:
@@ -776,6 +777,7 @@ Verify_BgpVrfAllAllNextHopDatabase:
   - metric_next_advertise
   - resolve_time
   - flags
+  - rib_route
   - refcount
   groups:
   - bgp

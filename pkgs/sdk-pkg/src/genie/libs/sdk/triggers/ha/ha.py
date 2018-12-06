@@ -171,6 +171,12 @@ class TriggerReload(ReloadTemplate):
         except Exception as e:
             self.skipped('Cannot learn the feature', from_exception=e,
                          goto=['next_tc'])
+            
+        for stp in steps.details:
+            if stp.result.name == 'skipped':
+                self.skipped('Cannot learn the feature', goto=['next_tc'])
+
+        self.print_local_verifications()
 
     @aetest.test
     def reload(self, uut, abstract, steps):
@@ -355,6 +361,12 @@ class TriggerIssu(IssuTemplate):
         except Exception as e:
             self.skipped('Cannot learn the feature', from_exception=e,
                          goto=['next_tc'])
+            
+        for stp in steps.details:
+            if stp.result.name == 'skipped':
+                self.skipped('Cannot learn the feature', goto=['next_tc'])
+
+        self.print_local_verifications()
 
     @aetest.test
     def prepare_issu(self, uut, abstract, steps):

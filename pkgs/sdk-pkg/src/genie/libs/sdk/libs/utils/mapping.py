@@ -477,6 +477,13 @@ class Mapping(object):
 
 
             self.keys = GroupKeys.max_amount(self.keys, self.num_values)
+            
+            # update mapping.keys with static values
+            if self._static:
+                uid = self.parent.uid.rsplit('.', 1)[0]
+                data = self.parent.parent.triggers[uid]
+                [item.update(data.get('static')) for item in self.keys]
+
             req = self._populate_path(all_requirements, device, keys=self.keys)
 
             if not req:

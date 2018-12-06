@@ -103,18 +103,35 @@ class HA(object):
                 Statement(pattern=r'\(y\/n\) +\[n\].*',
                                     action='sendline(y)',
                                     loop_continue=True,
-                                    continue_timer=False),                
+                                    continue_timer=False),
                 Statement(pattern=r'Save\? *\[yes\/no\]:.*',
                                     action='sendline(y)',
                                     loop_continue=True,
                                     continue_timer=False)
             ])
+
+            # store original error pattern
+            origin_err_pat = self.device.settings.ERROR_PATTERN.copy()
+
+            # TODO - update more with issues when seeing
+            # update the error pattern
+            self.device.settings.ERROR_PATTERN.append("Write failed: Broken pipe")
             try:
                 self.device.reload(dialog=dialog)
             except SubCommandFailure:
-                pass
+                # read the capture setting errors
+                try:
+                    out = self.device.spawn.read()
+                except Exception:
+                    out = getattr(getattr(self.device, 'spawn', None), 'buffer', None)
+
+                if 'Write failed' in str(out):
+                    log.warning('Please Notice failures during reload: %s' % str(out))
             except Exception as e:
                 raise Exception(str(e))
+
+        # revert the error pattern
+        self.device.settings.ERROR_PATTERN = origin_err_pat.copy()
             
         self._reconnect(steps=steps, timeout=timeout)
 

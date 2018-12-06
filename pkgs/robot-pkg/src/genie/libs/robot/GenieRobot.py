@@ -26,6 +26,7 @@ from genie.conf.base import loader
 from genie.conf.base import Testbed
 from genie.utils.config import Config
 from genie.harness.script import TestScript
+from genie.utils.loadattr import load_attribute
 from genie.harness._commons_internal import pickle, unpickle
 from genie.harness.discovery import GenieScriptDiscover
 from genie.harness.datafile.loader import TriggerdatafileLoader,\
@@ -784,52 +785,6 @@ class GenieRobot(object):
                                                            VerificationdatafileLoader)
         self.pts_datafile = self.testscript._load(pts_datafile,
                                                   PtsdatafileLoader)
-
-
-def load_attribute(pkg, attr_name, device=None):
-    # a pkg is used for abstraction, as the package has to be imported
-    # first
-    if pkg:
-        # Get package name
-        pkg_name = pkg.split('.')[-1]
-        # import it; if it explodes,  then it will error
-        attribute = importlib.import_module(name=pkg)
-        if getattr(attribute, '__abstract_pkg', None):
-            # Lookup is cached,  so only the first time will be slow
-            # Otherwise it is fast
-            attribute = Lookup.from_device(device,
-                                           packages={pkg_name:attribute})
-            # Build the class to use to call
-            items = attr_name.split('.')
-            items.insert(0, pkg_name)
-        else:
-            items = attr_name.split('.')
-
-        for item in items:
-            try:
-                attribute = getattr(attribute, item)
-            except LookupError as e:
-                if 'abstraction package' in str(e):
-                    # then could not find the abstracted package
-                    raise LookupError('Could not find {}.{} for device {}'
-                                      .format(pkg, attr_name, device.name))
-            except Exception as e:
-                pass
-    else:
-        # So just load it up
-        module, attr_name = attr_name.rsplit('.', 1)
-
-        # Load the module
-        mod = importlib.import_module(module)
-
-        # Find the right attribute
-        try:
-            attribute = getattr(mod, attr_name)
-        except AttributeError as e:
-            raise AttributeError("Couldn't find '{name}' in "
-                                 "'{mod}'".format(name=attr_name,
-                                                  mod=mod)) from e
-    return attribute
 
 
 class Testscript(object):
