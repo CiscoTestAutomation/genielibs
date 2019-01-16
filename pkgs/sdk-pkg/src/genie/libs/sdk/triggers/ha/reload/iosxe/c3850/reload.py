@@ -173,7 +173,17 @@ class TriggerReloadActiveRP(TriggerReloadWithPriority):
                                  in second. Default: 60
             tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,
                                in second. Default: 10
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                active_rp: `str`
+                standby_rp: `str`
+                members: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                   OR
+                   interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Platform Ops object and store the "active" and "standby" switch
            if has any, otherwise, SKIP the trigger
@@ -236,7 +246,16 @@ class TriggerReloadStandbyRP(TriggerReloadWithPriority):
                                  in second. Default: 60
             tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,
                                in second. Default: 10
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                standby_rp: `str`
+                members: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                   OR
+                   interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Platform Ops object and store the "standby" switch and "member" switch(es)
            if has any, otherwise, SKIP the trigger
@@ -291,7 +310,15 @@ class TriggerReloadMember(TriggerReloadLc):
                                  in second. Default: 60
             tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,
                                in second. Default: 10
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                members: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                   OR
+                   interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Platform Ops object and store the "member" switch(es)
            if has any, otherwise, SKIP the trigger

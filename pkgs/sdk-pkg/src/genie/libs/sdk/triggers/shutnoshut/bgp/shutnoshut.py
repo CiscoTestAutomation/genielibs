@@ -56,6 +56,18 @@ class TriggerShutNoShutBgp(TriggerShutNoShut):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                 The keys below are dynamically learnt by default.
+                 However, they can also be set to a custom value when provided in the trigger datafile.
+
+                 instance: `str`
+                 vrf: `str`
+                 neighbor: `str`
+                 bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn BGP Ops object and store the instance(s) and neighbor(s)
@@ -132,7 +144,19 @@ class TriggerShutNoShutBgpNeighbors(TriggerShutNoShut):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                 The keys below are dynamically learnt by default.
+                 However, they can also be set to a custom value when provided in the trigger datafile.
 
+                 instance: `str`
+                 vrf: `str`
+                 neighbor: `str`
+                 address_family: `str`
+                 bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn BGP Ops object and store the "established" neighbor(s)
            if has any, otherwise, SKIP the trigger
@@ -218,7 +242,18 @@ class TriggerShutNoShutBgpLoopbackInterface(TriggerShutNoShut):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                 The keys below are dynamically learnt by default.
+                 However, they can also be set to a custom value when provided in the trigger datafile.
 
+                 instance: `str`
+                 vrf: `str`
+                 neighbor: `str`
+                 interface: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn BGP Ops object and verify if has any update-source interface(s),
            and learn Interface Ops to verify if has any IP/IPv6 Loopback interface(s)
@@ -242,12 +277,12 @@ class TriggerShutNoShutBgpLoopbackInterface(TriggerShutNoShut):
         'requirements':[['info', 'instance', '(?P<instance>.*)',
                          'vrf', '(?P<vrf>.*)',
                          'neighbor', '(?P<neighbor>.*)',
-                         'update_source', '(?P<name>.*)']],
+                         'update_source', '(?P<interface>.*)']],
         'kwargs':{'attributes':['info']},
         'exclude': bgp_exclude + ['distance_local']}
 
     requirements['ops.interface.interface.Interface'] = {
-        'requirements':[['info', '(?P<name>l|Loopback[0-9\s]+)',
+        'requirements':[['info', '(?P<interface>l|Loopback[0-9\s]+)',
                          'oper_status', 'up']],
         'exclude': interface_exclude}
 
@@ -255,12 +290,12 @@ class TriggerShutNoShutBgpLoopbackInterface(TriggerShutNoShut):
                       config_info={'conf.interface.Interface':{
                                        'requirements':[['enabled', False]],
                                        'verify_conf':False,
-                                       'kwargs':{'mandatory':{'name': '(?P<name>.*)',
+                                       'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                      'requirements': [['info', '(?P<name>.*)', 'enabled', False],
-                                                       ['info', '(?P<name>.*)', 'oper_status', 'down']],
+                                      'requirements': [['info', '(?P<interface>.*)', 'enabled', False],
+                                                       ['info', '(?P<interface>.*)', 'oper_status', 'down']],
                                       'exclude': interface_exclude + ['(mti.*)'] + ['(tunnel.*)']}},
                       num_values={'instance': 1, 'vrf': 1, 'neighbor': 1,
-                                  'update_source': 1, 'name': 1,
+                                  'update_source': 1, 'interface': 1,
                                   'ipv6': 1, 'status': 1})

@@ -104,15 +104,13 @@ class test_hsrp(unittest.TestCase):
         f.learn()
         g.learn()
 
-        f.diff_ignore.append('info[Ethernet1/3][bfd_sessions_total]')
+        f.s = 2
 
         self.assertNotEqual(f, g)
         # Verify diff now
         diff = f.diff(g)
         sorted_diff = str(diff)
-        sorted_result = ("+diff_ignore: deque(['maker', 'callables', "
-            "'device', 'info[Ethernet1/3][bfd_sessions_total]'])\n"
-            "-diff_ignore: deque(['maker', 'callables', 'device'])")
+        sorted_result = ("+s: 2")
         self.assertEqual(sorted_diff, sorted_result)
 
 if __name__ == '__main__':

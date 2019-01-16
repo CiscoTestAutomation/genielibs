@@ -66,7 +66,15 @@ class TriggerAddRemoveNveAdvertiseVirtualRmac(TriggerAddRemove):
                                          trigger in seconds. Default: 180
                        interval (`int`): Wait time between iteration when looping is
                                          needed in seconds. Default: 15
+                   static:
+                       The keys below are dynamically learnt by default.
+                       However, they can also be set to a custom value when provided in the trigger datafile.
 
+                        nve_name: `str`
+
+                        (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                              OR
+                              interface: 'Ethernet1/1/1' (Specific value)
            Steps:
                1. Learn Vxlan Ops configured on device. SKIP the trigger if there
                   is no vxlan configured on the device.
@@ -134,7 +142,15 @@ class TriggerAddRemoveEvpnMsiteBgwDelayRestoreTime(TriggerAddRemove):
                                          trigger in seconds. Default: 180
                        interval (`int`): Wait time between iteration when looping is
                                          needed in seconds. Default: 15
+                   static:
+                       The keys below are dynamically learnt by default.
+                       However, they can also be set to a custom value when provided in the trigger datafile.
 
+                       evpn_multisite_border_gateway: `int`
+
+                       (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                             OR
+                             interface: 'Ethernet1/1/1' (Specific value)
            Steps:
                1. Learn Vxlan Ops configured on device. SKIP the trigger if there
                   is no Vxlan configured on the device.
@@ -147,7 +163,7 @@ class TriggerAddRemoveEvpnMsiteBgwDelayRestoreTime(TriggerAddRemove):
                6. Learn Vxlan Ops again and verify it is the same as the Ops in step 1.
            """
     mapping = Mapping(requirements={'ops.vxlan.vxlan.Vxlan': {
-                                        'requirements': [['nve', 'evpn_multisite_border_gateway', '(?P<border_gateway>.*)'],
+                                        'requirements': [['nve', 'evpn_multisite_border_gateway', '(?P<evpn_multisite_border_gateway>.*)'],
                                                          ['nve', NotExists('multisite_convergence_time'), NotExists('(.*)')]],
                                         'kwargs': {'attributes': ['nve[(.*)][vni][(.*)]',
                                                                   'nve[evpn_multisite_border_gateway]',
@@ -155,7 +171,7 @@ class TriggerAddRemoveEvpnMsiteBgwDelayRestoreTime(TriggerAddRemove):
                                         'all_keys': True,
                                         'exclude': vxlan_exclude + multisite_exclude + ['flags'] }},
                     config_info={'conf.vxlan.Vxlan': {
-                                        'requirements': [['device_attr', '{uut}', 'evpn_msite_attr', '(?P<border_gateway>.*)',\
+                                        'requirements': [['device_attr', '{uut}', 'evpn_msite_attr', '(?P<evpn_multisite_border_gateway>.*)',\
                                                           'evpn_msite_bgw_delay_restore_time', 30]],
                                         'verify_conf': False,
                                         'kwargs': {}}},
@@ -165,7 +181,7 @@ class TriggerAddRemoveEvpnMsiteBgwDelayRestoreTime(TriggerAddRemove):
                                                                   'nve[evpn_multisite_border_gateway]',
                                                                   'nve[multisite_convergence_time]','bgp_l2vpn_evpn','l2route']},
                                         'exclude': vxlan_exclude+ ['bgp_l2vpn_evpn','l2route'] }},
-                    num_values={'nve_name': 1, 'nve_vni':1 ,'border_gateway':1 })
+                    num_values={'nve_name': 1, 'nve_vni':1 ,'evpn_multisite_border_gateway':1 })
 
 class TriggerAddRemoveNveVniMcastGroup(TriggerAddRemove):
     """Add mcast group under vxlan and then restore the
@@ -202,7 +218,17 @@ class TriggerAddRemoveNveVniMcastGroup(TriggerAddRemove):
                                      trigger in seconds. Default: 180
                    interval (`int`): Wait time between iteration when looping is
                                      needed in seconds. Default: 15
+               static:
+                   The keys below are dynamically learnt by default.
+                   However, they can also be set to a custom value when provided in the trigger datafile.
 
+                   nve_name: `str`
+                   nve_vni: `int`
+                   mcast_group: `str`
+
+                   (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                         OR
+                         interface: 'Ethernet1/1/1' (Specific value)
        Steps:
            1. Learn Vxlan Ops configured on device. SKIP the trigger if there
               is no vxlan configured on the device.
@@ -278,6 +304,16 @@ class TriggerAddRemoveNveVniMultisiteIngressReplication(TriggerAddRemove):
                                          trigger in seconds. Default: 180
                        interval (`int`): Wait time between iteration when looping is
                                          needed in seconds. Default: 15
+                   static:
+                       The keys below are dynamically learnt by default.
+                       However, they can also be set to a custom value when provided in the trigger datafile.
+
+                       nve_name: `str`
+                       nve_vni: `int`
+
+                       (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                             OR
+                             interface: 'Ethernet1/1/1' (Specific value)
 
            Steps:
                1. Learn Vxlan Ops configured on device. SKIP the trigger if there
@@ -345,6 +381,16 @@ class TriggerAddRemoveNveMultisiteBgwInterface(TriggerAddRemove):
                                             trigger in seconds. Default: 180
                           interval (`int`): Wait time between iteration when looping is
                                             needed in seconds. Default: 15
+                      static:
+                          The keys below are dynamically learnt by default.
+                          However, they can also be set to a custom value when provided in the trigger datafile.
+
+                          nve_name: `str`
+                          source_if: `str`
+
+                          (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                                OR
+                                interface: 'Ethernet1/1/1' (Specific value)
 
               Steps:
                   1. Learn Vxlan Ops configured on device. SKIP the trigger if there

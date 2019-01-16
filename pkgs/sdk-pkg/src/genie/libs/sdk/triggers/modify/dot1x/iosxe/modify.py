@@ -50,7 +50,17 @@ class TriggerModifyDot1xUserCredential(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                interface: `str`
+                client: `str`
+                vlan: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Dot1x Ops object to check if there is any 'auth' interface(s),
            otherwise SKIP the trigger
@@ -73,10 +83,10 @@ class TriggerModifyDot1xUserCredential(TriggerModify):
 
         # shut no shut the interface on UUT to let the session restart
         for key in self.mapping.keys:
-            if hasattr(uut, 'interfaces') and key['name'] in uut.interfaces:
-                intf_conf = uut.interfaces[key['name']]
+            if hasattr(uut, 'interfaces') and key['interface'] in uut.interfaces:
+                intf_conf = uut.interfaces[key['interface']]
             else:
-                intf_conf = abstract.conf.interface.Interface(device=uut, name=key['name'])
+                intf_conf = abstract.conf.interface.Interface(device=uut, name=key['interface'])
             intf_conf.enabled = False
             intf_conf.build_config()
             intf_conf.build_unconfig(attributes={'enabled': None})
@@ -88,20 +98,20 @@ class TriggerModifyDot1xUserCredential(TriggerModify):
 
         # shut no shut the interface on UUT to let the session restart
         for key in self.mapping.keys:
-            if hasattr(uut, 'interfaces') and key['name'] in uut.interfaces:
-                intf_conf = uut.interfaces[key['name']]
+            if hasattr(uut, 'interfaces') and key['interface'] in uut.interfaces:
+                intf_conf = uut.interfaces[key['interface']]
             else:
-                intf_conf = abstract.conf.interface.Interface(device=uut, name=key['name'])
+                intf_conf = abstract.conf.interface.Interface(device=uut, name=key['interface'])
             intf_conf.enabled = False
             intf_conf.build_config()
             intf_conf.build_unconfig(attributes={'enabled': None})
-            del(uut.interfaces[key['name']])
+            del(uut.interfaces[key['interface']])
 
 
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.dot1x.dot1x.Dot1x':{
-                                       'requirements':[['info', 'interfaces', '(?P<name>.*)',
+                                       'requirements':[['info', 'interfaces', '(?P<interface>.*)',
                                                         'clients', '(?P<client>.*)', 'status', 'authorized']],
                                        'all_keys': True,
                                        'kwargs':{'attributes':['info[interfaces][(.*)][clients][(.*)][status]',
@@ -110,7 +120,7 @@ class TriggerModifyDot1xUserCredential(TriggerModify):
                                     'ops.fdb.fdb.Fdb':{
                                        'requirements':[['info', 'mac_table', 'vlans', '(?P<vlan>.*)',
                                                         'mac_addresses', '(?P<client>.*)',
-                                                        'interfaces', '(?P<name>.*)', 'entry_type', 'static']],
+                                                        'interfaces', '(?P<interface>.*)', 'entry_type', 'static']],
                                        'all_keys': True,
                                        'kwargs':{'attributes':['info[mac_table][vlans][(.*)]']},
                                        'exclude': fdb_exclude + ['mac_addresses']}},
@@ -126,7 +136,7 @@ class TriggerModifyDot1xUserCredential(TriggerModify):
                                        'verify_conf':False,
                                        'kwargs':{}}},
                       verify_ops={'ops.dot1x.dot1x.Dot1x':{
-                                       'requirements':[['info', 'interfaces', '(?P<name>.*)',
+                                       'requirements':[['info', 'interfaces', '(?P<interface>.*)',
                                                         'clients', '(?P<client>.*)', 'status', 'unauthorized'],
                                                        ['info', 'sessions', 'authorized_clients', '(\d+)'],
                                                        ['info', 'sessions', 'unauthorized_clients', '(\d+)']],
@@ -142,4 +152,4 @@ class TriggerModifyDot1xUserCredential(TriggerModify):
                                                         'drop', 'entry_type', 'dynamic']],
                                        'kwargs':{'attributes':['info[mac_table][vlans][(.*)]']},
                                        'exclude': fdb_exclude + ['mac_addresses']}},
-                      num_values={'name': 'all'})
+                      num_values={'interface': 'all'})

@@ -127,13 +127,13 @@ class test_platform_all(unittest.TestCase):
         f.learn()
         g.learn()
 
-        f.diff_ignore.append('name[slot][0][rp][ASR1000-RP1][rp_sn]')
+        f.s = 2
 
         self.assertNotEqual(f, g)
         # Verify diff now
         diff = f.diff(g)
         sorted_diff = str(diff)
-        sorted_result = ('''+diff_ignore: deque(['maker', 'callables', 'device', 'name[slot][0][rp][ASR1000-RP1][rp_sn]'])\n-diff_ignore: deque(['maker', 'callables', 'device'])''')
+        sorted_result = ('+s: 2')
         self.assertEqual(sorted_diff, sorted_result)
 
     def test_selective_attribute_asr1k(self):
@@ -285,13 +285,13 @@ class test_platform_all(unittest.TestCase):
         f.learn()
         g.learn()
 
-        f.diff_ignore.append('name[slot][0][rp][WS-C3850-24P-E][rp_sn]')
+        f.s = 2
 
         self.assertNotEqual(f, g)
         # Verify diff now
         diff = f.diff(g)
         sorted_diff = str(diff)
-        sorted_result = ('''+diff_ignore: deque(['maker', 'callables', 'device', 'name[slot][0][rp][WS-C3850-24P-E][rp_sn]'])\n-diff_ignore: deque(['maker', 'callables', 'device'])''')
+        sorted_result = ('+s: 2')
         self.assertEqual(sorted_diff, sorted_result)
 
     def test_selective_attribute_c3850(self):

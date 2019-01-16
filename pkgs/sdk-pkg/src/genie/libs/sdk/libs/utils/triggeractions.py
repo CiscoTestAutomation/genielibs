@@ -277,7 +277,6 @@ class CompareCounters(object):
                                 .format(n=items[1][1:],
                   r=relation, t=counter, tt=threshold_counter))
 
-
 def configure_add_attributes(add_obj, base, add_attribute, add_method, **kwargs):
 
     # initial configuration attributes
@@ -312,3 +311,39 @@ def configure_add_attributes(add_obj, base, add_attribute, add_method, **kwargs)
         kwargs['conf_obj'].build_unconfig(attributes=attrs)
     else:
         kwargs['conf_obj'].build_config(attributes=attrs)
+
+def verify_ops_or_logic(ops, **kwargs):
+
+    origin_req = []
+
+    if not kwargs.get('mapping'):
+        return
+
+    # poluate the path
+    reqs = kwargs['mapping']._populate_path(
+             kwargs.get('requires', []), ops.device, keys=kwargs['mapping'].keys)
+
+    # print out message
+    log.info('Check if output match any of following requirements\n{}'\
+        .format('\n'.join([str(re) for re in reqs])))
+
+    # check if one of the requires suite for the ops output
+    for req in kwargs.get('requires', []):
+        # find if requirement matches for current ops
+        req = kwargs['mapping']._populate_path(
+             [req], ops.device, keys=kwargs['mapping'].keys)
+        rs = [R(i) for i in req]
+        ret = find([ops], *rs, filter_=False, all_keys=True)
+        if not ret:
+            log.info('Not found requirement:\n{}'
+            .format(req))
+            continue
+        # update the requires in mapping object to
+        # modify the original ops with right requirement
+        origin_req = kwargs['local_reqs']['list']
+        origin_req.extend(req)
+        log.info('Found the requirement:\n{}'.format(req))
+        break
+    else:
+        raise Exception('Failed to find match for any of following requirements\n{}'
+            .format('\n'.join([str(re) for re in reqs])))

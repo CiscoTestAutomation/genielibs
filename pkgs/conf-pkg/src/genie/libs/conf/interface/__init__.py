@@ -183,8 +183,16 @@ class Interface(genie.conf.base.interface.BaseInterface):
         type=typedset(managedattribute.test_isinstance(IPv4Addr))._from_iterable,
         doc='A `set` of IPv4Addr associated objects')
 
-    def add_ipv4addr(self, ipv4addr):
-        self.ipv4addr.add(ipv4addr)
+    def add_ipv4addr(self, ipv4addr=None, ipv4=None, prefix_length=None):
+        if not ipv4addr and not (ipv4 and prefix_length):
+            raise KeyError('At least ipv4addr or <ipv4(str), prefix_length(str)> is defined')
+        if ipv4addr:
+            self.ipv4addr.add(ipv4addr)
+        else:
+            ipv4_obj = IPv4Addr(self.device)
+            ipv4_obj.ipv4 = ipv4
+            ipv4_obj.prefix_length = prefix_length
+            self.ipv4addr.add(ipv4_obj)
 
     def remove_ipv4addr(self, ipv4addr):
         ipv4addr._device = None

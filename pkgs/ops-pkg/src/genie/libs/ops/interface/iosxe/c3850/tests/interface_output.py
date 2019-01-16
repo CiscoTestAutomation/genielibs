@@ -920,6 +920,9 @@ class InterfaceOutput(object):
               "interfaces": [
                    "GigabitEthernet0/0"
               ],
+              "interface": {
+                   "GigabitEthernet0/0": {'vrf': 'Mgmt-vrf'}
+              },
               "address_family": {
                    "ipv4 unicast": {
                         "table_id": "0x1"
@@ -934,6 +937,9 @@ class InterfaceOutput(object):
               "interfaces": [
                    "GigabitEthernet1/0/2"
               ],
+              "interface": {
+                   "GigabitEthernet1/0/2": {'vrf': 'VRF1'}
+              },
               "address_family": {
                    "ipv4 unicast": {
                         "export_to_global": {

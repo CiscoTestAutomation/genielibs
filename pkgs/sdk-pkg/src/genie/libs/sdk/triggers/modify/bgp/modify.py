@@ -55,6 +55,20 @@ class TriggerModifyBgpNeighborAsn(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
+
+                instance: `str`
+                vrf: `vrf`
+                neighbor: `str`
+                address_family: `str`
+                remote_as: `int`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn BGP Ops object and store the "established" BGP neighbor(s) which has 
@@ -147,7 +161,18 @@ class TriggerModifyBgpNeighborCluster(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `vrf`
+                cluster_id: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn BGP Ops object and store the BGP instance(s) which has cluster id
            configured. SKIP the trigger if there is no BGP instance(s) found
@@ -216,6 +241,19 @@ class TriggerModifyBgpNeighborRoutemapIn(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
+
+                instance: `str`
+                vrf: `vrf`
+                neighbor: `str`
+                route_map: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn BGP Ops object and store the BGP neighbors(s) which has inbound route-map

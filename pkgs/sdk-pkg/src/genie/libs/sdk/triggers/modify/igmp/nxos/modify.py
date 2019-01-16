@@ -51,6 +51,16 @@ class TriggerModifyIgmpVersion(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
+
+                interface: `str`
+                vrf: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn Igmp Ops object and store the Igmp interface version
@@ -69,9 +79,9 @@ class TriggerModifyIgmpVersion(TriggerModify):
                           'ops.igmp.igmp.Igmp':{
                                 'requirements':[\
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<igmp_intf>.*)', 'enable', True],
+                                     '(?P<interface>.*)', 'enable', True],
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<igmp_intf>.*)', 'version', '(?P<version>2)']],
+                                     '(?P<interface>.*)', 'version', '(?P<version>2)']],
                                 'all_keys': True,
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)]']},
@@ -79,7 +89,7 @@ class TriggerModifyIgmpVersion(TriggerModify):
                       config_info={'conf.igmp.Igmp':{
                                        'requirements':[
                                          ['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)',
-                                          'interface_attr', '(?P<igmp_intf>.*)', 'version',
+                                          'interface_attr', '(?P<interface>.*)', 'version',
                                           3]],
                                        'verify_conf':False,
                                        'kwargs':{}}},
@@ -87,9 +97,8 @@ class TriggerModifyIgmpVersion(TriggerModify):
                           'ops.igmp.igmp.Igmp':{
                                 'requirements':[\
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<igmp_intf>.*)', 'version', 3]],
-                                'missing': False,
+                                     '(?P<interface>.*)', 'version', 3]],
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)]']},
                                 'exclude': igmp_exclude}},
-                      num_values={'vrf': 1, 'igmp_intf': 1})
+                      num_values={'vrf': 1, 'interface': 1})

@@ -129,7 +129,9 @@ class TriggerDisableEnableVnSegmentVlanWithNvOverlay(TriggerDisableEnable):
                                         'requirements': [['nve', 'enabled_vn_segment_vlan_based', True]],
                                         'kwargs': {'attributes': ['nve','l2route','bgp_l2vpn_evpn']},
                                         'exclude': vxlan_exclude + multisite_exclude + ['tx_id','peer_id','flags','pathnr',
-                                                                    'bestpathnr','totalpaths','prefix','advertisedto','resettime','resetreason']}},
+                                                                    'bestpathnr','totalpaths','prefix','advertisedto',
+                                                                    'resettime','resetreason','memoryused','prefixreceived',
+                                                                                        'totalnetworks']}},
                     config_info={'conf.vxlan.Vxlan': {
                                     'requirements': [['device_attr', '{uut}', 'enabled_vn_segment_vlan_based', True]],
                                     'verify_conf': False}},

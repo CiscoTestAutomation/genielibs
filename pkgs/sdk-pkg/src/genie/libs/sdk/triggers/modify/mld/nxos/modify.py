@@ -51,7 +51,15 @@ class TriggerModifyMldVersion(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+           static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                interface: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Mld Ops object and store the Mld interface version
            if has any, otherwise, SKIP the trigger
@@ -69,9 +77,9 @@ class TriggerModifyMldVersion(TriggerModify):
                           'ops.mld.mld.Mld':{
                                 'requirements':[\
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<mld_intf>.*)', 'enable', True],
+                                     '(?P<interface>.*)', 'enable', True],
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<mld_intf>.*)', 'version', '(?P<version>2)']],
+                                     '(?P<interface>.*)', 'version', '(?P<version>2)']],
                                 'all_keys': True,
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)]']},
@@ -79,7 +87,7 @@ class TriggerModifyMldVersion(TriggerModify):
                       config_info={'conf.mld.Mld':{
                                        'requirements':[
                                          ['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)',
-                                          'interface_attr', '(?P<mld_intf>.*)', 'version',
+                                          'interface_attr', '(?P<interface>.*)', 'version',
                                           1]],
                                        'verify_conf':False,
                                        'kwargs':{}}},
@@ -87,9 +95,8 @@ class TriggerModifyMldVersion(TriggerModify):
                           'ops.mld.mld.Mld':{
                                 'requirements':[\
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<mld_intf>.*)', 'version', 1]],
-                                'missing': False,
+                                     '(?P<interface>.*)', 'version', 1]],
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)]']},
                                 'exclude': mld_exclude}},
-                      num_values={'vrf': 1, 'mld_intf': 1})
+                      num_values={'vrf': 1, 'interface': 1})

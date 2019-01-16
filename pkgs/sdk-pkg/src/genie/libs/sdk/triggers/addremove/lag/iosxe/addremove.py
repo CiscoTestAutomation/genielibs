@@ -59,7 +59,15 @@ class TriggerAddRemoveTrunkEtherchannelLacp(TriggerAddRemove):
                                 in second. Default: 180
                 interval (`int`): Wait time between iterations when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                interface: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Interface Ops object to select trunk interfaces.
            Learn LAG ops object to find port-channle interfaces which does not have
@@ -91,9 +99,9 @@ class TriggerAddRemoveTrunkEtherchannelLacp(TriggerAddRemove):
                                             'kwargs':{'attributes':['info[interfaces][(.*)]']},
                                             'exclude': lag_exclude},
                                     'ops.interface.interface.Interface':{
-                                            'requirements':[['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                            'requirements':[['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                              'switchport_mode', 'trunk'],
-                                                            ['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                                            ['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                              'oper_status', 'up']],
                                             'kwargs': {'attributes': ['info[(.*)][switchport_mode]',
                                                                       'info[(.*)][enabled]',
@@ -104,7 +112,7 @@ class TriggerAddRemoveTrunkEtherchannelLacp(TriggerAddRemove):
                                         'requirements':[['lag_bundle_id', BUNDLE_ID],
                                                         ['lag_activity', 'active']],
                                         'verify_conf':False,
-                                        'kwargs':{'mandatory':{'name': '(?P<intf>.*)',
+                                        'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                                'attach': False}}}},
                       verify_ops={'ops.lag.lag.Lag':{
                                       'requirements': [\
@@ -117,17 +125,17 @@ class TriggerAddRemoveTrunkEtherchannelLacp(TriggerAddRemove):
                                                 ['info', 'interfaces', BUNDLE_ID_INTF,
                                                  'name', 'Port-channel10'],
                                                 ['info', 'interfaces', BUNDLE_ID_INTF,
-                                                 'members', '(?P<intf>.*)', 'bundled', True]],
+                                                 'members', '(?P<interface>.*)', 'bundled', True]],
                                       'kwargs':{'attributes':['info[interfaces][(.*)]']},
                                       'exclude': lag_exclude},
                                   'ops.interface.interface.Interface':{
-                                          'requirements':[['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                          'requirements':[['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                            'switchport_mode', 'trunk'],
-                                                          ['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                                          ['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                            'oper_status', 'up'],
-                                                          ['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                                          ['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                            'port_channel', 'port_channel_member', True],
-                                                          ['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                                          ['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                            'port_channel', 'port_channel_int', BUNDLE_ID_INTF],
                                                           ['info', BUNDLE_ID_INTF,
                                                            'oper_status', 'up'],
@@ -145,7 +153,7 @@ class TriggerAddRemoveTrunkEtherchannelLacp(TriggerAddRemove):
                                                            'switchport_mode', 'trunk'],],
                                           'kwargs': {'attributes': ['info']},
                                           'exclude': interface_exclude}},
-                      num_values={'intf':'all', 'bundle_id': 1})
+                      num_values={'interface':'all', 'bundle_id': 1})
 
 
 class TriggerAddRemoveAccessEtherchannelPagp(TriggerAddRemove):
@@ -183,7 +191,15 @@ class TriggerAddRemoveAccessEtherchannelPagp(TriggerAddRemove):
                                 in second. Default: 180
                 interval (`int`): Wait time between iterations when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                interface: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Interface Ops object to select trunk interfaces.
            Learn LAG ops object to find port-channle interfaces which does not have
@@ -207,9 +223,9 @@ class TriggerAddRemoveAccessEtherchannelPagp(TriggerAddRemove):
                                             'kwargs':{'attributes':['info[interfaces][(.*)]']},
                                             'exclude': lag_exclude},
                                     'ops.interface.interface.Interface':{
-                                            'requirements':[['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                            'requirements':[['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                              'switchport_mode', 'static access'],
-                                                            ['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                                            ['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                              'oper_status', 'up']],
                                           'kwargs': {'attributes': ['info[(.*)][switchport_mode]',
                                                                     'info[(.*)][enabled]',
@@ -220,7 +236,7 @@ class TriggerAddRemoveAccessEtherchannelPagp(TriggerAddRemove):
                                         'requirements':[['lag_bundle_id', BUNDLE_ID],
                                                         ['lag_activity', 'desirable']],
                                         'verify_conf':False,
-                                        'kwargs':{'mandatory':{'name': '(?P<intf>.*)',
+                                        'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                                'attach': False}}}},
                       verify_ops={'ops.lag.lag.Lag':{
                                       'requirements': [\
@@ -233,17 +249,17 @@ class TriggerAddRemoveAccessEtherchannelPagp(TriggerAddRemove):
                                                 ['info', 'interfaces', BUNDLE_ID_INTF,
                                                  'name', 'Port-channel10'],
                                                 ['info', 'interfaces', BUNDLE_ID_INTF,
-                                                 'members', '(?P<intf>.*)', 'bundled', True]],
+                                                 'members', '(?P<interface>.*)', 'bundled', True]],
                                       'kwargs':{'attributes':['info[interfaces][(.*)]']},
                                       'exclude': lag_exclude},
                                   'ops.interface.interface.Interface':{
-                                          'requirements':[['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                          'requirements':[['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                            'switchport_mode', 'static access'],
-                                                          ['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                                          ['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                            'oper_status', 'up'],
-                                                          ['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                                          ['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                            'port_channel', 'port_channel_member', True],
-                                                          ['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                                          ['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                            'port_channel', 'port_channel_int', BUNDLE_ID_INTF],
                                                           ['info', BUNDLE_ID_INTF,
                                                            'oper_status', 'up'],
@@ -257,7 +273,7 @@ class TriggerAddRemoveAccessEtherchannelPagp(TriggerAddRemove):
                                                            'switchport_mode', 'static access']],
                                           'kwargs': {'attributes': ['info']},
                                           'exclude': interface_exclude}},
-                      num_values={'intf':'all', 'bundle_id': 1})
+                      num_values={'interface':'all', 'bundle_id': 1})
 
 
 class TriggerAddRemoveL3EtherchannelPagp(TriggerAddRemove):
@@ -295,7 +311,17 @@ class TriggerAddRemoveL3EtherchannelPagp(TriggerAddRemove):
                                 in second. Default: 180
                 interval (`int`): Wait time between iterations when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                interface: `str`
+                bundle_intf: `str`
+                bundle_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Interface Ops object to select up interfaces.
            Learn LAG ops object to find port-channle interfaces which does not exists.
@@ -326,9 +352,9 @@ class TriggerAddRemoveL3EtherchannelPagp(TriggerAddRemove):
                                             'kwargs':{'attributes':['info[interfaces][(.*)]']},
                                             'exclude': lag_exclude},
                                     'ops.interface.interface.Interface':{
-                                            'requirements':[['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                            'requirements':[['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                              'switchport_enable', False],
-                                                            ['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                                            ['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                              'oper_status', 'up']],
                                             'kwargs': {'attributes': ['info[(.*)][switchport_enable]',
                                                                       'info[(.*)][operational_mode]',
@@ -340,7 +366,7 @@ class TriggerAddRemoveL3EtherchannelPagp(TriggerAddRemove):
                                         'requirements':[['lag_bundle_id', '(?P<bundle_id>.*)'],
                                                         ['lag_activity', 'desirable']],
                                         'verify_conf':False,
-                                        'kwargs':{'mandatory':{'name': '(?P<intf>.*)',
+                                        'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                                'attach': False}}}},
                       verify_ops={'ops.lag.lag.Lag':{
                                       'requirements': [\
@@ -353,13 +379,13 @@ class TriggerAddRemoveL3EtherchannelPagp(TriggerAddRemove):
                                                 ['info', 'interfaces', '(?P<bundle_intf>.*)',
                                                  'name', '(?P<bundle_intf>.*)'],
                                                 ['info', 'interfaces', '(?P<bundle_intf>.*)',
-                                                 'members', '(?P<intf>.*)', 'bundled', True]],
+                                                 'members', '(?P<interface>.*)', 'bundled', True]],
                                       'kwargs':{'attributes':['info[interfaces][(.*)]']},
                                       'exclude': lag_exclude + ['attribute']},
                                   'ops.interface.interface.Interface':{
-                                          'requirements':[['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                          'requirements':[['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                            'switchport_enable', False],
-                                                          ['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                                          ['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                            'oper_status', 'up'],
                                                           ['info', '(?P<bundle_intf>.*)',
                                                            'oper_status', 'up'],
@@ -377,4 +403,4 @@ class TriggerAddRemoveL3EtherchannelPagp(TriggerAddRemove):
                                                                       'info[(.*)][enabled]',
                                                                       'info[(.*)][port_channel]']},
                                           'exclude': interface_exclude}},
-                      num_values={'intf':'all', 'bundle_id': 1})
+                      num_values={'interface':'all', 'bundle_id': 1})

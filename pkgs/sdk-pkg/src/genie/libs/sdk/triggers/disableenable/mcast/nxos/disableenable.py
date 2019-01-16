@@ -45,6 +45,16 @@ class TriggerDisableEnablePim(TriggerDisableEnable):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
+
+                vrf: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
+
 
     steps:
         1. Learn Mcast Ops object and store the Mcast vrf(s) with ipv4 feature enabled
@@ -78,8 +88,9 @@ class TriggerDisableEnablePim(TriggerDisableEnable):
 
 
 class TriggerDisableEnablePim6(TriggerDisableEnable):
-    """Disable and enable feature Pim6.
+    """Disable and enable feature Pim6."""
 
+    __description__ = """Disable and enable feature Pim6.
     trigger_datafile:
         Mandatory:
             timeout: 
@@ -107,7 +118,15 @@ class TriggerDisableEnablePim6(TriggerDisableEnable):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Mcast Ops object and store the Mcast vrf(s) with ipv6 feature enabled
            if has any, otherwise, SKIP the trigger

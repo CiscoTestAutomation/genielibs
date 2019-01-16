@@ -62,7 +62,22 @@ class TriggerAddRemoveBgpNeighborRoutemapPrefixlist(TriggerAddRemove):
                                 in second. Default: 180
                 interval (`int`): Wait time between iterations when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                address_family: `str`
+                neighbor: `str`
+                policy_definition: `str`
+                statements: `str`
+                bgp_id: `int`
+                bgp_table_version: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn BGP Ops object and store the BGP neighbor(s) if has any,
            otherwise, SKIP the trigger. Learn RoutePolicy Ops object
@@ -79,7 +94,7 @@ class TriggerAddRemoveBgpNeighborRoutemapPrefixlist(TriggerAddRemove):
 
     """
     mapping = Mapping(requirements={'ops.route_policy.route_policy.RoutePolicy':{
-                                            'requirements':[['info', '(?P<info>.*)',
+                                            'requirements':[['info', '(?P<policy_definition>.*)',
                                                              'statements', '(?P<statements>.*)',
                                                              'conditions',
                                                              'match_prefix_list', '(?P<match_prefix_list>.*)']],
@@ -99,7 +114,7 @@ class TriggerAddRemoveBgpNeighborRoutemapPrefixlist(TriggerAddRemove):
                                                        'vrf_attr', '(?P<vrf>.*)',
                                                        'neighbor_attr','(?P<neighbor>.*)',
                                                        'address_family_attr', '(?P<address_family>.*)',
-                                                       'nbr_af_route_map_name_in', '(?P<info>.*)']],
+                                                       'nbr_af_route_map_name_in', '(?P<policy_definition>.*)']],
                                       'verify_conf':False,
                                       'kwargs':{'mandatory':{'bgp_id': '(?P<bgp_id>.*)'}}}},
                       verify_ops={'ops.bgp.bgp.Bgp':{
@@ -107,10 +122,10 @@ class TriggerAddRemoveBgpNeighborRoutemapPrefixlist(TriggerAddRemove):
                                                         'vrf', '(?P<vrf>.*)',
                                                         'neighbor', '(?P<neighbor>.*)',
                                                         'address_family', '(?P<address_family>.*)',
-                                                        'route_map_name_in', '(?P<info>.*)']],
+                                                        'route_map_name_in', '(?P<policy_definition>.*)']],
                                       'kwargs':{'attributes':['info']},
                                       'exclude': bgp_exclude}},
-                      num_values={'info':1, 'statements':'all', 'match_prefix_list':1, 'instance':1, 'vrf':1, 'address_family':1, 'neighbor':1, 'bgp_id':1, 'bgp_table_version':1})
+                      num_values={'policy_definition':1, 'statements':'all', 'match_prefix_list':1, 'instance':1, 'vrf':1, 'address_family':1, 'neighbor':1, 'bgp_id':1, 'bgp_table_version':1})
 
 
 class TriggerAddRemoveBgpNeighborRoutemapWeight(TriggerAddRemove):
@@ -150,7 +165,23 @@ class TriggerAddRemoveBgpNeighborRoutemapWeight(TriggerAddRemove):
                                 in second. Default: 180
                 interval (`int`): Wait time between iterations when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                address_family: `str`
+                neighbor: `str`
+                policy_definition: `str`
+                statements: `str`
+                set_weight: `int`
+                bgp_id: `int`
+                bgp_table_version: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn BGP Ops object and store the BGP neighbor(s) if has any,
            otherwise, SKIP the trigger. Learn RoutePolicy Ops object
@@ -167,7 +198,7 @@ class TriggerAddRemoveBgpNeighborRoutemapWeight(TriggerAddRemove):
 
     """
     mapping = Mapping(requirements={'ops.route_policy.route_policy.RoutePolicy':{
-                                            'requirements':[['info', '(?P<info>.*)',
+                                            'requirements':[['info', '(?P<policy_definition>.*)',
                                                              'statements', '(?P<statements>.*)',
                                                              'actions',
                                                              'set_weight', '(?P<set_weight>.*)']],
@@ -187,7 +218,7 @@ class TriggerAddRemoveBgpNeighborRoutemapWeight(TriggerAddRemove):
                                                        'vrf_attr', '(?P<vrf>.*)',
                                                        'neighbor_attr','(?P<neighbor>.*)',
                                                        'address_family_attr', '(?P<address_family>.*)',
-                                                       'nbr_af_route_map_name_in', '(?P<info>.*)']],
+                                                       'nbr_af_route_map_name_in', '(?P<policy_definition>.*)']],
                                       'verify_conf':False,
                                       'kwargs':{'mandatory':{'bgp_id': '(?P<bgp_id>.*)'}}}},
                       verify_ops={'ops.bgp.bgp.Bgp':{
@@ -195,8 +226,8 @@ class TriggerAddRemoveBgpNeighborRoutemapWeight(TriggerAddRemove):
                                                         'vrf', '(?P<vrf>.*)',
                                                         'neighbor', '(?P<neighbor>.*)',
                                                         'address_family', '(?P<address_family>.*)',
-                                                        'route_map_name_in', '(?P<info>.*)']],
+                                                        'route_map_name_in', '(?P<policy_definition>.*)']],
                                       'kwargs':{'attributes':['info']},
                                       'exclude': bgp_exclude}},
-                      num_values={'info':1, 'statements':'all', 'set_weight':1, 'instance':1, 'vrf':1, 'address_family':1, 'neighbor':1, 'bgp_id':1, 'bgp_table_version':1})
+                      num_values={'policy_definition':1, 'statements':'all', 'set_weight':1, 'instance':1, 'vrf':1, 'address_family':1, 'neighbor':1, 'bgp_id':1, 'bgp_table_version':1})
 

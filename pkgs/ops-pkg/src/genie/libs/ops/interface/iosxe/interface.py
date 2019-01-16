@@ -42,23 +42,12 @@ class Interface(Base):
 
         # vrf
         self.add_leaf(cmd=ShowVrfDetail,
-                      src='[(?P<vrf>.*)][interfaces]',
-                      dest='info[vrf][(?P<vrf>.*)][interfaces]')
+                      src='[(?P<vrf>.*)][interface][(?P<interface>.*)][vrf]',
+                      dest='info[(?P<interface>.*)][vrf]')
 
 
         # make to write in cache
         self.make()
-
-        # mapping vrf to interface from ShowVrfDetail
-        if hasattr(self, 'info') and 'vrf' in self.info:
-            for vrf in self.info['vrf']:
-                if 'interfaces' not in self.info['vrf'][vrf]:
-                    continue
-                for intf in self.info['vrf'][vrf]['interfaces']:
-                    if intf not in self.info:
-                        self.info[intf] = {}
-                    self.info[intf]['vrf'] = vrf
-            del(self.info['vrf'])
 
         # vrf_downstream not supported on iosxe
 

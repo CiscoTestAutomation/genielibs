@@ -63,6 +63,16 @@ class TriggerAddRemoveIgmpEnable(TriggerAddRemove):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
+
+                vrf: `str`
+                interface: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn Igmp Ops/Conf object and store the Igmp interface enable, learn Interface ops to 
@@ -85,9 +95,9 @@ class TriggerAddRemoveIgmpEnable(TriggerAddRemove):
         # learn interafce ops to get ipv4 up interfaces
         self.mapping.requirements = {}
         self.mapping.requirements['ops.interface.interface.Interface'] = \
-            {'requirements':[['info', '(?P<igmp_intf>^(?!mgmt).*)', 'ipv4',
+            {'requirements':[['info', '(?P<interface>^(?!mgmt).*)', 'ipv4',
                               '(?P<ip>.*)', 'ip', '(?P<address>.*)'],
-                             ['info', '(?P<igmp_intf>.*)', 'vrf',
+                             ['info', '(?P<interface>.*)', 'vrf',
                               '(?P<add_igmp_intf_vrf>.*)']],
             'all_keys': True,
             'kwargs':{'attributes': [
@@ -103,10 +113,10 @@ class TriggerAddRemoveIgmpEnable(TriggerAddRemove):
 
             add_keys = {}
             for item in intf_keys:
-                if all(item['igmp_intf'] not in \
-                    i['igmp_intf'] for i in igmp_keys):
+                if all(item['interface'] not in \
+                    i['interface'] for i in igmp_keys):
                     # attach the add value to mapping keys
-                    add_keys.update({'add_igmp_intf': item['igmp_intf'],
+                    add_keys.update({'add_igmp_intf': item['interface'],
                                      'add_igmp_intf_vrf': item['add_igmp_intf_vrf']})
                     break
 
@@ -123,7 +133,7 @@ class TriggerAddRemoveIgmpEnable(TriggerAddRemove):
     mapping = Mapping(requirements={'ops.igmp.igmp.Igmp':{
                                           'requirements':[\
                                               ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                               '(?P<igmp_intf>.*)']],
+                                               '(?P<interface>.*)']],
                                           'kwargs':{'attributes': [
                                               'info[vrfs][(.*)][interfaces]']},
                                           'exclude': igmp_exclude}},
@@ -139,7 +149,7 @@ class TriggerAddRemoveIgmpEnable(TriggerAddRemove):
                                                '(?P<add_igmp_intf>.*)', 'enable', True]],
                                           'kwargs':{'attributes': ['info[vrfs][(.*)][interfaces]']},
                                           'exclude': igmp_exclude}},
-                      num_values={'vrf': 'all', 'igmp_intf': 'all'})
+                      num_values={'vrf': 'all', 'interface': 'all'})
 
 
 class TriggerAddRemoveIgmpVersion(TriggerAddRemove):
@@ -174,7 +184,16 @@ class TriggerAddRemoveIgmpVersion(TriggerAddRemove):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                interface: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Igmp Ops object and store the Igmp which interface version is default value.
         2. Save the current device configurations through "method" which user uses
@@ -192,9 +211,9 @@ class TriggerAddRemoveIgmpVersion(TriggerAddRemove):
                           'ops.igmp.igmp.Igmp':{
                                 'requirements':[\
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<igmp_intf>.*)', 'enable', True],
+                                     '(?P<interface>.*)', 'enable', True],
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<igmp_intf>.*)', 'version', '(?P<version>2)']],
+                                     '(?P<interface>.*)', 'version', '(?P<version>2)']],
                                 'all_keys': True,
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)]']},
@@ -202,7 +221,7 @@ class TriggerAddRemoveIgmpVersion(TriggerAddRemove):
                       config_info={'conf.igmp.Igmp':{
                                        'requirements':[
                                          ['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)',
-                                          'interface_attr', '(?P<igmp_intf>.*)', 'version',
+                                          'interface_attr', '(?P<interface>.*)', 'version',
                                           ADD_VERSION]],
                                        'verify_conf':False,
                                        'kwargs':{}}},
@@ -210,12 +229,11 @@ class TriggerAddRemoveIgmpVersion(TriggerAddRemove):
                           'ops.igmp.igmp.Igmp':{
                                 'requirements':[\
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<igmp_intf>.*)', 'version', ADD_VERSION]],
-                                'missing': False,
+                                     '(?P<interface>.*)', 'version', ADD_VERSION]],
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)]']},
                                 'exclude': igmp_exclude}},
-                      num_values={'vrf': 1, 'igmp_intf': 1})
+                      num_values={'vrf': 1, 'interface': 1})
 
 
 class TriggerAddRemoveIgmpJoinGroup(TriggerAddRemove):
@@ -252,7 +270,18 @@ class TriggerAddRemoveIgmpJoinGroup(TriggerAddRemove):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                join_group: `str`
+                group: `str`
+                interface: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Igmp Ops object and store the Igmp interface(s) which does not have added join-group.
         2. Save the current device configurations through "method" which user uses
@@ -283,7 +312,7 @@ class TriggerAddRemoveIgmpJoinGroup(TriggerAddRemove):
         if any(not item for item in self.mapping.keys):
             self.mapping.requirements['ops.igmp.igmp.Igmp']['requirements'] = \
               [['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-               '(?P<igmp_intf>.*)', 'group', '(?P<group>.*)', '(?P<dummy>.*)']] # incase there is nothing learned
+               '(?P<interface>.*)', 'group', '(?P<group>.*)', '(?P<dummy>.*)']] # incase there is nothing learned
 
             try:
                 self.pre_snap = self.mapping.learn_ops(device=uut,
@@ -321,7 +350,7 @@ class TriggerAddRemoveIgmpJoinGroup(TriggerAddRemove):
                           'ops.igmp.igmp.Igmp':{
                                 'requirements':[\
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<igmp_intf>.*)', 'join_group', '(?P<join_group>.*)',
+                                     '(?P<interface>.*)', 'join_group', '(?P<join_group>.*)',
                                      'group', '(?P<group>.*)']],
                                 'all_keys': True,
                                 'kwargs':{'attributes': [
@@ -334,7 +363,7 @@ class TriggerAddRemoveIgmpJoinGroup(TriggerAddRemove):
                                          [partial(configure_add_attributes,  # callable configuration
                                             add_obj=IgmpGroup,
                                             base=[['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)',
-                                                  'interface_attr', '(?P<igmp_intf>.*)']],
+                                                  'interface_attr', '(?P<interface>.*)']],
                                             add_attribute=[['join_group', '(?P<add_igmp_group>.*)'],
                                                            ['join_group_source_addr', '(?P<add_igmp_source>.*)'],],
                                             add_method='add_groups',
@@ -345,20 +374,20 @@ class TriggerAddRemoveIgmpJoinGroup(TriggerAddRemove):
                           'ops.igmp.igmp.Igmp':{
                                 'requirements':[\
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<igmp_intf>.*)', 'join_group', '(?P<add_igmp_group_key>.*)',
+                                     '(?P<interface>.*)', 'join_group', '(?P<add_igmp_group_key>.*)',
                                      'group', '(?P<add_igmp_group>.*)'],
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<igmp_intf>.*)', 'join_group', '(?P<add_igmp_group_key>.*)',
+                                     '(?P<interface>.*)', 'join_group', '(?P<add_igmp_group_key>.*)',
                                      'source', '(?P<add_igmp_source>.*)'],
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<igmp_intf>.*)', 'group', '(?P<add_igmp_group>.*)',
+                                     '(?P<interface>.*)', 'group', '(?P<add_igmp_group>.*)',
                                      'last_reporter', '([\w\.]+)']],
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)][interfaces][(.*)][join_group][(.*)]',
                                     'info[vrfs][(.*)][interfaces][(.*)][static_group][(.*)]',
                                     'info[vrfs][(.*)][interfaces][(.*)][group][(.*)]']},
                                 'exclude': igmp_exclude}},
-                      num_values={'vrf': 1, 'igmp_intf': 1, 'join_group': 1, 'group': 1, 'source': 1})
+                      num_values={'vrf': 1, 'interface': 1, 'join_group': 1, 'group': 1, 'source': 1})
 
 
 class TriggerAddRemoveIgmpStaticGroup(TriggerAddRemove):
@@ -394,6 +423,18 @@ class TriggerAddRemoveIgmpStaticGroup(TriggerAddRemove):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
+
+                vrf: `str`
+                static_group: `str`
+                group: `str`
+                interface: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn Igmp Ops object and store the Igmp interface(s) which does not have added static-group.
@@ -425,7 +466,7 @@ class TriggerAddRemoveIgmpStaticGroup(TriggerAddRemove):
         if any(not item for item in self.mapping.keys):
             self.mapping.requirements['ops.igmp.igmp.Igmp']['requirements'] = \
               [['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-               '(?P<igmp_intf>.*)', 'group', '(?P<group>.*)', '(?P<dummy>.*)']] # incase there is nothing learned
+               '(?P<interface>.*)', 'group', '(?P<group>.*)', '(?P<dummy>.*)']] # incase there is nothing learned
 
             try:
                 self.pre_snap = self.mapping.learn_ops(device=uut,
@@ -463,7 +504,7 @@ class TriggerAddRemoveIgmpStaticGroup(TriggerAddRemove):
                           'ops.igmp.igmp.Igmp':{
                                 'requirements':[\
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<igmp_intf>.*)', 'static_group', '(?P<static_group>.*)',
+                                     '(?P<interface>.*)', 'static_group', '(?P<static_group>.*)',
                                      'group', '(?P<group>.*)']],
                                 'all_keys': True,
                                 'kwargs':{'attributes': [
@@ -476,7 +517,7 @@ class TriggerAddRemoveIgmpStaticGroup(TriggerAddRemove):
                                          [partial(configure_add_attributes,  # callable configuration
                                             add_obj=IgmpGroup,
                                             base=[['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)',
-                                                  'interface_attr', '(?P<igmp_intf>.*)']],
+                                                  'interface_attr', '(?P<interface>.*)']],
                                             add_attribute=[['static_group', '(?P<add_igmp_group>.*)'],
                                                            ['static_group_source_addr', '(?P<add_igmp_source>.*)'],],
                                             add_method='add_groups',
@@ -487,16 +528,16 @@ class TriggerAddRemoveIgmpStaticGroup(TriggerAddRemove):
                           'ops.igmp.igmp.Igmp':{
                                 'requirements':[\
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<igmp_intf>.*)', 'static_group', '(?P<add_igmp_group_key>.*)',
+                                     '(?P<interface>.*)', 'static_group', '(?P<add_igmp_group_key>.*)',
                                      'group', '(?P<add_igmp_group>.*)'],
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<igmp_intf>.*)', 'static_group', '(?P<add_igmp_group_key>.*)',
+                                     '(?P<interface>.*)', 'static_group', '(?P<add_igmp_group_key>.*)',
                                      'source', '(?P<add_igmp_source>.*)'],
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<igmp_intf>.*)', 'group', '(?P<add_igmp_group>.*)', 'last_reporter', '([\w\.]+)']],
+                                     '(?P<interface>.*)', 'group', '(?P<add_igmp_group>.*)', 'last_reporter', '([\w\.]+)']],
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)][interfaces][(.*)][join_group][(.*)]',
                                     'info[vrfs][(.*)][interfaces][(.*)][static_group][(.*)]',
                                     'info[vrfs][(.*)][interfaces][(.*)][group][(.*)]']},
                                 'exclude': igmp_exclude}},
-                      num_values={'vrf': 1, 'igmp_intf': 1, 'static_group': 1, 'group': 1, 'source': 1})
+                      num_values={'vrf': 1, 'interface': 1, 'static_group': 1, 'group': 1, 'source': 1})

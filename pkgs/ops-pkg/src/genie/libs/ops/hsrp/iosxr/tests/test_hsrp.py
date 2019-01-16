@@ -98,17 +98,14 @@ class test_hsrp(unittest.TestCase):
         f.learn()
         g.learn()
 
-        f.diff_ignore.append('info[GigabitEthernet0/0/0/0][bfd][enabled]')
+        f.s = 2
 
         self.assertNotEqual(f, g)
         
         # Verify diff now
         diff = f.diff(g)
         sorted_diff = str(diff)
-        sorted_result = ("+diff_ignore: deque(['maker', 'callables', 'device',"
-            " 'info[GigabitEthernet0/0/0/0][bfd][enabled]'])\n-diff_ignore: "
-            "deque(['maker', 'callables', 'device'])\ninfo:\n "
-            "GigabitEthernet0/0/0/0:\n  bfd:\n-   enabled: True")
+        sorted_result = ("+s: 2")
         self.assertEqual(sorted_diff, sorted_result)
 
 if __name__ == '__main__':

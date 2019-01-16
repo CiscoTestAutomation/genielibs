@@ -160,17 +160,14 @@ class Restore(object):
                 dir_loc = abstract.parser.show_platform.Dir(device=device).parse()
                 dir_loc = dir_loc['dir']['dir'].replace(':/', '')
                 # activate archive mode
-                cfg_str = '''
-                          archive
-                          path {dir}:{name}
-                          do-exec archive config
-                          '''
-                ret = device.configure(cfg_str.format(dir=dir_loc, name=name))
+                cfg_strs = ["archive", "path {dir}:{name}".format(dir=dir_loc, name=name),
+                            "do-exec archive config"]
+                ret = device.configure(cfg_strs)
             except Exception as e:
-                raise SyntaxError("Issue seding {c}".format(c=cfg_str)) from e
+                raise SyntaxError("Issue sending {c}".format(c=cfg_strs)) from e
             else:
                 if 'ERROR' in ret:
-                    raise SyntaxError("Issue seding {c}".format(c=cfg_str)) from e
+                    raise SyntaxError("Issue sending {c}".format(c=cfg_strs)) from e
         else:
             try:
                 # get location
@@ -199,17 +196,13 @@ class Restore(object):
                 device.execute('delete {}'.format(self.ckname), reply=dialog)
 
                 # deactivate archive mode
-                cfg_str = '''
-                          archive
-                          no path
-                          exit
-                          '''
-                ret = device.configure(cfg_str)
+                cfg_strs = ['archive', 'no path', 'exit']
+                ret = device.configure(cfg_strs)
             except Exception as e:
-                raise SyntaxError("Issue seding {c}".format(c=cfg_str)) from e
+                raise SyntaxError("Issue sending {c}".format(c=cfg_strs)) from e
             else:
                 if 'ERROR' in ret:
-                    raise SyntaxError("Issue seding {c}".format(c=cfg_str)) from e
+                    raise SyntaxError("Issue sending {c}".format(c=cfg_strs)) from e
 
 
     def rollback_checkpoint(self, device, name):

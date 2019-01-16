@@ -6,6 +6,7 @@ from genie.libs.sdk.triggers.unconfigconfig.unconfigconfig import TriggerUnconfi
 
 # import ats
 from ats import aetest
+from ats.utils.objects import Not, NotExists
 
 # Which key to exclude for Interface Ops comparison
 interface_exclude = ['maker', 'last_change','in_rate','in_rate_pkts',
@@ -52,6 +53,15 @@ class TriggerUnconfigConfigLoopbackInterface(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
+
+                interface: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn Interface Ops object and store the "up" Loopback interface(s)
@@ -70,49 +80,20 @@ class TriggerUnconfigConfigLoopbackInterface(TriggerUnconfigConfig):
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<name>(Loopback||Lo|loopback)[0-9]+)', 'oper_status', 'up']],
+                                       'requirements':[['info', '(?P<interface>(Loopback||Lo|loopback)[0-9]+)', 'oper_status', 'up']],
                                        'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
                                        'requirements':[],
                                        'verify_conf':False,
-                                       'kwargs':{'mandatory':{'name': '(?P<name>.*)',
+                                       'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<name>.*)']],
+                                       'requirements':[['info', NotExists('(?P<interface>.*)')]],
                                        'exclude': loopback_exclude}},
-                      num_values={'name':1})
+                      num_values={'interface':1})
 
 
-# for physical interfaces, the interface won't be removed, only can be defaulted.
-# all keys and values will return to default value when physical interfaces being unconfigured
-class TriggerUnconfigConfigPhysicalInterface(TriggerUnconfigConfig):
-    '''Trigger class for UnconfigConfig physical interfaces action'''
-
-    @aetest.test
-    def verify_unconfigure(self, uut, abstract, steps):
-        '''Verify that the unconfiguration was done correctly and Ops state is 
-           as expected.
-
-           Args:
-               uut (`obj`): Device object.
-               abstract (`obj`): Abstract object.
-               steps (`step obj`): aetest step object
-
-           Returns:
-               None
-
-           Raises:
-               pyATS Results
-        '''
-
-        try:
-            self.mapping.verify_ops(device=uut, abstract=abstract, steps=steps)
-        except Exception as e:
-            self.failed('Failed to verify the '
-                        'unconfigure feature', from_exception=e)
-
-
-class TriggerUnconfigConfigPhysicalTrunkInterface(TriggerUnconfigConfigPhysicalInterface):
+class TriggerUnconfigConfigPhysicalTrunkInterface(TriggerUnconfigConfig):
     """Unconfigure and reapply the whole configurations of dynamically learned
     physical (non-Loopback, non-Vlan, non-Null, non-Tunnel, non-subinterface etc.) "trunk" interface(s)."""
 
@@ -146,7 +127,15 @@ class TriggerUnconfigConfigPhysicalTrunkInterface(TriggerUnconfigConfigPhysicalI
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                interface: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Interface Ops object and store the "up" physical "trunk" interface(s)
            if has any, otherwise, SKIP the trigger
@@ -163,25 +152,25 @@ class TriggerUnconfigConfigPhysicalTrunkInterface(TriggerUnconfigConfigPhysicalI
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<name>[E|e]thernet[\d\/\.]+)',
+                                       'requirements':[['info', '(?P<interface>[E|e]thernet[\d\/\.]+)',
                                                         'switchport_mode', 'trunk'],
-                                                        ['info', '(?P<name>[E|e]thernet[\d\/\.]+)',
+                                                        ['info', '(?P<interface>[E|e]thernet[\d\/\.]+)',
                                                         'port_channel', 'port_channel_member', False]],
                                        'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
                                        'requirements':[],
                                        'verify_conf':False,
-                                       'kwargs':{'mandatory':{'name': '(?P<name>.*)',
+                                       'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<name>.*)', 'oper_status', '(.*)'],
-                                                       ['info', '(?P<name>.*)', 'enabled', False],
-                                                       ['info', '(?P<name>.*)', 'port_channel',
+                                       'requirements':[['info', '(?P<interface>.*)', 'oper_status', '(.*)'],
+                                                       ['info', '(?P<interface>.*)', 'enabled', False],
+                                                       ['info', '(?P<interface>.*)', 'port_channel',
                                                         'port_channel_member', False],
-                                                       ['info', '(?P<name>.*)', 'mac_address', '([\w\.]+)'],
-                                                       ['info', '(?P<name>.*)', '(.*)']],
+                                                       ['info', '(?P<interface>.*)', 'mac_address', '([\w\.]+)'],
+                                                       ['info', '(?P<interface>.*)', '(.*)']],
                                        'exclude': interface_exclude + ['(Vlan.*)']}},
-                      num_values={'name':1})
+                      num_values={'interface':1})
 
 
 class TriggerUnconfigConfigVirtualTrunkInterface(TriggerUnconfigConfig):
@@ -218,7 +207,15 @@ class TriggerUnconfigConfigVirtualTrunkInterface(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                interface: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Interface Ops object and store the "up" virtual "trunk" interface(s)
            if has any, otherwise, SKIP the trigger
@@ -234,18 +231,18 @@ class TriggerUnconfigConfigVirtualTrunkInterface(TriggerUnconfigConfig):
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<name>[p|P]ort-channel[\d\.]+)',
+                                       'requirements':[['info', '(?P<interface>[p|P]ort-channel[\d\.]+)',
                                                         'switchport_mode', 'trunk']],
                                        'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
                                        'requirements':[],
                                        'verify_conf':False,
-                                       'kwargs':{'mandatory':{'name': '(?P<name>.*)',
+                                       'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<name>.*)', '(.*)']],
+                                       'requirements':[['info', NotExists('(?P<interface>.*)')]],
                                        'exclude': interface_exclude}},
-                      num_values={'name':1})
+                      num_values={'interface':1})
 
 
 class TriggerUnconfigConfigEthernetInterface(TriggerUnconfigConfig):
@@ -280,7 +277,15 @@ class TriggerUnconfigConfigEthernetInterface(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                interface: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Interface Ops object and store the "up" Ethernet interface(s)
            if has any, otherwise, SKIP the trigger
@@ -308,30 +313,32 @@ class TriggerUnconfigConfigEthernetInterface(TriggerUnconfigConfig):
         return False
 
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                        'requirements':[['info', '(?P<name>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+$)',
+                                        'requirements':[['info', '(?P<interface>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+$)',
                                                          'enabled', True],
-                                                        ['info', '(?P<name>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+$)',
+                                                        ['info', '(?P<interface>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+$)',
                                                          'port_channel', 'port_channel_member', False],
-                                                        ['info', '(?P<name>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+$)',
+                                                        ['info', '(?P<interface>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+$)',
                                                          'oper_status', 'up']],
                                         'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
                                         'requirements':[],
                                         'verify_conf':False,
-                                        'kwargs':{'mandatory':{'name': '(?P<name>.*)',
+                                        'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                                'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                        'requirements':[['info', '(?P<name>.*)','access_vlan'],
-                                                        ['info', '(?P<name>.*)','switchport_enable'],
-                                                        ['info', '(?P<name>.*)','switchport_mode'],
-                                                        ['info', '(?P<name>.*)','trunk_vlans'],
-                                                        ['info', '(?P<name>.*)','vrf'],
-                                                        ['info', '(?P<name>.*)','duplex_mode'],
-                                                        ['info', '(?P<name>.*)','mac_address'],
-                                                        ['info', '(?P<name>.*)','oper_status']],
+                                        'requirements':[['info', '(?P<interface>.*)', 'vrf', 'default'],
+                                                        ['info', '(?P<interface>.*)', 'enabled', False],
+                                                        ['info', '(?P<interface>.*)', 'oper_status', 'down'],
+                                                        ['info', '(?P<interface>.*)', 'delay', '(\d+)'],
+                                                        ['info', '(?P<interface>.*)', 'bandwidth', '(\d+)'],
+                                                        ['info', '(?P<interface>.*)', 'encapsulation', 'encapsulation', '(\S+)'],
+                                                        ['info', '(?P<interface>.*)', 'mac_address', '(\S+)'],
+                                                        ['info', '(?P<interface>.*)', 'medium', '(\S+)'],
+                                                        ['info', '(?P<interface>.*)', 'mtu', '(\d+)'],
+                                                        ['info', '(?P<interface>.*)', 'port_channel', 'port_channel_member', False]],
                                         'exclude': interface_exclude +\
                                                    [remove_related_subinterface, '(Vlan.*)']}},
-                      num_values={'name': 1})
+                      num_values={'interface': 1})
 
 
 class TriggerUnconfigConfigEthernetInterfaceSub(TriggerUnconfigConfig):
@@ -366,7 +373,15 @@ class TriggerUnconfigConfigEthernetInterfaceSub(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+           static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                interface: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Interface Ops object and store the "up" Ethernet SubInterface(s)
            if has any, otherwise, SKIP the trigger
@@ -380,20 +395,20 @@ class TriggerUnconfigConfigEthernetInterfaceSub(TriggerUnconfigConfig):
     """
 
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                        'requirements':[['info', '(?P<name>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+\.[0-9]+)',
+                                        'requirements':[['info', '(?P<interface>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+\.[0-9]+)',
                                                          'enabled', True],
-                                                        ['info', '(?P<name>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+\.[0-9]+)',
+                                                        ['info', '(?P<interface>(GigabitEthernet|gigabitEthernet|Ethernet|ethernet)[0-9\/]+\.[0-9]+)',
                                                          'oper_status', 'up']],
                                         'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
                                         'requirements':[],
                                         'verify_conf':False,
-                                        'kwargs':{'mandatory':{'name': '(?P<name>.*)',
+                                        'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                                'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                        'requirements':[['info', '(?P<name>.*)','enabled', True]],
+                                        'requirements':[['info', NotExists('(?P<interface>.*)')]],
                                         'exclude': interface_exclude + ['(Vlan.*)']}},
-                      num_values={'name': 1})
+                      num_values={'interface': 1})
 
 
 class TriggerUnconfigConfigVlanInterface(TriggerUnconfigConfig):
@@ -428,7 +443,15 @@ class TriggerUnconfigConfigVlanInterface(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                interface: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Interface Ops object and store the "up" Vlan interface(s)
            if has any, otherwise, SKIP the trigger
@@ -446,15 +469,15 @@ class TriggerUnconfigConfigVlanInterface(TriggerUnconfigConfig):
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<name>(Vlan|vlan)[0-9]+)', 'oper_status', 'up']],
+                                       'requirements':[['info', '(?P<interface>(Vlan|vlan)[0-9]+)', 'oper_status', 'up']],
                                        'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
                                        'requirements':[],
                                        'verify_conf':False,
-                                       'kwargs':{'mandatory':{'name': '(?P<name>.*)',
+                                       'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<name>.*)']],
+                                       'requirements':[['info', NotExists('(?P<interface>.*)')]],
                                        'exclude': vlan_exclude}},
-                      num_values={'name':1})
+                      num_values={'interface':1})
     

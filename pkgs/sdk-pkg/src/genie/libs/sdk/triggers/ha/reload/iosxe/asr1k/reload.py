@@ -231,7 +231,15 @@ class TriggerReloadStandbyRP(TriggerReloadLc):
                                  in second. Default: 60
             tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,
                                in second. Default: 10
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                standby_rp: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                   OR
+                   interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Platform Ops object and store the "ok, standby" RP
            if has any, otherwise, SKIP the trigger

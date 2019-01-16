@@ -34,7 +34,8 @@ class Pim(Base):
             return False
 
     def keys(self, item):
-        return sorted(list(item.keys()))
+        if isinstance(item, dict):
+            return sorted(list(item.keys()))
 
     def check_exists(self, item):
         if 'bidir' in item:
@@ -50,7 +51,7 @@ class Pim(Base):
         self.add_leaf(cmd=ShowVrfDetail,
                       src='',
                       dest='list_of_vrfs',
-                      action=lambda x: list(x.keys()))
+                      action=self.keys)
 
         self.make()
 

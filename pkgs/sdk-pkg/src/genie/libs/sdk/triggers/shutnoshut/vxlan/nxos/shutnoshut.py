@@ -50,7 +50,15 @@ class TriggerShutNoShutNveOverlayInterface(TriggerShutNoShut):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+               The keys below are dynamically learnt by default.
+               However, they can also be set to a custom value when provided in the trigger datafile.
 
+               nve_name: `str`
+
+               (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                     OR
+                     interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn VxLan Ops object and verify if has any "up" Nve interface(s),
            otherwise, SKIP the trigger
@@ -64,7 +72,7 @@ class TriggerShutNoShutNveOverlayInterface(TriggerShutNoShut):
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.vxlan.vxlan.Vxlan': {
-                                                'requirements': [['nve', '(?P<name>.*)', 'if_state', 'up']],
+                                                'requirements': [['nve', '(?P<nve_name>.*)', 'if_state', 'up']],
                                                 'kwargs': {'attributes': [
                                                                 'nve[(.*)][if_state]',
                                                                 'nve[(.*)][vni][(.*)][vni]','l2route']},
@@ -73,15 +81,15 @@ class TriggerShutNoShutNveOverlayInterface(TriggerShutNoShut):
                     config_info={'conf.interface.Interface': {
                                                 'requirements': [['enabled', False]],
                                                 'verify_conf': False,
-                                                'kwargs': {'mandatory': {'name': '(?P<name>.*)',
+                                                'kwargs': {'mandatory': {'name': '(?P<nve_name>.*)',
                                                                          'attach': False}}}},
                     verify_ops={'ops.vxlan.vxlan.Vxlan': {
-                                                'requirements': [['nve', '(?P<name>.*)', 'if_state', 'down']],
+                                                'requirements': [['nve', '(?P<nve_name>.*)', 'if_state', 'down']],
                                                 'kwargs': {'attributes': [
                                                     'nve[(.*)][if_state]',
                                                     'nve[(.*)][vni][(.*)][vni]','l2route']},
                                                 'exclude': nve_exclude + ['l2route']}},
-                    num_values={'name': 1})
+                    num_values={'nve_name': 1})
 
 
 class TriggerShutNoShutNveLoopbackInterface(TriggerShutNoShut):
@@ -110,7 +118,16 @@ class TriggerShutNoShutNveLoopbackInterface(TriggerShutNoShut):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+               The keys below are dynamically learnt by default.
+               However, they can also be set to a custom value when provided in the trigger datafile.
 
+               nve_name: `str`
+               source_if: `str`
+
+               (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                     OR
+                     interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn VxLan Ops object and verify if has any "up" Nve interface(s),
            otherwise, SKIP the trigger

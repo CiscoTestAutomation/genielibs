@@ -38,7 +38,18 @@ class TriggerReload(CommonReload):
                                  in second. Default: 60
             tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,
                                in second. Default: 10
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                rp: `str`
+                oc: `str`
+                rp_state: `str`
+                oc_state: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                   OR
+                   interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Platform Ops object and store the "ok, active|ok, standby|Ready" slot(s)
            if has any, otherwise, SKIP the trigger
@@ -56,7 +67,7 @@ class TriggerReload(CommonReload):
     mapping = Mapping(requirements={'ops.platform.platform.Platform':{
                                         'requirements': [\
                                             ['slot', 'rp', '(?P<rp>.*)',
-                                              'state', '(?P<state>ok, active|ok, standby|Ready)'],
+                                              'state', '(?P<rp_state>ok, active|ok, standby|Ready)'],
                                             ['slot', 'oc', '(?P<oc>.*)',
                                               'state', '(?P<oc_state>ok, active|ok, standby|ok|ps, fail)'],
                                           ],

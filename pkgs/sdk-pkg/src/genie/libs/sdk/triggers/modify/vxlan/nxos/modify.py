@@ -61,6 +61,18 @@ class TriggerModifyNveMultisiteBgwInterface(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
+
+                nve_name: `str`
+                source_if: `str`
+                nve_vni: `int`
+                multisite_bgw_if: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn Vxlan Ops object and store the vni state which is active and has source interface
@@ -109,7 +121,7 @@ class TriggerModifyNveMultisiteBgwInterface(TriggerModify):
     mapping = Mapping(requirements={'ops.vxlan.vxlan.Vxlan': {
                                         'requirements': [['nve', '(?P<nve_name>.*)', 'source_if', '(?P<source_if>.*)'],
                                                          ['nve', '(?P<nve_name>.*)', 'multisite_bgw_if', '(?P<multisite_bgw_if>.*)'],
-                                                         ['nve', '(?P<nve_name>.*)', 'vni', '(?P<vni>.*)', 'vni_state', 'up']],
+                                                         ['nve', '(?P<nve_name>.*)', 'vni', '(?P<nve_vni>.*)', 'vni_state', 'up']],
                                         'all_keys': True,
                                         'kwargs': {'attributes': ['nve[(.*)][vni][(.*)]',
                                                                   'nve[(.*)][source_if]',
@@ -125,11 +137,11 @@ class TriggerModifyNveMultisiteBgwInterface(TriggerModify):
                                         'verify_conf': False,
                                         'kwargs': {'mandatory': {'name': '(?P<nve_name>.*)', 'attach': False}}}},
                     verify_ops={'ops.vxlan.vxlan.Vxlan': {
-                                        'requirements': [['nve', '(?P<nve_name>.*)', 'vni', '(?P<vni>.*)', 'vni_state', 'down']],
+                                        'requirements': [['nve', '(?P<nve_name>.*)', 'vni', '(?P<nve_vni>.*)', 'vni_state', 'down']],
                                         'kwargs': {'attributes': ['nve[(.*)][vni][(.*)]',
                                                                   'nve[(.*)][source_if]',
                                                                   'nve[(.*)][multisite_bgw_if]','l2route']},
-                                        'exclude': vxlan_exclude + multisite_exclude +['l2route']}},
+                                        'exclude': vxlan_exclude + multisite_exclude +['l2route', 'repl_ip']}},
                     num_values={'nve_name': 'all', 'source_if': 'all', 'intf_name': 'all'})
 
 
@@ -165,7 +177,17 @@ class TriggerModifyNveVniMcastGroup(TriggerModify):
                                     in second. Default: 180
                     interval (`int`): Wait time between iteration when looping is needed,
                                     in second. Default: 15
+           static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                nve_name: `str`
+                nve_vni: `int`
+                mcast: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
         steps:
             1. Learn Vxlan Ops object and store the vni state which is active.
                 SKIP the trigger if there is no VXLAN(s) found
@@ -260,7 +282,17 @@ class TriggerModifyEvpnMsiteBgwDelayRestoreTime(TriggerModify):
                                     in second. Default: 180
                     interval (`int`): Wait time between iteration when looping is needed,
                                     in second. Default: 15
+                static:
+                    The keys below are dynamically learnt by default.
+                    However, they can also be set to a custom value when provided in the trigger datafile.
 
+                    nve_name: `str`
+                    evpn_multisite_border_gateway: `int`
+                    multisite_convergence_time: `int`
+
+                    (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                          OR
+                          interface: 'Ethernet1/1/1' (Specific value)
         steps:
             1. Learn Vxlan Ops object and store the the multisite bgw delay restore time.
                 SKIP the trigger if there is no VXLAN(s) found
@@ -273,7 +305,7 @@ class TriggerModifyEvpnMsiteBgwDelayRestoreTime(TriggerModify):
             6. Learn VXLAN Ops again and verify it is the same as the Ops in step 1
     """
     mapping = Mapping(requirements={'ops.vxlan.vxlan.Vxlan': {
-                                        'requirements': [[['nve', 'evpn_multisite_border_gateway', '(?P<border_gateway>.*)']],
+                                        'requirements': [[['nve', 'evpn_multisite_border_gateway', '(?P<evpn_multisite_border_gateway>.*)']],
                                                          [['nve','(?P<nve_name>.*)', 'multisite_convergence_time',
                                                           '(?P<multisite_convergence_time>.*)']]],
                                         'kwargs': {'attributes': ['nve[(.*)][multisite_convergence_time]',
@@ -281,18 +313,18 @@ class TriggerModifyEvpnMsiteBgwDelayRestoreTime(TriggerModify):
                                                                   'nve[evpn_multisite_border_gateway]']},
                                         'exclude': vxlan_base_exclude}},
                     config_info={'conf.vxlan.Vxlan': {
-                                        'requirements': [['device_attr', '{uut}', 'evpn_msite_attr', '(?P<border_gateway>.*)',\
+                                        'requirements': [['device_attr', '{uut}', 'evpn_msite_attr', '(?P<evpn_multisite_border_gateway>.*)',\
                                                           'evpn_msite_bgw_delay_restore_time', 101]],
                                         'verify_conf': False,
                                         'kwargs': {}}},
                     verify_ops={'ops.vxlan.vxlan.Vxlan': {
-                                        'requirements': [['nve', 'evpn_multisite_border_gateway', '(?P<border_gateway>.*)'],
+                                        'requirements': [['nve', 'evpn_multisite_border_gateway', '(?P<evpn_multisite_border_gateway>.*)'],
                                                          ['nve', '(?P<nve_name>.*)', 'multisite_convergence_time', 101]],
                                         'kwargs': {'attributes': ['nve[(.*)][multisite_convergence_time]',
                                                                   'nve[(.*)][vni][(.*)]',
                                                                   'nve[evpn_multisite_border_gateway]']},
                                         'exclude': vxlan_base_exclude}},
-                    num_values={'nve_name': 'all' , 'border_gateway':'all', 'delay_time':'all' })
+                    num_values={'nve_name': 'all' , 'evpn_multisite_border_gateway':'all', 'delay_time':'all' })
 
 class TriggerModifyNveSourceInterfaceLoopback(TriggerModify):
     """Modify and revert nve source interface dynamically learned Vxlan(s)."""
@@ -326,7 +358,17 @@ class TriggerModifyNveSourceInterfaceLoopback(TriggerModify):
                                  in second. Default: 180
                  interval (`int`): Wait time between iteration when looping is needed,
                                  in second. Default: 15
+             static:
+                 The keys below are dynamically learnt by default.
+                 However, they can also be set to a custom value when provided in the trigger datafile.
 
+                 nve_name: `str`
+                 source_if: `str`
+                 multisite_bgw_if: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
        steps:
          1. Learn Vxlan Ops object and store the nve source interface under nve
             if has any, otherwise, SKIP the trigger
@@ -473,7 +515,19 @@ class TriggerModifyEvpnRd(TriggerModify):
                                     in second. Default: 180
                     interval (`int`): Wait time between iteration when looping is needed,
                                     in second. Default: 15
+                static:
+                     The keys below are dynamically learnt by default.
+                     However, they can also be set to a custom value when provided in the trigger datafile.
 
+                     instance: `str`
+                     vrf: `str`
+                     address_family: `str`
+                     rd: `str`
+                     rd_vniid: `str`
+
+                    (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                          OR
+                          interface: 'Ethernet1/1/1' (Specific value)
         steps:
             1. Learn Vxlan Ops object and store the rd and it's vni  .
                 SKIP the trigger if there is no VXLAN(s) found
@@ -513,11 +567,11 @@ class TriggerModifyEvpnRd(TriggerModify):
                 ret = item['new_rd']
                 req = ['bgp_l2vpn_evpn', 'instance', '(?P<instance>.*)',
                                'vrf', '(?P<vrf>.*)', 'address_family',
-                               '(?P<af>.*)', 'rd', ret,'rd']
+                               '(?P<address_family>.*)', 'rd', ret,'rd']
                 req.insert(len(req),ret)
                 req_2 = ['bgp_l2vpn_evpn', 'instance', '(?P<instance>.*)',
                                                            'vrf', '(?P<vrf>.*)', 'address_family',
-                                                           '(?P<af>.*)', 'rd', ret, 'rd_vniid', '(?P<rd_vniid>.*)']
+                                                           '(?P<address_family>.*)', 'rd', ret, 'rd_vniid', '(?P<rd_vniid>.*)']
                 self.mapping._verify_ops_dict['ops.vxlan.vxlan.Vxlan']['requirements'].append(req)
                 self.mapping._verify_ops_dict['ops.vxlan.vxlan.Vxlan']['requirements'].append(req_2)
             except Exception as e:
@@ -531,13 +585,13 @@ class TriggerModifyEvpnRd(TriggerModify):
     mapping = Mapping(requirements={'ops.vxlan.vxlan.Vxlan':{
                                           'requirements':[['bgp_l2vpn_evpn', 'instance', '(?P<instance>.*)',
                                                            'vrf', '(?P<vrf>.*)', 'address_family',
-                                                           '(?P<af>.*)', 'rd', '(?P<rd>.*)','rd','(?P<rd>.*)'],
+                                                           '(?P<address_family>.*)', 'rd', '(?P<rd>.*)','rd','(?P<rd>.*)'],
                                                           ['bgp_l2vpn_evpn', 'instance', '(?P<instance>.*)',
                                                            'vrf', '(?P<vrf>.*)', 'address_family',
-                                                           '(?P<af>.*)', 'rd', '(?P<rd>.*)', 'rd_vniid', '(?P<rd_vniid>.*)'],
+                                                           '(?P<address_family>.*)', 'rd', '(?P<rd>.*)', 'rd_vniid', '(?P<rd_vniid>.*)'],
                                                           ['bgp_l2vpn_evpn', 'instance', '(?P<instance>.*)',
                                                             'vrf', '(?P<vrf>.*)', 'address_family',
-                                                            '(?P<af>.*)', 'rd', '(?P<rd>.*)', 'rd_vrf', 'l2']],
+                                                            '(?P<address_family>.*)', 'rd', '(?P<rd>.*)', 'rd_vrf', 'l2']],
                                           'kwargs':{'attributes':['bgp_l2vpn_evpn[instance][(.*)][vrf][(.*)][address_family][(.*)][rd][(.*)][rd]',
                                                                   'bgp_l2vpn_evpn[instance][(.*)][vrf][(.*)][address_family][(.*)][rd][(.*)][rd_vniid]',
                                                                   'bgp_l2vpn_evpn[instance][(.*)][vrf][(.*)][address_family][(.*)][rd][(.*)][rd_vrf]',
@@ -556,4 +610,4 @@ class TriggerModifyEvpnRd(TriggerModify):
                                                                 'bgp_l2vpn_evpn[instance][(.*)][vrf][(.*)][address_family][(.*)][rd][(.*)][rd_vniid]',
                                                                 'bgp_l2vpn_evpn[instance][(.*)][vrf][(.*)][address_family][(.*)][rd][(.*)][rd_vrf]']},
                                         'exclude': vxlan_exclude}},
-                      num_values={'rd': 1, 'instance':1, 'vrf':1, 'af':1, 'rd_vniid':1})
+                      num_values={'rd': 1, 'instance':1, 'vrf':1, 'address_family':1, 'rd_vniid':1})

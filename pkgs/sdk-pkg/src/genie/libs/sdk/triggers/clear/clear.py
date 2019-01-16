@@ -115,7 +115,7 @@ class TriggerClear(TriggerClear):
                 if not callable(item[0]):
                     continue
                 ret = item[0]
-                ret.keywords.update({'uut': uut, 'pre_time': self.pre_time, 'mapping': self.mapping})
+                ret.keywords.update({'uut': uut, 'pre_time': self.pre_time})
 
         try:
             self.mapping.verify_ops(device=uut, abstract=abstract,

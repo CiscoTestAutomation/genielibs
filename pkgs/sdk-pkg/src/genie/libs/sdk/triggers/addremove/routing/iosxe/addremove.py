@@ -51,7 +51,15 @@ class TriggerAddRemoveIpv4StaticRoutes(TriggerAddRemove):
                                 in second. Default: 180
                 interval (`int`): Wait time between iterations when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn static_routing Ops object and store the routes info if has any.
         2. Save the current device configurations through "method" which user uses
@@ -163,7 +171,17 @@ class TriggerAddRemoveIpv6StaticRoutes(TriggerAddRemoveIpv4StaticRoutes):
                                 in second. Default: 180
                 interval (`int`): Wait time between iterations when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                route: `str`
+                out_intf: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn static_routing Ops object and store the routes info if has any.
         2. Save the current device configurations through "method" which user uses

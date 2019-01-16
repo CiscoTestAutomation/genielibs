@@ -121,23 +121,25 @@ class TriggerSwitchover(SwitchoverTemplate):
                pyATS Results
         '''
         # initial UpdateLearntDatabase object to update the database
-        update_obj = UpdateLearntDatabase(obj=self, device=uut)
+        update_obj = UpdateLearntDatabase(obj=self, device=uut,
+                                          update_ver_list=update_verifications,
+                                          update_feature_list=update_pts_features)
+
 
         # update global/local verification
-        if update_verifications:
-            with steps.start("Update global and local verifications for {}"
-              .format(update_verifications)) as step:
-                update_obj.update_verification(abstract=abstract,
-                                               update_ver_list=update_verifications)
+        with steps.start("Update global and local verifications for {}"
+          .format(update_verifications)) as step:
+            update_obj.update_verification()
 
         # update platform pts
         # update chassis_sn and slot info
-        if update_pts_features:
-            with steps.start("Update PTS for features {}"
-              .format(update_pts_features)) as step:
-                update_obj.update_pts(abstract=abstract,
-                                      update_feature_list=update_pts_features,
-                                      update_attributes={'platform': ['chassis_sn', 'slot', 'virtual_device']})
+        with steps.start("Update PTS for features {}"
+          .format(update_pts_features)) as step:
+            update_obj.update_pts(update_attributes={'platform': ['chassis_sn', 'slot', 'virtual_device']})
+        # print messages
+        update_obj.local_summary.print()
+        update_obj.global_summary.print()
+        update_obj.pts_summary.print()
 
 
 class TriggerReload(ReloadTemplate):
@@ -256,23 +258,25 @@ class TriggerReload(ReloadTemplate):
                pyATS Results
         '''
         # initial UpdateLearntDatabase object to update the database
-        update_obj = UpdateLearntDatabase(obj=self, device=uut)
+        update_obj = UpdateLearntDatabase(obj=self, device=uut,
+                                          update_ver_list=update_verifications,
+                                          update_feature_list=update_pts_features)
+
 
         # update global/local verification
-        if update_verifications:
-            with steps.start("Update global and local verifications for {}"
-              .format(update_verifications)) as step:
-                update_obj.update_verification(abstract=abstract,
-                                               update_ver_list=update_verifications)
+        with steps.start("Update global and local verifications for {}"
+          .format(update_verifications)) as step:
+            update_obj.update_verification()
 
         # update platform pts
         # update chassis_sn and slot info
-        if update_pts_features:
-            with steps.start("Update PTS for features {}"
-              .format(update_pts_features)) as step:
-                update_obj.update_pts(abstract=abstract,
-                                      update_feature_list=update_pts_features,
-                                      update_attributes={'platform': ['chassis_sn', 'slot', 'virtual_device']})
+        with steps.start("Update PTS for features {}"
+          .format(update_pts_features)) as step:
+            update_obj.update_pts(update_attributes={'platform': ['chassis_sn', 'slot', 'virtual_device']})
+        # print messages
+        update_obj.local_summary.print()
+        update_obj.global_summary.print()
+        update_obj.pts_summary.print()
 
 
 class TriggerReloadLc(TriggerReload):
@@ -476,20 +480,23 @@ class TriggerIssu(IssuTemplate):
                pyATS Results
         '''
         # initial UpdateLearntDatabase object to update the database
-        update_obj = UpdateLearntDatabase(obj=self, device=uut)
+        update_obj = UpdateLearntDatabase(obj=self, device=uut,
+                                          update_ver_list=update_verifications,
+                                          update_feature_list=update_pts_features)
+
 
         # update global/local verification
-        if update_verifications:
-            with steps.start("Update global and local verifications for {}"
-              .format(update_verifications)) as step:
-                update_obj.update_verification(abstract=abstract,
-                                               update_ver_list=update_verifications)
+        with steps.start("Update global and local verifications for {}"
+          .format(update_verifications)) as step:
+            update_obj.update_verification()
 
         # update platform pts
         # update chassis_sn and slot info
-        if update_pts_features:
-            with steps.start("Update PTS for features {}"
-              .format(update_pts_features)) as step:
-                update_obj.update_pts(abstract=abstract,
-                                      update_feature_list=update_pts_features,
-                                      update_attributes={'platform': ['chassis_sn', 'slot', 'virtual_device']})
+        with steps.start("Update PTS for features {}"
+          .format(update_pts_features)) as step:
+            update_obj.update_pts(update_attributes={'platform': ['chassis_sn', 'slot', 'virtual_device']})
+        # print messages
+        update_obj.local_summary.print()
+        update_obj.global_summary.print()
+        update_obj.pts_summary.print()
+        

@@ -18,7 +18,8 @@ class Igmp(Base):
 
     def keys(self, item):
         '''return only the key as list from the item'''
-        return sorted(list(item.keys()))
+        if isinstance(item, dict):
+            return sorted(list(item.keys()))
 
     def learn(self):
         '''Learn IGMP Ops'''
@@ -27,7 +28,7 @@ class Igmp(Base):
         self.add_leaf(cmd=ShowVrfDetail,
                       src='',
                       dest='list_of_vrfs',
-                      action=lambda x: list(x.keys()))
+                      action=self.keys)
 
         self.make()
 

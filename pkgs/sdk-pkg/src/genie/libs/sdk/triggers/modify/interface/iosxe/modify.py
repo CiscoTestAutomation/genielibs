@@ -17,47 +17,154 @@ interface_exclude = ['maker', 'last_change','in_rate','in_rate_pkts',
 
 
 class TriggerModifyEthernetMtu(TriggerModify):
+    """Modify and revert the mtu for dynamically learned Ethernet interface(s)."""
+
+    __description__ = """Modify and revert the mtu for dynamically learned Ethernet interface(s).
+
+        trigger_datafile:
+            Mandatory:
+                timeout:
+                    max_time (`int`): Maximum wait time for the trigger,
+                                    in second. Default: 180
+                    interval (`int`): Wait time between iteration when looping is needed,
+                                    in second. Default: 15
+                    method (`str`): Method to recover the device configuration,
+                                  Support methods:
+                                    'checkpoint': Rollback the configuration by
+                                                  checkpoint (nxos),
+                                                  archive file (iosxe),
+                                                  load the saved running-config file on disk (iosxr)
+            Optional:
+                tgn_timeout (`int`): Maximum wait time for all traffic threads to be
+                                     restored to the reference rate,
+                                     in second. Default: 60
+                tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,
+                                   in second. Default: 10
+                timeout_recovery:
+                    Buffer recovery timeout make sure devices are recovered at the end
+                    of the trigger execution. Used when previous timeouts have been exhausted.
+
+                    max_time (`int`): Maximum wait time for the last step of the trigger,
+                                    in second. Default: 180
+                    interval (`int`): Wait time between iteration when looping is needed,
+                                    in second. Default: 15
+                static:
+                    The keys below are dynamically learnt by default.
+                    However, they can also be set to a custom value when provided in the trigger datafile.
+
+                    interface: `str`
+                    mtu: `str`
+
+                    (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                        OR
+                        interface: 'Ethernet1/1/1' (Specific value)
+
+        steps:
+            1. Learn Interface Ops object and store the "up" Ethernet interface(s)
+               if has any, otherwise, SKIP the trigger
+            2. Save the current device configurations through "method" which user uses
+            3. Modify the mtu of the learned Ethernet interface(s) from step 1
+               with Interface Conf object
+            4. Verify the mtu of the learned Ethernet interface(s) from step 3
+               changes to the modified value in step 3
+            5. Recover the device configurations to the one in step 2
+            6. Learn Interface Ops again and verify it is the same as the Ops in step 1
+
+        """
 
     # Mapping of Information between Ops and Conf
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                        'requirements': [['info', '(?P<name>\w+Ethernet[0-9\/]+$)', 'mtu', '(?P<mtu>.*)'],
-                                                         ['info', '(?P<name>.*)', 'port_channel', 'port_channel_member', False],
-                                                         ['info', '(?P<name>.*)', 'oper_status', 'up']],
+                                        'requirements': [['info', '(?P<interface>\w+Ethernet[0-9\/]+$)', 'mtu', '(?P<mtu>.*)'],
+                                                         ['info', '(?P<interface>.*)', 'port_channel', 'port_channel_member', False],
+                                                         ['info', '(?P<interface>.*)', 'oper_status', 'up']],
                                         'exclude': interface_exclude,
                                         'include_management_interface': False}},
                       config_info={'conf.interface.Interface':{
                                       'requirements':[['mtu', 9216]],
                                       'verify_conf':False,
-                                      'kwargs':{'mandatory':{'name': '(?P<name>.*)',
+                                      'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                              'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                      'requirements': [['info', '(?P<name>.*)', 'mtu', 9216],
-                                                       ['info', '(?P<name>.*)', 'bandwidth', '(\d+)'],
+                                      'requirements': [['info', '(?P<interface>.*)', 'mtu', 9216],
+                                                       ['info', '(?P<interface>.*)', 'bandwidth', '(\d+)'],
                                                        ['info', '(.*)', 'mtu', '(\d+)']],
                                       'exclude': interface_exclude}},
-                      num_values={'name': 1, 'mtu': 1})
+                      num_values={'interface': 1, 'mtu': 1})
 
 
 class TriggerModifySwitchportModeTrunkToAccess(TriggerModify):
+    """Modify and revert the switchport mode to access for dynamically learned interface(s)."""
+
+    __description__ = """Modify and revert the switchport mode to access for dynamically learned interface(s).
+
+           trigger_datafile:
+               Mandatory:
+                   timeout:
+                       max_time (`int`): Maximum wait time for the trigger,
+                                       in second. Default: 180
+                       interval (`int`): Wait time between iteration when looping is needed,
+                                       in second. Default: 15
+                       method (`str`): Method to recover the device configuration,
+                                     Support methods:
+                                       'checkpoint': Rollback the configuration by
+                                                     checkpoint (nxos),
+                                                     archive file (iosxe),
+                                                     load the saved running-config file on disk (iosxr)
+               Optional:
+                   tgn_timeout (`int`): Maximum wait time for all traffic threads to be
+                                        restored to the reference rate,
+                                        in second. Default: 60
+                   tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,
+                                      in second. Default: 10
+                   timeout_recovery:
+                       Buffer recovery timeout make sure devices are recovered at the end
+                       of the trigger execution. Used when previous timeouts have been exhausted.
+
+                       max_time (`int`): Maximum wait time for the last step of the trigger,
+                                       in second. Default: 180
+                       interval (`int`): Wait time between iteration when looping is needed,
+                                       in second. Default: 15
+                   static:
+                       The keys below are dynamically learnt by default.
+                       However, they can also be set to a custom value when provided in the trigger datafile.
+
+                       interface: `str`
+
+                       (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                           OR
+                           interface: 'Ethernet1/1/1' (Specific value)
+
+           steps:
+               1. Learn Interface Ops object and store the "up" interface(s)
+                  if has any, otherwise, SKIP the trigger
+               2. Save the current device configurations through "method" which user uses
+               3. Modify the switchport mode to "access" of the learned  interface(s) from step 1
+                  with Interface Conf object
+               4. Verify the switchport mode of the learned interface(s) from step 3
+                  changes to "access"  in step 3
+               5. Recover the device configurations to the one in step 2
+               6. Learn Interface Ops again and verify it is the same as the Ops in step 1
+
+           """
 
     # Mapping of Information between Ops and Conf
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
                                         'requirements':[\
-                                            ['info', '(?P<name>.*)', 'switchport_mode', 'trunk'],
-                                            ['info', '(?P<name>.*)', 'enabled', True],
-                                            ['info', '(?P<name>.*)', 'oper_status', 'up'],
-                                            ['info', '(?P<name>.*)', 'port_channel', 'port_channel_member', False]],
+                                            ['info', '(?P<interface>.*)', 'switchport_mode', 'trunk'],
+                                            ['info', '(?P<interface>.*)', 'enabled', True],
+                                            ['info', '(?P<interface>.*)', 'oper_status', 'up'],
+                                            ['info', '(?P<interface>.*)', 'port_channel', 'port_channel_member', False]],
                                         'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
                                         'requirements':[['switchport_mode', 'access']],
                                         'verify_conf':False,
-                                        'kwargs':{'mandatory':{'name': '(?P<name>.*)',
+                                        'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                                'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
                                         'requirements': [\
-                                            ['info', '(?P<name>.*)', 'switchport_mode', '(.*access)'],
-                                            ['info', '(?P<name>.*)', 'switchport_enable', False]],
+                                            ['info', '(?P<interface>.*)', 'switchport_mode', '(.*access)'],
+                                            ['info', '(?P<interface>.*)', 'switchport_enable', False]],
                                         'exclude': interface_exclude + ['(Vlan.*)']}},
-                      num_values={'name': 1})
+                      num_values={'interface': 1})

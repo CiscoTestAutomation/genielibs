@@ -51,6 +51,16 @@ class TriggerDisableEnableBgp(TriggerDisableEnable):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
+
+                instance: `str`
+                bgp_id: `int`
+
+              (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn BGP Ops object and store the BGP instance(s)

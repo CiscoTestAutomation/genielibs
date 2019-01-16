@@ -76,6 +76,10 @@ class Device(genie.libs.conf.device.cisco.Device):
         #         "exception dump $arr_tftp_info(tftp_addr)" \
         #         "exception core-file [file join $arr_tftp_info(sub_dir) $::env(TESTBED)-$router.core]"
         # }
+        # nodename
+        if attributes.value('nodename'):
+            configurations.append_line(
+                attributes.format('hostname {nodename}'))
 
         if apply:
             if configurations:

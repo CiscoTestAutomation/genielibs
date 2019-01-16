@@ -4,6 +4,9 @@
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.unconfigconfig.vlan.unconfigconfig import TriggerUnconfigConfig
 
+# ats
+from ats.utils.objects import NotExists
+
 # Which key to exclude for Vlan Ops comparison
 vlan_exclude = ['maker']
 
@@ -39,7 +42,15 @@ class TriggerUnconfigConfigVlan(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vlan: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Vlan Ops object and store the "unshut" vlan(s) if has any, otherwise, SKIP the trigger
         2. Save the current device configurations through "method" which user uses
@@ -51,17 +62,17 @@ class TriggerUnconfigConfigVlan(TriggerUnconfigConfig):
     """
 
     mapping = Mapping(requirements={'ops.vlan.vlan.Vlan':{
-                                        'requirements':[['info','vlans','(?P<vlanid>^([2-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1][0][0][0-1]))$'\
-                                                            ,'vlan_id','(?P<vlanid>^([2-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1][0][0][0-1]))$'],
-                                                        ['info','vlans','(?P<vlanid>.*)','shutdown',False]],
+                                        'requirements':[['info','vlans','(?P<vlan>^([2-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1][0][0][0-1]))$'\
+                                                            ,'vlan_id','(?P<vlan>^([2-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1][0][0][0-1]))$'],
+                                                        ['info','vlans','(?P<vlan>.*)','shutdown',False]],
                                         'kwargs': {'attributes': ['info']},
                                         'exclude': vlan_exclude}},
                       config_info={'conf.vlan.Vlan':{
-                                     'requirements':[['device_attr', '{uut}', 'vlan_attr', '(?P<vlanid>.*)']],
+                                     'requirements':[['device_attr', '{uut}', 'vlan_attr', '(?P<vlan>.*)']],
                                      'verify_conf':False,
-                                     'kwargs':{'mandatory':{'vlanid': '(?P<vlanid>.*)'}}}},
+                                     'kwargs':{'mandatory':{'vlanid': '(?P<vlan>.*)'}}}},
                       verify_ops={'ops.vlan.vlan.Vlan':{
-                                    'requirements': [['info','vlans','(?P<vlanid>.*)','vlan_id' ,'(?P<vlanid>.*)']],
+                                    'requirements': [['info','vlans','(?P<vlan>.*)','vlan_id', NotExists('(?P<vlan>.*)')]],
                                     'kwargs':{'attributes':['info']},
                                     'exclude': vlan_exclude}},
-                      num_values={'vlanid':1})
+                      num_values={'vlan':1})

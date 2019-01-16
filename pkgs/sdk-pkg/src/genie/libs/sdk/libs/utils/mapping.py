@@ -79,6 +79,11 @@ class Mapping(object):
         # Check if parent has static key from trigger datafile
         # Remove device name at the end
         name = self.parent.uid.rsplit('.', 1)[0]
+        if not hasattr(self.parent.parent, 'triggers'):
+            self._static_learn = True
+            self._static = False
+            return
+
         if name not in self.parent.parent.triggers:
             # Weird corner case
             raise Exception("'{name}' is not defined in the Trigger"
@@ -562,6 +567,23 @@ class Mapping(object):
         '''Verify the ops response to the requirements'''
         if not requirements:
             return
+
+        # check if requires the output is empty
+        # this function only take one requirement at a time, so safe to do
+        # len(requirements[0])
+        # when the requirements is like below:
+        # verify_ops={ \
+        #     'conf.vxlan.Vxlan': {
+        #         'requirements': [ \
+        #             [NotExists('device_attr')]]}},
+        # verify_ops={ \
+        #     'ops.vxlan.vxlan.Vxlan': {
+        #         'requirements': [ \
+        #             [NotExists('nve')]]}},
+        if len(requirements[0]) == 1 and isinstance(requirements[0][0], NotExists) and \
+           not getattr(ops, requirements[0][0].value, {}):
+            return
+
         rs = [R(requirement) for requirement in requirements]
         ret = find([ops], *rs, filter_=False, all_keys=all_keys)
         # If missing is True, then we expect it to be missing, aka ret empty
@@ -613,7 +635,7 @@ class Mapping(object):
             exclude = self._populate_exclude(org_req['exclude'])
 
             diff = Diff(self._ops_ret[obj_mod], ops,
-                        exclude=exclude + ['callables'])
+                        exclude=exclude + ['callables', 'maker'])
             diff.findDiff()
 
             if str(diff):
@@ -621,7 +643,7 @@ class Mapping(object):
                                 .format(str(diff)))
 
     def _verify_same(self, ops, initial, exclude, **kwargs):
-        diff = Diff(initial, ops, exclude=exclude + ['callables'])
+        diff = Diff(initial, ops, exclude=exclude + ['callables', 'maker'])
         diff.findDiff()
         if diff.diffs:
             raise Exception("Current ops is not equal to the initial Snapshot "
@@ -696,7 +718,22 @@ class Mapping(object):
 
                 # Instantiate the abstracted Ops object
                 kwargs = self._populate_kwargs(device, requirements)
-                reqs['list'] = self._populate_path(reqs['list'], device, self.keys)
+                # Check if the requriements are required empty output
+                # like below, if it is, do not popluate the path
+                # verify_ops={ \
+                #     'conf.vxlan.Vxlan': {
+                #         'requirements': [ \
+                #             [NotExists('device_attr')]]}},
+                # verify_ops={ \
+                #     'ops.vxlan.vxlan.Vxlan': {
+                #         'requirements': [ \
+                #             [NotExists('nve')]]}},
+                if len(requirements.get('requirements', [])) == 1 and \
+                   len(requirements.get('requirements', [[None]])[0]) == 1 and\
+                   not isinstance(requirements.get('requirements', [[None]])[0][0], functools.partial):
+                    reqs['list'] = requirements.get('requirements', [])
+                else:
+                    reqs['list'] = self._populate_path(reqs['list'], device, self.keys)
 
                 msg = '\n'.join([str(re) for re in reqs['list']])
                 log.info("Verifying the following requirements "
@@ -767,6 +804,17 @@ class Mapping(object):
 
     def _verify_ops(self, device, o, reqs, missing, ops, requirements):
 
+        # verify callable if requirements path
+        # contains customized verify functions
+        if reqs.get('callable', None):
+            for item in reqs['callable']:
+                try:
+                    o.learn_poll(verify=item[0].func,
+                                 mapping=self, local_reqs=reqs,
+                                 timeout=self.timeout, **item[0].keywords)
+                except Exception as e:
+                    raise e
+
         # verify the ops paths values
         try:
             o.learn_poll(verify=self._verify_finds_ops,
@@ -781,16 +829,6 @@ class Mapping(object):
         except Exception as e:
             raise e
 
-        # verify callable if requirements path
-        # contains customized verify functions
-        if reqs.get('callable', None):
-            for item in reqs['callable']:
-                try:
-                    o.learn_poll(verify=item[0].func,
-                                 timeout=self.timeout, **item[0].keywords)
-                except Exception as e:
-                    raise e
-
     def _modify_ops_snapshot(self, original, current, path, obj=None):
         # Handling the case of 'NotExists' in the trigger prerequisites
         required_key = ''
@@ -802,7 +840,16 @@ class Mapping(object):
                     if matched:
                         required_key = str(matched.groupdict()['required_key'])
 
-        # First does path exists in original, except the value
+        # When output is empty, modify the current ops to the same as original
+        # since it already passed the testing empty step,
+        # can pass the diff check between ops
+        if len(path) == 1 and isinstance(path[0], NotExists):
+            try:
+                setattr(current,  path[0].value, getattr(original, path[0].value, None))
+            except Exception:
+                pass
+            return
+
         r = R(path[:-1] + ['(.*)'])
         ret = find([original], r, filter_=False)
         if not ret:
@@ -877,7 +924,7 @@ class Mapping(object):
 
                     if isinstance(item, Operator):
                         if not isinstance(item.value, str):
-                            loc.append(item.value)
+                            loc.append(item)
                             continue
                         if item.value == '{uut}':
                             loc.append(device.name)
@@ -889,15 +936,16 @@ class Mapping(object):
                             if var not in key:
                                 # So key does not exists
                                 # just keep doing with this as a value
-                                loc.append(item.value)
+                                loc.append(item)
                             else:
                                 # This mean var is in key
                                 vkeys = key[var]
                                 if not item == str(vkeys):
                                     break
-                                loc.append(vkeys)
+                                item.value = vkeys
+                                loc.append(item)
                             continue
-                        loc.append(item.value)
+                        loc.append(item)
                         continue
 
                     # TODO: Make this..more unique

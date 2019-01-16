@@ -1,11 +1,13 @@
 '''Implementation for TRM unconfigconfig triggers'''
+# python
+from functools import partial
 
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.unconfigconfig.unconfigconfig import TriggerUnconfigConfig
 from collections import OrderedDict
 from ats.utils.objects import NotExists
-from ats import aetest
+from genie.libs.sdk.libs.utils.triggeractions import verify_ops_or_logic
 
 
 # Which key to exclude for TRM Ops comparison
@@ -44,7 +46,18 @@ class TriggerUnconfigConfigRouteTargetMvpn(TriggerUnconfigConfig):
                                     in second. Default: 180
                     interval (`int`): Wait time between iteration when looping is needed,
                                     in second. Default: 15
+                static:
+                    The keys below are dynamically learnt by default.
+                    However, they can also be set to a custom value when provided in the trigger datafile.
 
+                    vrf: `str`
+                    address_family: `str`
+                    rt: `str`
+                    rt_type: `str`
+
+                    (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                          OR
+                          interface: 'Ethernet1/1/1' (Specific value)
         steps:
             1. Learn Vrf Conf object and check rt_mvpn is available
                if has any, otherwise, SKIP the trigger
@@ -59,9 +72,9 @@ class TriggerUnconfigConfigRouteTargetMvpn(TriggerUnconfigConfig):
         requirements={ \
             'conf.vrf.Vrf': {
                 'requirements': [ \
-                    ['device_attr', '{uut}', 'address_family_attr', '(?P<af>.*)', '_route_target_attr', '(?P<rt>.*)', \
+                    ['device_attr', '{uut}', 'address_family_attr', '(?P<address_family>.*)', '_route_target_attr', '(?P<rt>.*)', \
                       'rt_type', '(?P<rt_type>.*)'],
-                    ['device_attr', '{uut}', 'address_family_attr', '(?P<af>.*)', '_route_target_attr', '(?P<rt>.*)',
+                    ['device_attr', '{uut}', 'address_family_attr', '(?P<address_family>.*)', '_route_target_attr', '(?P<rt>.*)',
                       '_protocol_attr', '(?P<protocol_name>^(mvpn).*)', 'rt_mvpn', True],
                     ['device_attr', '{uut}', 'vrf_name', '(?P<vrf>.*)']],
                 'exclude': trm_exclude,
@@ -76,27 +89,25 @@ class TriggerUnconfigConfigRouteTargetMvpn(TriggerUnconfigConfig):
         config_info={ \
             'conf.vrf.Vrf': {
                 'requirements': [ \
-                    ['device_attr', '{uut}', 'address_family_attr', '(?P<af>.*)', 'route_target_attr', '(?P<rt>.*)', \
+                    ['device_attr', '{uut}', 'address_family_attr', '(?P<address_family>.*)', 'route_target_attr', '(?P<rt>.*)', \
                      'rt_type', '(?P<rt_type>.*)'],
-                    ['device_attr', '{uut}', 'address_family_attr', '(?P<af>.*)', 'route_target_attr', '(?P<rt>.*)',\
+                    ['device_attr', '{uut}', 'address_family_attr', '(?P<address_family>.*)', 'route_target_attr', '(?P<rt>.*)',\
                      'protocol_attr', '(?P<protocol_name>.*)', 'rt_mvpn', False]],
                 'verify_conf': False,
                 'kwargs': {'mandatory': {'name': '(?P<vrf>.*)'}}}},
         verify_ops={ \
             'conf.vrf.Vrf': {
                 'requirements': [ \
-                    ['device_attr', '{uut}', 'address_family_attr', '(?P<af>.*)', '_route_target_attr','(?P<rt>.*)',
-                     '_protocol_attr', '(?P<protocol_name>(?!mvpn).*)', '(.*)']],
+                    ['device_attr', '{uut}', 'address_family_attr', '(?P<address_family>.*)', '_route_target_attr','(?P<rt>.*)',
+                     '_protocol_attr', NotExists('(?P<protocol_name>(?!mvpn).*)')]], # , '(.*)'
                 'exclude': trm_exclude,
-                'kwargs': {'attributes': ['vrf[vrf][(.*)]']},
-                'missing': True},
+                'kwargs': {'attributes': ['vrf[vrf][(.*)]']}},
             'ops.vrf.vrf.Vrf':{
                 'requirements': [ \
                     ['info', 'vrfs', '(?P<vrf>.*)', '(.*)']],
                 'kwargs': {'attributes': ['info']},
-                'missing': False,
                 'exclude': trm_exclude}},
-        num_values={'protocol_name': 1, 'vrf': 1, 'rt': 1, 'rt_type': 1, 'af': 1})
+        num_values={'protocol_name': 1, 'vrf': 1, 'rt': 1, 'rt_type': 1, 'address_family': 1})
 
 class TriggerUnconfigConfigRouteTargetEvpn(TriggerUnconfigConfig):
     """Unconfigure route-target evpn and reapply the whole configurations of dynamically learned Conf Vrf."""
@@ -130,7 +141,18 @@ class TriggerUnconfigConfigRouteTargetEvpn(TriggerUnconfigConfig):
                                     in second. Default: 180
                     interval (`int`): Wait time between iteration when looping is needed,
                                     in second. Default: 15
+                static:
+                    The keys below are dynamically learnt by default.
+                    However, they can also be set to a custom value when provided in the trigger datafile.
 
+                    vrf: `str`
+                    address_family: `str`
+                    rt: `str`
+                    rt_type: `str`
+
+                    (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                          OR
+                          interface: 'Ethernet1/1/1' (Specific value)
         steps:
             1. Learn Vrf Conf object and check rt_evpn is available
                if has any, otherwise, SKIP the trigger
@@ -145,9 +167,9 @@ class TriggerUnconfigConfigRouteTargetEvpn(TriggerUnconfigConfig):
         requirements= {\
             'conf.vrf.Vrf': {
                 'requirements': [ \
-                    ['device_attr', '{uut}', 'address_family_attr', '(?P<af>.*)', '_route_target_attr', '(?P<rt>.*)', \
+                    ['device_attr', '{uut}', 'address_family_attr', '(?P<address_family>.*)', '_route_target_attr', '(?P<rt>.*)', \
                      'rt_type', '(?P<rt_type>.*)'],
-                    ['device_attr', '{uut}', 'address_family_attr', '(?P<af>.*)', '_route_target_attr', '(?P<rt>.*)',
+                    ['device_attr', '{uut}', 'address_family_attr', '(?P<address_family>.*)', '_route_target_attr', '(?P<rt>.*)',
                       '_protocol_attr', '(?P<protocol_name>^(evpn).*)', 'rt_evpn', True],
                     ['device_attr', '{uut}', 'vrf_name', '(?P<vrf>.*)']],
                 'exclude': trm_exclude,
@@ -160,27 +182,32 @@ class TriggerUnconfigConfigRouteTargetEvpn(TriggerUnconfigConfig):
         config_info={ \
             'conf.vrf.Vrf': {
                 'requirements': [ \
-                    ['device_attr', '{uut}', 'address_family_attr', '(?P<af>.*)', 'route_target_attr', '(?P<rt>.*)', \
+                    ['device_attr', '{uut}', 'address_family_attr', '(?P<address_family>.*)', 'route_target_attr', '(?P<rt>.*)', \
                      'rt_type', '(?P<rt_type>.*)'],
-                    ['device_attr', '{uut}', 'address_family_attr', '(?P<af>.*)', 'route_target_attr', '(?P<rt>.*)', \
+                    ['device_attr', '{uut}', 'address_family_attr', '(?P<address_family>.*)', 'route_target_attr', '(?P<rt>.*)', \
                      'protocol_attr', 'evpn', 'rt_evpn', False]
                 ],
                 'verify_conf': False,
                 'kwargs': {'mandatory': {'name': '(?P<vrf>.*)'}}}},
         verify_ops={ \
             'conf.vrf.Vrf': {
-                'requirements': [ \
-                    ['device_attr', '{uut}', 'address_family_attr', '(?P<af>.*)', '_route_target_attr','(?P<rt>.*)',
-                     '_protocol_attr', '(?P<protocol_name>(?!evpn).*)', '(.*)']],
-                'exclude': trm_exclude,
-                'missing': True},
+                'requirements': [[partial(verify_ops_or_logic,
+                                      requires=[['device_attr', '{uut}', 'address_family_attr',
+                                                 '(?P<address_family>.*)', '_route_target_attr','(?P<rt>.*)',
+                                                 '_protocol_attr', NotExists('(?P<protocol_name>(?!evpn).*)')],
+                                                ['device_attr', '{uut}', 'address_family_attr',
+                                                 '(?P<address_family>.*)', '_route_target_attr','(?P<rt>.*)',
+                                                 NotExists('_protocol_attr')],
+                                               ])
+                                  ]
+                                ],
+                'exclude': trm_exclude},
             'ops.vrf.vrf.Vrf':{
                 'requirements': [ \
                     ['info', 'vrfs', '(?P<vrf>.*)', '(.*)']],
                 'kwargs': {'attributes': ['info']},
-                'missing': False,
                 'exclude': trm_exclude}},
-        num_values={'protocol_name': 1, 'vrf': 1, 'rt': 1, 'af': 1})
+        num_values={'protocol_name': 1, 'vrf': 1, 'rt': 1, 'address_family': 1})
 
 class TriggerUnconfigConfigAdvertiseEvpnMulticast(TriggerUnconfigConfig):
     """Unconfigure advertise evpn multisite and reapply the whole configurations of dynamically learned Conf Vxlan."""
@@ -240,7 +267,6 @@ class TriggerUnconfigConfigAdvertiseEvpnMulticast(TriggerUnconfigConfig):
         verify_ops={ \
             'conf.vxlan.Vxlan': {
                 'requirements': [ \
-                    ['device_attr', '{uut}', NotExists('advertise_evpn_multicast')]],
-                'missing': False,
+                    [NotExists('device_attr')]],
                 'exclude': trm_exclude}},
         num_values={})

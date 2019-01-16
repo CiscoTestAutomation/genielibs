@@ -119,9 +119,9 @@ class TriggerUnconfigConfig(UnconfigConfigTemplate):
         '''
 
         try:
-            self.mapping.verify_missing_ops(device=uut,
-                                            abstract=abstract,
-                                            steps=steps)
+            self.mapping.verify_ops(device=uut,
+                                    abstract=abstract,
+                                    steps=steps)
         except Exception as e:
             self.failed('Failed to verify the '
                         'unconfigure feature', from_exception=e)

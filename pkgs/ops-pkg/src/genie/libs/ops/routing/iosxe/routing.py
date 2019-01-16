@@ -9,6 +9,11 @@ from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
 class Routing(Base):
     '''Routing Ops Object'''
 
+    def keys(self, item):
+        if isinstance(item, dict):
+            return list(item.keys())
+        return []
+
     def learn(self):
         '''Learn Routing object'''
         
@@ -16,7 +21,7 @@ class Routing(Base):
         self.add_leaf(cmd=ShowVrfDetail,
                       src='',
                       dest='list_of_vrfs',
-                      action=lambda x: list(x.keys()))
+                      action=self.keys)
         # when show vrf details return nothing
         # initial vrf list
         try:

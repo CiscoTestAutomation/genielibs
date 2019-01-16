@@ -35,7 +35,15 @@ class TriggerShutNoShutVlan(TriggerShutNoShut):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+               The keys below are dynamically learnt by default.
+               However, they can also be set to a custom value when provided in the trigger datafile.
 
+               vlan: `str`
+
+               (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                     OR
+                     interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Vlan Ops object and store the Vlan instance(s)
            if has any, otherwise, SKIP the trigger
@@ -47,19 +55,19 @@ class TriggerShutNoShutVlan(TriggerShutNoShut):
     """
 
     mapping = Mapping(requirements={'ops.vlan.vlan.Vlan':{
-                                        'requirements':[['info','vlans','(?P<vlanid>^([2-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1][0][0][0-1]))$',\
-                                                         'vlan_id','(?P<vlanid>^([2-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1][0][0][0-1]))$']],
+                                        'requirements':[['info','vlans','(?P<vlan>^([2-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1][0][0][0-1]))$',\
+                                                         'vlan_id','(?P<vlan>^([2-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1][0][0][0-1]))$']],
                                         'kwargs': {'attributes': ['info']},
                                         'exclude': vlan_exclude }},
                       config_info={'conf.vlan.Vlan':{
-                                     'requirements':[['device_attr', '{uut}', 'vlan_attr', '(?P<vlanid>.*)','shutdown', True]],
+                                     'requirements':[['device_attr', '{uut}', 'vlan_attr', '(?P<vlan>.*)','shutdown', True]],
                                      'verify_conf':False,
-                                     'kwargs':{'mandatory':{'vlanid': '(?P<vlanid>.*)'}}}},
+                                     'kwargs':{'mandatory':{'vlanid': '(?P<vlan>.*)'}}}},
                       verify_ops={'ops.vlan.vlan.Vlan':{
-                                    'requirements': [['info','vlans','(?P<vlanid>.*)','shutdown', True],
-                                                     ['info', 'vlans', '(?P<vlanid>.*)', 'state', 'shutdown']],
+                                    'requirements': [['info','vlans','(?P<vlan>.*)','shutdown', True],
+                                                     ['info', 'vlans', '(?P<vlan>.*)', 'state', 'shutdown']],
                                     'kwargs':{'attributes':['info']},
                                     'exclude': vlan_exclude + ['interfaces']}},
-                      num_values={'vlanid': 1})
+                      num_values={'vlan': 1})
 
 

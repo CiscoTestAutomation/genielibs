@@ -26,8 +26,10 @@ bgp_exclude = ['maker', 'bgp_session_transport', 'route_refresh',
 
 
 class TriggerModifyBgpKeepaliveHoldtime(TriggerModify):
-    """
-       Modify the keepalive interval and holdtime configured under BGP and then restore the
+    """Modify the keepalive interval and holdtime configured under BGP and then restore the
+       configuration by reapplying the whole running configuration"""
+
+    __description__= """Modify the keepalive interval and holdtime configured under BGP and then restore the
        configuration by reapplying the whole running configuration
 
        trigger_datafile:
@@ -58,6 +60,20 @@ class TriggerModifyBgpKeepaliveHoldtime(TriggerModify):
                                      trigger in seconds. Default: 180
                    interval (`int`): Wait time between iteration when looping is
                                      needed in seconds. Default: 15
+               static:
+                    The keys below are dynamically learnt by default.
+                    However, they can also be set to a custom value when provided in the trigger datafile.
+
+                    instance: `str`
+                    vrf: `str`
+                    keepalive_interval: `int`
+                    holdtime: `int`
+                    neighbor: `str`
+                    bgp_id: `int`
+
+                    (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                        OR
+                        interface: 'Ethernet1/1/1' (Specific value)
 
        Steps:
            1. Learn BGP Ops configured on device. SKIP the trigger if there
@@ -146,7 +162,20 @@ class TriggerModifyBgpKeepAliveInterval(TriggerModify):
                                   trigger in seconds. Default: 180
                 interval (`int`): Wait time between iteration when looping is
                                   needed in seconds. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                keepalive_interval: `int`
+                holdtime: `int`
+                neighbor: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
     Steps:
         1. Learn BGP Ops configured on device. SKIP the trigger if there
            is no BGP configured on the device.
@@ -232,7 +261,19 @@ class TriggerModifyBgpGracefulRestartRestartTime(TriggerModify):
                                   trigger in seconds. Default: 180
                 interval (`int`): Wait time between iteration when looping is
                                   needed in seconds. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                graceful_restart_restart_time: `int`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
     Steps:
         1. Learn BGP Ops configured on device. SKIP the trigger if there
            is no BGP configured on the device.
@@ -315,7 +356,19 @@ class TriggerModifyBgpGracefulRestartStalePathTime(TriggerModify):
                                   trigger in seconds. Default: 180
                 interval (`int`): Wait time between iteration when looping is
                                   needed in seconds. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                graceful_restart_stalepath_time: `int`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
     Steps:
         1. Learn BGP Ops configured on device. SKIP the trigger if there
            is no BGP configured on the device.
@@ -398,7 +451,20 @@ class TriggerModifyBgpNeighborKeepAliveInterval(TriggerModify):
                                   trigger in seconds. Default: 180
                 interval (`int`): Wait time between iteration when looping is
                                   needed in seconds. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                holdtime: `int`
+                keepalive_interval: `int`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
     Steps:
         1. Learn BGP Ops configured on device. SKIP the trigger if there
            is no BGP configured on the device.
@@ -501,7 +567,19 @@ class TriggerModifyBgpNeighborEbgpMultihop(TriggerModify):
                                   trigger in seconds. Default: 180
                 interval (`int`): Wait time between iteration when looping is
                                   needed in seconds. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                max_hop: `int`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
     Steps:
         1. Learn BGP Ops configured on device. SKIP the trigger if there
            is no BGP configured on the device.
@@ -579,7 +657,19 @@ class TriggerModifyBgpNeighborUpdateSource(TriggerModify):
                                   trigger in seconds. Default: 180
                 interval (`int`): Wait time between iteration when looping is
                                   needed in seconds. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                update_source: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
     Steps:
         1. Learn BGP Ops configured on device. SKIP the trigger if there
            is no BGP configured on the device.
@@ -654,7 +744,20 @@ class TriggerModifyBgpNeighborMaximumPrefix(TriggerModify):
                                   trigger in seconds. Default: 180
                 interval (`int`): Wait time between iteration when looping is
                                   needed in seconds. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                address_family: `str`
+                maximum_prefix_max_prefix_no: `int`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
     Steps:
         1. Learn BGP Ops configured on device. SKIP the trigger if there
            is no BGP configured on the device.
@@ -729,7 +832,20 @@ class TriggerModifyBgpNeighborPassword(TriggerModify):
                                   trigger in seconds. Default: 180
                 interval (`int`): Wait time between iteration when looping is
                                   needed in seconds. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                address_family: `str`
+                password_text: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
     Steps:
         1. Learn BGP Ops configured on device. SKIP the trigger if there
            is no BGP configured on the device.
@@ -831,7 +947,20 @@ class TriggerModifyBgpVpnRd(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                address_family: `str`
+                rd: `str`
+                default_vrf: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn BGP Ops object and store the BGP vrf(s) with route_distinguisher
            if has any, otherwise, SKIP the trigger
@@ -867,19 +996,19 @@ class TriggerModifyBgpVpnRd(TriggerModify):
                                                            ['table', 'instance', '(?P<instance>.*)',
                                                            'vrf', '(?P<vrf>.*)', 'address_family',
                                                            '(?P<address_family>.*)', 'default_vrf',
-                                                           '(?P<name>^(?!L3|vpn).*)']],
+                                                           '(?P<default_vrf>^(?!L3|vpn).*)']],
                                         'kwargs':{'attributes':['table', 'info']},
                                         'all_keys': True,
                                         'exclude': bgp_exclude},
                                     'ops.vrf.vrf.Vrf':{
-                                          'requirements':[['info', 'vrfs', '(?P<name>^(?!default).*)',
+                                          'requirements':[['info', 'vrfs', '(?P<default_vrf>^(?!default).*)',
                                                            'route_distinguisher', '(?P<rd>.*)']],
                                         'kwargs':{'attributes':['info']},
                                         'exclude': ['maker']}},
                       config_info={'conf.vrf.Vrf':{
                                      'requirements':[['device_attr', '{uut}', 'rd', MODIFY_RD]],
                                      'verify_conf':False,
-                                     'kwargs':{'mandatory':{'name': '(?P<name>.*)'}}}},
+                                     'kwargs':{'mandatory':{'name': '(?P<default_vrf>.*)'}}}},
                       verify_ops={'ops.bgp.bgp.Bgp':{
                                     'requirements': [['table', 'instance', '(?P<instance>.*)',
                                                      'vrf', '(?P<vrf>.*)', 'address_family',
@@ -887,9 +1016,9 @@ class TriggerModifyBgpVpnRd(TriggerModify):
                                     'kwargs':{'attributes':['table', 'info']},
                                     'exclude': bgp_exclude + ['label_allocation_mode']},
                                   'ops.vrf.vrf.Vrf':{
-                                        'requirements':[['info', 'vrfs', '(?P<name>.*)',
+                                        'requirements':[['info', 'vrfs', '(?P<default_vrf>.*)',
                                                          'route_distinguisher', MODIFY_RD]],
                                       'kwargs':{'attributes':['info']},
                                       'exclude': ['maker']}},
                       num_values={'vrf': 1, 'instance':1, 
-                                  'address_family': 'all', 'rd': 1, 'name': 1})
+                                  'address_family': 'all', 'rd': 1, 'default_vrf': 1})

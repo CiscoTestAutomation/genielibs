@@ -63,6 +63,10 @@ class Device(genie.libs.conf.device.cisco.Device):
         configurations.append_block(super().build_config(apply=False, attributes=attributes))
 
         # TODO -- exception dump?
+        # nodename
+        if attributes.value('nodename'):
+            configurations.append_line(
+                attributes.format('hostname {nodename}'))
 
         if apply:
             if configurations:

@@ -68,14 +68,10 @@ class Device(genie.libs.conf.device.cisco.Device):
 
         configurations.append_block(super().build_config(apply=False, attributes=attributes))
 
-        # TODO
-        # enaGetTftpServerInfo arr_tftp_info -router $router -default_sub_dir "hfr-mpls" ;# XXXJST /hfr-mpls ???
-        # if { [info exists arr_tftp_info(tftp_addr)] } {
-        #     lappend cfgs($router) \
-        #         "exception protocol tftp" \
-        #         "exception dump $arr_tftp_info(tftp_addr)" \
-        #         "exception core-file [file join $arr_tftp_info(sub_dir) $::env(TESTBED)-$router.core]"
-        # }
+        # nodename
+        if attributes.value('nodename'):
+            configurations.append_line(
+                attributes.format('hostname {nodename}'))
 
         if apply:
             if configurations:

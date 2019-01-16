@@ -49,7 +49,19 @@ class TriggerModifyHsrpIpv4StateActiveToStandby(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                interface: `str`
+                version: `int`
+                group_number: `int`
+                priority: `int`
+                standby_router: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn HSRP Ops object and store the HSRP ipv4 group(s) which is active and
            have standby connected. SKIP the trigger if there is no HSRP group(s) found
@@ -135,6 +147,19 @@ class TriggerModifyHsrpIpv6StateActiveToStandby(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
+
+                interface: `str`
+                version: `int`
+                group_number: `int`
+                priority: `int`
+                standby_router: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn HSRP Ops object and store the HSRP ipv6 group(s) which is active and

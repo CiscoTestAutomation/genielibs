@@ -40,7 +40,15 @@ class TriggerShutNoShutTrunkInterface(TriggerShutNoShut):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+               The keys below are dynamically learnt by default.
+               However, they can also be set to a custom value when provided in the trigger datafile.
 
+               interface: `str`
+
+               (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                     OR
+                     interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Interface Ops object and store the "up" trunk interface(s)
            if has any, otherwise, SKIP the trigger
@@ -54,24 +62,24 @@ class TriggerShutNoShutTrunkInterface(TriggerShutNoShut):
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<name>.*)', 'switchport_mode', 'trunk'],
-                                                       ['info', '(?P<name>.*)', 'enabled', True],
-                                                       ['info', '(?P<name>.*)', 'port_channel',
+                                       'requirements':[['info', '(?P<interface>.*)', 'switchport_mode', 'trunk'],
+                                                       ['info', '(?P<interface>.*)', 'enabled', True],
+                                                       ['info', '(?P<interface>.*)', 'port_channel',
                                                         'port_channel_int', '(?P<port_int>.*)'],
-                                                       ['info', '(?P<name>.*)', 'oper_status', 'up']],
+                                                       ['info', '(?P<interface>.*)', 'oper_status', 'up']],
                                        'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
                                        'requirements':[['enabled', False]],
                                        'verify_conf':False,
-                                       'kwargs':{'mandatory':{'name': '(?P<name>.*)',
+                                       'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<name>.*)', 'enabled', False],
-                                                       ['info', '(?P<name>.*)', 'oper_status', 'down'],
+                                       'requirements':[['info', '(?P<interface>.*)', 'enabled', False],
+                                                       ['info', '(?P<interface>.*)', 'oper_status', 'down'],
                                                        ['info', '(?P<port_int>.*)', 'enabled', False],
                                                        ['info', '(?P<port_int>.*)', 'oper_status', 'down']],
                                        'exclude': interface_exclude + ['(Vlan.*)']}},
-                      num_values={'name': 1, 'port_int': 'all'})
+                      num_values={'interface': 1, 'port_int': 'all'})
 
 
 class TriggerShutNoShutEthernetInterface(TriggerShutNoShut):
@@ -100,7 +108,15 @@ class TriggerShutNoShutEthernetInterface(TriggerShutNoShut):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+               The keys below are dynamically learnt by default.
+               However, they can also be set to a custom value when provided in the trigger datafile.
 
+               interface: `str`
+
+               (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                     OR
+                     interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Interface Ops object and store the "up" Ethernet interface(s)
            if has any, otherwise, SKIP the trigger
@@ -115,22 +131,22 @@ class TriggerShutNoShutEthernetInterface(TriggerShutNoShut):
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
                                         'requirements':[\
-                                            ['info', '(?P<name>Ethernet(\S+))', 'oper_status', 'up'],
-                                            ['info', '(?P<name>.*)', 'enabled', True],
-                                            ['info', '(?P<name>.*)', 'port_channel', 'port_channel_member', False]],
+                                            ['info', '(?P<interface>Ethernet(\S+))', 'oper_status', 'up'],
+                                            ['info', '(?P<interface>.*)', 'enabled', True],
+                                            ['info', '(?P<interface>.*)', 'port_channel', 'port_channel_member', False]],
                                         'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
                                         'requirements':[['enabled', False]],
                                         'verify_conf':False,
-                                        'kwargs':{'mandatory':{'name': '(?P<name>.*)',
+                                        'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                                'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
                                         'requirements':[\
-                                            ['info', '(?P<name>.*)', 'enabled', False],
-                                            ['info', '(?P<name>.*)', 'oper_status', 'down'],
+                                            ['info', '(?P<interface>.*)', 'enabled', False],
+                                            ['info', '(?P<interface>.*)', 'oper_status', 'down'],
                                             ['info', '(.*)', 'enabled', False]],
                                         'exclude': interface_exclude}},
-                      num_values={'name': 1})
+                      num_values={'interface': 1})
 
 
 class TriggerShutNoShutVlanInterface(TriggerShutNoShut):
@@ -159,7 +175,16 @@ class TriggerShutNoShutVlanInterface(TriggerShutNoShut):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+               The keys below are dynamically learnt by default.
+               However, they can also be set to a custom value when provided in the trigger datafile.
 
+               interface: `str`
+               mtu: `str`
+
+               (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                     OR
+                     interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Interface Ops object and store the "up" Vlan interface(s)
            if has any, otherwise, SKIP the trigger
@@ -173,20 +198,20 @@ class TriggerShutNoShutVlanInterface(TriggerShutNoShut):
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<name>Vlan[0-9]+)', 'mtu', '(?P<mtu>.*)'],
-                                                       ['info', '(?P<name>.*)', 'enabled', True],
-                                                       ['info', '(?P<name>.*)', 'oper_status', 'up']],
+                                       'requirements':[['info', '(?P<interface>Vlan[0-9]+)', 'mtu', '(?P<mtu>.*)'],
+                                                       ['info', '(?P<interface>.*)', 'enabled', True],
+                                                       ['info', '(?P<interface>.*)', 'oper_status', 'up']],
                                        'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
                                        'requirements':[['enabled', False]],
                                        'verify_conf':False,
-                                       'kwargs':{'mandatory':{'name': '(?P<name>.*)',
+                                       'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<name>.*)', 'enabled', False],
-                                                       ['info', '(?P<name>.*)', 'oper_status', 'down']],
+                                       'requirements':[['info', '(?P<interface>.*)', 'enabled', False],
+                                                       ['info', '(?P<interface>.*)', 'oper_status', 'down']],
                                        'exclude': interface_exclude}},
-                      num_values={'name': 1, 'mtu': 1})
+                      num_values={'interface': 1, 'mtu': 1})
 
 
 class TriggerShutNoShutLoopbackInterface(TriggerShutNoShut):
@@ -215,7 +240,15 @@ class TriggerShutNoShutLoopbackInterface(TriggerShutNoShut):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+               The keys below are dynamically learnt by default.
+               However, they can also be set to a custom value when provided in the trigger datafile.
 
+               interface: `str`
+
+               (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                     OR
+                     interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Interface Ops object and store the "up" Loopback interface(s)
            if has any, otherwise, SKIP the trigger
@@ -231,15 +264,15 @@ class TriggerShutNoShutLoopbackInterface(TriggerShutNoShut):
     # Mapping of Information between Ops and Conf
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<name>(Loopback|Lo|loopback)[0-9]+)', 'oper_status', 'up']],
+                                       'requirements':[['info', '(?P<interface>(Loopback|Lo|loopback)[0-9]+)', 'oper_status', 'up']],
                                        'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
                                        'requirements':[['enabled', False]],
                                        'verify_conf':False,
-                                       'kwargs':{'mandatory':{'name': '(?P<name>.*)',
+                                       'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<name>.*)', 'enabled', False],
-                                                       ['info', '(?P<name>.*)', 'oper_status', 'down']],
+                                       'requirements':[['info', '(?P<interface>.*)', 'enabled', False],
+                                                       ['info', '(?P<interface>.*)', 'oper_status', 'down']],
                                        'exclude': loopback_exclude}},
-                      num_values={'name': 1})
+                      num_values={'interface': 1})

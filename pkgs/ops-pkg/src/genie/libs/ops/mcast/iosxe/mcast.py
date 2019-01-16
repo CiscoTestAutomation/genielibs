@@ -23,6 +23,10 @@ from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
 class Mcast(Base):
     '''Mcast Genie Ops Object'''
 
+    def get_vrfs(self, item):
+        if isinstance(item, dict):
+            return list(item.keys())
+
     def learn(self):
         '''Learn Mcast Ops'''
 
@@ -30,7 +34,7 @@ class Mcast(Base):
         self.add_leaf(cmd=ShowVrfDetail,
                       src='',
                       dest='list_of_vrfs',
-                      action=lambda x: list(x.keys()))
+                      action=self.get_vrfs)
 
         self.make()
 

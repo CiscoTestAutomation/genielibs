@@ -79,7 +79,38 @@ class TriggerShutNoShutBgp(TriggerShutNoShut):
     then unshut it by restart bpm. """
     
     __description__ = """Shut BGP protocol by shutdown the dynamically learned BGP process,
-    then unshut it by restart bpm. 
+    then unshut it by restart bpm.
+
+    trigger_datafile:
+        Mandatory:
+            timeout:
+                max_time (`int`): Maximum wait time for the trigger,
+                                in second. Default: 180
+                interval (`int`): Wait time between iteration when looping is needed,
+                                in second. Default: 15
+        Optional:
+            tgn_timeout (`int`): Maximum wait time for all traffic threads to be
+                                 restored to the reference rate,
+                                 in second. Default: 60
+            tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,
+                               in second. Default: 10
+            timeout_recovery:
+                Buffer recovery timeout make sure devices are recovered at the end
+                of the trigger execution. Used when previous timeouts have been exhausted.
+
+                max_time (`int`): Maximum wait time for the last step of the trigger,
+                                in second. Default: 180
+                interval (`int`): Wait time between iteration when looping is needed,
+                                in second. Default: 15
+            static:
+                 The keys below are dynamically learnt by default.
+                 However, they can also be set to a custom value when provided in the trigger datafile.
+
+                 instance: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn BGP Ops object and store the BGP instance(s)

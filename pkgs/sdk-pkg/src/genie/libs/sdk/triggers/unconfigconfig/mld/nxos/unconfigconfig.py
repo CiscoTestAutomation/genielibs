@@ -4,13 +4,12 @@
 from functools import partial
 
 # ats
-from ats import aetest
 from ats.utils.objects import Not, NotExists
 
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.unconfigconfig.unconfigconfig import TriggerUnconfigConfig
-from genie.libs.sdk.libs.utils.triggeractions import configure_add_attributes
+from genie.libs.sdk.libs.utils.triggeractions import configure_add_attributes, verify_ops_or_logic
 from genie.libs.conf.mld.mld_group import MldGroup
 
 # Which key to exclude for Mld Ops comparison
@@ -51,7 +50,16 @@ class TriggerUnconfigConfigMldEnable(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                interface: `str`
+                vrf: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Mld Ops object and store the enabled Mld interface(s)
            if has any, otherwise, SKIP the trigger
@@ -70,7 +78,7 @@ class TriggerUnconfigConfigMldEnable(TriggerUnconfigConfig):
                           'ops.mld.mld.Mld':{
                                 'requirements':[\
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<mld_intf>.*)', 'enable', True]],
+                                     '(?P<interface>.*)', 'enable', True]],
                                 'all_keys': True,
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)][interfaces][(.*)]']},
@@ -78,19 +86,18 @@ class TriggerUnconfigConfigMldEnable(TriggerUnconfigConfig):
                       config_info={'conf.mld.Mld':{
                                        'requirements':[
                                          ['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)',
-                                          'interface_attr', '(?P<mld_intf>.*)', 'enable', True]],
+                                          'interface_attr', '(?P<interface>.*)', 'enable', True]],
                                        'verify_conf':False,
                                        'kwargs':{}}},
                       verify_ops={
                           'ops.mld.mld.Mld':{
                                 'requirements':[\
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<mld_intf>.*)']],
-                                'missing': True,
+                                     NotExists('(?P<interface>.*)')]],
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)][interfaces][(.*)]']},
                                 'exclude': mld_exclude}},
-                      num_values={'vrf': 1, 'mld_intf': 1})
+                      num_values={'vrf': 1, 'interface': 1})
 
 
 class TriggerUnconfigConfigMldVersion(TriggerUnconfigConfig):
@@ -127,7 +134,17 @@ class TriggerUnconfigConfigMldVersion(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                interface: `str`
+                vrf: `str`
+                version: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Mld Ops object and store the enabled Mld interface(s)'s version
            if has any, otherwise, SKIP the trigger
@@ -146,9 +163,9 @@ class TriggerUnconfigConfigMldVersion(TriggerUnconfigConfig):
                           'ops.mld.mld.Mld':{
                                 'requirements':[\
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<mld_intf>.*)', 'enable', True],
+                                     '(?P<interface>.*)', 'enable', True],
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<mld_intf>.*)', 'version', '(?P<version>^(?!2).*)']],
+                                     '(?P<interface>.*)', 'version', '(?P<version>^(?!2).*)']],
                                 'all_keys': True,
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)]']},
@@ -156,7 +173,7 @@ class TriggerUnconfigConfigMldVersion(TriggerUnconfigConfig):
                       config_info={'conf.mld.Mld':{
                                        'requirements':[
                                          ['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)',
-                                          'interface_attr', '(?P<mld_intf>.*)', 'version',
+                                          'interface_attr', '(?P<interface>.*)', 'version',
                                           '(?P<version>.*)']],
                                        'verify_conf':False,
                                        'kwargs':{}}},
@@ -164,12 +181,11 @@ class TriggerUnconfigConfigMldVersion(TriggerUnconfigConfig):
                           'ops.mld.mld.Mld':{
                                 'requirements':[\
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<mld_intf>.*)', 'version', 2]],
-                                'missing': False,
+                                     '(?P<interface>.*)', 'version', 2]],
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)]']},
                                 'exclude': mld_exclude}},
-                      num_values={'vrf': 1, 'mld_intf': 1})
+                      num_values={'vrf': 1, 'interface': 1})
 
 
 class TriggerUnconfigConfigMldJoinGroup(TriggerUnconfigConfig):
@@ -206,7 +222,19 @@ class TriggerUnconfigConfigMldJoinGroup(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                interface: `str`
+                vrf: `str`
+                group: `str`
+                join_group: `str`
+                source: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Mld Ops object and store the enabled Mld interface(s)'s join-groups
            if has any, otherwise, SKIP the trigger
@@ -226,10 +254,10 @@ class TriggerUnconfigConfigMldJoinGroup(TriggerUnconfigConfig):
                           'ops.mld.mld.Mld':{
                                 'requirements':[\
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<mld_intf>.*)', 'join_group', '(?P<join_group>.*)',
+                                     '(?P<interface>.*)', 'join_group', '(?P<join_group>.*)',
                                      'group', '(?P<group>.*)'],
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<mld_intf>.*)', 'join_group', '(?P<join_group>.*)',
+                                     '(?P<interface>.*)', 'join_group', '(?P<join_group>.*)',
                                      'source', '(?P<source>\*)']],
                                 'all_keys': True,
                                 'kwargs':{'attributes': [
@@ -242,7 +270,7 @@ class TriggerUnconfigConfigMldJoinGroup(TriggerUnconfigConfig):
                                          [partial(configure_add_attributes,  # callable configuration
                                             add_obj=MldGroup,
                                             base=[['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)',
-                                                  'interface_attr', '(?P<mld_intf>.*)']],
+                                                  'interface_attr', '(?P<interface>.*)']],
                                             add_attribute=[['join_group', '(?P<group>.*)'],
                                                            ['join_group_source_addr', '(?P<source>.*)'],],
                                             add_method='add_groups',
@@ -251,17 +279,37 @@ class TriggerUnconfigConfigMldJoinGroup(TriggerUnconfigConfig):
                                        'kwargs':{}}},
                       verify_ops={
                           'ops.mld.mld.Mld':{
-                                'requirements':[\
-                                    ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<mld_intf>.*)', 'join_group', '(?P<join_group>.*)'],
-                                    ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<mld_intf>.*)', 'group', '(?P<group>.*)']],
+                                'requirements': [[partial(verify_ops_or_logic,
+                                                      requires=[['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
+                                                                 '(?P<interface>.*)', 'join_group',
+                                                                 NotExists('(?P<join_group>.*)')],
+                                                                ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
+                                                                 '(?P<interface>.*)', NotExists('join_group')],
+                                                                ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
+                                                                 '(?P<interface>.*)', 'join_group',
+                                                                 '(?P<join_group>.*)', '(.*)']
+                                                               ])
+                                                  ],
+                                                  [partial(verify_ops_or_logic,
+                                                      requires=[['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
+                                                                 '(?P<interface>.*)', 'group', NotExists('(?P<group>.*)')],
+                                                                ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
+                                                                 '(?P<interface>.*)', NotExists('group')],
+                                                                ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
+                                                                 '(?P<interface>.*)', 'group', '(?P<group>.*)',
+                                                                 'source', NotExists('(?P<source>\*)')],
+                                                                ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
+                                                                 '(?P<interface>.*)', 'group', '(?P<group>.*)',
+                                                                 NotExists('source')]
+                                                               ])
+                                                  ],
+                                                ],
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)][interfaces][(.*)][join_group][(.*)]',
                                     'info[vrfs][(.*)][interfaces][(.*)][static_group][(.*)]',
                                     'info[vrfs][(.*)][interfaces][(.*)][group][(.*)]']},
-                                'exclude': mld_exclude}},
-                      num_values={'vrf': 1, 'mld_intf': 1, 'join_group': 1, 'group': 1, 'source': 1})
+                                'exclude': mld_exclude + ['static_group']}},
+                      num_values={'vrf': 1, 'interface': 1, 'join_group': 1, 'group': 1, 'source': 1})
 
 
 class TriggerUnconfigConfigMldStaticGroup(TriggerUnconfigConfig):
@@ -298,6 +346,19 @@ class TriggerUnconfigConfigMldStaticGroup(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
+
+                interface: `str`
+                vrf: `str`
+                group: `str`
+                static_group: `str`
+                source: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn Mld Ops object and store the enabled Mld interface(s)'s static-groups
@@ -317,10 +378,10 @@ class TriggerUnconfigConfigMldStaticGroup(TriggerUnconfigConfig):
                           'ops.mld.mld.Mld':{
                                 'requirements':[\
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<mld_intf>.*)', 'static_group', '(?P<static_group>.*)',
+                                     '(?P<interface>.*)', 'static_group', '(?P<static_group>.*)',
                                      'group', '(?P<group>.*)'],
                                     ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<mld_intf>.*)', 'static_group', '(?P<static_group>.*)',
+                                     '(?P<interface>.*)', 'static_group', '(?P<static_group>.*)',
                                      'source', '(?P<source>\*)']],
                                 'all_keys': True,
                                 'kwargs':{'attributes': [
@@ -333,7 +394,7 @@ class TriggerUnconfigConfigMldStaticGroup(TriggerUnconfigConfig):
                                          [partial(configure_add_attributes,  # callable configuration
                                             add_obj=MldGroup,
                                             base=[['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)',
-                                                  'interface_attr', '(?P<mld_intf>.*)']],
+                                                  'interface_attr', '(?P<interface>.*)']],
                                             add_attribute=[['static_group', '(?P<group>.*)'],
                                                            ['static_group_source_addr', '(?P<source>.*)'],],
                                             add_method='add_groups',
@@ -342,18 +403,35 @@ class TriggerUnconfigConfigMldStaticGroup(TriggerUnconfigConfig):
                                        'kwargs':{}}},
                       verify_ops={
                           'ops.mld.mld.Mld':{
-                                'requirements':[\
-                                    ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<mld_intf>.*)', 'static_group', '(?P<static_group>.*)'],
-                                    ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<mld_intf>.*)', 'group', '(?P<group>.*)'],
-                                    ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<mld_intf>.*)', 'static_group', '(?P<static_group>.*)',
-                                     'source', '(?P<source>.*)']],
+                                'requirements': [[partial(verify_ops_or_logic,
+                                                      requires=[['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
+                                                                 '(?P<interface>.*)', 'static_group',
+                                                                 NotExists('(?P<static_group>.*)')],
+                                                                ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
+                                                                 '(?P<interface>.*)', NotExists('static_group')],
+                                                                ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
+                                                                 '(?P<interface>.*)', 'static_group',
+                                                                 '(?P<static_group>.*)', '(.*)']
+                                                               ])
+                                                  ],
+                                                  [partial(verify_ops_or_logic,
+                                                      requires=[['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
+                                                                 '(?P<interface>.*)', 'group', NotExists('(?P<group>.*)')],
+                                                                ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
+                                                                 '(?P<interface>.*)', NotExists('group')],
+                                                                ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
+                                                                 '(?P<interface>.*)', 'group', '(?P<group>.*)',
+                                                                 'source', NotExists('(?P<source>\*)')],
+                                                                ['info', 'vrfs', '(?P<vrf>.*)', 'interfaces',
+                                                                 '(?P<interface>.*)', 'group', '(?P<group>.*)',
+                                                                 NotExists('source')]
+                                                               ])
+                                                  ],
+                                                ],
                                 'kwargs':{'attributes': [
                                     'info[vrfs][(.*)][interfaces][(.*)][join_group]',
                                     'info[vrfs][(.*)][interfaces][(.*)][static_group]',
                                     'info[vrfs][(.*)][interfaces][(.*)][group]']},
                                 'exclude': mld_exclude + ['last_reporter']}},
-                      num_values={'vrf': 1, 'mld_intf': 1, 'static_group': 1, 'group': 1})
+                      num_values={'vrf': 1, 'interface': 1, 'static_group': 1, 'group': 1})
 

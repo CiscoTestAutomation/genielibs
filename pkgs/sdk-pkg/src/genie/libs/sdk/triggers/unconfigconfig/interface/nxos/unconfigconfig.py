@@ -1,8 +1,12 @@
 '''NXOS Implementation for Interface unconfigconfig triggers'''
 
+# python
+from functools import partial
+
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.unconfigconfig.unconfigconfig import TriggerUnconfigConfig
+from genie.libs.sdk.libs.utils.triggeractions import verify_ops_or_logic
 # ATS
 from ats.utils.objects import NotExists, Not
 
@@ -95,7 +99,7 @@ class TriggerUnconfigConfigVxlanNveOverlayInterface(TriggerUnconfigConfig):
                                         'kwargs':{'mandatory':{'name': '(?P<name>.*)',
                                                                'attach': False}}}},
                       verify_ops={'ops.vxlan.vxlan.Vxlan':{
-                                        'requirements':[['nve', '(?P<name>.*)']],
+                                        'requirements':[[NotExists('nve')]], # enh to support or() could be [['nve', NotExists('(?P<name>.*)')]]
                                         'kwargs': {'attributes': [
                                                       'nve[(.*)][if_state]',
                                                       'nve[(.*)][vni][(.*)][vni]','l2route','bgp_l2vpn_evpn']},
@@ -154,7 +158,7 @@ class TriggerUnconfigConfigAutoRpInterface(TriggerUnconfigConfig):
                                        'kwargs':{'mandatory':{'name': '(?P<rp_intf>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<rp_intf>.*)']],
+                                       'requirements':[['info', NotExists('(?P<rp_intf>.*)')]],
                                        'kwargs': {'attributes': ['info[(.*)][enabled]']},
                                        'exclude': interface_exclude}},
                       num_values={'rp_intf': 1})
@@ -212,7 +216,7 @@ class TriggerUnconfigConfigAutoRpVrfInterface(TriggerUnconfigConfig):
                                        'kwargs':{'mandatory':{'name': '(?P<rp_intf>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<rp_intf>.*)']],
+                                       'requirements':[['info', NotExists('(?P<rp_intf>.*)')]],
                                        'kwargs': {'attributes': ['info[(.*)][enabled]']},
                                        'exclude': interface_exclude}},
                       num_values={'rp_intf': 1})
@@ -281,7 +285,7 @@ class TriggerUnconfigConfigBsrRpInterface(TriggerUnconfigConfig):
                                        'kwargs':{'mandatory':{'name': '(?P<rp_intf>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<rp_intf>.*)']],
+                                       'requirements':[['info', NotExists('(?P<rp_intf>.*)')]],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][(ipv4|ipv6)][(.*)][ip]',
                                                       'info[(.*)][vrf]',
@@ -291,10 +295,10 @@ class TriggerUnconfigConfigBsrRpInterface(TriggerUnconfigConfig):
                                   'ops.pim.pim.Pim':{
                                        'requirements':[['info', 'vrf', '(?P<vrf>^default$)',
                                                         'address_family','(?P<af>.*)', 'rp', 'bsr',
-                                                        'bsr'],
+                                                        NotExists('bsr')],
                                                        ['info', 'vrf', '(?P<vrf>^default$)',
                                                         'address_family','(?P<af>.*)', 'rp', 'bsr',
-                                                        'bsr_candidate']],
+                                                        NotExists('bsr_candidate')]],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][default][address_family][(.*)][rp][bsr][(.*)]']},
                                         'exclude': pim_exclude }},
@@ -366,7 +370,7 @@ class TriggerUnconfigConfigBsrRpVrfInterface(TriggerUnconfigConfig):
                                        'kwargs':{'mandatory':{'name': '(?P<rp_intf>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<rp_intf>.*)']],
+                                       'requirements':[['info', NotExists('(?P<rp_intf>.*)')]],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][(ipv4|ipv6)][(.*)][ip]',
                                                       'info[(.*)][vrf]',
@@ -376,10 +380,10 @@ class TriggerUnconfigConfigBsrRpVrfInterface(TriggerUnconfigConfig):
                                   'ops.pim.pim.Pim':{
                                        'requirements':[['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
                                                         'address_family','(?P<af>.*)', 'rp', 'bsr',
-                                                        'bsr'],
+                                                        NotExists('bsr')],
                                                        ['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
                                                         'address_family','(?P<af>.*)', 'rp', 'bsr',
-                                                        'bsr_candidate']],
+                                                        NotExists('bsr_candidate')]],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][(.*)][address_family][(.*)][rp][bsr][(.*)]']},
                                         'exclude': pim_exclude }},
@@ -449,16 +453,25 @@ class TriggerUnconfigConfigStaticRpInterface(TriggerUnconfigConfig):
                                        'kwargs':{'mandatory':{'name': '(?P<rp_intf>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<rp_intf>.*)']],
+                                       'requirements':[['info', NotExists('(?P<rp_intf>.*)')]],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][(ipv4|ipv6)][(.*)][ip]',
                                                       'info[(.*)][vrf]',
                                                       'info[(.*)][oper_status]']},
                                        'exclude': interface_exclude},
                                   'ops.pim.pim.Pim':{
-                                       'requirements':[['info', 'vrf', '(?P<vrf>^default$)',
-                                                        'address_family','(?P<af>.*)', 'rp', 'static_rp',
-                                                        '(?P<rp_addr>.*)']],
+                                       'requirements': [[partial(verify_ops_or_logic,
+                                                            requires=[['info', 'vrf', '(?P<vrf>^default$)',
+                                                                       'address_family','(?P<af>.*)', 'rp', 'static_rp',
+                                                                       NotExists('(?P<rp_addr>.*)')],
+                                                                      ['info', 'vrf', '(?P<vrf>^default$)',
+                                                                       'address_family','(?P<af>.*)', 'rp', NotExists('static_rp')],
+                                                                      ['info', 'vrf', '(?P<vrf>^default$)',
+                                                                       'address_family','(?P<af>.*)', 'rp', 'static_rp',
+                                                                       '(?P<rp_addr>.*)', '(?P<rp_rest>.*)'],
+                                                               ])
+                                                  ],
+                                                ],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][default][address_family][(.*)][rp][static_rp][(.*)]']},
                                         'exclude': pim_exclude }},
@@ -528,16 +541,25 @@ class TriggerUnconfigConfigStaticRpVrfInterface(TriggerUnconfigConfig):
                                        'kwargs':{'mandatory':{'name': '(?P<rp_intf>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<rp_intf>.*)']],
+                                       'requirements':[['info', NotExists('(?P<rp_intf>.*)')]],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][(ipv4|ipv6)][(.*)][ip]',
                                                       'info[(.*)][vrf]',
                                                       'info[(.*)][oper_status]']},
                                        'exclude': interface_exclude},
                                   'ops.pim.pim.Pim':{
-                                       'requirements':[['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
-                                                        'address_family','(?P<af>.*)', 'rp', 'static_rp',
-                                                        '(?P<rp_addr>.*)']],
+                                       'requirements':[[partial(verify_ops_or_logic,
+                                                            requires=[['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
+                                                                       'address_family','(?P<af>.*)', 'rp', 'static_rp',
+                                                                       NotExists('(?P<rp_addr>.*)')],
+                                                                      ['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
+                                                                       'address_family','(?P<af>.*)', 'rp', NotExists('static_rp')],
+                                                                      ['info', 'vrf', '(?P<vrf>.*)',
+                                                                       'address_family','(?P<af>.*)', 'rp', 'static_rp',
+                                                                       '(?P<rp_addr>.*)', '(?P<rp_rest>.*)'],
+                                                               ])
+                                                  ],
+                                                ],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][(.*)][address_family][(.*)][rp][static_rp][(.*)]']},
                                         'exclude': pim_exclude }},
@@ -607,18 +629,14 @@ class TriggerUnconfigConfigPimNbrInterface(TriggerUnconfigConfig):
                                        'kwargs':{'mandatory':{'name': '(?P<pim_intf>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<pim_intf>.*)']],
+                                       'requirements':[['info', NotExists('(?P<pim_intf>.*)')]],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][vrf]',
                                                       'info[(.*)][oper_status]']},
                                        'exclude': interface_exclude},
                                   'ops.pim.pim.Pim':{
                                        'requirements':[['info', 'vrf', '(?P<vrf>^default$)',
-                                                        'interfaces','(?P<pim_intf>.*)', 'address_family',
-                                                        '(?P<af>.*)', 'oper_status', 'down'],
-                                                       ['info', 'vrf', '(?P<vrf>^default$)',
-                                                        'interfaces','(?P<pim_intf>.*)', 'address_family',
-                                                        '(?P<af>.*)', 'neighbors', '(?P<address>.*)']],
+                                                        'interfaces',NotExists('(?P<pim_intf>.*)')]],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][default][interfaces][(.*)][address_family][(.*)][oper_status]',
                                                       'info[vrf][default][interfaces][(.*)][address_family][(.*)][neighbors]']},
@@ -690,18 +708,14 @@ class TriggerUnconfigConfigPimNbrVrfInterface(TriggerUnconfigConfig):
                                        'kwargs':{'mandatory':{'name': '(?P<pim_intf>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<pim_intf>.*)']],
+                                       'requirements':[['info', NotExists('(?P<pim_intf>.*)')]],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][vrf]',
                                                       'info[(.*)][oper_status]']},
                                        'exclude': interface_exclude},
                                   'ops.pim.pim.Pim':{
                                        'requirements':[['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
-                                                        'interfaces','(?P<pim_intf>.*)', 'address_family',
-                                                        '(?P<af>.*)', 'oper_status', 'down'],
-                                                       ['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
-                                                        'interfaces','(?P<pim_intf>.*)', 'address_family',
-                                                        '(?P<af>.*)', 'neighbors', '(?P<address>.*)']],
+                                                        'interfaces', NotExists('(?P<pim_intf>.*)')]],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][(.*)][interfaces][(.*)][address_family][(.*)][oper_status]',
                                                       'info[vrf][(.*)][interfaces][(.*)][address_family][(.*)][neighbors]']},

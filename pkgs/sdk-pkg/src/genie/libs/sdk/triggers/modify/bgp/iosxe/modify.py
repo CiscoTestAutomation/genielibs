@@ -20,6 +20,64 @@ bgp_exclude = ['maker', 'bgp_session_transport', 'route_refresh',
 
 
 class TriggerModifyBgpNeighborAsn(TriggerModify):
+    """Modify the neighbor remote_as configured under BGP and then restore the
+      configuration by reapplying the whole running configuration"""
+
+    __description__ = """Modify the neighbor remote_as configured under BGP and then restore the
+      configuration by reapplying the whole running configuration
+
+      trigger_datafile:
+          Mandatory Arguments:
+              timeout:
+                  max_time (`int`): Maximum wait time for the trigger in seconds.
+                                    Default: 180
+                  interval (`int`): Wait time between iteration when looping is
+                                    needed in seconds. Default: 15
+                  method (`str`): Method to recover the device configuration.
+                                  Supported methods:
+                                      'checkpoint': Rollback the configuration
+                                                    using checkpoint (nxos),
+                                                    archive file (iosxe),
+                                                    load the saved running-config
+                                                    file on disk (iosxr)
+          Optional Arguments:
+              tgn_timeout (`int`): Maximum wait time for all traffic streams to be
+                                   restored to the reference rate in seconds.
+                                   Default: 60
+              tgn_delay (`int`): Wait time between each poll to verify if traffic
+                                 is resumed in seconds. Default: 10
+              timeout_recovery:
+                  Buffer recovery timeout make sure devices are recovered at the
+                  end of the trigger execution. Used when previous timeouts have
+                  been exhausted.
+                  max_time (`int`): Maximum wait time for the last step of the
+                                    trigger in seconds. Default: 180
+                  interval (`int`): Wait time between iteration when looping is
+                                    needed in seconds. Default: 15
+              static:
+                  The keys below are dynamically learnt by default.
+                  However, they can also be set to a custom value when provided in the trigger datafile.
+
+                  instance: `str`
+                  vrf: `str`
+                  neighbor: `str`
+                  remote_as: `int`
+                  bgp_id: `int`
+
+                  (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                        OR
+                        interface: 'Ethernet1/1/1' (Specific value)
+      Steps:
+          1. Learn BGP Ops configured on device. SKIP the trigger if there
+             is no BGP configured on the device.
+          2. Save the current device configurations using "method" specified.
+          3. Modify the remote-as learned in step 1 using Genie BGP Conf.
+          4. Verify the change to remote_as config under BGP is
+             reflected in device configuration.
+          5. Restore the device configuration to the original configuration saved
+             in step 2.
+          6. Learn BGP Ops again and verify it is the same as the Ops in step 1.
+      """
 
     # Mapping of Information between Ops and Conf
     # Also permit to dictates which key to verify
@@ -54,7 +112,62 @@ class TriggerModifyBgpNeighborAsn(TriggerModify):
 
 
 class TriggerModifyBgpNeighborCluster(TriggerModify):
+    """Modify the cluster id configured under BGP and then restore the
+      configuration by reapplying the whole running configuration"""
 
+    __description__ = """Modify the cluster id configured under BGP and then restore the
+      configuration by reapplying the whole running configuration
+
+      trigger_datafile:
+          Mandatory Arguments:
+              timeout:
+                  max_time (`int`): Maximum wait time for the trigger in seconds.
+                                    Default: 180
+                  interval (`int`): Wait time between iteration when looping is
+                                    needed in seconds. Default: 15
+                  method (`str`): Method to recover the device configuration.
+                                  Supported methods:
+                                      'checkpoint': Rollback the configuration
+                                                    using checkpoint (nxos),
+                                                    archive file (iosxe),
+                                                    load the saved running-config
+                                                    file on disk (iosxr)
+          Optional Arguments:
+              tgn_timeout (`int`): Maximum wait time for all traffic streams to be
+                                   restored to the reference rate in seconds.
+                                   Default: 60
+              tgn_delay (`int`): Wait time between each poll to verify if traffic
+                                 is resumed in seconds. Default: 10
+              timeout_recovery:
+                  Buffer recovery timeout make sure devices are recovered at the
+                  end of the trigger execution. Used when previous timeouts have
+                  been exhausted.
+                  max_time (`int`): Maximum wait time for the last step of the
+                                    trigger in seconds. Default: 180
+                  interval (`int`): Wait time between iteration when looping is
+                                    needed in seconds. Default: 15
+              static:
+                  The keys below are dynamically learnt by default.
+                  However, they can also be set to a custom value when provided in the trigger datafile.
+
+                  instance: `str`
+                  cluster_id: `str`
+                  bgp_id: `int`
+
+                  (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                        OR
+                        interface: 'Ethernet1/1/1' (Specific value)
+      Steps:
+          1. Learn BGP Ops configured on device. SKIP the trigger if there
+             is no BGP configured on the device.
+          2. Save the current device configurations using "method" specified.
+          3. Modify the cluster id learned in step 1 using Genie BGP Conf.
+          4. Verify the change to cluster id config under BGP is
+             reflected in device configuration.
+          5. Restore the device configuration to the original configuration saved
+             in step 2.
+          6. Learn BGP Ops again and verify it is the same as the Ops in step 1.
+    """
     # Mapping of Information between Ops and Conf
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.bgp.bgp.Bgp':{
@@ -78,6 +191,65 @@ class TriggerModifyBgpNeighborCluster(TriggerModify):
 
 
 class TriggerModifyBgpNeighborRoutemapIn(TriggerModify):
+    """Modify the neighbor inbound route map configured under BGP and then restore the
+          configuration by reapplying the whole running configuration"""
+
+    __description__ = """Modify the neighbor inbound route map configured under BGP and then restore the
+      configuration by reapplying the whole running configuration
+
+      trigger_datafile:
+          Mandatory Arguments:
+              timeout:
+                  max_time (`int`): Maximum wait time for the trigger in seconds.
+                                    Default: 180
+                  interval (`int`): Wait time between iteration when looping is
+                                    needed in seconds. Default: 15
+                  method (`str`): Method to recover the device configuration.
+                                  Supported methods:
+                                      'checkpoint': Rollback the configuration
+                                                    using checkpoint (nxos),
+                                                    archive file (iosxe),
+                                                    load the saved running-config
+                                                    file on disk (iosxr)
+          Optional Arguments:
+              tgn_timeout (`int`): Maximum wait time for all traffic streams to be
+                                   restored to the reference rate in seconds.
+                                   Default: 60
+              tgn_delay (`int`): Wait time between each poll to verify if traffic
+                                 is resumed in seconds. Default: 10
+              timeout_recovery:
+                  Buffer recovery timeout make sure devices are recovered at the
+                  end of the trigger execution. Used when previous timeouts have
+                  been exhausted.
+                  max_time (`int`): Maximum wait time for the last step of the
+                                    trigger in seconds. Default: 180
+                  interval (`int`): Wait time between iteration when looping is
+                                    needed in seconds. Default: 15
+              static:
+                  The keys below are dynamically learnt by default.
+                  However, they can also be set to a custom value when provided in the trigger datafile.
+
+                  instance: `str`
+                  vrf: `vrf`
+                  neighbor: `str`
+                  address_family: `str`
+                  route_map: `str`
+                  bgp_id: `int`
+
+                  (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                        OR
+                        interface: 'Ethernet1/1/1' (Specific value)
+      Steps:
+          1. Learn BGP Ops configured on device. SKIP the trigger if there
+             is no BGP configured on the device.
+          2. Save the current device configurations using "method" specified.
+          3. Modify the inbound route map learned in step 1 using Genie BGP Conf.
+          4. Verify the change to inbound route map config under BGP is
+             reflected in device configuration.
+          5. Restore the device configuration to the original configuration saved
+             in step 2.
+          6. Learn BGP Ops again and verify it is the same as the Ops in step 1.
+    """
 
     # Create a name for router map in
     new_name = 'bgp_' + time.ctime().replace(' ', '_').replace(':', '_')
@@ -112,6 +284,65 @@ class TriggerModifyBgpNeighborRoutemapIn(TriggerModify):
 
 
 class TriggerModifyBgpNeighborRoutemapOut(TriggerModify):
+    """Modify the neighbor outbound route map configured under BGP and then restore the
+          configuration by reapplying the whole running configuration"""
+
+    __description__ = """Modify the neighbor outbound route map configured under BGP and then restore the
+          configuration by reapplying the whole running configuration
+
+          trigger_datafile:
+              Mandatory Arguments:
+                  timeout:
+                      max_time (`int`): Maximum wait time for the trigger in seconds.
+                                        Default: 180
+                      interval (`int`): Wait time between iteration when looping is
+                                        needed in seconds. Default: 15
+                      method (`str`): Method to recover the device configuration.
+                                      Supported methods:
+                                          'checkpoint': Rollback the configuration
+                                                        using checkpoint (nxos),
+                                                        archive file (iosxe),
+                                                        load the saved running-config
+                                                        file on disk (iosxr)
+              Optional Arguments:
+                  tgn_timeout (`int`): Maximum wait time for all traffic streams to be
+                                       restored to the reference rate in seconds.
+                                       Default: 60
+                  tgn_delay (`int`): Wait time between each poll to verify if traffic
+                                     is resumed in seconds. Default: 10
+                  timeout_recovery:
+                      Buffer recovery timeout make sure devices are recovered at the
+                      end of the trigger execution. Used when previous timeouts have
+                      been exhausted.
+                      max_time (`int`): Maximum wait time for the last step of the
+                                        trigger in seconds. Default: 180
+                      interval (`int`): Wait time between iteration when looping is
+                                        needed in seconds. Default: 15
+                  static:
+                      The keys below are dynamically learnt by default.
+                      However, they can also be set to a custom value when provided in the trigger datafile.
+
+                      instance: `str`
+                      vrf: `vrf`
+                      neighbor: `str`
+                      address_family: `str`
+                      route_map: `str`
+                      bgp_id: `int`
+
+                      (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                            OR
+                            interface: 'Ethernet1/1/1' (Specific value)
+          Steps:
+              1. Learn BGP Ops configured on device. SKIP the trigger if there
+                 is no BGP configured on the device.
+              2. Save the current device configurations using "method" specified.
+              3. Modify the outbound route map learned out step 1 using Genie BGP Conf.
+              4. Verify the change to outbound route map config under BGP is
+                 reflected in device configuration.
+              5. Restore the device configuration to the original configuration saved
+                 in step 2.
+              6. Learn BGP Ops again and verify it is the same as the Ops in step 1.
+        """
 
     # Create a name for router map in
     new_name = 'bgp_' + time.ctime().replace(' ', '_').replace(':', '_')

@@ -12,7 +12,7 @@ from ats.utils.objects import Not, NotExists
 
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping
-from genie.libs.sdk.libs.utils.triggeractions import Configure
+from genie.libs.sdk.libs.utils.triggeractions import Configure, verify_ops_or_logic
 from genie.libs.sdk.libs.utils.mapping import Mapping, Different
 from genie.libs.sdk.triggers.unconfigconfig.unconfigconfig import TriggerUnconfigConfig
 
@@ -32,6 +32,8 @@ bgp_exclude = ['maker', 'bgp_session_transport', 'route_refresh',
                'path', 'prefixes', 'cluster_id', 'distance_extern_as']
 
 trm_exclude = ['maker', 'keepalives', 'total', 'up_time', 'total_bytes',]
+
+
 class TriggerUnconfigConfigBgpNeighborSendCommunity(TriggerUnconfigConfig):
     """Unconfigure send-community under BGP and
         reapply the whole configurations for learned BGP."""
@@ -65,7 +67,20 @@ class TriggerUnconfigConfigBgpNeighborSendCommunity(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                address_family: `str`
+                send_community: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn BGP Ops object and store the BGP instance(s)
            if has any, otherwise, SKIP the trigger
@@ -80,7 +95,7 @@ class TriggerUnconfigConfigBgpNeighborSendCommunity(TriggerUnconfigConfig):
 
     mapping = Mapping(requirements={'ops.bgp.bgp.Bgp':{
                                           'requirements':[['info', 'instance', '(?P<instance>.*)','vrf', '(?P<vrf>.*)',
-                                                           'neighbor','(?P<neighbor>.*)','address_family','(?P<af>.*)',
+                                                           'neighbor','(?P<neighbor>.*)','address_family','(?P<address_family>.*)',
                                                            'send_community','(?P<send_community>.*)'],
                                                           ['info', 'instance', '(?P<instance>.*)', 'bgp_id', '(?P<bgp_id>.*)']],
                                           'all_keys':True,
@@ -89,16 +104,16 @@ class TriggerUnconfigConfigBgpNeighborSendCommunity(TriggerUnconfigConfig):
                       config_info={'conf.bgp.Bgp':{
                                      'requirements':[['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)',
                                                       'neighbor_attr','(?P<neighbor>.*)',
-                                                      'address_family_attr','(?P<af>.*)', 'nbr_af_send_community','(?P<send_community>.*)']],
+                                                      'address_family_attr','(?P<address_family>.*)', 'nbr_af_send_community','(?P<send_community>.*)']],
                                      'verify_conf':False,
                                      'kwargs':{'mandatory':{'bgp_id': '(?P<bgp_id>.*)'}}}},
                       verify_ops={'ops.bgp.bgp.Bgp':{
                                           'requirements':[['info', 'instance', '(?P<instance>.*)','vrf', '(?P<vrf>.*)',
-                                                           'neighbor','(?P<neighbor>.*)','address_family','(?P<af>.*)',
-                                                           'send_community']],
+                                                           'neighbor','(?P<neighbor>.*)','address_family','(?P<address_family>.*)',
+                                                           NotExists('send_community')]],
                                     'kwargs':{'attributes':['info']},
                                     'exclude': bgp_exclude}},
-                      num_values={'bgp_id':1, 'instance':1 , 'vrf':1, 'af':1, 'neighbor':1 })
+                      num_values={'bgp_id':1, 'instance':1 , 'vrf':1, 'address_family':1, 'neighbor':1 })
 
 
 class TriggerUnconfigConfigBgpNeighborSendCommunityExtended(TriggerUnconfigConfig):
@@ -135,7 +150,20 @@ class TriggerUnconfigConfigBgpNeighborSendCommunityExtended(TriggerUnconfigConfi
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                address_family: `str`
+                send_community: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn BGP Ops object and store the BGP instance(s)
            if has any, otherwise, SKIP the trigger
@@ -149,7 +177,7 @@ class TriggerUnconfigConfigBgpNeighborSendCommunityExtended(TriggerUnconfigConfi
 
     mapping = Mapping(requirements={'ops.bgp.bgp.Bgp':{
                                           'requirements':[['info', 'instance', '(?P<instance>.*)','vrf', '(?P<vrf>.*)',
-                                                           'neighbor','(?P<neighbor>.*)','address_family','(?P<af>.*)',
+                                                           'neighbor','(?P<neighbor>.*)','address_family','(?P<address_family>.*)',
                                                            'send_community','(?P<send_community>(both|extended)+)$'],
                                                           ['info', 'instance', '(?P<instance>.*)', 'bgp_id', '(?P<bgp_id>.*)']],
                                           'all_keys':True,
@@ -158,16 +186,16 @@ class TriggerUnconfigConfigBgpNeighborSendCommunityExtended(TriggerUnconfigConfi
                       config_info={'conf.bgp.Bgp':{
                                      'requirements':[['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)',
                                                       'neighbor_attr','(?P<neighbor>.*)',
-                                                      'address_family_attr','(?P<af>.*)', 'nbr_af_send_community','(?P<send_community>.*)']],
+                                                      'address_family_attr','(?P<address_family>.*)', 'nbr_af_send_community','(?P<send_community>.*)']],
                                      'verify_conf':False,
                                      'kwargs':{'mandatory':{'bgp_id': '(?P<bgp_id>.*)'}}}},
                       verify_ops={'ops.bgp.bgp.Bgp':{
                                           'requirements':[['info', 'instance', '(?P<instance>.*)','vrf', '(?P<vrf>.*)',
-                                                           'neighbor','(?P<neighbor>.*)','address_family','(?P<af>.*)',
-                                                           'send_community']],
+                                                           'neighbor','(?P<neighbor>.*)','address_family','(?P<address_family>.*)',
+                                                           NotExists('send_community')]],
                                     'kwargs':{'attributes':['info']},
                                     'exclude': bgp_exclude}},
-                      num_values={'bgp_id':1, 'instance':1 , 'vrf':1, 'af':1, 'neighbor':1 })
+                      num_values={'bgp_id':1, 'instance':1 , 'vrf':1, 'address_family':1, 'neighbor':1 })
 
 class TriggerUnconfigConfigBgpNeighborSoftReconfiguration(TriggerUnconfigConfig):
     """Unconfigure soft-reconfiguration inbound for a BGP neighbor and
@@ -203,7 +231,19 @@ class TriggerUnconfigConfigBgpNeighborSoftReconfiguration(TriggerUnconfigConfig)
                                     in second. Default: 180
                     interval (`int`): Wait time between iteration when looping is needed,
                                     in second. Default: 15
+                static:
+                    The keys below are dynamically learnt by default.
+                    However, they can also be set to a custom value when provided in the trigger datafile.
 
+                    instance: `str`
+                    vrf: `str`
+                    neighbor: `str`
+                    address_family: `str`
+                    bgp_id: `int`
+
+                    (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                          OR
+                          interface: 'Ethernet1/1/1' (Specific value)
         steps:
             1. Learn BGP Ops object and store the BGP instance(s)
                if has any, otherwise, SKIP the trigger
@@ -216,7 +256,7 @@ class TriggerUnconfigConfigBgpNeighborSoftReconfiguration(TriggerUnconfigConfig)
 
     mapping = Mapping(requirements={'ops.bgp.bgp.Bgp':{
                                           'requirements':[['info', 'instance', '(?P<instance>.*)','vrf', '(?P<vrf>.*)',
-                                                           'neighbor','(?P<neighbor>.*)','address_family','(?P<af>.*)',
+                                                           'neighbor','(?P<neighbor>.*)','address_family','(?P<address_family>.*)',
                                                            'soft_configuration',True ],
                                                           ['info', 'instance', '(?P<instance>.*)', 'bgp_id', '(?P<bgp_id>.*)']],
                                           'all_keys':True,
@@ -225,14 +265,14 @@ class TriggerUnconfigConfigBgpNeighborSoftReconfiguration(TriggerUnconfigConfig)
                       config_info={'conf.bgp.Bgp':{
                                      'requirements': [['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)',
                                                       'neighbor_attr','(?P<neighbor>.*)',
-                                                      'address_family_attr','(?P<af>.*)',
+                                                      'address_family_attr','(?P<address_family>.*)',
                                                       'nbr_af_soft_reconfiguration',True]],
                                      'verify_conf':False,
                                      'kwargs':{'mandatory':{'bgp_id': '(?P<bgp_id>.*)'}}}},
                       verify_ops={'ops.bgp.bgp.Bgp':{
                                           'requirements':[['info', 'instance', '(?P<instance>.*)','vrf', '(?P<vrf>.*)',
-                                                           'neighbor','(?P<neighbor>.*)','address_family','(?P<af>.*)',
-                                                           'soft_configuration']],
+                                                           'neighbor','(?P<neighbor>.*)','address_family','(?P<address_family>.*)',
+                                                           NotExists('soft_configuration')]],
                                     'kwargs':{'attributes':['info']},
                                     'exclude': bgp_exclude}},
                       num_values={'bgp_id':1, 'instance':1 , 'vrf':1, 'neighbor':1 })
@@ -272,7 +312,20 @@ class TriggerUnconfigConfigBgpKeepaliveHoldtime(TriggerUnconfigConfig):
                                         in second. Default: 180
                         interval (`int`): Wait time between iteration when looping is needed,
                                         in second. Default: 15
+                    static:
+                        The keys below are dynamically learnt by default.
+                        However, they can also be set to a custom value when provided in the trigger datafile.
 
+                        instance: `str`
+                        vrf: `str`
+                        neighbor: `str`
+                        keepalive_interval: `int`
+                        holdtime: `int`
+                        bgp_id: `int`
+
+                        (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                              OR
+                              interface: 'Ethernet1/1/1' (Specific value)
             steps:
                 1. Learn BGP Ops object and store the BGP instance(s)
                    if has any, otherwise, SKIP the trigger
@@ -307,8 +360,8 @@ class TriggerUnconfigConfigBgpKeepaliveHoldtime(TriggerUnconfigConfig):
             verify_ops={\
                 'conf.bgp.Bgp': {
                     'requirements': [\
-                        ['device_attr', '{uut}', '_vrf_attr', '(?P<vrf>.*)', 'keepalive_interval'],
-                        ['device_attr', '{uut}', '_vrf_attr', '(?P<vrf>.*)', 'holdtime']],
+                        ['device_attr', '{uut}', '_vrf_attr', '(?P<vrf>.*)', NotExists('keepalive_interval')],
+                        ['device_attr', '{uut}', '_vrf_attr', '(?P<vrf>.*)', NotExists('holdtime')]],
                     'exclude': bgp_exclude}},
             num_values={'device': 1, 'bgp_id': 1, 'vrf': 1, 'instance': 1, 'neighbor': 1})
 
@@ -346,7 +399,18 @@ class TriggerUnconfigConfigBgpFastExternalFallover(TriggerUnconfigConfig):
                                             in second. Default: 180
                             interval (`int`): Wait time between iteration when looping is needed,
                                             in second. Default: 15
+                        static:
+                            The keys below are dynamically learnt by default.
+                            However, they can also be set to a custom value when provided in the trigger datafile.
 
+                            instance: `str`
+                            vrf: `str`
+                            neighbor: `str`
+                            bgp_id: `int`
+
+                            (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                                  OR
+                                  interface: 'Ethernet1/1/1' (Specific value)
                 steps:
                     1. Learn BGP Ops object and store the BGP instance(s)
                        if has any, otherwise, SKIP the trigger
@@ -376,11 +440,11 @@ class TriggerUnconfigConfigBgpFastExternalFallover(TriggerUnconfigConfig):
                     'requirements': [\
                         ['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)', 'fast_external_fallover', True]],
                     'verify_conf': False,
-                    'kwargs': {'mandatory': {'bgp_id': [['info', 'instance', '(?P<instance>.*)', 'bgp_id', '(?P<bgp_id>.*)']]}}}},
+                    'kwargs': {'mandatory': {'bgp_id': '(?P<bgp_id>.*)'}}}},
             verify_ops={\
                 'conf.bgp.Bgp': {
                     'requirements': [\
-                        ['device_attr', '{uut}', '_vrf_attr', '(?P<vrf>.*)', 'fast_external_fallover']],
+                        ['device_attr', '{uut}', '_vrf_attr', '(?P<vrf>.*)', NotExists('fast_external_fallover')]],
                     'exclude': bgp_exclude}},
             num_values={'device': 1, 'bgp_id': 1, 'vrf': 1, 'instance': 1, 'neighbor': 1})
 
@@ -419,7 +483,17 @@ class TriggerUnconfigConfigBgpGracefulRestart(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     Steps:
         1. Learn BGP Ops object and store the BGP instance(s) if any,
            else SKIP the trigger
@@ -431,30 +505,6 @@ class TriggerUnconfigConfigBgpGracefulRestart(TriggerUnconfigConfig):
         5. Recover the device configurations to the one in step 2
         6. Learn BGP Ops again and verify it is the same as the Ops in step 1
     """
-
-    @aetest.test
-    def verify_unconfigure(self, uut, abstract, steps):
-        '''Verify that the unconfiguration was done correctly and Ops state is
-           as expected.
-
-           Args:
-               uut (`obj`): Device object.
-               abstract (`obj`): Abstract object.
-               steps (`step obj`): aetest step object
-
-           Returns:
-               None
-
-           Raises:
-               pyATS Results
-        '''
-
-        try:
-            self.mapping.verify_ops(device=uut, abstract=abstract,
-                                            steps=steps)
-        except Exception as e:
-            self.failed('Failed to verify the '
-                        'unconfigure feature', from_exception=e)
 
     mapping = Mapping(\
                 requirements={\
@@ -514,7 +564,19 @@ class TriggerUnconfigConfigBgpNeighborDefaultOriginate(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                address_family: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     Steps:
         1. Learn BGP Ops object and store the BGP instance(s) if any,
            else SKIP the trigger
@@ -546,7 +608,7 @@ class TriggerUnconfigConfigBgpNeighborDefaultOriginate(TriggerUnconfigConfig):
                 verify_ops={\
                     'ops.bgp.bgp.Bgp':{
                         'requirements':[\
-                            ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'address_family', '(?P<address_family>.*)', 'default_originate']],
+                            ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'address_family', '(?P<address_family>.*)', NotExists('default_originate')]],
                         'kwargs':{'attributes':['info']},
                         'exclude': bgp_exclude}},
                 num_values={'instance':1, 'vrf':1, 'neighbor':1})
@@ -586,7 +648,19 @@ class TriggerUnconfigConfigBgpNeighborNextHopSelf(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                address_family: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     Steps:
         1. Learn BGP Ops object and store the BGP instance(s) if any,
            else SKIP the trigger
@@ -618,7 +692,7 @@ class TriggerUnconfigConfigBgpNeighborNextHopSelf(TriggerUnconfigConfig):
                 verify_ops={\
                     'ops.bgp.bgp.Bgp':{
                         'requirements':[\
-                            ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'address_family', '(?P<address_family>.*)', 'next_hop_self']],
+                            ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'address_family', '(?P<address_family>.*)', NotExists('next_hop_self')]],
                         'kwargs':{'attributes':['info']},
                         'exclude': bgp_exclude}},
                 num_values={'instance':1, 'vrf':1, 'neighbor':1})
@@ -660,7 +734,18 @@ class TriggerUnconfigConfigBgpNeighborTransportConnectionModePassive(TriggerUnco
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     Steps:
         1. Learn BGP Ops object and store the BGP instance(s) if any,
            else SKIP the trigger
@@ -692,7 +777,7 @@ class TriggerUnconfigConfigBgpNeighborTransportConnectionModePassive(TriggerUnco
                 verify_ops={\
                     'ops.bgp.bgp.Bgp':{
                         'requirements':[\
-                            ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'bgp_session_transport', 'connection', 'mode']],
+                            ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'bgp_session_transport', 'connection', NotExists('mode')]],
                         'kwargs':{'attributes':['info']},
                         'exclude': bgp_exclude}},
                 num_values={'instance':1, 'vrf':1, 'neighbor':1})
@@ -732,7 +817,19 @@ class TriggerUnconfigConfigBgpNeighborPassword(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                password_text: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     Steps:
         1. Learn BGP Ops object and store the BGP instance(s) if any,
            else SKIP the trigger
@@ -764,7 +861,7 @@ class TriggerUnconfigConfigBgpNeighborPassword(TriggerUnconfigConfig):
                 verify_ops={\
                     'ops.bgp.bgp.Bgp':{
                         'requirements':[\
-                            ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'nbr_password_text']],
+                            ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', NotExists('nbr_password_text')]],
                         'kwargs':{'attributes':['info']},
                         'exclude': bgp_exclude}},
                 num_values={'instance':1, 'vrf':1, 'neighbor':1})
@@ -804,7 +901,18 @@ class TriggerUnconfigConfigBgpNeighborBfd(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     Steps:
         1. Learn BGP Ops object and store the BGP instance(s) if any,
            else SKIP the trigger
@@ -836,7 +944,7 @@ class TriggerUnconfigConfigBgpNeighborBfd(TriggerUnconfigConfig):
                 verify_ops={\
                     'ops.bgp.bgp.Bgp':{
                         'requirements':[\
-                            ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'fall_over_bfd']],
+                            ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', NotExists('fall_over_bfd')]],
                         'kwargs':{'attributes':['info']},
                         'exclude': bgp_exclude}},
                 num_values={'instance':1, 'vrf':1, 'neighbor':1})
@@ -876,7 +984,19 @@ class TriggerUnconfigConfigBgpNeighborRouteReflectorClient(TriggerUnconfigConfig
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                address_family: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn BGP Ops object and store the BGP neighbor(s) with route-reflector-client
            if has any, otherwise, SKIP the trigger
@@ -941,7 +1061,7 @@ class TriggerUnconfigConfigBgpNeighborRouteReflectorClient(TriggerUnconfigConfig
                                                      'vrf', '(?P<vrf>.*)', 'neighbor',
                                                      '(?P<neighbor>.*)', 'address_family',
                                                      '(?P<address_family>.*)',
-                                                     'route_reflector_client']],
+                                                     NotExists('route_reflector_client')]],
                                     'kwargs':{'attributes':['info']},
                                     'exclude': bgp_exclude}},
                       num_values={'vrf':'all', 'instance':'all', 'neighbor': 'all',
@@ -980,7 +1100,18 @@ class TriggerUnconfigConfigBgpNeighborIpv4(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn BGP Ops object and store the BGP IPv4 neighbor(s)
            if has any, otherwise, SKIP the trigger
@@ -1007,11 +1138,16 @@ class TriggerUnconfigConfigBgpNeighborIpv4(TriggerUnconfigConfig):
                                      'verify_conf':False,
                                      'kwargs':{'mandatory':{'bgp_id': '(?P<bgp_id>.*)'}}}},
                       verify_ops={'ops.bgp.bgp.Bgp':{
-                                    'requirements': [['info', 'instance', '(?P<instance>.*)', 'vrf',
-                                                   '(?P<vrf>.*)', 'neighbor',
-                                                   '(?P<neighbor>.*)']],
+                                    'requirements': [[partial(verify_ops_or_logic,
+                                                      requires=[['info', 'instance', '(?P<instance>.*)', 'vrf',
+                                                                 '(?P<vrf>.*)', 'neighbor',
+                                                                 NotExists('(?P<neighbor>.*)')],
+                                                                ['info', 'instance', '(?P<instance>.*)', 'vrf',
+                                                                 '(?P<vrf>.*)', NotExists('neighbor')],
+                                                               ])
+                                                    ]],
                                     'kwargs':{'attributes':['info']},
-                                    'exclude': bgp_exclude + ['vpnv4 unicast']}},
+                                    'exclude': bgp_exclude + ['vpnv4 unicast', 'distance_local']}},
                       num_values={'vrf':'all', 'instance':'all',
                                   'neighbor':'all'})
 
@@ -1048,7 +1184,18 @@ class TriggerUnconfigConfigBgpNeighborIpv6(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn BGP Ops object and store the BGP IPv6 neighbor(s)
            if has any, otherwise, SKIP the trigger
@@ -1077,7 +1224,7 @@ class TriggerUnconfigConfigBgpNeighborIpv6(TriggerUnconfigConfig):
                       verify_ops={'ops.bgp.bgp.Bgp':{
                                     'requirements': [['info', 'instance', '(?P<instance>.*)', 'vrf',
                                                    '(?P<vrf>.*)', 'neighbor',
-                                                   '(?P<neighbor>.*)']],
+                                                   NotExists('(?P<neighbor>.*)')]],
                                     'kwargs':{'attributes':['info']},
                                     'exclude': bgp_exclude}},
                       num_values={'vrf':'all', 'instance':'all',
@@ -1116,7 +1263,18 @@ class TriggerUnconfigConfigBgpNeighborIbgp(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn BGP Ops object and store the iBGP neighbor(s)
            if has any, otherwise, SKIP the trigger
@@ -1149,9 +1307,14 @@ class TriggerUnconfigConfigBgpNeighborIbgp(TriggerUnconfigConfig):
                                      'verify_conf':False,
                                      'kwargs':{'mandatory':{'bgp_id': '(?P<bgp_id>.*)'}}}},
                       verify_ops={'ops.bgp.bgp.Bgp':{
-                                    'requirements': [['info', 'instance', '(?P<instance>.*)', 'vrf',
-                                                   '(?P<vrf>.*)', 'neighbor',
-                                                   '(?P<neighbor>.*)', '(.*)']],
+                                    'requirements': [[partial(verify_ops_or_logic,
+                                                      requires=[['info', 'instance', '(?P<instance>.*)', 'vrf',
+                                                                 '(?P<vrf>.*)', 'neighbor',
+                                                                 NotExists('(?P<neighbor>.*)')],
+                                                                ['info', 'instance', '(?P<instance>.*)', 'vrf',
+                                                                 '(?P<vrf>.*)', NotExists('neighbor')],
+                                                               ])
+                                                    ]],
                                     'kwargs':{'attributes':['info']},
                                     'exclude': bgp_exclude}},
                       num_values={'vrf':1, 'instance':1,
@@ -1190,7 +1353,18 @@ class TriggerUnconfigConfigBgpRouterId(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn BGP Conf object and store the BGP instance(s)
            if has bgp_id configured, otherwise, SKIP the trigger.
@@ -1221,12 +1395,12 @@ class TriggerUnconfigConfigBgpRouterId(TriggerUnconfigConfig):
                                      'kwargs':{'mandatory':{'bgp_id': '(?P<bgp_id>.*)'}}}},
                       verify_ops={'ops.bgp.bgp.Bgp':{
                                     'requirements': [['info', 'instance', '(?P<instance>.*)', 'vrf',
-                                                   '(?P<vrf>.*)', NotExists('router_id')]],
+                                                   '(?P<vrf>.*)', 'router_id', '(.*)']], # will still pick up some loopback interace ip 
                                     'kwargs':{'attributes':['info']},
                                     'exclude': bgp_exclude},
                                   'conf.bgp.Bgp':{
                                     'requirements': [['device_attr', '{uut}', '_vrf_attr',
-                                                      '(?P<vrf>.*)', 'router_id', '(?P<router_id>.*)']],
+                                                      '(?P<vrf>.*)', NotExists('router_id')]], # no router_id should exists in conf
                                     'kwargs':{'attributes':['info']},
                                     'exclude': bgp_exclude}},
                       num_values={'vrf':'all', 'instance':'all',
@@ -1265,7 +1439,18 @@ class TriggerUnconfigConfigBgpNeighborVrf(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn BGP Ops object and store the BGP IPv6 neighbor(s)
            if has any, otherwise, SKIP the trigger
@@ -1291,8 +1476,14 @@ class TriggerUnconfigConfigBgpNeighborVrf(TriggerUnconfigConfig):
                                      'verify_conf':False,
                                      'kwargs':{'mandatory':{'bgp_id': '(?P<bgp_id>.*)'}}}},
                       verify_ops={'ops.bgp.bgp.Bgp':{
-                                    'requirements': [['info', 'instance', '(?P<instance>.*)', 'vrf',
-                                                   '(?P<vrf>.*)']],
+                                    'requirements': [[partial(verify_ops_or_logic,
+                                                      requires=[['info', 'instance', '(?P<instance>.*)', NotExists('vrf')],
+                                                                ['info', 'instance', '(?P<instance>.*)', 'vrf',
+                                                                 NotExists('(?P<vrf>.*)')],
+                                                                ['info', 'instance', '(?P<instance>.*)', 'vrf',
+                                                                 '(?P<vrf>.*)', NotExists('neighbor')]
+                                                               ])
+                                                    ]],
                                     'kwargs':{'attributes':['info']},
                                     'exclude': bgp_exclude}},
                       num_values={'vrf':'all', 'instance':'all',
@@ -1333,6 +1524,19 @@ class TriggerUnconfigConfigBgpNeighborAsOverride(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
+
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                address_family: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn BGP Ops object and store the BGP neighbors(s)
@@ -1392,7 +1596,7 @@ class TriggerUnconfigConfigBgpNeighborAsOverride(TriggerUnconfigConfig):
                                     'requirements': [['info', 'instance', '(?P<instance>.*)',
                                                       'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
                                                       'address_family', '(?P<address_family>.*)',
-                                                      'as_override']],
+                                                      NotExists('as_override')]],
                                     'kwargs':{'attributes':['info']},
                                     'exclude': bgp_exclude}},
                       num_values={'vrf':'all', 'instance':'all',
@@ -1431,7 +1635,18 @@ class TriggerUnconfigConfigBgpNeighborEbgp(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn BGP Ops object and store the EBGP neighbor(s)
            if has any, otherwise, SKIP the trigger
@@ -1461,9 +1676,13 @@ class TriggerUnconfigConfigBgpNeighborEbgp(TriggerUnconfigConfig):
                                      'verify_conf':False,
                                      'kwargs':{'mandatory':{'bgp_id': '(?P<bgp_id>.*)'}}}},
                       verify_ops={'ops.bgp.bgp.Bgp':{
-                                    'requirements': [['info', 'instance', '(?P<instance>.*)', 'vrf',
-                                                   '(?P<vrf>.*)', 'neighbor',
-                                                   '(?P<neighbor>.*)']],
+                                    'requirements': [[partial(verify_ops_or_logic,
+                                                      requires=[['info', 'instance', '(?P<instance>.*)', 'vrf',
+                                                                 '(?P<vrf>.*)', 'neighbor', NotExists('(?P<neighbor>.*)')],
+                                                                ['info', 'instance', '(?P<instance>.*)', 'vrf',
+                                                                 '(?P<vrf>.*)', NotExists('neighbor')]
+                                                               ])
+                                                    ]],
                                     'kwargs':{'attributes':['info']},
                                     'exclude': bgp_exclude + ['vpnv4 unicast']}},
                       num_values={'vrf':'all', 'instance':'all',
@@ -1504,7 +1723,20 @@ class TriggerUnconfigConfigBgpVpnRd(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+           static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                address_family: `str`
+                rd: `str`
+                default_vrf: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn BGP Ops object and store the BGP vrf(s) with route_distinguisher
            if has any, otherwise, SKIP the trigger
@@ -1525,34 +1757,37 @@ class TriggerUnconfigConfigBgpVpnRd(TriggerUnconfigConfig):
                                                            ['table', 'instance', '(?P<instance>.*)',
                                                            'vrf', '(?P<vrf>.*)', 'address_family',
                                                            '(?P<address_family>.*)', 'default_vrf',
-                                                           '(?P<name>.*)']],
+                                                           '(?P<default_vrf>.*)']],
                                         'kwargs':{'attributes':['table', 'info']},
                                         'exclude': bgp_exclude},
                                     'ops.vrf.vrf.Vrf':{
-                                          'requirements':[['info', 'vrfs', '(?P<name>^(?!default).*)',
+                                          'requirements':[['info', 'vrfs', '(?P<default_vrf>^(?!default).*)',
                                                            'route_distinguisher', '(?P<rd>.*)']],
                                         'kwargs':{'attributes':['info']},
                                         'exclude': ['maker']}},
                       config_info={'conf.vrf.Vrf':{
                                      'requirements':[['device_attr', '{uut}', 'rd', '(?P<rd>.*)']],
                                      'verify_conf':False,
-                                     'kwargs':{'mandatory':{'name': '(?P<name>.*)'}}}},
+                                     'kwargs':{'mandatory':{'name': '(?P<default_vrf>.*)'}}}},
                       verify_ops={'ops.bgp.bgp.Bgp':{
-                                    'requirements': [['table', 'instance', '(?P<instance>.*)',
-                                                     'vrf', '(?P<vrf>.*)', 'address_family',
-                                                     '(?P<address_family>.*)', 'route_distinguisher'],
-                                                     ['table', 'instance', '(?P<instance>.*)',
-                                                     'vrf', '(?P<vrf>.*)', 'address_family',
-                                                     '(?P<address_family>.*)', 'default_vrf']],
+                                    'requirements': [[partial(verify_ops_or_logic,
+                                                      requires=[['table', 'instance', '(?P<instance>.*)',
+                                                                 'vrf', '(?P<vrf>.*)', 'address_family',
+                                                                 '(?P<address_family>.*)', NotExists('default_vrf')],
+                                                                ['table', 'instance', '(?P<instance>.*)',
+                                                                 'vrf', '(?P<vrf>.*)', 'address_family',
+                                                                 NotExists('(?P<address_family>.*)')]
+                                                               ])
+                                                    ]],
                                     'kwargs':{'attributes':['table', 'info']},
-                                    'exclude': bgp_exclude + ['label_allocation_mode']},
+                                    'exclude': bgp_exclude + ['label_allocation_mode', 'vpnv4 unicast', 'vpnv6 unicast']},
                                   'ops.vrf.vrf.Vrf':{
-                                        'requirements':[['info', 'vrfs', '(?P<name>.*)',
-                                                         'route_distinguisher']],
+                                        'requirements':[['info', 'vrfs', '(?P<default_vrf>.*)',
+                                                         'route_distinguisher', '0:0']],
                                       'kwargs':{'attributes':['info']},
                                       'exclude': ['maker']}},
                       num_values={'vrf': 'all', 'instance':1, 
-                                  'address_family': 'all', 'rd': 1, 'name': 1})
+                                  'address_family': 'all', 'rd': 1, 'default_vrf': 1})
 
 
 class TriggerUnconfigConfigBgpL2vpnCapability(TriggerUnconfigConfig):
@@ -1589,7 +1824,18 @@ class TriggerUnconfigConfigBgpL2vpnCapability(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn BGP Ops object and store the BGP l2vpn evpn address-family
            if has any, otherwise, SKIP the trigger
@@ -1625,9 +1871,17 @@ class TriggerUnconfigConfigBgpL2vpnCapability(TriggerUnconfigConfig):
                         'kwargs':{'mandatory':{'bgp_id': '(?P<bgp_id>.*)'}}}},
                 verify_ops={\
                     'ops.bgp.bgp.Bgp':{
-                        'requirements':[\
-                            ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)',
-                             'neighbor', '(?P<neighbor>.*)', 'address_family', '(?P<address_family>^l2vpn +evpn$)']],
+                        'requirements':[[partial(verify_ops_or_logic,
+                                          requires=[['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)',
+                                                     'neighbor', '(?P<neighbor>.*)', 'address_family',
+                                                     NotExists('(?P<address_family>.*)')],
+                                                    ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)',
+                                                     'neighbor', NotExists('(?P<neighbor>.*)')],
+                                                    ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)',
+                                                     'neighbor', '(?P<neighbor>.*)', 'address_family',
+                                                     NotExists('(?P<address_family>^l2vpn +evpn$)')]
+                                                   ])
+                                        ]],
                         'kwargs':{'attributes':['info[instance][(.*)][bgp_id]',
                                     'info[list_of_vrfs]',
                                     'info[instance][(.*)][vrf][(.*)][neighbor]'
@@ -1670,7 +1924,19 @@ class TriggerUnconfigConfigBgpAfL2vpnEvpnRewriteEvpnRtAsn(TriggerUnconfigConfig)
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                instance: `str`
+                vrf: `str`
+                neighbor: `str`
+                address_family: `str`
+                bgp_id: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn BGP Ops object and store the BGP l2vpn evpn address-family evpn rewrite-evpn-rt-asn
            if has any, otherwise, SKIP the trigger
@@ -1722,15 +1988,12 @@ class TriggerUnconfigConfigBgpAfL2vpnEvpnRewriteEvpnRtAsn(TriggerUnconfigConfig)
                         'exclude': bgp_exclude},
                     'ops.bgp.bgp.Bgp':{
                         'requirements':[\
-                            [['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)',
+                            ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)',
                              'neighbor', '(?P<neighbor>.*)', 'address_family', '(?P<address_family>^l2vpn +evpn$)', 'session_state', 'established']],
-                            [['info', 'instance', '(?P<instance>.*)', 'vrf', \
-                             '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'remote_as', '(.*)']]],
                         'kwargs':{'attributes':['info[instance][(.*)][bgp_id]',
                                     'info[list_of_vrfs]',
                                     'info[instance][(.*)][vrf][(.*)][neighbor][(.*)][address_family][(.*)][session_state]',
                                     'info[instance][(.*)][vrf][(.*)][neighbor][(.*)][remote_as]']},
-                        'missing': True,
                         'exclude': bgp_exclude}},
                 num_values={'instance':1, 'vrf':1, 'neighbor':1 , 'address_family': 1})
 
@@ -1768,7 +2031,19 @@ class TriggerUnconfigConfigBgpAddressFamilyIpv4Mvpn(TriggerUnconfigConfig):
                                     in second. Default: 180
                     interval (`int`): Wait time between iteration when looping is needed,
                                     in second. Default: 15
+                static:
+                    The keys below are dynamically learnt by default.
+                    However, they can also be set to a custom value when provided in the trigger datafile.
 
+                    instance: `str`
+                    vrf: `str`
+                    neighbor: `str`
+                    address_family: `str`
+                    bgp_id: `int`
+
+                    (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                          OR
+                          interface: 'Ethernet1/1/1' (Specific value)
         steps:
             1. Learn BGP Ops object and store the BGP ipv4 mvpn address-family
                if has any, otherwise, SKIP the trigger
@@ -1802,7 +2077,6 @@ class TriggerUnconfigConfigBgpAddressFamilyIpv4Mvpn(TriggerUnconfigConfig):
                 'conf.bgp.Bgp': {
                     'requirements': [ \
                         ['device_attr', '{uut}', '_vrf_attr', '(?P<vrf>.*)', '_address_family_attr', '(?P<af>(?!ipv4 mvpn).*)']],
-                    'missing': False,
                     'exclude': trm_exclude }},
 
             num_values={'instance': 1, 'vrf': 1, 'neighbor': 'all', 'af':1})
@@ -1842,7 +2116,18 @@ class TriggerUnconfigConfigBgpNeighborAddressFamilyIpv4Mvpn(TriggerUnconfigConfi
                                         in second. Default: 180
                         interval (`int`): Wait time between iteration when looping is needed,
                                         in second. Default: 15
+                    static:
+                        The keys below are dynamically learnt by default.
+                        However, they can also be set to a custom value when provided in the trigger datafile.
 
+                        instance: `str`
+                        vrf: `str`
+                        neighbor: `str`
+                        bgp_id: `int`
+
+                        (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                              OR
+                              interface: 'Ethernet1/1/1' (Specific value)
             steps:
                 1. Learn BGP Ops object and store the ipv4 mvpn address-family under BGP neighbors
                    if has any, otherwise, SKIP the trigger
@@ -1881,7 +2166,6 @@ class TriggerUnconfigConfigBgpNeighborAddressFamilyIpv4Mvpn(TriggerUnconfigConfi
                 'requirements': [ \
                     ['device_attr', '{uut}', '_vrf_attr', '(?P<vrf>.*)', '_neighbor_attr',
                      '(?P<neighbor>.*)', '_address_family_attr', Not('ipv4 mvpn')]],
-                'missing': True,
                 'exclude': trm_exclude},
             'ops.bgp.bgp.Bgp': {
                 'requirements': [ \

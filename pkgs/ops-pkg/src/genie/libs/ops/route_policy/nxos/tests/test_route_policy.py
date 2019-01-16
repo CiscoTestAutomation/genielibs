@@ -57,13 +57,13 @@ class test_route_policy(unittest.TestCase):
         f.learn()
         g.learn()
 
-        f.diff_ignore.append('info[BGPPeers][statements][10][actions][set_route_origin][origin]')
+        f.s = 2
 
         self.assertNotEqual(f,g)
         # Verify diff now
         diff = f.diff(g)
         sorted_diff = str(diff)
-        sorted_result = ('''+diff_ignore: deque(['maker', 'callables', 'device', 'info[BGPPeers][statements][10][actions][set_route_origin][origin]'])\n-diff_ignore: deque(['maker', 'callables', 'device'])''')
+        sorted_result = ('+s: 2')
         self.assertEqual(sorted_diff,sorted_result)
 
     def test_selective_attribute(self):

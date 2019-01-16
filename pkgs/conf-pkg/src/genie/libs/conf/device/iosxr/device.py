@@ -112,6 +112,11 @@ class Device(genie.libs.conf.device.cisco.Device):
         #     }
         # }
 
+        # nodename
+        if attributes.value('nodename'):
+            configurations.append_line(
+                attributes.format('hostname {nodename}'))
+
         if apply:
             if configurations:
                 self.configure(str(configurations), fail_invalid=True)

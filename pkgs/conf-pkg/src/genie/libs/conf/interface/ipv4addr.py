@@ -27,7 +27,7 @@ class IPv4Addr(ConfigurableBase):
     ipv4 = managedattribute(
         name='ipv4',
         default=None,
-        type=(None, IPv4Address),
+        type=(None, IPv4Address, managedattribute.test_istype(str)),
         doc='IP address')
 
     # ipv4_secondary

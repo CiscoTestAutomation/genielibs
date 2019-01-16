@@ -160,6 +160,17 @@ class test_nx_interface(TestCase):
             ]))
 
         # Build unconfig
+        uncfgs = intf1.build_unconfig(apply=False, attributes={'nve_vni':'4096'})
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(uncfgs),
+            '\n'.join([
+                'interface nve1',
+                ' no member vni 4096',
+                ' exit'
+            ]))
+
+        # Build unconfig
         uncfgs = intf1.build_unconfig(apply=False, attributes={'nve_host_reachability_protocol':
                                                                    NveInterface.HOST_REACHABILTY_PROTOCOL.bgp,
                                                                'nve_vni':'4096',

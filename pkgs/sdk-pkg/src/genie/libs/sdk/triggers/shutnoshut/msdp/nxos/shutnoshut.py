@@ -41,7 +41,16 @@ class TriggerShutNoShutMsdp(TriggerShutNoShut):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+               The keys below are dynamically learnt by default.
+               However, they can also be set to a custom value when provided in the trigger datafile.
 
+               vrf: `str`
+               peer: `str`
+
+               (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                     OR
+                     interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Vlan Ops object and store the Msdp 'established' peer(s)
            if has any, otherwise, SKIP the trigger

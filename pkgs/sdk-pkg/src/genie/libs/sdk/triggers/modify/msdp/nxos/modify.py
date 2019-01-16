@@ -64,7 +64,16 @@ class TriggerModifyMsdpOriginatorId(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                originator_id: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Msdp Ops object and store the MSDP originator-id
            if has any, otherwise, SKIP the trigger
@@ -161,7 +170,17 @@ class TriggerModifyMsdpSaFilterIn(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                peer: `str`
+                sa_filter_in: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Msdp Ops object and store the "established" MSDP peer(s) sa-filter in
            if has any, otherwise, SKIP the trigger
@@ -236,6 +255,17 @@ class TriggerModifyMsdpSaFilterOut(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
+
+                vrf: `str`
+                peer: `str`
+                sa_filter_out: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn Msdp Ops object and store the "established" MSDP peer(s) sa-filter out
@@ -311,6 +341,17 @@ class TriggerModifyMsdpSaLimit(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
+
+                vrf: `str`
+                peer: `str`
+                sa_limit: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn Msdp Ops object and store the "established" MSDP peer(s) sa-limit
@@ -387,6 +428,17 @@ class TriggerModifyMsdpMeshGroup(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
+
+                vrf: `str`
+                peer: `str`
+                mesh_group: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn Msdp Ops object and store the 'established' MSDP peer(s) mesh group
@@ -463,7 +515,18 @@ class TriggerModifyMsdpKeepaliveHoldtime(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                peer: `str`
+                keepalive_interval: `int`
+                holdtime_interval: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Msdp Ops object and store the 'established' MSDP peer(s)
            keepalive&holdtime interval if has any, otherwise, SKIP the trigger
@@ -510,7 +573,6 @@ class TriggerModifyMsdpKeepaliveHoldtime(TriggerModify):
                                            'timer', 'holdtime_interval', holdtime_interval]],
                                     'kwargs':{'attributes': ['info[vrf][(.*)][peer][(.*)][timer]',
                                               'info[vrf][(.*)][peer][(.*)][session_state]']},
-                                    'missing': False,
                                     'exclude': msdp_exclude}},
                       num_values={'vrf': 1, 'peer': 1})
 
@@ -549,7 +611,17 @@ class TriggerModifyMsdpReconnectInterval(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                peer: `str`
+                connect_retry_interval: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Msdp Ops object and store the MSDP reconnect interval
            if has any, otherwise, SKIP the trigger
@@ -585,7 +657,6 @@ class TriggerModifyMsdpReconnectInterval(TriggerModify):
                                        'connect_retry_interval', connect_retry_interval]], 
                                     'kwargs':{'attributes': ['info[vrf][(.*)][peer][(.*)][timer]',
                                               'info[vrf][(.*)][peer][(.*)][session_state]']},
-                                    'missing': False,
                                     'exclude': msdp_exclude}},
                       num_values={'vrf': 1, 'peer': 'all'})
 
@@ -624,7 +695,17 @@ class TriggerModifyMsdpDescription(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                peer: `str`
+                description: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Msdp Ops object and store the MSDP peer(s) description
            if has any, otherwise, SKIP the trigger
@@ -699,7 +780,19 @@ class TriggerModifyMsdpPeerConnectedSource(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                peer: `str`
+                connect_source: `str`
+                modify_connect_source: `str`
+                ip: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Msdp Ops object and store the MSDP 'established' peer(s) connect-source 
            if has any, otherwise, SKIP the trigger
@@ -841,7 +934,18 @@ class TriggerModifyMsdpPeerAs(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                peer: `str`
+                peer_as: `int`
+                connected_source: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Msdp Ops object and store the MSDP 'established' peer(s) remote-as
            if has any, otherwise, SKIP the trigger

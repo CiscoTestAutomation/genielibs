@@ -50,7 +50,17 @@ class TriggerAddRemoveRouteTargetMvpn(TriggerAddRemove):
                                      trigger in seconds. Default: 180
                    interval (`int`): Wait time between iteration when looping is
                                      needed in seconds. Default: 15
+               static:
+                   The keys below are dynamically learnt by default.
+                   However, they can also be set to a custom value when provided in the trigger datafile.
 
+                    vrf: `str`
+                    address_family: `str`
+                    rt: `str`
+
+                    (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                          OR
+                          interface: 'Ethernet1/1/1' (Specific value)
        Steps:
            1. Learn Vrf Conf object configured on device. SKIP the trigger if there
               is no vrf configured on the device.
@@ -72,7 +82,7 @@ class TriggerAddRemoveRouteTargetMvpn(TriggerAddRemove):
     requirements = OrderedDict()
     requirements['conf.vrf.Vrf'] = {
         'requirements': [
-            ['device_attr', '{uut}', 'address_family_attr', '(?P<af>.*)', '_route_target_attr', '(?P<rt>.*)',
+            ['device_attr', '{uut}', 'address_family_attr', '(?P<address_family>.*)', '_route_target_attr', '(?P<rt>.*)',
               '_protocol_attr', NotExists(PROTOCOL)],
             ['device_attr', '{uut}', 'vrf_name', '(?P<vrf>.*)']],
         'all_keys': True,
@@ -88,9 +98,9 @@ class TriggerAddRemoveRouteTargetMvpn(TriggerAddRemove):
         config_info={ \
             'conf.vrf.Vrf': {
                 'requirements': [ \
-                    ['device_attr', '{uut}', 'address_family_attr', '(?P<af>.*)', 'route_target_attr', '(?P<rt>.*)', \
+                    ['device_attr', '{uut}', 'address_family_attr', '(?P<address_family>.*)', 'route_target_attr', '(?P<rt>.*)', \
                      'rt_type', 'both'],
-                    ['device_attr', '{uut}', 'address_family_attr', '(?P<af>.*)', 'route_target_attr', '(?P<rt>.*)', \
+                    ['device_attr', '{uut}', 'address_family_attr', '(?P<address_family>.*)', 'route_target_attr', '(?P<rt>.*)', \
                      'protocol_attr', 'mvpn', 'rt_mvpn', True]
                 ],
                 'verify_conf': False,
@@ -98,7 +108,7 @@ class TriggerAddRemoveRouteTargetMvpn(TriggerAddRemove):
         verify_ops={ \
             'conf.vrf.Vrf': {
                 'requirements': [ \
-                    ['device_attr', '{uut}', 'address_family_attr', '(?P<af>.*)', '_route_target_attr', '(?P<rt>.*)',
+                    ['device_attr', '{uut}', 'address_family_attr', '(?P<address_family>.*)', '_route_target_attr', '(?P<rt>.*)',
                      '_protocol_attr', 'mvpn', 'rt_mvpn', True]],
                 'exclude': trm_exclude},
             'ops.vrf.vrf.Vrf': {
@@ -106,7 +116,7 @@ class TriggerAddRemoveRouteTargetMvpn(TriggerAddRemove):
                     ['info', 'vrfs', '(?P<vrf>.*)', '(.*)']],
                 'kwargs': {'attributes': ['info']},
                 'exclude': trm_exclude}},
-        num_values={'vrf': 1, 'rt': 1, 'af': 1})
+        num_values={'vrf': 1, 'rt': 1, 'address_family': 1})
 
 class TriggerAddRemoveRouteTargetEvpn(TriggerAddRemove):
     """Add route-target evpn then restore the
@@ -143,7 +153,17 @@ class TriggerAddRemoveRouteTargetEvpn(TriggerAddRemove):
                                      trigger in seconds. Default: 180
                    interval (`int`): Wait time between iteration when looping is
                                      needed in seconds. Default: 15
+               static:
+                   The keys below are dynamically learnt by default.
+                   However, they can also be set to a custom value when provided in the trigger datafile.
 
+                    vrf: `str`
+                    rt: `str`
+                    address_family: `str`
+
+                    (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                          OR
+                          interface: 'Ethernet1/1/1' (Specific value)
        Steps:
            1. Learn Vrf Conf object configured on device. SKIP the trigger if there
               is no vrf configured on the device.
@@ -165,7 +185,7 @@ class TriggerAddRemoveRouteTargetEvpn(TriggerAddRemove):
     requirements = OrderedDict()
     requirements['conf.vrf.Vrf'] = {
         'requirements': [
-            ['device_attr', '{uut}', 'address_family_attr', '(?P<af>.*)', '_route_target_attr', '(?P<rt>.*)',
+            ['device_attr', '{uut}', 'address_family_attr', '(?P<address_family>.*)', '_route_target_attr', '(?P<rt>.*)',
              '_protocol_attr', NotExists(PROTOCOL),  NotExists('(.*)')],
             ['device_attr', '{uut}', 'vrf_name', '(?P<vrf>.*)']],
         'all_keys': True,
@@ -181,9 +201,9 @@ class TriggerAddRemoveRouteTargetEvpn(TriggerAddRemove):
         config_info={ \
             'conf.vrf.Vrf': {
                 'requirements': [ \
-                    ['device_attr', '{uut}', 'address_family_attr', '(?P<af>.*)', 'route_target_attr', '(?P<rt>.*)', \
+                    ['device_attr', '{uut}', 'address_family_attr', '(?P<address_family>.*)', 'route_target_attr', '(?P<rt>.*)', \
                      'rt_type', 'both'],
-                    ['device_attr', '{uut}', 'address_family_attr', '(?P<af>.*)', 'route_target_attr', '(?P<rt>.*)', \
+                    ['device_attr', '{uut}', 'address_family_attr', '(?P<address_family>.*)', 'route_target_attr', '(?P<rt>.*)', \
                      'protocol_attr', 'evpn', 'rt_evpn', True]
                 ],
                 'verify_conf': False,
@@ -191,7 +211,7 @@ class TriggerAddRemoveRouteTargetEvpn(TriggerAddRemove):
         verify_ops={ \
             'conf.vrf.Vrf': {
                 'requirements': [ \
-                    ['device_attr', '{uut}', 'address_family_attr', '(?P<af>.*)', '_route_target_attr', '(?P<rt>.*)',
+                    ['device_attr', '{uut}', 'address_family_attr', '(?P<address_family>.*)', '_route_target_attr', '(?P<rt>.*)',
                      '_protocol_attr', 'evpn', 'rt_evpn', True]],
                 'exclude': trm_exclude},
             'ops.vrf.vrf.Vrf': {
@@ -199,7 +219,7 @@ class TriggerAddRemoveRouteTargetEvpn(TriggerAddRemove):
                     ['info', 'vrfs', '(?P<vrf>.*)', '(.*)']],
                 'kwargs': {'attributes': ['info']},
                 'exclude': trm_exclude}},
-        num_values={'vrf': 1, 'rt': 1, 'af': 1})
+        num_values={'vrf': 1, 'rt': 1, 'address_family': 1})
 
 class TriggerAddRemoveAdvertiseEvpnMulticast(TriggerAddRemove):
     """Add advertise evpn multicast then restore the

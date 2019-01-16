@@ -51,6 +51,16 @@ class TriggerModifyEthernetMtu(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
+
+                interface: `str`
+                mtu: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn Interface Ops object and store the "up" Ethernet interface(s)
@@ -68,21 +78,21 @@ class TriggerModifyEthernetMtu(TriggerModify):
     # Mapping of Information between Ops and Conf
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
-                                        'requirements': [['info', '(?P<name>e|Ethernet[0-9\/\s]+$)', 'mtu', '(?P<mtu>.*)'],
-                                                         ['info', '(?P<name>.*)', 'enabled', True],
-                                                         ['info', '(?P<name>.*)', 'port_channel', 'port_channel_member', False],
-                                                         ['info', '(?P<name>.*)', 'oper_status', 'up']],
+                                        'requirements': [['info', '(?P<interface>e|Ethernet[0-9\/\s]+$)', 'mtu', '(?P<mtu>.*)'],
+                                                         ['info', '(?P<interface>.*)', 'enabled', True],
+                                                         ['info', '(?P<interface>.*)', 'port_channel', 'port_channel_member', False],
+                                                         ['info', '(?P<interface>.*)', 'oper_status', 'up']],
                                         'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
                                       'requirements':[['mtu', 9216]],
                                       'verify_conf':False,
-                                      'kwargs':{'mandatory':{'name': '(?P<name>.*)',
+                                      'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                              'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                      'requirements': [['info', '(?P<name>.*)', 'mtu', 9216],
-                                                       ['info', '(?P<name>.*)', 'bandwidth', '(\d+)']],
+                                      'requirements': [['info', '(?P<interface>.*)', 'mtu', 9216],
+                                                       ['info', '(?P<interface>.*)', 'bandwidth', '(\d+)']],
                                       'exclude': interface_exclude}},
-                      num_values={'name': 1, 'mtu': 1})
+                      num_values={'interface': 1, 'mtu': 1})
 
 
 class TriggerModifySwitchportModeTrunkToAccess(TriggerModify):
@@ -117,7 +127,15 @@ class TriggerModifySwitchportModeTrunkToAccess(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                interface: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                    OR
+                    interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Interface Ops object and store the "up" "trunk" interface(s)
            if has any, otherwise, SKIP the trigger
@@ -135,23 +153,23 @@ class TriggerModifySwitchportModeTrunkToAccess(TriggerModify):
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
                                         'requirements':[\
-                                            ['info', '(?P<name>.*)', 'switchport_mode', 'trunk'],
-                                            ['info', '(?P<name>.*)', 'enabled', True],
-                                            ['info', '(?P<name>.*)', 'oper_status', 'up'],
-                                            ['info', '(?P<name>.*)', 'port_channel', 'port_channel_member', False]],
+                                            ['info', '(?P<interface>.*)', 'switchport_mode', 'trunk'],
+                                            ['info', '(?P<interface>.*)', 'enabled', True],
+                                            ['info', '(?P<interface>.*)', 'oper_status', 'up'],
+                                            ['info', '(?P<interface>.*)', 'port_channel', 'port_channel_member', False]],
                                         'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
                                         'requirements':[['switchport_mode', 'access']],
                                         'verify_conf':False,
-                                        'kwargs':{'mandatory':{'name': '(?P<name>.*)',
+                                        'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                                'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
                                         'requirements': [\
-                                            ['info', '(?P<name>.*)', 'switchport_mode', 'access'],
-                                            ['info', '(?P<name>.*)', 'enabled', False],
+                                            ['info', '(?P<interface>.*)', 'switchport_mode', 'access'],
+                                            ['info', '(?P<interface>.*)', 'enabled', False],
                                             ['info', '(.*)', 'switchport_mode', '(\w+)']],
                                         'exclude': interface_exclude + ['(Vlan.*)']}},
-                      num_values={'name': 1})
+                      num_values={'interface': 1})
 
 
 class TriggerModifyLoopbackInterfaceIp(TriggerModify):
@@ -186,7 +204,6 @@ class TriggerModifyLoopbackInterfaceIp(TriggerModify):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
-
     steps:
         1. Learn Interface Ops object and store the "up" "ipv4" Loopback interface(s)
            if has any, otherwise, SKIP the trigger

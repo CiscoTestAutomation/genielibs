@@ -44,7 +44,17 @@ class TriggerAddRemovePimNeighborFilter(TriggerAddRemove):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                interface: `str`
+                address_family: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Pim Ops/Conf object and store the Pim interface(s)'s neighbor-filter.
         2. Save the current device configurations through "method" which user uses
@@ -63,10 +73,10 @@ class TriggerAddRemovePimNeighborFilter(TriggerAddRemove):
                           'ops.pim.pim.Pim':{
                                 'requirements':[\
                                     ['info', 'vrf', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<pim_intf>.*)', 'address_family', '(?P<af>.*)',
+                                     '(?P<interface>.*)', 'address_family', '(?P<address_family>.*)',
                                      NotExists('neighbor_filter')],
                                     ['info', 'vrf', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<pim_intf>.*)', 'address_family', '(?P<af>.*)',
+                                     '(?P<interface>.*)', 'address_family', '(?P<address_family>.*)',
                                      'oper_status', 'up']],
                                 'kwargs':{'attributes': [
                                     'info[vrf][(.*)][interfaces][(.*)][address_family][(.*)][oper_status]',
@@ -75,22 +85,22 @@ class TriggerAddRemovePimNeighborFilter(TriggerAddRemove):
                       config_info={'conf.pim.Pim':{
                                        'requirements':[
                                          ['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)',
-                                          'address_family_attr', '(?P<af>.*)', 'interface_attr',
-                                          '(?P<pim_intf>.*)', 'neighbor_filter', ADD_NAME]],
+                                          'address_family_attr', '(?P<address_family>.*)', 'interface_attr',
+                                          '(?P<interface>.*)', 'neighbor_filter', ADD_NAME]],
                                        'verify_conf':False,
                                        'kwargs':{}}},
                       verify_ops={
                           'ops.pim.pim.Pim':{
                                 'requirements':[\
                                     ['info', 'vrf', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<pim_intf>.*)', 'address_family', '(?P<af>.*)',
+                                     '(?P<interface>.*)', 'address_family', '(?P<address_family>.*)',
                                      'neighbor_filter', ADD_NAME],
                                     ['info', 'vrf', '(?P<vrf>.*)', 'interfaces',
-                                     '(?P<pim_intf>.*)', 'address_family', '(?P<af>.*)',
+                                     '(?P<interface>.*)', 'address_family', '(?P<address_family>.*)',
                                      'oper_status', 'up']],
                                 'kwargs':{'attributes': [
                                     'info[vrf][(.*)][interfaces][(.*)][address_family][(.*)][oper_status]',
                                     'info[vrf][(.*)][interfaces][(.*)][address_family][(.*)][neighbor_filter]']},
                                 'exclude': pim_exclude}},
-                      num_values={'vrf': 1, 'af': 1, 'pim_intf': 1})
+                      num_values={'vrf': 1, 'address_family': 1, 'interface': 1})
 

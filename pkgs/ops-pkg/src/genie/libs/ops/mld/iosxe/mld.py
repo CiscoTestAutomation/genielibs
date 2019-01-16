@@ -16,6 +16,11 @@ from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
 class Mld(Base):
     '''MLD Genie Ops Object'''
 
+    def keys(self, item):
+        '''return only the key as list from the item'''        
+        if isinstance(item, dict):
+            return list(item.keys())
+
     def learn(self):
         '''Learn MLD Ops'''
 
@@ -23,7 +28,7 @@ class Mld(Base):
         self.add_leaf(cmd=ShowVrfDetail,
                       src='',
                       dest='list_of_vrfs',
-                      action=lambda x: list(x.keys()))
+                      action=self.keys)
 
         self.make()
 

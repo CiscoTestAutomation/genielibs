@@ -4,6 +4,9 @@
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.unconfigconfig.unconfigconfig import TriggerUnconfigConfig
 
+# import ats
+from ats.utils.objects import Not, NotExists
+
 # Which key to exclude for Msdp Ops comparison
 msdp_exclude = ['maker', 'elapsed_time', 'discontinuity_time',
            'keepalive', 'total', 'up_time', 'expire', 'remote',
@@ -45,7 +48,17 @@ class TriggerUnconfigConfigMsdpPeer(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+                                in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                peer: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Msdp Ops object and store the "established" MSDP peer(s)
            if has any, otherwise, SKIP the trigger
@@ -74,7 +87,7 @@ class TriggerUnconfigConfigMsdpPeer(TriggerUnconfigConfig):
                                        'kwargs':{}}},
                       verify_ops={'ops.msdp.msdp.Msdp':{
                                     'requirements':[\
-                                      ['info', 'vrf', '(?P<vrf>.*)', 'peer', '(?P<peer>.*)']],
+                                      ['info', 'vrf', '(?P<vrf>.*)', 'peer', NotExists('(?P<peer>.*)')]],
                                     'kwargs':{'attributes': ['info[vrf][(.*)][peer][(.*)]']},
                                     'exclude': msdp_exclude}},
                       num_values={'vrf': 1, 'peer':1})
@@ -114,7 +127,17 @@ class TriggerUnconfigConfigMsdpSaFilterIn(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                peer: `str`
+                sa_filter_in: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Msdp Ops object and store the "established" MSDP peer(s) sa-filter in
            if has any, otherwise, SKIP the trigger
@@ -147,7 +170,7 @@ class TriggerUnconfigConfigMsdpSaFilterIn(TriggerUnconfigConfig):
                       verify_ops={'ops.msdp.msdp.Msdp':{
                                     'requirements':[\
                                       ['info', 'vrf', '(?P<vrf>.*)', 'peer', '(?P<peer>.*)', 
-                                       'sa_filter', 'in', '(?P<sa_filter_in>.*)']],
+                                       'sa_filter', NotExists('in')]], # , '(?P<sa_filter_in>.*)'
                                     'kwargs':{'attributes': ['info[vrf][(.*)][peer][(.*)][session_state]',
                                                              'info[vrf][(.*)][peer][(.*)][sa_filter]']},
                                     'exclude': msdp_exclude}},
@@ -188,7 +211,17 @@ class TriggerUnconfigConfigMsdpSaFilterOut(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                peer: `str`
+                sa_filter_out: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Msdp Ops object and store the "established" MSDP peer(s) sa-filter out
            if has any, otherwise, SKIP the trigger
@@ -221,7 +254,7 @@ class TriggerUnconfigConfigMsdpSaFilterOut(TriggerUnconfigConfig):
                       verify_ops={'ops.msdp.msdp.Msdp':{
                                     'requirements':[\
                                       ['info', 'vrf', '(?P<vrf>.*)', 'peer', '(?P<peer>.*)', 
-                                       'sa_filter', 'out', '(?P<sa_filter_out>.*)']],
+                                       'sa_filter', NotExists('out')]], # , '(?P<sa_filter_out>.*)'
                                     'kwargs':{'attributes': ['info[vrf][(.*)][peer][(.*)][session_state]',
                                                              'info[vrf][(.*)][peer][(.*)][sa_filter]']},
                                     'exclude': msdp_exclude}},
@@ -262,7 +295,17 @@ class TriggerUnconfigConfigMsdpSaLimit(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                peer: `str`
+                sa_limit: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Msdp Ops object and store the "established" MSDP peer(s) sa-limit
            if has any, otherwise, SKIP the trigger
@@ -295,7 +338,7 @@ class TriggerUnconfigConfigMsdpSaLimit(TriggerUnconfigConfig):
                       verify_ops={'ops.msdp.msdp.Msdp':{
                                     'requirements':[\
                                       ['info', 'vrf', '(?P<vrf>.*)', 'peer',
-                                       '(?P<peer>.*)', 'sa_limit', '(?P<sa_limit>.*)']],
+                                       '(?P<peer>.*)', 'sa_limit', 'unlimited']],
                                     'kwargs':{'attributes': [
                                                   'info[vrf][(.*)][peer][(.*)][session_state]',
                                                   'info[vrf][(.*)][peer][(.*)][sa_limit]']},
@@ -337,7 +380,17 @@ class TriggerUnconfigConfigMsdpMeshGroup(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                peer: `str`
+                mesh_group: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Msdp Ops object and store the 'established' MSDP peer(s) mesh group
            if has any, otherwise, SKIP the trigger
@@ -370,7 +423,7 @@ class TriggerUnconfigConfigMsdpMeshGroup(TriggerUnconfigConfig):
                       verify_ops={'ops.msdp.msdp.Msdp':{
                                     'requirements':[\
                                       ['info', 'vrf', '(?P<vrf>.*)', 'peer',
-                                       '(?P<peer>.*)', 'mesh_group', '(?P<mesh_group>.*)']],
+                                       '(?P<peer>.*)', NotExists('mesh_group')]], # , '(?P<mesh_group>.*)'
                                     'kwargs':{'attributes': [
                                                   'info[vrf][(.*)][peer][(.*)][session_state]',
                                                   'info[vrf][(.*)][peer][(.*)][mesh_group]']},
@@ -412,7 +465,18 @@ class TriggerUnconfigConfigMsdpOriginatorId(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                peer: `str`
+                originator_id: `str`
+                originating_rp: `str`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Msdp Ops object and store the MSDP originator-id
            if has any, otherwise, SKIP the trigger
@@ -450,7 +514,7 @@ class TriggerUnconfigConfigMsdpOriginatorId(TriggerUnconfigConfig):
                       verify_ops={'conf.msdp.Msdp':{
                                     'requirements':[\
                                         ['device_attr', '{uut}', '_vrf_attr', '(?P<vrf>.*)',
-                                         'originating_rp', '(?P<originating_rp>.*)']],
+                                         NotExists('originating_rp')]], # , '(?P<originating_rp>.*)'
                                     'kwargs':{'attributes': [
                                                   'info[vrf][(.*)][originating_rp]',
                                                   'info[vrf][(.*)][peer][(.*)][session_state]']},
@@ -492,7 +556,18 @@ class TriggerUnconfigConfigMsdpKeepaliveHoldtime(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                peer: `str`
+                keepalive_interval: `int`
+                holdtime_interval: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Msdp Ops object and store the MSDP peer(s)
            keepalive&holdtime interval if has any, otherwise, SKIP the trigger
@@ -546,7 +621,6 @@ class TriggerUnconfigConfigMsdpKeepaliveHoldtime(TriggerUnconfigConfig):
                                     'kwargs':{'attributes': [
                                                   'info[vrf][(.*)][peer][(.*)][session_state]',
                                                   'info[vrf][(.*)][peer][(.*)][timer]']},
-                                    'missing': False,
                                     'exclude': msdp_exclude}},
                       num_values={'vrf': 1, 'peer':1})
 
@@ -585,7 +659,17 @@ class TriggerUnconfigConfigMsdpReconnectInterval(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                peer: `str`
+                connect_retry_interval: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Msdp Ops object and store the MSDP reconnect interval
            if has any, otherwise, SKIP the trigger
@@ -628,7 +712,6 @@ class TriggerUnconfigConfigMsdpReconnectInterval(TriggerUnconfigConfig):
                                     'kwargs':{'attributes': [
                                                   'info[vrf][(.*)][peer][(.*)][session_state]',
                                                   'info[vrf][(.*)][peer][(.*)][timer]']},
-                                    'missing': False,
                                     'exclude': msdp_exclude}},
                       num_values={'vrf': 1, 'peer': 'all'})
 
@@ -667,7 +750,17 @@ class TriggerUnconfigConfigMsdpDescription(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                vrf: `str`
+                peer: `str`
+                connect_retry_interval: `int`
+
+                (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                      OR
+                      interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn Msdp Ops object and store the MSDP peer(s) description
            if has any, otherwise, SKIP the trigger
@@ -706,7 +799,7 @@ class TriggerUnconfigConfigMsdpDescription(TriggerUnconfigConfig):
                       verify_ops={'ops.msdp.msdp.Msdp':{
                                     'requirements':[\
                                       ['info', 'vrf', '(?P<vrf>.*)', 'peer',
-                                       '(?P<peer>.*)', 'description', '(?P<description>.*)']],
+                                       '(?P<peer>.*)', NotExists('description')]], # , '(?P<description>.*)'
                                     'kwargs':{'attributes': [
                                                   'info[vrf][(.*)][peer][(.*)][session_state]',
                                                   'info[vrf][(.*)][peer][(.*)][description]']},

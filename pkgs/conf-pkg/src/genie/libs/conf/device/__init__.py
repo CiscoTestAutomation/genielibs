@@ -105,6 +105,13 @@ class Device(genie.conf.base.device.Device):
         finit=str,
         type=managedattribute.test_istype(str))
 
+    # nodename
+    nodename = managedattribute(
+        name='nodename',
+        default=None,
+        type=(None, managedattribute.test_istype(str)),
+        doc="Hostname of the device")
+
     def learn_interface_mac_addresses(self):
         return NotImplemented  # Not an error; Just not supported.
 

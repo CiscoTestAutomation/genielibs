@@ -1177,31 +1177,26 @@ class NveInterface(VirtualInterface, genie.libs.conf.interface.NveInterface):
 
         # attributes for vnis
         if attributes.value('nve_vni') :
-            submode = ""
             if attributes.value('nve_vni_associate_vrf') == True:
-                submode = configurations.submode_context(attributes.format('member vni {nve_vni} associate-vrf'))
+                cfg_line = 'member vni {nve_vni} associate-vrf'
+            else:
+                cfg_line = 'member vni {nve_vni}'
 
-            elif unconfig or attributes.value('nve_vni_associate_vrf') == False:
-                submode = configurations.submode_context(
-                    attributes.format('member vni {nve_vni}'))
-            if submode:
-                with submode:
-                    if attributes.value('nve_vni_suppress_arp'):
-                        configurations.append_line(attributes.format('suppress-arp'),
-                        unconfig_cmd='no suppress-arp')
+            with configurations.submode_context(attributes.format(cfg_line, force=True)):
+                if unconfig and attributes.value('nve_vni') and \
+                   len(getattr(attributes, 'attributes', {})) == 1:
+                    configurations.submode_unconfig()
 
-                    if attributes.value('nve_vni_multisite_ingress_replication'):
-                        configurations.append_line(
-                            attributes.format('multisite ingress-replication'),
-                            unconfig_cmd='no multisite ingress-replication')
+                if attributes.value('nve_vni_suppress_arp'):
+                    configurations.append_line('suppress-arp')
 
-                    if attributes.value('nve_vni_mcast_group'):
-                        configurations.append_line(
-                            attributes.format('mcast-group {nve_vni_mcast_group}'),
-                            unconfig_cmd = 'no mcast-group')
+                if attributes.value('nve_vni_multisite_ingress_replication'):
+                    configurations.append_line('multisite ingress-replication')
 
-            if not submode and unconfig:
-                configurations.append_line(attributes.format('member vni {nve_vni}'))
+                if attributes.value('nve_vni_mcast_group'):
+                    configurations.append_line(
+                        attributes.format('mcast-group {nve_vni_mcast_group}'),
+                        unconfig_cmd = 'no mcast-group')
 
         # -- NVE
         # nxos: interface <intf> / auto-remap-replication-servers

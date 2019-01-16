@@ -58,7 +58,15 @@ class TriggerAddRemoveEthernetMacAcl(TriggerAddRemove):
                                 in second. Default: 180
                 interval (`int`): Wait time between iterations when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                interface: `str`
+
+               (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                     OR
+                     interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn acl Ops object and store the acls info if has any.
            Learn Interface ops object to select one trunk interface to add mac acl
@@ -77,9 +85,9 @@ class TriggerAddRemoveEthernetMacAcl(TriggerAddRemove):
                                             'requirements':[['info', 'acls', NotExists(ADD_ACL_NAME)]],
                                             'exclude': acl_exclude},
                                     'ops.interface.interface.Interface':{
-                                            'requirements':[['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                            'requirements':[['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                              'switchport_mode', 'trunk'],
-                                                            ['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                                            ['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                              'oper_status', 'up']],
                                             'exclude': interface_exclude,
                                             'kwargs': {'attributes': ['info[(.*)][switchport_mode]',
@@ -102,7 +110,7 @@ class TriggerAddRemoveEthernetMacAcl(TriggerAddRemove):
                                                        'dst', 'host 0011.2233.2222'],
                                                       ['device_attr', '{uut}',
                                                        'acl_attr', ADD_ACL_NAME,
-                                                       'interface_attr', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                                       'interface_attr', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                        'if_in', True]],
                                       'verify_conf':False,
                                       'kwargs':{}}},
@@ -121,14 +129,14 @@ class TriggerAddRemoveEthernetMacAcl(TriggerAddRemove):
                                       'kwargs':{'attributes':['info']},
                                       'exclude': acl_exclude},
                                   'ops.interface.interface.Interface':{
-                                          'requirements':[['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                          'requirements':[['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                            'switchport_mode', 'trunk'],
-                                                          ['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                                          ['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                            'oper_status', 'up']],
                                             'kwargs': {'attributes': ['info[(.*)][switchport_mode]',
                                                                       'info[(.*)][oper_status]']},
                                           'exclude': interface_exclude}},
-                      num_values={'intf':1})
+                      num_values={'interface':1})
 
 
 class TriggerAddRemoveEthernetIpAclPermit(TriggerAddRemove):
@@ -166,7 +174,15 @@ class TriggerAddRemoveEthernetIpAclPermit(TriggerAddRemove):
                                 in second. Default: 180
                 interval (`int`): Wait time between iterations when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                interface: `str`
+
+               (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                     OR
+                     interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn acl Ops object and store the acls info if has any.
            Learn Interface ops object to select one trunk interface to add mac acl
@@ -185,9 +201,9 @@ class TriggerAddRemoveEthernetIpAclPermit(TriggerAddRemove):
                                             'requirements':[['info', 'acls', NotExists(ADD_ACL_NAME)]],
                                             'exclude': acl_exclude},
                                     'ops.interface.interface.Interface':{
-                                            'requirements':[['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                            'requirements':[['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                              'switchport_mode', 'trunk'],
-                                                            ['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                                            ['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                              'oper_status', 'up']],
                                             'kwargs': {'attributes': ['info[(.*)][switchport_mode]',
                                                                       'info[(.*)][oper_status]']},
@@ -214,7 +230,7 @@ class TriggerAddRemoveEthernetIpAclPermit(TriggerAddRemove):
                                                        'dst', 'any'],
                                                       ['device_attr', '{uut}',
                                                        'acl_attr', ADD_ACL_NAME,
-                                                       'interface_attr', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                                       'interface_attr', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                        'if_in', True]],
                                       'verify_conf':False,
                                       'kwargs':{}}},
@@ -229,14 +245,14 @@ class TriggerAddRemoveEthernetIpAclPermit(TriggerAddRemove):
                                       'kwargs':{'attributes':['info']},
                                       'exclude': acl_exclude},
                                   'ops.interface.interface.Interface':{
-                                          'requirements':[['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                          'requirements':[['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                            'switchport_mode', 'trunk'],
-                                                          ['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                                          ['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                            'oper_status', 'up']],
                                           'kwargs': {'attributes': ['info[(.*)][switchport_mode]',
                                                                       'info[(.*)][oper_status]']},
                                           'exclude': interface_exclude}},
-                      num_values={'intf':1})
+                      num_values={'interface':1})
 
 
 class TriggerAddRemoveEthernetIpAclDeny(TriggerAddRemove):
@@ -274,7 +290,15 @@ class TriggerAddRemoveEthernetIpAclDeny(TriggerAddRemove):
                                 in second. Default: 180
                 interval (`int`): Wait time between iterations when looping is needed,
                                 in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
 
+                interface: `str`
+
+               (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                     OR
+                     interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn acl Ops object and store the acls info if has any.
            Learn Interface ops object to select one trunk interface to add mac acl
@@ -293,9 +317,9 @@ class TriggerAddRemoveEthernetIpAclDeny(TriggerAddRemove):
                                             'requirements':[['info', 'acls', NotExists(ADD_ACL_NAME)]],
                                             'exclude': acl_exclude},
                                     'ops.interface.interface.Interface':{
-                                            'requirements':[['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                            'requirements':[['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                              'switchport_mode', 'trunk'],
-                                                            ['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                                            ['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                              'oper_status', 'up']],
                                             'kwargs': {'attributes': ['info[(.*)][switchport_mode]',
                                                                       'info[(.*)][oper_status]']},
@@ -322,7 +346,7 @@ class TriggerAddRemoveEthernetIpAclDeny(TriggerAddRemove):
                                                        'dst', 'any'],
                                                       ['device_attr', '{uut}',
                                                        'acl_attr', ADD_ACL_NAME,
-                                                       'interface_attr', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                                       'interface_attr', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                        'if_in', True]],
                                       'verify_conf':False,
                                       'kwargs':{}}},
@@ -337,14 +361,14 @@ class TriggerAddRemoveEthernetIpAclDeny(TriggerAddRemove):
                                       'kwargs':{'attributes':['info']},
                                       'exclude': acl_exclude},
                                   'ops.interface.interface.Interface':{
-                                          'requirements':[['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                          'requirements':[['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                            'switchport_mode', 'trunk'],
-                                                          ['info', '(?P<intf>\w+Ethernet[\d\/]+$)',
+                                                          ['info', '(?P<interface>\w+Ethernet[\d\/]+$)',
                                                            'oper_status', 'up']],
                                           'kwargs': {'attributes': ['info[(.*)][switchport_mode]',
                                                                       'info[(.*)][oper_status]']},
                                           'exclude': interface_exclude}},
-                      num_values={'intf':1})
+                      num_values={'interface':1})
 
 
 

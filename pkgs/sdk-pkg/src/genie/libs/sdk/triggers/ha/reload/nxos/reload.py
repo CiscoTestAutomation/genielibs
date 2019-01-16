@@ -340,7 +340,7 @@ class TriggerReloadActiveRP(TriggerReloadLc):
                                           ['slot', 'lc', '(?P<lc>.*)',
                                            'state', '(ok|active|standby)']],
                                     'exclude': platform_exclude}},
-                      num_values={'active_rp':1, 'standby_rp':1})
+                      num_values={'active_rp':1, 'standby_rp':1, 'lc':1})
 
 
 class TriggerReloadStandbyRP(TriggerReloadLc):

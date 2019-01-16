@@ -1349,22 +1349,22 @@ class OspfOutput(object):
                                             {'GigabitEthernet3': 
                                                 {'mpls': 
                                                     {'ldp': 
-                                                        {'autoconfig': True,
+                                                        {'autoconfig': False,
                                                         'autoconfig_area_id': '0.0.0.1',
-                                                        'holddown_timer': True,
+                                                        'holddown_timer': False,
                                                         'igp_sync': False,
                                                         'state': 'up'}}},
                                             'OSPF_SL1': 
                                                 {'mpls': 
                                                     {'ldp': 
-                                                        {'autoconfig': True,
+                                                        {'autoconfig': False,
                                                         'autoconfig_area_id': '0.0.0.1',
-                                                        'holddown_timer': True,
+                                                        'holddown_timer': False,
                                                         'igp_sync': False,
                                                         'state': 'up'}}}}}},
                                 'mpls': 
                                     {'ldp': 
-                                        {'autoconfig': True,
+                                        {'autoconfig': False,
                                         'autoconfig_area_id': '0.0.0.1',
                                         'igp_sync': False}}}}}}},
             'default': 
@@ -1378,30 +1378,38 @@ class OspfOutput(object):
                                             {'GigabitEthernet1': 
                                                 {'mpls': 
                                                     {'ldp': 
-                                                        {'autoconfig': True,
+                                                        {'autoconfig': False,
                                                         'autoconfig_area_id': '0.0.0.0',
-                                                        'holddown_timer': True,
+                                                        'holddown_timer': False,
                                                         'igp_sync': False,
                                                         'state': 'up'}}},
                                             'GigabitEthernet2': 
                                                 {'mpls': 
                                                     {'ldp': 
-                                                        {'autoconfig': True,
+                                                        {'autoconfig': False,
                                                         'autoconfig_area_id': '0.0.0.0',
-                                                        'holddown_timer': True,
+                                                        'holddown_timer': False,
                                                         'igp_sync': False,
                                                         'state': 'up'}}},
+                                            'TenGigabitEthernet3/0/1': 
+                                                {'mpls': 
+                                                    {'ldp': 
+                                                        {'autoconfig': False,
+                                                        'autoconfig_area_id': '0.0.0.0',
+                                                        'holddown_timer': False,
+                                                        'igp_sync': False,
+                                                        'state': 'down'}}},
                                             'Loopback1': 
                                                 {'mpls': 
                                                     {'ldp': 
-                                                        {'autoconfig': True,
+                                                        {'autoconfig': False,
                                                         'autoconfig_area_id': '0.0.0.0',
-                                                        'holddown_timer': True,
+                                                        'holddown_timer': False,
                                                         'igp_sync': False,
                                                         'state': 'up'}}}}}},
                                 'mpls': 
                                     {'ldp': 
-                                        {'autoconfig': True,
+                                        {'autoconfig': False,
                                         'autoconfig_area_id': '0.0.0.0',
                                         'igp_sync': False}}}}}}}}}
 
@@ -1820,7 +1828,7 @@ class OspfOutput(object):
                                         'type': 'ietf'}},
                                 'mpls': 
                                     {'ldp': 
-                                        {'autoconfig': True,
+                                        {'autoconfig': False,
                                         'autoconfig_area_id': '0.0.0.1',
                                         'igp_sync': False}},
                                 'nsr': 
@@ -2143,7 +2151,7 @@ class OspfOutput(object):
                                         'type': 'ietf'}},
                                 'mpls': 
                                     {'ldp': 
-                                        {'autoconfig': True,
+                                        {'autoconfig': False,
                                         'autoconfig_area_id': '0.0.0.0',
                                         'igp_sync': False}},
                                 'nsr': 
