@@ -5,13 +5,13 @@ This library package contains the open source implementations for:
 - Genie Ops: objects modelling the operational state of devices
 - Genie Conf: objects modelling the configuration of devices
 - Genie Robot: robot library layer, enabling Genie libs to be used in Robot Framework
-- Genie SDK: triggers and verifications (reuseable testcases) implemented using
+- Genie SDK: triggers and verifications (reusable testcases) implemented using
              Genie infrastructure.
 
 ## About
 
 Genie is both a library framework and a test harness that facilitates rapid
-development, encourage re-usable and simplify writing test automation. Genie
+development, encourages reuse, and simplies writing test automation. Genie
 bundled with the modular architecture of pyATS framework accelerates and
 simplifies test automation leveraging all the perks of the Python programming
 language in an object-orienting fashion.
@@ -66,3 +66,5 @@ Now you should be able to develop the files and see it reflected in your runs.
 * [sdk](pkgs/sdk-pkg/changelog/CHANGELOG.md)
 * [ops](pkgs/ops-pkg/changelog/CHANGELOG.md)
 * [robot](pkgs/robot-pkg/changelog/CHANGELOG.md)
+
+> Copyright (c) 2018 Cisco Systems, Inc. and/or its affiliates
