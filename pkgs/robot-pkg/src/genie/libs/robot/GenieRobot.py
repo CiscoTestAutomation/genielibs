@@ -1,4 +1,3 @@
-
 import re
 import os
 import yaml
@@ -537,7 +536,7 @@ class GenieRobot(object):
 
                 if fet == 'config':
                     log.info("Start learning device configuration")
-                    profiled[fet][dev] = self._profile_config(device)
+                    profiled[fet][dev] = self._profile_config(dev)
                 else:
                     log.info("Start learning feature {f}".format(f=fet))
                     learnt_feature = self.genie_ops_on_device_alias_context(
@@ -581,6 +580,7 @@ class GenieRobot(object):
         if 'exclude' in self.pts_datafile:
             exclude_list.extend(self.pts_datafile['exclude'])
 
+        msg = []
         for fet in compare1:
             failed = []
             feature_exclude_list = exclude_list
@@ -605,22 +605,27 @@ class GenieRobot(object):
                     failed.append((dev, diff))
 
             if failed:
-                msg = ["Comparison between {pts} and "
-                       "{OPS} is different for feature '{f}' "
-                       "for device:\n".format(pts=pts, OPS=pts_compare, f=fet)]
+                msg.append('\n' + '*'*10)
+                msg.append("Comparison between {pts} and "
+                           "{OPS} is different for feature '{f}' "
+                           "for device:\n".format(pts=pts, OPS=pts_compare,
+                                                  f=fet))
                 for device, diff in failed:
                     msg.append("'{d}'\n{diff}".format(d=device,
                                                       diff=diff))
 
-                self.builtin.fail('\n'.join(msg))
             else:
-                msg = ["Comparison between {pts} and "
-                       "{OPS} is identical\n".format(pts=pts,
-                        OPS=pts_compare)]
+                message = "Comparison between {pts} and "\
+                          "{OPS} is identical\n".format(pts=pts,
+                          OPS=pts_compare)
                 # print out message
-                log.info('\n'.join(msg))
+                log.info(message)
 
-        self.builtin.pass_execution('\n'.join(msg))
+        if msg:
+            self.builtin.fail('\n'.join(msg))
+
+        message = 'All Feature were identical on all devices'
+        self.builtin.pass_execution(message)
 
     def _run_genie_trigger_verification(self, alias, device, context,
                                             name):
