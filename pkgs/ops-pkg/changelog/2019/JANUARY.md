@@ -1,5 +1,12 @@
 | Module                  | Version       |
 | ------------------------|:-------------:|
+| ``genie.libs.ops``      |     v3.1.7    |
+
+* Mandatory pump version number to avoid conflict with pypi
+
+
+| Module                  | Version       |
+| ------------------------|:-------------:|
 | ``genie.libs.ops``      |     v3.1.6    |
 
 * Genie.ops enhancement required StaticRouting class name modification, backward compatible
