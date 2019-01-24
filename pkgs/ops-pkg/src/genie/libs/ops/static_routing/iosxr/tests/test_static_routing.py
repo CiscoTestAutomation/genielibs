@@ -10,7 +10,7 @@ from genie.ops.base.maker import Maker
 
 from unittest.mock import Mock
 # genie.libs
-from genie.libs.ops.static_routing.iosxr.static_routing import StaticRoute
+from genie.libs.ops.static_routing.iosxr.static_routing import StaticRouting
 from genie.libs.ops.static_routing.iosxr.tests.static_routing_output import StaticRouteOutput
 
 from genie.libs.parser.iosxr.show_static_routing import ShowStaticTopologyDetail
@@ -26,7 +26,7 @@ class test_static_route_all(unittest.TestCase):
         self.device.connectionmgr.connections['cli'] = '5'
 
     def test_full_static_route(self):
-        f = StaticRoute(device=self.device)
+        f = StaticRouting(device=self.device)
         # Get 'show ip static route' output
         f.maker.outputs[ShowStaticTopologyDetail] = {'': StaticRouteOutput.showStaticRouteTopologyDetail}
         self.device.execute = Mock()
@@ -37,7 +37,7 @@ class test_static_route_all(unittest.TestCase):
         self.assertEqual(f.info, StaticRouteOutput.staticRouteOpsOutput)
 
     def test_selective_attribute_static_route(self):
-        f = StaticRoute(device=self.device)
+        f = StaticRouting(device=self.device)
 
         # Get 'show ipv4 static route' output
         f.maker.outputs[ShowStaticTopologyDetail] = {'': StaticRouteOutput.showStaticRouteTopologyDetail}
@@ -54,7 +54,7 @@ class test_static_route_all(unittest.TestCase):
 
 
     def test_missing_attributes_static_route(self):
-        f = StaticRoute(device=self.device)
+        f = StaticRouting(device=self.device)
         f.maker.outputs[ShowStaticTopologyDetail] = {'': StaticRouteOutput.showStaticRouteTopologyDetail}
 
         # Learn the feature
@@ -66,7 +66,7 @@ class test_static_route_all(unittest.TestCase):
 
     def test_empty_output_static_route(self):
         self.maxDiff = None
-        f = StaticRoute(device=self.device)
+        f = StaticRouting(device=self.device)
 
         # Get outputs
         f.maker.outputs[ShowStaticTopologyDetail] = {'': {}}

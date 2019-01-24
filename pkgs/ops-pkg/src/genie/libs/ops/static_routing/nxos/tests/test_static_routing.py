@@ -10,7 +10,7 @@ from genie.ops.base.maker import Maker
 
 from unittest.mock import Mock
 # genie.libs
-from genie.libs.ops.static_routing.nxos.static_routing import StaticRoute
+from genie.libs.ops.static_routing.nxos.static_routing import StaticRouting
 from genie.libs.ops.static_routing.nxos.tests.static_routing_output import StaticRouteOutput
 
 from genie.libs.parser.nxos.show_static_routing import ShowIpStaticRoute , ShowIpv6StaticRoute
@@ -26,7 +26,7 @@ class test_static_route_all(unittest.TestCase):
         self.device.connectionmgr.connections['cli'] = '5'
 
     def test_full_static_route(self):
-        f = StaticRoute(device=self.device)
+        f = StaticRouting(device=self.device)
         # Get 'show ip static route' output
         f.maker.outputs[ShowIpStaticRoute] = {'': StaticRouteOutput.showIpv4StaticRoute}
         f.maker.outputs[ShowIpv6StaticRoute] = {'': StaticRouteOutput.showIpv6StaticRoute}
@@ -39,7 +39,7 @@ class test_static_route_all(unittest.TestCase):
 
 
     def test_selective_attribute_static_route(self):
-        f = StaticRoute(device=self.device)
+        f = StaticRouting(device=self.device)
 
         # Get 'show ipv4 static route' output
         f.maker.outputs[ShowIpStaticRoute] = {'': StaticRouteOutput.showIpv4StaticRoute}
@@ -56,7 +56,7 @@ class test_static_route_all(unittest.TestCase):
 
 
     def test_missing_attributes_static_route(self):
-        f = StaticRoute(device=self.device)
+        f = StaticRouting(device=self.device)
         f.maker.outputs[ShowIpStaticRoute] = {'': StaticRouteOutput.showIpv4StaticRoute}
         f.maker.outputs[ShowIpv6StaticRoute] = {'': StaticRouteOutput.showIpv6StaticRoute}
 
@@ -69,7 +69,7 @@ class test_static_route_all(unittest.TestCase):
 
     def test_empty_output_static_route(self):
         self.maxDiff = None
-        f = StaticRoute(device=self.device)
+        f = StaticRouting(device=self.device)
 
         # Get outputs
         f.maker.outputs[ShowIpStaticRoute] = {'': {}}

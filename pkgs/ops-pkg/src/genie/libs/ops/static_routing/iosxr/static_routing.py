@@ -4,7 +4,7 @@ from genie.ops.base import Base
 # genie.libs
 from genie.libs.parser.iosxr.show_static_routing import ShowStaticTopologyDetail
 
-class StaticRoute(Base):
+class StaticRouting(Base):
     '''StaticRouting Ops Object'''
 
     def learn(self):
@@ -57,3 +57,7 @@ class StaticRoute(Base):
                           dest=dest_static_routing_hop + '[{}]'.format(key))
 
         self.make(final_call=True)
+
+class StaticRoute(Base):
+    # Keeping it for backward compatibility
+    pass

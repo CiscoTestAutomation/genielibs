@@ -209,7 +209,7 @@ stp:
 static_routing:
     source:
         pkg: genie.libs.ops
-        class: static_routing.static_routing.StaticRoute
+        class: static_routing.static_routing.StaticRouting
     devices: ['uut']
 
 routing:

@@ -1,10 +1,8 @@
-* Please follow the template we introduced in OCTOBER.md file.
-* Every Trigger/verification need to be added under the corresponding feature.
-
-|-----------------------------------------|
 | Module                  | Version       |
 | ------------------------|:-------------:|
-| ``genie.libs.ops``      |               |
+| ``genie.libs.ops``      |     v3.1.6    |
+
+* Genie.ops enhancement required StaticRouting class name modification, backward compatible
 
 --------------------------------------------------------------------------------
                                 ARP

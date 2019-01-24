@@ -5,7 +5,7 @@ from genie.ops.base import Base
 from genie.libs.parser.iosxe.show_static_routing import ShowIpStaticRoute,\
                                              ShowIpv6StaticDetail
 
-class StaticRoute(Base):
+class StaticRouting(Base):
     '''StaticRouting Ops Object'''
 
     def learn(self):
@@ -81,3 +81,7 @@ class StaticRoute(Base):
                           src=src_static_routing_hop + '[{}]'.format(key),
                           dest=dest_static_routing_hop + '[{}]'.format(key))
         self.make(final_call=True)
+
+class StaticRoute(Base):
+    # Keeping it for backward compatibility
+    pass

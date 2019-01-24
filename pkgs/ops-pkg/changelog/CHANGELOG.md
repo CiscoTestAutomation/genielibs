@@ -1,3 +1,7 @@
+# 2019
+
+* [January](2019/JANUARY.md)
+
 # 2018
 
 * [November](2018/NOVEMBER.md)
