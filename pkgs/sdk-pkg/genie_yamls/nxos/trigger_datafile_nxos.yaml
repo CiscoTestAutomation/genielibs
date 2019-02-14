@@ -23,6 +23,19 @@ TriggerSleep:
     tgn_max_outage: 120
     devices: ['uut']
 
+TriggerProfileSystem:
+    groups: ['profile']
+    timeout:
+       max_time: 300
+       interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    features: ['platform', 'interface']
+    devices: ['uut']
+    # golden_file: <golden pts file to compare with, if not provided, no comparison>
+    # location: <Location to save the learnt features pts at, default runtime directory>
+
 #===============================================================================
 #                                CLEAR
 #===============================================================================
@@ -2777,7 +2790,7 @@ TriggerAddRemoveRouteTargetMvpn:
     groups: ['add-remove', 'trm']
     method: 'checkpoint'
     timeout:
-      max_time: 180
+      max_time: 400
       interval: 15
     tgn_timeout: 300
     tgn_delay: 10

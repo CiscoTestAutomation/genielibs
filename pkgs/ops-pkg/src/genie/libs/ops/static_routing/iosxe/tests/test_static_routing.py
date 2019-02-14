@@ -13,37 +13,46 @@ from unittest.mock import Mock
 from genie.libs.ops.static_routing.iosxe.static_routing import StaticRouting
 from genie.libs.ops.static_routing.iosxe.tests.static_routing_output import StaticRouteOutput
 
-from genie.libs.parser.iosxe.show_static_routing import ShowIpStaticRoute , ShowIpv6StaticDetail
+from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
 
+outputs = {}
+outputs['show ip static route'] = StaticRouteOutput.showIpv4StaticRoute_default
+outputs['show ip static route vrf VRF1'] = StaticRouteOutput.showIpv4StaticRoute_vrf1
+outputs['show ipv6 static detail'] = StaticRouteOutput.showIpv6StaticRoute_default
+outputs['show ipv6 static vrf VRF1 detail'] = StaticRouteOutput.showIpv6StaticRoute_vrf1
+
+def mapper(key):
+    return outputs[key]
 
 class test_static_route_all(unittest.TestCase):
 
     def setUp(self):
         self.device = Device(name='aDevice')
         self.device.os = 'iosxe'
-        self.device.mapping={}
-        self.device.mapping['cli']='cli'
-        self.device.connectionmgr.connections['cli'] = '5'
+        self.device.mapping = {}
+        self.device.mapping['cli'] = 'cli'
+        self.device.connectionmgr.connections['cli'] = self.device
 
     def test_full_static_route(self):
         f = StaticRouting(device=self.device)
+        f.maker.outputs[ShowVrfDetail] = {'': StaticRouteOutput.ShowVrfDetail}
+
         # Get 'show ip static route' output
-        f.maker.outputs[ShowIpStaticRoute] = {'': StaticRouteOutput.showIpv4StaticRoute}
-        f.maker.outputs[ShowIpv6StaticDetail] = {'': StaticRouteOutput.showIpv6StaticRoute}
         self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
         # Learn the feature
         f.learn()
 
         self.maxDiff = None
         self.assertEqual(f.info, StaticRouteOutput.staticRouteOpsOutput)
 
-
     def test_selective_attribute_static_route(self):
         f = StaticRouting(device=self.device)
+        f.maker.outputs[ShowVrfDetail] = {'': StaticRouteOutput.ShowVrfDetail}
 
-        # Get 'show ipv4 static route' output
-        f.maker.outputs[ShowIpStaticRoute] = {'': StaticRouteOutput.showIpv4StaticRoute}
-        f.maker.outputs[ShowIpv6StaticDetail] = {'': StaticRouteOutput.showIpv6StaticRoute}
+        # Get 'show ip static route' output
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
         # Learn the feature
         f.learn()
         # Check match
@@ -57,9 +66,11 @@ class test_static_route_all(unittest.TestCase):
 
     def test_missing_attributes_static_route(self):
         f = StaticRouting(device=self.device)
-        f.maker.outputs[ShowIpStaticRoute] = {'': StaticRouteOutput.showIpv4StaticRoute}
-        f.maker.outputs[ShowIpv6StaticDetail] = {'': StaticRouteOutput.showIpv6StaticRoute}
+        f.maker.outputs[ShowVrfDetail] = {'': StaticRouteOutput.ShowVrfDetail}
 
+        # Get 'show ip static route' output
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
         # Learn the feature
         f.learn()
 
@@ -70,13 +81,26 @@ class test_static_route_all(unittest.TestCase):
     def test_empty_output_static_route(self):
         self.maxDiff = None
         f = StaticRouting(device=self.device)
-
         # Get outputs
-        f.maker.outputs[ShowIpStaticRoute] = {'': {}}
-        f.maker.outputs[ShowIpv6StaticDetail] = {'': {}}
+        f.maker.outputs[ShowVrfDetail] = {'': {}}
+
+        outputs['show ip static route'] = ''
+        outputs['show ip static route vrf VRF1'] = ''
+        outputs['show ipv6 static detail'] = ''
+        outputs['show ipv6 static vrf VRF1 detail'] = ''
+
+        # Return outputs above as inputs to parser when called
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
 
         # Learn the feature
         f.learn()
+
+        # revert back
+        outputs['show ip static route'] = StaticRouteOutput.showIpv4StaticRoute_default
+        outputs['show ip static route vrf VRF1'] = StaticRouteOutput.showIpv4StaticRoute_vrf1
+        outputs['show ipv6 static detail'] = StaticRouteOutput.showIpv6StaticRoute_default
+        outputs['show ipv6 static vrf VRF1 detail'] = StaticRouteOutput.showIpv6StaticRoute_vrf1
 
         # Check no attribute not found
         with self.assertRaises(AttributeError):

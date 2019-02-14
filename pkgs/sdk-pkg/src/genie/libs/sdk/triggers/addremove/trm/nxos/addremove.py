@@ -75,7 +75,7 @@ class TriggerAddRemoveRouteTargetMvpn(TriggerAddRemove):
 
     @aetest.test
     def verify_configuration(self, uut, abstract, steps):
-        time.sleep(30)
+        time.sleep(60)
         super().verify_configuration(uut, abstract, steps)
 
     PROTOCOL = 'mvpn'

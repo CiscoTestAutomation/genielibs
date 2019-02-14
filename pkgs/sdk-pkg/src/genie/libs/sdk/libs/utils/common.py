@@ -11,7 +11,7 @@ from collections import defaultdict, Iterable
 from prettytable import PrettyTable as ptable
 
 # import genie
-from genie.ops.base import get_ops
+from genie.ops.utils import get_ops
 from genie.utils.diff import Diff
 from genie.conf.base.attributes import SubAttributesDict
 from genie.libs.sdk.libs.utils.normalize import GroupKeys

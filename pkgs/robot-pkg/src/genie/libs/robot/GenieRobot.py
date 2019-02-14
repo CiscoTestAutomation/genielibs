@@ -26,7 +26,7 @@ from genie.conf.base import Testbed
 from genie.utils.config import Config
 from genie.harness.script import TestScript
 from genie.utils.loadattr import load_attribute
-from genie.harness._commons_internal import pickle, unpickle
+from genie.utils.profile import unpickle, pickle
 from genie.harness.discovery import GenieScriptDiscover
 from genie.harness.datafile.loader import TriggerdatafileLoader,\
                                           VerificationdatafileLoader,\
@@ -547,7 +547,7 @@ class GenieRobot(object):
 
         if os.path.isdir(os.path.dirname(name)):
             # the user provided a file to save as pickle
-            pickle_file = pickle(profiled, file = name)
+            pickle_file = pickle(profiled, pts_name = name)
             log.info('Saved system profile as file: %s' % pickle_file)
         else:
             self.testscript.parameters[name] = profiled

@@ -432,7 +432,8 @@ class Mapping(object):
 
                         if not ret1:
                             failed_list.append("0")
-                        ret.extend([ret1])
+                        else:
+                            ret.extend([ret1])
 
 
                     if len(failed_list) == len(o):
@@ -482,12 +483,16 @@ class Mapping(object):
 
 
             self.keys = GroupKeys.max_amount(self.keys, self.num_values)
-            
+
             # update mapping.keys with static values
             if self._static:
                 uid = self.parent.uid.rsplit('.', 1)[0]
                 data = self.parent.parent.triggers[uid]
-                [item.update(data.get('static')) for item in self.keys]
+                for item in self.keys:
+                    for k, v in data['static'].items():
+                        if not v.startswith('(?P<'):
+                            # Then update; as it specific was provided
+                            item[k] = v
 
             req = self._populate_path(all_requirements, device, keys=self.keys)
 

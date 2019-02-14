@@ -13,6 +13,14 @@ TriggerSleep:
     sleep_time: 5
     message_time: 3
 
+# -------------
+# PROFILESYSTEM
+# -------------
+TriggerProfileSystem:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.profilesystem.profilesystem.TriggerProfileSystem
+
 # ==============================================================================
 #                               FEATURE: OSPF
 # ==============================================================================

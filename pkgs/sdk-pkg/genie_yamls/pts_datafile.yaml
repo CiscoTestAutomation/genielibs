@@ -163,6 +163,8 @@ pim:
         - gen_id
         - incoming_interface
         - rpf_neighbor
+        - dr_address
+        - neighbors
 
 prefix_list:
     source:
@@ -184,6 +186,7 @@ mld:
         - expire
         - up_time
         - last_reporter
+        - querier
     devices: ['uut']
 
 route_policy:
@@ -287,6 +290,12 @@ vxlan:
         - l2_oiflist_index
         - num_of_oifs
         - oifs
+        - numof_converged_tables
+        - rmac
+        - vmac
+        - local_rmac
+        - router_mac
+        - rpf_ifname
 
 msdp:
     source:
@@ -309,3 +318,11 @@ ntp:
         - delay
         - root_dispersion
         - receive_time
+
+arp:
+    source:
+        pkg: genie.libs.ops
+        class: arp.arp.Arp
+    devices: ['uut']
+    exclude:
+        - in_requests_pkts
