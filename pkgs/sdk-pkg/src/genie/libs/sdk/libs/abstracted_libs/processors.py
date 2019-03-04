@@ -11,7 +11,13 @@ from ats.log.utils import banner
 from ats.utils.objects import find, R, NotExists
 
 # import pcall
-from ats.async import pcall
+import importlib
+try:
+    pcall = importlib.import_module('ats.async').pcall
+except ImportError:
+    from ats.async_ import pcall
+# # import pcall
+# from ats.async import pcall
 
 # Abstract
 from genie.abstract import Lookup

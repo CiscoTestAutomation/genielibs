@@ -6,7 +6,14 @@ import functools
 import types
 from copy import copy
 
-from ats.async import Pcall
+# import pcall
+import importlib
+try:
+    pcall = importlib.import_module('ats.async').pcall
+except ImportError:
+    from ats.async_ import pcall
+# # import pcall
+# from ats.async import pcall
 
 from genie.conf import Genie
 import genie.conf.base.testbed

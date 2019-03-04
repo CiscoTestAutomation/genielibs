@@ -19,10 +19,10 @@ from genie.libs.sdk.triggers.xe_sanity.checkcommands.libs.iosxe.checkcommands im
 # import parser
 from genie.libs.parser.iosxe.show_platform import ShowSwitchDetail, \
                                                   ShowRedundancy, \
-                                                  ShowEnvironmentAll, \
                                                   ShowModule, ShowInventory,\
                                                   ShowPlatform, ShowVersion
 
+from genie.libs.parser.iosxe.c3850.show_platform import ShowEnvironmentAll
 from genie.libs.parser.iosxe.show_power import ShowStackPower, ShowPowerInlineInterface
 from genie.libs.parser.iosxe.show_crypto import ShowCryptoPkiCertificates
 

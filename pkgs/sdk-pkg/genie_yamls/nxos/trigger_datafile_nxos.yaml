@@ -5,18 +5,34 @@ extends: '%ENV{VIRTUAL_ENV}/genie_yamls/trigger_datafile.yaml'
 #===============================================================================
 
 global_processors:
-# commented due to it makes issue for clearing statistic
-#  pre:
-#    clear_traffic_stats:
-#      method: genie.harness.libs.prepostprocessor.clear_traffic_stats
+  pre:
+    clear_traffic_statistics:
+      method: genie.harness.libs.prepostprocessor.clear_traffic_statistics
+      parameters:
+        clear_stats_time: 10
   post:
-    verify_traffic:
-      method: genie.harness.libs.prepostprocessor.verify_traffic
+    check_traffic_loss:
+      method: genie.harness.libs.prepostprocessor.check_traffic_loss
+      parameters:
+        loss_tolerance: 15
+        check_interval: 60
+        check_iteration: 10
+    compare_traffic_profile:
+      method: genie.harness.libs.prepostprocessor.compare_traffic_profile
+      parameters:
+        loss_tolerance: 1
+        frames_tolerance: 2
+        rate_tolerance: 2
     test_case_genie_telemetry:
       method: genie.telemetry.processors.genie_telemetry_processor
+    order: ['check_traffic_loss', 'compare_traffic_profile', 'test_case_genie_telemetry']
+
+#===============================================================================
+#                                SLEEP
+#===============================================================================
 
 TriggerSleep:
-    groups: []
+    groups: ['sleep']
     sleep_time: 5
     message_time: 1
     count: 1

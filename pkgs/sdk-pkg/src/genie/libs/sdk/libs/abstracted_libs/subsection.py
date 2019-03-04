@@ -16,7 +16,13 @@ from ats.datastructures import AttrDict
 from genie.abstract import Lookup
 
 # import pcall
-from ats.async import pcall
+import importlib
+try:
+    pcall = importlib.import_module('ats.async').pcall
+except ImportError:
+    from ats.async_ import pcall
+# # import pcall
+# from ats.async import pcall
 
 # unicon
 from unicon.eal.dialogs import Statement, Dialog

@@ -348,7 +348,7 @@ class TriggerShutNoShutAutoRpVrfInterface(TriggerShutNoShut):
     mapping = Mapping(requirements={'conf.pim.Pim': {
                                         'requirements': [['device_attr', '{uut}', '_vrf_attr',
                                                           '(?P<vrf>^(?!default)\w+$)', '_address_family_attr',
-                                                          '(?P<af>ipv4)', 'send_rp_announce_intf', '(?P<send_rp_announce_intf>.*)']],
+                                                          '(?P<address_family>ipv4)', 'send_rp_announce_intf', '(?P<send_rp_announce_intf>.*)']],
                                         'kwargs': {'attributes': ['pim[vrf_attr][(.*)][address_family_attr][ipv4][send_rp_announce_intf]']},
                                         'exclude': pim_conf_exclude}},
                       config_info={'conf.interface.Interface':{
@@ -363,7 +363,7 @@ class TriggerShutNoShutAutoRpVrfInterface(TriggerShutNoShut):
                                                       'info[(.*)][enabled]',
                                                       'info[(.*)][oper_status]',]},
                                        'exclude': interface_exclude}},
-                      num_values={'send_rp_announce_intf': 1, 'vrf': 1, 'af': 1})
+                      num_values={'send_rp_announce_intf': 1, 'vrf': 1, 'address_family': 1})
 
 
 # TODO: Enhance find to take (.*) after the first level
@@ -393,6 +393,18 @@ class TriggerShutNoShutBsrRpInterface(TriggerShutNoShut):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+            static:
+               The keys below are dynamically learnt by default.
+               However, they can also be set to a custom value when provided in the trigger datafile.
+
+               vrf: `str`
+               address_family: `str`
+               rp_addr: `str`
+               interface: `str`
+
+               (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                     OR
+                     interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn PIM Ops object and verify if has any "up" pim bsr-candidate interface(s) under default vrf,
@@ -408,16 +420,16 @@ class TriggerShutNoShutBsrRpInterface(TriggerShutNoShut):
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.pim.pim.Pim': {
                                         'requirements': [['info', 'vrf', '(?P<vrf>^default$)',
-                                                          'address_family','(?P<af>.*)', 'rp', 'bsr',
+                                                          'address_family','(?P<address_family>.*)', 'rp', 'bsr',
                                                           '(?P<rp_addr>.*)', 'address', '(?P<rp_addr>.*)']],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][default][address_family][(.*)][rp][bsr][(.*)]']},
                                         'exclude': pim_exclude },
                                   'ops.interface.interface.Interface': {
-                                        'requirements': [['info', '(?P<rp_intf>.*)', 'vrf', '(?P<vrf>^default$)'],
-                                                         ['info', '(?P<rp_intf>.*)', 'ipv4',
+                                        'requirements': [['info', '(?P<interface>.*)', 'vrf', '(?P<vrf>^default$)'],
+                                                         ['info', '(?P<interface>.*)', 'ipv4',
                                                           '(?P<ip>[\w\.\:]+)','ip', '(?P<rp_addr>.*)'],
-                                                         ['info', '(?P<rp_intf>.*)', 'oper_status', 'up']],
+                                                         ['info', '(?P<interface>.*)', 'oper_status', 'up']],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][(ipv4|ipv6)][(.*)][ip]',
                                                       'info[(.*)][vrf]',
@@ -427,11 +439,11 @@ class TriggerShutNoShutBsrRpInterface(TriggerShutNoShut):
                       config_info={'conf.interface.Interface':{
                                        'requirements':[['enabled', False]],
                                        'verify_conf':False,
-                                       'kwargs':{'mandatory':{'name': '(?P<rp_intf>.*)',
+                                       'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<rp_intf>.*)', 'enabled', False],
-                                                       ['info', '(?P<rp_intf>.*)', 'oper_status', 'down']],
+                                       'requirements':[['info', '(?P<interface>.*)', 'enabled', False],
+                                                       ['info', '(?P<interface>.*)', 'oper_status', 'down']],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][(ipv4|ipv6)][(.*)][ip]',
                                                       'info[(.*)][vrf]',
@@ -440,15 +452,15 @@ class TriggerShutNoShutBsrRpInterface(TriggerShutNoShut):
                                        'exclude': interface_exclude},
                                   'ops.pim.pim.Pim':{
                                        'requirements':[['info', 'vrf', '(?P<vrf>^default$)',
-                                                        'address_family','(?P<af>.*)', 'rp', 'bsr',
+                                                        'address_family','(?P<address_family>.*)', 'rp', 'bsr',
                                                         NotExists('bsr')],
                                                        ['info', 'vrf', '(?P<vrf>^default$)',
-                                                        'address_family','(?P<af>.*)', 'rp', 'bsr',
+                                                        'address_family','(?P<address_family>.*)', 'rp', 'bsr',
                                                         NotExists('bsr_candidate')]],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][default][address_family][(.*)][rp][bsr][(.*)]']},
                                         'exclude': pim_exclude }},
-                      num_values={'rp_intf': 1, 'vrf': 'all', 'rp_addr': 'all', 'af': 'all'})
+                      num_values={'interface': 1, 'vrf': 'all', 'rp_addr': 'all', 'address_family': 'all'})
 
 
 class TriggerShutNoShutBsrRpVrfInterface(TriggerShutNoShut):
@@ -477,6 +489,18 @@ class TriggerShutNoShutBsrRpVrfInterface(TriggerShutNoShut):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+         static:
+               The keys below are dynamically learnt by default.
+               However, they can also be set to a custom value when provided in the trigger datafile.
+
+               vrf: `str`
+               address_family: `str`
+               rp_addr: `str`
+               interface: `str`
+
+               (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                     OR
+                     interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn PIM Ops object and verify if has any "up" pim bsr-candidate interface(s) under non-default vrf,
@@ -492,16 +516,16 @@ class TriggerShutNoShutBsrRpVrfInterface(TriggerShutNoShut):
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.pim.pim.Pim': {
                                         'requirements': [['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
-                                                          'address_family','(?P<af>.*)', 'rp', 'bsr',
+                                                          'address_family','(?P<address_family>.*)', 'rp', 'bsr',
                                                           '(?P<rp_addr>.*)', 'address', '(?P<rp_addr>.*)']],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][(.*)][address_family][(.*)][rp][bsr][(.*)]']},
                                         'exclude': pim_exclude },
                                   'ops.interface.interface.Interface': {
-                                        'requirements': [['info', '(?P<rp_intf>.*)', 'ipv4',
+                                        'requirements': [['info', '(?P<interface>.*)', 'ipv4',
                                                           '(?P<ip>.*)','ip', '(?P<rp_addr>.*)'],
-                                                         ['info', '(?P<rp_intf>.*)', 'vrf', '(?P<vrf>^(?!default)\w+$)'],
-                                                         ['info', '(?P<rp_intf>.*)', 'oper_status', 'up']],
+                                                         ['info', '(?P<interface>.*)', 'vrf', '(?P<vrf>^(?!default)\w+$)'],
+                                                         ['info', '(?P<interface>.*)', 'oper_status', 'up']],
                                         'all_keys': True,
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][(ipv4|ipv6)][(.*)][ip]',
@@ -512,11 +536,11 @@ class TriggerShutNoShutBsrRpVrfInterface(TriggerShutNoShut):
                       config_info={'conf.interface.Interface':{
                                        'requirements':[['enabled', False]],
                                        'verify_conf':False,
-                                       'kwargs':{'mandatory':{'name': '(?P<rp_intf>.*)',
+                                       'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<rp_intf>.*)', 'enabled', False],
-                                                       ['info', '(?P<rp_intf>.*)', 'oper_status', 'down']],
+                                       'requirements':[['info', '(?P<interface>.*)', 'enabled', False],
+                                                       ['info', '(?P<interface>.*)', 'oper_status', 'down']],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][(ipv4|ipv6)][(.*)][ip]',
                                                       'info[(.*)][vrf]',
@@ -525,15 +549,15 @@ class TriggerShutNoShutBsrRpVrfInterface(TriggerShutNoShut):
                                        'exclude': interface_exclude},
                                   'ops.pim.pim.Pim':{
                                        'requirements':[['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
-                                                        'address_family','(?P<af>.*)', 'rp', 'bsr',
+                                                        'address_family','(?P<address_family>.*)', 'rp', 'bsr',
                                                         NotExists('bsr')],
                                                        ['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
-                                                        'address_family','(?P<af>.*)', 'rp', 'bsr',
+                                                        'address_family','(?P<address_family>.*)', 'rp', 'bsr',
                                                         NotExists('bsr_candidate')]],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][(.*)][address_family][(.*)][rp][bsr][(.*)]']},
                                         'exclude': pim_exclude }},
-                      num_values={'rp_intf': 1, 'vrf': 'all', 'rp_addr': 'all', 'af': 'all'})
+                      num_values={'interface': 1, 'vrf': 'all', 'rp_addr': 'all', 'address_family': 'all'})
 
 
 class TriggerShutNoShutStaticRpInterface(TriggerShutNoShut):
@@ -562,7 +586,18 @@ class TriggerShutNoShutStaticRpInterface(TriggerShutNoShut):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+        static:
+               The keys below are dynamically learnt by default.
+               However, they can also be set to a custom value when provided in the trigger datafile.
 
+               vrf: `str`
+               address_family: `str`
+               rp_addr: `str`
+               interface: `str`
+
+               (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                     OR
+                     interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn PIM Ops object and verify if has any "up" pim static-rp interface(s) under default vrf,
            store pim static-rp interface(s) if has any, otherwise, SKIP the trigger
@@ -577,16 +612,16 @@ class TriggerShutNoShutStaticRpInterface(TriggerShutNoShut):
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.pim.pim.Pim': {
                                         'requirements': [['info', 'vrf', '(?P<vrf>^default$)',
-                                                          'address_family','(?P<af>.*)', 'rp', 'static_rp',
+                                                          'address_family','(?P<address_family>.*)', 'rp', 'static_rp',
                                                           '(?P<rp_addr>.*)', '(?P<rp_rest>.*)']],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][default][address_family][(.*)][rp][static_rp][(.*)]']},
                                         'exclude': pim_exclude },
                                   'ops.interface.interface.Interface': {
-                                        'requirements': [['info', '(?P<rp_intf>.*)', 'ipv4',
+                                        'requirements': [['info', '(?P<interface>.*)', 'ipv4',
                                                           '(?P<rp_addr>.*)','ip', '(?P<rp_addr>.*)'],
-                                                         ['info', '(?P<rp_intf>.*)', 'vrf', '(?P<vrf>^default$)'],
-                                                         ['info', '(?P<rp_intf>.*)', 'oper_status', 'up']],
+                                                         ['info', '(?P<interface>.*)', 'vrf', '(?P<vrf>^default$)'],
+                                                         ['info', '(?P<interface>.*)', 'oper_status', 'up']],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][(ipv4|ipv6)][(.*)][ip]',
                                                       'info[(.*)][vrf]',
@@ -596,11 +631,11 @@ class TriggerShutNoShutStaticRpInterface(TriggerShutNoShut):
                       config_info={'conf.interface.Interface':{
                                        'requirements':[['enabled', False]],
                                        'verify_conf':False,
-                                       'kwargs':{'mandatory':{'name': '(?P<rp_intf>.*)',
+                                       'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<rp_intf>.*)', 'enabled', False],
-                                                       ['info', '(?P<rp_intf>.*)', 'oper_status', 'down']],
+                                       'requirements':[['info', '(?P<interface>.*)', 'enabled', False],
+                                                       ['info', '(?P<interface>.*)', 'oper_status', 'down']],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][(ipv4|ipv6)][(.*)][ip]',
                                                       'info[(.*)][vrf]',
@@ -609,12 +644,12 @@ class TriggerShutNoShutStaticRpInterface(TriggerShutNoShut):
                                        'exclude': interface_exclude},
                                   'ops.pim.pim.Pim':{
                                        'requirements':[['info', 'vrf', '(?P<vrf>^default$)',
-                                                        'address_family','(?P<af>.*)', 'rp', 'static_rp',
+                                                        'address_family','(?P<address_family>.*)', 'rp', 'static_rp',
                                                         NotExists('(?P<static_rp>.*)')]],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][default][address_family][(.*)][rp][static_rp][(.*)]']},
                                         'exclude': pim_exclude }},
-                      num_values={'rp_intf': 1, 'vrf': 'all', 'rp_addr': 'all', 'af': 'all'})
+                      num_values={'interface': 1, 'vrf': 'all', 'rp_addr': 'all', 'address_family': 'all'})
 
 
 class TriggerShutNoShutStaticRpVrfInterface(TriggerShutNoShut):
@@ -643,7 +678,18 @@ class TriggerShutNoShutStaticRpVrfInterface(TriggerShutNoShut):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+        static:
+               The keys below are dynamically learnt by default.
+               However, they can also be set to a custom value when provided in the trigger datafile.
 
+               vrf: `str`
+               address_family: `str`
+               rp_addr: `str`
+               interface: `str`
+
+               (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                     OR
+                     interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn PIM Ops object and verify if has any "up" pim static-rp interface(s) under non-default vrf,
            store pim static-rp interface(s) if has any, otherwise, SKIP the trigger
@@ -658,16 +704,16 @@ class TriggerShutNoShutStaticRpVrfInterface(TriggerShutNoShut):
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.pim.pim.Pim': {
                                         'requirements': [['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
-                                                          'address_family','(?P<af>.*)', 'rp', 'static_rp',
+                                                          'address_family','(?P<address_family>.*)', 'rp', 'static_rp',
                                                           '(?P<rp_addr>.*)', '(?P<rp_rest>.*)']],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][(.*)][address_family][(.*)][rp][static_rp][(.*)]']},
                                         'exclude': pim_exclude },
                                   'ops.interface.interface.Interface': {
-                                        'requirements': [['info', '(?P<rp_intf>.*)', 'ipv4',
+                                        'requirements': [['info', '(?P<interface>.*)', 'ipv4',
                                                           '(?P<rp_addr>.*)','ip', '(?P<rp_addr>.*)'],
-                                                         ['info', '(?P<rp_intf>.*)', 'vrf', '(?P<vrf>^(?!default)\w+$)'],
-                                                         ['info', '(?P<rp_intf>.*)', 'oper_status', 'up']],
+                                                         ['info', '(?P<interface>.*)', 'vrf', '(?P<vrf>^(?!default)\w+$)'],
+                                                         ['info', '(?P<interface>.*)', 'oper_status', 'up']],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][(ipv4|ipv6)][(.*)][ip]',
                                                       'info[(.*)][vrf]',
@@ -677,11 +723,11 @@ class TriggerShutNoShutStaticRpVrfInterface(TriggerShutNoShut):
                       config_info={'conf.interface.Interface':{
                                        'requirements':[['enabled', False]],
                                        'verify_conf':False,
-                                       'kwargs':{'mandatory':{'name': '(?P<rp_intf>.*)',
+                                       'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<rp_intf>.*)', 'enabled', False],
-                                                       ['info', '(?P<rp_intf>.*)', 'oper_status', 'down']],
+                                       'requirements':[['info', '(?P<interface>.*)', 'enabled', False],
+                                                       ['info', '(?P<interface>.*)', 'oper_status', 'down']],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][(ipv4|ipv6)][(.*)][ip]',
                                                       'info[(.*)][vrf]',
@@ -690,12 +736,12 @@ class TriggerShutNoShutStaticRpVrfInterface(TriggerShutNoShut):
                                        'exclude': interface_exclude},
                                   'ops.pim.pim.Pim':{
                                        'requirements':[['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
-                                                        'address_family','(?P<af>.*)', 'rp', 'static_rp',
+                                                        'address_family','(?P<address_family>.*)', 'rp', 'static_rp',
                                                         NotExists('(?P<static_rp>.*)')]],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][(.*)][address_family][(.*)][rp][static_rp][(.*)]']},
                                         'exclude': pim_exclude }},
-                      num_values={'rp_intf': 1, 'vrf': 'all', 'rp_addr': 'all', 'af': 'all'})
+                      num_values={'interface': 1, 'vrf': 'all', 'rp_addr': 'all', 'address_family': 'all'})
 
 
 class TriggerShutNoShutPimNbrInterface(TriggerShutNoShut):
@@ -724,7 +770,17 @@ class TriggerShutNoShutPimNbrInterface(TriggerShutNoShut):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+        static:
+               The keys below are dynamically learnt by default.
+               However, they can also be set to a custom value when provided in the trigger datafile.
 
+               vrf: `str`
+               address_family: `str`
+               interface: `str`
+
+               (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                     OR
+                     interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn PIM Ops object and verify if has any "up" pim neighbor interface(s) under default vrf,
            store pim neighbor interface(s) if has any, otherwise, SKIP the trigger
@@ -739,19 +795,19 @@ class TriggerShutNoShutPimNbrInterface(TriggerShutNoShut):
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.pim.pim.Pim': {
                                         'requirements': [['info', 'vrf', '(?P<vrf>^default$)',
-                                                          'interfaces','(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
-                                                          'address_family', '(?P<af>.*)', 'oper_status', 'up'],
+                                                          'interfaces','(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                                          'address_family', '(?P<address_family>.*)', 'oper_status', 'up'],
                                                          ['info', 'vrf', '(?P<vrf>^default$)',
-                                                          'interfaces','(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
-                                                          'address_family', '(?P<af>.*)', 'neighbors', '(?P<address>.*)']],
+                                                          'interfaces','(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                                          'address_family', '(?P<address_family>.*)', 'neighbors', '(?P<address>.*)']],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][default][interfaces][(.*)][address_family][(.*)][oper_status]',
                                                       'info[vrf][default][interfaces][(.*)][address_family][(.*)][neighbors]']},
                                         'exclude': pim_exclude },
                                   'ops.interface.interface.Interface': {
-                                        'requirements': [['info', '(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                        'requirements': [['info', '(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
                                                           'vrf', '(?P<vrf>^default$)'],
-                                                         ['info', '(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                                         ['info', '(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
                                                           'oper_status', 'up']],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][vrf]',
@@ -761,11 +817,11 @@ class TriggerShutNoShutPimNbrInterface(TriggerShutNoShut):
                       config_info={'conf.interface.Interface':{
                                        'requirements':[['enabled', False]],
                                        'verify_conf':False,
-                                       'kwargs':{'mandatory':{'name': '(?P<pim_intf>.*)',
+                                       'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<pim_intf>.*)', 'enabled', False],
-                                                       ['info', '(?P<pim_intf>.*)', 'oper_status', 'down']],
+                                       'requirements':[['info', '(?P<interface>.*)', 'enabled', False],
+                                                       ['info', '(?P<interface>.*)', 'oper_status', 'down']],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][vrf]',
                                                       'info[(.*)][enabled]',
@@ -773,16 +829,16 @@ class TriggerShutNoShutPimNbrInterface(TriggerShutNoShut):
                                        'exclude': interface_exclude},
                                   'ops.pim.pim.Pim':{
                                        'requirements':[['info', 'vrf', '(?P<vrf>^default$)',
-                                                        'interfaces', '(?P<pim_intf>.*)', 'address_family',
-                                                        '(?P<af>.*)', NotExists('neighbors')],
+                                                        'interfaces', '(?P<interface>.*)', 'address_family',
+                                                        '(?P<address_family>.*)', NotExists('neighbors')],
                                                        ['info', 'vrf', '(?P<vrf>^default$)',
-                                                        'interfaces', '(?P<pim_intf>.*)', 'address_family',
-                                                        '(?P<af>.*)', 'oper_status', 'down']],
+                                                        'interfaces', '(?P<interface>.*)', 'address_family',
+                                                        '(?P<address_family>.*)', 'oper_status', 'down']],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][default][interfaces][(.*)][address_family][(.*)][oper_status]',
                                                       'info[vrf][default][interfaces][(.*)][address_family][(.*)][neighbors]']},
                                         'exclude': pim_exclude }},
-                      num_values={'pim_intf': 1, 'vrf': 'all'})
+                      num_values={'interface': 1, 'vrf': 'all'})
 
 
 class TriggerShutNoShutPimNbrVrfInterface(TriggerShutNoShut):
@@ -811,7 +867,17 @@ class TriggerShutNoShutPimNbrVrfInterface(TriggerShutNoShut):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+        static:
+               The keys below are dynamically learnt by default.
+               However, they can also be set to a custom value when provided in the trigger datafile.
 
+               vrf: `str`
+               address_family: `str`
+               interface: `str`
+
+               (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                     OR
+                     interface: 'Ethernet1/1/1' (Specific value)
     steps:
         1. Learn PIM Ops object and verify if has any "up" pim neighbor interface(s) under non-default vrf,
            store pim neighbor interface(s) if has any, otherwise, SKIP the trigger
@@ -826,19 +892,19 @@ class TriggerShutNoShutPimNbrVrfInterface(TriggerShutNoShut):
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.pim.pim.Pim': {
                                         'requirements': [['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
-                                                          'interfaces','(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
-                                                          'address_family', '(?P<af>.*)', 'oper_status', 'up'],
+                                                          'interfaces','(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                                          'address_family', '(?P<address_family>.*)', 'oper_status', 'up'],
                                                          ['info', 'vrf', '(?P<vrf>^(?!default)\w+$)',
-                                                          'interfaces','(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
-                                                          'address_family', '(?P<af>.*)', 'neighbors', '(?P<address>.*)']],
+                                                          'interfaces','(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                                          'address_family', '(?P<address_family>.*)', 'neighbors', '(?P<address>.*)']],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][(.*)][interfaces][(.*)][address_family][(.*)][oper_status]',
                                                       'info[vrf][(.*)][interfaces][(.*)][address_family][(.*)][neighbors]']},
                                         'exclude': pim_exclude },
                                   'ops.interface.interface.Interface': {
-                                        'requirements': [['info', '(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                        'requirements': [['info', '(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
                                                           'vrf', '(?P<vrf>^(?!default)\w+$)'],
-                                                         ['info', '(?P<pim_intf>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
+                                                         ['info', '(?P<interface>(Ethernet\d+\/\d+\.\d+)|(Loopback\d+))',
                                                           'oper_status', 'up']],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][vrf]',
@@ -848,11 +914,11 @@ class TriggerShutNoShutPimNbrVrfInterface(TriggerShutNoShut):
                       config_info={'conf.interface.Interface':{
                                        'requirements':[['enabled', False]],
                                        'verify_conf':False,
-                                       'kwargs':{'mandatory':{'name': '(?P<pim_intf>.*)',
+                                       'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                               'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
-                                       'requirements':[['info', '(?P<pim_intf>.*)', 'enabled', False],
-                                                       ['info', '(?P<pim_intf>.*)', 'oper_status', 'down']],
+                                       'requirements':[['info', '(?P<interface>.*)', 'enabled', False],
+                                                       ['info', '(?P<interface>.*)', 'oper_status', 'down']],
                                         'kwargs': {'attributes': [
                                                       'info[(.*)][vrf]',
                                                       'info[(.*)][enabled]',
@@ -860,16 +926,16 @@ class TriggerShutNoShutPimNbrVrfInterface(TriggerShutNoShut):
                                        'exclude': interface_exclude},
                                   'ops.pim.pim.Pim':{
                                        'requirements': [['info', 'vrf', '(?P<vrf>.*)',
-                                                        'interfaces', '(?P<pim_intf>.*)', 'address_family',
-                                                        '(?P<af>.*)', NotExists('neighbors')],
+                                                        'interfaces', '(?P<interface>.*)', 'address_family',
+                                                        '(?P<address_family>.*)', NotExists('neighbors')],
                                                        ['info', 'vrf', '(?P<vrf>.*)',
-                                                        'interfaces', '(?P<pim_intf>.*)', 'address_family',
-                                                        '(?P<af>.*)', 'oper_status', 'down']],
+                                                        'interfaces', '(?P<interface>.*)', 'address_family',
+                                                        '(?P<address_family>.*)', 'oper_status', 'down']],
                                         'kwargs': {'attributes': [
                                                       'info[vrf][(.*)][interfaces][(.*)][address_family][(.*)][oper_status]',
                                                       'info[vrf][(.*)][interfaces][(.*)][address_family][(.*)][neighbors]']},
                                         'exclude': pim_exclude }},
-                      num_values={'pim_intf': 1, 'vrf': 'all'})
+                      num_values={'interface': 1, 'vrf': 'all'})
 
 class TriggerShutNoShutPortChannelInterface(TriggerShutNoShut):
     """Shut and unshut the dynamically learned Port Channel interface(s)."""
@@ -897,6 +963,15 @@ class TriggerShutNoShutPortChannelInterface(TriggerShutNoShut):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
+         static:
+               The keys below are dynamically learnt by default.
+               However, they can also be set to a custom value when provided in the trigger datafile.
+
+               interface: `str`
+
+               (e.g) interface: '(?P<interface>Ethernet1*)' (Regex supported)
+                     OR
+                     interface: 'Ethernet1/1/1' (Specific value)
 
     steps:
         1. Learn Interface Ops object and store the "up" Port Channel interface(s)
@@ -912,18 +987,18 @@ class TriggerShutNoShutPortChannelInterface(TriggerShutNoShut):
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
                                         'requirements':[\
-                                            ['info', '(?P<name>Ethernet(\S+))', 'oper_status', 'up'],
-                                            ['info', '(?P<name>.*)', 'enabled', True]],
+                                            ['info', '(?P<interface>([p|P]ort-channel)(\S+))', 'oper_status', 'up'],
+                                            ['info', '(?P<interface>.*)', 'enabled', True]],
                                         'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
                                         'requirements':[['enabled', False]],
                                         'verify_conf':False,
-                                        'kwargs':{'mandatory':{'name': '(?P<name>.*)',
+                                        'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
                                                                'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
                                         'requirements':[\
-                                            ['info', '(?P<name>.*)', 'enabled', False],
-                                            ['info', '(?P<name>.*)', 'oper_status', 'down'],
+                                            ['info', '(?P<interface>.*)', 'enabled', False],
+                                            ['info', '(?P<interface>.*)', 'oper_status', 'down'],
                                             ['info', '(.*)', 'enabled', False]],
                                         'exclude': interface_exclude}},
-                      num_values={'name': 1})
+                      num_values={'interface': 1})
