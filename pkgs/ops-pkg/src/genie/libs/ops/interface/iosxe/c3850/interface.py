@@ -21,7 +21,10 @@ class Interface(CommonInterface):
         #                           common keys
         # ======================================================================
         super().learn()  
-
+        if hasattr(self, 'info'):
+            for intf in self.info:
+                if 'switchport_enable' in self.info[intf] and self.info[intf]['switchport_enable']== False:
+                    self.info[intf].pop('switchport_enable')
 
         # ======================================================================
         #                           switchport related

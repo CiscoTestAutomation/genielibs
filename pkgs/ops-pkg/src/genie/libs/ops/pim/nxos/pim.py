@@ -408,74 +408,75 @@ class Pim(Base):
 
         # gen_id
         if hasattr(self, 'info'):
-            for vrf in self.info['vrf']:
-                if 'interfaces' not in self.info['vrf'][vrf]:
-                    continue
-                for intf in self.info['vrf'][vrf]['interfaces']:
-                    if 'address_family' not in self.info['vrf'][vrf]['interfaces'][intf]:
+            if 'vrf' in self.info:
+                for vrf in self.info['vrf']:
+                    if 'interfaces' not in self.info['vrf'][vrf]:
                         continue
-                    for af in self.info['vrf'][vrf]['interfaces'][intf]['address_family']:
-
-                        # autorp
-                        #    send_rp_announce
-                        #     --  interface
-                        try:
-                            rp_source = self.info['vrf'][vrf]['address_family'][af]\
-                                  ['rp']['autorp']['send_rp_announce']['rp_source']
-
-                            if rp_source in self.info['vrf'][vrf]['interfaces'][intf]\
-                                  ['address_family'][af]['address']:
-                                self.info['vrf'][vrf]['address_family'][af]\
-                                  ['rp']['autorp']['send_rp_announce']['interface'] = intf
-
-                                try:
-                                    del(self.info['vrf'][vrf]['address_family'][af]\
-                                              ['rp']['autorp']['send_rp_announce']['rp_source'])
-                                except:
-                                    pass                                  
-                        except:
-                            pass 
-                        #    send_rp_discovery
-                        #     --  interface
-                        try:
-                            address = self.info['vrf'][vrf]['address_family'][af]\
-                                  ['rp']['autorp']['address']
-
-                            if address in self.info['vrf'][vrf]['interfaces'][intf]\
-                                  ['address_family'][af]['address']:
-                                if 'send_rp_discovery' not in self.info['vrf'][vrf]\
-                                  ['address_family'][af]['rp']['autorp']:
-                                    self.info['vrf'][vrf]['address_family'][af]\
-                                  ['rp']['autorp']['send_rp_discovery'] = {}
-                                self.info['vrf'][vrf]['address_family'][af]\
-                                  ['rp']['autorp']['send_rp_discovery']['interface'] = intf
-
-                                try:
-                                    del(self.info['vrf'][vrf]['address_family'][af]\
-                                              ['rp']['autorp']['address'])
-                                except:
-                                    pass                                   
-                        except:
-                            pass
-
-
-                        if 'neighbors' not in self.info['vrf'][vrf]['interfaces'][intf]\
-                          ['address_family'][af]:
+                    for intf in self.info['vrf'][vrf]['interfaces']:
+                        if 'address_family' not in self.info['vrf'][vrf]['interfaces'][intf]:
                             continue
-                        for nei in self.info['vrf'][vrf]['interfaces'][intf]\
-                          ['address_family'][af]['neighbors']:
+                        for af in self.info['vrf'][vrf]['interfaces'][intf]['address_family']:
 
-                            # gen_id
+                            # autorp
+                            #    send_rp_announce
+                            #     --  interface
                             try:
-                                self.info['vrf'][vrf]['interfaces'][intf]\
-                                  ['address_family'][af]['neighbors'][nei]['gen_id'] = \
-                                    self.info['vrf'][vrf]['interfaces'][intf]\
-                                      ['address_family'][af]['genid']
-                            except:
-                                pass                          
+                                rp_source = self.info['vrf'][vrf]['address_family'][af]\
+                                      ['rp']['autorp']['send_rp_announce']['rp_source']
 
-                        try:
-                            del(self.info['vrf'][vrf]['interfaces'][intf]\
-                                ['address_family'][af]['genid'])
-                        except:
-                            pass
+                                if rp_source in self.info['vrf'][vrf]['interfaces'][intf]\
+                                      ['address_family'][af]['address']:
+                                    self.info['vrf'][vrf]['address_family'][af]\
+                                      ['rp']['autorp']['send_rp_announce']['interface'] = intf
+
+                                    try:
+                                        del(self.info['vrf'][vrf]['address_family'][af]\
+                                                  ['rp']['autorp']['send_rp_announce']['rp_source'])
+                                    except:
+                                        pass
+                            except:
+                                pass
+                            #    send_rp_discovery
+                            #     --  interface
+                            try:
+                                address = self.info['vrf'][vrf]['address_family'][af]\
+                                      ['rp']['autorp']['address']
+
+                                if address in self.info['vrf'][vrf]['interfaces'][intf]\
+                                      ['address_family'][af]['address']:
+                                    if 'send_rp_discovery' not in self.info['vrf'][vrf]\
+                                      ['address_family'][af]['rp']['autorp']:
+                                        self.info['vrf'][vrf]['address_family'][af]\
+                                      ['rp']['autorp']['send_rp_discovery'] = {}
+                                    self.info['vrf'][vrf]['address_family'][af]\
+                                      ['rp']['autorp']['send_rp_discovery']['interface'] = intf
+
+                                    try:
+                                        del(self.info['vrf'][vrf]['address_family'][af]\
+                                                  ['rp']['autorp']['address'])
+                                    except:
+                                        pass
+                            except:
+                                pass
+
+
+                            if 'neighbors' not in self.info['vrf'][vrf]['interfaces'][intf]\
+                              ['address_family'][af]:
+                                continue
+                            for nei in self.info['vrf'][vrf]['interfaces'][intf]\
+                              ['address_family'][af]['neighbors']:
+
+                                # gen_id
+                                try:
+                                    self.info['vrf'][vrf]['interfaces'][intf]\
+                                      ['address_family'][af]['neighbors'][nei]['gen_id'] = \
+                                        self.info['vrf'][vrf]['interfaces'][intf]\
+                                          ['address_family'][af]['genid']
+                                except:
+                                    pass
+
+                            try:
+                                del(self.info['vrf'][vrf]['interfaces'][intf]\
+                                    ['address_family'][af]['genid'])
+                            except:
+                                pass

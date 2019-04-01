@@ -23,7 +23,7 @@ class PlatformOutput(object):
                          'kickstart': 'version 8.1(1) [build 8.1(0.129)] [gdb]',
                          'kickstart_compile_time': '4/30/2017 23:00:00 [04/15/2017 ''04:34:05]',
                          'kickstart_image_file': 'slot0:///n7000-s2-kickstart.8.1.0.129.gbin',
-                         'system': 'version 8.1(1) [build 8.1(0.129)] [gdb]',
+                         'system_version': 'version 8.1(1) [build 8.1(0.129)] [gdb]',
                          'system_compile_time': '4/30/2017 23:00:00 [04/15/2017 ''06:43:41]',
                          'system_image_file': 'slot0:///n7000-s2-dk9.8.1.0.129.gbin'}
                       }

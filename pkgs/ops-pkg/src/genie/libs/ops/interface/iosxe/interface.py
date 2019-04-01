@@ -190,3 +190,9 @@ class Interface(Base):
 
         # make to write in cache
         self.make(final_call=True)
+
+        # switchport_enable   -- default values
+        if hasattr(self, 'info'):
+            for intf in self.info:
+                if 'switchport_enable' not in self.info[intf]:
+                    self.info[intf]['switchport_enable'] = False

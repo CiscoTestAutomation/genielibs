@@ -1056,6 +1056,7 @@ class InterfaceOutput(object):
     InterfaceOpsOutput_info = {
         "Port-channel12": {
             "type": "EtherChannel",
+            "switchport_enable": False,
             "oper_status": "up",
             "mac_address": "0057.d228.1a02",
             "duplex_mode": "full",
@@ -1134,7 +1135,8 @@ class InterfaceOutput(object):
                "in_octets": 0
             },
             "bandwidth": 8000000,
-            "delay": 5000
+            "delay": 5000,
+            "switchport_enable": False
             },
         "Vlan211": {
             "ipv6": {
@@ -1152,7 +1154,8 @@ class InterfaceOutput(object):
                     "ip": "FE80::257:D2FF:FE28:1A71",
                     "status": "valid"
                }
-            }
+            },
+             'switchport_enable': False
             },
         "GigabitEthernet1/0/1": {
             "accounting": {
@@ -1268,7 +1271,8 @@ class InterfaceOutput(object):
                     "prefix_length": "64",
                     "status": "tentative"
                }
-            }
+            },
+            "switchport_enable": False
             },
         "GigabitEthernet1/0/2": {
             "accounting": {
@@ -1338,6 +1342,7 @@ class InterfaceOutput(object):
                "in_errors": 0,
                "out_mac_pause_frames": 0
             },
+            'switchport_enable': False,
             "bandwidth": 1000000
             },
         "Vlan100": {
@@ -1380,6 +1385,7 @@ class InterfaceOutput(object):
                "in_crc_errors": 0,
                "in_octets": 3657594
             },
+            "switchport_enable": False,
             "bandwidth": 1000000
             },
         "GigabitEthernet0/0": {
@@ -1390,7 +1396,8 @@ class InterfaceOutput(object):
                     "prefix_length": "24"
                }
             },
-            "vrf": "Mgmt-vrf"
+            "vrf": "Mgmt-vrf",
+            'switchport_enable': False
             },
         "GigabitEthernet3": {
             "type": "CSR vNIC",
@@ -1444,6 +1451,7 @@ class InterfaceOutput(object):
                "out_mac_pause_frames": 0
             },
             "bandwidth": 1000000,
+            "switchport_enable": False,
             "encapsulation": {
                "encapsulation": "arpa"
             }

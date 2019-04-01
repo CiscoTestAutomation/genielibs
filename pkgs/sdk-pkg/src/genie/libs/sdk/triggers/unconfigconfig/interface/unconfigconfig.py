@@ -299,7 +299,7 @@ class TriggerUnconfigConfigEthernetInterface(TriggerUnconfigConfig):
     """
 
 
-    def remove_related_subinterface(item, name, **kwargs):
+    def remove_related_subinterface(item, interface, **kwargs):
         # Easiest way is to split at the dot, and see if it exists in name
         modified_item = item.split('.')[0]
 
@@ -308,7 +308,7 @@ class TriggerUnconfigConfigEthernetInterface(TriggerUnconfigConfig):
             return False
 
         # See if the modified_item exists in the list of name
-        if modified_item in name:
+        if modified_item in interface:
             return True
         return False
 

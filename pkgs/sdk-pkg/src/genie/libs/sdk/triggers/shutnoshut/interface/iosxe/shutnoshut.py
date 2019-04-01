@@ -414,13 +414,13 @@ class TriggerShutNoShutEthernetInterface(TriggerShutNoShut):
 
                """
 
-    def remove_related_subinterface(item, name, **kwargs):
+    def remove_related_subinterface(item, interface, **kwargs):
         """Check if interface (item) needs to remove sub-interfaces
         by checking with the given main interface (name).
 
            Args:
                item (`str`): Interface name to be checked if need to remove the sub-interfaces.
-               name (`str`): Interface name that needs to remove the sub-interfaces.
+               interface (`str`): Interface name that needs to remove the sub-interfaces.
                **kwargs: Arbitrary keyword arguments.
 
            Returns:
@@ -435,7 +435,7 @@ class TriggerShutNoShutEthernetInterface(TriggerShutNoShut):
             return False
 
         # See if the modified_item exists in the list of name
-        if modified_item in name:
+        if modified_item in interface:
             return True
         return False
 
@@ -443,7 +443,7 @@ class TriggerShutNoShutEthernetInterface(TriggerShutNoShut):
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
                                         'requirements':[\
-                                            ['info', '(?P<interface>\w+Ethernet[\d\/]+$)', 'oper_status', 'up'],
+                                            ['info', '(?P<interface>(\w+(e|E)thernet[\d\/]|\w+(g|G)ig[\w\/])+$)', 'oper_status', 'up'],
                                             ['info', '(?P<interface>.*)', 'port_channel', 'port_channel_member', False]],
                                         'exclude': interface_exclude,
                                         'kwargs': {'attributes': ['info[(.*)][switchport_enable]',

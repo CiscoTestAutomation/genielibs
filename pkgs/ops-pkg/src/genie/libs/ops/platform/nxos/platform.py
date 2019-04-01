@@ -130,7 +130,7 @@ class Platform(Base):
                       dest='[kickstart_image]')
 
         self.add_leaf(cmd=show_platform.ShowVersion,
-                      src='[platform][software][system]',
+                      src='[platform][software][system_version]',
                       dest='[version]')
 
         self.add_leaf(cmd=show_platform.ShowVersion,

@@ -169,7 +169,7 @@ class TriggerUnconfigConfigEthernetInterface(UncfgCfgInterface):
                                                                'attach': False}}}},
                       verify_ops={'ops.interface.interface.Interface':{
                                         'requirements':[['info', '(?P<interface>.*)', NotExists('access_vlan')],
-                                                        ['info', '(?P<interface>.*)', NotExists('switchport_enable')],
+                                                        ['info', '(?P<interface>.*)', 'switchport_enable', False],
                                                         ['info', '(?P<interface>.*)', NotExists('switchport_mode')],
                                                         ['info', '(?P<interface>.*)', NotExists('trunk_vlans')],
                                                         ['info', '(?P<interface>.*)', NotExists('vrf')],
