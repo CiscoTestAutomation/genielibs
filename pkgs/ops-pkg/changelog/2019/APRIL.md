@@ -1,5 +1,13 @@
 | Module                  | Version       |
 | ------------------------|:-------------:|
+| ``genie.libs.ops``      |     v19.0.2   |
+
+
+* Fix for the wheel built for external users
+
+
+| Module                  | Version       |
+| ------------------------|:-------------:|
 | ``genie.libs.ops``      |     v19.0.1   |
 
 

@@ -13,10 +13,10 @@ This library package contains the open source implementations for:
 ## About
 
 Genie is both a library framework and a test harness that facilitates rapid
-development, encourages reuse, and simplifies writing test automation. Genie,
-bundled with the modular architecture of pyATS framework, accelerates and
+development, encourages reuse, and simplies writing test automation. Genie
+bundled with the modular architecture of pyATS framework accelerates and
 simplifies test automation leveraging all the perks of the Python programming
-language in an object-oriented fashion.
+language in an object-orienting fashion.
 
 pyATS is an end-to-end testing ecosystem, specializing in data-driven and
 reusable testing, and engineered to be suitable for Agile, rapid development
