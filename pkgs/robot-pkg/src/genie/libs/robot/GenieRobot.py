@@ -88,7 +88,14 @@ class GenieRobot(object):
         self.testscript.parameters['testbed'] = self.testbed
 
         # Load Genie Datafiles (Trigger, Verification and PTS)
+
+        # This make UUT mandatory. When learning, aka no trigger
+        # the UUT are not mandatory
+        self.loaded_yamls = True
         self._load_genie_datafile()
+        if not self.trigger_datafile:
+            self.loaded_yamls = False
+            log.warning("Could not load the Datafile correctly")
 
 
     # Metaparser
@@ -290,6 +297,10 @@ class GenieRobot(object):
         '''Call any verification defined in the verification datafile
            on device using a specific alias with a context (cli, xml, yang, ...)
         '''
+        if not self.loaded_yamls:
+            self.builtin.fail("Could not load the yaml files - Make sure you "
+                              "have an uut device")
+
         # Set the variables to find the verification
         self.testscript.verification_uids = Or(name+'$')
         self.testscript.verification_groups = None
@@ -355,6 +366,10 @@ class GenieRobot(object):
         '''Call any trigger defined in the trigger datafile on device
         using a specific alias with a context (cli, xml, yang, ...)
         '''
+
+        if not self.loaded_yamls:
+            self.builtin.fail("Could not load the yaml files - Make sure you "
+                              "have an uut device")
 
         # Set the variables to find the trigger
         device_handle = self._search_device(device)
@@ -777,17 +792,19 @@ class GenieRobot(object):
         if '${pts_datafile}' in variables:
             pts_datafile = variables['${pts_datafile}']
 
-        trigger_datafile, verification_datafile, pts_datafile , *_ =\
+        self.trigger_datafile, self.verification_datafile, pts_datafile , *_ =\
              self.testscript._validate_datafiles(self.testbed,
                                                  trigger_datafile,
 						 verification_datafile,
 						 pts_datafile,
 						 None, None)
 
-        self.trigger_datafile = self.testscript._load(trigger_datafile,
-                                                      TriggerdatafileLoader)
-        self.verification_datafile = self.testscript._load(verification_datafile,
-                                                           VerificationdatafileLoader)
+        if self.trigger_datafile:
+            self.trigger_datafile = self.testscript._load(self.trigger_datafile,
+                                                          TriggerdatafileLoader)
+        if self.verification_datafile:
+            self.verification_datafile = self.testscript._load(self.verification_datafile,
+                                                               VerificationdatafileLoader)
         self.pts_datafile = self.testscript._load(pts_datafile,
                                                   PtsdatafileLoader)
 
