@@ -12,6 +12,7 @@ from genie.libs.ops.lldp.iosxe.tests.lldp_output import LldpOutput
 
 # Parser
 from genie.libs.parser.iosxe.show_lldp import ShowLldp, \
+                                   ShowLldpEntry, \
                                    ShowLldpNeighborsDetail,\
                                    ShowLldpTraffic, \
                                    ShowLldpInterface
@@ -35,6 +36,9 @@ class test_lldp(unittest.TestCase):
         lldp.maker.outputs[ShowLldp] = \
             {'': LldpOutput.ShowLldp}
 
+        lldp.maker.outputs[ShowLldpEntry] = \
+            {'': LldpOutput.ShowLldpEntry}
+
         lldp.maker.outputs[ShowLldpNeighborsDetail] = \
             {'': LldpOutput.ShowLldpNeighborsDetail}
 
@@ -46,7 +50,6 @@ class test_lldp(unittest.TestCase):
 
         # Learn the feature
         lldp.learn()
-
         # Verify Ops was created successfully
         self.assertEqual(lldp.info, LldpOutput.Lldp_info)
 
@@ -61,6 +64,9 @@ class test_lldp(unittest.TestCase):
         lldp = Lldp(device=self.device)
 
         lldp.maker.outputs[ShowLldp] = \
+            {'': {}}
+
+        lldp.maker.outputs[ShowLldpEntry] = \
             {'': {}}
 
         lldp.maker.outputs[ShowLldpNeighborsDetail] = \
@@ -87,6 +93,9 @@ class test_lldp(unittest.TestCase):
         lldp.maker.outputs[ShowLldp] = \
             {'': LldpOutput.ShowLldp}
 
+        lldp.maker.outputs[ShowLldpEntry] = \
+            {'': LldpOutput.ShowLldpEntry}
+            
         lldp.maker.outputs[ShowLldpNeighborsDetail] = \
             {'': LldpOutput.ShowLldpNeighborsDetail}
 

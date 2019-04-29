@@ -567,10 +567,16 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
         'TenGigabitEthernet',
         'twentyfivegigabitethernet',
         'TwentyFiveGigabitEthernet',
+        'hundredgige',
+        'HundredGigE',
         'hundredgigabitethernet',
         'HundredGigabitEthernet',
         'fortygigabitethernet',
         'FortyGigabitEthernet',
+        'fourhundredgige',
+        'FourHundredGigE',
+        'fourhundredgigabitethernet',
+        'FourHundredGigabitEthernet'
     )
 
 

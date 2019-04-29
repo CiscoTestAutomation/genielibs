@@ -44,6 +44,7 @@ HEADER        = [Watchdog]
 PYPIREPO      = pypitest
 
 # Development pkg requirements
+RELATED_PKGS = genie.libs.conf genie.libs.ops genie.libs.robot genie.libs.sdk
 DEPENDENCIES  = restview psutil Sphinx wheel asynctest
 DEPENDENCIES += setproctitle sphinxcontrib-napoleon sphinx-rtd-theme httplib2
 DEPENDENCIES += pip-tools Cython requests
@@ -142,6 +143,7 @@ develop:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
 	@echo "Installing development dependencies"
+	@pip uninstall -y $(RELATED_PKGS)
 	@pip install $(DEPENDENCIES)
 	@echo ""
 	@echo "--------------------------------------------------------------------"

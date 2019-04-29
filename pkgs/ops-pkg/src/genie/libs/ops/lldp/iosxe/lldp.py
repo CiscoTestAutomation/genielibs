@@ -6,7 +6,9 @@ from genie.ops.base import Base
 from genie.ops.base import Context
 
 # Parser
-from genie.libs.parser.iosxe.show_lldp import ShowLldp, ShowLldpNeighborsDetail,\
+from genie.libs.parser.iosxe.show_lldp import ShowLldp, \
+                                   ShowLldpEntry, \
+                                   ShowLldpNeighborsDetail,\
                                    ShowLldpTraffic, \
                                    ShowLldpInterface
 
@@ -26,42 +28,109 @@ class Lldp(Base):
 
     def learn(self):
         '''Learn lldp Ops'''
-        
         ########################################################################
         #                               info
         ########################################################################
+        
+        # unsupported keys
+        # enabled
+        # hello_timer
+        # hold_timer
+        # suppress_tlv_advertisement: - NA
+        #   chassis_id - N/A
+        #   port_id - N/A
+        #   port_description - N/A
+        #   system_name - N/A
+        #   system_description - N/A
+        #   system_capabilities - N/A
+        #   management_address - N/A
+        # system_name - N/A
+        # system_description - N/A
+        # chassis_id - N/A
+        # chassis_id_type - N/A
+        # counters
+        #   frame_in
+        #   frame_out
+        #   frame_error_in
+        #   frame_discard
+        #   tlv_discard - N/A
+        #   tlv_unknown - N/A
+        #   last_clear - N/A
+        #   tlv_accepted - N/A
+        #   entries_aged_out
+        # interfaces
+        #     if_name
+        #         if_name
+        #         enabled
+        #         counters
+        #             frame_in
+        #             frame_out
+        #             frame_error_in
+        #             frame_discard
+        #             tlv_discard
+        #             tlv_unknown
+        #             last_clear - N/A
+        #             frame_error_out - N/A
+        #             entries_aged_out
+        #         pord_id
+        #             neighbors
+        #                   neighbor_id
+        #                       neighbor_id
+        #                       system_name
+        #                       system_description
+        #                       chassis_id
+        #                       chassis_id_type - N/A
+        #                       id
+        #                       age
+        #                       last_update
+        #                       port_id
+        #                       port_id_type - N/A
+        #                       port_description
+        #                       management_address
+        #                       management_address_type - N/A
+        #                       custom_tlvs' - N/A
+        #                           [type oui oui_subtype] - N/A
+        #                               type - N/A
+        #                               oui - N/A
+        #                               oui_subtype - N/A
+        #                               value - N/A
+        #                       capabilities
+        #                           name
+        #                               name  - N/A
+        #                               enabled
         
         for key in ['enabled', 'hello_timer', 'hold_timer']:
             self.add_leaf(cmd=ShowLldp,
                           src='[{}]'.format(key),
                           dest='info[{}]'.format(key))
 
-        # suppress_tlv_advertisement, system_name are not supported
-        # system_description, chassis_id, chassis_id_type are not supported
-
-        # counters
-        # last_clear and tlv_accepted are not supported
         for key in ['frame_in', 'frame_out', 'frame_error_in', 'frame_discard',
           'tlv_discard', 'tlv_unknown', 'entries_aged_out']:
             self.add_leaf(cmd=ShowLldpTraffic,
                           src='[{}]'.format(key),
                           dest='info[counters][{}]'.format(key))
 
-        # interface neighbors attribtues
-        # Unsupported Attributes - id, age, last_update, chassis_id_type
-        #                          port_id_type, management_address_type,
-        #                          custom_tlvs, counters
-
         intf_src = '[interfaces][(?P<intf>.*)]'
         intf_dest = 'info[interfaces][(?P<intf>.*)]'
 
-        nbr_src = '[interfaces][(?P<intf>.*)][neighbors][(?P<nei>.*)]'
-        nbr_dest = 'info[interfaces][(?P<intf>.*)][neighbors][(?P<nei>.*)]'
+        nbr_src = '[interfaces][(?P<intf>.*)][port_id][(?P<p_id>.*)][neighbors][(?P<nei>.*)]'
+        nbr_dest = 'info[interfaces][(?P<intf>.*)][port_id][(?P<p_id>.*)][neighbors][(?P<nei>.*)]'
+
+        self.add_leaf(cmd=ShowLldpEntry,
+                      src=intf_src + '[if_name]',
+                      dest=intf_dest + '[if_name]')
 
         self.add_leaf(cmd=ShowLldpNeighborsDetail,
                       src=intf_src + '[if_name]',
                       dest=intf_dest + '[if_name]')
 
+        for key in ['[chassis_id]', '[port_id]', '[neighbor_id]', '[system_name]',
+          '[system_description]', '[port_description]', '[management_address]',
+          '[capabilities][(?P<cap>.*)][enabled]','[capabilities][(?P<cap>.*)][name]' ]:
+            self.add_leaf(cmd=ShowLldpEntry,
+                          src=nbr_src + key,
+                          dest=nbr_dest + key)
+            
         for key in ['[chassis_id]', '[port_id]', '[neighbor_id]', '[system_name]',
           '[system_description]', '[port_description]', '[management_address]',
           '[capabilities][(?P<cap>.*)][enabled]','[capabilities][(?P<cap>.*)][name]' ]:

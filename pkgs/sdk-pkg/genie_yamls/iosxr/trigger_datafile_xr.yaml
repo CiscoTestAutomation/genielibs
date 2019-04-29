@@ -119,15 +119,17 @@ TriggerUnconfigConfigBgpNeighbor:
     tgn_delay: 10
     devices: ['uut']
 
-# CSCtr26693 
+# CSCtr26693
 TriggerShutNoShutBgp:
-    groups: ['shut-noshut','bgp', 'L3']
+    groups: ['shut-noshut', 'bgp', 'L3']
     method: 'checkpoint'
     timeout:
-       max_time: 180
-       interval: 10
+      max_time: 180
+      interval: 10
     tgn_timeout: 600
     tgn_delay: 10
+    tgn_max_outage: 120
+    devices: ['uut']
 
 TriggerAddRemoveBgpNeighborRoutemapPrefixlist:
     groups: ['add-remove', 'bgp','L3']

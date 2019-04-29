@@ -94,7 +94,7 @@ class test_bgp(unittest.TestCase):
         # Verify Ops was created successfully
         self.assertEqual(bgp.info, BgpOutput.BgpOpsOutput_info)
         self.assertEqual(bgp.table, BgpOutput.BgpOpsOutput_table)
-        self.assertEqual(bgp.routes_per_peer, BgpOutput.BgpOpsOutput_routesperpeer)
+        self.assertEqual(set(bgp.routes_per_peer), set(BgpOutput.BgpOpsOutput_routesperpeer))
 
     def test_xml_cli_empty_output(self):
         self.maxDiff = None
