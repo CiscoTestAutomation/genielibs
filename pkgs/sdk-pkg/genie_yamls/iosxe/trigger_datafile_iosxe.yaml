@@ -31,6 +31,10 @@ global_processors:
 #                                SLEEP
 #===============================================================================
 
+#===============================================================================
+#                                SLEEP
+#===============================================================================
+
 TriggerSleep:
     groups: ['sleep']
     sleep_time: 5
@@ -43,9 +47,6 @@ TriggerProfileSystem:
     timeout:
        max_time: 300
        interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     features: ['platform', 'interface']
     devices: ['uut']
     # golden_file: <golden pts file to compare with, if not provided, no comparison>
@@ -56,8 +57,6 @@ TriggerShutNoShutLoopbackInterface:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerUnconfigConfigLoopbackInterface:
@@ -66,8 +65,6 @@ TriggerUnconfigConfigLoopbackInterface:
     timeout:
        max_time: 300 
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 # Not supported on ASR1K
@@ -76,8 +73,6 @@ TriggerShutNoShutTrunkInterface:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 # Not supported on ASR1K
@@ -86,8 +81,6 @@ TriggerShutNoShutVlanInterface:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 # Not supported on Edison(c3850)
@@ -97,8 +90,6 @@ TriggerModifyEthernetMtu:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 # Not supported on ASR1K
@@ -108,8 +99,6 @@ TriggerModifySwitchportModeTrunkToAccess:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 
@@ -120,8 +109,6 @@ TriggerUnconfigConfigPhysicalTrunkInterface:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']    
 
 # Not supported on ASR1K
@@ -131,8 +118,6 @@ TriggerUnconfigConfigVirtualTrunkInterface:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerModifyLoopbackInterfaceIp:
@@ -141,8 +126,6 @@ TriggerModifyLoopbackInterfaceIp:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 # Not supported on ASR1K
@@ -152,8 +135,6 @@ TriggerModifySviInterfaceIp:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerUnconfigConfigEthernetInterface:
@@ -162,8 +143,6 @@ TriggerUnconfigConfigEthernetInterface:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 # Not supported on Edison(c3850)
@@ -173,8 +152,6 @@ TriggerUnconfigConfigEthernetInterfaceSub:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
         
 TriggerModifyLoopbackInterfaceIpv6:
@@ -183,17 +160,14 @@ TriggerModifyLoopbackInterfaceIpv6:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
         
 TriggerShutNoShutEthernetInterface:
     groups: ['shut', 'interface', 'L3']
+    method: 'checkpoint'
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerClearCountersInterfaceAll:
@@ -201,8 +175,6 @@ TriggerClearCountersInterfaceAll:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighbor:
@@ -211,8 +183,6 @@ TriggerUnconfigConfigBgpNeighbor:
     timeout:
        max_time: 400
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerUnconfigConfigBgp:
@@ -221,8 +191,6 @@ TriggerUnconfigConfigBgp:
     timeout:
        max_time: 400
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerShutNoShutBgpNeighbors:
@@ -230,8 +198,6 @@ TriggerShutNoShutBgpNeighbors:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerModifyBgpNeighborRoutemapIn:
@@ -240,8 +206,6 @@ TriggerModifyBgpNeighborRoutemapIn:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerModifyBgpNeighborRoutemapOut:
@@ -250,8 +214,6 @@ TriggerModifyBgpNeighborRoutemapOut:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerModifyBgpNeighborAsn:
@@ -260,8 +222,6 @@ TriggerModifyBgpNeighborAsn:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerModifyBgpNeighborCluster:
@@ -270,8 +230,6 @@ TriggerModifyBgpNeighborCluster:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerUnconfigConfigVlan:
@@ -280,8 +238,6 @@ TriggerUnconfigConfigVlan:
     timeout:
        max_time: 1800
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerShutNoShutVlan:
@@ -289,8 +245,6 @@ TriggerShutNoShutVlan:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerShutNoShutHsrpIpv4VlanInterface:
@@ -298,8 +252,6 @@ TriggerShutNoShutHsrpIpv4VlanInterface:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerShutNoShutHsrpIpv6VlanInterface:
@@ -307,8 +259,6 @@ TriggerShutNoShutHsrpIpv6VlanInterface:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerUnconfigConfigVlanInterface:
@@ -317,8 +267,6 @@ TriggerUnconfigConfigVlanInterface:
     timeout:
        max_time: 400
        interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerReload:

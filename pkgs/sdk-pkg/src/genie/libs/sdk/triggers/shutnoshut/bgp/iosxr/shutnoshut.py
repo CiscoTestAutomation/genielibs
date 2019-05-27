@@ -117,7 +117,7 @@ class TriggerShutNoShutBgp(TriggerShutNoShut):
         1. Learn BGP Ops object and store the BGP instance(s)
            if has any, otherwise, SKIP the trigger
         2. Do "process shutdown bgp"
-        3. Verify the protocol state in BGP instance(s) does not exist
+        3. Verify the protocol state in BGP instance(s) is "KILLED"
         4. Do "process restart bpm"
         5. Learn BGP Ops again and verify it is the same as the Ops in step 1
 
@@ -131,7 +131,8 @@ class TriggerShutNoShutBgp(TriggerShutNoShut):
                                         'kwargs':{'attributes':['info']},
                                         'exclude': bgp_exclude}},
                       verify_ops={'ops.bgp.bgp.Bgp':{
-                                    'requirements': [['info', 'instance', '(?P<instance>.*)', NotExists('protocol_state')]],
+                                    'requirements': [['info', 'instance', '(?P<instance>.*)', 'protocol_state', 'KILLED'],
+                                                    ['info', 'instance', '(?P<instance>.*)', NotExists('vrf')]],
                                     'kwargs':{'attributes':['info']},
                                     'exclude': bgp_exclude}},
                       num_values={'instance':'all'})

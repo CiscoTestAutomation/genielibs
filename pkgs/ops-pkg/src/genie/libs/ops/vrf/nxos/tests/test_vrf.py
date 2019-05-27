@@ -13,6 +13,13 @@ from genie.libs.ops.vrf.nxos.tests.vrf_output import VrfOutput
 # nxos show_vrf
 from genie.libs.parser.nxos.show_vrf import ShowVrfDetail
 
+outputs = {}
+outputs['show vrf default detail'] = VrfOutput.showVrfDetail_default
+outputs['show vrf all detail'] = VrfOutput.showVrfDetail_all
+
+def mapper(key):
+    return outputs[key]
+
 
 class test_vrf(unittest.TestCase):
 
@@ -31,12 +38,27 @@ class test_vrf(unittest.TestCase):
 
         # Set outputs
         vrf.maker.outputs[ShowVrfDetail] = {'': VrfOutput.ShowVrfDetail}
-
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
         # Learn the feature
         vrf.learn()
 
         # Verify Ops was created successfully
         self.assertEqual(vrf.info, VrfOutput.VrfInfo)
+
+    def test_custom_output(self):
+        vrf = Vrf(device=self.device)
+        vrf.maker.outputs[ShowVrfDetail] = {'': VrfOutput.ShowVrfDetailCustom}
+        # Set outputs
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
+        # Learn the feature
+        vrf.learn(vrf='default')
+        self.maxDiff = None
+
+        # Verify Ops was created successfully
+        self.assertDictEqual(vrf.info, VrfOutput.VrfCustomInfo)
+
 
 
     def test_selective_attribute(self):
@@ -44,7 +66,8 @@ class test_vrf(unittest.TestCase):
 
         # Set outputs
         vrf.maker.outputs[ShowVrfDetail] = {'': VrfOutput.ShowVrfDetail}
-
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
         # Learn the feature
         vrf.learn()
 
@@ -56,10 +79,16 @@ class test_vrf(unittest.TestCase):
 
         # Set outputs
         vrf.maker.outputs[ShowVrfDetail] = {'': {}}
-
+        outputs['show vrf default detail'] = ''
+        outputs['show vrf all detail'] = ''
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
         # Learn the feature
         vrf.learn()
 
+        # revert back
+        outputs['show vrf default detail'] = VrfOutput.showVrfDetail_default
+        outputs['show vrf all detail'] = VrfOutput.showVrfDetail_all
         # Check no outputs in vrf.info
         with self.assertRaises(AttributeError):
             neighbor_address = vrf.info['vrfs']['default']['route_distinguisher']

@@ -31,12 +31,15 @@ global_processors:
 #                                SLEEP
 #===============================================================================
 
+#===============================================================================
+#                                SLEEP
+#===============================================================================
+
 TriggerSleep:
     groups: ['sleep']
     sleep_time: 5
     message_time: 1
     count: 1
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerProfileSystem:
@@ -44,9 +47,6 @@ TriggerProfileSystem:
     timeout:
        max_time: 300
        interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     features: ['platform', 'interface']
     devices: ['uut']
     # golden_file: <golden pts file to compare with, if not provided, no comparison>
@@ -61,9 +61,6 @@ TriggerClearMsdpPeer:
     timeout:
        max_time: 300
        interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearMsdpStatistics:
@@ -71,9 +68,6 @@ TriggerClearMsdpStatistics:
     timeout:
        max_time: 300
        interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearMsdpPolicyStatisticsSaPolicyIn:
@@ -81,9 +75,6 @@ TriggerClearMsdpPolicyStatisticsSaPolicyIn:
     timeout:
        max_time: 300
        interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearMsdpPolicyStatisticsSaPolicyOut:
@@ -91,9 +82,6 @@ TriggerClearMsdpPolicyStatisticsSaPolicyOut:
     timeout:
        max_time: 300
        interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearMsdpSaCache:
@@ -101,9 +89,6 @@ TriggerClearMsdpSaCache:
     timeout:
        max_time: 300
        interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearMsdpRoute:
@@ -111,9 +96,6 @@ TriggerClearMsdpRoute:
     timeout:
        max_time: 120
        interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearBgpAll:
@@ -121,9 +103,6 @@ TriggerClearBgpAll:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearIpBgpSoft:
@@ -131,9 +110,6 @@ TriggerClearIpBgpSoft:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearBgpNeighbor:
@@ -141,9 +117,6 @@ TriggerClearBgpNeighbor:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearBgpNeighborIpv4:
@@ -151,9 +124,6 @@ TriggerClearBgpNeighborIpv4:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearBgpNeighborIpv6:
@@ -161,9 +131,6 @@ TriggerClearBgpNeighborIpv6:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearBgpNeighborSoft:
@@ -171,9 +138,6 @@ TriggerClearBgpNeighborSoft:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearBgpNeighborSoftIpv4:
@@ -181,9 +145,6 @@ TriggerClearBgpNeighborSoftIpv4:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearBgpNeighborSoftIpv6:
@@ -191,9 +152,6 @@ TriggerClearBgpNeighborSoftIpv6:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearIpRouteAll:
@@ -201,9 +159,6 @@ TriggerClearIpRouteAll:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearCountersInterfaceAll:
@@ -211,9 +166,6 @@ TriggerClearCountersInterfaceAll:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearIpRouteVrfAll:
@@ -222,9 +174,6 @@ TriggerClearIpRouteVrfAll:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearIpv6RouteVrfAll:
@@ -233,9 +182,6 @@ TriggerClearIpv6RouteVrfAll:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearBgpVpnv4UnicastVrfAll:
@@ -244,9 +190,6 @@ TriggerClearBgpVpnv4UnicastVrfAll:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearBgpVpnv6UnicastVrfAll:
@@ -255,9 +198,6 @@ TriggerClearBgpVpnv6UnicastVrfAll:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearIpBgpVrfAll:
@@ -266,9 +206,6 @@ TriggerClearIpBgpVrfAll:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearIpOspfNeighborVrfAll:
@@ -280,9 +217,6 @@ TriggerClearIpOspfNeighborVrfAll:
     timeout_recovery:
       max_time: 600
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerRestartBgp:
@@ -291,9 +225,6 @@ TriggerRestartBgp:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerRestartOspf:
@@ -305,9 +236,6 @@ TriggerRestartOspf:
     timeout_recovery:
       max_time: 600
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearIpRoute:
@@ -315,9 +243,6 @@ TriggerClearIpRoute:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearIpv6Route:
@@ -325,9 +250,6 @@ TriggerClearIpv6Route:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearIpRouting:
@@ -335,9 +257,6 @@ TriggerClearIpRouting:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearRouting:
@@ -345,9 +264,6 @@ TriggerClearRouting:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearIpMroute:
@@ -355,9 +271,6 @@ TriggerClearIpMroute:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearIpv6Mroute:
@@ -365,9 +278,6 @@ TriggerClearIpv6Mroute:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearIpMrouteVrfAll:
@@ -375,9 +285,6 @@ TriggerClearIpMrouteVrfAll:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearIpv6MrouteVrfAll:
@@ -392,9 +299,6 @@ TriggerClearIpv6Routing:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearRoutingUnicast:
@@ -402,9 +306,6 @@ TriggerClearRoutingUnicast:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearIpRoutingUnicast:
@@ -412,9 +313,6 @@ TriggerClearIpRoutingUnicast:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearIpv6RoutingUnicast:
@@ -422,9 +320,6 @@ TriggerClearIpv6RoutingUnicast:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerClearIpRoutingMulticast:
@@ -466,9 +361,6 @@ TriggerDisableEnableBgp:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerDisableEnableBgpWithCR:
@@ -477,9 +369,6 @@ TriggerDisableEnableBgpWithCR:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerDisableEnableHsrp:
@@ -488,9 +377,6 @@ TriggerDisableEnableHsrp:
     timeout:
       max_time: 1800
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerDisableEnablePim:
@@ -499,9 +385,6 @@ TriggerDisableEnablePim:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerDisableEnablePim6:
@@ -510,9 +393,6 @@ TriggerDisableEnablePim6:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerDisableEnableVlanInterface:
@@ -521,9 +401,6 @@ TriggerDisableEnableVlanInterface:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerDisableEnableVnSegmentVlan:
@@ -532,9 +409,6 @@ TriggerDisableEnableVnSegmentVlan:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 
@@ -547,9 +421,6 @@ TriggerModifyEvpnMsiteBgwDelayRestoreTime:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     devices: ['uut']
 
 TriggerModifyNveVniMcastGroup:
@@ -558,9 +429,6 @@ TriggerModifyNveVniMcastGroup:
     timeout:
       max_time: 300
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     timeout_recovery:
         max_time: 400
         interval: 20
@@ -572,9 +440,6 @@ TriggerModifyBgpNeighborAsn:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifyBgpNeighborCluster:
@@ -583,9 +448,6 @@ TriggerModifyBgpNeighborCluster:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifyHsrpIpv4StateActiveToStandby:
@@ -594,9 +456,6 @@ TriggerModifyHsrpIpv4StateActiveToStandby:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifyHsrpIpv6StateActiveToStandby:
@@ -605,9 +464,6 @@ TriggerModifyHsrpIpv6StateActiveToStandby:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifyBgpNeighborRoutemapIn:
@@ -616,9 +472,6 @@ TriggerModifyBgpNeighborRoutemapIn:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifyBgpNeighborRoutemapOut:
@@ -627,9 +480,6 @@ TriggerModifyBgpNeighborRoutemapOut:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifySwitchportModeTrunkToAccess:
@@ -638,9 +488,6 @@ TriggerModifySwitchportModeTrunkToAccess:
     timeout:
       max_time: 400
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifyVlanMtu:
@@ -649,9 +496,6 @@ TriggerModifyVlanMtu:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifyEthernetMtu:
@@ -660,9 +504,6 @@ TriggerModifyEthernetMtu:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifyLoopbackInterfaceIp:
@@ -671,9 +512,6 @@ TriggerModifyLoopbackInterfaceIp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifySviInterfaceIp:
@@ -682,9 +520,6 @@ TriggerModifySviInterfaceIp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
        
 TriggerModifyLoopbackInterfaceIpv6:
@@ -693,9 +528,6 @@ TriggerModifyLoopbackInterfaceIpv6:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifyBgpKeepaliveHoldtime:
@@ -704,9 +536,6 @@ TriggerModifyBgpKeepaliveHoldtime:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifyBgpKeepAliveInterval:
@@ -715,9 +544,6 @@ TriggerModifyBgpKeepAliveInterval:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifyBgpGracefulRestartRestartTime:
@@ -726,9 +552,6 @@ TriggerModifyBgpGracefulRestartRestartTime:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifyBgpGracefulRestartStalePathTime:
@@ -737,9 +560,6 @@ TriggerModifyBgpGracefulRestartStalePathTime:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifyBgpNeighborKeepAliveInterval:
@@ -748,9 +568,6 @@ TriggerModifyBgpNeighborKeepAliveInterval:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifyBgpNeighborEbgpMultihop:
@@ -759,9 +576,6 @@ TriggerModifyBgpNeighborEbgpMultihop:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifyBgpNeighborUpdateSource:
@@ -770,9 +584,6 @@ TriggerModifyBgpNeighborUpdateSource:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifyBgpNeighborMaximumPrefix:
@@ -781,9 +592,6 @@ TriggerModifyBgpNeighborMaximumPrefix:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifyBgpNeighborPassword:
@@ -792,9 +600,6 @@ TriggerModifyBgpNeighborPassword:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerModifyNveMultisiteBgwInterface:
@@ -803,9 +608,6 @@ TriggerModifyNveMultisiteBgwInterface:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     timeout_recovery:
       max_time: 300
       interval: 20
@@ -817,9 +619,6 @@ TriggerModifyVlanVnsegment:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     devices: ['uut']
 
 TriggerModifyBgpVpnRd:
@@ -828,9 +627,6 @@ TriggerModifyBgpVpnRd:
     timeout:
       max_time: 120
       interval: 30
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
       
 TriggerModifyMsdpOriginatorId:
@@ -839,9 +635,6 @@ TriggerModifyMsdpOriginatorId:
     timeout:
       max_time: 300
       interval: 30
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
       
 TriggerModifyMsdpSaFilterIn:
@@ -850,9 +643,6 @@ TriggerModifyMsdpSaFilterIn:
     timeout:
       max_time: 300
       interval: 30
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
       
 TriggerModifyMsdpSaFilterOut:
@@ -861,9 +651,6 @@ TriggerModifyMsdpSaFilterOut:
     timeout:
       max_time: 300
       interval: 30
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
       
 TriggerModifyMsdpSaLimit:
@@ -872,9 +659,6 @@ TriggerModifyMsdpSaLimit:
     timeout:
       max_time: 300
       interval: 30
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
       
 TriggerModifyMsdpMeshGroup:
@@ -883,9 +667,6 @@ TriggerModifyMsdpMeshGroup:
     timeout:
       max_time: 300
       interval: 30
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
       
 TriggerModifyMsdpKeepaliveHoldtime:
@@ -894,9 +675,6 @@ TriggerModifyMsdpKeepaliveHoldtime:
     timeout:
       max_time: 300
       interval: 30
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
       
 TriggerModifyMsdpReconnectInterval:
@@ -905,9 +683,6 @@ TriggerModifyMsdpReconnectInterval:
     timeout:
       max_time: 300
       interval: 30
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
       
 TriggerModifyMsdpDescription:
@@ -916,9 +691,6 @@ TriggerModifyMsdpDescription:
     timeout:
       max_time: 120
       interval: 30
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
       
 TriggerModifyMsdpPeerConnectedSource:
@@ -927,9 +699,6 @@ TriggerModifyMsdpPeerConnectedSource:
     timeout:
       max_time: 300
       interval: 30
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
       
 TriggerModifyMsdpPeerAs:
@@ -938,9 +707,6 @@ TriggerModifyMsdpPeerAs:
     timeout:
       max_time: 120
       interval: 30
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
       
 TriggerModifyPimNeighborFilter:
@@ -949,9 +715,6 @@ TriggerModifyPimNeighborFilter:
     timeout:
       max_time: 120
       interval: 30
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
       
 TriggerModifyIgmpVersion:
@@ -960,9 +723,6 @@ TriggerModifyIgmpVersion:
     timeout:
       max_time: 120
       interval: 30
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
       
 TriggerModifyMldVersion:
@@ -971,9 +731,6 @@ TriggerModifyMldVersion:
     timeout:
       max_time: 120
       interval: 30
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 #===============================================================================
@@ -985,9 +742,6 @@ TriggerUnconfigConfigBgpAddressFamilyIpv4Mvpn:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborAddressFamilyIpv4Mvpn:
@@ -996,9 +750,6 @@ TriggerUnconfigConfigBgpNeighborAddressFamilyIpv4Mvpn:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     devices: ['uut']
 
 TriggerUnconfigConfigRouteTargetMvpn:
@@ -1007,9 +758,6 @@ TriggerUnconfigConfigRouteTargetMvpn:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     devices: ['uut']
 
 TriggerUnconfigConfigRouteTargetEvpn:
@@ -1018,9 +766,6 @@ TriggerUnconfigConfigRouteTargetEvpn:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     devices: ['uut']
 
 TriggerUnconfigConfigAdvertiseEvpnMulticast:
@@ -1029,9 +774,6 @@ TriggerUnconfigConfigAdvertiseEvpnMulticast:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     devices: ['uut']
 
 TriggerUnconfigConfigBgpAfL2vpnEvpnRewriteEvpnRtAsn:
@@ -1040,9 +782,6 @@ TriggerUnconfigConfigBgpAfL2vpnEvpnRewriteEvpnRtAsn:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     devices: ['uut']
 
 TriggerUnconfigConfigEvpnMsiteBgw:
@@ -1051,9 +790,6 @@ TriggerUnconfigConfigEvpnMsiteBgw:
     timeout:
       max_time: 180
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     timeout_recovery:
       max_time: 300
       interval: 20
@@ -1065,9 +801,6 @@ TriggerUnconfigConfigNveVniMultisiteIngressReplication:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     devices: ['uut']
 
 TriggerUnconfigConfigVlan:
@@ -1076,9 +809,6 @@ TriggerUnconfigConfigVlan:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgp:
@@ -1087,9 +817,6 @@ TriggerUnconfigConfigBgp:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerUnconfigConfigBgpWithCR:
@@ -1098,9 +825,6 @@ TriggerUnconfigConfigBgpWithCR:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighbor:
@@ -1109,9 +833,6 @@ TriggerUnconfigConfigBgpNeighbor:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborWithCR:
@@ -1120,9 +841,6 @@ TriggerUnconfigConfigBgpNeighborWithCR:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpFastExternalFallover:
@@ -1131,9 +849,6 @@ TriggerUnconfigConfigBgpFastExternalFallover:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigEthernetInterface:
@@ -1142,9 +857,6 @@ TriggerUnconfigConfigEthernetInterface:
     timeout:
       max_time: 180
       interval: 5
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigEthernetInterfaceSub:
@@ -1153,9 +865,6 @@ TriggerUnconfigConfigEthernetInterfaceSub:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigVlanInterface:
@@ -1164,9 +873,6 @@ TriggerUnconfigConfigVlanInterface:
     timeout:
       max_time: 400
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigLoopbackInterface:
@@ -1175,8 +881,6 @@ TriggerUnconfigConfigLoopbackInterface:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborDefaultOriginate:
@@ -1185,9 +889,6 @@ TriggerUnconfigConfigBgpNeighborDefaultOriginate:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborNextHopSelf:
@@ -1196,9 +897,6 @@ TriggerUnconfigConfigBgpNeighborNextHopSelf:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborTransportConnectionModePassive:
@@ -1207,9 +905,6 @@ TriggerUnconfigConfigBgpNeighborTransportConnectionModePassive:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborPassword:
@@ -1218,9 +913,6 @@ TriggerUnconfigConfigBgpNeighborPassword:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborBfd:
@@ -1229,9 +921,6 @@ TriggerUnconfigConfigBgpNeighborBfd:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpGracefulRestart:
@@ -1240,9 +929,6 @@ TriggerUnconfigConfigBgpGracefulRestart:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpKeepaliveHoldtime:
@@ -1251,9 +937,6 @@ TriggerUnconfigConfigBgpKeepaliveHoldtime:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborSoftReconfiguration:
@@ -1262,9 +945,6 @@ TriggerUnconfigConfigBgpNeighborSoftReconfiguration:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborSendCommunity:
@@ -1273,9 +953,6 @@ TriggerUnconfigConfigBgpNeighborSendCommunity:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborSendCommunityExtended:
@@ -1284,9 +961,6 @@ TriggerUnconfigConfigBgpNeighborSendCommunityExtended:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborRouteReflectorClient:
@@ -1295,9 +969,6 @@ TriggerUnconfigConfigBgpNeighborRouteReflectorClient:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborIpv4:
@@ -1306,9 +977,6 @@ TriggerUnconfigConfigBgpNeighborIpv4:
     timeout:
       max_time: 240
       interval: 30
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborIpv4WithCR:
@@ -1317,9 +985,6 @@ TriggerUnconfigConfigBgpNeighborIpv4WithCR:
     timeout:
       max_time: 240
       interval: 30
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborIpv6:
@@ -1328,9 +993,6 @@ TriggerUnconfigConfigBgpNeighborIpv6:
     timeout:
       max_time: 240
       interval: 30
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpRouterId:
@@ -1339,9 +1001,6 @@ TriggerUnconfigConfigBgpRouterId:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborAsOverride:
@@ -1350,9 +1009,6 @@ TriggerUnconfigConfigBgpNeighborAsOverride:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborVrf:
@@ -1361,9 +1017,6 @@ TriggerUnconfigConfigBgpNeighborVrf:
     timeout:
       max_time: 240
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborVrfWithCR:
@@ -1372,9 +1025,6 @@ TriggerUnconfigConfigBgpNeighborVrfWithCR:
     timeout:
       max_time: 240
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborIbgp:
@@ -1383,9 +1033,6 @@ TriggerUnconfigConfigBgpNeighborIbgp:
     timeout:
       max_time: 240
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborIbgpWithCR:
@@ -1394,9 +1041,6 @@ TriggerUnconfigConfigBgpNeighborIbgpWithCR:
     timeout:
       max_time: 240
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigPhysicalTrunkInterface:
@@ -1405,9 +1049,6 @@ TriggerUnconfigConfigPhysicalTrunkInterface:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']    
 
 TriggerUnconfigConfigVirtualTrunkInterface:
@@ -1416,9 +1057,6 @@ TriggerUnconfigConfigVirtualTrunkInterface:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighborEbgp:
@@ -1427,20 +1065,14 @@ TriggerUnconfigConfigBgpNeighborEbgp:
     timeout:
       max_time: 180
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigBgpVpnRd:
     groups: ['unconfig-config', 'bgp', 'L3']
     method: 'checkpoint'
     timeout:
-      max_time: 180
+      max_time: 450
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
         
 TriggerUnconfigConfigBgpL2vpnCapability:
@@ -1449,9 +1081,6 @@ TriggerUnconfigConfigBgpL2vpnCapability:
     timeout:
       max_time: 60
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     devices: ['uut']
 
 TriggerUnconfigConfigVxlanNveOverlayInterface:
@@ -1460,9 +1089,6 @@ TriggerUnconfigConfigVxlanNveOverlayInterface:
     timeout:
       max_time: 360
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     timeout_recovery:
       max_time: 800
       interval: 20
@@ -1474,9 +1100,6 @@ TriggerUnconfigConfigEvpn:
     timeout:
       max_time: 300
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     timeout_recovery:
       max_time: 500
       interval: 20
@@ -1488,9 +1111,6 @@ TriggerUnconfigConfigEvpnVni:
     timeout:
       max_time: 180
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     devices: ['uut']
 
 TriggerUnconfigConfigNvOverlayEvpn:
@@ -1499,9 +1119,6 @@ TriggerUnconfigConfigNvOverlayEvpn:
     timeout:
       max_time: 400
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     timeout_recovery:
       max_time: 1000
       interval: 20
@@ -1513,9 +1130,6 @@ TriggerUnconfigConfigEvpnMsiteBgwDelayRestoreTime:
     timeout:
       max_time: 180
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     devices: ['uut']
 
 TriggerUnconfigConfigEvpnMsiteDciTracking:
@@ -1524,9 +1138,6 @@ TriggerUnconfigConfigEvpnMsiteDciTracking:
     timeout:
       max_time: 180
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     timeout_recovery:
       max_time: 600
       interval: 20
@@ -1538,9 +1149,6 @@ TriggerUnconfigConfigEvpnMsiteFabricTracking:
     timeout:
       max_time: 400
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     timeout_recovery:
       max_time: 600
       interval: 20
@@ -1552,9 +1160,6 @@ TriggerUnconfigConfigNveVniAssociateVrf:
     timeout:
       max_time: 180
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     devices: ['uut']
 
 TriggerUnconfigConfigNveSourceInterfaceLoopback:
@@ -1563,27 +1168,22 @@ TriggerUnconfigConfigNveSourceInterfaceLoopback:
     timeout:
       max_time: 500
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 900
     timeout_recovery:
       max_time: 400
       interval: 15
     devices: ['uut']
-# removed from vxlan trigger list due to it makes changes on config
-#TriggerUnconfigConfigNveAdvertiseVirtualRmac:
-#    groups: ['unconfig-config', 'L3']
-#    method: 'checkpoint'
-#    timeout:
-#      max_time: 360
-#      interval: 20
-#    tgn_timeout: 300
-#    tgn_delay: 10
-#    tgn_max_outage: 300
-#    timeout_recovery:
-#      max_time: 750
-#      interval: 20
-#    devices: ['uut']
+
+# Removed from vxlan trigger list due to it makes changes on config
+# TriggerUnconfigConfigNveAdvertiseVirtualRmac:
+#     groups: ['unconfig-config', 'L3']
+#     method: 'checkpoint'
+#     timeout:
+#       max_time: 360
+#       interval: 20
+#     timeout_recovery:
+#       max_time: 750
+#       interval: 20
+#     devices: ['uut']
 
 TriggerUnconfigConfigNveVniMcastGroup:
     groups: ['unconfig-config', 'L3']
@@ -1591,9 +1191,6 @@ TriggerUnconfigConfigNveVniMcastGroup:
     timeout:
       max_time: 180
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     timeout_recovery:
       max_time: 300
       interval: 20
@@ -1605,9 +1202,6 @@ TriggerUnconfigConfigBsrRpInterface:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
         
 TriggerUnconfigConfigBsrRpVrfInterface:
@@ -1616,9 +1210,6 @@ TriggerUnconfigConfigBsrRpVrfInterface:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
         
 TriggerUnconfigConfigStaticRpInterface:
@@ -1627,9 +1218,6 @@ TriggerUnconfigConfigStaticRpInterface:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
         
 TriggerUnconfigConfigStaticRpVrfInterface:
@@ -1638,9 +1226,6 @@ TriggerUnconfigConfigStaticRpVrfInterface:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
         
 TriggerUnconfigConfigPimNbrInterface:
@@ -1649,9 +1234,6 @@ TriggerUnconfigConfigPimNbrInterface:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
         
 TriggerUnconfigConfigPimNbrVrfInterface:
@@ -1660,9 +1242,6 @@ TriggerUnconfigConfigPimNbrVrfInterface:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigAutoRpInterface:
@@ -1671,9 +1250,6 @@ TriggerUnconfigConfigAutoRpInterface:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
         
 TriggerUnconfigConfigAutoRpVrfInterface:
@@ -1682,9 +1258,6 @@ TriggerUnconfigConfigAutoRpVrfInterface:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigVlanVnsegment:
@@ -1693,9 +1266,6 @@ TriggerUnconfigConfigVlanVnsegment:
     timeout:
       max_time: 180
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     timeout_recovery:
       max_time: 300
       interval: 20
@@ -1707,9 +1277,6 @@ TriggerUnconfigConfigMsdpPeer:
     timeout:
       max_time: 300
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigMsdpSaFilterIn:
@@ -1718,9 +1285,6 @@ TriggerUnconfigConfigMsdpSaFilterIn:
     timeout:
       max_time: 300
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
         
 TriggerUnconfigConfigMsdpSaFilterOut:
@@ -1729,9 +1293,6 @@ TriggerUnconfigConfigMsdpSaFilterOut:
     timeout:
       max_time: 300
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigMsdpSaLimit:
@@ -1740,9 +1301,6 @@ TriggerUnconfigConfigMsdpSaLimit:
     timeout:
       max_time: 300
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigMsdpDescription:
@@ -1751,9 +1309,6 @@ TriggerUnconfigConfigMsdpDescription:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigMsdpMeshGroup:
@@ -1762,9 +1317,6 @@ TriggerUnconfigConfigMsdpMeshGroup:
     timeout:
       max_time: 300
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigMsdpKeepaliveHoldtime:
@@ -1773,9 +1325,6 @@ TriggerUnconfigConfigMsdpKeepaliveHoldtime:
     timeout:
       max_time: 300
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigMsdpReconnectInterval:
@@ -1784,9 +1333,6 @@ TriggerUnconfigConfigMsdpReconnectInterval:
     timeout:
       max_time: 300
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigMsdpOriginatorId:
@@ -1795,9 +1341,6 @@ TriggerUnconfigConfigMsdpOriginatorId:
     timeout:
       max_time: 300
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigPimNeighborFilter:
@@ -1806,9 +1349,6 @@ TriggerUnconfigConfigPimNeighborFilter:
     timeout:
       max_time: 120
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigIgmpEnable:
@@ -1817,9 +1357,6 @@ TriggerUnconfigConfigIgmpEnable:
     timeout:
       max_time: 120
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigMldEnable:
@@ -1828,9 +1365,6 @@ TriggerUnconfigConfigMldEnable:
     timeout:
       max_time: 120
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 
@@ -1840,9 +1374,6 @@ TriggerUnconfigConfigIgmpVersion:
     timeout:
       max_time: 120
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigMldVersion:
@@ -1851,9 +1382,6 @@ TriggerUnconfigConfigMldVersion:
     timeout:
       max_time: 120
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
       
 TriggerUnconfigConfigIgmpJoinGroup:
@@ -1862,9 +1390,6 @@ TriggerUnconfigConfigIgmpJoinGroup:
     timeout:
       max_time: 120
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigMldJoinGroup :
@@ -1873,9 +1398,6 @@ TriggerUnconfigConfigMldJoinGroup :
     timeout:
       max_time: 120
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
       
 TriggerUnconfigConfigIgmpStaticGroup:
@@ -1884,9 +1406,6 @@ TriggerUnconfigConfigIgmpStaticGroup:
     timeout:
       max_time: 120
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerUnconfigConfigMldStaticGroup:
@@ -1895,9 +1414,6 @@ TriggerUnconfigConfigMldStaticGroup:
     timeout:
       max_time: 120
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 #===============================================================================
@@ -1909,9 +1425,6 @@ TriggerShutNoShutBgp:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerShutNoShutBgpNeighbors:
@@ -1919,9 +1432,6 @@ TriggerShutNoShutBgpNeighbors:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerShutNoShutVlan:
@@ -1929,9 +1439,6 @@ TriggerShutNoShutVlan:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerShutNoShutEthernetInterface:
@@ -1939,9 +1446,6 @@ TriggerShutNoShutEthernetInterface:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerShutNoShutPortChannelInterface:
@@ -1949,9 +1453,6 @@ TriggerShutNoShutPortChannelInterface:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerShutNoShutLoopbackInterface:
@@ -1959,9 +1460,6 @@ TriggerShutNoShutLoopbackInterface:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerShutNoShutBgpLoopbackInterface:
@@ -1969,9 +1467,6 @@ TriggerShutNoShutBgpLoopbackInterface:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerShutNoShutHsrpIpv4VlanInterface:
@@ -1979,9 +1474,6 @@ TriggerShutNoShutHsrpIpv4VlanInterface:
     timeout:
       max_time: 1800
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerShutNoShutHsrpIpv6VlanInterface:
@@ -1989,9 +1481,6 @@ TriggerShutNoShutHsrpIpv6VlanInterface:
     timeout:
       max_time: 1800
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerShutNoShutTrunkInterface:
@@ -1999,9 +1488,6 @@ TriggerShutNoShutTrunkInterface:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerShutNoShutVlanInterface:
@@ -2009,9 +1495,6 @@ TriggerShutNoShutVlanInterface:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
         
 TriggerShutNoShutNveOverlayInterface:
@@ -2019,9 +1502,6 @@ TriggerShutNoShutNveOverlayInterface:
     timeout:
       max_time: 300
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     timeout_recovery:
       max_time: 500
       interval: 20
@@ -2032,9 +1512,6 @@ TriggerShutNoShutAutoRpInterface:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerShutNoShutBsrRpInterface:
@@ -2042,9 +1519,6 @@ TriggerShutNoShutBsrRpInterface:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
         
 TriggerShutNoShutAutoRpVrfInterface:
@@ -2052,9 +1526,6 @@ TriggerShutNoShutAutoRpVrfInterface:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerShutNoShutBsrRpVrfInterface:
@@ -2062,9 +1533,6 @@ TriggerShutNoShutBsrRpVrfInterface:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
         
 TriggerShutNoShutStaticRpInterface:
@@ -2072,9 +1540,6 @@ TriggerShutNoShutStaticRpInterface:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
         
 TriggerShutNoShutStaticRpVrfInterface:
@@ -2082,9 +1547,6 @@ TriggerShutNoShutStaticRpVrfInterface:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
         
 TriggerShutNoShutPimNbrInterface:
@@ -2092,9 +1554,6 @@ TriggerShutNoShutPimNbrInterface:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
         
 TriggerShutNoShutPimNbrVrfInterface:
@@ -2102,9 +1561,6 @@ TriggerShutNoShutPimNbrVrfInterface:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerShutNoShutMsdp:
@@ -2112,34 +1568,26 @@ TriggerShutNoShutMsdp:
     timeout:
       max_time: 300
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 #===============================================================================
 #                                ADD-REMOVE
 #===============================================================================
-# cannot be added to vxlan trigger list because it will affect other multisite triggers
+
+# Cannot be added to vxlan trigger list because it will affect other multisite triggers
 TriggerAddRemoveNveMultisiteBgwInterface:
     groups: ['add-remove', 'L3']
     method: 'checkpoint'
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
 
-#TriggerAddRemoveBgpAfL2vpnEvpnRewriteEvpnRtAsn:
+# TriggerAddRemoveBgpAfL2vpnEvpnRewriteEvpnRtAsn:
 #    groups: ['add-remove', 'vxlan']
 #    method: 'checkpoint'
 #    timeout:
 #       max_time: 180
 #       interval: 10
-#    tgn_timeout: 300
-#    tgn_delay: 10
-#    tgn_max_outage: 300
 #    devices: ['uut']
 
 TriggerAddRemoveNveVniMcastGroup:
@@ -2148,20 +1596,14 @@ TriggerAddRemoveNveVniMcastGroup:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     devices: ['uut']
 
-#TriggerDisableEnableNveOverlay:
+# TriggerDisableEnableNveOverlay:
 #    groups: ['disable-enable', 'vxlan', 'L3']
 #    method: 'checkpoint'
 #    timeout:
 #      max_time: 180
 #      interval: 10
-#    tgn_timeout: 300
-#    tgn_delay: 10
-#    tgn_max_outage: 300
 #    timeout_recovery:
 #      max_time: 400
 #      interval: 20
@@ -2173,9 +1615,6 @@ TriggerDisableEnableVnSegmentVlanWithNvOverlay:
     timeout:
       max_time: 360
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 600
     timeout_recovery:
       max_time: 800
       interval: 30
@@ -2187,9 +1626,6 @@ TriggerDisableEnableNgmvpn:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 600
     timeout_recovery:
       max_time: 180
       interval: 30
@@ -2201,9 +1637,6 @@ TriggerModifyNveSourceInterfaceLoopback:
     timeout:
       max_time: 400
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     timeout_recovery:
       max_time: 600
       interval: 20
@@ -2215,9 +1648,6 @@ TriggerShutNoShutNveLoopbackInterface:
     timeout:
       max_time: 360
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     timeout_recovery:
       max_time: 1200
       interval: 20
@@ -2229,20 +1659,14 @@ TriggerModifyEvpnRd:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     devices: ['uut']
 
-#TriggerUnconfigConfigNveMultisiteBgwInterface:
+# TriggerUnconfigConfigNveMultisiteBgwInterface:
 #    groups: ['add-remove', 'vxlan', 'L3']
 #    method: 'checkpoint'
 #    timeout:
 #      max_time: 180
 #      interval: 10
-#    tgn_timeout: 300
-#    tgn_delay: 10
-#    tgn_max_outage: 300
 #    devices: ['uut']
 
 TriggerAddRemoveNveVniMultisiteIngressReplication:
@@ -2251,9 +1675,6 @@ TriggerAddRemoveNveVniMultisiteIngressReplication:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     devices: ['uut']
 
 TriggerAddRemoveEvpnMsiteBgwDelayRestoreTime:
@@ -2262,23 +1683,18 @@ TriggerAddRemoveEvpnMsiteBgwDelayRestoreTime:
     timeout:
       max_time: 360
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     timeout_recovery:
       max_time: 1000
       interval: 20
     devices: ['uut']
-# removed from vxlan trigger list due to it makes changes on config
-#TriggerAddRemoveNveAdvertiseVirtualRmac:
+
+# Removed from vxlan trigger list due to it makes changes on config
+# TriggerAddRemoveNveAdvertiseVirtualRmac:
 #    groups: ['add-remove', 'L3']
 #    method: 'checkpoint'
 #    timeout:
 #      max_time: 360
 #      interval: 10
-#    tgn_timeout: 300
-#    tgn_delay: 10
-#    tgn_max_outage: 300
 #    timeout_recovery:
 #      max_time: 500
 #      interval: 20
@@ -2292,9 +1708,6 @@ TriggerAddRemoveBgpNeighborRoutemap:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborRoutemapPrefixlist:
@@ -2303,9 +1716,6 @@ TriggerAddRemoveBgpNeighborRoutemapPrefixlist:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborRoutemapWeight:
@@ -2314,9 +1724,6 @@ TriggerAddRemoveBgpNeighborRoutemapWeight:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborUpdateSource:
@@ -2325,9 +1732,6 @@ TriggerAddRemoveBgpNeighborUpdateSource:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborDescription:
@@ -2336,9 +1740,6 @@ TriggerAddRemoveBgpNeighborDescription:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborDisableConnectedCheck:
@@ -2347,9 +1748,6 @@ TriggerAddRemoveBgpNeighborDisableConnectedCheck:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborBfd:
@@ -2358,9 +1756,6 @@ TriggerAddRemoveBgpNeighborBfd:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborMaximumPrefix:
@@ -2369,9 +1764,6 @@ TriggerAddRemoveBgpNeighborMaximumPrefix:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborNextHopSelf:
@@ -2380,9 +1772,6 @@ TriggerAddRemoveBgpNeighborNextHopSelf:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborDefaultOriginate:
@@ -2391,9 +1780,6 @@ TriggerAddRemoveBgpNeighborDefaultOriginate:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborPassword:
@@ -2402,9 +1788,6 @@ TriggerAddRemoveBgpNeighborPassword:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborTransportConnectionModePassive:
@@ -2413,9 +1796,6 @@ TriggerAddRemoveBgpNeighborTransportConnectionModePassive:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborCapabilitySuppress4ByteAs:
@@ -2424,9 +1804,6 @@ TriggerAddRemoveBgpNeighborCapabilitySuppress4ByteAs:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNetworkIPv4:
@@ -2435,9 +1812,6 @@ TriggerAddRemoveBgpNetworkIPv4:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 TriggerAddRemoveBgpNetworkIPv6:
     groups: ['add-remove', 'bgp', 'L3']
@@ -2445,9 +1819,6 @@ TriggerAddRemoveBgpNetworkIPv6:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborSendCommunity:
@@ -2456,9 +1827,6 @@ TriggerAddRemoveBgpNeighborSendCommunity:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborSendCommunityExtended:
@@ -2467,9 +1835,6 @@ TriggerAddRemoveBgpNeighborSendCommunityExtended:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborSoftReconfiguration:
@@ -2478,9 +1843,6 @@ TriggerAddRemoveBgpNeighborSoftReconfiguration:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborRemovePrivateAs:
@@ -2489,9 +1851,6 @@ TriggerAddRemoveBgpNeighborRemovePrivateAs:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpAggregateAddressIpv4:
@@ -2500,9 +1859,6 @@ TriggerAddRemoveBgpAggregateAddressIpv4:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpAggregateAddressIpv6:
@@ -2511,9 +1867,6 @@ TriggerAddRemoveBgpAggregateAddressIpv6:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNetworkIPv4:
@@ -2522,9 +1875,6 @@ TriggerAddRemoveBgpNetworkIPv4:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpKeepaliveHoldtime:
@@ -2533,9 +1883,6 @@ TriggerAddRemoveBgpKeepaliveHoldtime:
     timeout:
       max_time: 300
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpMaximumPathsEbgp:
@@ -2544,9 +1891,6 @@ TriggerAddRemoveBgpMaximumPathsEbgp:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpRedistributeConnected:
@@ -2555,9 +1899,6 @@ TriggerAddRemoveBgpRedistributeConnected:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpRedistributeStatic:
@@ -2566,9 +1907,6 @@ TriggerAddRemoveBgpRedistributeStatic:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpRedistributeOspf:
@@ -2577,9 +1915,6 @@ TriggerAddRemoveBgpRedistributeOspf:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborRouteReflectorClient:
@@ -2588,9 +1923,6 @@ TriggerAddRemoveBgpNeighborRouteReflectorClient:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborAsOverride:
@@ -2599,9 +1931,6 @@ TriggerAddRemoveBgpNeighborAsOverride:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveMsdpPeer:
@@ -2610,9 +1939,6 @@ TriggerAddRemoveMsdpPeer:
     timeout:
       max_time: 300
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveMsdpOriginatorId:
@@ -2621,9 +1947,6 @@ TriggerAddRemoveMsdpOriginatorId:
     timeout:
       max_time: 300
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoteMsdpSaFilterIn:
@@ -2632,9 +1955,6 @@ TriggerAddRemoteMsdpSaFilterIn:
     timeout:
       max_time: 300
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveMsdpSaFilterOut:
@@ -2643,9 +1963,6 @@ TriggerAddRemoveMsdpSaFilterOut:
     timeout:
       max_time: 300
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveMsdpSaLimit:
@@ -2654,9 +1971,6 @@ TriggerAddRemoveMsdpSaLimit:
     timeout:
       max_time: 300
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveMsdpMeshGroup:
@@ -2665,9 +1979,6 @@ TriggerAddRemoveMsdpMeshGroup:
     timeout:
       max_time: 300
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveMsdpKeepaliveHoldtime:
@@ -2676,9 +1987,6 @@ TriggerAddRemoveMsdpKeepaliveHoldtime:
     timeout:
       max_time: 300
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveMsdpReconnectInterval:
@@ -2687,9 +1995,6 @@ TriggerAddRemoveMsdpReconnectInterval:
     timeout:
       max_time: 300
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveMsdpDescription:
@@ -2698,9 +2003,6 @@ TriggerAddRemoveMsdpDescription:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemovePimNeighborFilter:
@@ -2709,9 +2011,6 @@ TriggerAddRemovePimNeighborFilter:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveIgmpEnable:
@@ -2720,9 +2019,6 @@ TriggerAddRemoveIgmpEnable:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveIgmpVersion:
@@ -2731,9 +2027,6 @@ TriggerAddRemoveIgmpVersion:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveIgmpJoinGroup:
@@ -2742,9 +2035,6 @@ TriggerAddRemoveIgmpJoinGroup:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveIgmpStaticGroup:
@@ -2753,9 +2043,6 @@ TriggerAddRemoveIgmpStaticGroup:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveMldEnable:
@@ -2764,9 +2051,6 @@ TriggerAddRemoveMldEnable:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveMldVersion:
@@ -2775,9 +2059,6 @@ TriggerAddRemoveMldVersion:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveMldJoinGroup:
@@ -2786,9 +2067,6 @@ TriggerAddRemoveMldJoinGroup:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveMldStaticGroup:
@@ -2797,9 +2075,6 @@ TriggerAddRemoveMldStaticGroup:
     timeout:
       max_time: 120
       interval: 20
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveRouteTargetMvpn:
@@ -2808,9 +2083,6 @@ TriggerAddRemoveRouteTargetMvpn:
     timeout:
       max_time: 400
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     devices: ['uut']
 
 TriggerAddRemoveRouteTargetEvpn:
@@ -2819,9 +2091,6 @@ TriggerAddRemoveRouteTargetEvpn:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     devices: ['uut']
 
 TriggerAddRemoveAdvertiseEvpnMulticast:
@@ -2830,9 +2099,6 @@ TriggerAddRemoveAdvertiseEvpnMulticast:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 300
     devices: ['uut']
 
 #===============================================================================
@@ -2844,9 +2110,6 @@ TriggerProcessCliRestartBgp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerProcessCrashRestartBgp:
@@ -2854,9 +2117,6 @@ TriggerProcessCrashRestartBgp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartBgp:
@@ -2864,9 +2124,6 @@ TriggerProcessKillRestartBgp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCliRestartOspf:
@@ -2874,9 +2131,6 @@ TriggerProcessCliRestartOspf:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartOspf:
@@ -2884,9 +2138,6 @@ TriggerProcessCrashRestartOspf:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartOspf:
@@ -2894,9 +2145,6 @@ TriggerProcessKillRestartOspf:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCliRestartOspfv3:
@@ -2904,9 +2152,6 @@ TriggerProcessCliRestartOspfv3:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartOspfv3:
@@ -2914,9 +2159,6 @@ TriggerProcessKillRestartOspfv3:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartOspfv3:
@@ -2924,9 +2166,6 @@ TriggerProcessCrashRestartOspfv3:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCliRestartEigrp:
@@ -2934,9 +2173,6 @@ TriggerProcessCliRestartEigrp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartEigrp:
@@ -2944,9 +2180,6 @@ TriggerProcessKillRestartEigrp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartEigrp:
@@ -2954,9 +2187,6 @@ TriggerProcessCrashRestartEigrp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCliRestartIsis:
@@ -2964,9 +2194,6 @@ TriggerProcessCliRestartIsis:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartIsis:
@@ -2974,9 +2201,6 @@ TriggerProcessKillRestartIsis:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartIsis:
@@ -2984,9 +2208,6 @@ TriggerProcessCrashRestartIsis:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCliRestartRip:
@@ -2994,9 +2215,6 @@ TriggerProcessCliRestartRip:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartRip:
@@ -3004,9 +2222,6 @@ TriggerProcessKillRestartRip:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartRip:
@@ -3014,9 +2229,6 @@ TriggerProcessCrashRestartRip:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCliRestartMsdp:
@@ -3024,9 +2236,6 @@ TriggerProcessCliRestartMsdp:
     timeout:
       max_time: 240
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartMsdp:
@@ -3034,9 +2243,6 @@ TriggerProcessKillRestartMsdp:
     timeout:
       max_time: 240
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartMsdp:
@@ -3044,9 +2250,6 @@ TriggerProcessCrashRestartMsdp:
     timeout:
       max_time: 240
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCliRestartPim:
@@ -3054,9 +2257,6 @@ TriggerProcessCliRestartPim:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartPim:
@@ -3064,9 +2264,6 @@ TriggerProcessKillRestartPim:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartPim:
@@ -3074,9 +2271,6 @@ TriggerProcessCrashRestartPim:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCliRestartPim6:
@@ -3084,9 +2278,6 @@ TriggerProcessCliRestartPim6:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartPim6:
@@ -3094,9 +2285,6 @@ TriggerProcessKillRestartPim6:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartPim6:
@@ -3104,9 +2292,6 @@ TriggerProcessCrashRestartPim6:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCliRestartIgmp:
@@ -3114,9 +2299,6 @@ TriggerProcessCliRestartIgmp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartIgmp:
@@ -3124,9 +2306,6 @@ TriggerProcessKillRestartIgmp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartIgmp:
@@ -3134,9 +2313,6 @@ TriggerProcessCrashRestartIgmp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 # process Rsvp not exists on N9K 
@@ -3145,9 +2321,6 @@ TriggerProcessCliRestartRsvp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartRsvp:
@@ -3155,9 +2328,6 @@ TriggerProcessKillRestartRsvp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartRsvp:
@@ -3165,9 +2335,6 @@ TriggerProcessCrashRestartRsvp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 # the processes only can be restart from shell
@@ -3176,9 +2343,6 @@ TriggerProcessCrashRestartSysmgr:
     timeout:
       max_time: 900
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartSysmgr:
@@ -3186,9 +2350,6 @@ TriggerProcessKillRestartSysmgr:
     timeout:
       max_time: 900
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartMrib:
@@ -3196,9 +2357,6 @@ TriggerProcessCrashRestartMrib:
     timeout:
       max_time: 900
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartMrib:
@@ -3206,9 +2364,6 @@ TriggerProcessKillRestartMrib:
     timeout:
       max_time: 900
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartSyslogd:
@@ -3216,9 +2371,6 @@ TriggerProcessKillRestartSyslogd:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartSyslogd:
@@ -3226,9 +2378,6 @@ TriggerProcessCrashRestartSyslogd:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartFeatureMgr:
@@ -3236,9 +2385,6 @@ TriggerProcessKillRestartFeatureMgr:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartFeatureMgr:
@@ -3246,9 +2392,6 @@ TriggerProcessCrashRestartFeatureMgr:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
         
 TriggerProcessKillRestartVdcMgr:
@@ -3256,9 +2399,6 @@ TriggerProcessKillRestartVdcMgr:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartVdcMgr:
@@ -3266,9 +2406,6 @@ TriggerProcessCrashRestartVdcMgr:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
         
 TriggerProcessKillRestartLacp:
@@ -3276,9 +2413,6 @@ TriggerProcessKillRestartLacp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartLacp:
@@ -3286,9 +2420,6 @@ TriggerProcessCrashRestartLacp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
         
 TriggerProcessKillRestartCfs:
@@ -3296,9 +2427,6 @@ TriggerProcessKillRestartCfs:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartCfs:
@@ -3306,9 +2434,6 @@ TriggerProcessCrashRestartCfs:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartAclmgr:
@@ -3316,9 +2441,6 @@ TriggerProcessKillRestartAclmgr:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartAclmgr:
@@ -3326,9 +2448,6 @@ TriggerProcessCrashRestartAclmgr:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
    
 # process Monitorc not exists on N9K     
@@ -3337,9 +2456,6 @@ TriggerProcessKillRestartMonitorc:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartMonitorc:
@@ -3347,9 +2463,6 @@ TriggerProcessCrashRestartMonitorc:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
         
 TriggerProcessKillRestartTunnel:
@@ -3357,9 +2470,6 @@ TriggerProcessKillRestartTunnel:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartTunnel:
@@ -3367,9 +2477,6 @@ TriggerProcessCrashRestartTunnel:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
         
 TriggerProcessKillRestartEltm:
@@ -3377,9 +2484,6 @@ TriggerProcessKillRestartEltm:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartEltm:
@@ -3387,9 +2491,6 @@ TriggerProcessCrashRestartEltm:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
         
 TriggerProcessKillRestartVlanMgr:
@@ -3397,9 +2498,6 @@ TriggerProcessKillRestartVlanMgr:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartVlanMgr:
@@ -3407,9 +2505,6 @@ TriggerProcessCrashRestartVlanMgr:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
         
 # process Plugin not exists on N9K
@@ -3418,9 +2513,6 @@ TriggerProcessKillRestartPlugin:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartPlugin:
@@ -3428,9 +2520,6 @@ TriggerProcessCrashRestartPlugin:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartFsDaemon:
@@ -3438,9 +2527,6 @@ TriggerProcessKillRestartFsDaemon:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartFsDaemon:
@@ -3448,9 +2534,6 @@ TriggerProcessCrashRestartFsDaemon:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartConfCheck:
@@ -3458,9 +2541,6 @@ TriggerProcessCrashRestartConfCheck:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartConfCheck:
@@ -3468,9 +2548,6 @@ TriggerProcessKillRestartConfCheck:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartGlbp:
@@ -3478,9 +2555,6 @@ TriggerProcessCrashRestartGlbp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartGlbp:
@@ -3488,9 +2562,6 @@ TriggerProcessKillRestartGlbp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartBfd:
@@ -3498,9 +2569,6 @@ TriggerProcessCrashRestartBfd:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartBfd:
@@ -3508,9 +2576,6 @@ TriggerProcessKillRestartBfd:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartL2rib:
@@ -3518,9 +2583,6 @@ TriggerProcessCrashRestartL2rib:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartNgmvpn:
@@ -3528,9 +2590,6 @@ TriggerProcessCrashRestartNgmvpn:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartNgmvpn:
@@ -3538,9 +2597,6 @@ TriggerProcessKillRestartNgmvpn:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartL2rib:
@@ -3548,9 +2604,6 @@ TriggerProcessKillRestartL2rib:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartNetstack:
@@ -3558,9 +2611,6 @@ TriggerProcessCrashRestartNetstack:
     timeout:
       max_time: 900
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartNetstack:
@@ -3568,9 +2618,6 @@ TriggerProcessKillRestartNetstack:
     timeout:
       max_time: 900
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartNve:
@@ -3578,9 +2625,6 @@ TriggerProcessCrashRestartNve:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartNve:
@@ -3588,9 +2632,6 @@ TriggerProcessKillRestartNve:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartStp:
@@ -3598,9 +2639,6 @@ TriggerProcessCrashRestartStp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartStp:
@@ -3608,9 +2646,6 @@ TriggerProcessKillRestartStp:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartUrib:
@@ -3618,9 +2653,6 @@ TriggerProcessCrashRestartUrib:
     timeout:
       max_time: 900
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartUrib:
@@ -3628,9 +2660,6 @@ TriggerProcessKillRestartUrib:
     timeout:
       max_time: 900
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessCrashRestartVpc:
@@ -3638,9 +2667,6 @@ TriggerProcessCrashRestartVpc:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 TriggerProcessKillRestartVpc:
@@ -3648,9 +2674,6 @@ TriggerProcessKillRestartVpc:
     timeout:
       max_time: 180
       interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 180
     devices: ['uut']
 
 #===============================================================================
@@ -3674,9 +2697,6 @@ TriggerSwitchover:
     timeout:
       max_time: 900
       interval: 60
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 #===============================================================================
@@ -3700,9 +2720,6 @@ TriggerReload:
     timeout:
       max_time: 900
       interval: 60
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 450
     devices: ['uut']
 
 TriggerReloadFabricModule:
@@ -3711,9 +2728,6 @@ TriggerReloadFabricModule:
     timeout:
       max_time: 600
       interval: 60
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerReloadActiveSystemController:
@@ -3734,9 +2748,6 @@ TriggerReloadActiveSystemController:
     timeout:
       max_time: 400
       interval: 60
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerReloadStandbySystemController:
@@ -3757,9 +2768,6 @@ TriggerReloadStandbySystemController:
     timeout:
       max_time: 400
       interval: 60
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerReloadEthernetModule:
@@ -3768,9 +2776,6 @@ TriggerReloadEthernetModule:
     timeout:
       max_time: 500
       interval: 60
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     verifications:
       Verify_Interface:
         devices: ['uut']
@@ -3797,9 +2802,6 @@ TriggerReloadActiveRP:
     timeout:
       max_time: 900
       interval: 60
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerReloadStandbyRP:
@@ -3807,7 +2809,4 @@ TriggerReloadStandbyRP:
     timeout:
       max_time: 900
       interval: 60
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']

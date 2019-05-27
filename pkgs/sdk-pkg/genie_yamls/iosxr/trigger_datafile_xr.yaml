@@ -31,6 +31,10 @@ global_processors:
 #                                SLEEP
 #===============================================================================
 
+#===============================================================================
+#                                SLEEP
+#===============================================================================
+
 TriggerSleep:
     groups: []
     sleep_time: 5
@@ -42,9 +46,6 @@ TriggerProfileSystem:
     timeout:
        max_time: 300
        interval: 15
-    tgn_timeout: 300
-    tgn_delay: 10
-    tgn_max_outage: 120
     features: ['platform', 'interface']
     devices: ['uut']
     # golden_file: <golden pts file to compare with, if not provided, no comparison>
@@ -55,8 +56,6 @@ TriggerClearBgpAll:
     timeout:
        max_time:  180
        interval: 10
-    tgn_timeout: 600
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerModifyBgpNeighborAsn:
@@ -65,8 +64,6 @@ TriggerModifyBgpNeighborAsn:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 600
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerModifyBgpNeighborCluster:
@@ -75,8 +72,6 @@ TriggerModifyBgpNeighborCluster:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 600
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerModifyBgpNeighborRoutemapIn:
@@ -85,8 +80,6 @@ TriggerModifyBgpNeighborRoutemapIn:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 600
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerModifyBgpNeighborRoutemapOut:
@@ -95,8 +88,6 @@ TriggerModifyBgpNeighborRoutemapOut:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 600
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerUnconfigConfigBgp:
@@ -105,8 +96,6 @@ TriggerUnconfigConfigBgp:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 600
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerUnconfigConfigBgpNeighbor:
@@ -115,8 +104,6 @@ TriggerUnconfigConfigBgpNeighbor:
     timeout:
        max_time: 400
        interval: 10
-    tgn_timeout: 600
-    tgn_delay: 10
     devices: ['uut']
 
 # CSCtr26693
@@ -126,9 +113,6 @@ TriggerShutNoShutBgp:
     timeout:
       max_time: 180
       interval: 10
-    tgn_timeout: 600
-    tgn_delay: 10
-    tgn_max_outage: 120
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborRoutemapPrefixlist:
@@ -137,8 +121,6 @@ TriggerAddRemoveBgpNeighborRoutemapPrefixlist:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 600
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerAddRemoveBgpNeighborRoutemapWeight:
@@ -147,8 +129,6 @@ TriggerAddRemoveBgpNeighborRoutemapWeight:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 600
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerUnconfigConfigEthernetInterface:
@@ -157,8 +137,6 @@ TriggerUnconfigConfigEthernetInterface:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 600
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerUnconfigConfigEthernetInterfaceSub:
@@ -167,8 +145,6 @@ TriggerUnconfigConfigEthernetInterfaceSub:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 600
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerModifyEthernetMtu:
@@ -177,8 +153,6 @@ TriggerModifyEthernetMtu:
     timeout:
        max_time: 180
        interval: 10
-    tgn_timeout: 600
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerSwitchover:
@@ -198,8 +172,6 @@ TriggerSwitchover:
     timeout:
        max_time: 900
        interval: 60
-    tgn_timeout: 600
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerReload:
@@ -219,8 +191,6 @@ TriggerReload:
     timeout:
        max_time: 900
        interval: 60
-    tgn_timeout: 600
-    tgn_delay: 10
     devices: ['uut']
 
 TriggerReloadActiveRP:

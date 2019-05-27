@@ -74,7 +74,7 @@ class TriggerShutNoShutBgpNeighbors(TriggerShutNoShut):
                     'requirements':[\
                         ['info', 'instance', '(?P<instance>.*)',
                         'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
-                        'session_state', 'established'],
+                        'session_state', '(?P<established>[E|e]stablished)'],
                         ['info', 'instance', '(?P<instance>.*)', 'bgp_id', '(?P<bgp_id>.*)']],
                     'all_keys':True, 
                     'kwargs':
@@ -92,7 +92,7 @@ class TriggerShutNoShutBgpNeighbors(TriggerShutNoShut):
                     'requirements':[\
                         ['info', 'instance', '(?P<instance>.*)', 'vrf',
                         '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
-                        'session_state', 'idle'],
+                        'session_state', '(?P<idle>[I|i]dle)'],
                         ['info', 'instance', '(?P<instance>.*)', 'vrf',
                         '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
                         'shutdown', True]],

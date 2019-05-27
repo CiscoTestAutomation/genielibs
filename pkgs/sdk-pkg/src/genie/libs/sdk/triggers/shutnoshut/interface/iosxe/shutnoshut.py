@@ -443,7 +443,7 @@ class TriggerShutNoShutEthernetInterface(TriggerShutNoShut):
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
                                         'requirements':[\
-                                            ['info', '(?P<interface>(\w+(e|E)thernet[\d\/]|\w+(g|G)ig[\w\/])+$)', 'oper_status', 'up'],
+                                            ['info', '(?P<interface>(\w+(e|E)thernet[\S]+|\w+(g|G)ig[\S]+))', 'oper_status', 'up'],
                                             ['info', '(?P<interface>.*)', 'port_channel', 'port_channel_member', False]],
                                         'exclude': interface_exclude,
                                         'kwargs': {'attributes': ['info[(.*)][switchport_enable]',

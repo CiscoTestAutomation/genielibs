@@ -20,25 +20,21 @@ class Vrf(Base):
             ret_dict[key] = {}
         return ret_dict
 
-    def learn(self):
+    def learn(self, vrf=''):
 
         '''Learn Vrf Ops'''
 
-        ########################################################################
-        #                                 info
-        ########################################################################
-
-        # route_distinguisher
-        self.add_leaf(cmd=ShowVrfDetail,
-                      src='[(?P<vrf>.*)][route_distinguisher]',
-                      dest='info[vrfs][(?P<vrf>.*)][route_distinguisher]')
-
-        # address_family          
         src = '[(?P<vrf>.*)][address_family]'
         dest = 'info[vrfs][(?P<vrf>.*)][address_family]'
 
         self.add_leaf(cmd=ShowVrfDetail,
-                      src=src, dest=dest,
-                      action=self.keys)
+                      src='[(?P<vrf>.*)][route_distinguisher]',
+                      dest='info[vrfs][(?P<vrf>.*)][route_distinguisher]',
+                      vrf=vrf)
+        self.add_leaf(cmd=ShowVrfDetail,
+                      src=src,
+                      dest=dest,
+                      action=self.keys,
+                      vrf=vrf)
 
         self.make(final_call=True)

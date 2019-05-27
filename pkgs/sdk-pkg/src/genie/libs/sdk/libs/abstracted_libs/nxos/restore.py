@@ -14,6 +14,10 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 # Genie Exceptions
 from genie.harness.exceptions import GenieConfigReplaceWarning
 
+# Genie
+from genie.utils.diff import Diff, Config
+
+# Logger
 log = logging.getLogger(__name__)
 
 
@@ -30,11 +34,14 @@ class Restore(object):
             # Check if checkpoint is successfully created
             self.check_checkpoint_status(device=device, name=self.ckname,
                                          abstract=abstract)
+
+            # Return checkpoint name generated to caller
+            return self.ckname
+
         elif method == 'local':
             self.run_config = device.execute('show running-config')
 
         elif method == 'config_replace':
-
             # Create unique filename
             self.filename = self.__class__.__name__ + \
                                 time.ctime().replace(' ', '_').replace(':', '_')
@@ -59,8 +66,11 @@ class Restore(object):
             else:
                 raise Exception("Unable to create '{}'".format(self.to_url))
 
+            # Return filename generated to caller
+            return self.to_url
+
     def restore_configuration(self, device, method, abstract, iteration=10,
-                              interval=60):
+                              interval=60, compare=False, compare_exclude=[]):
         if method == 'checkpoint':
             # Enable the feature
             for i in range(1,iteration):
@@ -71,6 +81,7 @@ class Restore(object):
                     if i == iteration-1:
                         raise Exception('Unable to rollback config')
                     else:
+                        log.error(e)
                         log.info('Rollback configuration failed: sleeping {} '
                                  'seconds and retrying...'.format(interval))
                         time.sleep(interval)
@@ -109,7 +120,50 @@ class Restore(object):
                 raise GenieConfigReplaceWarning('Warning: reload needed after '
                                                 'configure replace')
 
+            # Compare restored configuration to details in file
+            if compare:
+                log.info("Comparing current running-config with config-replace file")
+
+                # Default
+                exclude = ['device', 'maker', 'diff_ignore', 'callables',
+                           '(Current configuration.*)']
+                if compare_exclude:
+                    if isinstance(compare_exclude, str):
+                        exclude.extend([compare_exclude])
+                    else:
+                        exclude.extend(compare_exclude)
+
+                # show run
+                show_run_output = device.execute('show running-config')
+                show_run_config = Config(show_run_output)
+                show_run_config.tree()
+
+                # location:<filename> contents
+                more_file = device.execute('show file {}'.format(self.to_url))
+                more_file_config = Config(more_file)
+                more_file_config.tree()
+
+                # Diff 'show run' and config replace file contents
+                diff = Diff(show_run_config.config, more_file_config.config, exclude=exclude)
+                diff.findDiff()
+
+                # Check for differences
+                if len(diff.diffs):
+                    log.error("Differences observed betweenrunning-config and "
+                              "config-replce file:'{f}' for device {d}:".\
+                              format(f=self.to_url, d=device.name))
+                    log.error(str(diff.diffs))
+                    raise Exception("Comparison between running-config and "
+                                    "config-replace file '{f}' failed for device"
+                                    " {d}".format(f=self.to_url, d=device.name))
+                else:
+                    log.info("Comparison between running-config and config-replace"
+                             "file '{f}' passed for device {d}".\
+                             format(f=self.to_url, d=device.name))
+
             # Delete location:<filename>
+            self.filetransfer = FileUtils.from_device(device)
+            self.filename = self.to_url
             self.filetransfer.deletefile(target=self.to_url, device=device)
 
             # Verify location:<filename> deleted

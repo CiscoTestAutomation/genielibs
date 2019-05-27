@@ -109,9 +109,9 @@ class test_interface(unittest.TestCase):
 
         # Check specific attribute values
         # info - vrf
-        self.assertEqual(intf.info['mgmt0']['vrf'], 'management')
+        self.assertEqual(intf.info['Mgmt0']['vrf'], 'management')
         # info - link_status
-        self.assertEqual(intf.info['mgmt0']['oper_status'], 'up')
+        self.assertEqual(intf.info['Mgmt0']['oper_status'], 'up')
 
     def test_incomplete_output(self):
         self.maxDiff = None

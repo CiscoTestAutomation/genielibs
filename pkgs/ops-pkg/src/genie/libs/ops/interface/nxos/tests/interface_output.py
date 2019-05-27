@@ -1020,7 +1020,7 @@ class InterfaceOutput(object):
         'Ethernet4/8': {'vrf': 'default'},
         'Ethernet4/9': {'vrf': 'default'},
         'Null0': {'vrf': 'default'},
-        'mgmt0': {'auto_negotiate': True,
+        'Mgmt0': {'auto_negotiate': True,
                'bandwidth': 1000000,
                'counters': {'rate': {'in_rate': 0,
                                      'in_rate_pkts': 0,

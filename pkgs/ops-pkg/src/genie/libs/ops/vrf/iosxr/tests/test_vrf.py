@@ -12,6 +12,14 @@ from genie.libs.ops.vrf.iosxr.tests.vrf_output import VrfOutput
 
 from genie.libs.parser.iosxr.show_vrf import ShowVrfAllDetail
 
+outputs = {}
+outputs['show vrf VRF2 detail'] = VrfOutput.showVrfDetail_vrf2
+outputs['show vrf all detail'] = VrfOutput.showVrfDetail_all
+
+def mapper(key):
+    return outputs[key]
+
+
 class test_vrf(unittest.TestCase):
 
     def setUp(self):
@@ -25,22 +33,36 @@ class test_vrf(unittest.TestCase):
     def test_complete_output(self):
         vrf = Vrf(device=self.device)
         # Learn the feature
-        vrf.maker.outputs[ShowVrfAllDetail] = {'': VrfOutput.vrfInfo}
+        vrf.maker.outputs[ShowVrfAllDetail] = {'': VrfOutput.ShowVrfAllDetail}
         self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
         vrf.learn()
 
         self.maxDiff = None
 
         # Verify Ops was created successfully
-        self.assertEqual(vrf.info, VrfOutput.vrfOutput)
+        self.assertEqual(vrf.info, VrfOutput.VrfInfo)
 
+    def test_custom_output(self):
+        vrf = Vrf(device=self.device)
+        vrf.maker.outputs[ShowVrfAllDetail] = {'': VrfOutput.ShowVrfAllDetailCustom}
+        # Set outputs
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
+        # Learn the feature
+        vrf.learn(vrf='VRF2')
+        self.maxDiff = None
+
+        # Verify Ops was created successfully
+        self.assertDictEqual(vrf.info, VrfOutput.VrfCustomInfo)
 
     def test_selective_attribute(self):
         vrf = Vrf(device=self.device)
 
         # Set outputs
-        vrf.maker.outputs[ShowVrfAllDetail] = {'': VrfOutput.vrfInfo}
-
+        vrf.maker.outputs[ShowVrfAllDetail] = {'': VrfOutput.ShowVrfAllDetail}
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
         # Learn the feature
         vrf.learn()
 
@@ -53,9 +75,16 @@ class test_vrf(unittest.TestCase):
 
         # Set outputs
         vrf.maker.outputs[ShowVrfAllDetail] = {'': {}}
-
+        outputs['show vrf VRF2 detail'] = ''
+        outputs['show vrf all detail'] = ''
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
         # Learn the feature
         vrf.learn()
+
+        # revert back
+        outputs['show vrf VRF2 detail'] = VrfOutput.showVrfDetail_vrf2
+        outputs['show vrf all detail'] = VrfOutput.showVrfDetail_all
 
         # Check no outputs in vrf.info
         with self.assertRaises(AttributeError):

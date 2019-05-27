@@ -13,25 +13,20 @@ from genie.libs.parser.iosxr.show_vrf import ShowVrfAllDetail
 class Vrf(Base):
     '''Vrf Genie Ops Object'''
 
-    def learn(self):
+    def learn(self, vrf=''):
 
         '''Learn Vrf Ops'''
 
-        ########################################################################
-        #                                 info
-        ########################################################################
-
-        # route_distinguisher
-        self.add_leaf(cmd=ShowVrfAllDetail,
-                      src='[(?P<vrf>.*)][route_distinguisher]',
-                      dest='info[vrfs][(?P<vrf>.*)][route_distinguisher]')
-
-        # address_family          
         src = '[(?P<vrf>.*)][address_family][(?P<af>.*)][route_target]'
         dest = 'info[vrfs][(?P<vrf>.*)][address_family][(?P<af>.*)][route_targets]'
 
         self.add_leaf(cmd=ShowVrfAllDetail,
-                          src=src,
-                          dest=dest)
+                      src='[(?P<vrf>.*)][route_distinguisher]',
+                      dest='info[vrfs][(?P<vrf>.*)][route_distinguisher]',
+                      vrf=vrf)
+        self.add_leaf(cmd=ShowVrfAllDetail,
+                      src=src,
+                      dest=dest,
+                      vrf=vrf)
 
         self.make(final_call=True)

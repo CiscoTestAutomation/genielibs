@@ -13,6 +13,10 @@ from ats.utils.fileutils import FileUtils
 # Metaparser
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
+# Genie
+from genie.utils.diff import Diff, Config
+
+# Logger
 log = logging.getLogger(__name__)
 
 
@@ -58,9 +62,11 @@ class Restore(object):
             else:
                 raise Exception("Unable to create '{}'".format(self.to_url))
 
+            # Return filename generated to caller
+            return self.to_url
 
     def restore_configuration(self, device, method, abstract, iteration=10,
-                              interval=60):
+                              interval=60, compare=False, compare_exclude=[]):
         if method == 'checkpoint':
             # Enable the feature
             for i in range(1,iteration):
@@ -107,7 +113,51 @@ class Restore(object):
                              ' retrying.'.format(interval))
                     time.sleep(interval)
 
+            # Compare restored configuration to details in file
+            if compare:
+                log.info("Comparing current running-config with config-replace file")
+
+                # Default
+                exclude = ['device', 'maker', 'diff_ignore', 'callables',
+                           '(Current configuration.*)', '(.*Building configuration.*)',
+                           '(.*Load for.*)', '(.*Time source.*)']
+                if compare_exclude:
+                    if isinstance(compare_exclude, str):
+                        exclude.extend([compare_exclude])
+                    else:
+                        exclude.extend(compare_exclude)
+
+                # show run
+                show_run_output = device.execute('show running-config')
+                show_run_config = Config(show_run_output)
+                show_run_config.tree()
+
+                # location:<filename> contents
+                more_file = device.execute('more {}'.format(self.to_url))
+                more_file_config = Config(more_file)
+                more_file_config.tree()
+
+                # Diff 'show run' and config replace file contents
+                diff = Diff(show_run_config.config, more_file_config.config, exclude=exclude)
+                diff.findDiff()
+
+                # Check for differences
+                if len(diff.diffs):
+                    log.error("Differences observed betweenrunning-config and "
+                              "config-replce file:'{f}' for device {d}:".\
+                              format(f=self.to_url, d=device.name))
+                    log.error(str(diff.diffs))
+                    raise Exception("Comparison between running-config and "
+                                    "config-replace file '{f}' failed for device"
+                                    " {d}".format(f=self.to_url, d=device.name))
+                else:
+                    log.info("Comparison between running-config and config-replace"
+                             "file '{f}' passed for device {d}".\
+                             format(f=self.to_url, d=device.name))
+
             # Delete location:<filename>
+            self.filetransfer = FileUtils.from_device(device)
+            self.filename = self.to_url
             self.filetransfer.deletefile(target=self.to_url, device=device)
 
             # Verify location:<filename> deleted

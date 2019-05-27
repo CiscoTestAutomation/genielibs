@@ -3,6 +3,7 @@
 import logging
 log = logging.getLogger(__name__)
 
+
 def save_device_information(device, **kwargs):
     """Show version to print information users interest
 

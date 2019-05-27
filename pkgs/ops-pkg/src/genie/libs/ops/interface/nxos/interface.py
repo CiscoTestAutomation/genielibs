@@ -18,15 +18,20 @@ from genie.libs.parser.nxos.show_routing import ShowRoutingIpv6VrfAll, ShowRouti
 class Interface(Base):
     '''Interface Genie Ops Object'''
 
+    def convert_intf_name(self, item):
+        return item.capitalize()
+
     def learn(self):
         '''Learn Interface Ops'''
         
         ########################################################################
         #                               info
         ########################################################################
+        self.callables = {'convert_intf_name': self.convert_intf_name}
+
         # Global source
-        src = '[(?P<interface>.*)]'
-        dest = 'info[(?P<interface>.*)]'
+        src = '[(?P<interface>{convert_intf_name})]'
+        dest = 'info[(?P<interface>{convert_intf_name})]'
         req_keys_path = {'[description]': '[description]',
                         '[types]': '[type]',
                         '[oper_status]': '[oper_status]',
@@ -90,8 +95,8 @@ class Interface(Base):
         #                           counters
         # ======================================================================
         # Global source
-        src = '[(?P<interface>.*)][counters]'
-        dest = 'info[(?P<interface>.*)][counters]'
+        src = '[(?P<interface>{convert_intf_name})][counters]'
+        dest = 'info[(?P<interface>{convert_intf_name})][counters]'
 
         req_keys = ['in_pkts', 'in_octets', 'in_unicast_pkts',
                     'in_broadcast_pkts', 'in_multicast_pkts',
@@ -108,8 +113,8 @@ class Interface(Base):
 
 
         # Global source - counters | rate
-        src = '[(?P<interface>.*)][counters][rate]'
-        dest = 'info[(?P<interface>.*)][counters][rate]'        
+        src = '[(?P<interface>{convert_intf_name})][counters][rate]'
+        dest = 'info[(?P<interface>{convert_intf_name})][counters][rate]'        
 
         req_keys = ['load_interval', 'in_rate', 'in_rate_pkts',
                     'out_rate', 'out_rate_pkts']
@@ -125,8 +130,8 @@ class Interface(Base):
         
 
         # Global source
-        src = '[(?P<interface>.*)][encapsulations]'
-        dest = 'info[(?P<interface>.*)][encapsulation]'
+        src = '[(?P<interface>{convert_intf_name})][encapsulations]'
+        dest = 'info[(?P<interface>{convert_intf_name})][encapsulation]'
 
         req_keys = ['encapsulation', 'first_dot1q', 'native_vlan']
 
@@ -141,8 +146,8 @@ class Interface(Base):
         
 
         # Global source
-        src = '[(?P<interface>.*)][ipv4][(?P<ipv4>.*)]'
-        dest = 'info[(?P<interface>.*)][ipv4][(?P<ipv4>.*)]'
+        src = '[(?P<interface>{convert_intf_name})][ipv4][(?P<ipv4>.*)]'
+        dest = 'info[(?P<interface>{convert_intf_name})][ipv4][(?P<ipv4>.*)]'
 
         req_keys = ['ip', 'prefix_length', 'secondary']
 
@@ -160,8 +165,8 @@ class Interface(Base):
         
         # unnumbered
         self.add_leaf(cmd=ShowIpInterfaceVrfAll,
-                      src='[(?P<interface>.*)][ipv4][unnumbered]',
-                      dest='info[(?P<interface>.*)][ipv4][unnumbered]')
+                      src='[(?P<interface>{convert_intf_name})][ipv4][unnumbered]',
+                      dest='info[(?P<interface>{convert_intf_name})][ipv4][unnumbered]')
 
 
         # ======================================================================
@@ -170,8 +175,8 @@ class Interface(Base):
         
 
         # Global source
-        src = '[(?P<interface>.*)][ipv6][(?P<ipv6>.*)]'
-        dest = 'info[(?P<interface>.*)][ipv6][(?P<ipv6>.*)]'
+        src = '[(?P<interface>{convert_intf_name})][ipv6][(?P<ipv6>.*)]'
+        dest = 'info[(?P<interface>{convert_intf_name})][ipv6][(?P<ipv6>.*)]'
 
         req_keys = ['ip', 'prefix_length', 'anycast', 'status']
 

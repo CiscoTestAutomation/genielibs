@@ -571,7 +571,7 @@ class InterfaceOutput(object):
                                                      'out_rate_pkts': 0}},
                                  'delay': 1000,
                                  'duplex_mode': 'auto',
-                                 'enabled': False,
+                                 'enabled': True,
                                  'encapsulation': {'encapsulation': 'arpa'},
                                  'flow_control': {'receive': False, 'send': False},
                                  'mac_address': '843d.c638.b984',

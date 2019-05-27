@@ -2,6 +2,7 @@
 
 # python
 import logging
+import time
 from functools import partial
 
 log = logging.getLogger(__name__)
@@ -1748,6 +1749,10 @@ class TriggerUnconfigConfigBgpVpnRd(TriggerUnconfigConfig):
         6. Learn BGP Ops again and verify it is the same as the Ops in step 1
 
     """
+    @aetest.test
+    def verify_unconfigure(self, uut, abstract, steps):
+        time.sleep(120)
+        super().verify_unconfigure(uut, abstract, steps)
 
     mapping = Mapping(requirements={'ops.bgp.bgp.Bgp':{
                                           'requirements':[['table', 'instance', '(?P<instance>.*)',
@@ -1770,15 +1775,9 @@ class TriggerUnconfigConfigBgpVpnRd(TriggerUnconfigConfig):
                                      'verify_conf':False,
                                      'kwargs':{'mandatory':{'name': '(?P<default_vrf>.*)'}}}},
                       verify_ops={'ops.bgp.bgp.Bgp':{
-                                    'requirements': [[partial(verify_ops_or_logic,
-                                                      requires=[['table', 'instance', '(?P<instance>.*)',
+                                    'requirements': [['table', 'instance', '(?P<instance>.*)',
                                                                  'vrf', '(?P<vrf>.*)', 'address_family',
-                                                                 '(?P<address_family>.*)', NotExists('default_vrf')],
-                                                                ['table', 'instance', '(?P<instance>.*)',
-                                                                 'vrf', '(?P<vrf>.*)', 'address_family',
-                                                                 NotExists('(?P<address_family>.*)')]
-                                                               ])
-                                                    ]],
+                                                                 '(?P<address_family>.*)', NotExists('default_vrf')]],
                                     'kwargs':{'attributes':['table', 'info']},
                                     'exclude': bgp_exclude + ['label_allocation_mode', 'vpnv4 unicast', 'vpnv6 unicast']},
                                   'ops.vrf.vrf.Vrf':{

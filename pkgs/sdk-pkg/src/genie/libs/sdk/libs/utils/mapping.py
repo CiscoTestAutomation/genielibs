@@ -36,6 +36,7 @@ class Mapping(object):
         self.num_values = num_values or {}
         self._static = False
         self._static_learn = True
+
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -79,6 +80,10 @@ class Mapping(object):
         # Check if parent has static key from trigger datafile
         # Remove device name at the end
         name = self.parent.uid.rsplit('.', 1)[0]
+        # remove <dev> part when there is count in datafile and
+        # name is <key>.<dev>.<counter>
+        if name.rsplit('.', 1):
+            name = name.rsplit('.', 1)[0]
         if not hasattr(self.parent.parent, 'triggers'):
             self._static_learn = True
             self._static = False
@@ -90,6 +95,9 @@ class Mapping(object):
                             "datafile".format(name=name))
 
         data = self.parent.parent.triggers[name]
+        if 'num_values' in data:
+            self.num_values.update(data['num_values'])
+
         if 'static' not in data:
             self._static_learn = True
             self._static = False
@@ -164,7 +172,7 @@ class Mapping(object):
         requirement = []
         for item in req:
             # Check if any of the static is in these item
-            # Only str can be replaced
+            # Only str can be replaced and
             # Only regex can be replaced
             if not isinstance(item, str) or not item.startswith('(?P<'):
                 requirement.append(item)

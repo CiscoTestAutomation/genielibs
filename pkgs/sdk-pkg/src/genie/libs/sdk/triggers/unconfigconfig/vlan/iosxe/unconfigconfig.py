@@ -72,7 +72,7 @@ class TriggerUnconfigConfigVlan(TriggerUnconfigConfig):
                                      'verify_conf':False,
                                      'kwargs':{'mandatory':{'vlanid': '(?P<vlan>.*)'}}}},
                       verify_ops={'ops.vlan.vlan.Vlan':{
-                                    'requirements': [['info','vlans','(?P<vlan>.*)','vlan_id', NotExists('(?P<vlan>.*)')]],
+                                    'requirements': [['info','vlans', NotExists('(?P<vlan>.*)')]],
                                     'kwargs':{'attributes':['info']},
                                     'exclude': vlan_exclude}},
                       num_values={'vlan':1})

@@ -67,6 +67,7 @@ class TriggerShutNoShutTrunkInterface(TriggerShutNoShut):
                                                        ['info', '(?P<interface>.*)', 'port_channel',
                                                         'port_channel_int', '(?P<port_int>.*)'],
                                                        ['info', '(?P<interface>.*)', 'oper_status', 'up']],
+                                       'all_keys': True,
                                        'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{
                                        'requirements':[['enabled', False]],
