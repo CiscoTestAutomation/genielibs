@@ -2,9 +2,8 @@
 MLD Genie Ops Object for IOSXR - CLI.
 '''
 
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.mld.mld import Mld as SuperMld
 
 # Parser
 from genie.libs.parser.iosxr.show_mld import ShowMldSummaryInternal, \
@@ -14,7 +13,7 @@ from genie.libs.parser.iosxr.show_mld import ShowMldSummaryInternal, \
 # iosxr show_vrf
 from genie.libs.parser.iosxr.show_vrf import ShowVrfAllDetail
 
-class Mld(Base):
+class Mld(SuperMld):
     '''MLD Genie Ops Object'''
 
     def keys(self, item):

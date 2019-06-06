@@ -2,9 +2,8 @@
 Platform Genie Ops Object for IOSXR.
 '''
 
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.platform.platform import Platform as SuperPlatform
 
 # Parser
 from genie.libs.parser.iosxr.show_platform import ShowVersion, ShowSdrDetail,\
@@ -14,7 +13,7 @@ from genie.libs.parser.iosxr.show_platform import ShowVersion, ShowSdrDetail,\
                                 ShowRedundancy, Dir
 
 
-class Platform(Base):
+class Platform(SuperPlatform):
     '''Platform Genie Ops Object'''
 
     def get_active_uptime(self, item):

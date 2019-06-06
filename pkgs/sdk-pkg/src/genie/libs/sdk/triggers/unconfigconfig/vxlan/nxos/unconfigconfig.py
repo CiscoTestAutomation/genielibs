@@ -623,7 +623,7 @@ class TriggerUnconfigConfigNveSourceInterfaceLoopback(TriggerUnconfigConfig):
                         from_exception=e)
 
     mapping = Mapping(requirements={'ops.vxlan.vxlan.Vxlan': {
-                                                'requirements': [['nve', '(?P<nve_name>.*)', 'source_if', '(?P<source_if>loopback.*)'],
+                                                'requirements': [['nve', '(?P<nve_name>.*)', 'source_if', '(?P<source_if>(L|l)oopback.*)'],
                                                                  ['nve', '(?P<nve_name>.*)', 'src_if_state', 'up']],
                                                 'kwargs': {'attributes': ['nve[(.*)][vni][(.*)][vni]',
                                                                           'nve[(.*)][source_if]',
@@ -999,7 +999,7 @@ class TriggerUnconfigConfigNveMultisiteBgwInterface(TriggerUnconfigConfig):
                         'exclude': vxlan_base_exclude + interface_exclude}
 
     requirements['ops.interface.interface.Interface'] = {
-        'requirements': [['info', '(?P<multisite_bgw_if>loopback.*)', 'oper_status', 'up']],
+        'requirements': [['info', '(?P<multisite_bgw_if>(L|l)oopback.*)', 'oper_status', 'up']],
         'kwargs': {'attributes': ['info']},
         'exclude': vxlan_base_exclude + interface_exclude}
 

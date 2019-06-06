@@ -500,3 +500,56 @@ class TriggerIssu(IssuTemplate):
         update_obj.global_summary.print()
         update_obj.pts_summary.print()
         
+class TriggerReloadFabric(TriggerReload):
+    '''Trigger class for Reload LCs action'''
+
+    @aetest.test
+    def reload(self, uut, abstract, steps,fabricRole=None):
+        '''Reload LC and reconnect to device if needed
+
+           Args:
+               uut (`obj`): Device object.
+               abstract (`obj`): Abstract object.
+               steps (`step obj`): aetest step object
+
+           Returns:
+               None
+
+           Raises:
+               pyATS Results
+        '''
+        self.ha = abstract.sdk.libs.abstracted_libs.ha.HA(device=uut)
+
+        # get the fabric oc 
+        for fabric in self.mapping.keys:
+            for key, value in fabric.items():
+                if fabricRole and fabricRole not in key:
+                    continue
+                try:
+                    self.ha.reloadFabric(timeout=self.timeout, steps=steps, fabric=value)
+                except Exception as e:
+                    self.failed('Failed to reload fabric {}'
+                                 .format(value), from_exception=e,
+                                goto=['next_tc'])
+
+    @aetest.test
+    def verify_reload(self, uut, abstract, steps):
+        '''Verify if the reload taken palce
+
+           Args:
+               uut (`obj`): Device object.
+               abstract (`obj`): Abstract object.
+               steps (`step obj`): aetest step object
+
+           Returns:
+               None
+
+           Raises:
+               pyATS Results
+        '''        
+        try:
+            self.mapping.verify_ops(device=uut, abstract=abstract,
+                                    steps=steps)
+        except Exception as e:
+            self.failed('Failed to verify the '
+                        "platform", from_exception=e)

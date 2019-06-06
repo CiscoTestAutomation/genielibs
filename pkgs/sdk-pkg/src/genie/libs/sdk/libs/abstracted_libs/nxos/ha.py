@@ -227,3 +227,17 @@ class HA(HA_main):
         # Execute command to reload LC
         self.device.execute('reload module {}'.format(lc), reply=dialog)
         time.sleep(5)
+
+    def _reloadFabric(self, fabric):
+        """Do the poweroff/no poweroff action for NXOS n7k devices.
+
+        Raises:
+            Unicon errors
+
+        Example:
+            >>> _reloadFabric()
+        """
+        
+        # Execute command to poweroff/on
+        self.device.configure('poweroff xbar {}\nno poweroff xbar {}'.format(fabric,fabric))
+        

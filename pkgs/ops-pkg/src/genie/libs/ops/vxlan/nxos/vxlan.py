@@ -1,5 +1,5 @@
-# Genie package
-from genie.ops.base import Base
+# super class
+from genie.libs.ops.vxlan.vxlan import Vxlan as SuperVxlan
 
 from genie.libs.parser.nxos.show_vxlan import ShowNvePeers,\
                                    ShowNveInterfaceDetail,\
@@ -30,7 +30,7 @@ from genie.libs.parser.nxos.show_bgp import ShowBgpL2vpnEvpnSummary,\
 from genie.libs.parser.nxos.show_feature import ShowFeature
 from genie.libs.parser.nxos.show_mcast import ShowForwardingDistributionMulticastRoute
 
-class Vxlan(Base):
+class Vxlan(SuperVxlan):
     '''Vxlan Ops Object'''
 
     def set_enable(self, key):
@@ -40,6 +40,9 @@ class Vxlan(Base):
     def set_nv_enabled(self, key):
         if key:
             return True
+    
+    def convert_intf_name(self, item):
+        return item.capitalize()
 
     def learn(self):
         '''Learn vxlan object'''
@@ -113,18 +116,29 @@ class Vxlan(Base):
                 dest_nve = 'nve' + src_nve
 
                 req_key =['nve_name','if_state','encap_type', 'vpc_capability', 'local_rmac',\
-                          'host_reach_mode','source_if','primary_ip','secondary_ip','src_if_state',\
+                          'host_reach_mode','primary_ip','secondary_ip','src_if_state',\
                           'ir_cap_mode', 'adv_vmac','nve_flags','nve_if_handle','src_if_holddown_tm',\
                           'src_if_holdup_tm','src_if_holddown_left','vip_rmac','vip_rmac_ro','multisite_convergence_time',\
                           'sm_state','peer_forwarding_mode', 'src_intf_last_reinit_notify_type','multisite_convergence_time_left',\
                           'mcast_src_intf_last_reinit_notify_type','multi_src_intf_last_reinit_notify_type',\
-                          'multisite_bgw_if','multisite_bgw_if_ip','multisite_bgw_if_admin_state',\
+                          'multisite_bgw_if_ip','multisite_bgw_if_admin_state',\
                           'multisite_bgw_if_oper_state','multisite_bgw_if_oper_state_down_reason']
                 for key in req_key:
                     self.add_leaf(cmd=ShowNveInterfaceDetail,
                                   src=src_nve + '[{}]'.format(key),
                                   dest=dest_nve + '[{}]'.format(key),
                                   intf=nve_name)
+
+                self.add_leaf(cmd=ShowNveInterfaceDetail,
+                              src=src_nve + '[source_if][(?P<source_if>.*)]',
+                              dest=dest_nve + '[source_if][(?P<source_if>.*)]',
+                              intf=nve_name,
+                              action=self.convert_intf_name)
+                self.add_leaf(cmd=ShowNveInterfaceDetail,
+                              src=src_nve + '[multisite_bgw_if][(?P<multisite_bgw_if>.*)]',
+                              dest=dest_nve + '[multisite_bgw_if][(?P<multisite_bgw_if>.*)]',
+                              intf=nve_name,
+                              action=self.convert_intf_name)
         # nve - enabled
         self.add_leaf(cmd=ShowFeature,
                       src='[feature][nve][instance][(?P<instance>.*)][state]',

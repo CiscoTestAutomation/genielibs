@@ -1610,7 +1610,7 @@ TriggerAddRemoveNveVniMcastGroup:
 #    devices: ['uut']
 
 TriggerDisableEnableVnSegmentVlanWithNvOverlay:
-    groups: ['disable-enable', 'vxlan', 'L3']
+    groups: ['disable-enable', 'L3']
     method: 'checkpoint'
     timeout:
       max_time: 360
@@ -2724,12 +2724,13 @@ TriggerReload:
 
 TriggerReloadFabricModule:
     groups: ['ha', 'reload', 'L3']
-    lcRole: lc
+    fabricRole: oc
+    lcRole: oc
     timeout:
       max_time: 600
       interval: 60
     devices: ['uut']
-
+    
 TriggerReloadActiveSystemController:
     groups: ['ha', 'reload', 'L3']
     update_verifications: ['Verify_Module',
@@ -2744,15 +2745,15 @@ TriggerReloadActiveSystemController:
                            'Verify_VdcMembershipStatus',
                            'Verify_Version']
     update_pts_features: ['platform']
-    lcRole: lc
+    lcRole: oc
     timeout:
-      max_time: 400
+      max_time: 600
       interval: 60
     devices: ['uut']
 
 TriggerReloadStandbySystemController:
     groups: ['ha', 'reload', 'L3']
-    lcRole: lc
+    lcRole: oc
     update_verifications: ['Verify_Module',
                            'Verify_Boot',
                            'Verify_Dir',
@@ -2766,7 +2767,7 @@ TriggerReloadStandbySystemController:
                            'Verify_Version']
     update_pts_features: ['platform']
     timeout:
-      max_time: 400
+      max_time: 600
       interval: 60
     devices: ['uut']
 
@@ -2774,7 +2775,7 @@ TriggerReloadEthernetModule:
     groups: ['ha', 'reload', 'L3']
     lcRole: lc
     timeout:
-      max_time: 500
+      max_time: 700
       interval: 60
     verifications:
       Verify_Interface:

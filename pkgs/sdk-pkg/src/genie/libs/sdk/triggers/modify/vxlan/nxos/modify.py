@@ -128,9 +128,9 @@ class TriggerModifyNveMultisiteBgwInterface(TriggerModify):
                                                                   'nve[(.*)][multisite_bgw_if]','l2route']},
                                         'exclude': vxlan_exclude +['peer_id','tx_id']},
                                     'ops.interface.interface.Interface': {
-                                        'requirements': [['info', '(?P<intf_name>loopback.*)', 'oper_status', 'up']],
+                                        'requirements': [['info', '(?P<intf_name>(L|l)oopback.*)', 'oper_status', 'up']],
                                         'kwargs': {'attributes': ['info']},
-                                        'exclude': interface_exclude}},
+                                        'exclude': interface_exclude + vxlan_base_exclude}},
                     config_info={'conf.interface.Interface': {
                                         'requirements': [[partial(configure_multisite_bgw_interface, \
                                                                   nve_multisite_bgw_intf='(?P<source_if>.*)')]],
@@ -463,10 +463,10 @@ class TriggerModifyNveSourceInterfaceLoopback(TriggerModify):
                                             'kwargs': {'attributes': ['nve']},
                                             'exclude': vxlan_exclude},
                                     'ops.interface.interface.Interface':{
-                                            'requirements': [['info', '(?P<intf_name>loopback.*)', 'oper_status', 'up']],
+                                            'requirements': [['info', '(?P<intf_name>(L|l)oopback.*)', 'oper_status', 'up']],
                                             'kwargs': {'attributes': ['info']},
                                             'all_keys': True,
-                                            'exclude': interface_exclude}},
+                                            'exclude': interface_exclude + vxlan_base_exclude}},
                         config_info={'conf.interface.Interface': {
                                             'requirements': [],
                                             'verify_conf': False,

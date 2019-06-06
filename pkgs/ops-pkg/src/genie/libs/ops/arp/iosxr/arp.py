@@ -3,9 +3,8 @@ ARP Genie Ops Object for IOSXR - CLI.
 '''
 import copy
 
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.arp.arp import Arp as SuperArp
 
 # Parser
 from genie.libs.parser.iosxr.show_arp import ShowArpDetail, \
@@ -14,7 +13,7 @@ from genie.libs.parser.iosxr.show_arp import ShowArpDetail, \
 from genie.libs.parser.iosxr.show_interface import ShowIpv4VrfAllInterface
 
 
-class Arp(Base):
+class Arp(SuperArp):
 	'''ARP Genie Ops Object'''
 
 	def learn(self):

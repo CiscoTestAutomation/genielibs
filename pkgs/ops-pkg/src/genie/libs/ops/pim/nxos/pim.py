@@ -1,9 +1,8 @@
 ''' 
 PIM Genie Ops Object for NXOS - CLI.
 '''
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.pim.pim import Pim as SuperPim
 
 # Parser
 from genie.libs.parser.nxos.show_pim import ShowIpPimInterface,\
@@ -28,7 +27,7 @@ from genie.libs.parser.nxos.show_mcast import ShowIpMrouteVrfAll, \
                                    ShowIpv6MrouteVrfAll
 
 
-class Pim(Base):
+class Pim(SuperPim):
     '''Pim Genie Ops Object'''
 
     def transfer_to_bool(self, item):

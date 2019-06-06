@@ -423,24 +423,110 @@ class PlatformOutput(object):
                                 }
                             }
 
-    slot = {'oc': 
-            {'33': 
-                {'sn': 'DTM171300QB', 'name': 'Nexus7000 C7009 (9 Slot) Chassis Power Supply'}, 
-             '35': 
-                {'sn': 'JAF1702AEBE', 'name': 'Nexus7000 C7009 (9 Slot) Chassis Fan Module'}}, 
-           'lc': 
-            {'3': 
-                {'state': 'ok', 'sn': 'JAF1717AAND', 'name': '1/10 Gbps Ethernet Module'}, 
-             '4': 
-                {'state': 'ok', 'sn': 'JAE18120FLU', 'name': '10/40 Gbps Ethernet Module'}}, 
-           'rp': 
-            {'2': 
-                {'rp_kickstart_boot_image': 'slot0:/n7000-s2-kickstart.8.3.0.CV.0.658.gbin', 'rp_boot_image': 'slot0:/n7000-s2-dk9.8.3.0.CV.0.658.gbin', 'sn': 'JAF1708AGQH', 'name': 'N7K-SUP2', 'rp_uptime': 28650, 'redundancy_state': 'ha-standby', 'state': 'ha-standby'}, 
-             '1': 
-                {'rp_kickstart_boot_image': 'slot0:/n7000-s2-kickstart.8.3.0.CV.0.658.gbin', 'rp_boot_image': 'slot0:/n7000-s2-dk9.8.3.0.CV.0.658.gbin', 'sn': 'JAF1708AGTH', 'name': 'N7K-SUP2', 'rp_uptime': 28650, 'redundancy_state': 'active', 'state': 'active'}
-            }
-        }
-
+    slot = {
+       "oc": {
+          "1": {
+             "ports": "0",
+             "module_type": "Fabric Module 2",
+             "model": "N7K-C7009-FAB-2",
+             "status": "ok",
+             "software": "NA",
+             "hardware": "3.1",
+             "mac_address": "NA",
+             "serial_number": "JAF1705AEEF",
+             "state": "ok",
+             "name": "Fabric Module 2"
+          },
+          "2": {
+             "ports": "0",
+             "module_type": "Fabric Module 2",
+             "model": "N7K-C7009-FAB-2",
+             "status": "ok",
+             "software": "NA",
+             "hardware": "3.1",
+             "mac_address": "NA",
+             "serial_number": "JAF1705BFBM",
+             "state": "ok",
+             "name": "Fabric Module 2"
+          },
+          "3": {
+             "ports": "0",
+             "module_type": "Fabric Module 2",
+             "model": "N7K-C7009-FAB-2",
+             "status": "ok",
+             "software": "NA",
+             "hardware": "3.1",
+             "mac_address": "NA",
+             "serial_number": "JAF1705AELK",
+             "state": "ok",
+             "name": "Fabric Module 2"
+          },
+          "4": {
+             "ports": "0",
+             "module_type": "Fabric Module 2",
+             "model": "N7K-C7009-FAB-2",
+             "status": "ok",
+             "software": "NA",
+             "hardware": "3.1",
+             "mac_address": "NA",
+             "serial_number": "JAF1705BFCF",
+             "state": "ok",
+             "name": "Fabric Module 2"
+          },
+          "5": {
+             "ports": "0",
+             "module_type": "Fabric Module 2",
+             "model": "N7K-C7009-FAB-2",
+             "status": "ok",
+             "software": "NA",
+             "hardware": "3.1",
+             "mac_address": "NA",
+             "serial_number": "JAF1704APQH",
+             "state": "ok",
+             "name": "Fabric Module 2"
+          },
+          "35": {
+             "name": "Nexus7000 C7009 (9 Slot) Chassis Fan Module",
+             "sn": "JAF1702AEBE"
+          },
+          "33": {
+             "name": "Nexus7000 C7009 (9 Slot) Chassis Power Supply",
+             "sn": "DTM171300QB"
+          }
+       },
+       "rp": {
+          "2": {
+             "name": "N7K-SUP2",
+             "state": "ha-standby",
+             "sn": "JAF1708AGQH",
+             "redundancy_state": "ha-standby",
+             "rp_boot_image": "slot0:/n7000-s2-dk9.8.3.0.CV.0.658.gbin",
+             "rp_kickstart_boot_image": "slot0:/n7000-s2-kickstart.8.3.0.CV.0.658.gbin",
+             "rp_uptime": 28650
+          },
+          "1": {
+             "name": "N7K-SUP2",
+             "state": "active",
+             "sn": "JAF1708AGTH",
+             "redundancy_state": "active",
+             "rp_boot_image": "slot0:/n7000-s2-dk9.8.3.0.CV.0.658.gbin",
+             "rp_kickstart_boot_image": "slot0:/n7000-s2-kickstart.8.3.0.CV.0.658.gbin",
+             "rp_uptime": 28650
+          }
+       },
+       "lc": {
+          "4": {
+             "name": "10/40 Gbps Ethernet Module",
+             "sn": "JAE18120FLU",
+             "state": "ok"
+          },
+          "3": {
+             "name": "1/10 Gbps Ethernet Module",
+             "sn": "JAF1717AAND",
+             "state": "ok"
+          }
+       }
+    }
     virtual_device = {'2': 
                         {'vd_name': 'PE2', 'membership': {'Eth4/4': {'status': 'OK', 'type': 'Ethernet'}, 'Eth4/3': {'status': 'OK', 'type': 'Ethernet'}}, 'vd_status': 'active'}, 
                       '3': 

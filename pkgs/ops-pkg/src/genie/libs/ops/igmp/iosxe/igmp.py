@@ -1,9 +1,8 @@
 ''' 
 IGMP Genie Ops Object for IOSXE - CLI.
 '''
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.igmp.igmp import Igmp as SuperIgmp
 
 # Parser
 from genie.libs.parser.iosxe.show_igmp import ShowIpIgmpInterface, \
@@ -13,7 +12,7 @@ from genie.libs.parser.iosxe.show_igmp import ShowIpIgmpInterface, \
 # iosxe show_vrf
 from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
 
-class Igmp(Base):
+class Igmp(SuperIgmp):
     '''IGMP Genie Ops Object'''
 
     def keys(self, item):

@@ -3,9 +3,8 @@ ARP Genie Ops Object for IOS - CLI.
 '''
 import copy
 
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.arp.arp import Arp as SuperArp
 
 # Parser
 from genie.libs.parser.ios.show_arp import ShowIpArp, \
@@ -13,9 +12,10 @@ from genie.libs.parser.ios.show_arp import ShowIpArp, \
 										   ShowIpTraffic
 
 from genie.libs.parser.ios.show_interface import ShowIpInterface
+from genie.libs.parser.ios.show_vrf import ShowVrf
 
 
-class Arp(Base):
+class Arp(SuperArp):
 	'''ARP Genie Ops Object'''
 
 	def learn(self):
@@ -46,6 +46,30 @@ class Arp(Base):
 					  src=src_global + '[origin]',
 					  dest=dest_global + '[origin]')
 
+		self.add_leaf(cmd=ShowVrf,
+					  src='vrf[(?P<vrf>.*)][interfaces]',
+					  dest='info[vrf][(?P<vrf>.*)][interfaces]')
+		# save to cache
+		self.make()
+		if hasattr(self, 'info') and 'vrf' in self.info:
+			for vrf in self.info['vrf']:
+				self.add_leaf(cmd=ShowIpArp,
+							  src=src_global + '[ip]',
+							  dest=dest_global + '[ip]',
+							  vrf=vrf)
+
+				# 'link_layer_address'
+				self.add_leaf(cmd=ShowIpArp,
+							  src=src_global + '[link_layer_address]',
+							  dest=dest_global + '[link_layer_address]',
+							  vrf=vrf)
+
+				# 'origin'
+				self.add_leaf(cmd=ShowIpArp,
+							  src=src_global + '[origin]',
+							  dest=dest_global + '[origin]',
+							  vrf=vrf)
+			del (self.info['vrf'])
 		src_interface = '[(?P<intf>.*)]'
 		dest_interface = 'info[interfaces][(?P<intf>.*)][arp_dynamic_learning]'
 

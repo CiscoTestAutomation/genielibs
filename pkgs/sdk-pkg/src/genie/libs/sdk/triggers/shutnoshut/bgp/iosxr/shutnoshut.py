@@ -36,10 +36,11 @@ class TriggerShutNoShut(CommonShutNoShut):
                pyATS Results
         '''
         # shut BGP process
-        try:
-            uut.execute("process shutdown bgp")
-        except Exception as e:
-            self.failed('Failed to shut the feature', from_exception=e)
+        with steps.start("Shut Bgp process") as step:
+          try:
+              uut.execute("process shutdown bgp")
+          except Exception as e:
+              step.failed('Failed to shut the feature', from_exception=e)
 
     @aetest.test
     def unshut(self, uut, method, abstract, steps):
@@ -61,10 +62,11 @@ class TriggerShutNoShut(CommonShutNoShut):
         # unshut BGP process
         # workaround: shut bpm instead of bgp cause bgp cannot be started from sysmgr.
         # known bug: CSCtr26693
-        try:
-            uut.execute("process restart bpm")
-        except Exception as e:
-            self.failed('Failed to shut the feature', from_exception=e)
+        with steps.start("UnShut Bgp process") as step:
+          try:
+              uut.execute("process restart bpm")
+          except Exception as e:
+              step.failed('Failed to shut the feature', from_exception=e)
 
 # Trigger required data settings
 # Which key to exclude for BGP Ops comparison

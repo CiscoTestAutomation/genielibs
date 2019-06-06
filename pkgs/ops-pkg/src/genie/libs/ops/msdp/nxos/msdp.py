@@ -1,5 +1,5 @@
-# Genie package
-from genie.ops.base import Base
+# super class
+from genie.libs.ops.msdp.msdp import Msdp as SuperMsdp
 
 from genie.libs.parser.nxos.show_msdp import ShowIpMsdpSaCacheDetailVrf,\
                                              ShowIpMsdpPeerVrf, \
@@ -7,7 +7,7 @@ from genie.libs.parser.nxos.show_msdp import ShowIpMsdpSaCacheDetailVrf,\
                                              ShowIpMsdpPolicyStatisticsSaPolicyOut, \
                                              ShowIpMsdpSummary
 
-class Msdp(Base):
+class Msdp(SuperMsdp):
     '''Msdp Ops Object'''
 
     def learn(self):

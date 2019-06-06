@@ -1,10 +1,8 @@
 ''' 
 MCAST Genie Ops Object for IOSXE - CLI.
 '''
-
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.mcast.mcast import Mcast as SuperMacst
 
 # iosxe show_mcast
 from genie.libs.parser.iosxe.show_mcast import ShowIpMroute, ShowIpv6Mroute,\
@@ -20,7 +18,7 @@ from genie.libs.parser.iosxe.show_pim import ShowIpv6PimInterface
 from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
 
 
-class Mcast(Base):
+class Mcast(SuperMacst):
     '''Mcast Genie Ops Object'''
 
     def get_vrfs(self, item):

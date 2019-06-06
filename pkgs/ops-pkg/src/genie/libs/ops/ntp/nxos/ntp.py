@@ -1,16 +1,15 @@
 ''' 
 NTP Genie Ops Object for NXOS - CLI.
 '''
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.ntp.ntp import Ntp as SuperNtp
 
 # Parser
 from genie.libs.parser.nxos.show_ntp import ShowNtpPeerStatus, \
                                             ShowNtpPeers
 
 
-class Ntp(Base):
+class Ntp(SuperNtp):
     '''NTP Genie Ops Object'''
 
     def learn(self):

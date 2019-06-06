@@ -4,10 +4,8 @@ BGP Genie Ops Object for NXOS - CLI.
 
 import re
 
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
-
+# Super class
+from genie.libs.ops.bgp.bgp import Bgp as SuperBgp
 # nxos show_bgp
 from genie.libs.parser.nxos.show_bgp import ShowBgpProcessVrfAll, ShowBgpPeerSession,\
                                  ShowBgpPeerPolicy, ShowBgpPeerTemplate,\
@@ -27,7 +25,7 @@ from genie.libs.parser.nxos.show_vrf import ShowVrf
 from genie.libs.parser.nxos.show_routing import ShowRoutingVrfAll
 
 
-class Bgp(Base):
+class Bgp(SuperBgp):
     '''BGP Genie Ops Object'''
 
     # Callables

@@ -1,7 +1,8 @@
 # Genie package
 import re
 import copy
-from genie.ops.base import Base
+# super class
+from genie.libs.ops.platform.platform import Platform as SuperPlatform
 
 # Genie Parsers
 from genie.libs.parser.iosxe import show_platform
@@ -9,7 +10,7 @@ from genie.libs.parser.iosxe.show_issu import ShowIssuStateDetail,\
                                               ShowIssuRollbackTimer
 
 
-class Platform(Base):
+class Platform(SuperPlatform):
     '''Platform Ops Object'''
 
     # Callables

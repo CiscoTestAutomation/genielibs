@@ -1,5 +1,31 @@
 | Module                  | Version       |
 | ------------------------|:-------------:|
+| ``genie.libs.sdk``      |   v19.5.1b1   |
+
+---------------------------------------------------------------
+                          TRIGGERS
+---------------------------------------------------------------
+
+* IOSXR
+    * Updated TriggerShutNoshutBgp  to support steps
+
+* IOSXR, IOSXE, NXOS
+   * Updated mapping requiremets  for TriggerClearCounters
+
+
+| Module                  | Version       |
+| ------------------------|:-------------:|
+| ``genie.libs.sdk``      |   v19.5.1b0   |
+
+--------------------------------------------------------------------------------
+                                MSDP
+--------------------------------------------------------------------------------
+* NXOS
+	* Fixing TriggerAddRemoveMsdpPeer logic
+
+
+| Module                  | Version       |
+| ------------------------|:-------------:|
 | ``genie.libs.sdk``      |   v19.5.0     |
 
 

@@ -2,9 +2,8 @@
 OSPF Genie Ops Object for NXOS - CLI.
 '''
 
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.ospf.ospf import Ospf as SuperOspf
 
 # Parser
 from genie.libs.parser.nxos.show_ospf import ShowIpOspf,\
@@ -23,7 +22,7 @@ from genie.libs.parser.nxos.show_ospf import ShowIpOspf,\
 from genie.libs.parser.nxos.show_feature import ShowFeature
 
 
-class Ospf(Base):
+class Ospf(SuperOspf):
     '''Ospf Ops Object'''
 
     def set_enable(self, key):

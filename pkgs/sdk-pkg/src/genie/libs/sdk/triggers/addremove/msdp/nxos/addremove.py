@@ -810,6 +810,7 @@ class TriggerAddRemoveMsdpPeer(TriggerAddRemove):
 
             # initial new mapping keys list to update with the added peer values
             new_mapping_keys = []
+            self.uut_peer = ''
 
             # get the route which are not in the existing msdp peers
             for item in self.mapping.keys:

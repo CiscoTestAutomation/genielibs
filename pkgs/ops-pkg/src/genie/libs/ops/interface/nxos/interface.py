@@ -4,9 +4,8 @@ Interface Genie Ops Object for NXOS - CLI.
 
 import re
 
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.interface.interface import Interface as SuperInterface
 
 # nxos show_interface
 from genie.libs.parser.nxos.show_interface import ShowInterface, ShowVrfAllInterface,\
@@ -15,7 +14,7 @@ from genie.libs.parser.nxos.show_interface import ShowInterface, ShowVrfAllInter
 from genie.libs.parser.nxos.show_routing import ShowRoutingIpv6VrfAll, ShowRoutingVrfAll
 
 
-class Interface(Base):
+class Interface(SuperInterface):
     '''Interface Genie Ops Object'''
 
     def convert_intf_name(self, item):

@@ -2,9 +2,8 @@
 OSPF Genie Ops Object for IOSXR - CLI.
 '''
 
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.ospf.ospf import Ospf as SuperOspf
 
 # iosxr show_ospf
 from genie.libs.parser.iosxr.show_ospf import ShowOspfVrfAllInclusiveInterface,\
@@ -23,7 +22,7 @@ from genie.libs.parser.iosxr.show_ospf import ShowOspfVrfAllInclusiveInterface,\
 from genie.libs.parser.iosxr.show_protocol import ShowProtocolsAfiAllAll
 
 
-class Ospf(Base):
+class Ospf(SuperOspf):
     '''Ospf Ops Object'''
 
     def learn(self):

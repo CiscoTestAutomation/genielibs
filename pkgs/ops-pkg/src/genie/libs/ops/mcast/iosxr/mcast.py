@@ -1,10 +1,8 @@
 ''' 
 MCAST Genie Ops Object for IOSXR - CLI.
 '''
-
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.mcast.mcast import Mcast as SuperMacst
 
 # nxos show_mcast
 from genie.libs.parser.iosxr.show_pim import ShowPimVrfMstatic, ShowPimVrfRpfSummary,\
@@ -16,7 +14,7 @@ from genie.libs.parser.iosxr.show_mrib import ShowMribVrfRoute
 # iosxr show_vrf
 from genie.libs.parser.iosxr.show_vrf import ShowVrfAllDetail
 
-class Mcast(Base):
+class Mcast(SuperMacst):
     '''Mcast Genie Ops Object'''
 
     def set_enable(self, item):

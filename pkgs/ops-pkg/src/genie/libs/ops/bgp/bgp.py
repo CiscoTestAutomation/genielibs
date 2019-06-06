@@ -1,0 +1,38 @@
+# Genie
+from genie.ops.base import Base
+
+
+class Bgp(Base):
+    exclude = ['if_handle',
+               'keepalives',
+               'last_reset',
+               'reset_reason',
+               'foreign_port',
+               'local_port',
+               'msg_rcvd',
+               'msg_sent',
+               'up_down',
+               'bgp_table_version',
+               'routing_table_version',
+               'tbl_ver',
+               'table_version',
+               'memory_usage',
+               'updates',
+               'mss',
+               'total',
+               'total_bytes',
+               'up_time',
+               'bgp_negotiated_keepalive_timers',
+               'hold_time',
+               'keepalive_interval',
+               'sent',
+               'received',
+               'status_codes',
+               'holdtime',
+               'router_id',
+               'connections_dropped',
+               'connections_established',
+               'advertised',
+               'prefixes',
+               'routes',
+               'state_pfxrcd']

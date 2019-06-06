@@ -4,10 +4,9 @@ BGP Genie Ops Object for IOSXE - CLI.
 
 import re
 
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
 
+# Super class
+from genie.libs.ops.bgp.bgp import Bgp as SuperBgp
 # iosxe show_bgp
 from genie.libs.parser.iosxe.show_bgp import ShowBgpAllSummary, ShowBgpAllClusterIds, \
                                   ShowBgpAllNeighborsAdvertisedRoutes, \
@@ -22,7 +21,7 @@ from genie.libs.parser.iosxe.show_bgp import ShowBgpAllSummary, ShowBgpAllCluste
                                   ShowBgpAll
 
 
-class Bgp(Base):
+class Bgp(SuperBgp):
     '''BGP Genie Ops Object'''
 
     # Callables

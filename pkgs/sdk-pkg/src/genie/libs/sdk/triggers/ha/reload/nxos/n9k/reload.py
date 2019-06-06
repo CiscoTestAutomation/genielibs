@@ -45,8 +45,8 @@ class TriggerReload(CommonReload):
         1. Learn Platform Ops object and store the "ok|active|ha-standby|standby" slot(s)
            if has any, otherwise, SKIP the trigger
         2. Do reload by command "reload"
-        3. Learn Platform Ops again and verify the state of RP(s) is 
-           "active|ha-standby"
+        3. Learn Platform Ops again and verify the state of RP(s),LC(s),OC(s) are 
+           "ok|active|ha-standby|standby"
            and verify the attributes from the ops are the same as the Ops in step 1
         4. Update platform PTS if feature pts is enabled,
            Update global/local veirifications if enabled
@@ -64,6 +64,10 @@ class TriggerReload(CommonReload):
                       verify_ops={'ops.platform.platform.Platform':{
                                       'requirements': [\
                                             ['slot', 'rp', '(?P<rp>.*)',
-                                             'state', '(active|ha-standby)']],
+                                             'state', '(active|ha-standby)'],
+                                             ['slot', 'oc', '(?P<oc>.*)',
+                                             'state', '(ok|active|standby)'],
+                                            ['slot', 'lc', '(?P<lc>.*)',
+                                             'state', 'ok']],
                                     'exclude': platform_exclude}},
-                      num_values={'rp': 'all'})
+                      num_values={'rp': 'all', 'oc':'all', 'lc':'all'})

@@ -1,12 +1,12 @@
-# Genie
-from genie.ops.base import Base
+# super class
+from genie.libs.ops.msdp.msdp import Msdp as SuperMsdp
 
 # iosxe show msdp
 from genie.libs.parser.iosxe.show_msdp import ShowIpMsdpPeer,\
                                               ShowIpMsdpSaCache
 
 
-class Msdp(Base):
+class Msdp(SuperMsdp):
     '''
         Msdp Ops Object
     '''

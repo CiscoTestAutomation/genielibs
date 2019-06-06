@@ -143,7 +143,7 @@ develop:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
 	@echo "Installing development dependencies"
-	@pip uninstall -y $(RELATED_PKGS)
+	@pip uninstall -y $(RELATED_PKGS) || true
 	@pip install $(DEPENDENCIES)
 	@echo ""
 	@echo "--------------------------------------------------------------------"

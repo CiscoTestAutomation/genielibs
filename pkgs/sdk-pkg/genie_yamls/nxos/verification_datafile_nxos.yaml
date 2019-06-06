@@ -1,7 +1,6 @@
 Verify_BgpAllDampeningFlapStatistics:
   devices: ['uut']
-  exclude:
-  - duration
+  exclude: []
   groups:
   - bgp
   iteration:
@@ -11,15 +10,7 @@ Verify_BgpAllDampeningFlapStatistics_xml:
   devices: ['uut']
 Verify_BgpAllNexthopDatabase:
   devices: ['uut']
-  exclude:
-  - resolve_time
-  - rnh_epoch
-  - flags
-  - metric_next_advertise
-  - refcount
-  - igp_cost
-  - igp_preference
-  - current_penalty
+  exclude: []
   groups:
   - bgp
   iteration:
@@ -27,14 +18,7 @@ Verify_BgpAllNexthopDatabase:
     interval: 10
 Verify_BgpAllNexthopDatabase_xml:
   devices: ['uut']
-  exclude:
-  - resolve_time
-  - rnh_epoch
-  - flags
-  - metric_next_advertise
-  - refcount
-  - igp_cost
-  - igp_preference
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
@@ -42,18 +26,14 @@ Verify_BgpIpMvpn:
   iteration:
     attempt: 15
     interval: 10
-  exclude:
-  - path
-  - table_version
+  exclude: []
   devices: ['uut']
 Verify_BgpIpMvpnRouteType_vrf_all_route_type_1:
   devices: ['uut']
   iteration:
     attempt: 15
     interval: 10
-  exclude:
-  - path
-  - table_version 
+  exclude: [] 
   parameters:
     route_type: '1'
     vrf: all
@@ -62,9 +42,7 @@ Verify_BgpIpMvpnRouteType_vrf_all_route_type_2:
   iteration:
     attempt: 15
     interval: 10
-  exclude:
-  - path
-  - table_version 
+  exclude: []
   parameters:
     route_type: '2'
     vrf: all
@@ -73,9 +51,7 @@ Verify_BgpIpMvpnRouteType_vrf_all_route_type_3:
   iteration:
     attempt: 15
     interval: 10
-  exclude:
-  - path
-  - table_version 
+  exclude: []
   parameters:
     route_type: '3'
     vrf: all
@@ -87,9 +63,7 @@ Verify_BgpIpMvpnRouteType_vrf_all_route_type_4:
   iteration:
     attempt: 15
     interval: 10
-  exclude:
-  - path
-  - table_version 
+  exclude: []
   parameters:
     route_type: '4'
     vrf: all
@@ -98,9 +72,7 @@ Verify_BgpIpMvpnRouteType_vrf_all_route_type_5:
   iteration:
     attempt: 15
     interval: 10
-  exclude:
-  - path
-  - table_version 
+  exclude: []
   parameters:
     route_type: '5'
     vrf: all
@@ -109,9 +81,7 @@ Verify_BgpIpMvpnRouteType_vrf_all_route_type_6:
   iteration:
     attempt: 15
     interval: 10
-  exclude:
-  - path
-  - table_version 
+  exclude: []
   parameters:
     route_type: '6'
     vrf: all
@@ -120,9 +90,7 @@ Verify_BgpIpMvpnRouteType_vrf_all_route_type_7:
   iteration:
     attempt: 15
     interval: 10
-  exclude:
-  - path
-  - table_version 
+  exclude: []
   parameters:
     route_type: '7'
     vrf: all
@@ -131,9 +99,7 @@ Verify_BgpIpMvpnRouteType_vrf_default_route_type_1:
   iteration:
     attempt: 15
     interval: 10
-  exclude:
-  - path
-  - table_version 
+  exclude: []
   parameters:
     route_type: '1'
     vrf: default
@@ -142,9 +108,7 @@ Verify_BgpIpMvpnRouteType_vrf_default_route_type_2:
   iteration:
     attempt: 15
     interval: 10
-  exclude:
-  - path
-  - table_version 
+  exclude: []
   parameters:
     route_type: '2'
     vrf: default
@@ -153,9 +117,7 @@ Verify_BgpIpMvpnRouteType_vrf_default_route_type_3:
   iteration:
     attempt: 15
     interval: 10
-  exclude:
-  - path
-  - table_version 
+  exclude: []
   parameters:
     route_type: '3'
     vrf: default
@@ -164,9 +126,7 @@ Verify_BgpIpMvpnRouteType_vrf_default_route_type_4:
   iteration:
     attempt: 15
     interval: 10
-  exclude:
-  - path
-  - table_version 
+  exclude: []
   parameters:
     route_type: '4'
     vrf: default
@@ -175,9 +135,7 @@ Verify_BgpIpMvpnRouteType_vrf_default_route_type_5:
   iteration:
     attempt: 15
     interval: 10
-  exclude:
-  - path
-  - table_version 
+  exclude: []
   parameters:
     route_type: '5'
     vrf: default
@@ -186,9 +144,7 @@ Verify_BgpIpMvpnRouteType_vrf_default_route_type_6:
   iteration:
     attempt: 15
     interval: 10
-  exclude:
-  - path
-  - table_version 
+  exclude: []
   parameters:
     route_type: '6'
     vrf: default
@@ -197,9 +153,7 @@ Verify_BgpIpMvpnRouteType_vrf_default_route_type_7:
   iteration:
     attempt: 15
     interval: 10
-  exclude:
-  - path
-  - table_version 
+  exclude: []
   parameters:
     route_type: '7'
     vrf: default
@@ -208,9 +162,7 @@ Verify_BgpIpMvpnSaadDetail:
   iteration:
     attempt: 15
     interval: 10
-  exclude:
-  - prefixversion
-  - bestpathnr
+  exclude: []
 Verify_BgpL2vpnEvpn:
   devices: ['uut']
   exclude:
@@ -221,45 +173,13 @@ Verify_BgpL2vpnEvpn:
     interval: 20
 Verify_BgpL2vpnEvpnNeighbors:
   devices: ['uut']
-  exclude:
-  - bytesrecvd
-  - bytessent
-  - connsdropped
-  - connsestablished
-  - elapsedtime
-  - keepalive
-  - keepaliverecvd
-  - keepalivesent
-  - lastread
-  - lastwrite
-  - localport
-  - msgrecvd
-  - msgsent
-  - notificationssent
-  - opensrecvd
-  - openssent
-  - neighbortableversion
-  - tableversion
-  - updatesrecvd
-  - updatessent
-  - fd
-  - capabilitiesrecvd
-  - capabilitiessent
-  - remoteport
-  - resetreason
-  - resettime
-  - rtrefreshsent
-  - rtrefreshrecvd
-  - retry
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
 Verify_BgpL2vpnEvpnRouteType_route_type_1:
   devices: ['uut']
-  exclude:
-  - prefixversion
-  - extcommunity
-  - prefix
+  exclude: []
   parameters:
     route_type: '1'
   iteration:
@@ -267,10 +187,7 @@ Verify_BgpL2vpnEvpnRouteType_route_type_1:
     interval: 20
 Verify_BgpL2vpnEvpnRouteType_route_type_2:
   devices: ['uut']
-  exclude:
-  - prefixversion
-  - extcommunity
-  - prefix
+  exclude: []
   parameters:
     route_type: '2'
   iteration:
@@ -278,10 +195,7 @@ Verify_BgpL2vpnEvpnRouteType_route_type_2:
     interval: 20
 Verify_BgpL2vpnEvpnRouteType_route_type_4:
   devices: ['uut']
-  exclude:
-  - prefixversion
-  - extcommunity
-  - prefix
+  exclude: []
   parameters:
     route_type: '4'
   iteration:
@@ -289,21 +203,7 @@ Verify_BgpL2vpnEvpnRouteType_route_type_4:
     interval: 20
 Verify_BgpL2vpnEvpnSummary:
   devices: ['uut']
-  exclude:
-  - msgrecvd
-  - msgsent
-  - neighbortableversion
-  - time
-  - tableversion
-  - bytesclusterlist
-  - numberclusterlist
-  - bytesattrs
-  - memoryused
-  - numberattrs
-  - totalnetworks
-  - totalpaths
-  - prefixreceived
-  - capablepeers
+  exclude: []
   iteration:
     attempt: 20
     interval: 30
@@ -311,8 +211,7 @@ Verify_BgpL2vpnEvpnSummary:
     - trm
 Verify_BgpLabels_vrf_all_address_family_ipv4_multicast:
   devices: ['uut']
-  exclude:
-  - table_version
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
@@ -321,8 +220,7 @@ Verify_BgpLabels_vrf_all_address_family_ipv4_multicast:
     vrf: all
 Verify_BgpLabels_vrf_all_address_family_ipv4_unicast:
   devices: ['uut']
-  exclude:
-  - table_version
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
@@ -331,8 +229,7 @@ Verify_BgpLabels_vrf_all_address_family_ipv4_unicast:
     vrf: all
 Verify_BgpLabels_vrf_all_address_family_ipv6_multicast:
   devices: ['uut']
-  exclude:
-  - table_version
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
@@ -341,8 +238,7 @@ Verify_BgpLabels_vrf_all_address_family_ipv6_multicast:
     vrf: all
 Verify_BgpLabels_vrf_all_address_family_ipv6_unicast:
   devices: ['uut']
-  exclude:
-  - table_version
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
@@ -351,8 +247,7 @@ Verify_BgpLabels_vrf_all_address_family_ipv6_unicast:
     vrf: all
 Verify_BgpLabels_vrf_default_address_family_ipv4_multicast:
   devices: ['uut']
-  exclude:
-  - table_version
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
@@ -360,8 +255,7 @@ Verify_BgpLabels_vrf_default_address_family_ipv4_multicast:
     address_family: ipv4 multicast
 Verify_BgpLabels_vrf_default_address_family_ipv4_unicast:
   devices: ['uut']
-  exclude:
-  - table_version
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
@@ -369,8 +263,7 @@ Verify_BgpLabels_vrf_default_address_family_ipv4_unicast:
     address_family: ipv4 unicast
 Verify_BgpLabels_vrf_default_address_family_ipv6_multicast:
   devices: ['uut']
-  exclude:
-  - table_version
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
@@ -378,8 +271,7 @@ Verify_BgpLabels_vrf_default_address_family_ipv6_multicast:
     address_family: ipv6 multicast
 Verify_BgpLabels_vrf_default_address_family_ipv6_unicast:
   devices: ['uut']
-  exclude:
-  - table_version
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
@@ -395,8 +287,7 @@ Verify_BgpLabels_xml_vrf_all_address_family_ipv4_multicast:
     vrf: all
 Verify_BgpLabels_xml_vrf_all_address_family_ipv4_unicast:
   devices: ['uut']
-  exclude:
-  - table_version
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
@@ -405,8 +296,7 @@ Verify_BgpLabels_xml_vrf_all_address_family_ipv4_unicast:
     vrf: all
 Verify_BgpLabels_xml_vrf_all_address_family_ipv6_multicast:
   devices: ['uut']
-  exclude:
-  - table_version
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
@@ -415,8 +305,7 @@ Verify_BgpLabels_xml_vrf_all_address_family_ipv6_multicast:
     vrf: all
 Verify_BgpLabels_xml_vrf_all_address_family_ipv6_unicast:
   devices: ['uut']
-  exclude:
-  - table_version
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
@@ -425,8 +314,7 @@ Verify_BgpLabels_xml_vrf_all_address_family_ipv6_unicast:
     vrf: all
 Verify_BgpLabels_xml_vrf_default_address_family_ipv4_multicast:
   devices: ['uut']
-  exclude:
-  - table_version
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
@@ -434,8 +322,7 @@ Verify_BgpLabels_xml_vrf_default_address_family_ipv4_multicast:
     address_family: ipv4 multicast
 Verify_BgpLabels_xml_vrf_default_address_family_ipv4_unicast:
   devices: ['uut']
-  exclude:
-  - table_version
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
@@ -447,8 +334,7 @@ Verify_BgpLabels_xml_vrf_default_address_family_ipv6_multicast:
     address_family: ipv6 multicast
 Verify_BgpLabels_xml_vrf_default_address_family_ipv6_unicast:
   devices: ['uut']
-  exclude:
-  - table_version
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
@@ -593,11 +479,7 @@ Verify_BgpPolicyStatisticsDampening_xml_vrf_default_address_family_ipv6_unicast:
     address_family: ipv6 unicast
 Verify_BgpPolicyStatisticsRedistribute_vrf_all_address_family_ipv4_multicast:
   devices: ['uut']
-  exclude:
-  - compare_count
-  - total_reject_count
-  - match_count
-  - total_accept_count
+  exclude: []
   groups:
   - bgp
   parameters:
@@ -605,11 +487,7 @@ Verify_BgpPolicyStatisticsRedistribute_vrf_all_address_family_ipv4_multicast:
     vrf: all
 Verify_BgpPolicyStatisticsRedistribute_vrf_all_address_family_ipv4_unicast:
   devices: ['uut']
-  exclude:
-  - compare_count
-  - total_reject_count
-  - match_count
-  - total_accept_count
+  exclude: []
   groups:
   - bgp
   parameters:
@@ -617,11 +495,7 @@ Verify_BgpPolicyStatisticsRedistribute_vrf_all_address_family_ipv4_unicast:
     vrf: all
 Verify_BgpPolicyStatisticsRedistribute_vrf_all_address_family_ipv6_multicast:
   devices: ['uut']
-  exclude:
-  - compare_count
-  - total_reject_count
-  - match_count
-  - total_accept_count
+  exclude: []
   groups:
   - bgp
   parameters:
@@ -629,11 +503,7 @@ Verify_BgpPolicyStatisticsRedistribute_vrf_all_address_family_ipv6_multicast:
     vrf: all
 Verify_BgpPolicyStatisticsRedistribute_vrf_all_address_family_ipv6_unicast:
   devices: ['uut']
-  exclude:
-  - compare_count
-  - total_reject_count
-  - match_count
-  - total_accept_count
+  exclude: []
   groups:
   - bgp
   parameters:
@@ -641,42 +511,28 @@ Verify_BgpPolicyStatisticsRedistribute_vrf_all_address_family_ipv6_unicast:
     vrf: all
 Verify_BgpPolicyStatisticsRedistribute_vrf_default_address_family_ipv4_multicast:
   devices: ['uut']
-  exclude:
-  - compare_count
-  - total_reject_count
-  - match_count
-  - total_accept_count
+  exclude: []
   groups:
   - bgp
   parameters:
     address_family: ipv4 multicast
 Verify_BgpPolicyStatisticsRedistribute_vrf_default_address_family_ipv4_unicast:
   devices: ['uut']
-  exclude:
-  - compare_count
-  - total_reject_count
-  - match_count
-  - total_accept_count
+  exclude: []
   groups:
   - bgp
   parameters:
     address_family: ipv4 unicast
 Verify_BgpPolicyStatisticsRedistribute_vrf_default_address_family_ipv6_multicast:
   devices: ['uut']
-  exclude:
-  - compare_count
-  - total_reject_count
+  exclude: []
   groups:
   - bgp
   parameters:
     address_family: ipv6 multicast
 Verify_BgpPolicyStatisticsRedistribute_vrf_default_address_family_ipv6_unicast:
   devices: ['uut']
-  exclude:
-  - compare_count
-  - total_reject_count
-  - match_count
-  - total_accept_count
+  exclude: []
   groups:
   - bgp
   parameters:
@@ -727,17 +583,7 @@ Verify_BgpPolicyStatisticsRedistribute_xml_vrf_default_address_family_ipv6_unica
     address_family: ipv6 unicast
 Verify_BgpProcessVrfAll:
   devices: ['uut']
-  exclude:
-  - bgp_pid
-  - hwm_attr_entries
-  - bgp_protocol_started_reason
-  - aggregate_label
-  - bgp_paths_per_hwm_attr
-  - bytes_used
-  - num_attr_entries
-  - router_id
-  - paths
-  - routes
+  exclude: []
   groups:
   - bgp
   iteration:
@@ -750,12 +596,7 @@ Verify_BgpProcessVrfAll_yang:
   exclude: []
 Verify_BgpVrfAllAll:
   devices: ['uut']
-  exclude:
-  - bgp_table_version
-  - status_codes
-  - local_router_id
-  - path_type
-  - weight
+  exclude: []
   groups:
   - bgp
   iteration:
@@ -771,14 +612,7 @@ Verify_BgpVrfAllAllDampeningParameters_xml:
   exclude: []
 Verify_BgpVrfAllAllNextHopDatabase:
   devices: ['uut']
-  exclude:
-  - nexthop_last_resolved
-  - rnh_epoch
-  - metric_next_advertise
-  - resolve_time
-  - flags
-  - rib_route
-  - refcount
+  exclude: []
   groups:
   - bgp
   iteration:
@@ -786,20 +620,7 @@ Verify_BgpVrfAllAllNextHopDatabase:
     interval: 5
 Verify_BgpVrfAllAllSummary:
   devices: ['uut']
-  exclude:
-  - tbl_ver
-  - up_down
-  - bgp_table_version
-  - state_pfxrcd
-  - memory_usage
-  - msg_rcvd
-  - msg_sent
-  - nexthop_last_resolved
-  - attribute_entries
-  - route_identifier
-  - clusterlist_entries
-  - total_entries
-  - as_path_entries
+  exclude: []
   groups:
   - bgp
   - evpn
@@ -810,34 +631,10 @@ Verify_BgpVrfAllAllSummary:
     interval: 10
 Verify_BgpVrfAllAllSummary_xml:
   devices: ['uut']
-  exclude:
-  - up_down
-  - bgp_table_version
-  - msg_sent
-  - tbl_ver
-  - msg_rcvd
+  exclude: []
 Verify_BgpVrfAllNeighbors_vrf_default:
   devices: ['uut']
-  exclude:
-  - up_time
-  - retry_time
-  - bgp_table_version
-  - bgp_negotiated_keepalive_timers
-  - bgp_session_transport
-  - bgp_neighbor_counters
-  - bgp_negotiated_capabilities
-  - graceful_restart_paramters
-  - path
-  - received_messages
-  - neighbor_version
-  - third_party_nexthop
-  - peer_index
-  - sent_messages
-  - sent_notifications
-  - received_notifications
-  - msg_sent
-  - tbl_ver
-  - msg_rcvd
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
@@ -850,18 +647,10 @@ Verify_Boot:
   exclude: []
 Verify_CheckpointSummary:
   devices: ['uut']
-  exclude:
-  - size
-  - created_time
-  - (system-fm.*)
+  exclude: []
 Verify_Dir:
   devices: ['uut']
-  exclude:
-  - date
-  - size
-  - time
-  - disk_free_space
-  - disk_used_space
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
@@ -876,8 +665,7 @@ Verify_FabricMulticastIpL2Mroute_vni_all:
     interval: 40
 Verify_FabricMulticastIpSaAdRoute_vrf_all:
   devices: ['uut']
-  exclude:
-  - uptime
+  exclude: []
   parameters:
     vrf: all
   iteration:
@@ -892,18 +680,10 @@ Verify_ForwardingDistributionMulticastRoute:
     attempt: 10
     interval: 40
   devices: ['uut']
-  exclude:
-  - flags
-  - oif_index
-  - num_of_oifs
-  - oifs
+  exclude: []
 Verify_HsrpAll:
   devices: ['uut']
-  exclude:
-  - last_state_change
-  - standby_expire
-  - num_state_changes
-  - active_expire
+  exclude: []
   iteration:
     attempt: 6
     interval: 10
@@ -911,47 +691,13 @@ Verify_HsrpDelay:
   devices: ['uut']
 Verify_HsrpSummary:
   devices: ['uut']
-  exclude:
-  - total_mts_rx
-  - rx_good
-  - tx_pass
-  - pkt_unknown_groups
+  exclude: []
 Verify_InstallActive:
   devices: ['uut']
   exclude: []
 Verify_Interface:
   devices: ['uut']
-  exclude:
-  - in_unicast_pkts
-  - out_unicast_pkts
-  - in_octets
-  - out_octets
-  - in_pkts
-  - out_pkts
-  - in_multicast_pkts
-  - out_multicast_pkts
-  - in_rate
-  - out_rate
-  - in_broadcast_pkts
-  - out_broadcast_pkts
-  - last_link_flapped
-  - in_rate_pkts
-  - out_rate_pkts
-  - out_rate_bps
-  - in_rate_bps
-  - interface_reset
-  - in_rate_pps
-  - out_rate_pps
-  - last_clear
-  - out_jumbo_packets
-  - in_jumbo_packets
-  - rxload
-  - txload
-  - in_errors
-  - mac_address
-  - phys_address
-  - in_crc_errors
-  - reliability
+  exclude: []
   groups:
   - bgp
   - evpn
@@ -964,8 +710,7 @@ Verify_Interface:
     interval: 20
 Verify_InterfaceBrief:
   devices: ['uut']
-  exclude:
-  - reason
+  exclude: []
 Verify_InterfaceSwitchport:
   devices: ['uut']
   exclude: []
@@ -974,14 +719,10 @@ Verify_Inventory:
   exclude: []
 Verify_IpArp:
   devices: ['uut']
-  exclude:
-  - Age
+  exclude: []
 Verify_IpIgmpGroups_vrf_all:
   devices: ['uut']
-  exclude:
-  - expire
-  - up_time
-  - last_reporter
+  exclude: []
   iteration:
     attempt: 30
     interval: 10
@@ -989,25 +730,13 @@ Verify_IpIgmpGroups_vrf_all:
     vrf: all
 Verify_IpIgmpGroups_vrf_default:
   devices: ['uut']
-  exclude:
-  - expire
-  - up_time
-  - last_reporter
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
 Verify_IpIgmpInterface_vrf_all:
   devices: ['uut']
-  exclude:
-  - next_query_sent_in
-  - v2_queries
-  - v2_reports
-  - v2_leaves
-  - enable_refcount
-  - pim_dr
-  - received
-  - sent
-  - expires
+  exclude: []
   iteration:
     attempt: 30
     interval: 10
@@ -1015,23 +744,13 @@ Verify_IpIgmpInterface_vrf_all:
     vrf: all
 Verify_IpIgmpInterface_vrf_default:
   devices: ['uut']
-  exclude:
-  - next_query_sent_in
-  - v2_queries
-  - v2_reports
-  - v2_leaves
-  - enable_refcount
-  - pim_dr
-  - received
-  - sent
-  - expires
+  exclude: []
   iteration:
     attempt: 30
     interval: 10
 Verify_IpIgmpLocalGroups_vrf_all:
   devices: ['uut']
-  exclude:
-  - last_reporter
+  exclude: []
   iteration:
     attempt: 30
     interval: 10
@@ -1039,22 +758,19 @@ Verify_IpIgmpLocalGroups_vrf_all:
     vrf: all
 Verify_IpIgmpLocalGroups_vrf_default:
   devices: ['uut']
-  exclude:
-  - last_reporter
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
 Verify_IpIgmpSnooping:
   devices: ['uut']
-  exclude:
-  - igmp_explicit_tracking
+  exclude: []
   iteration:
     attempt: 10
     interval: 10
 Verify_IpInterfaceBrief:
   devices: ['uut']
-  exclude:
-  - (tunnel.*)
+  exclude: []
   iteration:
     attempt: 10
     interval: 10
@@ -1065,46 +781,13 @@ Verify_IpInterfaceBriefVrfAll:
   devices: ['uut']
 Verify_IpInterfaceVrfAll:
   devices: ['uut']
-  exclude:
-  - multicast_bytes_consumed
-  - multicast_bytes_received
-  - unicast_bytes_consumed
-  - unicast_packets_consumed
-  - unicast_bytes_originated
-  - unicast_packets_originated
-  - unicast_bytes_received
-  - unicast_bytes_sent
-  - unicast_packets_received
-  - unicast_packets_sent
-  - multicast_packets_consumed
-  - multicast_packets_received
-  - multicast_bytes_originated
-  - multicast_bytes_sent
-  - multicast_packets_originated
-  - multicast_packets_sent
-  - broadcast_bytes_consumed
-  - broadcast_bytes_received
-  - broadcast_packets_consumed
-  - broadcast_packets_received
-  - multicast_groups
-  - int_stat_last_reset
-  - unicast_bytes_forwarded
-  - unicast_packets_forwarded
-  - oil_uptime
-  - iod
-  - (tunnel.*)
-  - multicast_groups_address
+  exclude: []
   iteration:
     attempt: 15
     interval: 5
 Verify_IpMrouteVrfAll:
   devices: ['uut']
-  exclude:
-  - uptime
-  - oil_count
-  - outgoing_interface_list
-  - flags
-  - incoming_interface_list
+  exclude: []
   groups:
   - multicast
   - trm
@@ -1113,18 +796,7 @@ Verify_IpMrouteVrfAll:
     interval: 10
 Verify_IpMsdpPeerVrf_vrf_all:
   devices: ['uut']
-  exclude:
-  - last_message_received
-  - keepalive
-  - elapsed_time
-  - reset_reason
-  - connection_attempts
-  - discontinuity_time
-  - established_transitions
-  - local
-  - received
-  - sent
-  - rpf_failure
+  exclude: []
   groups:
   - msdp
   iteration:
@@ -1134,18 +806,7 @@ Verify_IpMsdpPeerVrf_vrf_all:
     vrf: all
 Verify_IpMsdpPeerVrf_vrf_default:
   devices: ['uut']
-  exclude:
-  - last_message_received
-  - keepalive
-  - elapsed_time
-  - reset_reason
-  - connection_attempts
-  - discontinuity_time
-  - established_transitions
-  - local
-  - received
-  - sent
-  - rpf_failure
+  exclude: []
   groups:
   - msdp
   iteration:
@@ -1153,9 +814,7 @@ Verify_IpMsdpPeerVrf_vrf_default:
     interval: 10
 Verify_IpMsdpSaCacheDetailVrf_vrf_all:
   devices: ['uut']
-  exclude:
-  - expire
-  - up_time
+  exclude: []
   groups:
   - msdp
   iteration:
@@ -1165,9 +824,7 @@ Verify_IpMsdpSaCacheDetailVrf_vrf_all:
     vrf: all
 Verify_IpMsdpSaCacheDetailVrf_vrf_default:
   devices: ['uut']
-  exclude:
-  - expire
-  - up_time
+  exclude: []
   groups:
   - msdp
   iteration:
@@ -1175,9 +832,7 @@ Verify_IpMsdpSaCacheDetailVrf_vrf_default:
     interval: 10
 Verify_IpMsdpSummary_vrf_all:
   devices: ['uut']
-  exclude:
-  - elapsed_time
-  - last_message_received
+  exclude: []
   groups:
   - msdp
   iteration:
@@ -1187,9 +842,7 @@ Verify_IpMsdpSummary_vrf_all:
     vrf: all
 Verify_IpMsdpSummary_vrf_default:
   devices: ['uut']
-  exclude:
-  - elapsed_time
-  - last_message_received
+  exclude: []
   groups:
   - msdp
   iteration:
@@ -1197,10 +850,7 @@ Verify_IpMsdpSummary_vrf_default:
     interval: 10
 Verify_IpOspfDatabaseExternalDetail_vrf_all:
   devices: ['uut']
-  exclude:
-  - age
-  - checksum
-  - seq_num
+  exclude: []
   iteration:
     attempt: 30
     interval: 10
@@ -1213,86 +863,39 @@ Verify_IpOspfDatabaseExternalDetail_vrf_default:
     interval: 10
 Verify_IpOspfDatabaseNetworkDetail_vrf_all:
   devices: ['uut']
-  exclude:
-  - age
-  - checksum
-  - seq_num
-  - lsas
-  - links
+  exclude: []
   parameters:
     vrf: all
 Verify_IpOspfDatabaseNetworkDetail_vrf_default:
   devices: ['uut']
-  exclude:
-  - age
-  - checksum
-  - seq_num
-  - lsas
-  - links
+  exclude: []
 Verify_IpOspfDatabaseOpaqueAreaDetail_vrf_all:
   devices: ['uut']
-  exclude:
-  - age
-  - checksum
-  - seq_num
-  - lsas
-  - links
+  exclude: []
   parameters:
     vrf: all
 Verify_IpOspfDatabaseOpaqueAreaDetail_vrf_default:
   devices: ['uut']
-  exclude:
-  - age
-  - checksum
-  - seq_num
-  - lsas
-  - links
+  exclude: []
 Verify_IpOspfDatabaseRouterDetail_vrf_all:
   devices: ['uut']
-  exclude:
-  - age
-  - checksum
-  - seq_num
-  - links
-  - lsas
+  exclude: []
   parameters:
     vrf: all
 Verify_IpOspfDatabaseRouterDetail_vrf_default:
   devices: ['uut']
-  exclude:
-  - age
-  - checksum
-  - seq_num
-  - links
-  - lsas
+  exclude: []
 Verify_IpOspfDatabaseSummaryDetail_vrf_all:
   devices: ['uut']
-  exclude:
-  - age
-  - checksum
-  - seq_num
-  - metric
-  - lsas
+  exclude: []
   parameters:
     vrf: all
 Verify_IpOspfDatabaseSummaryDetail_vrf_default:
   devices: ['uut']
-  exclude:
-  - age
-  - checksum
-  - seq_num
-  - metric
-  - lsas
+  exclude: []
 Verify_IpOspfInterface_vrf_all:
   devices: ['uut']
-  exclude:
-  - hello_timer
-  - bdr_ip_addr
-  - bdr_router_id
-  - dr_ip_addr
-  - dr_router_id
-  - state
-  - index
+  exclude: []
   iteration:
     attempt: 12
     interval: 5
@@ -1300,21 +903,13 @@ Verify_IpOspfInterface_vrf_all:
     vrf: all
 Verify_IpOspfInterface_vrf_default:
   devices: ['uut']
-  exclude:
-  - hello_timer
-  - bdr_ip_addr
-  - bdr_router_id
-  - dr_ip_addr
-  - dr_router_id
-  - state
-  - index
+  exclude: []
   iteration:
     attempt: 12
     interval: 5
 Verify_IpOspfMplsLdpInterface_vrf_all:
   devices: ['uut']
-  exclude:
-  - state
+  exclude: []
   iteration:
     attempt: 12
     interval: 5
@@ -1322,20 +917,13 @@ Verify_IpOspfMplsLdpInterface_vrf_all:
     vrf: all
 Verify_IpOspfMplsLdpInterface_vrf_default:
   devices: ['uut']
-  exclude:
-  - state
+  exclude: []
   iteration:
     attempt: 12
     interval: 5
 Verify_IpOspfNeighborDetail_vrf_all:
   devices: ['uut']
-  exclude:
-  - dead_timer
-  - last_non_hello_packet_received
-  - last_state_change
-  - bdr_ip_addr
-  - dr_ip_addr
-  - nbr_event_count
+  exclude: []
   iteration:
     attempt: 12
     interval: 5
@@ -1343,13 +931,7 @@ Verify_IpOspfNeighborDetail_vrf_all:
     vrf: all
 Verify_IpOspfNeighborDetail_vrf_default:
   devices: ['uut']
-  exclude:
-  - dead_timer
-  - last_non_hello_packet_received
-  - last_state_change
-  - nbr_event_count
-  - bdr_ip_addr
-  - dr_ip_addr
+  exclude: []
   iteration:
     attempt: 12
     interval: 5
@@ -1367,10 +949,7 @@ Verify_IpOspfVirtualLinks_vrf_default:
   devices: ['uut']
 Verify_IpPimDf:
   devices: ['uut']
-  exclude:
-  - df_uptime
-  - is_rpf
-  - df_address
+  exclude: []
   iteration:
     attempt: 12
     interval: 5
@@ -1381,25 +960,13 @@ Verify_IpPimGroupRange:
     interval: 10
 Verify_IpPimInterface:
   devices: ['uut']
-  exclude:
-  - hello_expiration
-  - df_winners
-  - hellos
-  - genid
-  - jp_next_sending
-  - jps
-  - df_offers
-  - dr_delay
-  - dr_address
-  - asserts
+  exclude: []
   iteration:
     attempt: 12
     interval: 5
 Verify_IpPimNeighbor_vrf_all:
   devices: ['uut']
-  exclude:
-  - expiration
-  - up_time
+  exclude: []
   groups:
   - multicast
   iteration:
@@ -1409,9 +976,7 @@ Verify_IpPimNeighbor_vrf_all:
     vrf: all
 Verify_IpPimNeighbor_vrf_default:
   devices: ['uut']
-  exclude:
-  - expiration
-  - up_time
+  exclude: []
   iteration:
     attempt: 6
     interval: 5
@@ -1419,27 +984,13 @@ Verify_IpPimPolicyStaticticsRegisterPolicy:
   devices: ['uut']
 Verify_IpPimRoute:
   devices: ['uut']
-  exclude:
-  - expiration
-  - timeout_interval
-  - immediate_timeout_count
-  - oif_timeout_count
-  - immediate_count
-  - oif_count
-  - incoming_interface
-  - rpf_neighbor
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
 Verify_IpPimRp_vrf_all:
   devices: ['uut']
-  exclude:
-  - expires
-  - up_time
-  - rp_candidate_next_advertisement
-  - expiration
-  - bsr_next_bootstrap
-  - bsr_next_discovery
+  exclude: []
   iteration:
     attempt: 20
     interval: 20
@@ -1447,13 +998,7 @@ Verify_IpPimRp_vrf_all:
     vrf: all
 Verify_IpPimRp_vrf_default:
   devices: ['uut']
-  exclude:
-  - expires
-  - up_time
-  - rp_candidate_next_advertisement
-  - expiration
-  - bsr_next_bootstrap
-  - bsr_next_discovery
+  exclude: []
   iteration:
     attempt: 18
     interval: 10
@@ -1466,8 +1011,7 @@ Verify_IpPrefixList:
   devices: ['uut']
 Verify_IpRoute_vrf_all:
   devices: ['uut']
-  exclude:
-  - updated
+  exclude: []
   groups:
   - multicast
   iteration:
@@ -1477,8 +1021,7 @@ Verify_IpRoute_vrf_all:
     vrf: all
 Verify_IpRoute_vrf_default:
   devices: ['uut']
-  exclude:
-  - updated
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
@@ -1493,37 +1036,19 @@ Verify_IpStaticRoute_vrf_default:
   devices: ['uut']
 Verify_Ipv6IcmpNeighborDetail:
   devices: ['uut']
-  exclude:
-  - age
+  exclude: []
   iteration:
     attempt: 10
     interval: 10
 Verify_Ipv6InterfaceVrfAll:
   devices: ['uut']
-  exclude:
-  - multicast_bytes_consumed
-  - multicast_packets_consumed
-  - multicast_bytes_originated
-  - multicast_packets_originated
-  - unicast_bytes_consumed
-  - unicast_packets_consumed
-  - unicast_bytes_originated
-  - unicast_packets_originated
-  - ipv6_multicast_groups
-  - iod
-  - multicast_groups
-  - unicast_bytes_forwarded
-  - unicast_packets_forwarded
-  - ipv6_link_local
+  exclude: []
   iteration:
     attempt: 15
     interval: 5
 Verify_Ipv6MldGroups_vrf_all:
   devices: ['uut']
-  exclude:
-  - expire
-  - up_time
-  - last_reporter
+  exclude: []
   iteration:
     attempt: 15
     interval: 5
@@ -1531,36 +1056,21 @@ Verify_Ipv6MldGroups_vrf_all:
     vrf: all
 Verify_Ipv6MldGroups_vrf_default:
   devices: ['uut']
-  exclude:
-  - expire
-  - up_time
-  - last_reporter
+  exclude: []
   iteration:
     attempt: 15
     interval: 5
 Verify_Ipv6MldInterface_vrf_all:
   devices: ['uut']
-  exclude:
-  - next_query_sent_in
-  - address
-  - ipv6_address
-  - querier
+  exclude: []
   parameters:
     vrf: all
 Verify_Ipv6MldInterface_vrf_default:
   devices: ['uut']
-  exclude:
-  - next_query_sent_in
-  - address
-  - ipv6_address
-  - querier
+  exclude: []
 Verify_Ipv6MldLocalGroups_vrf_all:
   devices: ['uut']
-  exclude:
-  - last_reported
-  - uptime
-  - oil_uptime
-  - incoming_interface_list
+  exclude: []
   iteration:
     attempt: 6
     interval: 5
@@ -1570,11 +1080,7 @@ Verify_Ipv6MldLocalGroups_vrf_default:
   devices: ['uut']
 Verify_Ipv6MrouteVrfAll:
   devices: ['uut']
-  exclude:
-  - last_reported
-  - uptime
-  - oil_uptime
-  - incoming_interface_list
+  exclude: []
   groups:
   - multicast
   - trm
@@ -1583,38 +1089,24 @@ Verify_Ipv6MrouteVrfAll:
     interval: 20
 Verify_Ipv6NdInterface:
   devices: ['uut']
-  exclude:
-  - last_neighbor_advertisement
-  - last_neighbor_solicitation
-  - last_router_advertisement
-  - next_router_advertisement
+  exclude: []
 Verify_Ipv6NeighborDetail:
   devices: ['uut']
-  exclude:
-  - age
+  exclude: []
 Verify_Ipv6PimDf:
   devices: ['uut']
-  exclude:
-  - df_uptime
-  - df_address
+  exclude: []
 Verify_Ipv6PimGroupRange:
   devices: ['uut']
 Verify_Ipv6PimInterface:
   devices: ['uut']
-  exclude:
-  - hello_expiration
-  - hellos
-  - genid
-  - hello_interval
-  - dr_address
+  exclude: []
   iteration:
     attempt: 12
     interval: 5
 Verify_Ipv6PimNeighbor_vrf_all:
   devices: ['uut']
-  exclude:
-  - expiration
-  - up_time
+  exclude: []
   groups:
   - multicast
   iteration:
@@ -1624,28 +1116,19 @@ Verify_Ipv6PimNeighbor_vrf_all:
     vrf: all
 Verify_Ipv6PimNeighbor_vrf_default:
   devices: ['uut']
-  exclude:
-  - expiration
-  - up_time
+  exclude: []
   iteration:
     attempt: 18
     interval: 10
 Verify_Ipv6PimRoute:
   devices: ['uut']
-  exclude:
-  - expiration
-  - timeout_interval
-  - incoming_interface
-  - rpf_neighbor
-  - rp_bit
+  exclude: []
   iteration:
     attempt: 15
     interval: 5
 Verify_Ipv6PimRp_vrf_all:
   devices: ['uut']
-  exclude:
-  - up_time
-  - bsr_next_discovery
+  exclude: []
   iteration:
     attempt: 15
     interval: 5
@@ -1653,8 +1136,7 @@ Verify_Ipv6PimRp_vrf_all:
     vrf: all
 Verify_Ipv6PimRp_vrf_default:
   devices: ['uut']
-  exclude:
-  - up_time
+  exclude: []
   iteration:
     attempt: 15
     interval: 5
@@ -1667,12 +1149,7 @@ Verify_Ipv6PrefixList:
   devices: ['uut']
 Verify_Ipv6Route_vrf_all:
   devices: ['uut']
-  exclude:
-  - updated
-  - metric
-  - next_hop
-  - outgoing_interface
-  - incoming_interface
+  exclude: []
   groups:
   - multicast
   iteration:
@@ -1682,12 +1159,7 @@ Verify_Ipv6Route_vrf_all:
     vrf: all
 Verify_Ipv6Route_vrf_default:
   devices: ['uut']
-  exclude:
-  - updated
-  - metric
-  - next_hop
-  - outgoing_interface
-  - incoming_interface
+  exclude: []
 Verify_Ipv6Routers:
   devices: ['uut']
   exclude:
@@ -1710,25 +1182,18 @@ Verify_L2routeEvpnMac:
   devices: ['uut']
 Verify_L2routeFlAll:
   devices: ['uut']
-  exclude:
-  - peer_id
+  exclude: []
   iteration:
     attempt: 30
     interval: 20
 Verify_L2routeMacAllDetail:
-  exclude:
-  - mac
+  exclude: []
   devices: ['uut']
 Verify_L2routeMacIpAllDetail:
   devices: ['uut']
 Verify_L2routeSummary:
   devices: ['uut']
-  exclude:
-  - total_memory
-  - total_mem
-  - total_obj
-  - memory
-  - objects
+  exclude: []
   iteration:
     attempt: 30
     interval: 20
@@ -1737,8 +1202,7 @@ Verify_L2routeSummary:
   - trm
 Verify_L2routeTopologyDetail:
   devices: ['uut']
-  exclude:
-  - tx_id
+  exclude: []
   iteration:
     attempt: 30
     interval: 20
@@ -1754,8 +1218,7 @@ Verify_Module:
   - trm
 Verify_NtpPeerStatus:
   devices: ['uut']
-  exclude:
-  - delay
+  exclude: []
   groups:
   - ntp
 Verify_NtpPeers:
@@ -1779,8 +1242,7 @@ Verify_NveMultisiteFabricLinks:
   devices: ['uut']
 Verify_NvePeers:
   devices: ['uut']
-  exclude:
-  - uptime
+  exclude: []
   groups:
   - vxlan
   - trm
@@ -1795,35 +1257,25 @@ Verify_NveVniSummary:
   - trm
 Verify_Processes:
   devices: ['uut']
-  exclude:
-  - pid
-  - start_cnt
-  - (flush.*)
-  - (kworker.*)
-  - (hwclock)
+  exclude: []
   iteration:
     attempt: 12
     interval: 5
 Verify_RedundancyStatus:
   devices: ['uut']
-  exclude:
-  - active_supervisor_time
-  - kernel_uptime
-  - system_uptime
+  exclude: []
 Verify_RouteMap:
   devices: ['uut']
   exclude: []
 Verify_RoutingIpv6VrfAll:
   devices: ['uut']
-  exclude:
-  - uptime
+  exclude: []
   iteration:
     attempt: 30
     interval: 10
 Verify_RoutingVrfAll:
   devices: ['uut']
-  exclude:
-  - uptime
+  exclude: []
   iteration:
     attempt: 30
     interval: 10
@@ -1850,20 +1302,13 @@ Verify_VdcCurrent:
   exclude: []
 Verify_VdcDetail:
   devices: ['uut']
-  exclude:
-  - uptime
+  exclude: []
 Verify_VdcMembershipStatus:
   devices: ['uut']
   exclude: []
 Verify_Version:
   devices: ['uut']
-  exclude:
-  - seconds
-  - minutes
-  - hours
-  - days
-  - essor_board_id
-  - reason
+  exclude: []
 Verify_Vlan:
   devices: ['uut']
   exclude: []
@@ -1883,22 +1328,19 @@ Verify_Vrf:
   exclude: []
 Verify_VrfAllInterface:
   devices: ['uut']
-  exclude:
-  - (Null.*)
+  exclude: []
   iteration:
     attempt: 10
     interval: 10
 Verify_VrfDetail:
   devices: ['uut']
-  exclude:
-  - route_distinguisher
+  exclude: []
   iteration:
     attempt: 3
     interval: 10
 Verify_VrfInterface:
   devices: ['uut']
-  exclude:
-  - (Null.*)
+  exclude: []
   iteration:
     attempt: 3
     interval: 10

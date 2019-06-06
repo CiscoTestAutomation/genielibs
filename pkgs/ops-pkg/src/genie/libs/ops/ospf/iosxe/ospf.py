@@ -1,10 +1,8 @@
 ''' 
 OSPF Genie Ops Object for IOSXE - CLI.
 '''
-
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.ospf.ospf import Ospf as SuperOspf
 
 # iosxe show_ospf
 from genie.libs.parser.iosxe.show_ospf import ShowIpOspf,\
@@ -24,7 +22,7 @@ from genie.libs.parser.iosxe.show_ospf import ShowIpOspf,\
 from genie.libs.parser.iosxe.show_protocols import ShowIpProtocols
 
 
-class Ospf(Base):
+class Ospf(SuperOspf):
     '''Ospf Ops Object'''
 
     def learn(self):

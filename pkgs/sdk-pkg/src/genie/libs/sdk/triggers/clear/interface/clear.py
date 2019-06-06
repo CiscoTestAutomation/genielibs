@@ -26,19 +26,19 @@ class TriggerClearCounters(TriggerClear):
     # dynamic argument name to actual script argument name
     # <expected argument_name for callable>: <script argument name>
   
-    verify_func_args_in={'r_obj': [['info', '(?P<name>.*)',
+    verify_func_args_in={'r_obj': [['info', '(?P<interface>.*)',
                                     'counters', 'in_pkts', '(.*)']],
                          'relation': '<',
                          'threshold_counter': '(?P<in_pkts>.*)',
                          'ops': 'ops'}
   
-    verify_func_args_out={'r_obj': [['info', '(?P<name>.*)',
+    verify_func_args_out={'r_obj': [['info', '(?P<interface>.*)',
                                      'counters', 'out_pkts', '(.*)']],
                           'relation': '<',
                           'threshold_counter': '(?P<out_pkts>.*)',
                           'ops': 'ops'}
 
-    verify_func_args={'r_obj': [['info', '(?P<name>.*)',
+    verify_func_args={'r_obj': [['info', '(?P<interface>.*)',
                                  'counters', 'last_clear', '(.*)']],
                       'relation': '<',
                       'threshold_time': 'compare_time',
@@ -46,10 +46,11 @@ class TriggerClearCounters(TriggerClear):
 
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
                                         'requirements':[\
-                                            ['info', '(?P<name>[\w\-\/]+$)', 'enabled', True],
-                                            ['info', '(?P<name>[\w\-\/]+$)', 'counters',
+                                            ['info', '(?P<interface>[\w\-\/]+$)', 'enabled', True],
+                                            ['info', '(?P<interface>[\w\-\/]+$)', 'oper_status', 'up'],
+                                            ['info', '(?P<interface>[\w\-\/]+$)', 'counters',
                                              'in_pkts', '(?P<in_pkts>.*)'],
-                                            ['info', '(?P<name>[\w\-\/]+$)', 'counters',
+                                            ['info', '(?P<interface>[\w\-\/]+$)', 'counters',
                                              'out_pkts', '(?P<out_pkts>.*)']],
                                         'all_keys': True,
                                         'kwargs': {'attributes': \
@@ -70,4 +71,4 @@ class TriggerClearCounters(TriggerClear):
                                                 ['info[(.*)][enabled]',
                                                  'info[(.*)][counters]']},
                                     'exclude': interface_exclude}},
-                      num_values={'name': 'all'})
+                      num_values={'interface': 'all'})

@@ -142,7 +142,7 @@ class TriggerShutNoShutNveLoopbackInterface(TriggerShutNoShut):
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.vxlan.vxlan.Vxlan': {
                                         'requirements': [[['nve', '(?P<nve_name>.*)', 'src_if_state', 'up']],
-                                                         [['nve', '(?P<nve_name>.*)', 'source_if', '(?P<source_if>loopback.*)']]],
+                                                         [['nve', '(?P<nve_name>.*)', 'source_if', '(?P<source_if>(L|l)oopback.*)']]],
                                         'all_keys': True,
                                         'kwargs': {'attributes': ['nve', 'l2route', 'bgp_l2vpn_evpn']},
                                         'exclude': nve_exclude + multisite_exclude + l2route_exclude + ['peer_id','resetreason','resettime','totalpaths']}},

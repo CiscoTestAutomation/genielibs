@@ -3,9 +3,8 @@ NTP Genie Ops Object for IOSXR - CLI.
 '''
 import copy
 
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.ntp.ntp import Ntp as SuperNtp
 
 # Parser
 from genie.libs.parser.iosxr.show_ntp import ShowNtpAssociations, \
@@ -13,7 +12,7 @@ from genie.libs.parser.iosxr.show_ntp import ShowNtpAssociations, \
 										     ShowRunningConfigNtp
 
 
-class Ntp(Base):
+class Ntp(SuperNtp):
 	'''NTP Genie Ops Object'''
 
 	def set_defaults(self, peer, vrf):

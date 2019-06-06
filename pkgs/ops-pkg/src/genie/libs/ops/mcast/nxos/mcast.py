@@ -1,10 +1,8 @@
 ''' 
 MCAST Genie Ops Object for NXOS - CLI.
 '''
-
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.mcast.mcast import Mcast as SuperMacst
 
 # nxos show_mcast
 from genie.libs.parser.nxos.show_mcast import ShowIpMrouteVrfAll, ShowIpv6MrouteVrfAll,\
@@ -15,7 +13,7 @@ from genie.libs.parser.nxos.show_mcast import ShowIpMrouteVrfAll, ShowIpv6Mroute
 from genie.libs.parser.nxos.show_feature import ShowFeature
 
 
-class Mcast(Base):
+class Mcast(SuperMacst):
     '''Mcast Genie Ops Object'''
 
     def set_enable(self, key):

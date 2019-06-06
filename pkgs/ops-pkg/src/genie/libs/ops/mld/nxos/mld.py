@@ -1,16 +1,15 @@
 ''' 
 MLD Genie Ops Object for NXOS - CLI.
 '''
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.mld.mld import Mld as SuperMld
 
 # Parser
 from genie.libs.parser.nxos.show_mld import ShowIpv6MldInterface, \
                                  ShowIpv6MldGroups, \
                                  ShowIpv6MldLocalGroups
 
-class Mld(Base):
+class Mld(SuperMld):
     '''MLD Genie Ops Object'''
 
     def learn(self):

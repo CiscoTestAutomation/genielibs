@@ -7,8 +7,7 @@ Verify_ConfigurationSystemNtpSet:
     interval: 10
 Verify_InterfacesTerse: 
   devices: [ 'uut' ]
-  exclude:
-  - duration
+  exclude: []
   groups:
   - junos
   iteration:
@@ -16,8 +15,7 @@ Verify_InterfacesTerse:
     interval: 10
 Verify_NtpAssociations: 
   devices: [ 'uut' ]
-  exclude:
-  - receive_time
+  exclude: []
   groups:
   - junos
   iteration:
@@ -25,9 +23,7 @@ Verify_NtpAssociations:
     interval: 10
 Verify_NtpStatus: 
   devices: [ 'uut' ]
-  exclude:
-  - system_status
-  - rootdispersion
+  exclude: []
   groups:
   - junos
   iteration:

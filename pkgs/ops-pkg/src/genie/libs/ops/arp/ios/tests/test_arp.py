@@ -14,7 +14,7 @@ from genie.libs.parser.ios.show_arp import ShowIpArp, \
                                            ShowIpTraffic
 
 from genie.libs.parser.ios.show_interface import ShowIpInterface
-
+from genie.libs.parser.ios.show_vrf import ShowVrf
 
 class test_arp(unittest.TestCase):
 
@@ -33,7 +33,10 @@ class test_arp(unittest.TestCase):
 
         # Get outputs
         arp.maker.outputs[ShowIpArp] = \
-            {"": ArpOutput.ShowIpArp}
+            {"": ArpOutput.ShowIpArp,
+             "{'vrf':'VRF1'}": ArpOutput.ShowIpArpVrf}
+        arp.maker.outputs[ShowVrf] = \
+            {"": ArpOutput.ShowVrf}
 
         arp.maker.outputs[ShowIpArpSummary] = \
             {"": ArpOutput.ShowIpArpSummary}
@@ -64,8 +67,10 @@ class test_arp(unittest.TestCase):
 
         # Get outputs
         arp.maker.outputs[ShowIpArp] = \
-            {"": ArpOutput.ShowIpArp}
-
+            {"": ArpOutput.ShowIpArp,
+             "{'vrf':'VRF1'}": ArpOutput.ShowIpArpVrf}
+        arp.maker.outputs[ShowVrf] = \
+            {"": ArpOutput.ShowVrf}
         arp.maker.outputs[ShowIpArpSummary] = \
             {"": ArpOutput.ShowIpArpSummary}
 
@@ -91,6 +96,9 @@ class test_arp(unittest.TestCase):
 
         # Get outputs
         arp.maker.outputs[ShowIpArp] = \
+            {"": {},
+             "{'vrf':'VRF1'}": {}}
+        arp.maker.outputs[ShowVrf] = \
             {"": {}}
 
         arp.maker.outputs[ShowIpArpSummary] = \
@@ -116,7 +124,10 @@ class test_arp(unittest.TestCase):
 
         # Get outputs
         arp.maker.outputs[ShowIpArp] = \
-            {"": ArpOutput.ShowIpArp}
+            {"": ArpOutput.ShowIpArp,
+             "{'vrf':'VRF1'}": ArpOutput.ShowIpArpVrf}
+        arp.maker.outputs[ShowVrf] = \
+            {"": ArpOutput.ShowVrf}
 
         arp.maker.outputs[ShowIpArpSummary] = \
             {"": {}}

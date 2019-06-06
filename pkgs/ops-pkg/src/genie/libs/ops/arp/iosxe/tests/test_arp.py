@@ -3,7 +3,7 @@ import unittest
 
 # ATS
 from ats.topology import Device
-
+from unittest.mock import Mock
 # Genie
 from genie.libs.ops.arp.iosxe.arp import Arp
 from genie.libs.ops.arp.iosxe.tests.arp_output import ArpOutput
@@ -11,9 +11,16 @@ from genie.libs.ops.arp.iosxe.tests.arp_output import ArpOutput
 # Parser
 from genie.libs.parser.iosxe.show_arp import ShowArp, \
                                              ShowIpArpSummary, \
-                                             ShowIpTraffic
+                                             ShowIpTraffic, ShowIpArp
 
 from genie.libs.parser.iosxe.show_interface import ShowIpInterface
+from genie.libs.parser.iosxe.show_vrf import ShowVrf
+
+outputs = {}
+outputs['show ip arp'] = ArpOutput.ShowIpArp_all
+outputs['show ip arp vrf VRF1'] = ArpOutput.ShowIpArp_vrf1
+def mapper(key):
+    return outputs[key]
 
 
 class test_arp(unittest.TestCase):
@@ -34,7 +41,10 @@ class test_arp(unittest.TestCase):
         # Get outputs
         arp.maker.outputs[ShowArp] = \
             {"": ArpOutput.ShowArp}
-
+        arp.maker.outputs[ShowVrf] = \
+            {"": ArpOutput.ShowVrf}
+        arp.maker.outputs[ShowIpArp] = \
+            {"{'vrf':'VRF1'}": ArpOutput.ShowIpArp}
         arp.maker.outputs[ShowIpArpSummary] = \
             {"": ArpOutput.ShowIpArpSummary}
 
@@ -43,12 +53,13 @@ class test_arp(unittest.TestCase):
 
         arp.maker.outputs[ShowIpInterface] = \
             {"": ArpOutput.ShowIpInterface}
-
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
         # Learn the feature
         arp.learn()
 
         # Verify Ops was created successfully
-        self.assertEqual(arp.info, ArpOutput.Arp_info)
+        self.assertDictEqual(arp.info, ArpOutput.Arp_info)
 
         # Check specific attribute values
         # info - interfaces
@@ -65,7 +76,10 @@ class test_arp(unittest.TestCase):
         # Get outputs
         arp.maker.outputs[ShowArp] = \
             {"": ArpOutput.ShowArp}
-
+        arp.maker.outputs[ShowVrf] = \
+            {"": ArpOutput.ShowVrf}
+        arp.maker.outputs[ShowIpArp] = \
+            {"{'vrf':'VRF1'}": ArpOutput.ShowIpArp}
         arp.maker.outputs[ShowIpArpSummary] = \
             {"": ArpOutput.ShowIpArpSummary}
 
@@ -92,7 +106,10 @@ class test_arp(unittest.TestCase):
         # Get outputs
         arp.maker.outputs[ShowArp] = \
             {"": {}}
-
+        arp.maker.outputs[ShowVrf] = \
+            {"": {}}
+        arp.maker.outputs[ShowIpArp] = \
+            {"{'vrf':'VRF1'}": {}}
         arp.maker.outputs[ShowIpArpSummary] = \
             {"": {}}
 
@@ -101,13 +118,16 @@ class test_arp(unittest.TestCase):
 
         arp.maker.outputs[ShowIpInterface] = \
             {"": {}}
-
+        outputs['show ip arp']=''
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
         # Learn the feature
         arp.learn()
 
         # Check no attribute not found
         with self.assertRaises(AttributeError):
             arp.info['statistics']
+        outputs['show ip arp'] = ArpOutput.ShowIpArp_all
 
     def test_incomplete_output(self):
         self.maxDiff = None
@@ -117,7 +137,10 @@ class test_arp(unittest.TestCase):
         # Get outputs
         arp.maker.outputs[ShowArp] = \
             {"": ArpOutput.ShowArp}
-
+        arp.maker.outputs[ShowVrf] = \
+            {"": ArpOutput.ShowVrf}
+        arp.maker.outputs[ShowIpArp] = \
+            {"{'vrf':'VRF1'}": ArpOutput.ShowIpArp}
         arp.maker.outputs[ShowIpArpSummary] = \
             {"": {}}
 
@@ -126,7 +149,8 @@ class test_arp(unittest.TestCase):
 
         arp.maker.outputs[ShowIpInterface] = \
             {"": ArpOutput.ShowIpInterface}
-
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
         # Learn the feature
         arp.learn()
                 

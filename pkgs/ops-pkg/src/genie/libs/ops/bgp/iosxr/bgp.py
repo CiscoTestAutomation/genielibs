@@ -2,9 +2,8 @@
 BGP Genie Ops Object for IOSXR - CLI.
 '''
 
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# Super class
+from genie.libs.ops.bgp.bgp import Bgp as SuperBgp
 
 # Parser
 from genie.libs.parser.iosxr.show_bgp import ShowPlacementProgramAll,\
@@ -19,7 +18,7 @@ from genie.libs.parser.iosxr.show_bgp import ShowPlacementProgramAll,\
                                   ShowBgpInstanceAllAll, ShowBgpInstances
 
 
-class Bgp(Base):
+class Bgp(SuperBgp):
     '''BGP Genie Ops Object'''
 
     # Callables

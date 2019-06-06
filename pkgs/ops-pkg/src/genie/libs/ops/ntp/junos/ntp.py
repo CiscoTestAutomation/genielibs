@@ -1,9 +1,8 @@
 ''' 
 NTP Genie Ops Object for Junos - CLI.
 '''
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.ntp.ntp import Ntp as SuperNtp
 
 # Parser
 from genie.libs.parser.junos.show_ntp import ShowNtpAssociations, \
@@ -11,7 +10,7 @@ from genie.libs.parser.junos.show_ntp import ShowNtpAssociations, \
                                              ShowConfigurationSystemNtpSet
 
 
-class Ntp(Base):
+class Ntp(SuperNtp):
     '''NTP Genie Ops Object'''
 
     def learn(self):

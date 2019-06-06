@@ -6,98 +6,28 @@ Verify_Archive:
   devices: ['uut']
 Verify_Arp:
   devices: ['uut']
-  exclude:
-  - age
+  exclude: []
 Verify_BgpAll:
   devices: ['uut']
-  exclude:
-  - bgp_table_version
+  exclude: []
 Verify_BgpAllClusterIds:
   devices: ['uut']
   exclude: []
 Verify_BgpAllDetail:
   devices: ['uut']
-  exclude:
-  - table_version
-  - refresh_epoch
-  - best_path
-  - status_codes
-  - transfer_pathid
-  - paths
+  exclude: []
   iteration:
     attempt: 10
     interval: 10
 Verify_BgpAllNeighbors:
   devices: ['uut']
-  exclude:
-  - current_time
-  - last_read
-  - last_write
-  - retrans
-  - keepalives
-  - total
-  - value
-  - retransmit
-  - total_data
-  - with_data
-  - krtt
-  - receive_idletime
-  - sent_idletime
-  - sndnxt
-  - snduna
-  - sndwnd
-  - uptime
-  - ackhold
-  - delrcvwnd
-  - rcvnxt
-  - receive_idletime
-  - rcvwnd
-  - updates
-  - down_time
-  - last_reset
-  - notifications
-  - opens
-  - route_refresh
-  - total
-  - updates
-  - up_time
-  - rtto
-  - rtv
-  - srtt
-  - pmtuager
-  - min_rtt
-  - irs
-  - iss
-  - tcp_semaphore
-  - foreign_port
-  - local_port
-  - reset_reason
-  - status_flags
-  - dropped
-  - established
-  - out_of_order
-  - keepalive
-  - retransmit_packet
-  - max_rtt
-  - mss
-  - rcv_scale
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
 Verify_BgpAllSummary:
   devices: ['uut']
-  exclude:
-  - msg_sent
-  - msg_rcvd
-  - activity_paths
-  - activity_prefixes
-  - bgp_table_version
-  - routing_table_version
-  - tbl_ver
-  - up_down
-  - attribute_entries
-  - dropped
-  - established
+  exclude: []
   iteration:
     attempt: 10
     interval: 10
@@ -108,10 +38,7 @@ Verify_CryptoPkiCertificates:
   exclude: []
 Verify_Dir:
   devices: ['uut']
-  exclude:
-  - last_modified_date
-  - bytes_free
-  - files
+  exclude: []
 Verify_Dot1x:
   devices: ['uut']
 Verify_Dot1xAllCount:
@@ -130,100 +57,19 @@ Verify_ErrdisableRecovery:
   exclude: []
 Verify_EtherchannelSummary:
   devices: ['uut']
-  exclude:
-  - current_time
-  - last_read
-  - last_write
-  - retrans
-  - keepalives
-  - total
-  - value
-  - retransmit
-  - total_data
-  - with_data
-  - krtt
-  - receive_idletime
-  - sent_idletime
-  - sndnxt
-  - snduna
-  - sndwnd
-  - uptime
-  - ackhold
-  - delrcvwnd
-  - rcvnxt
-  - receive_idletime
-  - rcvwnd
-  - updates
-  - down_time
-  - last_reset
-  - notifications
-  - opens
-  - route_refresh
-  - total
-  - updates
-  - up_time
-  - rtto
-  - rtv
-  - srtt
-  - pmtuager
-  - min_rtt
-  - max_rtt
-  - dropped
-  - established
-  - reset_reason
-  - irs
-  - iss
-  - tcp_semaphore
-  - foreign_port
-  - status_flags
-  - local_port
-  - keepalive
-  - out_of_order
+  exclude: []
   iteration:
     attempt: 5
     interval: 10
 Verify_Interfaces:
   devices: ['uut']
-  exclude:
-  - in_octets
-  - in_pkts
-  - out_octets
-  - out_pkts
-  - in_rate
-  - in_rate_pkts
-  - out_rate
-  - out_rate_pkts
-  - input_queue_size
-  - in_broadcast_pkts
-  - in_multicast_pkts
-  - last_output
-  - out_unknown_protocl_drops
-  - last_input
-  - input_queue_drops
-  - out_interface_resets
-  - rxload
-  - txload
-  - last_clear
-  - in_crc_errors
-  - in_errors
-  - in_giants
-  - unnumbered
-  - mac_address
-  - phys_address
-  - out_lost_carrier
-  - (Tunnel.*)
-  - input_queue_flushes
-  - reliability
+  exclude: []
   iteration:
     attempt: 5
     interval: 10
 Verify_InterfacesAccounting:
   devices: ['uut']
-  exclude:
-  - pkts_in
-  - pkts_out
-  - chars_in
-  - chars_out
+  exclude: []
 Verify_InterfacesSwitchport:
   devices: ['uut']
   exclude: []
@@ -243,34 +89,22 @@ Verify_IpBgpTemplatePeerSession:
   exclude: []
 Verify_IpIgmpGroupsDetail:
   devices: ['uut']
-  exclude:
-  - expire
-  - up_time
-  - ast_reporter
+  exclude: []
   iteration:
     attempt: 12
     interval: 10
 Verify_IpIgmpInterface_vrf_default:
   devices: ['uut']
-  exclude:
-  - joins
-  - leaves
+  exclude: []
 Verify_IpInterface:
   devices: ['uut']
-  exclude:
-  - unnumbered
-  - address_determined_by
-  - (Tunnel.*)
-  - joins
-  - leaves
+  exclude: []
   iteration:
     attempt: 5
     interval: 10
 Verify_IpInterfaceBrief:
   devices: ['uut']
-  exclude:
-  - method
-  - (Tunnel.*)
+  exclude: []
 Verify_IpInterfaceBriefPipeVlan:
   devices: ['uut']
 Verify_IpInterfaceBriefPipeVlan_yang:
@@ -279,11 +113,7 @@ Verify_IpInterfaceBrief_yang:
   exclude: []
 Verify_IpMroute:
   devices: ['uut']
-  exclude:
-  - expire
-  - uptime
-  - outgoing_interface_list
-  - flags
+  exclude: []
   iteration:
     attempt: 5
     interval: 10
@@ -297,94 +127,50 @@ Verify_IpOspfDatabaseExternal:
   devices: ['uut']
 Verify_IpOspfDatabaseNetwork:
   devices: ['uut']
-  exclude:
-  - age
-  - seq_num
-  - checksum
-  - lsas
+  exclude: []
 Verify_IpOspfDatabaseOpaqueArea:
   devices: ['uut']
 Verify_IpOspfDatabaseRouter:
   devices: ['uut']
-  exclude:
-  - age
-  - seq_num
-  - checksum
-  - links
+  exclude: []
 Verify_IpOspfDatabaseSummary:
   devices: ['uut']
-  exclude:
-  - age
-  - seq_num
-  - checksum
+  exclude: []
 Verify_IpOspfInterface_vrf_default:
   devices: ['uut']
-  exclude:
-  - hello_timer
-  - dead_timer
-  - bdr_ip_addr
-  - bdr_router_id
-  - last_flood_scan_length
-  - last_flood_scan_time_msec
-  - max_flood_scan_length
-  - max_flood_scan_time_msec
-  - state
+  exclude: []
 Verify_IpOspfMplsLdpInterface_vrf_default:
   devices: ['uut']
 Verify_IpOspfMplsTrafficEngLink:
   devices: ['uut']
 Verify_IpOspfNeighborDetail_vrf_default:
   devices: ['uut']
-  exclude:
-  - hello_timer
-  - dead_timer
-  - bdr_ip_addr
-  - bdr_router_id
-  - index
-  - last_retrans_max_scan_length
-  - last_retrans_max_scan_time_msec
-  - total_retransmission
-  - uptime
-  - last_retrans_scan_length
-  - last_retrans_scan_time_msec
+  exclude: []
 Verify_IpOspfShamLinks_vrf_default:
   devices: ['uut']
 Verify_IpOspfVirtualLinks_vrf_default:
   devices: ['uut']
 Verify_IpPimBsrRouter:
   devices: ['uut']
-  exclude:
-  - next_advertisment
-  - expires
-  - up_time
-  - bsr_next_bootstrap
+  exclude: []
 Verify_IpPimInterface:
   devices: ['uut']
 Verify_IpPimInterfaceDetail:
   devices: ['uut']
-  exclude:
-  - hello_packets_in
-  - hello_packets_out
-  - packets_in
-  - packets_out
+  exclude: []
 Verify_IpPimInterfaceDf:
   devices: ['uut']
 Verify_IpPimNeighbor_vrf_default:
   devices: ['uut']
-  exclude:
-  - expiration
-  - up_time
+  exclude: []
 Verify_IpPimRpMapping:
   devices: ['uut']
-  exclude:
-  - up_time
-  - expiration
+  exclude: []
 Verify_IpPrefixListDetail:
   devices: ['uut']
 Verify_IpProtocols:
   devices: ['uut']
-  exclude:
-  - last_update
+  exclude: []
 Verify_IpRoute_protocol_bgp:
   devices: ['uut']
   exclude:
@@ -405,81 +191,50 @@ Verify_IpStaticRoute_vrf_default:
   devices: ['uut']
 Verify_Ipv6Interface:
   devices: ['uut']
-  exclude:
-  - unnumbered
-  - interface_ref
-  - (Tunnel.*)
-  - joined_group_addresses
-  - ipv6
+  exclude: []
   iteration:
     attempt: 5
     interval: 10
 Verify_Ipv6MldGroupsDetail:
   devices: ['uut']
-  exclude:
-  - expire
-  - up_time
+  exclude: []
 Verify_Ipv6MldInterface_vrf_default:
   devices: ['uut']
-  exclude:
-  - (LIIN.*)
-  - (Tunnel.*)
-  - (Loopback.*)
-  - joins
-  - leaves
+  exclude: []
 Verify_Ipv6Mroute:
   devices: ['uut']
-  exclude:
-  - expire
-  - uptime
-  - joins
-  - leaves
-  - incoming_interface_list
-  - (Tunnel.*)
+  exclude: []
   iteration:
     attempt: 5
     interval: 10
 Verify_Ipv6PimBsrCandidateRp:
   devices: ['uut']
-  exclude:
-  - rp_candidate_next_advertisement
+  exclude: []
 Verify_Ipv6PimBsrElection:
   devices: ['uut']
-  exclude:
-  - expires
-  - up_time
-  - rpf_address
+  exclude: []
 Verify_Ipv6PimInterface:
   devices: ['uut']
-  exclude:
-  - (Tunnel.*)
-  - address
+  exclude: []
 Verify_Ipv6PimNeighborDetail:
   devices: ['uut']
-  exclude:
-  - expiration
-  - up_time
+  exclude: []
 Verify_Ipv6PimNeighbor_vrf_default:
   devices: ['uut']
-  exclude:
-  - expiration
-  - up_time
+  exclude: []
 Verify_Ipv6PrefixListDetail:
   devices: ['uut']
 Verify_Ipv6RouteUpdated:
   devices: ['uut']
-  exclude:
-  - updated
+  exclude: []
 Verify_Ipv6Route_protocol_bgp:
   devices: ['uut']
-  exclude:
-  - uptime
+  exclude: []
   parameters:
     protocol: bgp
 Verify_Ipv6Route_protocol_ospf:
   devices: ['uut']
-  exclude:
-  - uptime
+  exclude: []
   parameters:
     protocol: ospf
 Verify_Ipv6StaticDetail:
@@ -532,8 +287,7 @@ Verify_LispServiceMapCache_service_ethernet_instance_id_*:
   parameters:
     instance_id: '*'
     service: ethernet
-  exclude:
-  - creation_time
+  exclude: []
   groups:
   - lisp
 Verify_LispServiceMapCache_service_ipv4_instance_id_*:
@@ -541,8 +295,7 @@ Verify_LispServiceMapCache_service_ipv4_instance_id_*:
   parameters:
     instance_id: '*'
     service: ipv4
-  exclude:
-  - creation_time
+  exclude: []
   groups:
   - lisp
 Verify_LispServiceMapCache_service_ipv6_instance_id_*:
@@ -550,8 +303,7 @@ Verify_LispServiceMapCache_service_ipv6_instance_id_*:
   parameters:
     instance_id: '*'
     service: ipv6
-  exclude:
-  - creation_time
+  exclude: []
   groups:
   - lisp
 Verify_LispServiceRlocMembers_service_ethernet_instance_id_*:
@@ -643,8 +395,7 @@ Verify_LispServiceStatistics_service_ethernet_instance_id_*:
   parameters:
     instance_id: '*'
     service: ethernet
-  exclude:
-  - map_register_records_out
+  exclude: []
   groups:
   - lisp
 Verify_LispServiceStatistics_service_ipv4_instance_id_*:
@@ -652,8 +403,7 @@ Verify_LispServiceStatistics_service_ipv4_instance_id_*:
   parameters:
     instance_id: '*'
     service: ipv4
-  exclude:
-  - map_register_records_out
+  exclude: []
   groups:
   - lisp
 Verify_LispServiceStatistics_service_ipv6_instance_id_*:
@@ -661,8 +411,7 @@ Verify_LispServiceStatistics_service_ipv6_instance_id_*:
   parameters:
     instance_id: '*'
     service: ipv6
-  exclude:
-  - map_register_records_out
+  exclude: []
   groups:
   - lisp
 Verify_LispServiceSummary_service_ethernet:
@@ -703,8 +452,7 @@ Verify_LispService_service_ipv6:
   - lisp
 Verify_LispSession:
   devices: ['uut']
-  exclude:
-  - time
+  exclude: []
   groups:
   - lisp
 Verify_Lldp:
@@ -730,9 +478,7 @@ Verify_MacAddressTableLearning:
   devices: ['uut']
 Verify_MemoryStatistics:
   devices: ['uut']
-  exclude:
-  - free
-  - used
+  exclude: []
 Verify_Module:
   devices: ['uut']
   exclude: []
@@ -744,33 +490,19 @@ Verify_PagpNeighbor:
   devices: ['uut']
 Verify_Platform:
   devices: ['uut']
-  exclude:
-  - insert_time
+  exclude: []
 Verify_PlatformSoftwareSlotActiveMonitorMem:
   devices: ['uut']
   exclude: []
 Verify_PlatformSoftwareStatusControl:
   devices: ['uut']
-  exclude:
-  - idle
-  - system
-  - user
-  - 1_min
-  - 5_min
-  - 15_min
-  - free
-  - used
-  - sirq
-  - waiting
-  - committed
+  exclude: []
   iteration:
     attempt: 6
     interval: 10
 Verify_Redundancy:
   devices: ['uut']
-  exclude:
-  - available_system_uptime
-  - uptime_in_curr_state
+  exclude: []
 Verify_RouteMapAll:
   devices: ['uut']
   exclude: []
@@ -794,13 +526,7 @@ Verify_StackPower:
   exclude: []
 Verify_StandbyAll:
   devices: ['uut']
-  exclude:
-  - next_hello_sent
-  - last_state_change
-  - standby_expires_in
-  - statistics
-  - num_state_changes
-  - active_expires_in
+  exclude: []
   iteration:
     attempt: 6
     interval: 10
@@ -819,10 +545,7 @@ Verify_SwitchDetail:
   exclude: []
 Verify_Version:
   devices: ['uut']
-  exclude:
-  - system_restarted_at
-  - uptime_this_cp
-  - uptime
+  exclude: []
 Verify_Vlan:
   devices: ['uut']
   exclude: []
@@ -843,6 +566,5 @@ Verify_VrfDetail:
   exclude: []
 Verify_VtpStatus:
   devices: ['uut']
-  exclude:
-  - device_id
+  exclude: []
 extends: '%ENV{VIRTUAL_ENV}/genie_yamls/verification_datafile.yaml'

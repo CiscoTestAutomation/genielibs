@@ -1,9 +1,8 @@
 ''' 
 ARP Genie Ops Object for NXOS - CLI.
 '''
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.arp.arp import Arp as SuperArp
 
 # Parser
 from genie.libs.parser.nxos.show_arp import ShowIpArpDetailVrfAll, \
@@ -13,7 +12,7 @@ from genie.libs.parser.nxos.show_arp import ShowIpArpDetailVrfAll, \
 from genie.libs.parser.nxos.show_interface import ShowIpInterfaceVrfAll
 
 
-class Arp(Base):
+class Arp(SuperArp):
 	'''ARP Genie Ops Object'''
 
 	def learn(self):

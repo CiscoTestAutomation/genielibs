@@ -1,8 +1,8 @@
 # python
 import re
 
-# Genie package
-from genie.ops.base import Base
+# super class
+from genie.libs.ops.platform.platform import Platform as SuperPlatform
 
 # Genie Xbu_shared
 from genie.libs.parser.nxos import show_platform
@@ -10,7 +10,7 @@ from genie.metaparser import MetaParser
 from genie.metaparser.util import merge_dict
 
 
-class Platform(Base):
+class Platform(SuperPlatform):
     '''Platform Ops Object'''
 
     def convert_to_seconds(self, item):
@@ -75,6 +75,18 @@ class Platform(Base):
                       src=src_vdc_membership+'[(?P<vdc_name>.*)][(?P<vd_ms_name>.*)][vd_ms_type]',
                       dest=dest_vdc_membership+'[(?P<vdc_name>.*)][(?P<vd_ms_name>.*)][type]')
 
+        self.add_leaf(cmd=show_platform.ShowModule,
+                      src='[xbar]',
+                      dest='[slot][oc]')
+
+        self.add_leaf(cmd=show_platform.ShowModule,
+                      src='[xbar][(?P<xbar>.*)][status]',
+                      dest='[slot][oc][(?P<xbar>.*)][state]')
+        
+        self.add_leaf(cmd=show_platform.ShowModule,
+                      src='[xbar][(?P<xbar>.*)][module_type]',
+                      dest='[slot][oc][(?P<xbar>.*)][name]')
+        
         self.add_leaf(cmd=show_platform.ShowModule,
                       src='[xbar]',
                       dest='[xbar]')
@@ -171,7 +183,6 @@ class Platform(Base):
                       dest='[rp_boot_image]')
 
         self.make(final_call=True)
-
         if 'Slot' in self.__dict__:
             line_cards = []
             slot_value = None
@@ -183,38 +194,29 @@ class Platform(Base):
                 if 'Slot' in slot:
                     slot_value = self.Slot[slot]['slot']
                     if 'Nexus' in self.Slot[slot]['description']:
-                        if 'oc' not in new_dict['slot']:
-                            new_dict['slot']['oc']= {}
-                        if slot_value not in new_dict['slot']['oc']:
-                            new_dict['slot']['oc'][slot_value]= {}
-                        new_dict['slot']['oc'][slot_value]['name'] = self.Slot[slot]['description']
+                        slot_dict = new_dict.setdefault('slot', {}).setdefault('oc', {}).setdefault(slot_value, {})
+                        slot_dict.update({'name': self.Slot[slot]['description']})
                         if 'serial_number' in self.Slot[slot]:
-                            new_dict['slot']['oc'][slot_value]['sn'] = self.Slot[slot]['serial_number']
+                            slot_dict.update({'sn': self.Slot[slot]['serial_number']})
+                            
                     elif 'Supervisor' not in self.Slot[slot]['description']:
-                        if 'lc' not in new_dict['slot']:
-                            new_dict['slot']['lc'] = {}
-                        if slot_value not in new_dict['slot']['lc']:
-                            new_dict['slot']['lc'][slot_value] = {}
-                        new_dict['slot']['lc'][slot_value]['name'] = self.Slot[slot]['description']
+                        slot_dict = new_dict.setdefault('slot', {}).setdefault('lc', {}).setdefault(slot_value, {})
+                        slot_dict.update({'name': self.Slot[slot]['description']})
                         if 'serial_number' in self.Slot[slot]:
-                            new_dict['slot']['lc'][slot_value]['sn'] = self.Slot[slot]['serial_number']
-
+                            slot_dict.update({'sn': self.Slot[slot]['serial_number']})
+                            
                 elif 'Module' in slot:
                     slot_value = self.Slot[slot]['slot']
                     if 'Nexus' in self.Slot[slot]['description']:
-                        if 'oc' not in new_dict['slot']:
-                            new_dict['slot']['oc']= {}
-                        if slot_value not in new_dict['slot']['oc']:
-                            new_dict['slot']['oc'][slot_value]= {}
-                        new_dict['slot']['oc'][slot_value]['name'] = self.Slot[slot]['description']
-                        new_dict['slot']['oc'][slot_value]['sn'] = self.Slot[slot]['serial_number']
+                        slot_dict = new_dict.setdefault('slot', {}).setdefault('oc', {}).setdefault(slot_value, {})
+                        slot_dict.update({'name': self.Slot[slot]['description']})
+                        slot_dict.update({'sn': self.Slot[slot]['serial_number']})
+                        
                     if 'Supervisor' not in self.Slot[slot]['description']:
-                        if 'lc' not in new_dict['slot']:
-                            new_dict['slot']['lc'] = {}
-                        if slot_value not in new_dict['slot']['lc']:
-                            new_dict['slot']['lc'][slot_value] = {}
-                        new_dict['slot']['lc'][slot_value]['name'] = self.Slot[slot]['description']
-                        new_dict['slot']['lc'][slot_value]['sn'] = self.Slot[slot]['serial_number']
+                        slot_dict = new_dict.setdefault('slot', {}).setdefault('lc', {}).setdefault(slot_value, {})
+                        slot_dict.update({'name': self.Slot[slot]['description']})
+                        slot_dict.update({'sn': self.Slot[slot]['serial_number']})
+                        
             merge_dict(self.__dict__, new_dict)
             del self.Slot
             for slot_number in self.slot['rp']:
@@ -227,23 +229,31 @@ class Platform(Base):
                 except Exception:
                     pass
                 self.slot['rp'][str(slot_number)]['rp_uptime'] = self.rp_uptime
+
             if 'lc' in self.slot:
                 for item in self.slot['lc']:
                     if 'sn' in self.slot['lc'][item]:
                         serial = self.slot['lc'][item]['sn']
                     else:
                         serial = None
+                    
+        
                     if 'module' in self.__dict__:
                         for key in self.module['lc']:
                             for mod_name in self.module['lc'][key]:
                                 if self.module['lc'][key][mod_name]['serial_number'] == serial:
                                     linecard_status = self.module['lc'][key][mod_name]['status']
                                     self.slot['lc'][item].update({'state':linecard_status})
+                                    if 'sup' not in self.slot['lc'][item]['name'].lower() and\
+                                       'ethernet' not in self.slot['lc'][item]['name'].lower():
+                                      self.slot.setdefault('oc',{}).setdefault(item, {}).update(self.slot['lc'][item])
+                                      self.slot['oc'][item].update({'state':linecard_status})
+
                     if 'xbar' in self.__dict__:
                         for key in self.xbar:
                             if self.xbar[key]['serial_number'] == serial:
                                 linecard_status = self.xbar[key]['status']
-                                self.slot['lc'][item].update({'state':linecard_status})
+                                self.slot.setdefault('oc',{}).setdefault(item,{}).update({'state':linecard_status})
             if 'oc' in self.slot:
                 for item in self.slot['oc']:
                     if 'sn' in self.slot['oc'][item]:
@@ -260,7 +270,13 @@ class Platform(Base):
                         for key in self.xbar:
                             if self.xbar[key]['serial_number'] == serial:
                                 linecard_status = self.xbar[key]['status']
-                                self.slot['oc'][item].update({'state':linecard_status})
+                                self.slot['oc'][item].update({'state':linecard_status})                                
+                    
+                    if 'oc' in self.slot and 'lc' in self.slot:
+                      if item in self.slot['oc'] and item in self.slot['lc']:
+                        if self.slot['oc'][item] == self.slot['lc'][item]:
+                          self.slot['lc'].pop(item)
+           
             try:
                 del self.rp_boot_image
             except Exception:
@@ -275,7 +291,6 @@ class Platform(Base):
                 del self.xbar
             except Exception:
                 pass
-
         if 'virtual_device' in self.__dict__:
             for virt_dev in self.virtual_device:
                 if 'membership' in self.virtual_device[virt_dev]:

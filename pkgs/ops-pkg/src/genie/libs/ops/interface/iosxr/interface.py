@@ -4,9 +4,8 @@ Interface Genie Ops Object for IOSXR - CLI.
 # python
 import re
 
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.interface.interface import Interface as SuperInterface
 
 # iosxr show_interface
 from genie.libs.parser.iosxr.show_interface import ShowInterfacesDetail, \
@@ -18,7 +17,7 @@ from genie.libs.parser.iosxr.show_interface import ShowInterfacesDetail, \
 from genie.libs.parser.iosxr.show_vrf import ShowVrfAllDetail
 
 
-class Interface(Base):
+class Interface(SuperInterface):
     '''Interface Genie Ops Object'''
 
     def learn(self, custom=None):

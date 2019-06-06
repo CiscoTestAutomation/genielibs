@@ -1,9 +1,8 @@
 ''' 
 IGMP Genie Ops Object for NXOS - CLI.
 '''
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.igmp.igmp import Igmp as SuperIgmp
 
 # Parser
 from genie.libs.parser.nxos.show_igmp import ShowIpIgmpInterface, \
@@ -11,7 +10,7 @@ from genie.libs.parser.nxos.show_igmp import ShowIpIgmpInterface, \
                                   ShowIpIgmpLocalGroups
 
 
-class Igmp(Base):
+class Igmp(SuperIgmp):
     '''IGMP Genie Ops Object'''
 
     def learn(self):

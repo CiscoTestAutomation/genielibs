@@ -1,9 +1,8 @@
 ''' 
 PIM Genie Ops Object for IOSXE - CLI.
 '''
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
+# super class
+from genie.libs.ops.pim.pim import Pim as SuperPim
 
 # Parser
 from genie.libs.parser.iosxe.show_pim import ShowIpv6PimInterface,\
@@ -24,7 +23,7 @@ from genie.libs.parser.iosxe.show_mcast import ShowIpMroute,\
 from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
 
 
-class Pim(Base):
+class Pim(SuperPim):
     '''Pim Genie Ops Object'''
 
     def transfer_to_bool(self, item):
