@@ -563,30 +563,42 @@ class GenieRobot(object):
         else:
             compare2 = self.testscript.parameters[pts_compare]
 
-        exclude_list = ['device', 'maker', 'diff_ignore', 'callables',
-                        '(Current configuration.*)']
 
-        if 'exclude' in self.pts_datafile:
-            exclude_list.extend(self.pts_datafile['exclude'])
+
+        exclude_list = ['device', 'maker', 'diff_ignore', 'callables',
+                        '(Current configuration.*)', 'ops_schema']
+
+        try:
+            if 'exclude' in self.pts_datafile:
+                exclude_list.extend(self.pts_datafile['exclude'])
+        except AttributeError:
+            pass
 
         msg = []
         for fet in compare1:
             failed = []
-            feature_exclude_list = exclude_list
+            feature_exclude_list = exclude_list.copy()
 
             # Get the information too from the pts_data
             try:
                 feature_exclude_list.extend(self.pts_datafile[fet]['exclude'])
-            except KeyError:
+            except (KeyError, AttributeError):
                 pass
 
             for dev in compare1[fet]:
                 # Only compare for the specified devices
                 if dev not in devices:
                     continue
+                dev_exclude = feature_exclude_list.copy()
+                try:
+                    dev_exclude.extend(compare1[fet][dev].exclude)
+                    # TODO - better fix,
+                    dev_exclude.remove(None)
+                except (AttributeError, ValueError):
+                    pass
 
                 diff = Diff(compare1[fet][dev], compare2[fet][dev],
-                    exclude=feature_exclude_list)
+                    exclude=dev_exclude)
 
                 diff.findDiff()
 
