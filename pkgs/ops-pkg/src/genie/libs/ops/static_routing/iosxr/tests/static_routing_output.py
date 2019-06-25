@@ -135,8 +135,8 @@ class StaticRouteOutput(object):
                         'table_id': '0xe0000000',
                         'safi': 'unicast',
                         'routes': {
-                            '1.1.1.1/32': {
-                                'route': '1.1.1.1/32',
+                            '10.4.1.1/32': {
+                                'route': '10.4.1.1/32',
                                 'next_hop': {
                                     'outgoing_interface': {
                                         'GigabitEthernet0/0/0/3': {
@@ -162,14 +162,14 @@ class StaticRouteOutput(object):
                                     },
                                 },
                             },
-                            '3.3.3.3/32': {
-                                'route': '3.3.3.3/32',
+                            '10.36.3.3/32': {
+                                'route': '10.36.3.3/32',
                                 'next_hop': {
                                     'next_hop_list': {
                                         1: {
                                             'index': 1,
                                             'active': True,
-                                            'next_hop': '20.2.3.3',
+                                            'next_hop': '10.229.3.3',
                                             'outgoing_interface': 'GigabitEthernet0/0/0/2',
                                             'install_date': 'Dec  7 21:52:00.843',
                                             'metrics': 1,
@@ -182,7 +182,7 @@ class StaticRouteOutput(object):
                                         2: {
                                             'index': 2,
                                             'active': False,
-                                            'next_hop': '20.2.3.3',
+                                            'next_hop': '10.229.3.3',
                                             'configure_date': 'Dec  7 21:47:43.624',
                                             'metrics': 1,
                                             'preference': 3,
@@ -220,8 +220,8 @@ class StaticRouteOutput(object):
                 'address_family': {
                     'ipv4': {
                         'routes': {
-                            '1.1.1.1/32': {
-                                'route': '1.1.1.1/32',
+                            '10.4.1.1/32': {
+                                'route': '10.4.1.1/32',
                                 'next_hop': {
                                     'outgoing_interface': {
                                         'GigabitEthernet0/0/0/3': {
@@ -237,20 +237,20 @@ class StaticRouteOutput(object):
                                     },
                                 },
                             },
-                            '3.3.3.3/32': {
-                                'route': '3.3.3.3/32',
+                            '10.36.3.3/32': {
+                                'route': '10.36.3.3/32',
                                 'next_hop': {
                                     'next_hop_list': {
                                         1: {
                                             'index': 1,
                                             'active': True,
-                                            'next_hop': '20.2.3.3',
+                                            'next_hop': '10.229.3.3',
                                             'preference': 1,
                                         },
                                         2: {
                                             'index': 2,
                                             'active': False,
-                                            'next_hop': '20.2.3.3',
+                                            'next_hop': '10.229.3.3',
                                             'preference': 3,
                                         },
                                         3: {

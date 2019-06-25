@@ -11,8 +11,8 @@ class StaticRouteOutput(object):
                 'address_family': {
                     'ipv4': {
                         'routes': {
-                            '1.1.1.1/32': {
-                                'route': '1.1.1.1/32',
+                            '10.4.1.1/32': {
+                                'route': '10.4.1.1/32',
                                 'next_hop': {
                                     'next_hop_list': {
                                         1: {
@@ -25,8 +25,8 @@ class StaticRouteOutput(object):
                                     },
                                 },
                             },
-                            '2.2.2.2/32': {
-                                'route': '2.2.2.2/32',
+                            '10.16.2.2/32': {
+                                'route': '10.16.2.2/32',
                                 'next_hop': {
                                     'next_hop_list': {
                                         1: {
@@ -39,7 +39,7 @@ class StaticRouteOutput(object):
                                         2: {
                                             'index': 2,
                                             'active': True,
-                                            'next_hop': '20.2.3.2',
+                                            'next_hop': '10.229.3.2',
                                             'next_hop_netmask': '32',
                                             'outgoing_interface': 'Ethernet1/1',
                                         },
@@ -234,8 +234,8 @@ class StaticRouteOutput(object):
                 'address_family': {
                     'ipv4': {
                         'routes': {
-                            '1.1.1.1/32': {
-                                'route': '1.1.1.1/32',
+                            '10.4.1.1/32': {
+                                'route': '10.4.1.1/32',
                                 'next_hop': {
                                     'next_hop_list': {
                                         1: {
@@ -247,8 +247,8 @@ class StaticRouteOutput(object):
                                     },
                                 },
                             },
-                            '2.2.2.2/32': {
-                                'route': '2.2.2.2/32',
+                            '10.16.2.2/32': {
+                                'route': '10.16.2.2/32',
                                 'next_hop': {
                                     'next_hop_list': {
                                         1: {
@@ -260,7 +260,7 @@ class StaticRouteOutput(object):
                                         2: {
                                             'index': 2,
                                             'active': True,
-                                            'next_hop': '20.2.3.2',
+                                            'next_hop': '10.229.3.2',
                                             'outgoing_interface': 'Ethernet1/1',
                                         },
                                     },

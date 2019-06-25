@@ -66,7 +66,7 @@ class McastOutput(object):
                                                   'pim',
                                         'incoming_interface_list': 
                                             {'port-channel8': 
-                                                {'rpf_nbr': '159.103.50.233'}},
+                                                {'rpf_nbr': '172.16.189.233'}},
                                        'oil_count': 3,
                                         'outgoing_interface_list': 
                                             {'Vlan803': 
@@ -84,7 +84,7 @@ class McastOutput(object):
                                                   'ip',
                                         'incoming_interface_list': 
                                             {'Vlan807': 
-                                                {'rpf_nbr': '159.103.211.228'}},
+                                                {'rpf_nbr': '172.16.94.228'}},
                                         'oil_count': 1,
                                         'outgoing_interface_list': 
                                             {'port-channel9': 
@@ -96,7 +96,7 @@ class McastOutput(object):
                                                   'ip',
                                         'incoming_interface_list': 
                                             {'Ethernet1/1.10': 
-                                                {'rpf_nbr': '159.103.211.228'}},
+                                                {'rpf_nbr': '172.16.94.228'}},
                                         'oil_count': 1,
                                         'outgoing_interface_list': 
                                             {'Ethernet1/2.20': 
@@ -350,14 +350,14 @@ class McastOutput(object):
                 {'address_family': 
                     {'ipv4': 
                         {'mroute': 
-                            {'112.0.0.0/8': 
+                            {'10.49.0.0/8': 
                                 {'path': 
                                     {'0.0.0.0/32 Null0': 
                                         {'interface_name': 'Null0',
                                         'neighbor_address': '0.0.0.0/32',
                                         'urib': True,
                                         'vrf_id': '1'}}},
-                            '212.0.0.0/8': 
+                            '192.168.64.0/8': 
                                 {'path': 
                                     {'0.0.0.0/32 Null0': 
                                         {'interface_name': 'Null0',
@@ -481,12 +481,12 @@ class McastOutput(object):
                     {'ipv4': 
                         {'enable': True,
                         'mroute': 
-                            {'112.0.0.0/8': 
+                            {'10.49.0.0/8': 
                                 {'path': 
                                     {'0.0.0.0/32 Null0': 
                                         {'interface_name': 'Null0',
                                         'neighbor_address': '0.0.0.0/32'}}},
-                            '212.0.0.0/8': 
+                            '192.168.64.0/8': 
                                 {'path': 
                                     {'0.0.0.0/32 Null0': 
                                         {'interface_name': 'Null0',
@@ -775,7 +775,7 @@ class McastOutput(object):
                                         {'flags': 'igmp ip pim',
                                         'incoming_interface_list': 
                                             {'port-channel8': 
-                                                {'rpf_nbr': '159.103.50.233'}},
+                                                {'rpf_nbr': '172.16.189.233'}},
                                         'outgoing_interface_list': 
                                             {'Vlan803': 
                                                 {'flags': 'igmp',
@@ -791,7 +791,7 @@ class McastOutput(object):
                                         {'flags': 'pim ip',
                                         'incoming_interface_list': 
                                             {'Vlan807': 
-                                                {'rpf_nbr': '159.103.211.228'}},
+                                                {'rpf_nbr': '172.16.94.228'}},
                                         'outgoing_interface_list': 
                                             {'port-channel9': 
                                                 {'flags': 'pim',
@@ -801,7 +801,7 @@ class McastOutput(object):
                                         {'flags': 'pim ip',
                                         'incoming_interface_list': 
                                             {'Ethernet1/1.10': 
-                                                {'rpf_nbr': '159.103.211.228'}},
+                                                {'rpf_nbr': '172.16.94.228'}},
                                         'outgoing_interface_list': 
                                             {'Ethernet1/2.20': 
                                                 {'flags': 'pim',

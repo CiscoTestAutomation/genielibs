@@ -122,7 +122,7 @@ class McastOutput(object):
                                         Count Intvl  Prior
 
         Loopback0                   on   1     30     1     
-            Primary Address : 2.2.2.2
+            Primary Address : 10.16.2.2
                       Flags : B P V
                         BFD : Off/150 ms/3
                          DR : this system
@@ -252,14 +252,14 @@ class McastOutput(object):
         Mon May 29 14:37:05.732 UTC
         IP Multicast Static Routes Information
 
-        * 20.10.10.10/32 via GigabitEthernet1/0/0/0 with nexthop 192.168.1.0 and distance 10
-        * 20.10.10.11/32 via GigabitEthernet1/0/0/1 with nexthop 192.168.1.1 and distance 11
-        * 20.10.10.12/32 via GigabitEthernet1/0/0/2 with nexthop 192.168.1.2 and distance 12
-        * 20.10.10.13/32 via GigabitEthernet1/0/0/3 with nexthop 192.168.1.3 and distance 13
-        * 20.10.10.14/32 via GigabitEthernet1/0/0/4 with nexthop 192.168.1.4 and distance 14
-        * 20.10.10.15/32 via GigabitEthernet1/0/0/5 with nexthop 192.168.1.5 and distance 15
-        * 20.10.10.16/32 via GigabitEthernet1/0/0/6 with nexthop 192.168.1.6 and distance 16
-        * 20.10.10.17/32 via GigabitEthernet1/0/0/7 with nexthop 192.168.1.7 and distance 17
+        * 10.135.10.10/32 via GigabitEthernet1/0/0/0 with nexthop 192.168.1.0 and distance 10
+        * 10.135.10.11/32 via GigabitEthernet1/0/0/1 with nexthop 192.168.1.1 and distance 11
+        * 10.135.10.12/32 via GigabitEthernet1/0/0/2 with nexthop 192.168.1.2 and distance 12
+        * 10.135.10.13/32 via GigabitEthernet1/0/0/3 with nexthop 192.168.1.3 and distance 13
+        * 10.135.10.14/32 via GigabitEthernet1/0/0/4 with nexthop 192.168.1.4 and distance 14
+        * 10.135.10.15/32 via GigabitEthernet1/0/0/5 with nexthop 192.168.1.5 and distance 15
+        * 10.135.10.16/32 via GigabitEthernet1/0/0/6 with nexthop 192.168.1.6 and distance 16
+        * 10.135.10.17/32 via GigabitEthernet1/0/0/7 with nexthop 192.168.1.7 and distance 17
         '''
 
     PimVrfVRF1Ipv6Mstatic = '''\
@@ -290,7 +290,7 @@ class McastOutput(object):
                                         Count Intvl  Prior
 
         Loopback0                   on   1     30     1     
-            Primary Address : 2.2.2.2
+            Primary Address : 10.16.2.2
                       Flags : B P V
                         BFD : Off/150 ms/3
                          DR : this system
@@ -488,7 +488,7 @@ class McastOutput(object):
             Outgoing Interface List
                 Loopback0 Flags: F A, Up: 00:00:54
 
-        (192.168.0.22,236.5.5.5) RPF nbr: 11.0.1.22 Flags: C RPF MD MH CD
+        (192.168.0.22,236.5.5.5) RPF nbr: 10.121.1.22 Flags: C RPF MD MH CD
             MVPN TID: 0xe0000018
             MVPN Remote TID: 0xe0800018
             MVPN Payload: IPv4 IPv6
@@ -552,7 +552,7 @@ class McastOutput(object):
             mdtvpn1 Flags: F NS MI MT MA, Up: 00:02:53
 
         (4::4:4:4:5,ff15::2:1)
-          RPF nbr: ::ffff:200.200.200.200 Flags: L RPF
+          RPF nbr: ::ffff:192.168.195.200 Flags: L RPF
           Up: 00:03:59
           Incoming Interface List
             mdtvpn1 Flags: A MI, Up: 00:03:35
@@ -596,13 +596,13 @@ class McastOutput(object):
         (*,234.0.0.0/4) RPF nbr: 0.0.0.1 Flags: MD RPF P
             Up: 00:01:28
 
-        (*,124.0.0.0/32) Flags: P D
+        (*,10.76.0.0/32) Flags: P D
             Up: 00:01:38
 
-        (*,124.0.1.40) Flags: S P
+        (*,10.76.1.40) Flags: S P
             Up: 00:00:46
 
-        (172.150.0.15,217.1.1.1) RPF nbr: 192.168.0.12 Flags: RPF ME MH
+        (172.16.154.15,192.168.21.1) RPF nbr: 192.168.0.12 Flags: RPF ME MH
             MVPN TID: 0xe000001f
             MVPN Remote TID: 0x0
             MVPN Payload: IPv4
@@ -667,49 +667,49 @@ class McastOutput(object):
                     {'ipv4': 
                         {'enable': True,
                         'mroute': 
-                            {'20.10.10.10/32': 
+                            {'10.135.10.10/32': 
                                 {'path': 
                                     {'192.168.1.0 GigabitEthernet1/0/0/0 10': 
                                         {'admin_distance': 10,
                                         'interface_name': 'GigabitEthernet1/0/0/0',
                                         'neighbor_address': '192.168.1.0'}}},
-                            '20.10.10.11/32': 
+                            '10.135.10.11/32': 
                                 {'path': 
                                     {'192.168.1.1 GigabitEthernet1/0/0/1 11': 
                                         {'admin_distance': 11,
                                         'interface_name': 'GigabitEthernet1/0/0/1',
                                         'neighbor_address': '192.168.1.1'}}},
-                            '20.10.10.12/32': 
+                            '10.135.10.12/32': 
                                 {'path': 
                                     {'192.168.1.2 GigabitEthernet1/0/0/2 12': 
                                         {'admin_distance': 12,
                                         'interface_name': 'GigabitEthernet1/0/0/2',
                                         'neighbor_address': '192.168.1.2'}}},
-                            '20.10.10.13/32': 
+                            '10.135.10.13/32': 
                                 {'path': 
                                     {'192.168.1.3 GigabitEthernet1/0/0/3 13': 
                                         {'admin_distance': 13,
                                         'interface_name': 'GigabitEthernet1/0/0/3',
                                         'neighbor_address': '192.168.1.3'}}},
-                            '20.10.10.14/32': 
+                            '10.135.10.14/32': 
                                 {'path': 
                                     {'192.168.1.4 GigabitEthernet1/0/0/4 14': 
                                         {'admin_distance': 14,
                                         'interface_name': 'GigabitEthernet1/0/0/4',
                                         'neighbor_address': '192.168.1.4'}}},
-                            '20.10.10.15/32': 
+                            '10.135.10.15/32': 
                                 {'path': 
                                     {'192.168.1.5 GigabitEthernet1/0/0/5 15': 
                                         {'admin_distance': 15,
                                         'interface_name': 'GigabitEthernet1/0/0/5',
                                         'neighbor_address': '192.168.1.5'}}},
-                            '20.10.10.16/32': 
+                            '10.135.10.16/32': 
                                 {'path': 
                                     {'192.168.1.6 GigabitEthernet1/0/0/6 16': 
                                         {'admin_distance': 16,
                                         'interface_name': 'GigabitEthernet1/0/0/6',
                                         'neighbor_address': '192.168.1.6'}}},
-                            '20.10.10.17/32': 
+                            '10.135.10.17/32': 
                                 {'path': 
                                     {'192.168.1.7 GigabitEthernet1/0/0/7 17': 
                                         {'admin_distance': 17,
@@ -857,19 +857,19 @@ class McastOutput(object):
                 {'address_family': 
                     {'ipv4': 
                         {'multicast_group': 
-                            {'124.0.0.0/32': 
+                            {'10.76.0.0/32': 
                                 {'source_address': 
                                     {'*': 
                                         {'flags': 'P D',
                                         'uptime': '00:01:38'}}},
-                            '124.0.1.40': 
+                            '10.76.1.40': 
                                 {'source_address': 
                                     {'*': 
                                         {'flags': 'S P',
                                         'uptime': '00:00:46'}}},
-                            '217.1.1.1': 
+                            '192.168.21.1': 
                                 {'source_address': 
-                                    {'172.150.0.15': 
+                                    {'172.16.154.15': 
                                         {'flags': 'RPF ME MH',
                                         'incoming_interface_list': 
                                             {'GigabitEthernet0/0/0/1': 
@@ -1036,7 +1036,7 @@ class McastOutput(object):
                                         {'flags': 'L RPF',
                                         'incoming_interface_list': 
                                             {'mdtvpn1': 
-                                                {'rpf_nbr': '::ffff:200.200.200.200'}},
+                                                {'rpf_nbr': '::ffff:192.168.195.200'}},
                                         'outgoing_interface_list': 
                                             {'GigabitEthernet150/0/0/6': 
                                                 {'flags': 'F NS',

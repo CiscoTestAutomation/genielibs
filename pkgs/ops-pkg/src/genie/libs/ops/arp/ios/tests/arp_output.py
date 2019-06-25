@@ -27,9 +27,9 @@ class ArpOutput(object):
 			'Port-channel10': {
 				'ipv4': {
 					'neighbors': {
-						'1.2.1.1': {
+						'10.9.1.1': {
 							'age': '-',
-							'ip': '1.2.1.1',
+							'ip': '10.9.1.1',
 							'link_layer_address': '843d.c638.b9c6',
 							'origin': 'static',
 							'protocol': 'Internet',
@@ -37,9 +37,9 @@ class ArpOutput(object):
 			'Vlan99': {
 				'ipv4': {
 					'neighbors': {
-						'18.0.1.2': {
+						'10.69.1.2': {
 							'age': '-',
-							'ip': '18.0.1.2',
+							'ip': '10.69.1.2',
 							'link_layer_address': '843d.c638.b9c1',
 							'origin': 'static',
 							'protocol': 'Internet',
@@ -277,9 +277,9 @@ class ArpOutput(object):
 				"unreachables": "always sent",
 			},
 			"ipv4": {
-				"201.11.14.1/24": {
+				"192.168.76.1/24": {
 					"prefix_length": "24",
-					"ip": "201.11.14.1",
+					"ip": "192.168.76.1",
 					"secondary": False,
 					"broadcase_address": "255.255.255.255"
 				}
@@ -453,8 +453,8 @@ class ArpOutput(object):
             'Port-channel10': {
             	'ipv4': {
             		'neighbors': {
-            			'1.2.1.1': {
-            				'ip': '1.2.1.1',
+            			'10.9.1.1': {
+            				'ip': '10.9.1.1',
                           	'link_layer_address': '843d.c638.b9c6',
                           	'origin': 'static'}
                     }
@@ -468,8 +468,8 @@ class ArpOutput(object):
             'Vlan99': {
             	'ipv4': {
             		'neighbors': {
-            			'18.0.1.2': {
-            				'ip': '18.0.1.2',
+            			'10.69.1.2': {
+            				'ip': '10.69.1.2',
                            	'link_layer_address': '843d.c638.b9c1',
                            	'origin': 'static'}
                     }

@@ -117,8 +117,8 @@ class StaticRouteOutput(object):
                 'address_family': {
                     'ipv4': {
                         'routes': {
-                            '2.2.2.2/32': {
-                                'route': '2.2.2.2/32',
+                            '10.16.2.2/32': {
+                                'route': '10.16.2.2/32',
                                 'next_hop': {
                                     'next_hop_list': {
                                         1: {
@@ -131,21 +131,21 @@ class StaticRouteOutput(object):
                                         2: {
                                             'index': 2,
                                             'active': False,
-                                            'next_hop': '20.1.2.2',
+                                            'next_hop': '10.186.2.2',
                                             'outgoing_interface': 'GigabitEthernet0/1',
                                             'preference': 2,
                                         },
                                         3: {
                                             'index': 3,
                                             'active': False,
-                                            'next_hop': '20.1.2.2',
+                                            'next_hop': '10.186.2.2',
                                             'preference': 3,
                                         },
                                     },
                                 },
                             },
-                            '3.3.3.3/32': {
-                                'route': '3.3.3.3/32',
+                            '10.36.3.3/32': {
+                                'route': '10.36.3.3/32',
                                 'next_hop': {
                                     'outgoing_interface': {
                                         'GigabitEthernet0/2': {
@@ -249,10 +249,10 @@ class StaticRouteOutput(object):
        IR - ICMP Redirect
     Codes in []: A - active, N - non-active, B - BFD-tracked, D - Not Tracked, P - permanent
     Static local RIB for VRF1
-    M  2.2.2.2/32 [1/0] via GigabitEthernet0/0 10.1.2.2 [A]
-    M             [2/0] via GigabitEthernet0/1 20.1.2.2 [N]
-    M             [3/0] via 20.1.2.2 [N]
-    M  3.3.3.3/32 [1/0] via GigabitEthernet0/2 [A]
+    M  10.16.2.2/32 [1/0] via GigabitEthernet0/0 10.1.2.2 [A]
+    M             [2/0] via GigabitEthernet0/1 10.186.2.2 [N]
+    M             [3/0] via 10.186.2.2 [N]
+    M  10.36.3.3/32 [1/0] via GigabitEthernet0/2 [A]
     M             [1/0] via GigabitEthernet0/3 [A]
     '''
     showIpv6StaticRoute_default = '''\
@@ -284,8 +284,8 @@ R1#show ipv6 static vrf VRF1 detail
                 'address_family': {
                     'ipv4': {
                         'routes': {
-                            '2.2.2.2/32': {
-                                'route': '2.2.2.2/32',
+                            '10.16.2.2/32': {
+                                'route': '10.16.2.2/32',
                                 'next_hop': {
                                     'next_hop_list': {
                                         1: {
@@ -298,21 +298,21 @@ R1#show ipv6 static vrf VRF1 detail
                                         2: {
                                             'index': 2,
                                             'active': False,
-                                            'next_hop': '20.1.2.2',
+                                            'next_hop': '10.186.2.2',
                                             'outgoing_interface': 'GigabitEthernet0/1',
                                             'preference': 2,
                                         },
                                         3: {
                                             'index': 3,
                                             'active': False,
-                                            'next_hop': '20.1.2.2',
+                                            'next_hop': '10.186.2.2',
                                             'preference': 3,
                                         },
                                     },
                                 },
                             },
-                            '3.3.3.3/32': {
-                                'route': '3.3.3.3/32',
+                            '10.36.3.3/32': {
+                                'route': '10.36.3.3/32',
                                 'next_hop': {
                                     'outgoing_interface': {
                                         'GigabitEthernet0/2': {

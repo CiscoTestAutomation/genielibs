@@ -115,8 +115,8 @@ class LispOutput(object):
           Map Server (MS):                     disabled
           Map Resolver (MR):                   disabled
           Delegated Database Tree (DDT):       disabled
-          ITR Map-Resolver(s):                 4.4.4.4, 13.13.13.13
-          ETR Map-Server(s):                   4.4.4.4, 13.13.13.13
+          ITR Map-Resolver(s):                 10.64.4.4, 10.166.13.13
+          ETR Map-Server(s):                   10.64.4.4, 10.166.13.13
           xTR-ID:                              0x730E0861-0x12996F6D-0xEFEA2114-0xE1C951F7
           site-ID:                             unspecified
           ITR local RLOC (last resort):        *** NOT FOUND ***
@@ -157,8 +157,8 @@ class LispOutput(object):
           Map Server (MS):                     disabled
           Map Resolver (MR):                   disabled
           Delegated Database Tree (DDT):       disabled
-          ITR Map-Resolver(s):                 4.4.4.4, 13.13.13.13
-          ETR Map-Server(s):                   4.4.4.4, 13.13.13.13
+          ITR Map-Resolver(s):                 10.64.4.4, 10.166.13.13
+          ETR Map-Server(s):                   10.64.4.4, 10.166.13.13
           xTR-ID:                              0x730E0861-0x12996F6D-0xEFEA2114-0xE1C951F7
           site-ID:                             unspecified
           ITR local RLOC (last resort):        *** NOT FOUND ***
@@ -201,10 +201,10 @@ class LispOutput(object):
           Map Resolver (MR):                   disabled
           Mr-use-petr:                         disabled
           Delegated Database Tree (DDT):       disabled
-          ITR Map-Resolver(s):                 44.44.44.44
-                                               66.66.66.66
-          ETR Map-Server(s):                   44.44.44.44
-                                               66.66.66.66
+          ITR Map-Resolver(s):                 10.94.44.44
+                                               10.84.66.66
+          ETR Map-Server(s):                   10.94.44.44
+                                               10.84.66.66
           xTR-ID:                              0x730E0861-0x12996F6D-0xEFEA2114-0xE1C951F7
           site-ID:                             unspecified
           ITR local RLOC (last resort):        *** NOT FOUND ***
@@ -225,8 +225,8 @@ class LispOutput(object):
             Map-cache activity check period:   60 secs
             Persistent map-cache:              disabled
           Source locator configuration:
-            Vlan100: 11.11.11.1 (Loopback0)
-            Vlan101: 11.11.11.1 (Loopback0)
+            Vlan100: 10.229.11.1 (Loopback0)
+            Vlan101: 10.229.11.1 (Loopback0)
           Database:
             Dynamic database mapping limit:    5120
         '''
@@ -257,11 +257,11 @@ class LispOutput(object):
           Delegated Database Tree (DDT):       disabled
           Site Registration Limit:             0
           Map-Request source:                  derived from EID destination
-          ITR Map-Resolver(s):                 4.4.4.4, 13.13.13.13
-          ETR Map-Server(s):                   4.4.4.4 (17:49:58), 13.13.13.13 (00:00:35)
+          ITR Map-Resolver(s):                 10.64.4.4, 10.166.13.13
+          ETR Map-Server(s):                   10.64.4.4 (17:49:58), 10.166.13.13 (00:00:35)
           xTR-ID:                              0x730E0861-0x12996F6D-0xEFEA2114-0xE1C951F7
           site-ID:                             unspecified
-          ITR local RLOC (last resort):        2.2.2.2
+          ITR local RLOC (last resort):        10.16.2.2
           ITR use proxy ETR RLOC(s):           10.10.10.10
           ITR Solicit Map Request (SMR):       accept and process
             Max SMRs per map-cache entry:      8 more specifics
@@ -313,11 +313,11 @@ class LispOutput(object):
           Delegated Database Tree (DDT):       disabled
           Site Registration Limit:             0
           Map-Request source:                  derived from EID destination
-          ITR Map-Resolver(s):                 5.5.5.5, 12.12.12.12
-          ETR Map-Server(s):                   5.5.5.5 (17:49:58), 12.12.12.12 (00:00:35)
+          ITR Map-Resolver(s):                 10.100.5.5, 10.66.12.12
+          ETR Map-Server(s):                   10.100.5.5 (17:49:58), 10.66.12.12 (00:00:35)
           xTR-ID:                              0x730E0861-0x12996F6D-0xEFEA2114-0xE1C951F7
           site-ID:                             unspecified
-          ITR local RLOC (last resort):        2.2.2.2
+          ITR local RLOC (last resort):        10.16.2.2
           ITR use proxy ETR RLOC(s):           10.10.10.10
           ITR Solicit Map Request (SMR):       accept and process
             Max SMRs per map-cache entry:      8 more specifics
@@ -397,14 +397,14 @@ class LispOutput(object):
             Registration errors:
               Authentication failures:   0
               Allowed locators mismatch: 0
-            ETR 2.2.2.2, last registered 01:12:41, proxy-reply, map-notify
+            ETR 10.16.2.2, last registered 01:12:41, proxy-reply, map-notify
                          TTL 1d00h, no merge, hash-function sha1, nonce 0x70D18EF4-0x3A605D67
                          state complete, no security-capability
                          xTR-ID 0x21EDD25F-0x7598784C-0x769C8E4E-0xC04926EC
                          site-ID unspecified
                          sourced by reliable transport
               Locator  Local  State      Pri/Wgt  Scope
-              2.2.2.2  yes    up          50/50   IPv4 none
+              10.16.2.2  yes    up          50/50   IPv4 none
 
         Site name: xtr1_2
         Allowed configured locators: any
@@ -426,14 +426,14 @@ class LispOutput(object):
             Registration errors:
               Authentication failures:   0
               Allowed locators mismatch: 0
-            ETR 8.8.8.8, last registered 01:55:47, proxy-reply, map-notify
+            ETR 10.1.8.8, last registered 01:55:47, proxy-reply, map-notify
                          TTL 1d00h, no merge, hash-function sha1, nonce 0xB06AE31D-0x6ADB0BA5
                          state complete, no security-capability
                          xTR-ID 0x77200484-0xD134DC48-0x0FBAD9DC-0x4A46CA5D
                          site-ID unspecified
                          sourced by reliable transport
               Locator  Local  State      Pri/Wgt  Scope
-              8.8.8.8  yes    up          50/50   IPv4 none
+              10.1.8.8  yes    up          50/50   IPv4 none
         '''
 
     # 'show lisp all instance-id 101 service ipv6 server detail internal'
@@ -458,10 +458,10 @@ class LispOutput(object):
         Home Instance ID: 101
         Total entries: 6
         Provider/Subscriber  Inst ID    EID prefix
-        Provider             103        88.88.88.0/24
-        Provider             103        100.100.100.0/24
-        Provider             103        200.200.200.0/24
-        Subscriber           102        172.168.1.0/24
+        Provider             103        10.121.88.0/24
+        Provider             103        10.220.100.0/24
+        Provider             103        192.168.195.0/24
+        Subscriber           102        172.16.1.0/24
         Subscriber           101        192.168.0.0/24
         Subscriber           101        192.168.9.0/24
         '''
@@ -538,8 +538,8 @@ class LispOutput(object):
           Number of reachability reports:           0 (+ dropped 0)
         ITR Map-Resolvers:
           Map-Resolver         LastReply  Metric ReqsSent Positive Negative No-Reply
-          4.4.4.4              03:13:58        4        1        1        0        0
-          13.13.13.13          03:13:58       26        2        0        0        1
+          10.64.4.4              03:13:58        4        1        1        0        0
+          10.166.13.13          03:13:58       26        2        0        0        1
         LISP RLOC Statistics - last cleared: never
         Control Packets:
             RTR Map-Requests forwarded:             0
@@ -632,8 +632,8 @@ class LispOutput(object):
           Number of reachability reports:           0 (+ dropped 0)
         ITR Map-Resolvers:
           Map-Resolver         LastReply  Metric ReqsSent Positive Negative No-Reply
-          4.4.4.4              00:15:36       19        2        1        0        1
-          13.13.13.13          00:17:11       31        3        0        0        2
+          10.64.4.4              00:15:36       19        2        1        0        1
+          10.166.13.13          00:17:11       31        3        0        0        2
         LISP RLOC Statistics - last cleared: never
         Control Packets:
             RTR Map-Requests forwarded:             0
@@ -721,7 +721,7 @@ class LispOutput(object):
           Negative cache entry, action: send-map-request
         192.168.9.0/24, uptime: 00:04:02, expires: 23:55:57, via map-reply, complete
           Locator  Uptime    State      Pri/Wgt     Encap-IID
-          8.8.8.8  00:04:02  up          50/50        -
+          10.1.8.8  00:04:02  up          50/50        -
         '''
 
     # 'show lisp all instance-id 101 ipv6 map-cache'
@@ -737,7 +737,7 @@ class LispOutput(object):
           Negative cache entry, action: send-map-request
         2001:192:168:9::/64, uptime: 00:06:51, expires: 23:53:08, via map-reply, complete
           Locator  Uptime    State      Pri/Wgt     Encap-IID
-          8.8.8.8  00:06:51  up          50/50        -
+          10.1.8.8  00:06:51  up          50/50        -
         172.16.10.0/24, uptime: 00:00:00, expires: 23:59:59, via map-reply, complete
           Locator                     Uptime    State      Pri/Wgt
           172.16.156.134             00:00:00  up           1/50
@@ -764,7 +764,7 @@ class LispOutput(object):
 
         192.168.0.0/24, locator-set RLOC
           Locator  Pri/Wgt  Source     State
-          2.2.2.2   50/50   cfg-intf   site-self, reachable
+          10.16.2.2   50/50   cfg-intf   site-self, reachable
         '''
 
     # 'show lisp all instance-id 101 ipv6 database'
@@ -778,7 +778,7 @@ class LispOutput(object):
 
         2001:192:168::/64, locator-set RLOC
           Locator  Pri/Wgt  Source     State
-          2.2.2.2   50/50   cfg-intf   site-self, reachable
+          10.16.2.2   50/50   cfg-intf   site-self, reachable
         '''
 
     # 'show lisp all instance-id 101 ethernet database'
@@ -793,10 +793,10 @@ class LispOutput(object):
 
         0050.56b0.6a0e/48, dynamic-eid Auto-L2-group-1, inherited from default locator-set RLOC
           Locator     Pri/Wgt  Source     State
-          11.11.11.1    1/100  cfg-intf   site-self, reachable
+          10.229.11.1    1/100  cfg-intf   site-self, reachable
         cafe.cafe.cafe/48, dynamic-eid Auto-L2-group-1, inherited from default locator-set RLOC
           Locator     Pri/Wgt  Source     State
-          11.11.11.1    1/100  cfg-intf   site-self, reachable
+          10.229.11.1    1/100  cfg-intf   site-self, reachable
         '''
 
     ############################################################################
@@ -824,7 +824,7 @@ class LispOutput(object):
                                                 {'address_type': 'ethernet',
                                                 'vrf': '101'},
                                             'id': '0050.56b0.6a0e/48',
-                                            'loopback_address': '11.11.11.1',
+                                            'loopback_address': '10.229.11.1',
                                             'priority': 1,
                                             'rlocs': 'RLOC',
                                             'weight': 100},
@@ -833,7 +833,7 @@ class LispOutput(object):
                                                 {'address_type': 'ethernet',
                                                 'vrf': '101'},
                                             'id': 'cafe.cafe.cafe/48',
-                                            'loopback_address': '11.11.11.1',
+                                            'loopback_address': '10.229.11.1',
                                             'priority': 1,
                                             'rlocs': 'RLOC',
                                             'weight': 100}},
@@ -856,7 +856,7 @@ class LispOutput(object):
                                                 {'address_type': 'ipv4',
                                                 'vrf': 'red'},
                                             'id': '192.168.0.0/24',
-                                            'loopback_address': '2.2.2.2',
+                                            'loopback_address': '10.16.2.2',
                                             'priority': 50,
                                             'rlocs': 'RLOC',
                                             'weight': 50}},
@@ -867,10 +867,10 @@ class LispOutput(object):
                                         },
                                     'vni': '101'}},
                             'mapping_servers': 
-                                {'13.13.13.13': 
-                                    {'ms_address': '13.13.13.13'},
-                                '4.4.4.4': 
-                                    {'ms_address': '4.4.4.4'}}},
+                                {'10.166.13.13': 
+                                    {'ms_address': '10.166.13.13'},
+                                '10.64.4.4': 
+                                    {'ms_address': '10.64.4.4'}}},
                         'itr': 
                             {'enabled': True,
                             'map_cache': 
@@ -902,17 +902,17 @@ class LispOutput(object):
                                                         'locator_address': 
                                                             {'address_type': 'ipv4-afi',
                                                             'ipv4': 
-                                                                {'ipv4': '8.8.8.8'},
+                                                                {'ipv4': '10.1.8.8'},
                                                             'virtual_network_id': '101'},
                                                         'priority': 50,
                                                         'weight': 50}}},
                                             'time_to_live': '23:55:57'}},
                                     'vni': '101'}},
                             'map_resolvers': 
-                                {'13.13.13.13': 
-                                    {'map_resolver': '13.13.13.13'},
-                                '4.4.4.4': 
-                                    {'map_resolver': '4.4.4.4'}},
+                                {'10.166.13.13': 
+                                    {'map_resolver': '10.166.13.13'},
+                                '10.64.4.4': 
+                                    {'map_resolver': '10.64.4.4'}},
                             'proxy_itrs': 
                                 {'10.10.10.10': 
                                     {'proxy_etr_address': '10.10.10.10'}}},
@@ -1009,9 +1009,9 @@ class LispOutput(object):
                                             {'extranet': 'ext1',
                                             'home_instance_id': 101,
                                             'subscriber': 
-                                                {'172.168.1.0/24': 
+                                                {'172.16.1.0/24': 
                                                     {'bidirectional': True,
-                                                    'eid_record': '172.168.1.0/24'}}}},
+                                                    'eid_record': '172.16.1.0/24'}}}},
                                     'vni': '102'},
                                 '103': 
                                     {'extranets': 
@@ -1019,15 +1019,15 @@ class LispOutput(object):
                                             {'extranet': 'ext1',
                                             'home_instance_id': 101,
                                             'provider': 
-                                                {'100.100.100.0/24': 
+                                                {'10.220.100.0/24': 
                                                     {'bidirectional': True,
-                                                    'eid_record': '100.100.100.0/24'},
-                                                '200.200.200.0/24': 
+                                                    'eid_record': '10.220.100.0/24'},
+                                                '192.168.195.0/24': 
                                                     {'bidirectional': True,
-                                                    'eid_record': '200.200.200.0/24'},
-                                                '88.88.88.0/24': 
+                                                    'eid_record': '192.168.195.0/24'},
+                                                '10.121.88.0/24': 
                                                     {'bidirectional': True,
-                                                    'eid_record': '88.88.88.0/24'}}}},
+                                                    'eid_record': '10.121.88.0/24'}}}},
                                     'vni': '103'}}},
                         'service': 'ipv4',
                         'virtual_network_ids': 
@@ -1047,7 +1047,7 @@ class LispOutput(object):
                                                 {'address_type': 'ipv6',
                                                 'vrf': 'red'},
                                             'id': '2001:192:168::/64',
-                                            'loopback_address': '2.2.2.2',
+                                            'loopback_address': '10.16.2.2',
                                             'priority': 50,
                                             'rlocs': 'RLOC',
                                             'weight': 50}},
@@ -1058,10 +1058,10 @@ class LispOutput(object):
                                         },
                                     'vni': '101'}},
                             'mapping_servers': 
-                                {'12.12.12.12': 
-                                    {'ms_address': '12.12.12.12'},
-                                '5.5.5.5': 
-                                    {'ms_address': '5.5.5.5'}}},
+                                {'10.66.12.12': 
+                                    {'ms_address': '10.66.12.12'},
+                                '10.100.5.5': 
+                                    {'ms_address': '10.100.5.5'}}},
                         'itr': 
                             {'enabled': True,
                             'map_cache': 
@@ -1118,7 +1118,7 @@ class LispOutput(object):
                                                         'locator_address': 
                                                             {'address_type': 'ipv4-afi',
                                                             'ipv4': 
-                                                                {'ipv4': '8.8.8.8'},
+                                                                {'ipv4': '10.1.8.8'},
                                                             'virtual_network_id': '101'},
                                                         'priority': 50,
                                                         'weight': 50}}},
@@ -1134,10 +1134,10 @@ class LispOutput(object):
                                             'time_to_live': 'never'}},
                                     'vni': '101'}},
                             'map_resolvers': 
-                                {'12.12.12.12': 
-                                    {'map_resolver': '12.12.12.12'},
-                                '5.5.5.5': 
-                                    {'map_resolver': '5.5.5.5'}}},
+                                {'10.66.12.12': 
+                                    {'map_resolver': '10.66.12.12'},
+                                '10.100.5.5': 
+                                    {'map_resolver': '10.100.5.5'}}},
                         'map_server': 
                             {'enabled': False,
                             'summary': 

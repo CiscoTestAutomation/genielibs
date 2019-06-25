@@ -31,19 +31,19 @@ from genie.libs.parser.nxos.show_routing import ShowRoutingVrfAll
 outputs = {}
 outputs['show bgp vrf VRF1 all neighbors'] = BgpOutput.vrf_vrf1_output
 outputs['show bgp vrf default all neighbors'] = BgpOutput.vrf_default_output
-outputs['show bgp vrf VRF1 all neighbors 2.2.2.10 advertised-routes'] = BgpOutput.nbr1_advertised_routes
-outputs['show bgp vrf VRF1 all neighbors 2.2.2.10 routes'] = BgpOutput.nbr1_routes
-outputs['show bgp vrf VRF1 all neighbors 2.2.2.10 received-routes'] = BgpOutput.nbr1_received_routes
+outputs['show bgp vrf VRF1 all neighbors 10.16.2.10 advertised-routes'] = BgpOutput.nbr1_advertised_routes
+outputs['show bgp vrf VRF1 all neighbors 10.16.2.10 routes'] = BgpOutput.nbr1_routes
+outputs['show bgp vrf VRF1 all neighbors 10.16.2.10 received-routes'] = BgpOutput.nbr1_received_routes
 outputs['show bgp vrf default all neighbors'] = BgpOutput.vrf_default_output
-outputs['show bgp vrf default all neighbors 2.2.2.2 advertised-routes'] = BgpOutput.nbr2_advertised_routes
-outputs['show bgp vrf default all neighbors 2.2.2.2 routes'] = BgpOutput.nbr2_routes
-outputs['show bgp vrf default all neighbors 2.2.2.2 received-routes'] = BgpOutput.nbr2_received_routes
-outputs['show bgp vrf default all neighbors 2.2.2.25 advertised-routes'] = BgpOutput.nbr3_advertised_routes
-outputs['show bgp vrf default all neighbors 2.2.2.25 routes'] = BgpOutput.nbr3_routes
-outputs['show bgp vrf default all neighbors 2.2.2.25 received-routes'] = BgpOutput.nbr3_received_routes
-outputs['show bgp vrf default all neighbors 2.2.2.5 advertised-routes'] = BgpOutput.nbr4_advertised_routes
-outputs['show bgp vrf default all neighbors 2.2.2.5 routes'] = BgpOutput.nbr4_routes
-outputs['show bgp vrf default all neighbors 2.2.2.5 received-routes'] = BgpOutput.nbr4_received_routes
+outputs['show bgp vrf default all neighbors 10.16.2.2 advertised-routes'] = BgpOutput.nbr2_advertised_routes
+outputs['show bgp vrf default all neighbors 10.16.2.2 routes'] = BgpOutput.nbr2_routes
+outputs['show bgp vrf default all neighbors 10.16.2.2 received-routes'] = BgpOutput.nbr2_received_routes
+outputs['show bgp vrf default all neighbors 10.16.2.25 advertised-routes'] = BgpOutput.nbr3_advertised_routes
+outputs['show bgp vrf default all neighbors 10.16.2.25 routes'] = BgpOutput.nbr3_routes
+outputs['show bgp vrf default all neighbors 10.16.2.25 received-routes'] = BgpOutput.nbr3_received_routes
+outputs['show bgp vrf default all neighbors 10.16.2.5 advertised-routes'] = BgpOutput.nbr4_advertised_routes
+outputs['show bgp vrf default all neighbors 10.16.2.5 routes'] = BgpOutput.nbr4_routes
+outputs['show bgp vrf default all neighbors 10.16.2.5 received-routes'] = BgpOutput.nbr4_received_routes
 
 def mapper(key):
     return outputs[key]
@@ -125,7 +125,7 @@ class test_bgp(unittest.TestCase):
         # routes_per_peer - remote_as
         with self.assertRaises(AttributeError):
             remote_as = (bgp.routes_per_peer['instance']['default']['vrf']\
-                ['VRF1']['neighbor']['2.2.2.10']['remote_as'])
+                ['VRF1']['neighbor']['10.16.2.10']['remote_as'])
 
     def test_xml_cli_selective_attribute(self):
         self.maxDiff = None
@@ -159,7 +159,7 @@ class test_bgp(unittest.TestCase):
                 ['address_family']['ipv4 unicast']['bgp_table_version'], 35)
         # routes_per_peer - remote_as
         self.assertEqual(bgp.routes_per_peer['instance']['default']['vrf']\
-                ['VRF1']['neighbor']['2.2.2.10']['remote_as'], 0)
+                ['VRF1']['neighbor']['10.16.2.10']['remote_as'], 0)
 
     def test_xml_cli_incomplete_output(self):
         self.maxDiff = None

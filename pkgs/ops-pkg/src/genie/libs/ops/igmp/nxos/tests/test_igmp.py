@@ -89,7 +89,7 @@ class test_igmp(unittest.TestCase):
         # info - vrf VRF1
         self.assertEqual(igmp.info['vrfs']['VRF1']['interfaces']\
                                   ['Ethernet2/4']['group']\
-                                  ['239.6.6.6']['last_reporter'], '20.1.2.1')
+                                  ['239.6.6.6']['last_reporter'], '10.186.2.1')
 
     def test_incomplete_output(self):
         self.maxDiff = None

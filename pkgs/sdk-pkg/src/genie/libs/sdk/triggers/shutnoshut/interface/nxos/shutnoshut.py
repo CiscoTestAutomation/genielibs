@@ -81,6 +81,7 @@ class TriggerShutNoShutVlanInterface(TriggerShutNoShut):
                                         'requirements':[['info', '(?P<interface>Vlan[0-9]+)', 'mtu', '(?P<mtu>.*)'],
                                                         ['info', '(?P<interface>.*)', 'enabled', True],
                                                         ['info', '(?P<interface>.*)', 'oper_status', 'up']],
+                                        'all_keys': True,
                                         'exclude': interface_exclude}},
                        config_info={'conf.interface.Interface':{
                                         'requirements':[['enabled', False]],

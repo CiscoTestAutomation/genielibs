@@ -8,7 +8,7 @@ class NtpOutput(object):
 	ShowNtpAssociations = {
 	'clock_state':
 		{'system_status':
-			{'associations_address': '2.2.2.2',
+			{'associations_address': '10.16.2.2',
 			 'associations_local_mode': 'client',
 			 'clock_offset': 27.027,
 			 'clock_refid': '127.127.1.1',
@@ -17,7 +17,7 @@ class NtpOutput(object):
 			 'root_delay': 5.61}
 		},
 	'peer':
-		{'2.2.2.2':
+		{'10.16.2.2':
 			{'local_mode':
 				{'client':
 					{'delay': 5.61,
@@ -28,12 +28,12 @@ class NtpOutput(object):
 					'reach': 7,
 					'receive_time': 25,
 					'refid': '127.127.1.1',
-					'remote': '2.2.2.2',
+					'remote': '10.16.2.2',
 					'stratum': 3,
 					'local_mode': 'client'}
 				}
 			},
-		'3.3.3.3':
+		'10.36.3.3':
 			{'local_mode':
 				{'client':
 					{'delay': 0.0,
@@ -44,7 +44,7 @@ class NtpOutput(object):
 					'reach': 0,
 					'receive_time': '-',
 					'refid': '.STEP.',
-					'remote': '3.3.3.3',
+					'remote': '10.36.3.3',
 					'stratum': 16,
 					'local_mode': 'client'}
 				}
@@ -62,7 +62,7 @@ class NtpOutput(object):
 				'peerdispersion': 3.34,
 				'poll': 64,
 				'precision': '2**14',
-				'refid': '2.2.2.2',
+				'refid': '10.16.2.2',
 				'reftime': 'DFA02517.D2F7B9F6 '
 						   '(13:40:23.824 EST Wed Nov '
 						   '21 2018)',
@@ -79,29 +79,29 @@ class NtpOutput(object):
         'vrf': {
             'default': {
                 'address': {
-                    '2.2.2.2': {
+                    '10.16.2.2': {
                         'isconfigured': {
                             'True': {
-                                'address': '2.2.2.2',
+                                'address': '10.16.2.2',
                                 'isconfigured': True}
                         },
                         'type': {
                             'server': {
-                                'address': '2.2.2.2',
+                                'address': '10.16.2.2',
                                 'source': 'Loopback0',
                                 'type': 'server',
                                 'vrf': 'default'}
                         }
                     },
-                    '3.3.3.3': {
+                    '10.36.3.3': {
                         'isconfigured': {
                             'True': {
-                                'address': '3.3.3.3',
+                                'address': '10.36.3.3',
                                 'isconfigured': True}
                         },
                         'type': {
                             'server': {
-                                'address': '3.3.3.3',
+                                'address': '10.36.3.3',
                                 'type': 'server',
                                 'vrf': 'default'}
                         }
@@ -114,7 +114,7 @@ class NtpOutput(object):
 	Ntp_info = {
 		'clock_state': {
 			'system_status': {
-				'associations_address': '2.2.2.2',
+				'associations_address': '10.16.2.2',
                 'associations_local_mode': 'client',
                 'clock_offset': 27.027,
                 'clock_precision': '2**14',
@@ -131,12 +131,12 @@ class NtpOutput(object):
  			'default': {
  				'associations': {
  					'address': {
- 						'2.2.2.2': {
+ 						'10.16.2.2': {
  							'local_mode': {
  								'client': {
  									'isconfigured': {
  										True: {
- 											'address': '2.2.2.2',
+ 											'address': '10.16.2.2',
                                             'delay': 5.61,
                                             'isconfigured': True,
                                             'local_mode': 'client',
@@ -151,12 +151,12 @@ class NtpOutput(object):
                                 }
                             }
                         },
-                        '3.3.3.3': {
+                        '10.36.3.3': {
                         	'local_mode': {
                         		'client': {
                         			'isconfigured': {
                         				True: {
-                        					'address': '3.3.3.3',
+                        					'address': '10.36.3.3',
                                             'delay': 0.0,
                                             'isconfigured': True,
                                             'local_mode': 'client',
@@ -175,19 +175,19 @@ class NtpOutput(object):
                	},
                 'unicast_configuration': {
                 	'address': {
-                		'2.2.2.2': {
+                		'10.16.2.2': {
                 			'type': {
                 				'server': {
-                					'address': '2.2.2.2',
+                					'address': '10.16.2.2',
                                     'source': 'Loopback0',
                                     'type': 'server',
                                     'vrf': 'default'}
                             }
                         },
-                        '3.3.3.3': {
+                        '10.36.3.3': {
                         	'type': {
                         		'server': {
-                        			'address': '3.3.3.3',
+                        			'address': '10.36.3.3',
                                     'type': 'server',
                                     'vrf': 'default'}
                             }

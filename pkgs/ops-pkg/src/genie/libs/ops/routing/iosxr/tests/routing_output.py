@@ -11,8 +11,8 @@ class RoutingOutput(object):
                 "address_family": {
                     "ipv4": {
                         "routes": {
-                            "1.1.1.1/32": {
-                                "route": "1.1.1.1/32",
+                            "10.4.1.1/32": {
+                                "route": "10.4.1.1/32",
                                 "active": True,
                                 "source_protocol_codes": "S",
                                 "source_protocol": "static",
@@ -29,8 +29,8 @@ class RoutingOutput(object):
                                     },
                                 },
                             },
-                            "2.2.2.2/32": {
-                                "route": "2.2.2.2/32",
+                            "10.16.2.2/32": {
+                                "route": "10.16.2.2/32",
                                 "active": True,
                                 "source_protocol_codes": "L",
                                 "source_protocol": "local",
@@ -43,8 +43,8 @@ class RoutingOutput(object):
                                     },
                                 },
                             },
-                            "3.3.3.3/32": {
-                                "route": "3.3.3.3/32",
+                            "10.36.3.3/32": {
+                                "route": "10.36.3.3/32",
                                 "active": True,
                                 "route_preference": 1,
                                 "metric": 0,
@@ -60,7 +60,7 @@ class RoutingOutput(object):
                                         },
                                         2: {
                                             "index": 2,
-                                            "next_hop": "20.2.3.3",
+                                            "next_hop": "10.229.3.3",
                                             "outgoing_interface": "GigabitEthernet0/0/0/2",
                                             "updated": "01:51:13"
                                         },
@@ -81,8 +81,8 @@ class RoutingOutput(object):
                                     },
                                 },
                             },
-                            "21.21.21.21/32": {
-                                "route": "21.21.21.21/32",
+                            "10.234.21.21/32": {
+                                "route": "10.234.21.21/32",
                                 "active": True,
                                 "route_preference": 115,
                                 "metric": 20,
@@ -92,7 +92,7 @@ class RoutingOutput(object):
                                     "next_hop_list": {
                                         1: {
                                             "index": 1,
-                                            "next_hop": "20.1.2.1",
+                                            "next_hop": "10.186.2.1",
                                             "outgoing_interface": "GigabitEthernet0/0/0/0",
                                             "updated": "01:50:50"
                                         },
@@ -105,8 +105,8 @@ class RoutingOutput(object):
                                     },
                                 },
                             },
-                            "31.31.31.31/32": {
-                                "route": "31.31.31.31/32",
+                            "10.19.31.31/32": {
+                                "route": "10.19.31.31/32",
                                 "active": True,
                                 "route_preference": 200,
                                 "metric": 0,
@@ -116,14 +116,14 @@ class RoutingOutput(object):
                                     "next_hop_list": {
                                         1: {
                                             "index": 1,
-                                            "next_hop": "11.11.11.11",
+                                            "next_hop": "10.229.11.11",
                                             "updated": "00:55:14"
                                         },
                                     },
                                 },
                             },
-                            "32.32.32.32/32": {
-                                "route": "32.32.32.32/32",
+                            "10.16.32.32/32": {
+                                "route": "10.16.32.32/32",
                                 "active": True,
                                 "source_protocol_codes": "L",
                                 "source_protocol": "local",
@@ -136,8 +136,8 @@ class RoutingOutput(object):
                                     },
                                 },
                             },
-                            "33.33.33.33/32": {
-                                "route": "33.33.33.33/32",
+                            "10.21.33.33/32": {
+                                "route": "10.21.33.33/32",
                                 "active": True,
                                 "route_preference": 200,
                                 "metric": 0,
@@ -147,7 +147,7 @@ class RoutingOutput(object):
                                     "next_hop_list": {
                                         1: {
                                             "index": 1,
-                                            "next_hop": "13.13.13.13",
+                                            "next_hop": "10.166.13.13",
                                             "updated": "00:52:31"
                                         },
                                     },
@@ -298,8 +298,8 @@ class RoutingOutput(object):
                 "address_family": {
                     "ipv4": {
                         "routes": {
-                            "1.1.1.1/32": {
-                                "route": "1.1.1.1/32",
+                            "10.4.1.1/32": {
+                                "route": "10.4.1.1/32",
                                 "active": True,
                                 "source_protocol_codes": "S",
                                 "source_protocol": "static",
@@ -314,8 +314,8 @@ class RoutingOutput(object):
                                     },
                                 },
                             },
-                            "2.2.2.2/32": {
-                                "route": "2.2.2.2/32",
+                            "10.16.2.2/32": {
+                                "route": "10.16.2.2/32",
                                 "active": True,
                                 "source_protocol_codes": "L",
                                 "source_protocol": "local",
@@ -327,8 +327,8 @@ class RoutingOutput(object):
                                     },
                                 },
                             },
-                            "3.3.3.3/32": {
-                                "route": "3.3.3.3/32",
+                            "10.36.3.3/32": {
+                                "route": "10.36.3.3/32",
                                 "active": True,
                                 "route_preference": 1,
                                 "metric": 0,
@@ -344,7 +344,7 @@ class RoutingOutput(object):
                                         },
                                         2: {
                                             "index": 2,
-                                            "next_hop": "20.2.3.3",
+                                            "next_hop": "10.229.3.3",
                                             "outgoing_interface": "GigabitEthernet0/0/0/2",
                                             "updated": "01:51:13"
                                         },
@@ -364,8 +364,8 @@ class RoutingOutput(object):
                                     },
                                 },
                             },
-                            "21.21.21.21/32": {
-                                "route": "21.21.21.21/32",
+                            "10.234.21.21/32": {
+                                "route": "10.234.21.21/32",
                                 "active": True,
                                 "route_preference": 115,
                                 "metric": 20,
@@ -375,7 +375,7 @@ class RoutingOutput(object):
                                     "next_hop_list": {
                                         1: {
                                             "index": 1,
-                                            "next_hop": "20.1.2.1",
+                                            "next_hop": "10.186.2.1",
                                             "outgoing_interface": "GigabitEthernet0/0/0/0",
                                             "updated": "01:50:50"
                                         },
@@ -388,8 +388,8 @@ class RoutingOutput(object):
                                     },
                                 },
                             },
-                            "31.31.31.31/32": {
-                                "route": "31.31.31.31/32",
+                            "10.19.31.31/32": {
+                                "route": "10.19.31.31/32",
                                 "active": True,
                                 "route_preference": 200,
                                 "metric": 0,
@@ -399,14 +399,14 @@ class RoutingOutput(object):
                                     "next_hop_list": {
                                         1: {
                                             "index": 1,
-                                            "next_hop": "11.11.11.11",
+                                            "next_hop": "10.229.11.11",
                                             "updated": "00:55:14"
                                         },
                                     },
                                 },
                             },
-                            "32.32.32.32/32": {
-                                "route": "32.32.32.32/32",
+                            "10.16.32.32/32": {
+                                "route": "10.16.32.32/32",
                                 "active": True,
                                 "source_protocol_codes": "L",
                                 "source_protocol": "local",
@@ -418,8 +418,8 @@ class RoutingOutput(object):
                                     },
                                 },
                             },
-                            "33.33.33.33/32": {
-                                "route": "33.33.33.33/32",
+                            "10.21.33.33/32": {
+                                "route": "10.21.33.33/32",
                                 "active": True,
                                 "route_preference": 200,
                                 "metric": 0,
@@ -429,7 +429,7 @@ class RoutingOutput(object):
                                     "next_hop_list": {
                                         1: {
                                             "index": 1,
-                                            "next_hop": "13.13.13.13",
+                                            "next_hop": "10.166.13.13",
                                             "updated": "00:52:31"
                                         },
                                     },

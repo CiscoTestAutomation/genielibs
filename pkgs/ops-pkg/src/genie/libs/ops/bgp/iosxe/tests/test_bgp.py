@@ -23,16 +23,16 @@ from genie.libs.parser.iosxe.show_bgp import ShowBgpAllSummary, ShowBgpAllCluste
                                   ShowBgpAll
 
 outputs = {}
-outputs['show bgp all neighbors 2.2.2.2 policy'] = BgpOutput.nbr1_bgp_policy
-outputs['show bgp all neighbors 3.3.3.3 policy'] = BgpOutput.nbr2_bgp_policy
+outputs['show bgp all neighbors 10.16.2.2 policy'] = BgpOutput.nbr1_bgp_policy
+outputs['show bgp all neighbors 10.36.3.3 policy'] = BgpOutput.nbr2_bgp_policy
 outputs['show bgp all neighbors | i BGP neighbor'] = BgpOutput.nbr1_bgp_all_neighbors
-outputs['show bgp all neighbors 2.2.2.2 advertised-routes'] = BgpOutput.nbr1_advertised_routes
-outputs['show bgp all neighbors 2.2.2.2 routes'] = BgpOutput.nbr1_routes
-outputs['show bgp all neighbors 2.2.2.2 received-routes'] = BgpOutput.nbr1_received_routes
+outputs['show bgp all neighbors 10.16.2.2 advertised-routes'] = BgpOutput.nbr1_advertised_routes
+outputs['show bgp all neighbors 10.16.2.2 routes'] = BgpOutput.nbr1_routes
+outputs['show bgp all neighbors 10.16.2.2 received-routes'] = BgpOutput.nbr1_received_routes
 outputs['show bgp all neighbors | i BGP neighbor'] = BgpOutput.nbr2_bgp_all_neighbors
-outputs['show bgp all neighbors 3.3.3.3 advertised-routes'] = BgpOutput.nbr2_advertised_routes
-outputs['show bgp all neighbors 3.3.3.3 routes'] = BgpOutput.nbr2_routes
-outputs['show bgp all neighbors 3.3.3.3 received-routes'] = BgpOutput.nbr2_received_routes
+outputs['show bgp all neighbors 10.36.3.3 advertised-routes'] = BgpOutput.nbr2_advertised_routes
+outputs['show bgp all neighbors 10.36.3.3 routes'] = BgpOutput.nbr2_routes
+outputs['show bgp all neighbors 10.36.3.3 received-routes'] = BgpOutput.nbr2_received_routes
 
 def mapper(key):
     return outputs[key]
@@ -120,7 +120,7 @@ class test_bgp(unittest.TestCase):
         # routes_per_peer - remote_as
         with self.assertRaises(AttributeError):
             remote_as = (bgp.routes_per_peer['instance']['default']['vrf']\
-                ['default']['neighbor']['2.2.2.2']['remote_as'])
+                ['default']['neighbor']['10.16.2.2']['remote_as'])
 
     def test_selective_attribute(self):
         self.maxDiff = None
@@ -160,8 +160,8 @@ class test_bgp(unittest.TestCase):
                 ['bgp_table_version'], 5)
         # routes_per_peer - localprf
         self.assertEqual(bgp.routes_per_peer['instance']['default']['vrf']\
-                ['default']['neighbor']['2.2.2.2']['address_family']\
-                ['ipv4 unicast']['advertised']['15.1.1.0/24']['index'][1]\
+                ['default']['neighbor']['10.16.2.2']['address_family']\
+                ['ipv4 unicast']['advertised']['10.1.1.0/24']['index'][1]\
                 ['localprf'], 100)
 
     def test_incomplete_output(self):

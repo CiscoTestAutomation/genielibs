@@ -101,7 +101,7 @@ class NtpOutput(object):
                 'precision': '2**24',
                 'refid': '192.168.128.5',
                 'reftime': 'CC95463C.9B964367 '
-                           '(11:21:48.607 JST Tue Oct  '
+                           '(11:21:48.607 EST Tue Oct  '
                            '7 2008)',
                 'rootdelay': 186.05,
                 'rootdispersion': 53.86,
@@ -136,7 +136,7 @@ class NtpOutput(object):
                 'clock_state': 'synchronized',
                 'clock_stratum': 3,
                 'reference_time': 'CC95463C.9B964367 '
-                                  '(11:21:48.607 JST '
+                                  '(11:21:48.607 EST '
                                   'Tue Oct  7 2008)',
                 'root_delay': 2.0,
                 'root_dispersion': 53.86}

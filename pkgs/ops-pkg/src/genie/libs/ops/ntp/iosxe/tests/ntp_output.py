@@ -17,7 +17,7 @@ class NtpOutput(object):
              'root_delay': 0.0}
             },
     'peer':
-        {'1.1.1.1':
+        {'10.4.1.1':
             {'local_mode':
                 {'client':
                     {'delay': 0.0,
@@ -28,7 +28,7 @@ class NtpOutput(object):
                     'reach': 0,
                     'receive_time': '-',
                     'refid': '.INIT.',
-                    'remote': '1.1.1.1',
+                    'remote': '10.4.1.1',
                     'stratum': 16,
                     'local_mode': 'client'}
                 }
@@ -49,7 +49,7 @@ class NtpOutput(object):
                     'local_mode': 'client'}
                 }
             },
-        '2.2.2.2':
+        '10.16.2.2':
             {'local_mode':
                 {'client':
                     {'delay': 0.0,
@@ -60,7 +60,7 @@ class NtpOutput(object):
                     'reach': 0,
                     'receive_time': '-',
                     'refid': '.INIT.',
-                    'remote': '2.2.2.2',
+                    'remote': '10.16.2.2',
                     'stratum': 16,
                     'local_mode': 'client'}
                 }
@@ -95,15 +95,15 @@ class NtpOutput(object):
         'vrf': {
             'VRF1': {
                 'address': {
-                    '4.4.4.4': {
+                    '10.64.4.4': {
                         'isconfigured': {
                             'True': {
-                                'address': '4.4.4.4',
+                                'address': '10.64.4.4',
                                 'isconfigured': True}
                         },
                         'type': {
                             'server': {
-                                'address': '4.4.4.4',
+                                'address': '10.64.4.4',
                                 'type': 'server',
                                 'vrf': 'VRF1'}
                         }
@@ -112,28 +112,28 @@ class NtpOutput(object):
             },
             'default': {
                 'address': {
-                    '1.1.1.1': {
+                    '10.4.1.1': {
                         'isconfigured': {
                             'True': {
-                                'address': '1.1.1.1',
+                                'address': '10.4.1.1',
                                 'isconfigured': True}
                             },
                         'type': {
                             'server': {
-                                'address': '1.1.1.1',
+                                'address': '10.4.1.1',
                                 'type': 'server',
                                 'vrf': 'default'}
                         }
                     },
-                    '2.2.2.2': {
+                    '10.16.2.2': {
                         'isconfigured': {
                             'True': {
-                                'address': '2.2.2.2',
+                                'address': '10.16.2.2',
                                 'isconfigured': True}
                         },
                         'type': {
                             'server': {
-                                'address': '2.2.2.2',
+                                'address': '10.16.2.2',
                                 'type': 'server',
                                 'vrf': 'default'}
                         }
@@ -163,10 +163,10 @@ class NtpOutput(object):
         'VRF1': {
             'associations': {
                 'address': {
-                    '4.4.4.4': {
+                    '10.64.4.4': {
                         'isconfigured': {
                             'True': {
-                                'address': '4.4.4.4',
+                                'address': '10.64.4.4',
                                 'isconfigured': True}
                         }
                     }
@@ -174,10 +174,10 @@ class NtpOutput(object):
             },
             'unicast_configuration': {
                 'address': {
-                    '4.4.4.4': {
+                    '10.64.4.4': {
                         'type': {
                             'server': {
-                                'address': '4.4.4.4',
+                                'address': '10.64.4.4',
                                 'type': 'server',
                                 'vrf': 'VRF1'}
                         }
@@ -188,12 +188,12 @@ class NtpOutput(object):
         'default': {
             'associations': {
                 'address': {
-                    '1.1.1.1': {
+                    '10.4.1.1': {
                         'local_mode': {
                             'client': {
                                 'isconfigured': {
                                     True: {
-                                        'address': '1.1.1.1',
+                                        'address': '10.4.1.1',
                                         'delay': 0.0,
                                         'isconfigured': True,
                                         'local_mode': 'client',
@@ -228,12 +228,12 @@ class NtpOutput(object):
                             }
                         }
                     },
-                    '2.2.2.2': {
+                    '10.16.2.2': {
                         'local_mode': {
                             'client': {
                                 'isconfigured': {
                                     True: {
-                                        'address': '2.2.2.2',
+                                        'address': '10.16.2.2',
                                         'delay': 0.0,
                                         'isconfigured': True,
                                         'local_mode': 'client',
@@ -252,18 +252,18 @@ class NtpOutput(object):
             },
             'unicast_configuration': {
                 'address': {
-                    '1.1.1.1': {
+                    '10.4.1.1': {
                         'type': {
                             'server': {
-                                'address': '1.1.1.1',
+                                'address': '10.4.1.1',
                                 'type': 'server',
                                 'vrf': 'default'}
                         }
                     },
-                    '2.2.2.2': {
+                    '10.16.2.2': {
                         'type': {
                             'server': {
-                                'address': '2.2.2.2',
+                                'address': '10.16.2.2',
                                 'type': 'server',
                                 'vrf': 'default'}
                         }

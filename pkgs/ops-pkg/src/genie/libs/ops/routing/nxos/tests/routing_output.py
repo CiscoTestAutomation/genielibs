@@ -13,8 +13,8 @@ class RouteOutput(object):
                 'address_family': {
                     'ipv4': {
                         'routes': {
-                            '1.1.1.1/32': {
-                                'route': '1.1.1.1/32',
+                            '10.4.1.1/32': {
+                                'route': '10.4.1.1/32',
                                 'active': True,
                                 'ubest':2,
                                 'mbest':0,
@@ -32,7 +32,7 @@ class RouteOutput(object):
                                         },
                                         2: {
                                             'index': 2,
-                                            'next_hop': '20.1.3.1',
+                                            'next_hop': '10.186.3.1',
                                             'best_ucast_nexthop': True,
                                             'outgoing_interface': 'Ethernet1/3',
                                             'updated': '01:01:30',
@@ -40,8 +40,8 @@ class RouteOutput(object):
                                     },
                                 },
                             },
-                            '2.2.2.2/32': {
-                                'route': '2.2.2.2/32',
+                            '10.16.2.2/32': {
+                                'route': '10.16.2.2/32',
                                 'active': True,
                                 'ubest': 2,
                                 'mbest': 0,
@@ -59,7 +59,7 @@ class RouteOutput(object):
                                         },
                                         2: {
                                             'index': 2,
-                                            'next_hop': '20.2.3.2',
+                                            'next_hop': '10.229.3.2',
                                             'best_ucast_nexthop': True,
                                             'outgoing_interface': 'Ethernet1/1',
                                             'updated': '01:01:29',
@@ -67,8 +67,8 @@ class RouteOutput(object):
                                     },
                                 },
                             },
-                            '3.3.3.3/32': {
-                                'route': '3.3.3.3/32',
+                            '10.36.3.3/32': {
+                                'route': '10.36.3.3/32',
                                 'active': True,
                                 'attached': True,
                                 'ubest': 2,
@@ -80,14 +80,14 @@ class RouteOutput(object):
                                     'next_hop_list': {
                                         1: {
                                             'index': 1,
-                                            'next_hop': '3.3.3.3',
+                                            'next_hop': '10.36.3.3',
                                             'best_ucast_nexthop': True,
                                             'outgoing_interface': 'Loopback0',
                                             'updated': '01:01:31',
                                         },
                                         2: {
                                             'index': 2,
-                                            'next_hop': '3.3.3.3',
+                                            'next_hop': '10.36.3.3',
                                             'best_ucast_nexthop': True,
                                             'outgoing_interface': 'Loopback0',
                                             'updated': '01:01:31',
@@ -123,14 +123,14 @@ class RouteOutput(object):
                                         },
                                         3: {
                                             'index': 3,
-                                            'next_hop': '20.1.3.1',
+                                            'next_hop': '10.186.3.1',
                                             'best_ucast_nexthop': True,
                                             'outgoing_interface': 'Ethernet1/3',
                                             'updated': '01:01:18',
                                         },
                                         4: {
                                             'index': 4,
-                                            'next_hop': '20.2.3.2',
+                                            'next_hop': '10.229.3.2',
                                             'best_ucast_nexthop': True,
                                             'outgoing_interface': 'Ethernet1/1',
                                             'updated': '01:01:18',
@@ -139,8 +139,8 @@ class RouteOutput(object):
                                     },
                                 },
                             },
-                            '33.33.33.33/32': {
-                                'route': '33.33.33.33/32',
+                            '10.21.33.33/32': {
+                                'route': '10.21.33.33/32',
                                 'active': True,
                                 'attached': True,
                                 'ubest': 2,
@@ -152,14 +152,14 @@ class RouteOutput(object):
                                     'next_hop_list': {
                                         1: {
                                             'index': 1,
-                                            'next_hop': '33.33.33.33',
+                                            'next_hop': '10.21.33.33',
                                             'outgoing_interface': 'Loopback3',
                                             'best_ucast_nexthop': True,
                                             'updated': '01:01:30',
                                         },
                                         2: {
                                             'index': 2,
-                                            'next_hop': '33.33.33.33',
+                                            'next_hop': '10.21.33.33',
                                             'outgoing_interface': 'Loopback3',
                                             'best_ucast_nexthop': True,
                                             'updated': '01:01:30',
@@ -175,8 +175,8 @@ class RouteOutput(object):
                 'address_family': {
                     'ipv4': {
                         'routes': {
-                            '1.1.1.1/32': {
-                                'route': '1.1.1.1/32',
+                            '10.4.1.1/32': {
+                                'route': '10.4.1.1/32',
                                 'attached': True,
                                 'active': True,
                                 'ubest': 2,
@@ -188,14 +188,14 @@ class RouteOutput(object):
                                     'next_hop_list': {
                                         1: {
                                             'index': 1,
-                                            'next_hop': '1.1.1.1',
+                                            'next_hop': '10.4.1.1',
                                             'outgoing_interface': 'Loopback4',
                                             'best_ucast_nexthop': True,
                                             'updated': '00:00:10',
                                         },
                                         2: {
                                             'index': 2,
-                                            'next_hop': '1.1.1.1',
+                                            'next_hop': '10.4.1.1',
                                             'outgoing_interface': 'Loopback4',
                                             'best_ucast_nexthop': True,
                                             'updated': '00:00:10',
@@ -301,7 +301,7 @@ class RouteOutput(object):
                                     'next_hop_list': {
                                         1: {
                                             'index': 1,
-                                            'next_hop': '::ffff:11.11.11.11',
+                                            'next_hop': '::ffff:10.229.11.11',
                                             'next_hop_vrf': 'default',
                                             'next_hop_af': 'ipv4',
                                             'best_ucast_nexthop': True,
@@ -419,8 +419,8 @@ class RouteOutput(object):
                 'address_family': {
                     'ipv4': {
                         'routes': {
-                            '1.1.1.1/32': {
-                                'route': '1.1.1.1/32',
+                            '10.4.1.1/32': {
+                                'route': '10.4.1.1/32',
                                 'active': True,
                                 'route_preference': 1,
                                 'metric': 0,
@@ -435,15 +435,15 @@ class RouteOutput(object):
                                         },
                                         2: {
                                             'index': 2,
-                                            'next_hop': '20.1.3.1',
+                                            'next_hop': '10.186.3.1',
                                             'outgoing_interface': 'Ethernet1/3',
                                             'updated': '01:01:30',
                                         },
                                     },
                                 },
                             },
-                            '2.2.2.2/32': {
-                                'route': '2.2.2.2/32',
+                            '10.16.2.2/32': {
+                                'route': '10.16.2.2/32',
                                 'active': True,
                                 'route_preference': 1,
                                 'metric': 0,
@@ -458,15 +458,15 @@ class RouteOutput(object):
                                         },
                                         2: {
                                             'index': 2,
-                                            'next_hop': '20.2.3.2',
+                                            'next_hop': '10.229.3.2',
                                             'outgoing_interface': 'Ethernet1/1',
                                             'updated': '01:01:29',
                                         },
                                     },
                                 },
                             },
-                            '3.3.3.3/32': {
-                                'route': '3.3.3.3/32',
+                            '10.36.3.3/32': {
+                                'route': '10.36.3.3/32',
                                 'active': True,
                                 'route_preference': 0,
                                 'source_protocol': 'local',
@@ -475,13 +475,13 @@ class RouteOutput(object):
                                     'next_hop_list': {
                                         1: {
                                             'index': 1,
-                                            'next_hop': '3.3.3.3',
+                                            'next_hop': '10.36.3.3',
                                             'outgoing_interface': 'Loopback0',
                                             'updated': '01:01:31',
                                         },
                                         2: {
                                             'index': 2,
-                                            'next_hop': '3.3.3.3',
+                                            'next_hop': '10.36.3.3',
                                             'outgoing_interface': 'Loopback0',
                                             'updated': '01:01:31',
                                         },
@@ -510,13 +510,13 @@ class RouteOutput(object):
                                         },
                                         3: {
                                             'index': 3,
-                                            'next_hop': '20.1.3.1',
+                                            'next_hop': '10.186.3.1',
                                             'outgoing_interface': 'Ethernet1/3',
                                             'updated': '01:01:18',
                                         },
                                         4: {
                                             'index': 4,
-                                            'next_hop': '20.2.3.2',
+                                            'next_hop': '10.229.3.2',
                                             'outgoing_interface': 'Ethernet1/1',
                                             'updated': '01:01:18',
                                         },
@@ -524,8 +524,8 @@ class RouteOutput(object):
                                     },
                                 },
                             },
-                            '33.33.33.33/32': {
-                                'route': '33.33.33.33/32',
+                            '10.21.33.33/32': {
+                                'route': '10.21.33.33/32',
                                 'active': True,
                                 'route_preference': 0,
                                 'source_protocol': 'local',
@@ -534,13 +534,13 @@ class RouteOutput(object):
                                     'next_hop_list': {
                                         1: {
                                             'index': 1,
-                                            'next_hop': '33.33.33.33',
+                                            'next_hop': '10.21.33.33',
                                             'outgoing_interface': 'Loopback3',
                                             'updated': '01:01:30',
                                         },
                                         2: {
                                             'index': 2,
-                                            'next_hop': '33.33.33.33',
+                                            'next_hop': '10.21.33.33',
                                             'outgoing_interface': 'Loopback3',
                                             'updated': '01:01:30',
                                         },
@@ -619,7 +619,7 @@ class RouteOutput(object):
                                     'next_hop_list': {
                                         1: {
                                             'index': 1,
-                                            'next_hop': '::ffff:11.11.11.11',
+                                            'next_hop': '::ffff:10.229.11.11',
                                             'updated': '01:01:43',
                                         },
 
@@ -682,8 +682,8 @@ class RouteOutput(object):
                 'address_family': {
                     'ipv4': {
                         'routes': {
-                            '1.1.1.1/32': {
-                                'route': '1.1.1.1/32',
+                            '10.4.1.1/32': {
+                                'route': '10.4.1.1/32',
                                 'active': True,
                                 'route_preference': 0,
                                 'metric': 0,
@@ -692,13 +692,13 @@ class RouteOutput(object):
                                     'next_hop_list': {
                                         1: {
                                             'index': 1,
-                                            'next_hop': '1.1.1.1',
+                                            'next_hop': '10.4.1.1',
                                             'outgoing_interface': 'Loopback4',
                                             'updated': '00:00:10',
                                         },
                                         2: {
                                             'index': 2,
-                                            'next_hop': '1.1.1.1',
+                                            'next_hop': '10.4.1.1',
                                             'outgoing_interface': 'Loopback4',
                                             'updated': '00:00:10',
                                         },

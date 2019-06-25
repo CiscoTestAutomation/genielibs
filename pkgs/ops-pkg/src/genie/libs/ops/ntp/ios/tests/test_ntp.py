@@ -61,7 +61,7 @@ class test_ntp(unittest.TestCase):
         self.assertEqual(ntp.info['clock_state']['system_status']['clock_state'], 'synchronized')
         # info - default vrf
         self.assertEqual(ntp.info['vrf']['default']['unicast_configuration']['address']\
-                                 ['3.3.3.3']['type']['server']['type'], 'server')
+                                 ['10.36.3.3']['type']['server']['type'], 'server')
 
     def test_empty_output(self):
         self.maxDiff = None

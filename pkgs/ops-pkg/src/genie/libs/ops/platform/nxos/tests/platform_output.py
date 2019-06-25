@@ -22,10 +22,10 @@ class PlatformOutput(object):
                          'bios_compile_time': '05/29/2013',
                          'kickstart': 'version 8.1(1) [build 8.1(0.129)] [gdb]',
                          'kickstart_compile_time': '4/30/2017 23:00:00 [04/15/2017 ''04:34:05]',
-                         'kickstart_image_file': 'slot0:///n7000-s2-kickstart.8.1.0.129.gbin',
+                         'kickstart_image_file': 'slot0:///n7000-s2-kickstart.10.81.0.129.gbin',
                          'system_version': 'version 8.1(1) [build 8.1(0.129)] [gdb]',
                          'system_compile_time': '4/30/2017 23:00:00 [04/15/2017 ''06:43:41]',
-                         'system_image_file': 'slot0:///n7000-s2-dk9.8.1.0.129.gbin'}
+                         'system_image_file': 'slot0:///n7000-s2-dk10.34.1.0.129.gbin'}
                       }
                     }
 
@@ -78,12 +78,12 @@ class PlatformOutput(object):
 
     showInstallActive = {'boot_images':
                               {'kickstart_image': 'slot0:/n7000-s2-kickstart.8.3.0.CV.0.658.gbin',
-                               'system_image': 'slot0:/n7000-s2-dk9.8.3.0.CV.0.658.gbin'},
+                               'system_image': 'slot0:/n7000-s2-dk10.34.3.0.CV.0.658.gbin'},
                             'active_packages':
                               {'active_package_module_0':
-                                {'active_package_name': 'n7700-s2-dk9.7.2.0.D1.1.CSCuo7721.bin'},
+                                {'active_package_name': 'n7700-s2-dk10.1.2.0.D1.1.CSCuo7721.bin'},
                                'active_package_module_3': 
-                                {'active_package_name': 'n7700-s2-dk9.7.2.0.D1.1.CSCuo7721.bin'}
+                                {'active_package_name': 'n7700-s2-dk10.1.2.0.D1.1.CSCuo7721.bin'}
                               }
                             }
 
@@ -120,11 +120,11 @@ class PlatformOutput(object):
                     {'sup_number':
                         {'sup-1':
                             {'kickstart_variable': 'slot0:/n7000-s2-kickstart.8.3.0.CV.0.658.gbin',
-                             'system_variable': 'slot0:/n7000-s2-dk9.8.3.0.CV.0.658.gbin',
+                             'system_variable': 'slot0:/n7000-s2-dk10.34.3.0.CV.0.658.gbin',
                              'boot_poap':'Disabled'},
                          'sup-2':
                             {'kickstart_variable': 'slot0:/n7000-s2-kickstart.8.3.0.CV.0.658.gbin',
-                             'system_variable': 'slot0:/n7000-s2-dk9.8.3.0.CV.0.658.gbin',
+                             'system_variable': 'slot0:/n7000-s2-dk10.34.3.0.CV.0.658.gbin',
                              'boot_poap':'Disabled'}
                         }
                     },
@@ -132,11 +132,11 @@ class PlatformOutput(object):
                     {'sup_number':
                         {'sup-1':
                             {'kickstart_variable': 'slot0:/n7000-s2-kickstart.8.3.0.CV.0.658.gbin',
-                             'system_variable': 'slot0:/n7000-s2-dk9.8.3.0.CV.0.658.gbin',
+                             'system_variable': 'slot0:/n7000-s2-dk10.34.3.0.CV.0.658.gbin',
                              'boot_poap':'Disabled'},
                          'sup-2':
                             {'kickstart_variable': 'slot0:/n7000-s2-kickstart.8.3.0.CV.0.658.gbin',
-                             'system_variable': 'slot0:/n7000-s2-dk9.8.3.0.CV.0.658.gbin',
+                             'system_variable': 'slot0:/n7000-s2-dk10.34.3.0.CV.0.658.gbin',
                              'boot_poap':'Disabled'}
                         }
                     }
@@ -295,7 +295,7 @@ class PlatformOutput(object):
                         {'size': '24576', 'date': 'Apr 21 2017', 'time': '04:18:28'},
                      'lost+found/': 
                         {'size': '4096', 'date': 'Nov 23 2016', 'time': '08:25:40'},
-                     'n7000-s2-debug-sh.8.1.0.125.gbin': 
+                     'n7000-s2-debug-sh.10.81.0.125.gbin': 
                         {'size': '4073830', 'date': 'Apr 20 2017', 'time': '10:19:08'},
                      'virtual-instance-stby-sync/': 
                         {'size': '4096', 'date': 'Apr 20 2017', 'time': '10:28:55'}
@@ -500,7 +500,7 @@ class PlatformOutput(object):
              "state": "ha-standby",
              "sn": "JAF1708AGQH",
              "redundancy_state": "ha-standby",
-             "rp_boot_image": "slot0:/n7000-s2-dk9.8.3.0.CV.0.658.gbin",
+             "rp_boot_image": "slot0:/n7000-s2-dk10.34.3.0.CV.0.658.gbin",
              "rp_kickstart_boot_image": "slot0:/n7000-s2-kickstart.8.3.0.CV.0.658.gbin",
              "rp_uptime": 28650
           },
@@ -509,7 +509,7 @@ class PlatformOutput(object):
              "state": "active",
              "sn": "JAF1708AGTH",
              "redundancy_state": "active",
-             "rp_boot_image": "slot0:/n7000-s2-dk9.8.3.0.CV.0.658.gbin",
+             "rp_boot_image": "slot0:/n7000-s2-dk10.34.3.0.CV.0.658.gbin",
              "rp_kickstart_boot_image": "slot0:/n7000-s2-kickstart.8.3.0.CV.0.658.gbin",
              "rp_uptime": 28650
           }
@@ -549,9 +549,9 @@ class PlatformOutput(object):
                      'disk_free_space': '1674481664',
                      'disk_total_space': '1782931456',
                      'disk_used_space': '108449792',
-                     'image': 'slot0:///n7000-s2-dk9.8.1.0.129.gbin',
-                     'installed_packages': 'n7700-s2-dk9.7.2.0.D1.1.CSCuo7721.bin',
-                     'kickstart_image': 'slot0:///n7000-s2-kickstart.8.1.0.129.gbin',
+                     'image': 'slot0:///n7000-s2-dk10.34.1.0.129.gbin',
+                     'installed_packages': 'n7700-s2-dk10.1.2.0.D1.1.CSCuo7721.bin',
+                     'kickstart_image': 'slot0:///n7000-s2-kickstart.10.81.0.129.gbin',
                      'kickstart_version': 'version 8.1(1) [build 8.1(0.129)] [gdb]',
                      'main_mem': '32938744',
                      # 'maker': <genie.ops.base.maker.Maker object at 0xf712414c>,
@@ -572,14 +572,14 @@ class PlatformOutput(object):
                                             'sn': 'JAF1702AEBE'}},
                               'rp': {'1': {'name': 'N7K-SUP2',
                                            'redundancy_state': 'active',
-                                           'rp_boot_image': 'slot0:/n7000-s2-dk9.8.3.0.CV.0.658.gbin',
+                                           'rp_boot_image': 'slot0:/n7000-s2-dk10.34.3.0.CV.0.658.gbin',
                                            'rp_kickstart_boot_image': 'slot0:/n7000-s2-kickstart.8.3.0.CV.0.658.gbin',
                                            'rp_uptime': 28650,
                                            'sn': 'JAF1708AGTH',
                                            'state': 'active'},
                                      '2': {'name': 'N7K-SUP2',
                                            'redundancy_state': 'ha-standby',
-                                           'rp_boot_image': 'slot0:/n7000-s2-dk9.8.3.0.CV.0.658.gbin',
+                                           'rp_boot_image': 'slot0:/n7000-s2-dk10.34.3.0.CV.0.658.gbin',
                                            'rp_kickstart_boot_image': 'slot0:/n7000-s2-kickstart.8.3.0.CV.0.658.gbin',
                                            'rp_uptime': 28650,
                                            'sn': 'JAF1708AGQH',

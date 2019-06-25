@@ -187,13 +187,13 @@ class test_vxlan_all(unittest.TestCase):
 
         self.assertEqual('0300.0000.0001.2c00.0309', f.l2route['evpn']['ethernet_segment'][1]['ethernet_segment'])
         self.assertEqual(4, f.bgp_l2vpn_evpn['instance']['default']['vrf']['default']['address_family']\
-            ['l2vpn evpn']['neighbor']['191.13.1.8']['version'])
-        self.assertEqual('up',f.nve['nve1']['peer_ip']['201.202.1.1']['peer_state'])
+            ['l2vpn evpn']['neighbor']['172.16.205.8']['version'])
+        self.assertEqual('up',f.nve['nve1']['peer_ip']['192.168.16.1']['peer_state'])
 
         self.assertNotEqual('0300.0000.0309.1265', f.l2route['evpn']['ethernet_segment'][1]['ethernet_segment'])
         self.assertNotEqual(5, f.bgp_l2vpn_evpn['instance']['default']['vrf']['default']['address_family'] \
-            ['l2vpn evpn']['neighbor']['191.13.1.8']['version'])
-        self.assertNotEqual('down', f.nve['nve1']['peer_ip']['201.202.1.1']['peer_state'])
+            ['l2vpn evpn']['neighbor']['172.16.205.8']['version'])
+        self.assertNotEqual('down', f.nve['nve1']['peer_ip']['192.168.16.1']['peer_state'])
 
         self.assertNotEqual('50', f.fabric['multicast']['vrf']['vni_10100']['address_family']['ipv4']\
             ['sa_ad_routes']['gaddr']['238.8.4.101/32'])
@@ -204,7 +204,7 @@ class test_vxlan_all(unittest.TestCase):
         self.assertNotEqual(False,
                             f.bgp_mvpn['instance']['default']['vrf']['default']['address_family'][
                                 'ipv4 mvpn'] \
-                                ['rd']['2.2.2.2:3']['prefix']['[1][100.101.1.3][238.8.4.101]/64']['on_xmitlist'])
+                                ['rd']['10.16.2.2:3']['prefix']['[1][10.111.1.3][238.8.4.101]/64']['on_xmitlist'])
 
     def test_empty_output_vxlan(self):
         self.maxDiff = None

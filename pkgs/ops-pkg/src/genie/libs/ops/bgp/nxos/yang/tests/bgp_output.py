@@ -25,7 +25,7 @@ class BgpOutput(object):
                         {'bgp_distance_internal_as': 33,
                         'bgp_distance_local': 55,
                         'ip/mask':
-                            {'11.0.0.0/8':
+                            {'10.121.0.0/8':
                                 {'ubest_num': '1',
                                 'mbest_num': '0',
                                 'best_route':
@@ -40,13 +40,13 @@ class BgpOutput(object):
                                                         'protocol_id': '100',
                                                         'attribute': 'discard',
                                                         'tag': '100'}}}}}}},
-                            '33.33.33.33/32':
+                            '10.21.33.33/32':
                                 {'ubest_num': '1',
                                 'mbest_num': '1',
                                 'best_route':
                                     {'unicast':
                                         {'nexthop':
-                                            {'3.3.3.3':
+                                            {'10.36.3.3':
                                                 {'protocol':
                                                     {'bgp':
                                                         {'uptime': '5w0d',
@@ -58,7 +58,7 @@ class BgpOutput(object):
                                                         'tag': '100 (mpls-vpn)'}}}}},
                                     'multicast':
                                         {'nexthop':
-                                            {'3.3.3.3':
+                                            {'10.36.3.3':
                                                 {'protocol':
                                                     {'bgp':
                                                         {'uptime': '5w0d',
@@ -68,14 +68,14 @@ class BgpOutput(object):
                                                         'attribute': 'internal',
                                                         'route_table': 'default',
                                                         'tag': '100 (mpls-vpn)'}}}}}}},
-                            '11.11.11.11/32':
+                            '10.229.11.11/32':
                                 {'ubest_num': '2',
                                 'mbest_num': '0',
                                 'attach': 'attached',
                                 'best_route':
                                     {'unicast':
                                         {'nexthop':
-                                            {'11.11.11.11':
+                                            {'10.229.11.11':
                                                 {'protocol':
                                                     {'local':
                                                         {'uptime': '5w4d',
@@ -93,7 +93,7 @@ class BgpOutput(object):
                         {'bgp_distance_extern_as': 20,
                         'bgp_distance_internal_as': 200,
                         'ip/mask':
-                            {'104.0.0.0/8':
+                            {'10.106.0.0/8':
                                 {'ubest_num': '1',
                                 'mbest_num': '0',
                                 'best_route':
@@ -109,7 +109,7 @@ class BgpOutput(object):
                                                         'attribute': 'external',
                                                         'tag': '333',
                                                         'interface': 'Null0'}}}}}}},
-                            '1.3.1.0/24':
+                            '10.16.1.0/24':
                                 {'ubest_num': '1',
                                 'mbest_num': '0',
                                 'best_route':
@@ -126,7 +126,7 @@ class BgpOutput(object):
                                                         'route_table': 'default',
                                                         'tag': '333',
                                                         'interface': 'Eth1/1'}}}}}}},
-                            '104.0.0.5/8':
+                            '10.106.0.5/8':
                                 {'ubest_num': '1',
                                 'mbest_num': '0',
                                 'best_route':
@@ -150,7 +150,7 @@ class BgpOutput(object):
                  'ebgp_multihop_enable': True,
                  'ebgp_multihop_limit': 255,
                  'holdtime': 111,
-                 'inherited_vrf_default': '2.2.2.5',
+                 'inherited_vrf_default': '10.16.2.5',
                  'keepalive': 222,
                  'local_as': True,
                  'transport_connection_mode': 'Passive',
@@ -168,7 +168,7 @@ class BgpOutput(object):
                 'as_override': True,
                 'default_originate': True,
                 'default_originate_route_map': 'test',
-                'inherited_vrf_default': '2.2.2.5',
+                'inherited_vrf_default': '10.16.2.5',
                 'maximum_prefix_max_prefix_no': 300,
                 'route_map_name_in': 'test-map',
                 'route_map_name_out': 'test-map',
@@ -200,13 +200,13 @@ class BgpOutput(object):
                 {'address_family':
                     {'ipv4 unicast':
                         {'aggregate_address_as_set': True,
-                        'aggregate_address_ipv4_address': '11.0.0.0',
+                        'aggregate_address_ipv4_address': '10.121.0.0',
                         'aggregate_address_ipv4_mask': '8',
                         'aggregate_address_summary_only': True,
                         'bgp_table_version': 35,
-                        'local_router_id': '11.11.11.11',
+                        'local_router_id': '10.229.11.11',
                         'prefixes':
-                            {'11.0.0.0/8':
+                            {'10.121.0.0/8':
                                 {'index':
                                     {1:
                                         {'next_hop': '0.0.0.0',
@@ -216,7 +216,7 @@ class BgpOutput(object):
                                         'status_codes': '*>',
                                         'weight': 32768},
                                     2:
-                                        {'next_hop': '4.4.4.4',
+                                        {'next_hop': '10.64.4.4',
                                         'localprf': 100,
                                         'metric': 0,
                                         'origin_codes': 'e',
@@ -224,14 +224,14 @@ class BgpOutput(object):
                                         'status_codes': '*>',
                                         'weight': 32768},
                                     3:
-                                        {'next_hop': '6.6.6.6',
+                                        {'next_hop': '10.144.6.6',
                                         'localprf': 100,
                                         'metric': 0,
                                         'origin_codes': 'e',
                                         'path_type': 'a',
                                         'status_codes': '*>',
                                         'weight': 32768}}},
-                                    '11.11.11.11/32':
+                                    '10.229.11.11/32':
                                         {'index':
                                             {1:
                                             {'next_hop': '0.0.0.0',
@@ -241,7 +241,7 @@ class BgpOutput(object):
                                             'path_type': 'r',
                                             'status_codes': '*>',
                                             'weight': 32768}}},
-                            '123.0.0.0/8':
+                            '10.84.0.0/8':
                                 {'index':
                                     {1:
                                         {'next_hop': '0.0.0.0',
@@ -250,17 +250,17 @@ class BgpOutput(object):
                                         'path_type': 'a',
                                         'status_codes': 'None',
                                         'weight': 32768}}},
-                            '33.33.33.33/32':
+                            '10.21.33.33/32':
                                 {'index':
                                     {1:
-                                        {'next_hop': '3.3.3.3',
+                                        {'next_hop': '10.36.3.3',
                                         'localprf': 100,
                                         'metric': 0,
                                         'origin_codes': '?',
                                         'path_type': 'i',
                                         'status_codes': '*>',
                                         'weight': 0}}},
-                            '34.34.34.0/24':
+                            '10.34.34.0/24':
                                 {'index':
                                     {1:
                                         {'next_hop': '0.0.0.0',
@@ -271,7 +271,7 @@ class BgpOutput(object):
                                         'weight': 32768}}}}},
                     'ipv6 unicast':
                         {'bgp_table_version': 28,
-                        'local_router_id': '11.11.11.11',
+                        'local_router_id': '10.229.11.11',
                         'prefixes':
                             {'2000::/8':
                                 {'index':
@@ -304,7 +304,7 @@ class BgpOutput(object):
                             '2001::33/128':
                                 {'index':
                                     {1:
-                                        {'next_hop': '::ffff:3.3.3.3',
+                                        {'next_hop': '::ffff:10.36.3.3',
                                         'localprf': 100,
                                         'metric': 0,
                                         'origin_codes': '?',
@@ -318,17 +318,17 @@ class BgpOutput(object):
                 {'address_family':
                     {'vpnv4 unicast':
                         {'bgp_table_version': 48,
-                        'local_router_id': '1.1.1.1'},
+                        'local_router_id': '10.4.1.1'},
                     'vpnv4 unicast RD 100:100':
                         {'aggregate_address_as_set': True,
-                        'aggregate_address_ipv4_address': '11.0.0.0',
+                        'aggregate_address_ipv4_address': '10.121.0.0',
                         'aggregate_address_ipv4_mask': '8',
                         'aggregate_address_summary_only': True,
                         'bgp_table_version': 48,
                         'default_vrf': 'VRF1',
-                        'local_router_id': '1.1.1.1',
+                        'local_router_id': '10.4.1.1',
                         'prefixes':
-                            {'11.0.0.0/8':
+                            {'10.121.0.0/8':
                                 {'index':
                                     {1:
                                         {'next_hop': '0.0.0.0',
@@ -337,7 +337,7 @@ class BgpOutput(object):
                                         'path_type': 'a',
                                         'status_codes': '*>',
                                         'weight': 32768}}},
-                            '11.11.11.11/32':
+                            '10.229.11.11/32':
                                 {'index':
                                     {1:
                                         {'next_hop': '0.0.0.0',
@@ -347,7 +347,7 @@ class BgpOutput(object):
                                         'path_type': 'r',
                                         'status_codes': '*>',
                                         'weight': 32768}}},
-                            '123.0.0.0/8':
+                            '10.84.0.0/8':
                                 {'index':
                                     {1:
                                         {'next_hop': '0.0.0.0',
@@ -356,17 +356,17 @@ class BgpOutput(object):
                                         'path_type': 'a',
                                         'status_codes': 'None',
                                         'weight': 32768}}},
-                            '33.33.33.33/32':
+                            '10.21.33.33/32':
                                 {'index':
                                     {1:
-                                        {'next_hop': '3.3.3.3',
+                                        {'next_hop': '10.36.3.3',
                                         'localprf': 100,
                                         'metric': 0,
                                         'origin_codes': '?',
                                         'path_type': 'i',
                                         'status_codes': '*>',
                                         'weight': 0}}},
-                            '34.34.34.0/24':
+                            '10.34.34.0/24':
                                 {'index':
                                     {1:
                                         {'next_hop': '0.0.0.0',
@@ -378,11 +378,11 @@ class BgpOutput(object):
                         'route_distinguisher': '100:100'},
                     'vpnv6 unicast':
                         {'bgp_table_version': 41,
-                        'local_router_id': '1.1.1.1'},
+                        'local_router_id': '10.4.1.1'},
                     'vpnv6 unicast RD 100:100':
                         {'bgp_table_version': 41,
                         'default_vrf': 'VRF1',
-                        'local_router_id': '1.1.1.1',
+                        'local_router_id': '10.4.1.1',
                         'prefixes':
                             {'2000::/8':
                                 {'index':
@@ -415,7 +415,7 @@ class BgpOutput(object):
                             '2001::33/128':
                                 {'index':
                                     {1:
-                                        {'next_hop': '::ffff:3.3.3.3',
+                                        {'next_hop': '::ffff:10.36.3.3',
                                         'localprf': 100,
                                         'metric': 0,
                                         'origin_codes': '?',
@@ -485,9 +485,9 @@ class BgpOutput(object):
                         'igp_preference': 110,
                         'igp_route_type': 0,
                         'metric_next_advertise': 'never',
-                        'next_hop': '3.3.3.3',
+                        'next_hop': '10.36.3.3',
                         'nexthop_last_resolved': '5w0d',
-                        'nexthop_resolved_using': '3.3.3.3/32',
+                        'nexthop_resolved_using': '10.36.3.3/32',
                         'nexthop_trigger_delay_critical': 3000,
                         'nexthop_trigger_delay_non_critical': 10000,
                         'nexthop_type': 'not-attached '
@@ -504,9 +504,9 @@ class BgpOutput(object):
                         'igp_preference': 110,
                         'igp_route_type': 0,
                         'metric_next_advertise': 'never',
-                        'next_hop': '::ffff:3.3.3.3',
+                        'next_hop': '::ffff:10.36.3.3',
                         'nexthop_last_resolved': '5w0d',
-                        'nexthop_resolved_using': '3.3.3.3/32',
+                        'nexthop_resolved_using': '10.36.3.3/32',
                         'nexthop_trigger_delay_critical': 3000,
                         'nexthop_trigger_delay_non_critical': 10000,
                         'nexthop_type': 'not-attached '
@@ -520,7 +520,7 @@ class BgpOutput(object):
         'vrf':
             {'VRF1':
                 {'neighbor':
-                    {'2.2.2.10':
+                    {'10.16.2.10':
                         {'address_family':
                             {'ipv4 unicast':
                                 {'as': 0,
@@ -544,14 +544,14 @@ class BgpOutput(object):
                                 'prefixes':
                                     {'memory_usage': 620,
                                     'total_entries': 5},
-                                'route_identifier': '4.4.4.4',
+                                'route_identifier': '10.64.4.4',
                                 'state_pfxrcd': 'Idle',
                                 'tbl_ver': 0,
                                 'up_down': '5w6d',
                                 'v': 4}}}}},
             'default':
                 {'neighbor':
-                    {'2.2.2.2':
+                    {'10.16.2.2':
                         {'address_family':
                             {'vpnv4 unicast':
                                 {'as': 100,
@@ -575,7 +575,7 @@ class BgpOutput(object):
                                 'prefixes':
                                     {'memory_usage': 620,
                                     'total_entries': 5},
-                                'route_identifier': '1.1.1.1',
+                                'route_identifier': '10.4.1.1',
                                 'state_pfxrcd': '1',
                                 'tbl_ver': 53,
                                 'up_down': '5w6d',
@@ -602,7 +602,7 @@ class BgpOutput(object):
                                 'prefixes':
                                     {'memory_usage': 544,
                                     'total_entries': 4},
-                                'route_identifier': '1.1.1.1',
+                                'route_identifier': '10.4.1.1',
                                 'state_pfxrcd': '1',
                                 'tbl_ver': 45,
                                 'up_down': '5w6d',
@@ -651,7 +651,7 @@ class BgpOutput(object):
     # Set output for 'show bgp vrf VRF1 all neighbors' as input to parser
     vrf_vrf1_output = '''\
         N7k# show bgp vrf VRF1 all neighbors 
-        BGP neighbor is 2.2.2.10,  remote AS 0, unknown link,  Peer index 1
+        BGP neighbor is 10.16.2.10,  remote AS 0, unknown link,  Peer index 1
           BGP version 4, remote router ID 0.0.0.0
           BGP state = Idle, down for 02:19:37, retry in 0.000000
           Last read never, hold time = 180, keepalive interval is 60 seconds
@@ -689,9 +689,9 @@ class BgpOutput(object):
     # Set output for 'show bgp vrf default all neighbors'
     vrf_default_output = '''\
         N7k# show bgp vrf default all neighbors 
-        BGP neighbor is 2.2.2.2,  remote AS 100, ibgp link,  Peer index 1
+        BGP neighbor is 10.16.2.2,  remote AS 100, ibgp link,  Peer index 1
           Description: nei_desc
-          BGP version 4, remote router ID 2.2.2.2
+          BGP version 4, remote router ID 10.16.2.2
           BGP state = Established, up for 02:20:02
           Using loopback0 as update source for this peer
           BFD live-detection is configured
@@ -755,74 +755,62 @@ class BgpOutput(object):
           Extended community attribute sent to this neighbor
           Third-party Nexthop will not be computed.
 
-          Local host: 1.1.1.1, Local port: 57144
-          Foreign host: 2.2.2.2, Foreign port: 179
+          Local host: 10.4.1.1, Local port: 57144
+          Foreign host: 10.16.2.2, Foreign port: 179
           fd = 44
         '''
 
     nbr1_advertised_routes = '''\
-        pinxdt-n9kv-2# show bgp vrf VRF1 all neighbors 2.2.2.10 advertised-routes 
-        Can't find neighbor 2.2.2.10
+        pinxdt-n9kv-2# show bgp vrf VRF1 all neighbors 10.16.2.10 advertised-routes 
+        Can't find neighbor 10.16.2.10
 
-        Peer 2.2.2.10 routes for address family IPv4 Unicast:
-        BGP table version is 25, Local Router ID is 21.0.101.1
+        Peer 10.16.2.10 routes for address family IPv4 Unicast:
+        BGP table version is 25, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
-        *>l1.1.1.0/24         0.0.0.0                           100      32768 i
-        *>r1.3.1.0/24         0.0.0.0               4444        100      32768 ?
-        *>r1.3.2.0/24         0.0.0.0               4444        100      32768 ?
-        *>r104.0.0.0/8        0.0.0.0               4444        100      32768 ?
-        *>r204.0.0.0/8        0.0.0.0               4444        100      32768 ?
+        *>l10.4.1.0/24         0.0.0.0                           100      32768 i
+        *>r10.16.1.0/24         0.0.0.0               4444        100      32768 ?
+        *>r10.16.2.0/24         0.0.0.0               4444        100      32768 ?
+        *>r10.106.0.0/8        0.0.0.0               4444        100      32768 ?
+        *>r192.168.51.0/8        0.0.0.0               4444        100      32768 ?
 
 
-        Peer 2.2.2.10 routes for address family IPv4 Multicast:
-        BGP table version is 19, Local Router ID is 21.0.101.1
+        Peer 10.16.2.10 routes for address family IPv4 Multicast:
+        BGP table version is 19, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
-        *>r1.1.1.0/24         0.0.0.0               3333        100      32768 ?
-        *>r1.2.1.0/24         0.0.0.0               3333        100      32768 ?
-        *>r2.0.0.0/8          0.0.0.0               3333        100      32768 ?
-        *>r102.0.0.0/8        0.0.0.0               3333        100      32768 ?
-        *>r202.0.0.0/8        0.0.0.0               3333        100      32768 ?
+        *>r10.4.1.0/24         0.0.0.0               3333        100      32768 ?
+        *>r10.9.1.0/24         0.0.0.0               3333        100      32768 ?
+        *>r10.4.0.0/8          0.0.0.0               3333        100      32768 ?
+        *>r10.204.0.0/8        0.0.0.0               3333        100      32768 ?
+        *>r192.168.4.0/8        0.0.0.0               3333        100      32768 ?
 
 
-        Peer 2.2.2.10 routes for address family IPv6 Unicast:
-        BGP table version is 7, Local Router ID is 21.0.101.1
-        Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
-        Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
-        Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
-
-           Network            Next Hop            Metric     LocPrf     Weight Path
-
-
-        Peer 2.2.2.10 routes for address family IPv6 Multicast:
-        BGP table version is 2, Local Router ID is 21.0.101.1
+        Peer 10.16.2.10 routes for address family IPv6 Unicast:
+        BGP table version is 7, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
 
-        Peer 2.2.2.10 routes for address family VPNv4 Unicast:
-        BGP table version is 23, Local Router ID is 21.0.101.1
+
+        Peer 10.16.2.10 routes for address family IPv6 Multicast:
+        BGP table version is 2, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
-        Route Distinguisher: 1:100    (VRF vpn1)
 
-        Route Distinguisher: 2:100    (VRF vpn2)
-
-
-        Peer 2.2.2.10 routes for address family VPNv6 Unicast:
-        BGP table version is 7, Local Router ID is 21.0.101.1
+        Peer 10.16.2.10 routes for address family VPNv4 Unicast:
+        BGP table version is 23, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
@@ -833,24 +821,36 @@ class BgpOutput(object):
         Route Distinguisher: 2:100    (VRF vpn2)
 
 
-        Peer 2.2.2.10 routes for address family IPv4 MVPN:
-        BGP table version is 2, Local Router ID is 21.0.101.1
+        Peer 10.16.2.10 routes for address family VPNv6 Unicast:
+        BGP table version is 7, Local Router ID is 10.186.101.1
+        Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+        Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
+        Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
+
+           Network            Next Hop            Metric     LocPrf     Weight Path
+        Route Distinguisher: 1:100    (VRF vpn1)
+
+        Route Distinguisher: 2:100    (VRF vpn2)
+
+
+        Peer 10.16.2.10 routes for address family IPv4 MVPN:
+        BGP table version is 2, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
 
-        Peer 2.2.2.10 routes for address family IPv6 MVPN:
-        BGP table version is 2, Local Router ID is 21.0.101.1
+        Peer 10.16.2.10 routes for address family IPv6 MVPN:
+        BGP table version is 2, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
 
-        Peer 2.2.2.10 routes for address family IPv4 Label Unicast:
-        BGP table version is 28, Local Router ID is 21.0.101.1
+        Peer 10.16.2.10 routes for address family IPv4 Label Unicast:
+        BGP table version is 28, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
@@ -858,226 +858,214 @@ class BgpOutput(object):
            Network            Next Hop            Metric     LocPrf     Weight Path
 
 
-        Peer 2.2.2.10 routes for address family Link-State:
-        BGP table version is 2, Local Router ID is 21.0.101.1
+        Peer 10.16.2.10 routes for address family Link-State:
+        BGP table version is 2, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
-        Can't find neighbor 2.2.2.10
-        Can't find neighbor 2.2.2.10
+        Can't find neighbor 10.16.2.10
+        Can't find neighbor 10.16.2.10
         '''
 
     nbr1_routes = '''\
-        pinxdt-n9kv-2# show bgp vrf VRF1 all neighbors 2.2.2.10 routes 
-            Can't find neighbor 2.2.2.10
+        pinxdt-n9kv-2# show bgp vrf VRF1 all neighbors 10.16.2.10 routes 
+            Can't find neighbor 10.16.2.10
 
-            Peer 2.2.2.10 routes for address family IPv4 Unicast:
-            BGP table version is 25, Local Router ID is 21.0.101.1
+            Peer 10.16.2.10 routes for address family IPv4 Unicast:
+            BGP table version is 25, Local Router ID is 10.186.101.1
             Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
             Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
             Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
                Network            Next Hop            Metric     LocPrf     Weight Path
-            *>i4.0.0.0/8          21.0.0.2                 0        100          0 ?
-            * i104.0.0.0/8        21.0.0.2                 0        100          0 ?
-            * i204.0.0.0/8        21.0.0.2                 0        100          0 ?
+            *>i10.16.0.0/8          10.186.0.2                 0        100          0 ?
+            * i10.106.0.0/8        10.186.0.2                 0        100          0 ?
+            * i192.168.51.0/8        10.186.0.2                 0        100          0 ?
 
 
-            Peer 2.2.2.10 routes for address family IPv4 Multicast:
-            BGP table version is 19, Local Router ID is 21.0.101.1
+            Peer 10.16.2.10 routes for address family IPv4 Multicast:
+            BGP table version is 19, Local Router ID is 10.186.101.1
             Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
             Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
             Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
                Network            Next Hop            Metric     LocPrf     Weight Path
-            *>i4.0.0.0/8          21.0.0.2                 0        100          0 ?
-            *>i104.0.0.0/8        21.0.0.2                 0        100          0 ?
-            *>i204.0.0.0/8        21.0.0.2                 0        100          0 ?
+            *>i10.16.0.0/8          10.186.0.2                 0        100          0 ?
+            *>i10.106.0.0/8        10.186.0.2                 0        100          0 ?
+            *>i192.168.51.0/8        10.186.0.2                 0        100          0 ?
 
 
-            Peer 2.2.2.10 routes for address family IPv6 Unicast:
-            BGP table version is 7, Local Router ID is 21.0.101.1
-            Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
-            Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
-            Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
-
-               Network            Next Hop            Metric     LocPrf     Weight Path
-
-
-            Peer 2.2.2.10 routes for address family IPv6 Multicast:
-            BGP table version is 2, Local Router ID is 21.0.101.1
+            Peer 10.16.2.10 routes for address family IPv6 Unicast:
+            BGP table version is 7, Local Router ID is 10.186.101.1
             Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
             Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
             Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
                Network            Next Hop            Metric     LocPrf     Weight Path
 
-            Peer 2.2.2.10 routes for address family VPNv4 Unicast:
-            BGP table version is 23, Local Router ID is 21.0.101.1
+
+            Peer 10.16.2.10 routes for address family IPv6 Multicast:
+            BGP table version is 2, Local Router ID is 10.186.101.1
             Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
             Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
             Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
                Network            Next Hop            Metric     LocPrf     Weight Path
-            Route Distinguisher: 1:100    (VRF vpn1)
-            *>i4.0.0.0/8          21.0.0.2                 0        100          0 ?
 
-            Route Distinguisher: 2:100    (VRF vpn2)
-
-
-            Peer 2.2.2.10 routes for address family VPNv6 Unicast:
-            BGP table version is 7, Local Router ID is 21.0.101.1
+            Peer 10.16.2.10 routes for address family VPNv4 Unicast:
+            BGP table version is 23, Local Router ID is 10.186.101.1
             Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
             Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
             Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
                Network            Next Hop            Metric     LocPrf     Weight Path
             Route Distinguisher: 1:100    (VRF vpn1)
+            *>i10.16.0.0/8          10.186.0.2                 0        100          0 ?
 
             Route Distinguisher: 2:100    (VRF vpn2)
 
 
-            Peer 2.2.2.10 routes for address family IPv4 MVPN:
-            BGP table version is 2, Local Router ID is 21.0.101.1
+            Peer 10.16.2.10 routes for address family VPNv6 Unicast:
+            BGP table version is 7, Local Router ID is 10.186.101.1
+            Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+            Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
+            Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
+
+               Network            Next Hop            Metric     LocPrf     Weight Path
+            Route Distinguisher: 1:100    (VRF vpn1)
+
+            Route Distinguisher: 2:100    (VRF vpn2)
+
+
+            Peer 10.16.2.10 routes for address family IPv4 MVPN:
+            BGP table version is 2, Local Router ID is 10.186.101.1
             Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
             Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
             Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
                Network            Next Hop            Metric     LocPrf     Weight Path
 
-            Peer 2.2.2.10 routes for address family IPv6 MVPN:
-            BGP table version is 2, Local Router ID is 21.0.101.1
+            Peer 10.16.2.10 routes for address family IPv6 MVPN:
+            BGP table version is 2, Local Router ID is 10.186.101.1
             Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
             Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
             Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
                Network            Next Hop            Metric     LocPrf     Weight Path
 
-            Peer 2.2.2.10 routes for address family IPv4 Label Unicast:
-            BGP table version is 28, Local Router ID is 21.0.101.1
+            Peer 10.16.2.10 routes for address family IPv4 Label Unicast:
+            BGP table version is 28, Local Router ID is 10.186.101.1
             Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
             Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
             Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
                Network            Next Hop            Metric     LocPrf     Weight Path
-            *>i4.0.0.0/8          21.0.0.2                 0        100          0 ?
-            * i104.0.0.0/8        21.0.0.2                 0        100          0 ?
-            * i204.0.0.0/8        21.0.0.2                 0        100          0 ?
+            *>i10.16.0.0/8          10.186.0.2                 0        100          0 ?
+            * i10.106.0.0/8        10.186.0.2                 0        100          0 ?
+            * i192.168.51.0/8        10.186.0.2                 0        100          0 ?
 
 
-            Peer 2.2.2.10 routes for address family Link-State:
-            BGP table version is 2, Local Router ID is 21.0.101.1
+            Peer 10.16.2.10 routes for address family Link-State:
+            BGP table version is 2, Local Router ID is 10.186.101.1
             Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
             Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
             Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
                Network            Next Hop            Metric     LocPrf     Weight Path
-            Can't find neighbor 2.2.2.10
-            Can't find neighbor 2.2.2.10
+            Can't find neighbor 10.16.2.10
+            Can't find neighbor 10.16.2.10
             '''
 
     nbr1_received_routes = '''\
-        pinxdt-n9kv-2# show bgp vrf VRF1 all neighbors 2.2.2.10 received-routes 
-        Can't find neighbor 2.2.2.10
+        pinxdt-n9kv-2# show bgp vrf VRF1 all neighbors 10.16.2.10 received-routes 
+        Can't find neighbor 10.16.2.10
 
-        Inbound soft reconfiguration for IPv4 Unicast not performed on 2.2.2.10
+        Inbound soft reconfiguration for IPv4 Unicast not performed on 10.16.2.10
 
-        Peer 2.2.2.10 routes for address family IPv4 Multicast:
-        BGP table version is 19, Local Router ID is 21.0.101.1
+        Peer 10.16.2.10 routes for address family IPv4 Multicast:
+        BGP table version is 19, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
-        *>i4.0.0.0/8          21.0.0.2                 0        100          0 ?
-        *>i104.0.0.0/8        21.0.0.2                 0        100          0 ?
-        *>i204.0.0.0/8        21.0.0.2                 0        100          0 ?
+        *>i10.16.0.0/8          10.186.0.2                 0        100          0 ?
+        *>i10.106.0.0/8        10.186.0.2                 0        100          0 ?
+        *>i192.168.51.0/8        10.186.0.2                 0        100          0 ?
 
 
-        Inbound soft reconfiguration for IPv6 Unicast not performed on 2.2.2.10
+        Inbound soft reconfiguration for IPv6 Unicast not performed on 10.16.2.10
 
-        Inbound soft reconfiguration for IPv6 Multicast not performed on 2.2.2.10
+        Inbound soft reconfiguration for IPv6 Multicast not performed on 10.16.2.10
 
-        Inbound soft reconfiguration for VPNv4 Unicast not performed on 2.2.2.10
+        Inbound soft reconfiguration for VPNv4 Unicast not performed on 10.16.2.10
 
-        Inbound soft reconfiguration for VPNv6 Unicast not performed on 2.2.2.10
+        Inbound soft reconfiguration for VPNv6 Unicast not performed on 10.16.2.10
 
-        Inbound soft reconfiguration for IPv4 MVPN not performed on 2.2.2.10
+        Inbound soft reconfiguration for IPv4 MVPN not performed on 10.16.2.10
 
-        Inbound soft reconfiguration for IPv6 MVPN not performed on 2.2.2.10
+        Inbound soft reconfiguration for IPv6 MVPN not performed on 10.16.2.10
 
-        Inbound soft reconfiguration for IPv4 Label Unicast not performed on 2.2.2.10
+        Inbound soft reconfiguration for IPv4 Label Unicast not performed on 10.16.2.10
 
-        Inbound soft reconfiguration for Link-State not performed on 2.2.2.10
-        Can't find neighbor 2.2.2.10
-        Can't find neighbor 2.2.2.10
+        Inbound soft reconfiguration for Link-State not performed on 10.16.2.10
+        Can't find neighbor 10.16.2.10
+        Can't find neighbor 10.16.2.10
         '''
 
     nbr2_advertised_routes = '''\
-        pinxdt-n9kv-2# show bgp vrf default all neighbors 2.2.2.2 advertised-routes 
-        Can't find neighbor 2.2.2.2
+        pinxdt-n9kv-2# show bgp vrf default all neighbors 10.16.2.2 advertised-routes 
+        Can't find neighbor 10.16.2.2
 
-        Peer 2.2.2.2 routes for address family IPv4 Unicast:
-        BGP table version is 25, Local Router ID is 21.0.101.1
+        Peer 10.16.2.2 routes for address family IPv4 Unicast:
+        BGP table version is 25, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
-        *>l1.1.1.0/24         0.0.0.0                           100      32768 i
-        *>r1.3.1.0/24         0.0.0.0               4444        100      32768 ?
-        *>r1.3.2.0/24         0.0.0.0               4444        100      32768 ?
-        *>r104.0.0.0/8        0.0.0.0               4444        100      32768 ?
-        *>r204.0.0.0/8        0.0.0.0               4444        100      32768 ?
+        *>l10.4.1.0/24         0.0.0.0                           100      32768 i
+        *>r10.16.1.0/24         0.0.0.0               4444        100      32768 ?
+        *>r10.16.2.0/24         0.0.0.0               4444        100      32768 ?
+        *>r10.106.0.0/8        0.0.0.0               4444        100      32768 ?
+        *>r192.168.51.0/8        0.0.0.0               4444        100      32768 ?
 
 
-        Peer 2.2.2.2 routes for address family IPv4 Multicast:
-        BGP table version is 19, Local Router ID is 21.0.101.1
+        Peer 10.16.2.2 routes for address family IPv4 Multicast:
+        BGP table version is 19, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
-        *>r1.1.1.0/24         0.0.0.0               3333        100      32768 ?
-        *>r1.2.1.0/24         0.0.0.0               3333        100      32768 ?
-        *>r2.0.0.0/8          0.0.0.0               3333        100      32768 ?
-        *>r102.0.0.0/8        0.0.0.0               3333        100      32768 ?
-        *>r202.0.0.0/8        0.0.0.0               3333        100      32768 ?
+        *>r10.4.1.0/24         0.0.0.0               3333        100      32768 ?
+        *>r10.9.1.0/24         0.0.0.0               3333        100      32768 ?
+        *>r10.4.0.0/8          0.0.0.0               3333        100      32768 ?
+        *>r10.204.0.0/8        0.0.0.0               3333        100      32768 ?
+        *>r192.168.4.0/8        0.0.0.0               3333        100      32768 ?
 
 
-        Peer 2.2.2.2 routes for address family IPv6 Unicast:
-        BGP table version is 7, Local Router ID is 21.0.101.1
-        Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
-        Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
-        Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
-
-           Network            Next Hop            Metric     LocPrf     Weight Path
-
-
-        Peer 2.2.2.2 routes for address family IPv6 Multicast:
-        BGP table version is 2, Local Router ID is 21.0.101.1
+        Peer 10.16.2.2 routes for address family IPv6 Unicast:
+        BGP table version is 7, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
 
-        Peer 2.2.2.2 routes for address family VPNv4 Unicast:
-        BGP table version is 23, Local Router ID is 21.0.101.1
+
+        Peer 10.16.2.2 routes for address family IPv6 Multicast:
+        BGP table version is 2, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
-        Route Distinguisher: 1:100    (VRF vpn1)
 
-        Route Distinguisher: 2:100    (VRF vpn2)
-
-
-        Peer 2.2.2.2 routes for address family VPNv6 Unicast:
-        BGP table version is 7, Local Router ID is 21.0.101.1
+        Peer 10.16.2.2 routes for address family VPNv4 Unicast:
+        BGP table version is 23, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
@@ -1088,24 +1076,36 @@ class BgpOutput(object):
         Route Distinguisher: 2:100    (VRF vpn2)
 
 
-        Peer 2.2.2.2 routes for address family IPv4 MVPN:
-        BGP table version is 2, Local Router ID is 21.0.101.1
+        Peer 10.16.2.2 routes for address family VPNv6 Unicast:
+        BGP table version is 7, Local Router ID is 10.186.101.1
+        Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+        Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
+        Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
+
+           Network            Next Hop            Metric     LocPrf     Weight Path
+        Route Distinguisher: 1:100    (VRF vpn1)
+
+        Route Distinguisher: 2:100    (VRF vpn2)
+
+
+        Peer 10.16.2.2 routes for address family IPv4 MVPN:
+        BGP table version is 2, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
 
-        Peer 2.2.2.2 routes for address family IPv6 MVPN:
-        BGP table version is 2, Local Router ID is 21.0.101.1
+        Peer 10.16.2.2 routes for address family IPv6 MVPN:
+        BGP table version is 2, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
 
-        Peer 2.2.2.2 routes for address family IPv4 Label Unicast:
-        BGP table version is 28, Local Router ID is 21.0.101.1
+        Peer 10.16.2.2 routes for address family IPv4 Label Unicast:
+        BGP table version is 28, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
@@ -1113,161 +1113,161 @@ class BgpOutput(object):
            Network            Next Hop            Metric     LocPrf     Weight Path
 
 
-        Peer 2.2.2.2 routes for address family Link-State:
-        BGP table version is 2, Local Router ID is 21.0.101.1
+        Peer 10.16.2.2 routes for address family Link-State:
+        BGP table version is 2, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
-        Can't find neighbor 2.2.2.2
-        Can't find neighbor 2.2.2.2
+        Can't find neighbor 10.16.2.2
+        Can't find neighbor 10.16.2.2
         '''
 
     nbr2_routes = '''\
-        pinxdt-n9kv-2# show bgp vrf default all neighbors 2.2.2.2 routes 
-            Can't find neighbor 2.2.2.2
+        pinxdt-n9kv-2# show bgp vrf default all neighbors 10.16.2.2 routes 
+            Can't find neighbor 10.16.2.2
 
-            Peer 2.2.2.2 routes for address family IPv4 Unicast:
-            BGP table version is 25, Local Router ID is 21.0.101.1
+            Peer 10.16.2.2 routes for address family IPv4 Unicast:
+            BGP table version is 25, Local Router ID is 10.186.101.1
             Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
             Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
             Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
                Network            Next Hop            Metric     LocPrf     Weight Path
-            *>i4.0.0.0/8          21.0.0.2                 0        100          0 ?
-            * i104.0.0.0/8        21.0.0.2                 0        100          0 ?
-            * i204.0.0.0/8        21.0.0.2                 0        100          0 ?
+            *>i10.16.0.0/8          10.186.0.2                 0        100          0 ?
+            * i10.106.0.0/8        10.186.0.2                 0        100          0 ?
+            * i192.168.51.0/8        10.186.0.2                 0        100          0 ?
 
 
-            Peer 2.2.2.2 routes for address family IPv4 Multicast:
-            BGP table version is 19, Local Router ID is 21.0.101.1
+            Peer 10.16.2.2 routes for address family IPv4 Multicast:
+            BGP table version is 19, Local Router ID is 10.186.101.1
             Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
             Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
             Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
                Network            Next Hop            Metric     LocPrf     Weight Path
-            *>i4.0.0.0/8          21.0.0.2                 0        100          0 ?
-            *>i104.0.0.0/8        21.0.0.2                 0        100          0 ?
-            *>i204.0.0.0/8        21.0.0.2                 0        100          0 ?
+            *>i10.16.0.0/8          10.186.0.2                 0        100          0 ?
+            *>i10.106.0.0/8        10.186.0.2                 0        100          0 ?
+            *>i192.168.51.0/8        10.186.0.2                 0        100          0 ?
 
 
-            Peer 2.2.2.2 routes for address family IPv6 Unicast:
-            BGP table version is 7, Local Router ID is 21.0.101.1
-            Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
-            Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
-            Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
-
-               Network            Next Hop            Metric     LocPrf     Weight Path
-
-
-            Peer 2.2.2.2 routes for address family IPv6 Multicast:
-            BGP table version is 2, Local Router ID is 21.0.101.1
+            Peer 10.16.2.2 routes for address family IPv6 Unicast:
+            BGP table version is 7, Local Router ID is 10.186.101.1
             Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
             Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
             Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
                Network            Next Hop            Metric     LocPrf     Weight Path
 
-            Peer 2.2.2.2 routes for address family VPNv4 Unicast:
-            BGP table version is 23, Local Router ID is 21.0.101.1
+
+            Peer 10.16.2.2 routes for address family IPv6 Multicast:
+            BGP table version is 2, Local Router ID is 10.186.101.1
             Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
             Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
             Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
                Network            Next Hop            Metric     LocPrf     Weight Path
-            Route Distinguisher: 1:100    (VRF vpn1)
-            *>i4.0.0.0/8          21.0.0.2                 0        100          0 ?
 
-            Route Distinguisher: 2:100    (VRF vpn2)
-
-
-            Peer 2.2.2.2 routes for address family VPNv6 Unicast:
-            BGP table version is 7, Local Router ID is 21.0.101.1
+            Peer 10.16.2.2 routes for address family VPNv4 Unicast:
+            BGP table version is 23, Local Router ID is 10.186.101.1
             Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
             Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
             Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
                Network            Next Hop            Metric     LocPrf     Weight Path
             Route Distinguisher: 1:100    (VRF vpn1)
+            *>i10.16.0.0/8          10.186.0.2                 0        100          0 ?
 
             Route Distinguisher: 2:100    (VRF vpn2)
 
 
-            Peer 2.2.2.2 routes for address family IPv4 MVPN:
-            BGP table version is 2, Local Router ID is 21.0.101.1
+            Peer 10.16.2.2 routes for address family VPNv6 Unicast:
+            BGP table version is 7, Local Router ID is 10.186.101.1
+            Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+            Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
+            Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
+
+               Network            Next Hop            Metric     LocPrf     Weight Path
+            Route Distinguisher: 1:100    (VRF vpn1)
+
+            Route Distinguisher: 2:100    (VRF vpn2)
+
+
+            Peer 10.16.2.2 routes for address family IPv4 MVPN:
+            BGP table version is 2, Local Router ID is 10.186.101.1
             Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
             Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
             Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
                Network            Next Hop            Metric     LocPrf     Weight Path
 
-            Peer 2.2.2.2 routes for address family IPv6 MVPN:
-            BGP table version is 2, Local Router ID is 21.0.101.1
+            Peer 10.16.2.2 routes for address family IPv6 MVPN:
+            BGP table version is 2, Local Router ID is 10.186.101.1
             Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
             Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
             Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
                Network            Next Hop            Metric     LocPrf     Weight Path
 
-            Peer 2.2.2.2 routes for address family IPv4 Label Unicast:
-            BGP table version is 28, Local Router ID is 21.0.101.1
+            Peer 10.16.2.2 routes for address family IPv4 Label Unicast:
+            BGP table version is 28, Local Router ID is 10.186.101.1
             Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
             Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
             Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
                Network            Next Hop            Metric     LocPrf     Weight Path
-            *>i4.0.0.0/8          21.0.0.2                 0        100          0 ?
-            * i104.0.0.0/8        21.0.0.2                 0        100          0 ?
-            * i204.0.0.0/8        21.0.0.2                 0        100          0 ?
+            *>i10.16.0.0/8          10.186.0.2                 0        100          0 ?
+            * i10.106.0.0/8        10.186.0.2                 0        100          0 ?
+            * i192.168.51.0/8        10.186.0.2                 0        100          0 ?
 
 
-            Peer 2.2.2.2 routes for address family Link-State:
-            BGP table version is 2, Local Router ID is 21.0.101.1
+            Peer 10.16.2.2 routes for address family Link-State:
+            BGP table version is 2, Local Router ID is 10.186.101.1
             Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
             Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
             Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
                Network            Next Hop            Metric     LocPrf     Weight Path
-            Can't find neighbor 2.2.2.10
-            Can't find neighbor 2.2.2.10
+            Can't find neighbor 10.16.2.10
+            Can't find neighbor 10.16.2.10
             '''
 
     nbr2_received_routes = '''\
-        pinxdt-n9kv-2# show bgp vrf default all neighbors 2.2.2.2 received-routes 
-        Can't find neighbor 2.2.2.2
+        pinxdt-n9kv-2# show bgp vrf default all neighbors 10.16.2.2 received-routes 
+        Can't find neighbor 10.16.2.2
 
-        Inbound soft reconfiguration for IPv4 Unicast not performed on 2.2.2.2
+        Inbound soft reconfiguration for IPv4 Unicast not performed on 10.16.2.2
 
-        Peer 2.2.2.25 routes for address family IPv4 Multicast:
-        BGP table version is 19, Local Router ID is 21.0.101.1
+        Peer 10.16.2.25 routes for address family IPv4 Multicast:
+        BGP table version is 19, Local Router ID is 10.186.101.1
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
-        *>i4.0.0.0/8          21.0.0.2                 0        100          0 ?
-        *>i104.0.0.0/8        21.0.0.2                 0        100          0 ?
-        *>i204.0.0.0/8        21.0.0.2                 0        100          0 ?
+        *>i10.16.0.0/8          10.186.0.2                 0        100          0 ?
+        *>i10.106.0.0/8        10.186.0.2                 0        100          0 ?
+        *>i192.168.51.0/8        10.186.0.2                 0        100          0 ?
 
 
-        Inbound soft reconfiguration for IPv6 Unicast not performed on 2.2.2.2
+        Inbound soft reconfiguration for IPv6 Unicast not performed on 10.16.2.2
 
-        Inbound soft reconfiguration for IPv6 Multicast not performed on 2.2.2.2
+        Inbound soft reconfiguration for IPv6 Multicast not performed on 10.16.2.2
 
-        Inbound soft reconfiguration for VPNv4 Unicast not performed on 2.2.2.2
+        Inbound soft reconfiguration for VPNv4 Unicast not performed on 10.16.2.2
 
-        Inbound soft reconfiguration for VPNv6 Unicast not performed on 2.2.2.2
+        Inbound soft reconfiguration for VPNv6 Unicast not performed on 10.16.2.2
 
-        Inbound soft reconfiguration for IPv4 MVPN not performed on 2.2.2.2
+        Inbound soft reconfiguration for IPv4 MVPN not performed on 10.16.2.2
 
-        Inbound soft reconfiguration for IPv6 MVPN not performed on 2.2.2.2
+        Inbound soft reconfiguration for IPv6 MVPN not performed on 10.16.2.2
 
-        Inbound soft reconfiguration for IPv4 Label Unicast not performed on 2.2.2.2
+        Inbound soft reconfiguration for IPv4 Label Unicast not performed on 10.16.2.2
 
-        Inbound soft reconfiguration for Link-State not performed on 2.2.2.2
-        Can't find neighbor 2.2.2.2
-        Can't find neighbor 2.2.2.2
+        Inbound soft reconfiguration for Link-State not performed on 10.16.2.2
+        Can't find neighbor 10.16.2.2
+        Can't find neighbor 10.16.2.2
         '''
 
     class etree_holder1():
@@ -1662,7 +1662,7 @@ class BgpOutput(object):
                                 <peer-as/>
                                 <remove-private-as/>
                                 <peer-group/>
-                                <neighbor-address>2.2.2.2</neighbor-address>
+                                <neighbor-address>10.16.2.2</neighbor-address>
                             </config>
                             <ebgp-multihop>
                                 <config>
@@ -1694,7 +1694,7 @@ class BgpOutput(object):
                                 <peer-as/>
                                 <remove-private-as/>
                                 <peer-group/>
-                                <neighbor-address>2.2.2.2</neighbor-address>
+                                <neighbor-address>10.16.2.2</neighbor-address>
                             </state>
                             <timers>
                                 <config>
@@ -1714,11 +1714,11 @@ class BgpOutput(object):
                                     <local-address>0.0.0.0</local-address>
                                     <passive-mode>false</passive-mode>
                                     <local-port xmlns="http://openconfig.net/yang/bgp-operational">unspecified</local-port>
-                                    <remote-address xmlns="http://openconfig.net/yang/bgp-operational">4.4.4.4</remote-address>
+                                    <remote-address xmlns="http://openconfig.net/yang/bgp-operational">10.64.4.4</remote-address>
                                     <remote-port xmlns="http://openconfig.net/yang/bgp-operational">unspecified</remote-port>
                                 </state>
                             </transport>
-                            <neighbor-address>2.2.2.2</neighbor-address>
+                            <neighbor-address>10.16.2.2</neighbor-address>
                         </neighbor>
                     </neighbors>
                 </bgp>
@@ -1757,7 +1757,7 @@ class BgpOutput(object):
         BGP Information for VRF default
         VRF Id                         : 1
         VRF state                      : UP
-        Router-ID                      : 3.3.3.3
+        Router-ID                      : 10.36.3.3
         Configured Router-ID           : 0.0.0.0
         Confed-ID                      : 0
         Cluster-ID                     : 0.0.0.0
@@ -1904,7 +1904,7 @@ class BgpOutput(object):
         BGP Information for VRF vpn1
         VRF Id                         : 5
         VRF state                      : UP
-        Router-ID                      : 33.33.33.33
+        Router-ID                      : 10.21.33.33
         Configured Router-ID           : 0.0.0.0
         Confed-ID                      : 0
         Cluster-ID                     : 0.0.0.0
@@ -2070,7 +2070,7 @@ class BgpOutput(object):
                         {'address_family': 
                             {'ipv4 unicast': 
                                 {'aggregate_address_as_set': True,
-                                'aggregate_address_ipv4_address': '11.0.0.0',
+                                'aggregate_address_ipv4_address': '10.121.0.0',
                                 'aggregate_address_ipv4_mask': '8',
                                 'aggregate_address_summary_only': True,
                                 'dampening': 'True',
@@ -2136,7 +2136,7 @@ class BgpOutput(object):
                             'link-state': {},
                             'vpnv4 unicast': 
                                 {'aggregate_address_as_set': True,
-                                'aggregate_address_ipv4_address': '11.0.0.0',
+                                'aggregate_address_ipv4_address': '10.121.0.0',
                                 'aggregate_address_ipv4_mask': '8',
                                 'aggregate_address_summary_only': True,
                                 'dampening': 'True',
@@ -2153,7 +2153,7 @@ class BgpOutput(object):
                         'cluster_id': '0.0.03',
                         'confederation_identifier': 0,
                         'neighbor': 
-                            {'2.2.2.2': 
+                            {'10.16.2.2': 
                                 {'address_family': 
                                     {'vpnv4 unicast': 
                                         {'bgp_table_version': 11,
@@ -2206,7 +2206,7 @@ class BgpOutput(object):
                                         'state': 'established'},
                                     'transport': 
                                         {'foreign_host': 'unspecified',
-                                        'foreign_port': '4.4.4.4',
+                                        'foreign_port': '10.64.4.4',
                                         'local_host': '0.0.0.0',
                                         'local_port': 'unspecified'}},
                                 'bgp_version': 4,
@@ -2231,7 +2231,7 @@ class BgpOutput(object):
                                 {'label_allocation_mode': 'per-prefix'}},
                         'cluster_id': '0.0.0.0',
                         'confederation_identifier': 0,
-                        'router_id': '33.33.33.33'},
+                        'router_id': '10.21.33.33'},
                     'vpn2': 
                         {'address_family': 
                             {'ipv4 unicast': 
@@ -2251,7 +2251,7 @@ class BgpOutput(object):
                             {'ipv4 unicast': 
                                 {'bgp_table_version': 35,
                                 'prefixes': 
-                                    {'11.0.0.0/8': 
+                                    {'10.121.0.0/8': 
                                         {'index': 
                                             {1: 
                                                 {'localpref': 100,
@@ -2261,17 +2261,17 @@ class BgpOutput(object):
                                                 'weight': 32768},
                                             2: {'localpref': 100,
                                                 'metric': 0,
-                                                'next_hop': '4.4.4.4',
+                                                'next_hop': '10.64.4.4',
                                                 'origin_codes': 'e',
                                                 'status_codes': '*>',
                                                 'weight': 32768},
                                             3: {'localpref': 100,
                                                 'metric': 0,
-                                                'next_hop': '6.6.6.6',
+                                                'next_hop': '10.144.6.6',
                                                 'origin_codes': 'e',
                                                 'status_codes': '*>',
                                                 'weight': 32768}}},
-                                    '11.11.11.11/32': 
+                                    '10.229.11.11/32': 
                                         {'index': 
                                             {1: 
                                                 {'localpref': 100,
@@ -2280,7 +2280,7 @@ class BgpOutput(object):
                                                 'origin_codes': '?',
                                                 'status_codes': '*>',
                                                 'weight': 32768}}},
-                                    '123.0.0.0/8': 
+                                    '10.84.0.0/8': 
                                         {'index': 
                                             {1: 
                                                 {'localpref': 100,
@@ -2288,16 +2288,16 @@ class BgpOutput(object):
                                                 'origin_codes': 'i',
                                                 'status_codes': 'None',
                                                 'weight': 32768}}},
-                                    '33.33.33.33/32': 
+                                    '10.21.33.33/32': 
                                         {'index': 
                                             {1: 
                                                 {'localpref': 100,
                                                 'metric': 0,
-                                                'next_hop': '3.3.3.3',
+                                                'next_hop': '10.36.3.3',
                                                 'origin_codes': '?',
                                                 'status_codes': '*>',
                                                 'weight': 0}}},
-                                    '34.34.34.0/24': 
+                                    '10.34.34.0/24': 
                                         {'index': 
                                             {1: 
                                                 {'localpref': 100,
@@ -2338,7 +2338,7 @@ class BgpOutput(object):
                                             {1: 
                                                 {'localpref': 100,
                                                 'metric': 0,
-                                                'next_hop': '::ffff:3.3.3.3',
+                                                'next_hop': '::ffff:10.36.3.3',
                                                 'origin_codes': '?',
                                                 'status_codes': '*>',
                                                 'weight': 0}}}}}}},
@@ -2350,7 +2350,7 @@ class BgpOutput(object):
                                 {'bgp_table_version': 48,
                                 'default_vrf': 'VRF1',
                                 'prefixes': 
-                                    {'11.0.0.0/8': 
+                                    {'10.121.0.0/8': 
                                         {'index': 
                                             {1: 
                                                 {'localpref': 100,
@@ -2358,7 +2358,7 @@ class BgpOutput(object):
                                                 'origin_codes': 'i',
                                                 'status_codes': '*>',
                                                 'weight': 32768}}},
-                                    '11.11.11.11/32': 
+                                    '10.229.11.11/32': 
                                         {'index': 
                                             {1: 
                                                 {'localpref': 100,
@@ -2367,7 +2367,7 @@ class BgpOutput(object):
                                                 'origin_codes': '?',
                                                 'status_codes': '*>',
                                                 'weight': 32768}}},
-                                    '123.0.0.0/8': 
+                                    '10.84.0.0/8': 
                                         {'index': 
                                             {1: 
                                                 {'localpref': 100,
@@ -2375,16 +2375,16 @@ class BgpOutput(object):
                                                 'origin_codes': 'i',
                                                 'status_codes': 'None',
                                                 'weight': 32768}}},
-                                    '33.33.33.33/32': 
+                                    '10.21.33.33/32': 
                                         {'index': 
                                             {1: 
                                                 {'localpref': 100,
                                                 'metric': 0,
-                                                'next_hop': '3.3.3.3',
+                                                'next_hop': '10.36.3.3',
                                                 'origin_codes': '?',
                                                 'status_codes': '*>',
                                                 'weight': 0}}},
-                                    '34.34.34.0/24': 
+                                    '10.34.34.0/24': 
                                         {'index': 
                                             {1: 
                                                 {'localpref': 100,
@@ -2429,7 +2429,7 @@ class BgpOutput(object):
                                             {1: 
                                                 {'localpref': 100,
                                                 'metric': 0,
-                                                'next_hop': '::ffff:3.3.3.3',
+                                                'next_hop': '::ffff:10.36.3.3',
                                                 'origin_codes': '?',
                                                 'status_codes': '*>',
                                                 'weight': 0}}}},
@@ -2441,7 +2441,7 @@ class BgpOutput(object):
                 {'vrf': 
                     {'VRF1': 
                         {'neighbor': 
-                            {'2.2.2.10': 
+                            {'10.16.2.10': 
                                 {'address_family': 
                                     {'ipv4 unicast': 
                                         {'input_queue': 0,
@@ -2453,44 +2453,44 @@ class BgpOutput(object):
                                         'up_down': '5w6d'}}}}},
                     'default': 
                         {'neighbor': 
-                            {'2.2.2.2': 
+                            {'10.16.2.2': 
                                 {'address_family': 
                                     {'ipv4 label unicast': 
                                         {'advertised': {},
                                         'routes': 
-                                            {'104.0.0.0/8': 
+                                            {'10.106.0.0/8': 
                                                 {'index': 
                                                     {1: 
                                                         {'locprf': 100,
                                                         'metric': 0,
-                                                        'next_hop': '21.0.0.2',
+                                                        'next_hop': '10.186.0.2',
                                                         'origin_codes': '?',
                                                         'path_type': 'i',
                                                         'status_codes': '* ',
                                                         'weight': 0}}},
-                                            '204.0.0.0/8': 
+                                            '192.168.51.0/8': 
                                                 {'index': 
                                                     {1: 
                                                         {'locprf': 100,
                                                         'metric': 0,
-                                                        'next_hop': '21.0.0.2',
+                                                        'next_hop': '10.186.0.2',
                                                         'origin_codes': '?',
                                                         'path_type': 'i',
                                                         'status_codes': '* ',
                                                         'weight': 0}}},
-                                            '4.0.0.0/8': 
+                                            '10.16.0.0/8': 
                                                 {'index': 
                                                     {1: 
                                                         {'locprf': 100,
                                                         'metric': 0,
-                                                        'next_hop': '21.0.0.2',
+                                                        'next_hop': '10.186.0.2',
                                                         'origin_codes': '?',
                                                         'path_type': 'i',
                                                         'status_codes': '*>',
                                                         'weight': 0}}}}},
                                     'ipv4 multicast': 
                                         {'advertised': 
-                                            {'1.1.1.0/24': 
+                                            {'10.4.1.0/24': 
                                                 {'index': 
                                                     {1: 
                                                         {'locprf': 100,
@@ -2500,7 +2500,7 @@ class BgpOutput(object):
                                                         'path_type': 'r',
                                                         'status_codes': '*>',
                                                         'weight': 32768}}},
-                                            '1.2.1.0/24': 
+                                            '10.9.1.0/24': 
                                                 {'index': 
                                                     {1: 
                                                         {'locprf': 100,
@@ -2510,7 +2510,7 @@ class BgpOutput(object):
                                                         'path_type': 'r',
                                                         'status_codes': '*>',
                                                         'weight': 32768}}},
-                                            '102.0.0.0/8': 
+                                            '10.204.0.0/8': 
                                                 {'index': 
                                                     {1: 
                                                         {'locprf': 100,
@@ -2520,7 +2520,7 @@ class BgpOutput(object):
                                                         'path_type': 'r',
                                                         'status_codes': '*>',
                                                         'weight': 32768}}},
-                                            '2.0.0.0/8': 
+                                            '10.4.0.0/8': 
                                                 {'index': 
                                                     {1: 
                                                         {'locprf': 100,
@@ -2530,7 +2530,7 @@ class BgpOutput(object):
                                                         'path_type': 'r',
                                                         'status_codes': '*>',
                                                         'weight': 32768}}},
-                                            '202.0.0.0/8': 
+                                            '192.168.4.0/8': 
                                                 {'index': 
                                                     {1: 
                                                         {'locprf': 100,
@@ -2541,32 +2541,32 @@ class BgpOutput(object):
                                                         'status_codes': '*>',
                                                         'weight': 32768}}}},
                                         'routes': 
-                                            {'104.0.0.0/8': 
+                                            {'10.106.0.0/8': 
                                                 {'index': 
                                                     {1: 
                                                         {'locprf': 100,
                                                         'metric': 0,
-                                                        'next_hop': '21.0.0.2',
+                                                        'next_hop': '10.186.0.2',
                                                         'origin_codes': '?',
                                                         'path_type': 'i',
                                                         'status_codes': '*>',
                                                         'weight': 0}}},
-                                            '204.0.0.0/8': 
+                                            '192.168.51.0/8': 
                                                 {'index': 
                                                     {1: 
                                                         {'locprf': 100,
                                                         'metric': 0,
-                                                        'next_hop': '21.0.0.2',
+                                                        'next_hop': '10.186.0.2',
                                                         'origin_codes': '?',
                                                         'path_type': 'i',
                                                         'status_codes': '*>',
                                                         'weight': 0}}},
-                                            '4.0.0.0/8': 
+                                            '10.16.0.0/8': 
                                                 {'index': 
                                                     {1: 
                                                         {'locprf': 100,
                                                         'metric': 0,
-                                                        'next_hop': '21.0.0.2',
+                                                        'next_hop': '10.186.0.2',
                                                         'origin_codes': '?',
                                                         'path_type': 'i',
                                                         'status_codes': '*>',
@@ -2576,7 +2576,7 @@ class BgpOutput(object):
                                         'routes': {}},
                                     'ipv4 unicast': 
                                         {'advertised': 
-                                            {'1.1.1.0/24': 
+                                            {'10.4.1.0/24': 
                                                 {'index': 
                                                     {1: 
                                                         {'locprf': 100,
@@ -2585,7 +2585,7 @@ class BgpOutput(object):
                                                         'path_type': 'l',
                                                         'status_codes': '*>',
                                                         'weight': 32768}}},
-                                            '1.3.1.0/24': 
+                                            '10.16.1.0/24': 
                                                 {'index': 
                                                     {1: 
                                                         {'locprf': 100,
@@ -2595,7 +2595,7 @@ class BgpOutput(object):
                                                         'path_type': 'r',
                                                         'status_codes': '*>',
                                                         'weight': 32768}}},
-                                            '1.3.2.0/24': 
+                                            '10.16.2.0/24': 
                                                 {'index': 
                                                     {1: 
                                                         {'locprf': 100,
@@ -2605,7 +2605,7 @@ class BgpOutput(object):
                                                         'path_type': 'r',
                                                         'status_codes': '*>',
                                                         'weight': 32768}}},
-                                            '104.0.0.0/8': 
+                                            '10.106.0.0/8': 
                                                 {'index': 
                                                     {1: 
                                                         {'locprf': 100,
@@ -2615,7 +2615,7 @@ class BgpOutput(object):
                                                         'path_type': 'r',
                                                         'status_codes': '*>',
                                                         'weight': 32768}}},
-                                            '204.0.0.0/8': 
+                                            '192.168.51.0/8': 
                                                 {'index': 
                                                     {1: 
                                                         {'locprf': 100,
@@ -2626,32 +2626,32 @@ class BgpOutput(object):
                                                         'status_codes': '*>',
                                                         'weight': 32768}}}},
                                         'routes': 
-                                            {'104.0.0.0/8': 
+                                            {'10.106.0.0/8': 
                                                 {'index': 
                                                     {1: 
                                                         {'locprf': 100,
                                                         'metric': 0,
-                                                        'next_hop': '21.0.0.2',
+                                                        'next_hop': '10.186.0.2',
                                                         'origin_codes': '?',
                                                         'path_type': 'i',
                                                         'status_codes': '* ',
                                                         'weight': 0}}},
-                                                '204.0.0.0/8': 
+                                                '192.168.51.0/8': 
                                                     {'index': 
                                                         {1: 
                                                             {'locprf': 100,
                                                         'metric': 0,
-                                                            'next_hop': '21.0.0.2',
+                                                            'next_hop': '10.186.0.2',
                                                             'origin_codes': '?',
                                                             'path_type': 'i',
                                                             'status_codes': '* ',
                                                             'weight': 0}}},
-                                                '4.0.0.0/8': 
+                                                '10.16.0.0/8': 
                                                     {'index': 
                                                         {1: 
                                                             {'locprf': 100,
                                                             'metric': 0,
-                                                            'next_hop': '21.0.0.2',
+                                                            'next_hop': '10.186.0.2',
                                                             'origin_codes': '?',
                                                             'path_type': 'i',
                                                             'status_codes': '*>',
@@ -2683,12 +2683,12 @@ class BgpOutput(object):
                                         'default_vrf': 'vpn1',
                                         'route_distinguisher': '1:100',
                                         'routes': 
-                                            {'4.0.0.0/8': 
+                                            {'10.16.0.0/8': 
                                                 {'index': 
                                                     {1: 
                                                         {'locprf': 100,
                                                         'metric': 0,
-                                                        'next_hop': '21.0.0.2',
+                                                        'next_hop': '10.186.0.2',
                                                         'origin_codes': '?',
                                                         'path_type': 'i',
                                                         'status_codes': '*>',

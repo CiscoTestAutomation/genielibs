@@ -128,9 +128,9 @@ class test_lisp(unittest.TestCase):
         lisp.learn()
 
         # Check selective attribute
-        self.assertEqual('13.13.13.13', lisp.info['lisp_router_instances'][0]\
+        self.assertEqual('10.166.13.13', lisp.info['lisp_router_instances'][0]\
                                         ['service']['ipv4']['etr']\
-                                        ['mapping_servers']['13.13.13.13']\
+                                        ['mapping_servers']['10.166.13.13']\
                                         ['ms_address'])
 
 
@@ -165,7 +165,7 @@ class test_lisp(unittest.TestCase):
         with self.assertRaises(KeyError):
             ms_address = lisp.info['lisp_router_instances'][0]\
                                         ['service']['ipv4']['etr']\
-                                        ['mapping_servers']['13.13.13.13']\
+                                        ['mapping_servers']['10.166.13.13']\
                                         ['ms_address']
 
 

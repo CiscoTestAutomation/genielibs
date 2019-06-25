@@ -176,7 +176,7 @@ class VxlanOutput(object):
                             'local_ordinal': 0,
                             'df_timer_st': '00:00:00',
                             'config_status': 'n/a',
-                            'df_list': '201.0.0.55 201.0.0.66',
+                            'df_list': '192.168.111.55 192.168.111.66',
                             'es_rt_added': True,
                             'ead_rt_added': False,
                             'ead_evi_rt_timer_age': 'not running',
@@ -189,13 +189,13 @@ class VxlanOutput(object):
     showNvePeers = {
         'nve1':{
             'peer_ip': {
-                '201.202.1.1':{
+                '192.168.16.1':{
                     'peer_state': 'up',
                     'learn_type': 'CP',
                     'uptime': '01:15:09',
                     'router_mac': 'n/a',
                 },
-                '204.1.1.1': {
+                '192.168.106.1': {
                     'peer_state': 'up',
                     'learn_type': 'CP',
                     'uptime': '00:03:05',
@@ -212,8 +212,8 @@ class VxlanOutput(object):
             'local_rmac': "6cb2.ae24.3f17",
             'host_reach_mode': "control-plane",
             'source_if': "loopback1",
-            'primary_ip': "201.0.0.11",
-            'secondary_ip': "201.12.11.22",
+            'primary_ip': "192.168.111.11",
+            'secondary_ip': "192.168.196.22",
             'src_if_state': "up",
             'ir_cap_mode': "no",
             'adv_vmac': True,
@@ -226,7 +226,7 @@ class VxlanOutput(object):
             'vip_rmac_ro': "0200.6565.6565",
             'sm_state': "nve-intf-init",
             'multisite_bgw_if': "loopback2",
-            'multisite_bgw_if_ip': '101.101.101.101',
+            'multisite_bgw_if_ip': '10.4.101.101',
             'multisite_bgw_if_admin_state': "down",
             'multisite_bgw_if_oper_state': "down",
             'multisite_bgw_if_oper_state_down_reason': "NVE not up."
@@ -250,8 +250,8 @@ class VxlanOutput(object):
                 10001: {
                     'vni': 10001,
                     'repl_ip': {
-                        "7.7.7.7": {
-                        'repl_ip': "7.7.7.7",
+                        "10.196.7.7": {
+                        'repl_ip': "10.196.7.7",
                         'up_time': "1d02h",
                         'source': "bgp-imet",
                         }
@@ -260,8 +260,8 @@ class VxlanOutput(object):
                 10002: {
                     'vni': 10002,
                     'repl_ip': {
-                        "7.7.7.7": {
-                        'repl_ip': "7.7.7.7",
+                        "10.196.7.7": {
+                        'repl_ip': "10.196.7.7",
                         'up_time': "1d02h",
                         'source': "bgp-imet",
                         }
@@ -270,8 +270,8 @@ class VxlanOutput(object):
                 10005: {
                     'vni': 10005,
                     'repl_ip': {
-                        "7.7.7.7": {
-                        'repl_ip': "7.7.7.7",
+                        "10.196.7.7": {
+                        'repl_ip': "10.196.7.7",
                         'up_time': "1d02h",
                         'source': "bgp-imet",
                         }
@@ -307,8 +307,8 @@ class VxlanOutput(object):
             'local_rmac': "6cb2.ae24.3f17",
             'host_reach_mode': "control-plane",
             'source_if': "Loopback1",
-            'primary_ip': "201.0.0.11",
-            'secondary_ip': "201.12.11.22",
+            'primary_ip': "192.168.111.11",
+            'secondary_ip': "192.168.196.22",
             'src_if_state': "up",
             'ir_cap_mode': "no",
             'adv_vmac': True,
@@ -321,18 +321,18 @@ class VxlanOutput(object):
             'vip_rmac_ro': "0200.6565.6565",
             'sm_state': "nve-intf-init",
             'multisite_bgw_if': "Loopback2",
-            'multisite_bgw_if_ip': '101.101.101.101',
+            'multisite_bgw_if_ip': '10.4.101.101',
             'multisite_bgw_if_admin_state': "down",
             'multisite_bgw_if_oper_state': "down",
             'multisite_bgw_if_oper_state_down_reason': "NVE not up.",
             'peer_ip': {
-                '201.202.1.1': {
+                '192.168.16.1': {
                   'peer_state': 'up',
                   'learn_type': 'CP',
                   'uptime': '01:15:09',
                   'router_mac': 'n/a',
                 },
-                '204.1.1.1': {
+                '192.168.106.1': {
                   'peer_state': 'up',
                   'learn_type': 'CP',
                   'uptime': '00:03:05',
@@ -364,7 +364,7 @@ class VxlanOutput(object):
                        'local_ordinal': 0,
                        'df_timer_st': '00:00:00',
                        'config_status': 'n/a',
-                       'df_list': '201.0.0.55 201.0.0.66',
+                       'df_list': '192.168.111.55 192.168.111.66',
                        'es_rt_added': True,
                        'ead_rt_added': False,
                        'ead_evi_rt_timer_age': 'not running',
@@ -452,8 +452,8 @@ class VxlanOutput(object):
                    'type': "L3 [vni_10001]",
                    'flags': '',
                    'repl_ip': {
-                       "7.7.7.7": {
-                           'repl_ip': "7.7.7.7",
+                       "10.196.7.7": {
+                           'repl_ip': "10.196.7.7",
                            'up_time': "1d02h",
                            'source': "bgp-imet",
                        }
@@ -467,8 +467,8 @@ class VxlanOutput(object):
                    'type': "L3 [vni_10002]",
                    'flags': '',
                    'repl_ip': {
-                       "7.7.7.7": {
-                           'repl_ip': "7.7.7.7",
+                       "10.196.7.7": {
+                           'repl_ip': "10.196.7.7",
                            'up_time': "1d02h",
                            'source': "bgp-imet",
                        }
@@ -482,8 +482,8 @@ class VxlanOutput(object):
                    'type': "L3 [vni_10005]",
                    'flags': '',
                    'repl_ip': {
-                       "7.7.7.7": {
-                           'repl_ip': "7.7.7.7",
+                       "10.196.7.7": {
+                           'repl_ip': "10.196.7.7",
                            'up_time': "1d02h",
                            'source': "bgp-imet",
                        }
@@ -528,19 +528,19 @@ class VxlanOutput(object):
                         8: {
                             'topo_id': 101,
                             'peer_id': 8,
-                            'flood_list': '201.34.33.44',
+                            'flood_list': '192.168.169.44',
                             'is_service_node': 'no',
                         },
                         2: {
                             'topo_id': 101,
                             'peer_id': 2,
-                            'flood_list': '201.0.0.55',
+                            'flood_list': '192.168.111.55',
                             'is_service_node': 'no',
                         },
                         1: {
                             'topo_id': 101,
                             'peer_id': 1,
-                            'flood_list': '201.0.0.66',
+                            'flood_list': '192.168.111.66',
                             'is_service_node': 'no',
                         },
                     },
@@ -553,14 +553,14 @@ class VxlanOutput(object):
             'ethernet_segment': {
                 1: {
                     'ethernet_segment': '0300.0000.0001.2c00.0309',
-                    'originating_rtr': '201.0.0.55',
+                    'originating_rtr': '192.168.111.55',
                     'prod_name': 'vxlan',
                     'int_ifhdl': 'nve1',
                     'client_nfn': 64,
                 },
                 2: {
                     'ethernet_segment': '0300.0000.0001.2c00.0309',
-                    'originating_rtr': '201.0.0.66',
+                    'originating_rtr': '192.168.111.66',
                     'prod_name': 'bgp',
                     'int_ifhdl': 'n/a',
                     'client_nfn': 32,
@@ -580,9 +580,9 @@ class VxlanOutput(object):
                             'encap_type': 0,
                             'iod': 0,
                             'if_hdl': 1224736769,
-                            'vtep_ip': '201.11.11.11',
-                            'emulated_ip': '201.12.11.22',
-                            'emulated_ro_ip': '201.12.11.22',
+                            'vtep_ip': '192.168.4.11',
+                            'emulated_ip': '192.168.196.22',
+                            'emulated_ro_ip': '192.168.196.22',
                             'tx_id': 20,
                             'rcvd_flag': 0,
                             'rmac': '5e00.0005.0007',
@@ -608,7 +608,7 @@ class VxlanOutput(object):
                             'prod_type': 'vxlan',
                             'flags': 'rmac',
                             'seq_num': 0,
-                            'next_hop1': '204.1.1.1',
+                            'next_hop1': '192.168.106.1',
                             'rte_res': 'regular',
                             'fwd_state': 'Resolved',
                             'peer_id': 2,
@@ -628,8 +628,8 @@ class VxlanOutput(object):
                             'mac_ip_prod_type': 'bgp',
                             'mac_ip_flags': '--',
                             'seq_num': 0,
-                            'next_hop1': '204.1.1.1',
-                            'host_ip': '5.1.10.11',
+                            'next_hop1': '192.168.106.1',
+                            'host_ip': '10.36.10.11',
                         },
                         'fa16.3ea3.fb66': {
                             'mac_addr': 'fa16.3ea3.fb66',
@@ -637,7 +637,7 @@ class VxlanOutput(object):
                             'mac_ip_flags': '--',
                             'seq_num': 0,
                             'next_hop1': 'local',
-                            'host_ip': '5.1.10.55',
+                            'host_ip': '10.36.10.55',
                             'sent_to': 'bgp',
                             'soo': 774975538,
                             'l3_info': 10001,
@@ -727,14 +727,14 @@ class VxlanOutput(object):
             'ethernet_segment': {
                 1: {
                     'ethernet_segment': '0300.0000.0001.2c00.0309',
-                    'originating_rtr': '201.0.0.55',
+                    'originating_rtr': '192.168.111.55',
                     'prod_name': 'vxlan',
                     'int_ifhdl': 'nve1',
                     'client_nfn': 64,
                 },
                 2: {
                     'ethernet_segment': '0300.0000.0001.2c00.0309',
-                    'originating_rtr': '201.0.0.66',
+                    'originating_rtr': '192.168.111.66',
                     'prod_name': 'bgp',
                     'int_ifhdl': 'n/a',
                     'client_nfn': 32,
@@ -749,19 +749,19 @@ class VxlanOutput(object):
                         8: {
                             'topo_id': 101,
                             'peer_id': 8,
-                            'flood_list': '201.34.33.44',
+                            'flood_list': '192.168.169.44',
                             'is_service_node': 'no',
                         },
                         2: {
                             'topo_id': 101,
                             'peer_id': 2,
-                            'flood_list': '201.0.0.55',
+                            'flood_list': '192.168.111.55',
                             'is_service_node': 'no',
                         },
                         1: {
                             'topo_id': 101,
                             'peer_id': 1,
-                            'flood_list': '201.0.0.66',
+                            'flood_list': '192.168.111.66',
                             'is_service_node': 'no',
                         },
                     },
@@ -773,9 +773,9 @@ class VxlanOutput(object):
                             'encap_type': 0,
                             'iod': 0,
                             'if_hdl': 1224736769,
-                            'vtep_ip': '201.11.11.11',
-                            'emulated_ip': '201.12.11.22',
-                            'emulated_ro_ip': '201.12.11.22',
+                            'vtep_ip': '192.168.4.11',
+                            'emulated_ip': '192.168.196.22',
+                            'emulated_ro_ip': '192.168.196.22',
                             'tx_id': 20,
                             'rcvd_flag': 0,
                             'rmac': '5e00.0005.0007',
@@ -792,7 +792,7 @@ class VxlanOutput(object):
                             'prod_type': 'vxlan',
                             'flags': 'rmac',
                             'seq_num': 0,
-                            'next_hop1': '204.1.1.1',
+                            'next_hop1': '192.168.106.1',
                             'rte_res': 'regular',
                             'fwd_state': 'Resolved',
                             'peer_id': 2,
@@ -804,8 +804,8 @@ class VxlanOutput(object):
                             'mac_ip_prod_type': 'bgp',
                             'mac_ip_flags': '--',
                             'seq_num': 0,
-                            'next_hop1': '204.1.1.1',
-                            'host_ip': '5.1.10.11',
+                            'next_hop1': '192.168.106.1',
+                            'host_ip': '10.36.10.11',
                         },
                         'fa16.3ea3.fb66': {
                             'mac_addr': 'fa16.3ea3.fb66',
@@ -813,7 +813,7 @@ class VxlanOutput(object):
                             'mac_ip_flags': '--',
                             'seq_num': 0,
                             'next_hop1': 'local',
-                            'host_ip': '5.1.10.55',
+                            'host_ip': '10.36.10.55',
                             'sent_to': 'bgp',
                             'soo': 774975538,
                             'l3_info': 10001,
@@ -905,7 +905,7 @@ class VxlanOutput(object):
                 'vrf': {
                     'default': {
                         'vrf_name_out': 'default',
-                        'vrf_router_id': '201.11.11.11',
+                        'vrf_router_id': '192.168.4.11',
                         'vrf_local_as': 100,
                         'address_family': {
                             'l2vpn evpn': {
@@ -925,8 +925,8 @@ class VxlanOutput(object):
                                 'bytesclusterlist': 12,
                                 'dampening': 'disabled',
                                 'neighbor': {
-                                    '191.13.1.8': {
-                                        'neighbor': '191.13.1.8',
+                                    '172.16.205.8': {
+                                        'neighbor': '172.16.205.8',
                                         'version': 4,
                                         'msgrecvd': 130,
                                         'msgsent': 139,
@@ -955,13 +955,13 @@ class VxlanOutput(object):
                         'address_family': {
                             'l2vpn evpn': { 
                                 'neighbor': {
-                                    '191.13.1.8': {
-                                        'neighbor': '191.13.1.8',
+                                    '172.16.205.8': {
+                                        'neighbor': '172.16.205.8',
                                         'remoteas': 200,
                                         'link': 'ebgp',
                                         'index': 3,
                                         'version': 4,
-                                        'remote_id':'201.33.33.33',
+                                        'remote_id':'192.168.144.33',
                                         'state': 'established',
                                         'up': True,
                                         'elapsedtime': '02:11:53',
@@ -1049,9 +1049,9 @@ class VxlanOutput(object):
                                                 'sendextcommunity': True,
                                                 }
                                         },
-                                        'localaddr': '191.13.1.6',
+                                        'localaddr': '172.16.205.6',
                                         'localport': 179,
-                                        'remoteaddr': '191.13.1.8',
+                                        'remoteaddr': '172.16.205.8',
                                         'remoteport': 52715,
                                         'fd': 84,
                                     },
@@ -1072,11 +1072,11 @@ class VxlanOutput(object):
                         'address_family': {
                             'l2vpn evpn': {
                                 'rd': {
-                                    '11.0.0.55:27001': {
-                                        'rd': '11.0.0.55:27001',
+                                    '10.121.0.55:27001': {
+                                        'rd': '10.121.0.55:27001',
                                         'prefix': {
-                                            '[4]:[0300.0000.0001.2c00.0309]:[32]:[201.0.0.55]/136': {
-                                                'nonipprefix': '[4]:[0300.0000.0001.2c00.0309]:[32]:[201.0.0.55]/136',
+                                            '[4]:[0300.0000.0001.2c00.0309]:[32]:[192.168.111.55]/136': {
+                                                'nonipprefix': '[4]:[0300.0000.0001.2c00.0309]:[32]:[192.168.111.55]/136',
                                                 'prefixversion': 13144,
                                                 'on_xmitlist': True,
                                                 'totalpaths': 1,
@@ -1087,21 +1087,21 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': True,
-                                                        'ipnexthop': '201.0.0.55',
+                                                        'ipnexthop': '192.168.111.55',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '11.0.0.55',
+                                                        'neighborid': '10.121.0.55',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
                                                         'extcommunity': ['ENCAP:8', 'RT:0000.0000.012c'],
-                                                        'advertisedto': ['11.0.0.11', '11.0.0.22', '11.0.0.33',
-                                                                         '11.0.0.44', '14.0.0.11'],
+                                                        'advertisedto': ['10.121.0.11', '10.121.0.22', '10.121.0.33',
+                                                                         '10.121.0.44', '10.196.0.11'],
                                                     },
                                                 }
                                             },
-                                            '[4]:[0300.0000.0001.2c00.0309]:[32]:[201.0.0.66]/136': {
-                                                'nonipprefix': '[4]:[0300.0000.0001.2c00.0309]:[32]:[201.0.0.66]/136',
+                                            '[4]:[0300.0000.0001.2c00.0309]:[32]:[192.168.111.66]/136': {
+                                                'nonipprefix': '[4]:[0300.0000.0001.2c00.0309]:[32]:[192.168.111.66]/136',
                                                 'prefixversion': 13146,
                                                 'on_xmitlist': True,
                                                 'totalpaths': 1,
@@ -1112,26 +1112,26 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': True,
-                                                        'ipnexthop': '201.0.0.66',
+                                                        'ipnexthop': '192.168.111.66',
                                                         'nexthopmetric': 3,
-                                                        'neighbor': '14.0.0.11',
-                                                        'neighborid': '14.0.0.11',
+                                                        'neighbor': '10.196.0.11',
+                                                        'neighborid': '10.196.0.11',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 0,
                                                         'extcommunity': ['ENCAP:8', 'RT:0000.0000.012c'],
-                                                        'originatorid': '11.0.0.66',
-                                                        'clusterlist': ['14.0.0.11'],
+                                                        'originatorid': '10.121.0.66',
+                                                        'clusterlist': ['10.196.0.11'],
                                                     },
                                                 }
                                             }
                                         }
                                     },
-                                    '11.0.0.66:27001': {
-                                        'rd': '11.0.0.66:27001',
+                                    '10.121.0.66:27001': {
+                                        'rd': '10.121.0.66:27001',
                                         'prefix': {
-                                            '[4]:[0300.0000.0001.2c00.0309]:[32]:[201.0.0.66]/136': {
-                                                'nonipprefix': '[4]:[0300.0000.0001.2c00.0309]:[32]:[201.0.0.66]/136',
+                                            '[4]:[0300.0000.0001.2c00.0309]:[32]:[192.168.111.66]/136': {
+                                                'nonipprefix': '[4]:[0300.0000.0001.2c00.0309]:[32]:[192.168.111.66]/136',
                                                 'prefixversion': 13145,
                                                 'on_xmitlist': True,
                                                 'totalpaths': 1,
@@ -1142,18 +1142,18 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': True,
-                                                        'ipnexthop': '201.0.0.66',
+                                                        'ipnexthop': '192.168.111.66',
                                                         'nexthopmetric': 3,
-                                                        'neighbor': '14.0.0.11',
-                                                        'neighborid': '14.0.0.11',
+                                                        'neighbor': '10.196.0.11',
+                                                        'neighborid': '10.196.0.11',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 0,
                                                         'extcommunity': ['ENCAP:8', 'RT:0000.0000.012c'],
-                                                        'advertisedto': ['11.0.0.11', '11.0.0.22', '11.0.0.33',
-                                                                         '11.0.0.44'],
-                                                        'originatorid': '11.0.0.66',
-                                                        'clusterlist': ['14.0.0.11'],
+                                                        'advertisedto': ['10.121.0.11', '10.121.0.22', '10.121.0.33',
+                                                                         '10.121.0.44'],
+                                                        'originatorid': '10.121.0.66',
+                                                        'clusterlist': ['10.196.0.11'],
                                                     },
                                                 }
                                             },
@@ -1176,8 +1176,8 @@ class VxlanOutput(object):
                         'address_family': {
                             'l2vpn evpn': {
                                 'rd': {
-                                    '205.1.1.1:33767': {
-                                        'rd': '205.1.1.1:33767',
+                                    '192.168.9.1:33767': {
+                                        'rd': '192.168.9.1:33767',
                                         'rd_vrf': 'l2',
                                         'rd_vniid': 25000,
                                         'prefix': {
@@ -1193,10 +1193,10 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': True,
-                                                        'ipnexthop': '205.1.1.1',
+                                                        'ipnexthop': '192.168.9.1',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '205.1.1.1',
+                                                        'neighborid': '192.168.9.1',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -1217,10 +1217,10 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': True,
-                                                        'ipnexthop': '205.1.1.1',
+                                                        'ipnexthop': '192.168.9.1',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '205.1.1.1',
+                                                        'neighborid': '192.168.9.1',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -1241,10 +1241,10 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': True,
-                                                        'ipnexthop': '205.1.1.1',
+                                                        'ipnexthop': '192.168.9.1',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '205.1.1.1',
+                                                        'neighborid': '192.168.9.1',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -1255,8 +1255,8 @@ class VxlanOutput(object):
                                             }
                                         }
                                     },
-                                    '205.1.1.1:33768': {
-                                        'rd': '205.1.1.1:33768',
+                                    '192.168.9.1:33768': {
+                                        'rd': '192.168.9.1:33768',
                                         'rd_vrf': 'l2',
                                         'rd_vniid': 25001,
                                         'prefix': {
@@ -1272,10 +1272,10 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': True,
-                                                        'ipnexthop': '205.1.1.1',
+                                                        'ipnexthop': '192.168.9.1',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '205.1.1.1',
+                                                        'neighborid': '192.168.9.1',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -1300,10 +1300,10 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': True,
-                                                        'ipnexthop': '205.1.1.1',
+                                                        'ipnexthop': '192.168.9.1',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '205.1.1.1',
+                                                        'neighborid': '192.168.9.1',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -1328,10 +1328,10 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': True,
-                                                        'ipnexthop': '205.1.1.1',
+                                                        'ipnexthop': '192.168.9.1',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '205.1.1.1',
+                                                        'neighborid': '192.168.9.1',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -1363,8 +1363,8 @@ class VxlanOutput(object):
                         'address_family': {
                             'l2vpn evpn': {
                                 'rd': {
-                                    '201.1.1.1:3': {
-                                        'rd': '201.1.1.1:3',
+                                    '192.168.154.1:3': {
+                                        'rd': '192.168.154.1:3',
                                         'prefix': {
                                             '[2]:[0]:[0]:[48]:[5e00.0003.0007]:[0]:[0.0.0.0]/216': {
                                                 'nonipprefix': '[2]:[0]:[0]:[48]:[5e00.0003.0007]:[0]:[0.0.0.0]/216',
@@ -1379,10 +1379,10 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': False,
-                                                        'ipnexthop': '201.202.1.1',
+                                                        'ipnexthop': '192.168.16.1',
                                                         'nexthopmetric': 81,
-                                                        'neighbor': '211.1.1.1',
-                                                        'neighborid': '211.1.1.1',
+                                                        'neighbor': '192.168.234.1',
+                                                        'neighborid': '192.168.234.1',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 0,
@@ -1391,16 +1391,16 @@ class VxlanOutput(object):
                                                             "ENCAP:8"
                                                         ],
                                                         'inlabel': 10001,
-                                                        'originatorid': '201.1.1.1',
-                                                        'clusterlist': ['211.1.1.1'],
-                                                        'advertisedto': ['191.13.1.8'],
+                                                        'originatorid': '192.168.154.1',
+                                                        'clusterlist': ['192.168.234.1'],
+                                                        'advertisedto': ['172.16.205.8'],
                                                     },
                                                 }
                                             },
                                         },
                                     },
-                                    '201.1.1.1:4': {
-                                        'rd': '201.1.1.1:4',
+                                    '192.168.154.1:4': {
+                                        'rd': '192.168.154.1:4',
                                         'prefix': {
                                             '[2]:[0]:[0]:[48]:[5e00.0003.0007]:[0]:[0.0.0.0]/216': {
                                                 'nonipprefix': '[2]:[0]:[0]:[48]:[5e00.0003.0007]:[0]:[0.0.0.0]/216',
@@ -1415,17 +1415,17 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': False,
-                                                        'ipnexthop': '201.202.1.1',
+                                                        'ipnexthop': '192.168.16.1',
                                                         'nexthopmetric': 81,
-                                                        'neighbor': '211.1.1.1',
-                                                        'neighborid': '211.1.1.1',
+                                                        'neighbor': '192.168.234.1',
+                                                        'neighborid': '192.168.234.1',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 0,
                                                         'inlabel': 10002,
-                                                        'advertisedto': ['191.13.1.8'],
-                                                        'originatorid': '201.1.1.1',
-                                                        'clusterlist': ['211.1.1.1'],
+                                                        'advertisedto': ['172.16.205.8'],
+                                                        'originatorid': '192.168.154.1',
+                                                        'clusterlist': ['192.168.234.1'],
                                                     },
                                                 }
                                             },
@@ -1448,22 +1448,22 @@ class VxlanOutput(object):
                         "address_family": {
                             "l2vpn evpn": {
                                 "rd": {
-                                    "7.7.7.7:32969": {
-                                        "rd": "7.7.7.7:32969",
+                                    "10.196.7.7:32969": {
+                                        "rd": "10.196.7.7:32969",
                                         "prefix": {
-                                            "[3]:[0]:[32]:[7.7.7.7]/88": {
+                                            "[3]:[0]:[32]:[10.196.7.7]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "neighbor": "20.6.7.7",
+                                                        "neighbor": "10.166.7.7",
                                                         "localpref": 100,
-                                                        "neighborid": "7.7.7.7",
+                                                        "neighborid": "10.196.7.7",
                                                         "pathbest": True,
                                                         "nexthopmetric": 20,
                                                         "pathvalid": True,
-                                                        "ipnexthop": "7.7.7.7",
+                                                        "ipnexthop": "10.196.7.7",
                                                         "extcommunity": [
                                                             "RT:100:10202",
                                                             "ENCAP:8"
@@ -1472,13 +1472,13 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10202",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "7.7.7.7",
+                                                            "tunnel_id": "10.196.7.7",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 0
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[7.7.7.7]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.196.7.7]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5387,
                                                 "totalpaths": 1,
@@ -1486,22 +1486,22 @@ class VxlanOutput(object):
                                             }
                                         }
                                     },
-                                    "7.7.7.7:32968": {
-                                        "rd": "7.7.7.7:32968",
+                                    "10.196.7.7:32968": {
+                                        "rd": "10.196.7.7:32968",
                                         "prefix": {
-                                            "[3]:[0]:[32]:[7.7.7.7]/88": {
+                                            "[3]:[0]:[32]:[10.196.7.7]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "neighbor": "20.6.7.7",
+                                                        "neighbor": "10.166.7.7",
                                                         "localpref": 100,
-                                                        "neighborid": "7.7.7.7",
+                                                        "neighborid": "10.196.7.7",
                                                         "pathbest": True,
                                                         "nexthopmetric": 20,
                                                         "pathvalid": True,
-                                                        "ipnexthop": "7.7.7.7",
+                                                        "ipnexthop": "10.196.7.7",
                                                         "extcommunity": [
                                                             "RT:100:10201",
                                                             "ENCAP:8"
@@ -1510,13 +1510,13 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10201",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "7.7.7.7",
+                                                            "tunnel_id": "10.196.7.7",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 0
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[7.7.7.7]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.196.7.7]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5386,
                                                 "totalpaths": 1,
@@ -1524,22 +1524,22 @@ class VxlanOutput(object):
                                             }
                                         }
                                     },
-                                    "7.7.7.7:32868": {
-                                        "rd": "7.7.7.7:32868",
+                                    "10.196.7.7:32868": {
+                                        "rd": "10.196.7.7:32868",
                                         "prefix": {
-                                            "[3]:[0]:[32]:[7.7.7.7]/88": {
+                                            "[3]:[0]:[32]:[10.196.7.7]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "neighbor": "20.6.7.7",
+                                                        "neighbor": "10.166.7.7",
                                                         "localpref": 100,
-                                                        "neighborid": "7.7.7.7",
+                                                        "neighborid": "10.196.7.7",
                                                         "pathbest": True,
                                                         "nexthopmetric": 20,
                                                         "pathvalid": True,
-                                                        "ipnexthop": "7.7.7.7",
+                                                        "ipnexthop": "10.196.7.7",
                                                         "extcommunity": [
                                                             "RT:100:10101",
                                                             "ENCAP:8"
@@ -1548,13 +1548,13 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10101",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "7.7.7.7",
+                                                            "tunnel_id": "10.196.7.7",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 0
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[7.7.7.7]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.196.7.7]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5384,
                                                 "totalpaths": 1,
@@ -1562,24 +1562,24 @@ class VxlanOutput(object):
                                             }
                                         }
                                     },
-                                    "6.6.6.6:32868": {
-                                        "rd": "6.6.6.6:32868",
+                                    "10.144.6.6:32868": {
+                                        "rd": "10.144.6.6:32868",
                                         "rd_vniid": 10101,
                                         "rd_vrf": "l2",
                                         "prefix": {
-                                            "[3]:[0]:[32]:[7.7.7.7]/88": {
+                                            "[3]:[0]:[32]:[10.196.7.7]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "neighbor": "20.6.7.7",
+                                                        "neighbor": "10.166.7.7",
                                                         "localpref": 100,
-                                                        "neighborid": "7.7.7.7",
+                                                        "neighborid": "10.196.7.7",
                                                         "pathbest": True,
                                                         "nexthopmetric": 20,
                                                         "pathvalid": True,
-                                                        "ipnexthop": "7.7.7.7",
+                                                        "ipnexthop": "10.196.7.7",
                                                         "extcommunity": [
                                                             "RT:100:10101",
                                                             "ENCAP:8"
@@ -1588,33 +1588,33 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10101",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "7.7.7.7",
+                                                            "tunnel_id": "10.196.7.7",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 0
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[7.7.7.7]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.196.7.7]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5809,
                                                 "totalpaths": 1,
                                                 "on_xmitlist": True
                                             },
-                                            "[3]:[0]:[32]:[6.6.6.6]/88": {
+                                            "[3]:[0]:[32]:[10.144.6.6]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "ipnexthop": "6.6.6.6",
+                                                        "ipnexthop": "10.144.6.6",
                                                         "neighbor": "0.0.0.0",
                                                         "localpref": 100,
-                                                        "neighborid": "6.6.6.6",
+                                                        "neighborid": "10.144.6.6",
                                                         "pathbest": True,
                                                         "nexthopmetric": 0,
                                                         "pathvalid": True,
                                                         "advertisedto": [
-                                                            "20.6.7.7"
+                                                            "10.166.7.7"
                                                         ],
                                                         "extcommunity": [
                                                             "RT:100:10101",
@@ -1624,13 +1624,13 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10101",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "6.6.6.6",
+                                                            "tunnel_id": "10.144.6.6",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 32768
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[6.6.6.6]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.144.6.6]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5759,
                                                 "totalpaths": 1,
@@ -1638,24 +1638,24 @@ class VxlanOutput(object):
                                             }
                                         }
                                     },
-                                    "6.6.6.6:32969": {
-                                        "rd": "6.6.6.6:32969",
+                                    "10.144.6.6:32969": {
+                                        "rd": "10.144.6.6:32969",
                                         "rd_vniid": 10202,
                                         "rd_vrf": "l2",
                                         "prefix": {
-                                            "[3]:[0]:[32]:[7.7.7.7]/88": {
+                                            "[3]:[0]:[32]:[10.196.7.7]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "neighbor": "20.6.7.7",
+                                                        "neighbor": "10.166.7.7",
                                                         "localpref": 100,
-                                                        "neighborid": "7.7.7.7",
+                                                        "neighborid": "10.196.7.7",
                                                         "pathbest": True,
                                                         "nexthopmetric": 20,
                                                         "pathvalid": True,
-                                                        "ipnexthop": "7.7.7.7",
+                                                        "ipnexthop": "10.196.7.7",
                                                         "extcommunity": [
                                                             "RT:100:10202",
                                                             "ENCAP:8"
@@ -1664,33 +1664,33 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10202",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "7.7.7.7",
+                                                            "tunnel_id": "10.196.7.7",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 0
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[7.7.7.7]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.196.7.7]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5813,
                                                 "totalpaths": 1,
                                                 "on_xmitlist": True
                                             },
-                                            "[3]:[0]:[32]:[6.6.6.6]/88": {
+                                            "[3]:[0]:[32]:[10.144.6.6]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "ipnexthop": "6.6.6.6",
+                                                        "ipnexthop": "10.144.6.6",
                                                         "neighbor": "0.0.0.0",
                                                         "localpref": 100,
-                                                        "neighborid": "6.6.6.6",
+                                                        "neighborid": "10.144.6.6",
                                                         "pathbest": True,
                                                         "nexthopmetric": 0,
                                                         "pathvalid": True,
                                                         "advertisedto": [
-                                                            "20.6.7.7"
+                                                            "10.166.7.7"
                                                         ],
                                                         "extcommunity": [
                                                             "RT:100:10202",
@@ -1700,13 +1700,13 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10202",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "6.6.6.6",
+                                                            "tunnel_id": "10.144.6.6",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 32768
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[6.6.6.6]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.144.6.6]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5761,
                                                 "totalpaths": 1,
@@ -1714,24 +1714,24 @@ class VxlanOutput(object):
                                             }
                                         }
                                     },
-                                    "6.6.6.6:32968": {
-                                        "rd": "6.6.6.6:32968",
+                                    "10.144.6.6:32968": {
+                                        "rd": "10.144.6.6:32968",
                                         "rd_vniid": 10201,
                                         "rd_vrf": "l2",
                                         "prefix": {
-                                            "[3]:[0]:[32]:[7.7.7.7]/88": {
+                                            "[3]:[0]:[32]:[10.196.7.7]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "neighbor": "20.6.7.7",
+                                                        "neighbor": "10.166.7.7",
                                                         "localpref": 100,
-                                                        "neighborid": "7.7.7.7",
+                                                        "neighborid": "10.196.7.7",
                                                         "pathbest": True,
                                                         "nexthopmetric": 20,
                                                         "pathvalid": True,
-                                                        "ipnexthop": "7.7.7.7",
+                                                        "ipnexthop": "10.196.7.7",
                                                         "extcommunity": [
                                                             "RT:100:10201",
                                                             "ENCAP:8"
@@ -1740,33 +1740,33 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10201",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "7.7.7.7",
+                                                            "tunnel_id": "10.196.7.7",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 0
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[7.7.7.7]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.196.7.7]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5811,
                                                 "totalpaths": 1,
                                                 "on_xmitlist": True
                                             },
-                                            "[3]:[0]:[32]:[6.6.6.6]/88": {
+                                            "[3]:[0]:[32]:[10.144.6.6]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "ipnexthop": "6.6.6.6",
+                                                        "ipnexthop": "10.144.6.6",
                                                         "neighbor": "0.0.0.0",
                                                         "localpref": 100,
-                                                        "neighborid": "6.6.6.6",
+                                                        "neighborid": "10.144.6.6",
                                                         "pathbest": True,
                                                         "nexthopmetric": 0,
                                                         "pathvalid": True,
                                                         "advertisedto": [
-                                                            "20.6.7.7"
+                                                            "10.166.7.7"
                                                         ],
                                                         "extcommunity": [
                                                             "RT:100:10201",
@@ -1776,13 +1776,13 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10201",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "6.6.6.6",
+                                                            "tunnel_id": "10.144.6.6",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 32768
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[6.6.6.6]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.144.6.6]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5760,
                                                 "totalpaths": 1,
@@ -1790,22 +1790,22 @@ class VxlanOutput(object):
                                             }
                                         }
                                     },
-                                    "7.7.7.7:32869": {
-                                        "rd": "7.7.7.7:32869",
+                                    "10.196.7.7:32869": {
+                                        "rd": "10.196.7.7:32869",
                                         "prefix": {
-                                            "[3]:[0]:[32]:[7.7.7.7]/88": {
+                                            "[3]:[0]:[32]:[10.196.7.7]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "neighbor": "20.6.7.7",
+                                                        "neighbor": "10.166.7.7",
                                                         "localpref": 100,
-                                                        "neighborid": "7.7.7.7",
+                                                        "neighborid": "10.196.7.7",
                                                         "pathbest": True,
                                                         "nexthopmetric": 20,
                                                         "pathvalid": True,
-                                                        "ipnexthop": "7.7.7.7",
+                                                        "ipnexthop": "10.196.7.7",
                                                         "extcommunity": [
                                                             "RT:100:10102",
                                                             "ENCAP:8"
@@ -1814,13 +1814,13 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10102",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "7.7.7.7",
+                                                            "tunnel_id": "10.196.7.7",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 0
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[7.7.7.7]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.196.7.7]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5385,
                                                 "totalpaths": 1,
@@ -1843,7 +1843,7 @@ class VxlanOutput(object):
                 'vrf': {
                     'default': {
                         'vrf_name_out': 'default',
-                        'vrf_router_id': '201.11.11.11',
+                        'vrf_router_id': '192.168.4.11',
                         'vrf_local_as': 100,
                         'address_family': {
                             'l2vpn evpn': {
@@ -1863,8 +1863,8 @@ class VxlanOutput(object):
                                 'bytesclusterlist': 12,
                                 'dampening': 'disabled',
                                 'neighbor': {
-                                    '191.13.1.8': {
-                                        'neighbor': '191.13.1.8',
+                                    '172.16.205.8': {
+                                        'neighbor': '172.16.205.8',
                                         'version': 4,
                                         'msgrecvd': 130,
                                         'msgsent': 139,
@@ -1877,7 +1877,7 @@ class VxlanOutput(object):
                                         'elapsedtime': '02:11:53',
                                         'link': 'ebgp',
                                         'index': 3,
-                                        'remote_id': '201.33.33.33',
+                                        'remote_id': '192.168.144.33',
                                         'up': True,
                                         'connectedif': 'ethernet1/6',
                                         'bfd': True,
@@ -1960,16 +1960,16 @@ class VxlanOutput(object):
                                                 'sendextcommunity': True,
                                             }
                                         },
-                                        'localaddr': '191.13.1.6',
+                                        'localaddr': '172.16.205.6',
                                         'localport': 179,
-                                        'remoteaddr': '191.13.1.8',
+                                        'remoteaddr': '172.16.205.8',
                                         'remoteport': 52715,
                                         'fd': 84,
                                    },
                                 },
                                 'rd': {
-                                    '205.1.1.1:33767': {
-                                        'rd': '205.1.1.1:33767',
+                                    '192.168.9.1:33767': {
+                                        'rd': '192.168.9.1:33767',
                                         'rd_vrf': 'l2',
                                         'rd_vniid': 25000,
                                         'prefix': {
@@ -1985,10 +1985,10 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': True,
-                                                        'ipnexthop': '205.1.1.1',
+                                                        'ipnexthop': '192.168.9.1',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '205.1.1.1',
+                                                        'neighborid': '192.168.9.1',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -2009,10 +2009,10 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': True,
-                                                        'ipnexthop': '205.1.1.1',
+                                                        'ipnexthop': '192.168.9.1',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '205.1.1.1',
+                                                        'neighborid': '192.168.9.1',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -2033,10 +2033,10 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': True,
-                                                        'ipnexthop': '205.1.1.1',
+                                                        'ipnexthop': '192.168.9.1',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '205.1.1.1',
+                                                        'neighborid': '192.168.9.1',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -2047,8 +2047,8 @@ class VxlanOutput(object):
                                             }
                                         }
                                     },
-                                    '205.1.1.1:33768': {  # Ops Str '11.0.0.55:27001'
-                                        'rd': '205.1.1.1:33768',
+                                    '192.168.9.1:33768': {  # Ops Str '10.121.0.55:27001'
+                                        'rd': '192.168.9.1:33768',
                                         'rd_vrf': 'l2',
                                         'rd_vniid': 25001,
                                         'prefix': {
@@ -2064,10 +2064,10 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': True,
-                                                        'ipnexthop': '205.1.1.1',
+                                                        'ipnexthop': '192.168.9.1',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '205.1.1.1',
+                                                        'neighborid': '192.168.9.1',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -2092,10 +2092,10 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': True,
-                                                        'ipnexthop': '205.1.1.1',
+                                                        'ipnexthop': '192.168.9.1',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '205.1.1.1',
+                                                        'neighborid': '192.168.9.1',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -2120,10 +2120,10 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': True,
-                                                        'ipnexthop': '205.1.1.1',
+                                                        'ipnexthop': '192.168.9.1',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '205.1.1.1',
+                                                        'neighborid': '192.168.9.1',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -2138,8 +2138,8 @@ class VxlanOutput(object):
                                             }
                                         }
                                     },
-                                    '201.1.1.1:3': {
-                                        'rd': '201.1.1.1:3',
+                                    '192.168.154.1:3': {
+                                        'rd': '192.168.154.1:3',
                                         'prefix': {
                                             '[2]:[0]:[0]:[48]:[5e00.0003.0007]:[0]:[0.0.0.0]/216': {
                                                 'nonipprefix': '[2]:[0]:[0]:[48]:[5e00.0003.0007]:[0]:[0.0.0.0]/216',
@@ -2154,10 +2154,10 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': False,
-                                                        'ipnexthop': '201.202.1.1',
+                                                        'ipnexthop': '192.168.16.1',
                                                         'nexthopmetric': 81,
-                                                        'neighbor': '211.1.1.1',
-                                                        'neighborid': '211.1.1.1',
+                                                        'neighbor': '192.168.234.1',
+                                                        'neighborid': '192.168.234.1',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 0,
@@ -2166,16 +2166,16 @@ class VxlanOutput(object):
                                                             "ENCAP:8"
                                                         ],
                                                         'inlabel': 10001,
-                                                        'originatorid': '201.1.1.1',
-                                                        'clusterlist': ['211.1.1.1'],
-                                                        'advertisedto': ['191.13.1.8'],
+                                                        'originatorid': '192.168.154.1',
+                                                        'clusterlist': ['192.168.234.1'],
+                                                        'advertisedto': ['172.16.205.8'],
                                                     },
                                                 }
                                             },
                                         },
                                     },
-                                    '201.1.1.1:4': {
-                                        'rd': '201.1.1.1:4',
+                                    '192.168.154.1:4': {
+                                        'rd': '192.168.154.1:4',
                                         'prefix': {
                                             '[2]:[0]:[0]:[48]:[5e00.0003.0007]:[0]:[0.0.0.0]/216': {
                                                 'nonipprefix': '[2]:[0]:[0]:[48]:[5e00.0003.0007]:[0]:[0.0.0.0]/216',
@@ -2190,27 +2190,27 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': False,
-                                                        'ipnexthop': '201.202.1.1',
+                                                        'ipnexthop': '192.168.16.1',
                                                         'nexthopmetric': 81,
-                                                        'neighbor': '211.1.1.1',
-                                                        'neighborid': '211.1.1.1',
+                                                        'neighbor': '192.168.234.1',
+                                                        'neighborid': '192.168.234.1',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 0,
                                                         'inlabel': 10002,
-                                                        'advertisedto': ['191.13.1.8'],
-                                                        'originatorid': '201.1.1.1',
-                                                        'clusterlist': ['211.1.1.1'],
+                                                        'advertisedto': ['172.16.205.8'],
+                                                        'originatorid': '192.168.154.1',
+                                                        'clusterlist': ['192.168.234.1'],
                                                     },
                                                 }
                                             },
                                         }
                                     },
-                                    '11.0.0.55:27001': {
-                                        'rd': '11.0.0.55:27001',
+                                    '10.121.0.55:27001': {
+                                        'rd': '10.121.0.55:27001',
                                         'prefix': {
-                                            '[4]:[0300.0000.0001.2c00.0309]:[32]:[201.0.0.55]/136': {
-                                                'nonipprefix': '[4]:[0300.0000.0001.2c00.0309]:[32]:[201.0.0.55]/136',
+                                            '[4]:[0300.0000.0001.2c00.0309]:[32]:[192.168.111.55]/136': {
+                                                'nonipprefix': '[4]:[0300.0000.0001.2c00.0309]:[32]:[192.168.111.55]/136',
                                                 'prefixversion': 13144,
                                                 'on_xmitlist': True,
                                                 'totalpaths': 1,
@@ -2221,21 +2221,21 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': True,
-                                                        'ipnexthop': '201.0.0.55',
+                                                        'ipnexthop': '192.168.111.55',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '11.0.0.55',
+                                                        'neighborid': '10.121.0.55',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
                                                         'extcommunity': ['ENCAP:8', 'RT:0000.0000.012c'],
-                                                        'advertisedto': ['11.0.0.11', '11.0.0.22', '11.0.0.33',
-                                                                         '11.0.0.44', '14.0.0.11'],
+                                                        'advertisedto': ['10.121.0.11', '10.121.0.22', '10.121.0.33',
+                                                                         '10.121.0.44', '10.196.0.11'],
                                                     },
                                                 }
                                             },
-                                            '[4]:[0300.0000.0001.2c00.0309]:[32]:[201.0.0.66]/136': {
-                                                'nonipprefix': '[4]:[0300.0000.0001.2c00.0309]:[32]:[201.0.0.66]/136',
+                                            '[4]:[0300.0000.0001.2c00.0309]:[32]:[192.168.111.66]/136': {
+                                                'nonipprefix': '[4]:[0300.0000.0001.2c00.0309]:[32]:[192.168.111.66]/136',
                                                 'prefixversion': 13146,
                                                 'on_xmitlist': True,
                                                 'totalpaths': 1,
@@ -2246,26 +2246,26 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': True,
-                                                        'ipnexthop': '201.0.0.66',
+                                                        'ipnexthop': '192.168.111.66',
                                                         'nexthopmetric': 3,
-                                                        'neighbor': '14.0.0.11',
-                                                        'neighborid': '14.0.0.11',
+                                                        'neighbor': '10.196.0.11',
+                                                        'neighborid': '10.196.0.11',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 0,
                                                         'extcommunity': ['ENCAP:8', 'RT:0000.0000.012c'],
-                                                        'originatorid': '11.0.0.66',
-                                                        'clusterlist': ['14.0.0.11'],
+                                                        'originatorid': '10.121.0.66',
+                                                        'clusterlist': ['10.196.0.11'],
                                                     },
                                                 }
                                             }
                                         }
                                     },
-                                    '11.0.0.66:27001': {
-                                        'rd': '11.0.0.66:27001',
+                                    '10.121.0.66:27001': {
+                                        'rd': '10.121.0.66:27001',
                                         'prefix': {
-                                            '[4]:[0300.0000.0001.2c00.0309]:[32]:[201.0.0.66]/136': {
-                                                'nonipprefix': '[4]:[0300.0000.0001.2c00.0309]:[32]:[201.0.0.66]/136',
+                                            '[4]:[0300.0000.0001.2c00.0309]:[32]:[192.168.111.66]/136': {
+                                                'nonipprefix': '[4]:[0300.0000.0001.2c00.0309]:[32]:[192.168.111.66]/136',
                                                 'prefixversion': 13145,
                                                 'on_xmitlist': True,
                                                 'totalpaths': 1,
@@ -2276,39 +2276,39 @@ class VxlanOutput(object):
                                                         'pathvalid': True,
                                                         'pathbest': True,
                                                         'pathnolabeledrnh': True,
-                                                        'ipnexthop': '201.0.0.66',
+                                                        'ipnexthop': '192.168.111.66',
                                                         'nexthopmetric': 3,
-                                                        'neighbor': '14.0.0.11',
-                                                        'neighborid': '14.0.0.11',
+                                                        'neighbor': '10.196.0.11',
+                                                        'neighborid': '10.196.0.11',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 0,
                                                         'extcommunity': ['ENCAP:8', 'RT:0000.0000.012c'],
-                                                        'advertisedto': ['11.0.0.11', '11.0.0.22', '11.0.0.33',
-                                                                         '11.0.0.44'],
-                                                        'originatorid': '11.0.0.66',
-                                                        'clusterlist': ['14.0.0.11'],
+                                                        'advertisedto': ['10.121.0.11', '10.121.0.22', '10.121.0.33',
+                                                                         '10.121.0.44'],
+                                                        'originatorid': '10.121.0.66',
+                                                        'clusterlist': ['10.196.0.11'],
                                                     },
                                                 }
                                             },
                                         }
                                     },
-                                    "7.7.7.7:32969": {
-                                        "rd": "7.7.7.7:32969",
+                                    "10.196.7.7:32969": {
+                                        "rd": "10.196.7.7:32969",
                                         "prefix": {
-                                            "[3]:[0]:[32]:[7.7.7.7]/88": {
+                                            "[3]:[0]:[32]:[10.196.7.7]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "neighbor": "20.6.7.7",
+                                                        "neighbor": "10.166.7.7",
                                                         "localpref": 100,
-                                                        "neighborid": "7.7.7.7",
+                                                        "neighborid": "10.196.7.7",
                                                         "pathbest": True,
                                                         "nexthopmetric": 20,
                                                         "pathvalid": True,
-                                                        "ipnexthop": "7.7.7.7",
+                                                        "ipnexthop": "10.196.7.7",
                                                         "extcommunity": [
                                                             "RT:100:10202",
                                                             "ENCAP:8"
@@ -2317,13 +2317,13 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10202",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "7.7.7.7",
+                                                            "tunnel_id": "10.196.7.7",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 0
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[7.7.7.7]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.196.7.7]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5387,
                                                 "totalpaths": 1,
@@ -2331,22 +2331,22 @@ class VxlanOutput(object):
                                             }
                                         }
                                     },
-                                    "7.7.7.7:32968": {
-                                        "rd": "7.7.7.7:32968",
+                                    "10.196.7.7:32968": {
+                                        "rd": "10.196.7.7:32968",
                                         "prefix": {
-                                            "[3]:[0]:[32]:[7.7.7.7]/88": {
+                                            "[3]:[0]:[32]:[10.196.7.7]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "neighbor": "20.6.7.7",
+                                                        "neighbor": "10.166.7.7",
                                                         "localpref": 100,
-                                                        "neighborid": "7.7.7.7",
+                                                        "neighborid": "10.196.7.7",
                                                         "pathbest": True,
                                                         "nexthopmetric": 20,
                                                         "pathvalid": True,
-                                                        "ipnexthop": "7.7.7.7",
+                                                        "ipnexthop": "10.196.7.7",
                                                         "extcommunity": [
                                                             "RT:100:10201",
                                                             "ENCAP:8"
@@ -2355,13 +2355,13 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10201",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "7.7.7.7",
+                                                            "tunnel_id": "10.196.7.7",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 0
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[7.7.7.7]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.196.7.7]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5386,
                                                 "totalpaths": 1,
@@ -2369,22 +2369,22 @@ class VxlanOutput(object):
                                             }
                                         }
                                     },
-                                    "7.7.7.7:32868": {
-                                        "rd": "7.7.7.7:32868",
+                                    "10.196.7.7:32868": {
+                                        "rd": "10.196.7.7:32868",
                                         "prefix": {
-                                            "[3]:[0]:[32]:[7.7.7.7]/88": {
+                                            "[3]:[0]:[32]:[10.196.7.7]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "neighbor": "20.6.7.7",
+                                                        "neighbor": "10.166.7.7",
                                                         "localpref": 100,
-                                                        "neighborid": "7.7.7.7",
+                                                        "neighborid": "10.196.7.7",
                                                         "pathbest": True,
                                                         "nexthopmetric": 20,
                                                         "pathvalid": True,
-                                                        "ipnexthop": "7.7.7.7",
+                                                        "ipnexthop": "10.196.7.7",
                                                         "extcommunity": [
                                                             "RT:100:10101",
                                                             "ENCAP:8"
@@ -2393,13 +2393,13 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10101",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "7.7.7.7",
+                                                            "tunnel_id": "10.196.7.7",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 0
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[7.7.7.7]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.196.7.7]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5384,
                                                 "totalpaths": 1,
@@ -2407,24 +2407,24 @@ class VxlanOutput(object):
                                             }
                                         }
                                     },
-                                    "6.6.6.6:32868": {
-                                        "rd": "6.6.6.6:32868",
+                                    "10.144.6.6:32868": {
+                                        "rd": "10.144.6.6:32868",
                                         "rd_vniid": 10101,
                                         "rd_vrf": "l2",
                                         "prefix": {
-                                            "[3]:[0]:[32]:[7.7.7.7]/88": {
+                                            "[3]:[0]:[32]:[10.196.7.7]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "neighbor": "20.6.7.7",
+                                                        "neighbor": "10.166.7.7",
                                                         "localpref": 100,
-                                                        "neighborid": "7.7.7.7",
+                                                        "neighborid": "10.196.7.7",
                                                         "pathbest": True,
                                                         "nexthopmetric": 20,
                                                         "pathvalid": True,
-                                                        "ipnexthop": "7.7.7.7",
+                                                        "ipnexthop": "10.196.7.7",
                                                         "extcommunity": [
                                                             "RT:100:10101",
                                                             "ENCAP:8"
@@ -2433,33 +2433,33 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10101",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "7.7.7.7",
+                                                            "tunnel_id": "10.196.7.7",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 0
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[7.7.7.7]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.196.7.7]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5809,
                                                 "totalpaths": 1,
                                                 "on_xmitlist": True
                                             },
-                                            "[3]:[0]:[32]:[6.6.6.6]/88": {
+                                            "[3]:[0]:[32]:[10.144.6.6]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "ipnexthop": "6.6.6.6",
+                                                        "ipnexthop": "10.144.6.6",
                                                         "neighbor": "0.0.0.0",
                                                         "localpref": 100,
-                                                        "neighborid": "6.6.6.6",
+                                                        "neighborid": "10.144.6.6",
                                                         "pathbest": True,
                                                         "nexthopmetric": 0,
                                                         "pathvalid": True,
                                                         "advertisedto": [
-                                                            "20.6.7.7"
+                                                            "10.166.7.7"
                                                         ],
                                                         "extcommunity": [
                                                             "RT:100:10101",
@@ -2469,13 +2469,13 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10101",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "6.6.6.6",
+                                                            "tunnel_id": "10.144.6.6",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 32768
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[6.6.6.6]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.144.6.6]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5759,
                                                 "totalpaths": 1,
@@ -2483,24 +2483,24 @@ class VxlanOutput(object):
                                             }
                                         }
                                     },
-                                    "6.6.6.6:32969": {
-                                        "rd": "6.6.6.6:32969",
+                                    "10.144.6.6:32969": {
+                                        "rd": "10.144.6.6:32969",
                                         "rd_vniid": 10202,
                                         "rd_vrf": "l2",
                                         "prefix": {
-                                            "[3]:[0]:[32]:[7.7.7.7]/88": {
+                                            "[3]:[0]:[32]:[10.196.7.7]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "neighbor": "20.6.7.7",
+                                                        "neighbor": "10.166.7.7",
                                                         "localpref": 100,
-                                                        "neighborid": "7.7.7.7",
+                                                        "neighborid": "10.196.7.7",
                                                         "pathbest": True,
                                                         "nexthopmetric": 20,
                                                         "pathvalid": True,
-                                                        "ipnexthop": "7.7.7.7",
+                                                        "ipnexthop": "10.196.7.7",
                                                         "extcommunity": [
                                                             "RT:100:10202",
                                                             "ENCAP:8"
@@ -2509,33 +2509,33 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10202",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "7.7.7.7",
+                                                            "tunnel_id": "10.196.7.7",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 0
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[7.7.7.7]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.196.7.7]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5813,
                                                 "totalpaths": 1,
                                                 "on_xmitlist": True
                                             },
-                                            "[3]:[0]:[32]:[6.6.6.6]/88": {
+                                            "[3]:[0]:[32]:[10.144.6.6]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "ipnexthop": "6.6.6.6",
+                                                        "ipnexthop": "10.144.6.6",
                                                         "neighbor": "0.0.0.0",
                                                         "localpref": 100,
-                                                        "neighborid": "6.6.6.6",
+                                                        "neighborid": "10.144.6.6",
                                                         "pathbest": True,
                                                         "nexthopmetric": 0,
                                                         "pathvalid": True,
                                                         "advertisedto": [
-                                                            "20.6.7.7"
+                                                            "10.166.7.7"
                                                         ],
                                                         "extcommunity": [
                                                             "RT:100:10202",
@@ -2545,13 +2545,13 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10202",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "6.6.6.6",
+                                                            "tunnel_id": "10.144.6.6",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 32768
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[6.6.6.6]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.144.6.6]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5761,
                                                 "totalpaths": 1,
@@ -2559,24 +2559,24 @@ class VxlanOutput(object):
                                             }
                                         }
                                     },
-                                    "6.6.6.6:32968": {
-                                        "rd": "6.6.6.6:32968",
+                                    "10.144.6.6:32968": {
+                                        "rd": "10.144.6.6:32968",
                                         "rd_vniid": 10201,
                                         "rd_vrf": "l2",
                                         "prefix": {
-                                            "[3]:[0]:[32]:[7.7.7.7]/88": {
+                                            "[3]:[0]:[32]:[10.196.7.7]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "neighbor": "20.6.7.7",
+                                                        "neighbor": "10.166.7.7",
                                                         "localpref": 100,
-                                                        "neighborid": "7.7.7.7",
+                                                        "neighborid": "10.196.7.7",
                                                         "pathbest": True,
                                                         "nexthopmetric": 20,
                                                         "pathvalid": True,
-                                                        "ipnexthop": "7.7.7.7",
+                                                        "ipnexthop": "10.196.7.7",
                                                         "extcommunity": [
                                                             "RT:100:10201",
                                                             "ENCAP:8"
@@ -2585,33 +2585,33 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10201",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "7.7.7.7",
+                                                            "tunnel_id": "10.196.7.7",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 0
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[7.7.7.7]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.196.7.7]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5811,
                                                 "totalpaths": 1,
                                                 "on_xmitlist": True
                                             },
-                                            "[3]:[0]:[32]:[6.6.6.6]/88": {
+                                            "[3]:[0]:[32]:[10.144.6.6]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "ipnexthop": "6.6.6.6",
+                                                        "ipnexthop": "10.144.6.6",
                                                         "neighbor": "0.0.0.0",
                                                         "localpref": 100,
-                                                        "neighborid": "6.6.6.6",
+                                                        "neighborid": "10.144.6.6",
                                                         "pathbest": True,
                                                         "nexthopmetric": 0,
                                                         "pathvalid": True,
                                                         "advertisedto": [
-                                                            "20.6.7.7"
+                                                            "10.166.7.7"
                                                         ],
                                                         "extcommunity": [
                                                             "RT:100:10201",
@@ -2621,13 +2621,13 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10201",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "6.6.6.6",
+                                                            "tunnel_id": "10.144.6.6",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 32768
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[6.6.6.6]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.144.6.6]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5760,
                                                 "totalpaths": 1,
@@ -2635,22 +2635,22 @@ class VxlanOutput(object):
                                             }
                                         }
                                     },
-                                    "7.7.7.7:32869": {
-                                        "rd": "7.7.7.7:32869",
+                                    "10.196.7.7:32869": {
+                                        "rd": "10.196.7.7:32869",
                                         "prefix": {
-                                            "[3]:[0]:[32]:[7.7.7.7]/88": {
+                                            "[3]:[0]:[32]:[10.196.7.7]/88": {
                                                 "bestpathnr": 1,
                                                 "path": {
                                                     1: {
                                                         "pathnr": 0,
                                                         "pathnolabeledrnh": True,
-                                                        "neighbor": "20.6.7.7",
+                                                        "neighbor": "10.166.7.7",
                                                         "localpref": 100,
-                                                        "neighborid": "7.7.7.7",
+                                                        "neighborid": "10.196.7.7",
                                                         "pathbest": True,
                                                         "nexthopmetric": 20,
                                                         "pathvalid": True,
-                                                        "ipnexthop": "7.7.7.7",
+                                                        "ipnexthop": "10.196.7.7",
                                                         "extcommunity": [
                                                             "RT:100:10102",
                                                             "ENCAP:8"
@@ -2659,13 +2659,13 @@ class VxlanOutput(object):
                                                         "pmsi_tunnel_attribute": {
                                                             "label": "10102",
                                                             "flags": "0x00",
-                                                            "tunnel_id": "7.7.7.7",
+                                                            "tunnel_id": "10.196.7.7",
                                                             "tunnel_type": "Ingress Replication"
                                                         },
                                                         "weight": 0
                                                     }
                                                 },
-                                                "nonipprefix": "[3]:[0]:[32]:[7.7.7.7]/88",
+                                                "nonipprefix": "[3]:[0]:[32]:[10.196.7.7]/88",
                                                 "mpath": "ibgp",
                                                 "prefixversion": 5385,
                                                 "totalpaths": 1,
@@ -2717,7 +2717,7 @@ class VxlanOutput(object):
                                     "238.8.4.101/32": {
                                         "grp_len": 32,
                                         "saddr": {
-                                            "100.101.1.3/32": {
+                                            "10.111.1.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:01:01",
                                                 "interested_fabric_nodes": {
@@ -2726,7 +2726,7 @@ class VxlanOutput(object):
                                                     }
                                                 }
                                             },
-                                            "100.101.1.4/32": {
+                                            "10.111.1.4/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:01:01",
                                                 "interested_fabric_nodes": {
@@ -2735,38 +2735,38 @@ class VxlanOutput(object):
                                                     }
                                                 }
                                             },
-                                            "100.101.6.3/32": {
+                                            "10.111.6.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:49:39",
                                                 "interested_fabric_nodes": {
-                                                    "6.6.6.6": {
+                                                    "10.144.6.6": {
                                                         "uptime": "00:49:39",
                                                     }
                                                 }
                                             },
-                                            "100.101.6.4/32": {
+                                            "10.111.6.4/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:49:39",
                                                 "interested_fabric_nodes": {
-                                                    "6.6.6.6": {
+                                                    "10.144.6.6": {
                                                         "uptime": "00:49:39",
                                                     }
                                                 }
                                             },
-                                            "100.101.7.3/32": {
+                                            "10.111.7.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:02:38",
                                                 "interested_fabric_nodes": {
-                                                    "7.7.7.7": {
+                                                    "10.196.7.7": {
                                                         "uptime": "00:02:38",
                                                     }
                                                 }
                                             },
-                                            "100.101.8.3/32": {
+                                            "10.111.8.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:49:39",
                                                 "interested_fabric_nodes": {
-                                                    "8.8.8.8": {
+                                                    "10.1.8.8": {
                                                         "uptime": "00:49:39",
                                                     }
                                                 }
@@ -2776,7 +2776,7 @@ class VxlanOutput(object):
                                     "238.8.4.102/32": {
                                         "grp_len": 32,
                                         'saddr': {
-                                            "100.102.1.3/32": {
+                                            "10.4.1.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:00:10",
                                                 "interested_fabric_nodes": {
@@ -2785,7 +2785,7 @@ class VxlanOutput(object):
                                                     }
                                                 }
                                             },
-                                            "100.102.2.3/32": {
+                                            "10.4.2.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:47:51",
                                                 "interested_fabric_nodes": {
@@ -2794,11 +2794,11 @@ class VxlanOutput(object):
                                                     }
                                                 }
                                             },
-                                            "100.102.6.3/32": {
+                                            "10.4.6.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:49:39",
                                                 "interested_fabric_nodes": {
-                                                    "6.6.6.6": {
+                                                    "10.144.6.6": {
                                                         "uptime": "00:49:39",
                                                     }
                                                 }
@@ -2819,7 +2819,7 @@ class VxlanOutput(object):
                                     "238.8.4.201/32": {
                                         "grp_len": 32,
                                         "saddr": {
-                                            "200.201.1.3/32": {
+                                            "192.168.189.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:03:24",
                                                 "interested_fabric_nodes": {
@@ -2828,7 +2828,7 @@ class VxlanOutput(object):
                                                     }
                                                 }
                                             },
-                                            "200.201.2.3/32": {
+                                            "192.168.229.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:07:48",
                                                 "interested_fabric_nodes": {
@@ -2837,11 +2837,11 @@ class VxlanOutput(object):
                                                     }
                                                 }
                                             },
-                                            "200.201.6.3/32": {
+                                            "192.168.154.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:49:39",
                                                 "interested_fabric_nodes": {
-                                                    "6.6.6.6": {
+                                                    "10.144.6.6": {
                                                         "uptime": "00:49:39",
                                                     }
                                                 }
@@ -2852,7 +2852,7 @@ class VxlanOutput(object):
                                     "238.8.4.202/32": {
                                         "grp_len": 32,
                                         "saddr": {
-                                            "200.202.1.3/32": {
+                                            "192.168.229.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:02:10",
                                                 "interested_fabric_nodes": {
@@ -2861,7 +2861,7 @@ class VxlanOutput(object):
                                                     }
                                                 }
                                             },
-                                            "200.202.2.3/32": {
+                                            "192.168.16.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:49:39",
                                                 "interested_fabric_nodes": {
@@ -2870,11 +2870,11 @@ class VxlanOutput(object):
                                                     }
                                                 }
                                             },
-                                            "200.202.6.3/32": {
+                                            "192.168.204.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:49:39",
                                                 "interested_fabric_nodes": {
-                                                    "6.6.6.6": {
+                                                    "10.144.6.6": {
                                                         "uptime": "00:49:39",
                                                     }
                                                 }
@@ -2972,8 +2972,8 @@ class VxlanOutput(object):
                                     "saddr": {
                                         "*": {
                                             "interested_fabric_nodes": {
-                                                "6.6.6.6": {
-                                                    "node": "6.6.6.6"
+                                                "10.144.6.6": {
+                                                    "node": "10.144.6.6"
                                                 }
                                             },
                                         },
@@ -2983,8 +2983,8 @@ class VxlanOutput(object):
                                     "saddr": {
                                         "*": {
                                             "interested_fabric_nodes": {
-                                                "6.6.6.6":{
-                                                    "node": "6.6.6.6"
+                                                "10.144.6.6":{
+                                                    "node": "10.144.6.6"
                                                 }
                                             },
                                         },
@@ -2994,8 +2994,8 @@ class VxlanOutput(object):
                                     "saddr": {
                                         "*": {
                                             "interested_fabric_nodes": {
-                                                "8.8.8.8": {
-                                                    "node": "8.8.8.8"
+                                                "10.1.8.8": {
+                                                    "node": "10.1.8.8"
                                                 }
                                             },
                                         },
@@ -3012,8 +3012,8 @@ class VxlanOutput(object):
                                     "saddr": {
                                         "*": {
                                             "interested_fabric_nodes": {
-                                                "8.8.8.8": {
-                                                    "node": "8.8.8.8"
+                                                "10.1.8.8": {
+                                                    "node": "10.1.8.8"
                                                 },
                                             },
                                         }
@@ -3030,8 +3030,8 @@ class VxlanOutput(object):
                                     "saddr": {
                                         "*": {
                                             "interested_fabric_nodes": {
-                                                "8.8.8.8": {
-                                                    "node": "8.8.8.8"
+                                                "10.1.8.8": {
+                                                    "node": "10.1.8.8"
                                                     }
                                                 },
                                             },
@@ -3048,8 +3048,8 @@ class VxlanOutput(object):
                                     "saddr": {
                                         "*": {
                                             "interested_fabric_nodes": {
-                                                "8.8.8.8": {
-                                                    "node": "8.8.8.8"
+                                                "10.1.8.8": {
+                                                    "node": "10.1.8.8"
                                                 }
                                             },
                                         },
@@ -3089,7 +3089,7 @@ class VxlanOutput(object):
                                     "238.8.4.101/32": {
                                         "grp_len": 32,
                                         "saddr": {
-                                            "100.101.1.3/32": {
+                                            "10.111.1.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:01:01",
                                                 "interested_fabric_nodes": {
@@ -3098,7 +3098,7 @@ class VxlanOutput(object):
                                                     }
                                                 }
                                             },
-                                            "100.101.1.4/32": {
+                                            "10.111.1.4/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:01:01",
                                                 "interested_fabric_nodes": {
@@ -3107,38 +3107,38 @@ class VxlanOutput(object):
                                                     }
                                                 }
                                             },
-                                            "100.101.6.3/32": {
+                                            "10.111.6.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:49:39",
                                                 "interested_fabric_nodes": {
-                                                    "6.6.6.6": {
+                                                    "10.144.6.6": {
                                                         "uptime": "00:49:39",
                                                     }
                                                 }
                                             },
-                                            "100.101.6.4/32": {
+                                            "10.111.6.4/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:49:39",
                                                 "interested_fabric_nodes": {
-                                                    "6.6.6.6": {
+                                                    "10.144.6.6": {
                                                         "uptime": "00:49:39",
                                                     }
                                                 }
                                             },
-                                            "100.101.7.3/32": {
+                                            "10.111.7.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:02:38",
                                                 "interested_fabric_nodes": {
-                                                    "7.7.7.7": {
+                                                    "10.196.7.7": {
                                                         "uptime": "00:02:38",
                                                     }
                                                 }
                                             },
-                                            "100.101.8.3/32": {
+                                            "10.111.8.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:49:39",
                                                 "interested_fabric_nodes": {
-                                                    "8.8.8.8": {
+                                                    "10.1.8.8": {
                                                         "uptime": "00:49:39",
                                                     }
                                                 }
@@ -3148,7 +3148,7 @@ class VxlanOutput(object):
                                     "238.8.4.102/32": {
                                         "grp_len": 32,
                                         'saddr': {
-                                            "100.102.1.3/32": {
+                                            "10.4.1.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:00:10",
                                                 "interested_fabric_nodes": {
@@ -3157,7 +3157,7 @@ class VxlanOutput(object):
                                                     }
                                                 }
                                             },
-                                            "100.102.2.3/32": {
+                                            "10.4.2.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:47:51",
                                                 "interested_fabric_nodes": {
@@ -3166,11 +3166,11 @@ class VxlanOutput(object):
                                                     }
                                                 }
                                             },
-                                            "100.102.6.3/32": {
+                                            "10.4.6.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:49:39",
                                                 "interested_fabric_nodes": {
-                                                    "6.6.6.6": {
+                                                    "10.144.6.6": {
                                                         "uptime": "00:49:39",
                                                     }
                                                 }
@@ -3191,7 +3191,7 @@ class VxlanOutput(object):
                                     "238.8.4.201/32": {
                                         "grp_len": 32,
                                         "saddr": {
-                                            "200.201.1.3/32": {
+                                            "192.168.189.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:03:24",
                                                 "interested_fabric_nodes": {
@@ -3200,7 +3200,7 @@ class VxlanOutput(object):
                                                     }
                                                 }
                                             },
-                                            "200.201.2.3/32": {
+                                            "192.168.229.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:07:48",
                                                 "interested_fabric_nodes": {
@@ -3209,11 +3209,11 @@ class VxlanOutput(object):
                                                     }
                                                 }
                                             },
-                                            "200.201.6.3/32": {
+                                            "192.168.154.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:49:39",
                                                 "interested_fabric_nodes": {
-                                                    "6.6.6.6": {
+                                                    "10.144.6.6": {
                                                         "uptime": "00:49:39",
                                                     }
                                                 }
@@ -3224,7 +3224,7 @@ class VxlanOutput(object):
                                     "238.8.4.202/32": {
                                         "grp_len": 32,
                                         "saddr": {
-                                            "200.202.1.3/32": {
+                                            "192.168.229.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:02:10",
                                                 "interested_fabric_nodes": {
@@ -3233,7 +3233,7 @@ class VxlanOutput(object):
                                                     }
                                                 }
                                             },
-                                            "200.202.2.3/32": {
+                                            "192.168.16.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:49:39",
                                                 "interested_fabric_nodes": {
@@ -3242,11 +3242,11 @@ class VxlanOutput(object):
                                                     }
                                                 }
                                             },
-                                            "200.202.6.3/32": {
+                                            "192.168.204.3/32": {
                                                 "src_len": 32,
                                                 "uptime": "00:49:39",
                                                 "interested_fabric_nodes": {
-                                                    "6.6.6.6": {
+                                                    "10.144.6.6": {
                                                         "uptime": "00:49:39",
                                                     }
                                                 }
@@ -3338,8 +3338,8 @@ class VxlanOutput(object):
                                     "saddr": {
                                         "*": {
                                             "interested_fabric_nodes": {
-                                                "6.6.6.6": {
-                                                    "node": "6.6.6.6"
+                                                "10.144.6.6": {
+                                                    "node": "10.144.6.6"
                                                 }
                                             },
                                         },
@@ -3349,8 +3349,8 @@ class VxlanOutput(object):
                                     "saddr": {
                                         "*": {
                                             "interested_fabric_nodes": {
-                                                "6.6.6.6": {
-                                                    "node": "6.6.6.6"
+                                                "10.144.6.6": {
+                                                    "node": "10.144.6.6"
                                                 }
                                             },
                                         },
@@ -3360,8 +3360,8 @@ class VxlanOutput(object):
                                     "saddr": {
                                         "*": {
                                             "interested_fabric_nodes": {
-                                                "8.8.8.8": {
-                                                    "node": "8.8.8.8"
+                                                "10.1.8.8": {
+                                                    "node": "10.1.8.8"
                                                 }
                                             },
                                         },
@@ -3378,8 +3378,8 @@ class VxlanOutput(object):
                                     "saddr": {
                                         "*": {
                                             "interested_fabric_nodes": {
-                                                "8.8.8.8": {
-                                                    "node": "8.8.8.8"
+                                                "10.1.8.8": {
+                                                    "node": "10.1.8.8"
                                                 },
                                             },
                                         }
@@ -3396,8 +3396,8 @@ class VxlanOutput(object):
                                     "saddr": {
                                         "*": {
                                             "interested_fabric_nodes": {
-                                                "8.8.8.8": {
-                                                    "node": "8.8.8.8"
+                                                "10.1.8.8": {
+                                                    "node": "10.1.8.8"
                                                 }
                                             },
                                         },
@@ -3414,8 +3414,8 @@ class VxlanOutput(object):
                                     "saddr": {
                                         "*": {
                                             "interested_fabric_nodes": {
-                                                "8.8.8.8": {
-                                                    "node": "8.8.8.8"
+                                                "10.1.8.8": {
+                                                    "node": "10.1.8.8"
                                                 }
                                             },
                                         },
@@ -3483,7 +3483,7 @@ class VxlanOutput(object):
                                                         },
                                                     },
                                                 },
-                                                '23.23.23.23/32': {
+                                                '10.76.23.23/32': {
                                                     "src_len": 32,
                                                     "rpf_ifname": "loopback1",
                                                     "rcv_packets": 0,
@@ -3521,7 +3521,7 @@ class VxlanOutput(object):
                                         "238.8.4.101/32": {
                                             "grp_len": 32,
                                             "saddr": {
-                                                "100.101.1.3/32": {
+                                                "10.111.1.3/32": {
                                                     "src_len": 32,
                                                     "rpf_ifname": 'Vlan101',
                                                     "rcv_packets": 0,
@@ -3603,7 +3603,7 @@ class VxlanOutput(object):
                                                         },
                                                     },
                                                 },
-                                                '23.23.23.23/32': {
+                                                '10.76.23.23/32': {
                                                     "src_len": 32,
                                                     "rpf_ifname": "loopback1",
                                                     "rcv_packets": 0,
@@ -3641,7 +3641,7 @@ class VxlanOutput(object):
                                         "238.8.4.101/32": {
                                             "grp_len": 32,
                                             "saddr": {
-                                                "100.101.1.3/32": {
+                                                "10.111.1.3/32": {
                                                     "src_len": 32,
                                                     "rpf_ifname": 'Vlan101',
                                                     "rcv_packets": 0,
@@ -3687,14 +3687,14 @@ class VxlanOutput(object):
                             'ipv4 mvpn': {
                                 'af_name': 'ipv4 mvpn',
                                 'table_version': '390',
-                                'router_id': '2.2.2.2',
+                                'router_id': '10.16.2.2',
                                 'rd': {
-                                    '2.2.2.2:3': {
-                                        'rd_val': '2.2.2.2:3',
+                                    '10.16.2.2:3': {
+                                        'rd_val': '10.16.2.2:3',
                                         'rd_vrf': '10100',
                                         'prefix': {
-                                            '[1][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[1][100.101.1.3][238.8.4.101]/64',
+                                            '[1][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[1][10.111.1.3][238.8.4.101]/64',
                                                 'path': {
                                                     1: {
                                                         'pathnr': 0,
@@ -3728,14 +3728,14 @@ class VxlanOutput(object):
                             'ipv4 mvpn': {
                                 'af_name': 'ipv4 mvpn',
                                 'table_version': '390',
-                                'router_id': '2.2.2.2',
+                                'router_id': '10.16.2.2',
                                 'rd': {
-                                    '2.2.2.2:3': {
-                                        'rd_val': '2.2.2.2:3',
+                                    '10.16.2.2:3': {
+                                        'rd_val': '10.16.2.2:3',
                                         'rd_vrf': '10100',
                                         'prefix': {
-                                            '[2][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[2][100.101.1.3][238.8.4.101]/64',
+                                            '[2][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[2][10.111.1.3][238.8.4.101]/64',
                                                 'path': {
                                                     1: {
                                                         'pathnr': 0,
@@ -3769,14 +3769,14 @@ class VxlanOutput(object):
                             'ipv4 mvpn': {
                                 'af_name': 'ipv4 mvpn',
                                 'table_version': '390',
-                                'router_id': '2.2.2.2',
+                                'router_id': '10.16.2.2',
                                 'rd': {
-                                    '2.2.2.2:3': {
-                                        'rd_val': '2.2.2.2:3',
+                                    '10.16.2.2:3': {
+                                        'rd_val': '10.16.2.2:3',
                                         'rd_vrf': '10100',
                                         'prefix': {
-                                            '[3][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[3][100.101.1.3][238.8.4.101]/64',
+                                            '[3][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[3][10.111.1.3][238.8.4.101]/64',
                                                 'path': {
                                                     1: {
                                                         'pathnr': 0,
@@ -3810,14 +3810,14 @@ class VxlanOutput(object):
                             'ipv4 mvpn': {
                                 'af_name': 'ipv4 mvpn',
                                 'table_version': '390',
-                                'router_id': '2.2.2.2',
+                                'router_id': '10.16.2.2',
                                 'rd': {
-                                    '2.2.2.2:3': {
-                                        'rd_val': '2.2.2.2:3',
+                                    '10.16.2.2:3': {
+                                        'rd_val': '10.16.2.2:3',
                                         'rd_vrf': '10100',
                                         'prefix': {
-                                            '[4][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[4][100.101.1.3][238.8.4.101]/64',
+                                            '[4][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[4][10.111.1.3][238.8.4.101]/64',
                                                 'path': {
                                                     1: {
                                                         'pathnr': 0,
@@ -3851,14 +3851,14 @@ class VxlanOutput(object):
                             'ipv4 mvpn': {
                                 'af_name': 'ipv4 mvpn',
                                 'table_version': '390',
-                                'router_id': '2.2.2.2',
+                                'router_id': '10.16.2.2',
                                 'rd': {
-                                    '2.2.2.2:3': {
-                                        'rd_val': '2.2.2.2:3',
+                                    '10.16.2.2:3': {
+                                        'rd_val': '10.16.2.2:3',
                                         'rd_vrf': '10100',
                                         'prefix': {
-                                            '[5][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[5][100.101.1.3][238.8.4.101]/64',
+                                            '[5][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[5][10.111.1.3][238.8.4.101]/64',
                                                 'path': {
                                                     1: {
                                                         'pathnr': 0,
@@ -3893,14 +3893,14 @@ class VxlanOutput(object):
                             'ipv4 mvpn': {
                                 'af_name': 'ipv4 mvpn',
                                 'table_version': '390',
-                                'router_id': '2.2.2.2',
+                                'router_id': '10.16.2.2',
                                 'rd': {
-                                    '2.2.2.2:3': {
-                                        'rd_val': '2.2.2.2:3',
+                                    '10.16.2.2:3': {
+                                        'rd_val': '10.16.2.2:3',
                                         'rd_vrf': '10100',
                                         'prefix': {
-                                            '[6][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[6][100.101.1.3][238.8.4.101]/64',
+                                            '[6][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[6][10.111.1.3][238.8.4.101]/64',
                                                 'path': {
                                                     1: {
                                                         'pathnr': 0,
@@ -3935,14 +3935,14 @@ class VxlanOutput(object):
                             'ipv4 mvpn': {
                                 'af_name': 'ipv4 mvpn',
                                 'table_version': '390',
-                                'router_id': '2.2.2.2',
+                                'router_id': '10.16.2.2',
                                 'rd': {
-                                    '2.2.2.2:3': {
-                                        'rd_val': '2.2.2.2:3',
+                                    '10.16.2.2:3': {
+                                        'rd_val': '10.16.2.2:3',
                                         'rd_vrf': '10100',
                                         'prefix': {
-                                            '[7][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[7][100.101.1.3][238.8.4.101]/64',
+                                            '[7][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[7][10.111.1.3][238.8.4.101]/64',
                                                 'path': {
                                                     1: {
                                                         'pathnr': 0,
@@ -3977,12 +3977,12 @@ class VxlanOutput(object):
                             'ipv4 mvpn': {
                                 'af_name': 'ipv4 mvpn',
                                 'rd': {
-                                    '2.2.2.2:3': {
-                                        'rd_val': '2.2.2.2:3',
+                                    '10.16.2.2:3': {
+                                        'rd_val': '10.16.2.2:3',
                                         'rd_vrf': '10100',
                                         'prefix': {
-                                            '[1][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[1][100.101.1.3][238.8.4.101]/64',
+                                            '[1][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[1][10.111.1.3][238.8.4.101]/64',
                                                 'prefixversion': 7,
                                                 'totalpaths': 1,
                                                 'bestpathnr': 1,
@@ -3997,7 +3997,7 @@ class VxlanOutput(object):
                                                         'ipnexthop': '0.0.0.0',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '2.2.2.2',
+                                                        'neighborid': '10.16.2.2',
                                                         'origin': 'i',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -4005,14 +4005,14 @@ class VxlanOutput(object):
                                                             'RT:100:10100'
                                                         ],
                                                         'advertisedto': [
-                                                            '4.4.4.4',
-                                                            '5.5.5.5'
+                                                            '10.64.4.4',
+                                                            '10.100.5.5'
                                                         ],
                                                     }
                                                 },
                                             },
-                                            '[2][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[2][100.101.1.3][238.8.4.101]/64',
+                                            '[2][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[2][10.111.1.3][238.8.4.101]/64',
                                                 'prefixversion': 7,
                                                 'totalpaths': 1,
                                                 'bestpathnr': 1,
@@ -4027,7 +4027,7 @@ class VxlanOutput(object):
                                                         'ipnexthop': '0.0.0.0',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '2.2.2.2',
+                                                        'neighborid': '10.16.2.2',
                                                         'origin': 'i',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -4035,14 +4035,14 @@ class VxlanOutput(object):
                                                             'RT:100:10100'
                                                         ],
                                                         'advertisedto': [
-                                                            '4.4.4.4',
-                                                            '5.5.5.5'
+                                                            '10.64.4.4',
+                                                            '10.100.5.5'
                                                         ],
                                                     }
                                                 },
                                             },
-                                            '[3][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[3][100.101.1.3][238.8.4.101]/64',
+                                            '[3][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[3][10.111.1.3][238.8.4.101]/64',
                                                 'prefixversion': 7,
                                                 'totalpaths': 1,
                                                 'bestpathnr': 1,
@@ -4057,7 +4057,7 @@ class VxlanOutput(object):
                                                         'ipnexthop': '0.0.0.0',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '2.2.2.2',
+                                                        'neighborid': '10.16.2.2',
                                                         'origin': 'i',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -4065,14 +4065,14 @@ class VxlanOutput(object):
                                                             'RT:100:10100'
                                                         ],
                                                         'advertisedto': [
-                                                            '4.4.4.4',
-                                                            '5.5.5.5'
+                                                            '10.64.4.4',
+                                                            '10.100.5.5'
                                                         ],
                                                     }
                                                 },
                                             },
-                                            '[4][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[4][100.101.1.3][238.8.4.101]/64',
+                                            '[4][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[4][10.111.1.3][238.8.4.101]/64',
                                                 'prefixversion': 7,
                                                 'totalpaths': 1,
                                                 'bestpathnr': 1,
@@ -4087,7 +4087,7 @@ class VxlanOutput(object):
                                                         'ipnexthop': '0.0.0.0',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '2.2.2.2',
+                                                        'neighborid': '10.16.2.2',
                                                         'origin': 'i',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -4095,14 +4095,14 @@ class VxlanOutput(object):
                                                             'RT:100:10100'
                                                         ],
                                                         'advertisedto': [
-                                                            '4.4.4.4',
-                                                            '5.5.5.5'
+                                                            '10.64.4.4',
+                                                            '10.100.5.5'
                                                         ],
                                                     }
                                                 },
                                             },
-                                            '[5][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[5][100.101.1.3][238.8.4.101]/64',
+                                            '[5][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[5][10.111.1.3][238.8.4.101]/64',
                                                 'prefixversion': 7,
                                                 'totalpaths': 1,
                                                 'bestpathnr': 1,
@@ -4117,7 +4117,7 @@ class VxlanOutput(object):
                                                         'ipnexthop': '0.0.0.0',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '2.2.2.2',
+                                                        'neighborid': '10.16.2.2',
                                                         'origin': 'i',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -4125,14 +4125,14 @@ class VxlanOutput(object):
                                                             'RT:100:10100'
                                                         ],
                                                         'advertisedto': [
-                                                            '4.4.4.4',
-                                                            '5.5.5.5'
+                                                            '10.64.4.4',
+                                                            '10.100.5.5'
                                                         ],
                                                     }
                                                 },
                                             },
-                                            '[6][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[6][100.101.1.3][238.8.4.101]/64',
+                                            '[6][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[6][10.111.1.3][238.8.4.101]/64',
                                                 'prefixversion': 7,
                                                 'totalpaths': 1,
                                                 'bestpathnr': 1,
@@ -4147,7 +4147,7 @@ class VxlanOutput(object):
                                                         'ipnexthop': '0.0.0.0',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '2.2.2.2',
+                                                        'neighborid': '10.16.2.2',
                                                         'origin': 'i',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -4155,14 +4155,14 @@ class VxlanOutput(object):
                                                             'RT:100:10100'
                                                         ],
                                                         'advertisedto': [
-                                                            '4.4.4.4',
-                                                            '5.5.5.5'
+                                                            '10.64.4.4',
+                                                            '10.100.5.5'
                                                         ],
                                                     }
                                                 },
                                             },
-                                            '[7][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[7][100.101.1.3][238.8.4.101]/64',
+                                            '[7][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[7][10.111.1.3][238.8.4.101]/64',
                                                 'prefixversion': 7,
                                                 'totalpaths': 1,
                                                 'bestpathnr': 1,
@@ -4177,7 +4177,7 @@ class VxlanOutput(object):
                                                         'ipnexthop': '0.0.0.0',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '2.2.2.2',
+                                                        'neighborid': '10.16.2.2',
                                                         'origin': 'i',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -4185,8 +4185,8 @@ class VxlanOutput(object):
                                                             'RT:100:10100'
                                                         ],
                                                         'advertisedto': [
-                                                            '4.4.4.4',
-                                                            '5.5.5.5'
+                                                            '10.64.4.4',
+                                                            '10.100.5.5'
                                                         ],
                                                     }
                                                 },
@@ -4212,14 +4212,14 @@ class VxlanOutput(object):
                             'ipv4 mvpn': {
                                 'af_name': 'ipv4 mvpn',
                                 'table_version': '390',
-                                'router_id': '2.2.2.2',
+                                'router_id': '10.16.2.2',
                                 'rd': {
-                                    '2.2.2.2:3': {
-                                        'rd_val': '2.2.2.2:3',
+                                    '10.16.2.2:3': {
+                                        'rd_val': '10.16.2.2:3',
                                         'rd_vrf': '10100',
                                         'prefix': {
-                                            '[1][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[1][100.101.1.3][238.8.4.101]/64',
+                                            '[1][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[1][10.111.1.3][238.8.4.101]/64',
                                                 'prefixversion': 7,
                                                 'totalpaths': 1,
                                                 'bestpathnr': 1,
@@ -4237,7 +4237,7 @@ class VxlanOutput(object):
                                                         'ipnexthop': '0.0.0.0',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '2.2.2.2',
+                                                        'neighborid': '10.16.2.2',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -4245,14 +4245,14 @@ class VxlanOutput(object):
                                                             'RT:100:10100'
                                                         ],
                                                         'advertisedto': [
-                                                            '4.4.4.4',
-                                                            '5.5.5.5'
+                                                            '10.64.4.4',
+                                                            '10.100.5.5'
                                                         ],
                                                     }
                                                 },
                                             },
-                                            '[2][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[2][100.101.1.3][238.8.4.101]/64',
+                                            '[2][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[2][10.111.1.3][238.8.4.101]/64',
                                                 'prefixversion': 7,
                                                 'totalpaths': 1,
                                                 'bestpathnr': 1,
@@ -4270,7 +4270,7 @@ class VxlanOutput(object):
                                                         'ipnexthop': '0.0.0.0',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '2.2.2.2',
+                                                        'neighborid': '10.16.2.2',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -4278,14 +4278,14 @@ class VxlanOutput(object):
                                                             'RT:100:10100'
                                                         ],
                                                         'advertisedto': [
-                                                            '4.4.4.4',
-                                                            '5.5.5.5'
+                                                            '10.64.4.4',
+                                                            '10.100.5.5'
                                                         ],
                                                     }
                                                 },
                                             },
-                                            '[3][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[3][100.101.1.3][238.8.4.101]/64',
+                                            '[3][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[3][10.111.1.3][238.8.4.101]/64',
                                                 'prefixversion': 7,
                                                 'totalpaths': 1,
                                                 'bestpathnr': 1,
@@ -4303,7 +4303,7 @@ class VxlanOutput(object):
                                                         'ipnexthop': '0.0.0.0',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '2.2.2.2',
+                                                        'neighborid': '10.16.2.2',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -4311,14 +4311,14 @@ class VxlanOutput(object):
                                                             'RT:100:10100'
                                                         ],
                                                         'advertisedto': [
-                                                            '4.4.4.4',
-                                                            '5.5.5.5'
+                                                            '10.64.4.4',
+                                                            '10.100.5.5'
                                                         ],
                                                     }
                                                 },
                                             },
-                                            '[4][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[4][100.101.1.3][238.8.4.101]/64',
+                                            '[4][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[4][10.111.1.3][238.8.4.101]/64',
                                                 'prefixversion': 7,
                                                 'totalpaths': 1,
                                                 'bestpathnr': 1,
@@ -4336,7 +4336,7 @@ class VxlanOutput(object):
                                                         'ipnexthop': '0.0.0.0',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '2.2.2.2',
+                                                        'neighborid': '10.16.2.2',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -4344,14 +4344,14 @@ class VxlanOutput(object):
                                                             'RT:100:10100'
                                                         ],
                                                         'advertisedto': [
-                                                            '4.4.4.4',
-                                                            '5.5.5.5'
+                                                            '10.64.4.4',
+                                                            '10.100.5.5'
                                                         ],
                                                     }
                                                 },
                                             },
-                                            '[5][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[5][100.101.1.3][238.8.4.101]/64',
+                                            '[5][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[5][10.111.1.3][238.8.4.101]/64',
                                                 'prefixversion': 7,
                                                 'totalpaths': 1,
                                                 'bestpathnr': 1,
@@ -4369,7 +4369,7 @@ class VxlanOutput(object):
                                                         'ipnexthop': '0.0.0.0',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '2.2.2.2',
+                                                        'neighborid': '10.16.2.2',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -4377,14 +4377,14 @@ class VxlanOutput(object):
                                                             'RT:100:10100'
                                                         ],
                                                         'advertisedto': [
-                                                            '4.4.4.4',
-                                                            '5.5.5.5'
+                                                            '10.64.4.4',
+                                                            '10.100.5.5'
                                                         ],
                                                     }
                                                 },
                                             },
-                                            '[6][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[6][100.101.1.3][238.8.4.101]/64',
+                                            '[6][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[6][10.111.1.3][238.8.4.101]/64',
                                                 'prefixversion': 7,
                                                 'totalpaths': 1,
                                                 'bestpathnr': 1,
@@ -4402,7 +4402,7 @@ class VxlanOutput(object):
                                                         'ipnexthop': '0.0.0.0',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '2.2.2.2',
+                                                        'neighborid': '10.16.2.2',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -4410,14 +4410,14 @@ class VxlanOutput(object):
                                                             'RT:100:10100'
                                                         ],
                                                         'advertisedto': [
-                                                            '4.4.4.4',
-                                                            '5.5.5.5'
+                                                            '10.64.4.4',
+                                                            '10.100.5.5'
                                                         ],
                                                     }
                                                 },
                                             },
-                                            '[7][100.101.1.3][238.8.4.101]/64': {
-                                                'nonipprefix': '[7][100.101.1.3][238.8.4.101]/64',
+                                            '[7][10.111.1.3][238.8.4.101]/64': {
+                                                'nonipprefix': '[7][10.111.1.3][238.8.4.101]/64',
                                                 'prefixversion': 7,
                                                 'totalpaths': 1,
                                                 'bestpathnr': 1,
@@ -4435,7 +4435,7 @@ class VxlanOutput(object):
                                                         'ipnexthop': '0.0.0.0',
                                                         'nexthopmetric': 0,
                                                         'neighbor': '0.0.0.0',
-                                                        'neighborid': '2.2.2.2',
+                                                        'neighborid': '10.16.2.2',
                                                         'origin': 'igp',
                                                         'localpref': 100,
                                                         'weight': 32768,
@@ -4443,8 +4443,8 @@ class VxlanOutput(object):
                                                             'RT:100:10100'
                                                         ],
                                                         'advertisedto': [
-                                                            '4.4.4.4',
-                                                            '5.5.5.5'
+                                                            '10.64.4.4',
+                                                            '10.100.5.5'
                                                         ],
                                                     }
                                                 },

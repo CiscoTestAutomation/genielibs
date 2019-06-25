@@ -53,10 +53,10 @@ class test_route_all(unittest.TestCase):
         # test_selective_attribute_route
 
         self.assertEqual('Loopback0', f.info['vrf']['default']['address_family']['ipv4']['routes']\
-            ['1.1.1.1/32']['next_hop']['outgoing_interface']['Loopback0']['outgoing_interface'])
+            ['10.4.1.1/32']['next_hop']['outgoing_interface']['Loopback0']['outgoing_interface'])
         # Check does not match
         self.assertNotEqual('GigabitEthernet0/0', f.info['vrf']['default']['address_family']['ipv4']['routes']\
-            ['1.1.1.1/32']['next_hop']['outgoing_interface']['Loopback0']['outgoing_interface'])
+            ['10.4.1.1/32']['next_hop']['outgoing_interface']['Loopback0']['outgoing_interface'])
 
 
     def test_missing_attributes_route(self):
@@ -77,7 +77,7 @@ class test_route_all(unittest.TestCase):
 
         with self.assertRaises(KeyError):
             interfaces = f.info['vrf']['VRF1']['address_family']['ipv4']['routes']\
-                ['3.3.3.3/32']['next_hop']['interface']
+                ['10.36.3.3/32']['next_hop']['interface']
 
     def test_empty_output_route(self):
         self.maxDiff = None

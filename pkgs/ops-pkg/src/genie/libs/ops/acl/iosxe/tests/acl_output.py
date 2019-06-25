@@ -59,7 +59,7 @@ class AclOutput(object):
                                     'matches': {'l3': {'tcp': {'source_network': {'192.168.1.0 0.0.0.255': {'source_network': '192.168.1.0 '
                                                                                                                                                   '0.0.0.255'}},
                                                                'protocol': 'tcp',
-                                                               'destination_network': {'1.1.1.1': {'destination_network': '1.1.1.1'}}}},
+                                                               'destination_network': {'10.4.1.1': {'destination_network': '10.4.1.1'}}}},
                                                 'l4': {'tcp': {'established': True}}},
                                     'name': '10'},
                              '20': {'actions': {'forwarding': 'permit',
@@ -67,7 +67,7 @@ class AclOutput(object):
                                     'matches': {'l3': {'tcp': {'destination_network': {'any': {'destination_network': 'any'}},
                                                                'precedence': 'network',
                                                                'protocol': 'tcp',
-                                                               'source_network': {'2.2.2.2': {'source_network': '2.2.2.2'}},
+                                                               'source_network': {'10.16.2.2': {'source_network': '10.16.2.2'}},
                                                                'ttl': 255,
                                                                'ttl_operator': 'eq'}},
                                                 'l4': {'tcp': {'established': False,

@@ -64,7 +64,7 @@ class test_arp(unittest.TestCase):
         # Check specific attribute values
         # info - interfaces
         self.assertEqual(arp.info['interfaces']['Vlan100']['ipv4']\
-            ['neighbors']['201.0.12.1']['ip'], '201.0.12.1')
+            ['neighbors']['192.168.234.1']['ip'], '192.168.234.1')
         # info - statistics
         self.assertEqual(arp.info['statistics']['entries_total'], 8)
 

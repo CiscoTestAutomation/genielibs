@@ -29,7 +29,7 @@ class Bgp(SuperBgp):
         # self.neighbors = item.keys()
         return list(item.keys())
 
-    def learn(self):
+    def learn(self, instance='all', vrf='all', address_family='', neighbor=''):
         '''Learn BGP Ops'''
 
         ########################################################################
@@ -103,32 +103,33 @@ class Bgp(SuperBgp):
 
         # Init vrf first loop
         vrf_loop1 = False
-        
+
         for vrf_type in ['all', 'vrf']:
+            if vrf != 'all':
+                vrf_type = 'vrf'
 
-            for af_type in ['ipv4 unicast', 'ipv6 unicast']:
-
+            for af in ['ipv4 unicast', 'ipv6 unicast']:
+                if address_family:
+                    af=address_family
                 # Set or skip 'all all all' iteration
                 if vrf_type == 'all':
                     if vrf_loop1:
                         continue
-                    else: 
-                        af_type = ''
+                    else:
+                        af = ''
                         vrf_loop1 = True
-
                 # vrf
                 #   vrf_id
                 vrf_src = '[instance][(?P<instance>.*)][vrf][(?P<vrf>.*)]'
                 vrf_dest = 'info[instance][(?P<instance>.*)][vrf][(?P<vrf>.*)]'
 
-                vrf_keys = ['always_compare_med', 'bestpath_compare_routerid',\
-                            'bestpath_cost_community_ignore',\
-                            'bestpath_med_missin_at_worst', 'cluster_id',\
-                            'log_neighbor_changes', 'router_id',\
+                vrf_keys = ['always_compare_med', 'bestpath_compare_routerid',
+                            'bestpath_cost_community_ignore',
+                            'bestpath_med_missin_at_worst', 'cluster_id',
+                            'log_neighbor_changes', 'router_id',
                             'enforce_first_as', 'fast_external_fallover']
-
                 for key in vrf_keys:
-                    
+
                     # set key values
                     src_key = dest_key = key
 
@@ -138,7 +139,8 @@ class Bgp(SuperBgp):
                     self.add_leaf(cmd=ShowBgpInstanceProcessDetail,
                           src='{vrf_src}[{src_key}]'.format(vrf_src=vrf_src,src_key=src_key),
                           dest='{vrf_dest}[{dest_key}]'.format(vrf_dest=vrf_dest,dest_key=dest_key),
-                          vrf_type=vrf_type, af_type=af_type)
+                          vrf_type=vrf_type, vrf=vrf, instance=instance,
+                                  address_family=af)
 
                 # confederation_identifier - N/A
                 # confederation_peer_as - N/A
@@ -171,7 +173,8 @@ class Bgp(SuperBgp):
                     self.add_leaf(cmd=ShowBgpInstanceProcessDetail,
                                   src='{af_src}[{src_key}]'.format(af_src=af_src,src_key=src_key),
                                   dest='{af_dest}[{dest_key}]'.format(af_dest=af_dest,dest_key=dest_key),
-                                  vrf_type=vrf_type, af_type=af_type)
+                                  vrf_type=vrf_type, vrf=vrf,
+                                  instance=instance, address_family=af)
 
                 # nexthop_route_map - N/A
                 # nexthop_trigger_enable - N/A
@@ -244,7 +247,9 @@ class Bgp(SuperBgp):
                     self.add_leaf(cmd=ShowBgpInstanceNeighborsDetail,
                                   src='{nbr_src}[{src_key}]'.format(nbr_src=nbr_src,src_key=src_key),
                                   dest='{nbr_dest}[{dest_key}]'.format(nbr_dest=nbr_dest,dest_key=dest_key),
-                                  vrf_type=vrf_type, af_type=af_type)
+                                  vrf_type=vrf_type, vrf=vrf,
+                                  instance=instance, address_family=af,
+                                  neighbor=neighbor)
 
                 # fall_over_bfd - N/A
                 # disable_connected_check - N/A
@@ -263,7 +268,9 @@ class Bgp(SuperBgp):
                 self.add_leaf(cmd=ShowBgpInstanceNeighborsDetail,
                               src=nbr_src+'[bgp_session_transport][connection]',
                               dest=nbr_dest+'[bgp_session_transport][connection]',
-                              vrf_type=vrf_type, af_type=af_type)
+                              vrf_type=vrf_type, vrf=vrf,
+                                  instance=instance, address_family=af,
+                                  neighbor=neighbor)
 
                 # bgp_session_transport
                 #   transport
@@ -275,35 +282,45 @@ class Bgp(SuperBgp):
                 self.add_leaf(cmd=ShowBgpInstanceNeighborsDetail,
                               src=nbr_src+'[bgp_session_transport][transport]',
                               dest=nbr_dest+'[bgp_session_transport][transport]',
-                              vrf_type=vrf_type, af_type=af_type)
+                              vrf_type=vrf_type, vrf=vrf,
+                                  instance=instance, address_family=af,
+                                  neighbor=neighbor)
 
                 # bgp_negotiated_capabilities
                 #   route_refresh
                 self.add_leaf(cmd=ShowBgpInstanceNeighborsDetail,
                               src=nbr_src+'[bgp_negotiated_capabilities][route_refresh]',
                               dest=nbr_dest+'[bgp_negotiated_capabilities][route_refresh]',
-                              vrf_type=vrf_type, af_type=af_type)
+                              vrf_type=vrf_type, vrf=vrf,
+                                  instance=instance, address_family=af,
+                                  neighbor=neighbor)
 
                 # bgp_negotiated_capabilities
                 #   four_octets_asn
                 self.add_leaf(cmd=ShowBgpInstanceNeighborsDetail,
                               src=nbr_src+'[bgp_negotiated_capabilities][four_octets_asn]',
                               dest=nbr_dest+'[bgp_negotiated_capabilities][four_octets_asn]',
-                              vrf_type=vrf_type, af_type=af_type)
+                              vrf_type=vrf_type, vrf=vrf,
+                                  instance=instance, address_family=af,
+                                  neighbor=neighbor)
 
                 # bgp_negotiated_capabilities
                 #   vpnv4_unicast
                 self.add_leaf(cmd=ShowBgpInstanceNeighborsDetail,
                               src=nbr_src+'[bgp_negotiated_capabilities][vpnv4_unicast]',
                               dest=nbr_dest+'[bgp_negotiated_capabilities][vpnv4_unicast]',
-                              vrf_type=vrf_type, af_type=af_type)
+                              vrf_type=vrf_type, vrf=vrf,
+                                  instance=instance, address_family=af,
+                                  neighbor=neighbor)
 
                 # bgp_negotiated_capabilities
                 #   vpnv6_unicast
                 self.add_leaf(cmd=ShowBgpInstanceNeighborsDetail,
                               src=nbr_src+'[bgp_negotiated_capabilities][vpnv6_unicast]',
                               dest=nbr_dest+'[bgp_negotiated_capabilities][vpnv6_unicast]',
-                              vrf_type=vrf_type, af_type=af_type)
+                              vrf_type=vrf_type, vrf=vrf,
+                                  instance=instance, address_family=af,
+                                  neighbor=neighbor)
 
                 # bgp_negotiated_capabilities
                 #   graceful_restart - N/A
@@ -328,7 +345,9 @@ class Bgp(SuperBgp):
                 self.add_leaf(cmd=ShowBgpInstanceNeighborsDetail,
                               src=nbr_src+'[bgp_neighbor_counters][messages][sent]',
                               dest=nbr_dest+'[bgp_neighbor_counters][messages][sent]',
-                              vrf_type=vrf_type, af_type=af_type)
+                              vrf_type=vrf_type, vrf=vrf,
+                                  instance=instance, address_family=af,
+                                  neighbor=neighbor)
 
                 # bgp_neighbor_counters
                 #   messages
@@ -341,7 +360,9 @@ class Bgp(SuperBgp):
                 self.add_leaf(cmd=ShowBgpInstanceNeighborsDetail,
                               src=nbr_src+'[bgp_neighbor_counters][messages][received]',
                               dest=nbr_dest+'[bgp_neighbor_counters][messages][received]',
-                              vrf_type=vrf_type, af_type=af_type)
+                              vrf_type=vrf_type, vrf=vrf,
+                                  instance=instance, address_family=af,
+                                  neighbor=neighbor)
 
                 # ==============================================================
                 #                  vrf: neighbor - address_family
@@ -372,8 +393,11 @@ class Bgp(SuperBgp):
                     self.add_leaf(cmd=ShowBgpInstanceNeighborsDetail,
                                   src='{nbr_af_src}[{src_key}]'.format(nbr_af_src=nbr_af_src,src_key=src_key),
                                   dest='{nbr_af_dest}[{dest_key}]'.format(nbr_af_dest=nbr_af_dest,dest_key=dest_key),
-                                  vrf_type=vrf_type, af_type=af_type)
-
+                                  vrf_type=vrf_type, vrf=vrf,
+                                  instance=instance, address_family=af,
+                                  neighbor=neighbor)
+                if address_family:
+                    break
                 # routing_table_version - N/A
                 # prefixes - N/A
                 #   total_entries - N/A
@@ -394,44 +418,44 @@ class Bgp(SuperBgp):
         table_loop1 = False
 
         for vrf_type in ['all', 'vrf']:
+            if vrf != 'all':
+                vrf_type = 'vrf'
 
-            for af_type in ['ipv4 unicast', 'ipv6 unicast']:
+            # Set or skip 'all all all' iteration
+            if vrf_type == 'all':
+                if table_loop1:
+                    continue
+                else:
 
-                # Set or skip 'all all all' iteration
-                if vrf_type == 'all':
-                    if table_loop1:
-                        continue
-                    else:
-                        af_type = ''
-                        table_loop1 = True
+                    table_loop1 = True
 
-                # instance
-                #   instance_name
-                #     vrf
-                #       vrf_id
-                #         address_family
-                #           af_name
-                tbl_src = '[instance][(?P<instance>.*)][vrf][(?P<vrf>.*)][address_family][(?P<address_family>.*)]'
-                tbl_dest = 'table[instance][(?P<instance>.*)][vrf][(?P<vrf>.*)][address_family][(?P<address_family>.*)]'
+            # instance
+            #   instance_name
+            #     vrf
+            #       vrf_id
+            #         address_family
+            #           af_name
+            tbl_src = '[instance][(?P<instance>.*)][vrf][(?P<vrf>.*)][address_family][(?P<address_family>.*)]'
+            tbl_dest = 'table[instance][(?P<instance>.*)][vrf][(?P<vrf>.*)][address_family][(?P<address_family>.*)]'
 
-                table_keys = ['route_distinguisher', 'default_vrf',\
-                              'route_identifier', 'local_as',\
-                              'bgp_table_version', 'prefixes']
+            table_keys = ['route_distinguisher', 'default_vrf',\
+                          'route_identifier', 'local_as',\
+                          'bgp_table_version', 'prefixes']
 
-                for key in table_keys:
+            for key in table_keys:
 
-                    # set key values
-                    src_key = dest_key = key
+                # set key values
+                src_key = dest_key = key
 
-                    if key == 'prefixes':
-                        src_key = 'prefix'
-                    
-                    self.add_leaf(cmd=ShowBgpInstanceAllAll,
-                                  src='{tbl_src}[{src_key}]'.format(tbl_src=tbl_src,src_key=src_key),
-                                  dest='{tbl_dest}[{dest_key}]'.format(tbl_dest=tbl_dest,dest_key=dest_key),
-                                  vrf_type=vrf_type, af_type=af_type)
+                if key == 'prefixes':
+                    src_key = 'prefix'
 
-                # paths - N/A
+                self.add_leaf(cmd=ShowBgpInstanceAllAll,
+                              src='{tbl_src}[{src_key}]'.format(tbl_src=tbl_src,src_key=src_key),
+                              dest='{tbl_dest}[{dest_key}]'.format(tbl_dest=tbl_dest,dest_key=dest_key),
+                              vrf_type=vrf_type, vrf=vrf, instance=instance, address_family=address_family)
+
+            # paths - N/A
 
         # ########################################################################
         # #                           routes_per_peer
@@ -441,15 +465,18 @@ class Bgp(SuperBgp):
         rpp_loop1 = False
 
         for vrf_type in ['all', 'vrf']:
-
-            for af_type in ['ipv4 unicast', 'ipv6 unicast']:
+            if vrf != 'all':
+                vrf_type = 'vrf'
+            for af in ['ipv4 unicast', 'ipv6 unicast']:
+                if address_family:
+                    af = address_family
 
                 # Set or skip 'all all all' iteration
                 if vrf_type == 'all':
                     if rpp_loop1:
                         continue
                     else:
-                        af_type = ''
+                        af = ''
                         rpp_loop1 = True
 
                 # instance
@@ -458,83 +485,101 @@ class Bgp(SuperBgp):
                 #       vrf_name
                 #         neighbor
                 #           neighbor_id
-                rpp_src = '[instance][(?P<instance>.*)][vrf][(?P<vrf>.*)][neighbor][(?P<neighbor_id>.*)]'
-                rpp_dest = 'routes_per_peer[instance][(?P<instance>.*)][vrf][(?P<vrf>.*)][neighbor][(?P<neighbor_id>.*)]'
+                rpp_src = '[instance][(?P<instance>.*)][vrf][(?P<vrf>.*)][neighbor][(' \
+                          '?P<neighbor_id>.*)]'
+                rpp_dest = 'routes_per_peer[instance][(?P<instance>.*)][vrf][(' \
+                           '?P<vrf>.*)][neighbor][(?P<neighbor_id>.*)]'
 
                 # remote_as
                 self.add_leaf(cmd=ShowBgpInstanceSummary,
-                              src=rpp_src+'[remote_as]',
-                              dest=rpp_dest+'[remote_as]',
-                              vrf_type=vrf_type, af_type=af_type)
+                              src=rpp_src + '[remote_as]',
+                              dest=rpp_dest + '[remote_as]',
+                              vrf_type=vrf_type, address_family=af,
+                              vrf=vrf, instance=instance)
 
                 # address_family
                 #   af_name
                 rpp_af_src = rpp_src + '[address_family][(?P<address_family>.*)]'
                 rpp_af_dest = rpp_dest + '[address_family][(?P<address_family>.*)]'
 
-                rpp_af_keys = ['route_distinguisher', 'default_vrf', 'msg_rcvd',\
-                               'msg_sent', 'tbl_ver', 'input_queue',\
+                rpp_af_keys = ['route_distinguisher', 'default_vrf', 'msg_rcvd',
+                               'msg_sent', 'tbl_ver', 'input_queue',
                                'output_queue', 'up_down', 'state_pfxrcd']
 
                 for key in rpp_af_keys:
-
                     # set key values
                     src_key = dest_key = key
-                
+
                     self.add_leaf(cmd=ShowBgpInstanceSummary,
-                                  src='{rpp_af_src}[{src_key}]'.format(rpp_af_src=rpp_af_src,src_key=src_key),
-                                  dest='{rpp_af_dest}[{dest_key}]'.format(rpp_af_dest=rpp_af_dest,dest_key=dest_key),
-                                  vrf_type=vrf_type, af_type=af_type)
+                                  src='{rpp_af_src}[{src_key}]'.format(
+                                      rpp_af_src=rpp_af_src, src_key=src_key),
+                                  dest='{rpp_af_dest}[{dest_key}]'.format(
+                                      rpp_af_dest=rpp_af_dest, dest_key=dest_key),
+                                  vrf_type=vrf_type, address_family=af,
+                                  vrf=vrf, instance=instance)
+                if address_family:
+                    break
 
         # Get list of neighbors
         
         # Init list
         rpp_nbrs_loop1 = False
-
         for vrf_type in ['all', 'vrf']:
-
-            for af_type in ['ipv4 unicast', 'ipv6 unicast']:
-
+            if vrf != 'all':
+                vrf_type = 'vrf'
+            for af in ['ipv4 unicast', 'ipv6 unicast']:
+                if address_family:
+                    af = address_family
                 # Set or skip 'all all all' iteration
                 if vrf_type == 'all':
                     if rpp_nbrs_loop1:
                         continue
-                    else: 
-                        af_type = ''
+                    else:
+                        af = ''
                         rpp_nbrs_loop1 = True
 
                 self.add_leaf(cmd=ShowBgpInstanceNeighborsDetail,
                               src='[instance][(?P<instance>.*)][vrf][(?P<vrf>.*)][neighbor]',
                               dest='neighbors',
-                              vrf_type=vrf_type, af_type=af_type, action=self.get_key)
+                              vrf_type=vrf_type, address_family=af, vrf=vrf,
+                              instance=instance, neighbor=neighbor, action=self.get_key)
                 self.make()
 
                 if hasattr(self, 'neighbors'):
 
-                    for neighbor in sorted(self.neighbors):
-
-                        #print('\nneighbor is {neighbor}'.format(neighbor=neighbor))
+                    for nbr in sorted(self.neighbors):
+                        # print('\nneighbor is {neighbor}'.format(neighbor=neighbor))
 
                         # advertised
                         self.add_leaf(cmd=ShowBgpInstanceNeighborsAdvertisedRoutes,
                                       src='[instance][(?P<instance>.*)][vrf][(?P<vrf>.*)][address_family][(?P<af>.*)][advertised]',
-                                      dest='routes_per_peer[instance][(?P<instance>.*)][vrf][(?P<vrf>.*)][neighbor][{neighbor}][address_family][(?P<af>.*)][advertised]'.format(neighbor=neighbor),
-                                      vrf_type=vrf_type, neighbor=neighbor, af_type=af_type)
+                                      dest='routes_per_peer[instance][(?P<instance>.*)][vrf][(?P<vrf>.*)][neighbor][{neighbor}][address_family][(?P<af>.*)][advertised]'.format(
+                                          neighbor=nbr),
+                                      vrf_type=vrf_type, neighbor=nbr, vrf=vrf, instance=instance,
+                                      address_family=af)
 
                         # received
                         self.add_leaf(cmd=ShowBgpInstanceNeighborsReceivedRoutes,
                                       src='[instance][(?P<instance>.*)][vrf][(?P<vrf>.*)][address_family][(?P<af>.*)][received]',
-                                      dest='routes_per_peer[instance][(?P<instance>.*)][vrf][(?P<vrf>.*)][neighbor][{neighbor}][address_family][(?P<af>.*)][received_routes]'.format(neighbor=neighbor),
-                                      vrf_type=vrf_type, neighbor=neighbor, af_type=af_type)
+                                      dest='routes_per_peer[instance][(?P<instance>.*)][vrf][(?P<vrf>.*)][neighbor][{neighbor}][address_family][(?P<af>.*)][received_routes]'.format(
+                                          neighbor=nbr),
+                                      vrf_type=vrf_type, neighbor=nbr,
+                                      address_family=af, vrf=vrf,
+                                        instance=instance,)
 
                         # routes
                         self.add_leaf(cmd=ShowBgpInstanceNeighborsRoutes,
                                       src='[instance][(?P<instance>.*)][vrf][(?P<vrf>.*)][address_family][(?P<af>.*)][routes]',
-                                      dest='routes_per_peer[instance][(?P<instance>.*)][vrf][(?P<vrf>.*)][neighbor][{neighbor}][address_family][(?P<af>.*)][routes]'.format(neighbor=neighbor),
-                                      vrf_type=vrf_type, neighbor=neighbor, af_type=af_type)
-                    
+                                      dest='routes_per_peer[instance][(?P<instance>.*)][vrf][(?P<vrf>.*)][neighbor][{neighbor}][address_family][(?P<af>.*)][routes]'.format(
+                                          neighbor=nbr),
+                                      vrf_type=vrf_type, neighbor=nbr,
+                                      address_family=af, vrf=vrf,
+                                        instance=instance,)
+
                     # Delete neighbors for this iteration
                     del self.neighbors
+                if address_family:
+                    break
 
         ########################################################################
         #                           Final Structure

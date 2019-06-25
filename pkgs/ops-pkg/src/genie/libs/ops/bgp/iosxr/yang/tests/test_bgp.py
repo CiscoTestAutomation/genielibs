@@ -28,15 +28,15 @@ outputs['show bgp instance all vrf all ipv4 unicast'] = BgpOutput.InstanceIpv4Ou
 outputs['show bgp instance all all all  summary'] = BgpOutput.SummaryAllOutput
 outputs['show bgp instance all vrf all ipv4 unicast summary'] = BgpOutput.SummaryIpv4Output
 outputs['show bgp instance all vrf all ipv6 unicast summary'] = BgpOutput.SummaryIpv6Output
-outputs['show bgp instance all all all  neighbors 2.2.2.2 advertised-routes'] = BgpOutput.AdvertisedAllOutput
-outputs['show bgp instance all all all  neighbors 2.2.2.2 received routes'] = BgpOutput.ReceivedAllOutput
-outputs['show bgp instance all all all  neighbors 2.2.2.2 routes'] = BgpOutput.RoutesAllOutput
-outputs['show bgp instance all vrf all ipv4 unicast neighbors 2.2.2.2 advertised-routes'] = ''
-outputs['show bgp instance all vrf all ipv4 unicast neighbors 2.2.2.2 received routes'] = ''
-outputs['show bgp instance all vrf all ipv4 unicast neighbors 2.2.2.2 routes'] = ''
-outputs['show bgp instance all vrf all ipv6 unicast neighbors 2.2.2.2 advertised-routes'] = ''
-outputs['show bgp instance all vrf all ipv6 unicast neighbors 2.2.2.2 received routes'] = ''
-outputs['show bgp instance all vrf all ipv6 unicast neighbors 2.2.2.2 routes'] = ''
+outputs['show bgp instance all all all  neighbors 10.16.2.2 advertised-routes'] = BgpOutput.AdvertisedAllOutput
+outputs['show bgp instance all all all  neighbors 10.16.2.2 received routes'] = BgpOutput.ReceivedAllOutput
+outputs['show bgp instance all all all  neighbors 10.16.2.2 routes'] = BgpOutput.RoutesAllOutput
+outputs['show bgp instance all vrf all ipv4 unicast neighbors 10.16.2.2 advertised-routes'] = ''
+outputs['show bgp instance all vrf all ipv4 unicast neighbors 10.16.2.2 received routes'] = ''
+outputs['show bgp instance all vrf all ipv4 unicast neighbors 10.16.2.2 routes'] = ''
+outputs['show bgp instance all vrf all ipv6 unicast neighbors 10.16.2.2 advertised-routes'] = ''
+outputs['show bgp instance all vrf all ipv6 unicast neighbors 10.16.2.2 received routes'] = ''
+outputs['show bgp instance all vrf all ipv6 unicast neighbors 10.16.2.2 routes'] = ''
 # YANG command output
 outputs['yang_output'] = BgpOutput.yang_output
 

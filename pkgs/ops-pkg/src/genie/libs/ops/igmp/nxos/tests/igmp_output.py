@@ -159,7 +159,7 @@ class IgmpOutput(object):
                            "configured_query_max_response_time": 15,
                            "max_groups": 10,
                            "vrf_id": 3,
-                           "querier": "20.1.2.1",
+                           "querier": "10.186.2.1",
                            "membership_count": 4,
                            "last_member": {
                                "query_count": 5,
@@ -172,8 +172,8 @@ class IgmpOutput(object):
                            },
                            "pim_dr": True,
                            "link_status": "up",
-                           "subnet": "20.1.2.0/24",
-                           "address": "20.1.2.1",
+                           "subnet": "10.186.2.0/24",
+                           "address": "10.186.2.1",
                            "link_local_groups_reporting": False,
                            "unsolicited_report_interval": 10,
                            "enable_refcount": 9,
@@ -217,7 +217,7 @@ class IgmpOutput(object):
                            "configured_query_max_response_time": 10,
                            "pim_dr": True,
                            "vrf_id": 3,
-                           "querier": "20.1.3.1",
+                           "querier": "10.186.3.1",
                            "membership_count": 0,
                            "last_member": {
                                "query_count": 2,
@@ -229,8 +229,8 @@ class IgmpOutput(object):
                                "count": 2,
                            },
                            "link_status": "up",
-                           "subnet": "20.1.3.0/24",
-                           "address": "20.1.3.1",
+                           "subnet": "10.186.3.0/24",
+                           "address": "10.186.3.1",
                            "link_local_groups_reporting": False,
                            "unsolicited_report_interval": 10,
                            "enable_refcount": 1,
@@ -272,15 +272,15 @@ class IgmpOutput(object):
                                 "239.6.6.6": {
                                      "expire": "never",
                                      "type": "S",
-                                     "last_reporter": "20.1.2.1",
+                                     "last_reporter": "10.186.2.1",
                                      "up_time": "00:15:27"
                                 },
                                 "239.8.8.8": {
                                      "source": {
-                                          "2.2.2.2": {
+                                          "10.16.2.2": {
                                                "expire": "never",
                                                "type": "S",
-                                               "last_reporter": "20.1.2.1",
+                                               "last_reporter": "10.186.2.1",
                                                "up_time": "00:15:27"
                                           }
                                      },
@@ -288,15 +288,15 @@ class IgmpOutput(object):
                                 "239.5.5.5": {
                                      "expire": "never",
                                      "type": "S",
-                                     "last_reporter": "20.1.2.1",
+                                     "last_reporter": "10.186.2.1",
                                      "up_time": "00:15:27"
                                 },
                                 "239.7.7.7": {
                                      "source": {
-                                          "2.2.2.1": {
+                                          "10.16.2.1": {
                                                "expire": "never",
                                                "type": "S",
-                                               "last_reporter": "20.1.2.1",
+                                               "last_reporter": "10.186.2.1",
                                                "up_time": "00:15:27"
                                           }
                                      },
@@ -318,7 +318,7 @@ class IgmpOutput(object):
                                 },
                                 "239.8.8.8": {
                                      "source": {
-                                          "2.2.2.2": {
+                                          "10.16.2.2": {
                                                "expire": "never",
                                                "type": "S",
                                                "last_reporter": "10.1.2.1",
@@ -334,7 +334,7 @@ class IgmpOutput(object):
                                 },
                                 "239.7.7.7": {
                                      "source": {
-                                          "2.2.2.1": {
+                                          "10.16.2.1": {
                                                "expire": "never",
                                                "type": "S",
                                                "last_reporter": "10.1.2.1",
@@ -361,16 +361,16 @@ class IgmpOutput(object):
                                      "source": "*",
                                      "group": "239.1.1.1"
                                 },
-                                "239.3.3.3 1.1.1.1": {
-                                     "source": "1.1.1.1",
+                                "239.3.3.3 10.4.1.1": {
+                                     "source": "10.4.1.1",
                                      "group": "239.3.3.3"
                                 },
                                 "239.2.2.2 *": {
                                      "source": "*",
                                      "group": "239.2.2.2"
                                 },
-                                "239.4.4.4 1.1.1.2": {
-                                     "source": "1.1.1.2",
+                                "239.4.4.4 10.4.1.2": {
+                                     "source": "10.4.1.2",
                                      "group": "239.4.4.4"
                                 }
                            },
@@ -379,16 +379,16 @@ class IgmpOutput(object):
                                      "source": "*",
                                      "group": "239.5.5.5"
                                 },
-                                "239.8.8.8 2.2.2.2": {
-                                     "source": "2.2.2.2",
+                                "239.8.8.8 10.16.2.2": {
+                                     "source": "10.16.2.2",
                                      "group": "239.8.8.8"
                                 },
                                 "239.6.6.6 *": {
                                      "source": "*",
                                      "group": "239.6.6.6"
                                 },
-                                "239.7.7.7 2.2.2.1": {
-                                     "source": "2.2.2.1",
+                                "239.7.7.7 10.16.2.1": {
+                                     "source": "10.16.2.1",
                                      "group": "239.7.7.7"
                                 }
                            },
@@ -399,7 +399,7 @@ class IgmpOutput(object):
                                 },
                                 "239.8.8.8": {
                                      "source": {
-                                          "2.2.2.2": {
+                                          "10.16.2.2": {
                                                "last_reporter": "01:06:47",
                                                "type": "static"
                                           }
@@ -411,7 +411,7 @@ class IgmpOutput(object):
                                 },
                                 "239.4.4.4": {
                                      "source": {
-                                          "1.1.1.2": {
+                                          "10.4.1.2": {
                                                "last_reporter": "00:00:06",
                                                "type": "local"
                                           }
@@ -427,7 +427,7 @@ class IgmpOutput(object):
                                 },
                                 "239.3.3.3": {
                                      "source": {
-                                          "1.1.1.1": {
+                                          "10.4.1.1": {
                                                "last_reporter": "00:00:11",
                                                "type": "local"
                                           }
@@ -435,7 +435,7 @@ class IgmpOutput(object):
                                 },
                                 "239.7.7.7": {
                                      "source": {
-                                          "2.2.2.1": {
+                                          "10.16.2.1": {
                                                "last_reporter": "01:06:47",
                                                "type": "static"
                                           }
@@ -453,16 +453,16 @@ class IgmpOutput(object):
                                      "source": "*",
                                      "group": "239.1.1.1"
                                 },
-                                "239.3.3.3 1.1.1.1": {
-                                     "source": "1.1.1.1",
+                                "239.3.3.3 10.4.1.1": {
+                                     "source": "10.4.1.1",
                                      "group": "239.3.3.3"
                                 },
                                 "239.2.2.2 *": {
                                      "source": "*",
                                      "group": "239.2.2.2"
                                 },
-                                "239.4.4.4 1.1.1.2": {
-                                     "source": "1.1.1.2",
+                                "239.4.4.4 10.4.1.2": {
+                                     "source": "10.4.1.2",
                                      "group": "239.4.4.4"
                                 }
                            },
@@ -471,16 +471,16 @@ class IgmpOutput(object):
                                      "source": "*",
                                      "group": "239.5.5.5"
                                 },
-                                "239.8.8.8 2.2.2.2": {
-                                     "source": "2.2.2.2",
+                                "239.8.8.8 10.16.2.2": {
+                                     "source": "10.16.2.2",
                                      "group": "239.8.8.8"
                                 },
                                 "239.6.6.6 *": {
                                      "source": "*",
                                      "group": "239.6.6.6"
                                 },
-                                "239.7.7.7 2.2.2.1": {
-                                     "source": "2.2.2.1",
+                                "239.7.7.7 10.16.2.1": {
+                                     "source": "10.16.2.1",
                                      "group": "239.7.7.7"
                                 }
                            },
@@ -491,7 +491,7 @@ class IgmpOutput(object):
                                 },
                                 "239.8.8.8": {
                                      "source": {
-                                          "2.2.2.2": {
+                                          "10.16.2.2": {
                                                "last_reporter": "01:06:47",
                                                "type": "static"
                                           }
@@ -503,7 +503,7 @@ class IgmpOutput(object):
                                 },
                                 "239.4.4.4": {
                                      "source": {
-                                          "1.1.1.2": {
+                                          "10.4.1.2": {
                                                "last_reporter": "00:00:55",
                                                "type": "local"
                                           }
@@ -519,7 +519,7 @@ class IgmpOutput(object):
                                 },
                                 "239.3.3.3": {
                                      "source": {
-                                          "1.1.1.1": {
+                                          "10.4.1.1": {
                                                "last_reporter": "00:01:01",
                                                "type": "local"
                                           }
@@ -527,7 +527,7 @@ class IgmpOutput(object):
                                 },
                                 "239.7.7.7": {
                                      "source": {
-                                          "2.2.2.1": {
+                                          "10.16.2.1": {
                                                "last_reporter": "01:06:47",
                                                "type": "static"
                                           }
@@ -541,16 +541,16 @@ class IgmpOutput(object):
             "VRF1": {
                  "interfaces": {
                       "Ethernet2/4": {
-                           "querier": "20.1.2.1",
+                           "querier": "10.186.2.1",
                            "group_policy": "access-group-filter",
                            "robustness_variable": 5,
                            "join_group": {
-                                "239.3.3.3 1.1.1.1": {
-                                     "source": "1.1.1.1",
+                                "239.3.3.3 10.4.1.1": {
+                                     "source": "10.4.1.1",
                                      "group": "239.3.3.3"
                                 },
-                                "239.4.4.4 1.1.1.2": {
-                                     "source": "1.1.1.2",
+                                "239.4.4.4 10.4.1.2": {
+                                     "source": "10.4.1.2",
                                      "group": "239.4.4.4"
                                 },
                                 "239.1.1.1 *": {
@@ -570,18 +570,18 @@ class IgmpOutput(object):
                            "group": {
                                 "239.5.5.5": {
                                      "up_time": "00:15:27",
-                                     "last_reporter": "20.1.2.1",
+                                     "last_reporter": "10.186.2.1",
                                      "expire": "never"
                                 },
                                 "239.6.6.6": {
                                      "up_time": "00:15:27",
-                                     "last_reporter": "20.1.2.1",
+                                     "last_reporter": "10.186.2.1",
                                      "expire": "never"
                                 },
                                 "239.8.8.8": {
                                      "source": {
-                                          "2.2.2.2": {
-                                               "last_reporter": "20.1.2.1",
+                                          "10.16.2.2": {
+                                               "last_reporter": "10.186.2.1",
                                                "up_time": "00:15:27",
                                                "expire": "never"
                                           }
@@ -589,8 +589,8 @@ class IgmpOutput(object):
                                 },
                                 "239.7.7.7": {
                                      "source": {
-                                          "2.2.2.1": {
-                                               "last_reporter": "20.1.2.1",
+                                          "10.16.2.1": {
+                                               "last_reporter": "10.186.2.1",
                                                "up_time": "00:15:27",
                                                "expire": "never"
                                           }
@@ -598,8 +598,8 @@ class IgmpOutput(object):
                                 }
                            },
                            "static_group": {
-                                "239.7.7.7 2.2.2.1": {
-                                     "source": "2.2.2.1",
+                                "239.7.7.7 10.16.2.1": {
+                                     "source": "10.16.2.1",
                                      "group": "239.7.7.7"
                                 },
                                 "239.5.5.5 *": {
@@ -610,8 +610,8 @@ class IgmpOutput(object):
                                      "source": "*",
                                      "group": "239.6.6.6"
                                 },
-                                "239.8.8.8 2.2.2.2": {
-                                     "source": "2.2.2.2",
+                                "239.8.8.8 10.16.2.2": {
+                                     "source": "10.16.2.2",
                                      "group": "239.8.8.8"
                                 }
                            },
@@ -619,7 +619,7 @@ class IgmpOutput(object):
                            "query_interval": 133
                       },
                       "Ethernet2/3": {
-                           "querier": "20.1.3.1",
+                           "querier": "10.186.3.1",
                            "immediate_leave": False,
                            "enable": True,
                            "version": 2,
@@ -654,12 +654,12 @@ class IgmpOutput(object):
                            "group_policy": "access-group-filter",
                            "robustness_variable": 5,
                            "join_group": {
-                                "239.3.3.3 1.1.1.1": {
-                                     "source": "1.1.1.1",
+                                "239.3.3.3 10.4.1.1": {
+                                     "source": "10.4.1.1",
                                      "group": "239.3.3.3"
                                 },
-                                "239.4.4.4 1.1.1.2": {
-                                     "source": "1.1.1.2",
+                                "239.4.4.4 10.4.1.2": {
+                                     "source": "10.4.1.2",
                                      "group": "239.4.4.4"
                                 },
                                 "239.1.1.1 *": {
@@ -689,7 +689,7 @@ class IgmpOutput(object):
                                 },
                                 "239.8.8.8": {
                                      "source": {
-                                          "2.2.2.2": {
+                                          "10.16.2.2": {
                                                "last_reporter": "10.1.2.1",
                                                "up_time": "00:20:34",
                                                "expire": "never"
@@ -698,7 +698,7 @@ class IgmpOutput(object):
                                 },
                                 "239.7.7.7": {
                                      "source": {
-                                          "2.2.2.1": {
+                                          "10.16.2.1": {
                                                "last_reporter": "10.1.2.1",
                                                "up_time": "00:20:42",
                                                "expire": "never"
@@ -707,8 +707,8 @@ class IgmpOutput(object):
                                 }
                            },
                            "static_group": {
-                                "239.7.7.7 2.2.2.1": {
-                                     "source": "2.2.2.1",
+                                "239.7.7.7 10.16.2.1": {
+                                     "source": "10.16.2.1",
                                      "group": "239.7.7.7"
                                 },
                                 "239.5.5.5 *": {
@@ -719,8 +719,8 @@ class IgmpOutput(object):
                                      "source": "*",
                                      "group": "239.6.6.6"
                                 },
-                                "239.8.8.8 2.2.2.2": {
-                                     "source": "2.2.2.2",
+                                "239.8.8.8 10.16.2.2": {
+                                     "source": "10.16.2.2",
                                      "group": "239.8.8.8"
                                 }
                            },

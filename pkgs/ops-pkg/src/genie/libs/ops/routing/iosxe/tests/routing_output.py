@@ -127,26 +127,26 @@ class RouteOutput(object):
 
         Gateway of last resort is not set
 
-              1.0.0.0/32 is subnetted, 1 subnets
-        C        1.1.1.1 is directly connected, Loopback0
-              2.0.0.0/32 is subnetted, 1 subnets
-        S        2.2.2.2 [1/0] via 20.1.2.2, GigabitEthernet0/1
+              10.1.0.0/32 is subnetted, 1 subnets
+        C        10.4.1.1 is directly connected, Loopback0
+              10.4.0.0/32 is subnetted, 1 subnets
+        S        10.16.2.2 [1/0] via 10.186.2.2, GigabitEthernet0/1
                          [1/0] via 10.1.2.2, GigabitEthernet0/0
-              3.0.0.0/32 is subnetted, 1 subnets
-        S        3.3.3.3 is directly connected, GigabitEthernet0/3
+              10.9.0.0/32 is subnetted, 1 subnets
+        S        10.36.3.3 is directly connected, GigabitEthernet0/3
                          is directly connected, GigabitEthernet0/2
               10.0.0.0/8 is variably subnetted, 5 subnets, 2 masks
         C        10.1.2.0/24 is directly connected, GigabitEthernet0/0
         L        10.1.2.1/32 is directly connected, GigabitEthernet0/0
         C        10.1.3.0/24 is directly connected, GigabitEthernet0/2
         L        10.1.3.1/32 is directly connected, GigabitEthernet0/2
-        O        10.2.3.0/24 [110/2] via 20.1.2.2, 06:46:59, GigabitEthernet0/1
+        O        10.2.3.0/24 [110/2] via 10.186.2.2, 06:46:59, GigabitEthernet0/1
                              [110/2] via 10.1.2.2, 06:46:59, GigabitEthernet0/0
-               22.0.0.0/32 is subnetted, 1 subnets
-        i L1     22.22.22.22 [115/20] via 20.1.2.2, 06:47:04, GigabitEthernet0/1
+               10.229.0.0/32 is subnetted, 1 subnets
+        i L1     10.151.22.22 [115/20] via 10.186.2.2, 06:47:04, GigabitEthernet0/1
                          [115/20] via 10.1.2.2, 06:47:04, GigabitEthernet0/0
-              32.0.0.0/32 is subnetted, 1 subnets
-        B        32.32.32.32 [200/0] via 12.12.12.12, 1d00h
+              10.4.0.0/32 is subnetted, 1 subnets
+        B        10.16.32.32 [200/0] via 10.66.12.12, 1d00h
     '''
     showIpRoute_VRF1 = '''\
         PE1#sh ip route vrf VRF1
@@ -164,17 +164,17 @@ class RouteOutput(object):
         Gateway of last resort is not set
 
               10.0.0.0/24 is subnetted, 50 subnets
-        O        10.0.0.0 [110/1] via 111.0.1.2, 01:02:20, GigabitEthernet0/0/2.100
-        O        10.0.1.0 [110/1] via 111.0.1.2, 01:02:20, GigabitEthernet0/0/2.100
-        O        10.0.2.0 [110/1] via 111.0.1.2, 01:02:20, GigabitEthernet0/0/2.100
-              20.0.0.0/24 is subnetted, 50 subnets
-        B        20.0.0.0 [200/1] via 200.0.4.1, 01:01:10
-        B        20.0.1.0 [200/1] via 200.0.4.1, 01:01:10
-        B        20.0.2.0 [200/1] via 200.0.4.1, 01:01:10
-              111.0.0.0/8 is variably subnetted, 2 subnets, 2 masks
-        C        111.0.1.0/24 is directly connected, GigabitEthernet0/0/2.100
-        L        111.0.1.1/32 is directly connected, GigabitEthernet0/0/2.100
-        B     222.0.1.0/24 [200/0] via 200.0.4.1, 01:01:10
+        O        10.0.0.0 [110/1] via 10.81.1.2, 01:02:20, GigabitEthernet0/0/2.100
+        O        10.0.1.0 [110/1] via 10.81.1.2, 01:02:20, GigabitEthernet0/0/2.100
+        O        10.0.2.0 [110/1] via 10.81.1.2, 01:02:20, GigabitEthernet0/0/2.100
+              10.145.0.0/24 is subnetted, 50 subnets
+        B        10.145.0.0 [200/1] via 192.168.51.1, 01:01:10
+        B        10.145.1.0 [200/1] via 192.168.51.1, 01:01:10
+        B        10.145.2.0 [200/1] via 192.168.51.1, 01:01:10
+              10.81.0.0/8 is variably subnetted, 2 subnets, 2 masks
+        C        10.81.1.0/24 is directly connected, GigabitEthernet0/0/2.100
+        L        10.81.1.1/32 is directly connected, GigabitEthernet0/0/2.100
+        B     192.168.4.0/24 [200/0] via 192.168.51.1, 01:01:10
 
     '''
     showIpv6RouteUpdated_default = '''\
@@ -202,7 +202,7 @@ class RouteOutput(object):
              via GigabitEthernet0/3, directly connected
               Last updated 22:57:43 04 December 2017
         B   20:0:0:1::/64 [200/1]
-            via 200.0.4.1%default, indirectly connected
+            via 192.168.51.1%default, indirectly connected
             Last updated 09:43:27 06 December 2017
     '''
 
@@ -244,7 +244,7 @@ class RouteOutput(object):
                                         "next_hop_list": {
                                              1: {
                                                   "index": 1,
-                                                  "next_hop": "200.0.4.1",
+                                                  "next_hop": "192.168.51.1",
                                                   "updated": "09:43:27 06 December 2017"
                                              }
                                         }
@@ -313,7 +313,7 @@ class RouteOutput(object):
                     },
                     "ipv4": {
                          "routes": {
-                              "1.1.1.1/32": {
+                              "10.4.1.1/32": {
                                    "source_protocol_codes": "C",
                                    "active": True,
                                    "next_hop": {
@@ -324,7 +324,7 @@ class RouteOutput(object):
                                         }
                                    },
                                    "source_protocol": "connected",
-                                   "route": "1.1.1.1/32"
+                                   "route": "10.4.1.1/32"
                               },
                               "10.1.3.1/32": {
                                    "source_protocol_codes": "L",
@@ -339,7 +339,7 @@ class RouteOutput(object):
                                    "source_protocol": "local",
                                    "route": "10.1.3.1/32"
                               },
-                              "3.3.3.3/32": {
+                              "10.36.3.3/32": {
                                    "source_protocol_codes": "S",
                                    "active": True,
                                    "next_hop": {
@@ -353,9 +353,9 @@ class RouteOutput(object):
                                         }
                                    },
                                    "source_protocol": "static",
-                                   "route": "3.3.3.3/32"
+                                   "route": "10.36.3.3/32"
                               },
-                              "32.32.32.32/32": {
+                              "10.16.32.32/32": {
                                    "route_preference": 200,
                                    "active": True,
                                    "metric": 0,
@@ -365,12 +365,12 @@ class RouteOutput(object):
                                         "next_hop_list": {
                                              1: {
                                                   "index": 1,
-                                                  "next_hop": "12.12.12.12",
+                                                  "next_hop": "10.66.12.12",
                                                   "updated": "1d00h"
                                              }
                                         }
                                    },
-                                   "route": "32.32.32.32/32"
+                                   "route": "10.16.32.32/32"
                               },
                               "10.1.2.0/24": {
                                    "source_protocol_codes": "C",
@@ -398,7 +398,7 @@ class RouteOutput(object):
                                    "source_protocol": "local",
                                    "route": "10.1.2.1/32"
                               },
-                              "2.2.2.2/32": {
+                              "10.16.2.2/32": {
                                    "route_preference": 1,
                                    "active": True,
                                    "metric": 0,
@@ -408,7 +408,7 @@ class RouteOutput(object):
                                         "next_hop_list": {
                                              1: {
                                                   "index": 1,
-                                                  "next_hop": "20.1.2.2",
+                                                  "next_hop": "10.186.2.2",
                                                   "outgoing_interface": "GigabitEthernet0/1"
                                              },
                                              2: {
@@ -418,9 +418,9 @@ class RouteOutput(object):
                                              }
                                         }
                                    },
-                                   "route": "2.2.2.2/32"
+                                   "route": "10.16.2.2/32"
                               },
-                              "22.22.22.22/32": {
+                              "10.151.22.22/32": {
                                    "route_preference": 115,
                                    "active": True,
                                    "metric": 20,
@@ -430,7 +430,7 @@ class RouteOutput(object):
                                         "next_hop_list": {
                                              1: {
                                                   "index": 1,
-                                                  "next_hop": "20.1.2.2",
+                                                  "next_hop": "10.186.2.2",
                                                   "updated": "06:47:04",
                                                   "outgoing_interface": "GigabitEthernet0/1"
                                              },
@@ -442,7 +442,7 @@ class RouteOutput(object):
                                              }
                                         }
                                    },
-                                   "route": "22.22.22.22/32"
+                                   "route": "10.151.22.22/32"
                               },
                               "10.2.3.0/24": {
                                    "route_preference": 110,
@@ -454,7 +454,7 @@ class RouteOutput(object):
                                         "next_hop_list": {
                                              1: {
                                                   "index": 1,
-                                                  "next_hop": "20.1.2.2",
+                                                  "next_hop": "10.186.2.2",
                                                   "updated": "06:46:59",
                                                   "outgoing_interface": "GigabitEthernet0/1"
                                              },
@@ -547,7 +547,7 @@ class RouteOutput(object):
                     },
                     "ipv4": {
                          "routes": {
-                              "20.0.1.0/24": {
+                              "10.145.1.0/24": {
                                    "active": True,
                                    "metric": 1,
                                    "source_protocol": "bgp",
@@ -556,15 +556,15 @@ class RouteOutput(object):
                                         "next_hop_list": {
                                              1: {
                                                   "index": 1,
-                                                  "next_hop": "200.0.4.1",
+                                                  "next_hop": "192.168.51.1",
                                                   "updated": "01:01:10"
                                              }
                                         }
                                    },
                                    "route_preference": 200,
-                                   "route": "20.0.1.0/24"
+                                   "route": "10.145.1.0/24"
                               },
-                              "20.0.2.0/24": {
+                              "10.145.2.0/24": {
                                    "active": True,
                                    "metric": 1,
                                    "source_protocol": "bgp",
@@ -573,15 +573,15 @@ class RouteOutput(object):
                                         "next_hop_list": {
                                              1: {
                                                   "index": 1,
-                                                  "next_hop": "200.0.4.1",
+                                                  "next_hop": "192.168.51.1",
                                                   "updated": "01:01:10"
                                              }
                                         }
                                    },
                                    "route_preference": 200,
-                                   "route": "20.0.2.0/24"
+                                   "route": "10.145.2.0/24"
                               },
-                              "222.0.1.0/24": {
+                              "192.168.4.0/24": {
                                    "active": True,
                                    "metric": 0,
                                    "source_protocol": "bgp",
@@ -590,15 +590,15 @@ class RouteOutput(object):
                                         "next_hop_list": {
                                              1: {
                                                   "index": 1,
-                                                  "next_hop": "200.0.4.1",
+                                                  "next_hop": "192.168.51.1",
                                                   "updated": "01:01:10"
                                              }
                                         }
                                    },
                                    "route_preference": 200,
-                                   "route": "222.0.1.0/24"
+                                   "route": "192.168.4.0/24"
                               },
-                              "111.0.1.0/24": {
+                              "10.81.1.0/24": {
                                    "source_protocol_codes": "C",
                                    "active": True,
                                    "next_hop": {
@@ -609,9 +609,9 @@ class RouteOutput(object):
                                         }
                                    },
                                    "source_protocol": "connected",
-                                   "route": "111.0.1.0/24"
+                                   "route": "10.81.1.0/24"
                               },
-                              "20.0.0.0/24": {
+                              "10.145.0.0/24": {
                                    "active": True,
                                    "metric": 1,
                                    "source_protocol": "bgp",
@@ -620,15 +620,15 @@ class RouteOutput(object):
                                         "next_hop_list": {
                                              1: {
                                                   "index": 1,
-                                                  "next_hop": "200.0.4.1",
+                                                  "next_hop": "192.168.51.1",
                                                   "updated": "01:01:10"
                                              }
                                         }
                                    },
                                    "route_preference": 200,
-                                   "route": "20.0.0.0/24"
+                                   "route": "10.145.0.0/24"
                               },
-                              "111.0.1.1/32": {
+                              "10.81.1.1/32": {
                                    "source_protocol_codes": "L",
                                    "active": True,
                                    "next_hop": {
@@ -639,7 +639,7 @@ class RouteOutput(object):
                                         }
                                    },
                                    "source_protocol": "local",
-                                   "route": "111.0.1.1/32"
+                                   "route": "10.81.1.1/32"
                               },
                               "10.0.0.0/24": {
                                    "active": True,
@@ -650,7 +650,7 @@ class RouteOutput(object):
                                         "next_hop_list": {
                                              1: {
                                                   "index": 1,
-                                                  "next_hop": "111.0.1.2",
+                                                  "next_hop": "10.81.1.2",
                                                   "updated": "01:02:20",
                                                   "outgoing_interface": "GigabitEthernet0/0/2.100"
                                              }
@@ -668,7 +668,7 @@ class RouteOutput(object):
                                         "next_hop_list": {
                                              1: {
                                                   "index": 1,
-                                                  "next_hop": "111.0.1.2",
+                                                  "next_hop": "10.81.1.2",
                                                   "updated": "01:02:20",
                                                   "outgoing_interface": "GigabitEthernet0/0/2.100"
                                              }
@@ -686,7 +686,7 @@ class RouteOutput(object):
                                         "next_hop_list": {
                                              1: {
                                                   "index": 1,
-                                                  "next_hop": "111.0.1.2",
+                                                  "next_hop": "10.81.1.2",
                                                   "updated": "01:02:20",
                                                   "outgoing_interface": "GigabitEthernet0/0/2.100"
                                              }

@@ -69,7 +69,7 @@ class test_mcast(unittest.TestCase):
 
         # Test specific attributes in info
         self.assertEqual(mcast.info['vrf']['default']['address_family']['ipv4']\
-                ['mroute']['112.0.0.0/8']['path']['0.0.0.0/32 Null0']\
+                ['mroute']['10.49.0.0/8']['path']['0.0.0.0/32 Null0']\
                 ['neighbor_address'], '0.0.0.0/32')
 
         # Test specific attribute in table
@@ -94,7 +94,7 @@ class test_mcast(unittest.TestCase):
         # Check no outputs in mcast.info
         with self.assertRaises(AttributeError):
             neighbor_address = mcast.info['vrf']['default']['address_family']\
-                ['ipv4']['mroute']['112.0.0.0/8']['path']['0.0.0.0/32 Null0']\
+                ['ipv4']['mroute']['10.49.0.0/8']['path']['0.0.0.0/32 Null0']\
                 ['neighbor_address']
 
         # Check no outputs in mcast.table
@@ -120,7 +120,7 @@ class test_mcast(unittest.TestCase):
 
         # Test specific attributes in info
         self.assertEqual(mcast.info['vrf']['default']['address_family']['ipv4']\
-                ['mroute']['112.0.0.0/8']['path']['0.0.0.0/32 Null0']\
+                ['mroute']['10.49.0.0/8']['path']['0.0.0.0/32 Null0']\
                 ['neighbor_address'], '0.0.0.0/32')
 
         # Test specific attribute in table

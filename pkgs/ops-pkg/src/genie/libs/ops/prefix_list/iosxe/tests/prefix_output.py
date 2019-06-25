@@ -11,41 +11,41 @@ class PrefixListOutput(object):
           "test": {
                "sequences": "5 - 25",
                "prefixes": {
-                    "35.0.0.0/8 8..16 permit": {
+                    "10.205.0.0/8 8..16 permit": {
                          "refcount": 0,
-                         "prefix": "35.0.0.0/8",
+                         "prefix": "10.205.0.0/8",
                          "sequence": 10,
                          "hit_count": 0,
                          "masklength_range": "8..16",
                          "action": "permit",
                     },
-                    "36.0.0.0/8 8..16 permit": {
+                    "10.21.0.0/8 8..16 permit": {
                          "refcount": 1,
-                         "prefix": "36.0.0.0/8",
+                         "prefix": "10.21.0.0/8",
                          "sequence": 15,
                          "hit_count": 0,
                          "masklength_range": "8..16",
                          "action": "permit",
                     },
-                    "38.0.0.0/8 16..24 permit": {
+                    "10.169.0.0/8 16..24 permit": {
                          "refcount": 3,
-                         "prefix": "38.0.0.0/8",
+                         "prefix": "10.169.0.0/8",
                          "sequence": 25,
                          "hit_count": 0,
                          "masklength_range": "16..24",
                          "action": "permit",
                     },
-                    "37.0.0.0/8 24..32 permit": {
+                    "10.94.0.0/8 24..32 permit": {
                          "refcount": 2,
-                         "prefix": "37.0.0.0/8",
+                         "prefix": "10.94.0.0/8",
                          "sequence": 20,
                          "hit_count": 0,
                          "masklength_range": "24..32",
                          "action": "permit",
                     },
-                    "35.0.0.0/8 8..8 permit": {
+                    "10.205.0.0/8 8..8 permit": {
                          "refcount": 1,
-                         "prefix": "35.0.0.0/8",
+                         "prefix": "10.205.0.0/8",
                          "sequence": 5,
                          "hit_count": 0,
                          "masklength_range": "8..8",
@@ -106,28 +106,28 @@ class PrefixListOutput(object):
                "protocol": "ipv4",
                "prefix_set_name": "test",
                "prefixes": {
-                    "35.0.0.0/8 8..16 permit": {
-                         "prefix": "35.0.0.0/8",
+                    "10.205.0.0/8 8..16 permit": {
+                         "prefix": "10.205.0.0/8",
                          "action": "permit",
                          "masklength_range": "8..16"
                     },
-                    "37.0.0.0/8 24..32 permit": {
-                         "prefix": "37.0.0.0/8",
+                    "10.94.0.0/8 24..32 permit": {
+                         "prefix": "10.94.0.0/8",
                          "action": "permit",
                          "masklength_range": "24..32"
                     },
-                    "36.0.0.0/8 8..16 permit": {
-                         "prefix": "36.0.0.0/8",
+                    "10.21.0.0/8 8..16 permit": {
+                         "prefix": "10.21.0.0/8",
                          "action": "permit",
                          "masklength_range": "8..16"
                     },
-                    "35.0.0.0/8 8..8 permit": {
-                         "prefix": "35.0.0.0/8",
+                    "10.205.0.0/8 8..8 permit": {
+                         "prefix": "10.205.0.0/8",
                          "action": "permit",
                          "masklength_range": "8..8"
                     },
-                    "38.0.0.0/8 16..24 permit": {
-                         "prefix": "38.0.0.0/8",
+                    "10.169.0.0/8 16..24 permit": {
+                         "prefix": "10.169.0.0/8",
                          "action": "permit",
                          "masklength_range": "16..24"
                     }

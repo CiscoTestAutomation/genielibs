@@ -279,11 +279,13 @@ class TriggerShutNoShutBgpLoopbackInterface(TriggerShutNoShut):
                          'neighbor', '(?P<neighbor>.*)',
                          'update_source', '(?P<interface>.*)']],
         'kwargs':{'attributes':['info']},
+        'all_keys':True,
         'exclude': bgp_exclude + ['distance_local']}
 
     requirements['ops.interface.interface.Interface'] = {
         'requirements':[['info', '(?P<interface>l|Loopback[0-9\s]+)',
                          'oper_status', 'up']],
+        'all_keys':True,
         'exclude': interface_exclude}
 
     mapping = Mapping(requirements = requirements,

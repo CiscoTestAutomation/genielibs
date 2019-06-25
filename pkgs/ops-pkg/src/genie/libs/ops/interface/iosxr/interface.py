@@ -20,7 +20,7 @@ from genie.libs.parser.iosxr.show_vrf import ShowVrfAllDetail
 class Interface(SuperInterface):
     '''Interface Genie Ops Object'''
 
-    def learn(self, custom=None):
+    def learn(self, interface='', vrf='', address_family='',custom=None):
         '''Learn Interface Ops'''
         
         ########################################################################
@@ -41,45 +41,46 @@ class Interface(SuperInterface):
                         '[duplex_mode]': '[duplex_mode]',
                         '[bandwidth]': '[bandwidth]',
                    }
-
         for src_key_path, dest_key_path in req_keys_path.items():
             self.add_leaf(cmd=ShowInterfacesDetail,
                           src=src + src_key_path,
-                          dest=dest + dest_key_path)
-
-        # vrf
-        self.add_leaf(cmd=ShowVrfAllDetail,
-                      src='[(?P<vrf>.*)][interfaces]',
-                      dest='info[vrf][(?P<vrf>.*)][interfaces]')
-
-
-        # make to write in cache
-        self.make()
-        
-        # mapping vrf to interface from ShowVrfAllDetail
-        if hasattr(self, 'info') and 'vrf' in self.info:
-            for vrf in self.info['vrf']:
-                if 'interfaces' not in self.info['vrf'][vrf]:
-                    continue
-                for intf in self.info['vrf'][vrf]['interfaces']:
-                    if intf not in self.info:
-                        self.info[intf] = {}
-                    self.info[intf]['vrf'] = vrf
-            del(self.info['vrf'])
+                          dest=dest + dest_key_path,
+                          interface=interface)
 
         # vlan_id
         self.add_leaf(cmd=ShowEthernetTags,
                       src=src + '[vlan_id]',
-                      dest=dest + '[vlan_id]')
-
-        # ======================================================================
-        #                           flow_control
-        # ======================================================================
-
+                      dest=dest + '[vlan_id]',
+                      interface=interface)
         # flow_control
         self.add_leaf(cmd=ShowInterfacesDetail,
                       src=src + '[flow_control]',
-                      dest=dest + '[flow_control]')
+                      dest=dest + '[flow_control]',
+                      interface=interface)
+        # vrf
+        self.add_leaf(cmd=ShowVrfAllDetail,
+                      src='[(?P<vrf>.*)][interfaces]',
+                      dest='info[vrf][(?P<vrf>.*)][interfaces]',
+                      vrf=vrf)
+        # make to write in cache
+        self.make()
+
+        # mapping vrf to interface from ShowVrfAllDetail
+        if hasattr(self, 'info') and 'vrf' in self.info:
+            for vrf_item in self.info['vrf']:
+                if 'interfaces' not in self.info['vrf'][vrf_item]:
+                    continue
+                for intf in self.info['vrf'][vrf_item]['interfaces']:
+                    if interface:
+                        if intf == interface:
+                            if intf not in self.info:
+                                self.info[intf] = {}
+                            self.info[intf]['vrf'] = vrf_item
+                    else:
+                        if intf not in self.info:
+                            self.info[intf] = {}
+                        self.info[intf]['vrf'] = vrf_item
+            del (self.info['vrf'])
 
         # ======================================================================
         #                           accounting
@@ -92,15 +93,16 @@ class Interface(SuperInterface):
                 self.add_leaf(cmd=ShowInterfacesAccounting,
                               src=src + '[accounting]',
                               dest=dest + '[accounting]',
-                              intf=custom[cmd]['intf'])
+                              interface=custom[cmd]['intf'])
             else:
                 self.add_leaf(cmd=ShowInterfacesAccounting,
                               src=src + '[accounting]',
                               dest=dest + '[accounting]')
-        else:
-            self.add_leaf(cmd=ShowInterfacesAccounting,
-                          src=src + '[accounting]',
-                          dest=dest + '[accounting]')
+
+        self.add_leaf(cmd=ShowInterfacesAccounting,
+                      src=src + '[accounting]',
+                      dest=dest + '[accounting]',
+                      interface=interface)
 
         # ======================================================================
         #                           counters
@@ -119,7 +121,8 @@ class Interface(SuperInterface):
         for key in req_keys:
             self.add_leaf(cmd=ShowInterfacesDetail,
                           src=src + '[{}]'.format(key),
-                          dest=dest + '[{}]'.format(key))
+                          dest=dest + '[{}]'.format(key),
+                          interface=interface)
 
 
         # Global source - counters | rate
@@ -128,11 +131,11 @@ class Interface(SuperInterface):
 
         req_keys = ['load_interval', 'in_rate', 'in_rate_pkts',
                     'out_rate', 'out_rate_pkts']
-
         for key in req_keys:
             self.add_leaf(cmd=ShowInterfacesDetail,
                           src=src + '[{}]'.format(key),
-                          dest=dest + '[{}]'.format(key))
+                          dest=dest + '[{}]'.format(key),
+                          interface=interface)
 
         # IOSXR NONE supported keys from general ops
         # in_8021q_frames - N/A
@@ -178,57 +181,89 @@ class Interface(SuperInterface):
         for key in req_keys:
             self.add_leaf(cmd=ShowInterfacesDetail,
                           src=src + '[{}]'.format(key),
-                          dest=dest + '[{}]'.format(key))
+                          dest=dest + '[{}]'.format(key),
+                          interface=interface)
 
         # ======================================================================
         #                           ipv4
         # ======================================================================
-        
+        if not address_family or address_family.lower() == 'ipv4':
+            # Global source
+            req_keys = ['ip', 'prefix_length', 'secondary', 'route_tag']
+            if interface:
+                src = '[{}][ipv4][(?P<ipv4>.*)]'.format(interface)
+                dest = 'info[{}][ipv4][(?P<ipv4>.*)]'.format(interface)
+                for key in req_keys:
+                    self.add_leaf(cmd=ShowIpv4VrfAllInterface,
+                                  src=src + '[{}]'.format(key),
+                                  dest=dest + '[{}]'.format(key),
+                                  vrf=vrf,
+                                  interface=interface)
+                # unnumbered
+                self.add_leaf(cmd=ShowIpv4VrfAllInterface,
+                              src='[{}][ipv4][unnumbered][unnumbered_intf_ref]'.format(interface),
+                              dest='info[{}][ipv4][unnumbered][unnumbered_intf_ref]'.format(interface),
+                              vrf=vrf,
+                              interface=interface)
+            else:
+                src = '[(?P<interface>.*)][ipv4][(?P<ipv4>.*)]'
+                dest = 'info[(?P<interface>.*)][ipv4][(?P<ipv4>.*)]'
+                for key in req_keys:
+                    self.add_leaf(cmd=ShowIpv4VrfAllInterface,
+                                  src=src + '[{}]'.format(key),
+                                  dest=dest + '[{}]'.format(key),
+                                  vrf=vrf,
+                                  interface=interface)
+                # unnumbered
+                self.add_leaf(cmd=ShowIpv4VrfAllInterface,
+                              src='[(?P<interface>.*)][ipv4][unnumbered][unnumbered_intf_ref]',
+                              dest='info[(?P<interface>.*)][ipv4][unnumbered][unnumbered_intf_ref]',
+                              vrf=vrf,
+                              interface=interface)
 
-        # Global source
-        src = '[(?P<interface>.*)][ipv4][(?P<ipv4>.*)]'
-        dest = 'info[(?P<interface>.*)][ipv4][(?P<ipv4>.*)]'
-
-        req_keys = ['ip', 'prefix_length', 'secondary', 'route_tag']
-
-        for key in req_keys:
-            self.add_leaf(cmd=ShowIpv4VrfAllInterface,
-                          src=src + '[{}]'.format(key),
-                          dest=dest + '[{}]'.format(key))
-        
-        # unnumbered
-        self.add_leaf(cmd=ShowIpv4VrfAllInterface,
-                      src='[(?P<interface>.*)][ipv4][unnumbered][unnumbered_intf_ref]',
-                      dest='info[(?P<interface>.*)][ipv4][unnumbered][unnumbered_intf_ref]')
 
 
         # ======================================================================
         #                           ipv6
         # ======================================================================
-        
-
-        # Global source
-        src = '[(?P<interface>.*)][ipv6][(?P<ipv6>.*)]'
-        dest = 'info[(?P<interface>.*)][ipv6][(?P<ipv6>.*)]'
-
-        req_keys_path = {'[ipv6]': '[ip]',
-                        '[ipv6_prefix_length]': '[prefix_length]',
-                        '[ipv6_status]': '[status]',
-                        '[ipv6_eui64]': '[eui64]',
-                        '[ipv6_route_tag]': '[route_tag]',
-                   }
-
-        for src_key_path, dest_key_path in req_keys_path.items():
-            self.add_leaf(cmd=ShowIpv6VrfAllInterface,
-                          src=src + src_key_path,
-                          dest=dest + dest_key_path)
-        
-        # enabled
-        self.add_leaf(cmd=ShowIpv6VrfAllInterface,
-                      src='[(?P<interface>.*)][ipv6_enabled]',
-                      dest='info[(?P<interface>.*)][ipv6][enabled]')
+        if not address_family or address_family.lower() == 'ipv6':
+            req_keys_path = {'[ipv6]': '[ip]',
+                            '[ipv6_prefix_length]': '[prefix_length]',
+                            '[ipv6_status]': '[status]',
+                            '[ipv6_eui64]': '[eui64]',
+                            '[ipv6_route_tag]': '[route_tag]',
+                       }
+            if interface:
+                src = '[{}][ipv6][(?P<ipv6>.*)]'.format(interface)
+                dest = 'info[{}][ipv6][(?P<ipv6>.*)]'.format(interface)
+                for src_key_path, dest_key_path in req_keys_path.items():
+                    self.add_leaf(cmd=ShowIpv6VrfAllInterface,
+                                  src=src + src_key_path,
+                                  dest=dest + dest_key_path,
+                                  vrf=vrf,
+                                  interface=interface)
+                # enabled
+                self.add_leaf(cmd=ShowIpv6VrfAllInterface,
+                              src='[{}][ipv6_enabled]'.format(interface),
+                              dest='info[{}][ipv6][enabled]'.format(interface),
+                              vrf=vrf,
+                              interface=interface)
+            else:
+                src = '[(?P<interface>.*)][ipv6][(?P<ipv6>.*)]'
+                dest = 'info[(?P<interface>.*)][ipv6][(?P<ipv6>.*)]'
+                for src_key_path, dest_key_path in req_keys_path.items():
+                    self.add_leaf(cmd=ShowIpv6VrfAllInterface,
+                                  src=src + src_key_path,
+                                  dest=dest + dest_key_path,
+                                  vrf=vrf,
+                                  interface=interface)
+                # enabled
+                self.add_leaf(cmd=ShowIpv6VrfAllInterface,
+                              src='[(?P<interface>.*)][ipv6_enabled]',
+                              dest='info[(?P<interface>.*)][ipv6][enabled]',
+                              vrf=vrf,
+                              interface=interface)
 
         # make to write in cache
         self.make(final_call=True)
 
-        

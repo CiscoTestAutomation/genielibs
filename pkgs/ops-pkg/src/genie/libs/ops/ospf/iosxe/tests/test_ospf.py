@@ -120,7 +120,7 @@ class test_ospf(unittest.TestCase):
         self.assertEqual(288, ospf.info['vrf']['VRF1']['address_family']\
                                     ['ipv4']['instance']['2']['areas']\
                                     ['0.0.0.1']['database']['lsa_types'][1]\
-                                    ['lsas']['77.77.77.77 77.77.77.77']\
+                                    ['lsas']['10.1.77.77 10.1.77.77']\
                                     ['ospfv2']['header']['age'])
 
 

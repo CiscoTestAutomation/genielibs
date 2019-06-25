@@ -15,7 +15,19 @@ from genie.libs.parser.nxos.show_interface import ShowInterface, ShowVrfAllInter
                                  ShowIpv6InterfaceVrfAll, ShowIpInterfaceVrfAll,\
                                  ShowInterfaceSwitchport
 from genie.libs.parser.nxos.show_routing import ShowRoutingIpv6VrfAll, ShowRoutingVrfAll
+outputs = {}
+outputs['show interface'] = InterfaceOutput.ShowInterface_all
+outputs['show vrf all interface'] = InterfaceOutput.ShowVrfAllInterface_all
+outputs['show interface switchport'] = InterfaceOutput.ShowInterfaceSwitchport_all
+outputs['show ip interface vrf all'] = InterfaceOutput.ShowIpInterfaceVrfAll_all
+outputs['show ipv6 interface vrf all'] = InterfaceOutput.ShowIpv6InterfaceVrfAll_all
+outputs['show interface Ethernet2/1'] = InterfaceOutput.ShowInterface_eth2
+outputs['show vrf VRF1 interface Ethernet2/1'] = InterfaceOutput.ShowVrfAllInterface_vrf1_eth2
+outputs['show interface Ethernet2/1 switchport'] = InterfaceOutput.ShowInterfaceSwitchport_eth2
+outputs['show ip interface Ethernet2/1 vrf VRF1'] = InterfaceOutput.ShowIpInterfaceVrfAll_all
 
+def mapper(key):
+    return outputs[key]
 
 class test_interface(unittest.TestCase):
 
@@ -32,78 +44,75 @@ class test_interface(unittest.TestCase):
         self.maxDiff = None
         intf = Interface(device=self.device)
         # Get outputs
-        intf.maker.outputs[ShowInterface] = \
-            {'':InterfaceOutput.ShowInterface}
-
-        intf.maker.outputs[ShowVrfAllInterface] = \
-            {'':InterfaceOutput.ShowVrfAllInterface}
-
-        intf.maker.outputs[ShowIpInterfaceVrfAll] = \
-            {'':InterfaceOutput.ShowIpInterfaceVrfAll}
-
-        intf.maker.outputs[ShowIpv6InterfaceVrfAll] = \
-            {'':InterfaceOutput.ShowIpv6InterfaceVrfAll}
-
-        intf.maker.outputs[ShowInterfaceSwitchport] = \
-            {'':InterfaceOutput.ShowInterfaceSwitchport}
 
         intf.maker.outputs[ShowRoutingVrfAll] = \
-            {'':InterfaceOutput.ShowRoutingVrfAll}
+            {"{'vrf':''}":InterfaceOutput.ShowRoutingVrfAll}
 
         intf.maker.outputs[ShowRoutingIpv6VrfAll] = \
-            {'':InterfaceOutput.ShowRoutingIpv6VrfAll}
+            {"{'vrf':''}":InterfaceOutput.ShowRoutingIpv6VrfAll}
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
 
         # Learn the feature
         intf.learn()
 
         # Verify Ops was created successfully
-        self.assertEqual(intf.info, InterfaceOutput.InterfaceOpsOutput_info)
+        self.assertDictEqual(intf.info, InterfaceOutput.InterfaceOpsOutput_info)
+    def test_custom_output(self):
+        self.maxDiff = None
+        intf = Interface(device=self.device)
+        # Get outputs
 
+        intf.maker.outputs[ShowRoutingVrfAll] = \
+            {"{'vrf':'VRF1'}":InterfaceOutput.ShowRoutingVrfAll_vrf1}
+
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
+
+        # Learn the feature
+        intf.learn(interface='Ethernet2/1', vrf='VRF1', address_family='ipv4')
+
+        # Verify Ops was created successfully
+        self.assertDictEqual(intf.info, InterfaceOutput.InterfaceOpsOutput_custom_info)
     def test_empty_output(self):
         self.maxDiff = None
         intf = Interface(device=self.device)
         # Get outputs
-        intf.maker.outputs[ShowInterface] = {'':''}
-        intf.maker.outputs[ShowVrfAllInterface] = {'':''}
-        intf.maker.outputs[ShowIpInterfaceVrfAll] = {'':''}
-        intf.maker.outputs[ShowIpv6InterfaceVrfAll] = {'':''}
-        intf.maker.outputs[ShowInterfaceSwitchport] = {'':''}
-        intf.maker.outputs[ShowRoutingVrfAll] = {'':''}
-        intf.maker.outputs[ShowRoutingIpv6VrfAll] = {'':''}
-        
+        outputs['show interface'] = ''
+        outputs['show vrf all interface'] = ''
+        outputs['show interface switchport'] = ''
+        outputs['show ip interface vrf all'] = ''
+        outputs[
+            'show ipv6 interface vrf all'] = ''
+        intf.maker.outputs[ShowRoutingVrfAll] = {"{'vrf':''}":''}
+        intf.maker.outputs[ShowRoutingIpv6VrfAll] = {"{'vrf':''}":''}
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
         # Learn the feature
         intf.learn()
 
         # Check no attribute not found
         # info - vrf
         with self.assertRaises(AttributeError):
-            vrf = (intf.info['mgmt0']['vrf'])
+            vrf = (intf.info['Mgmt0']['vrf'])
 
+        outputs['show interface'] = InterfaceOutput.ShowInterface_all
+        outputs['show vrf all interface'] = InterfaceOutput.ShowVrfAllInterface_all
+        outputs['show interface switchport'] = InterfaceOutput.ShowInterfaceSwitchport_all
+        outputs['show ip interface vrf all'] = InterfaceOutput.ShowIpInterfaceVrfAll_all
+        outputs['show ipv6 interface vrf all'] = InterfaceOutput.ShowIpv6InterfaceVrfAll_all
     def test_selective_attribute(self):
         self.maxDiff = None
         intf = Interface(device=self.device)
         # Get outputs
-        intf.maker.outputs[ShowInterface] = \
-            {'':InterfaceOutput.ShowInterface}
-
-        intf.maker.outputs[ShowVrfAllInterface] = \
-            {'':InterfaceOutput.ShowVrfAllInterface}
-
-        intf.maker.outputs[ShowIpInterfaceVrfAll] = \
-            {'':InterfaceOutput.ShowIpInterfaceVrfAll}
-
-        intf.maker.outputs[ShowIpv6InterfaceVrfAll] = \
-            {'':InterfaceOutput.ShowIpv6InterfaceVrfAll}
-
-        intf.maker.outputs[ShowInterfaceSwitchport] = \
-            {'':InterfaceOutput.ShowInterfaceSwitchport}
 
         intf.maker.outputs[ShowRoutingVrfAll] = \
-            {'':InterfaceOutput.ShowRoutingVrfAll}
+            {"{'vrf':''}":InterfaceOutput.ShowRoutingVrfAll}
 
         intf.maker.outputs[ShowRoutingIpv6VrfAll] = \
-            {'':InterfaceOutput.ShowRoutingIpv6VrfAll}
-
+            {"{'vrf':''}":InterfaceOutput.ShowRoutingIpv6VrfAll}
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
         # Learn the feature
         intf.learn()        
 
@@ -117,26 +126,15 @@ class test_interface(unittest.TestCase):
         self.maxDiff = None
         intf = Interface(device=self.device)
         # Get outputs
-        intf.maker.outputs[ShowInterface] = \
-            {'':InterfaceOutput.ShowInterface}
 
-        intf.maker.outputs[ShowVrfAllInterface] = \
-            {'':InterfaceOutput.ShowVrfAllInterface}
 
-        intf.maker.outputs[ShowIpInterfaceVrfAll] = \
-            {'':InterfaceOutput.ShowIpInterfaceVrfAll}
-
-        intf.maker.outputs[ShowIpv6InterfaceVrfAll] = \
-            {'':InterfaceOutput.ShowIpv6InterfaceVrfAll}
-
-        intf.maker.outputs[ShowInterfaceSwitchport] = \
-            {'':InterfaceOutput.ShowInterfaceSwitchport}
-
-        intf.maker.outputs[ShowRoutingVrfAll] = {'':''}
+        intf.maker.outputs[ShowRoutingVrfAll] = \
+            {"{'vrf':''}":''}
 
         intf.maker.outputs[ShowRoutingIpv6VrfAll] = \
-            {'':InterfaceOutput.ShowRoutingIpv6VrfAll}
-
+            {"{'vrf':''}":InterfaceOutput.ShowRoutingIpv6VrfAll}
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
         # Learn the feature
         intf.learn()        
 
@@ -146,7 +144,7 @@ class test_interface(unittest.TestCase):
         del(expect_dict['Ethernet2/1']['ipv4']['10.2.2.2/24']['origin'])
                 
         # Verify Ops was created successfully
-        self.assertEqual(intf.info, expect_dict)
+        self.assertDictEqual(intf.info, expect_dict)
 
 
 if __name__ == '__main__':

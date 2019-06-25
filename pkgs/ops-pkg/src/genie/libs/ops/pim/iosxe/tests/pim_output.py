@@ -263,8 +263,8 @@ class PimOutput(object):
                                     'neighbor_count': 0,
                                     'version': 2,
                                     'mode': 'sparse-mode',
-                                    'dr_address': '1.1.1.1',
-                                    'address': ['1.1.1.1'],
+                                    'dr_address': '10.4.1.1',
+                                    'address': ['10.4.1.1'],
                                 },
                             },
                         },
@@ -417,14 +417,14 @@ class PimOutput(object):
                                 {'bsr':
                                     {'Loopback0': {
                                         'interface': 'Loopback0',
-                                        'address': '2.2.2.2',
+                                        'address': '10.16.2.2',
                                         'holdtime': 150,
                                         'next_advertisment': '00:00:26',
                                         'priority': 10,
                                         'interval': 60,
                                         },
                                     'bsr': {
-                                        'address': '4.4.4.4',
+                                        'address': '10.64.4.4',
                                         'hash_mask_length': 0,
                                         'priority': 0,
                                         'address_host': '?',
@@ -478,32 +478,32 @@ class PimOutput(object):
                         "ipv4": {
                              "rp": {
                                   "rp_list": {
-                                       "3.3.3.3 BIDIR static": {
+                                       "10.36.3.3 BIDIR static": {
                                             "info_source_type": "static",
-                                            "address": "3.3.3.3",
+                                            "address": "10.36.3.3",
                                             'mode': 'BIDIR'
                                        },
-                                       "20.0.0.3 SM autorp": {
-                                            "address": "20.0.0.3",
-                                            "info_source_address": "20.0.0.2",
+                                       "10.145.0.3 SM autorp": {
+                                            "address": "10.145.0.3",
+                                            "info_source_address": "10.145.0.2",
                                             "bsr_version": "v2v1",
                                             "info_source_type": "autorp",
                                             "expiration": "00:02:40",
                                             "up_time": "00:22:08",
                                             'mode': 'SM'
                                        },
-                                       "2.2.2.2 SM bootstrap": {
-                                            "address": "2.2.2.2",
-                                            "info_source_address": "4.4.4.4",
+                                       "10.16.2.2 SM bootstrap": {
+                                            "address": "10.16.2.2",
+                                            "info_source_address": "10.64.4.4",
                                             "bsr_version": "v2",
                                             "info_source_type": "bootstrap",
                                             "expiration": "00:02:03",
                                             "up_time": "00:00:35",
                                             'mode': 'SM'
                                        },
-                                       "3.3.3.3 SM bootstrap": {
-                                            "address": "3.3.3.3",
-                                            "info_source_address": "4.4.4.4",
+                                       "10.36.3.3 SM bootstrap": {
+                                            "address": "10.36.3.3",
+                                            "info_source_address": "10.64.4.4",
                                             "bsr_version": "v2",
                                             "info_source_type": "bootstrap",
                                             "expiration": "00:02:19",
@@ -512,49 +512,49 @@ class PimOutput(object):
                                        }
                                   },
                                   "rp_mappings": {
-                                       "224.0.0.0/4 20.0.0.3 autorp": {
+                                       "224.0.0.0/4 10.145.0.3 autorp": {
                                             "group": "224.0.0.0/4",
                                             "rp_address_host": "?",
                                             "protocol": "autorp",
                                             "expiration": "00:02:40",
-                                            "rp_address": "20.0.0.3",
+                                            "rp_address": "10.145.0.3",
                                             "up_time": "00:22:08"
                                        },
-                                       "224.0.0.0/4 2.2.2.2 bootstrap": {
+                                       "224.0.0.0/4 10.16.2.2 bootstrap": {
                                             "group": "224.0.0.0/4",
                                             "rp_address_host": "?",
                                             "hold_time": 150,
                                             "priority": 10,
                                             "protocol": "bootstrap",
                                             "expiration": "00:02:03",
-                                            "rp_address": "2.2.2.2",
+                                            "rp_address": "10.16.2.2",
                                             "up_time": "00:00:35"
                                        },
-                                       "224.0.0.0/4 3.3.3.3 bootstrap": {
+                                       "224.0.0.0/4 10.36.3.3 bootstrap": {
                                             "group": "224.0.0.0/4",
                                             "rp_address_host": "?",
                                             "hold_time": 150,
                                             "priority": 5,
                                             "protocol": "bootstrap",
                                             "expiration": "00:02:19",
-                                            "rp_address": "3.3.3.3",
+                                            "rp_address": "10.36.3.3",
                                             "up_time": "00:00:19"
                                        },
-                                       "224.0.0.0/4 3.3.3.3 static": {
+                                       "224.0.0.0/4 10.36.3.3 static": {
                                             "group": "224.0.0.0/4",
                                             "protocol": "static",
-                                            "rp_address": "3.3.3.3",
+                                            "rp_address": "10.36.3.3",
                                             "rp_address_host": "?"
                                        }
                                   },
                                   "static_rp": {
-                                       "3.3.3.3": {
+                                       "10.36.3.3": {
                                             "bidir": {}
                                        }
                                   },
                                   "bsr": {
                                        "rp": {
-                                            "rp_address": "2.2.2.2",
+                                            "rp_address": "10.16.2.2",
                                             "up_time": "00:22:08",
                                             "group_policy": "224.0.0.0/4"
                                        }
@@ -573,10 +573,10 @@ class PimOutput(object):
                         "ipv4": {
                              "rp": {
                                   "rp_mappings": {
-                                       "STATIC_RP_V4 200.11.3.1 static": {
+                                       "STATIC_RP_V4 192.168.151.1 static": {
                                             "rp_address_host": "?",
                                             "protocol": "static",
-                                            "rp_address": "200.11.3.1",
+                                            "rp_address": "192.168.151.1",
                                             "group": "STATIC_RP_V4"
                                        },
                                        "224.0.0.0/4 10.1.5.5 static": {
@@ -592,14 +592,14 @@ class PimOutput(object):
                                             "address": "10.1.5.5",
                                             "info_source_type": "static"
                                        },
-                                       "200.11.3.1 SM static": {
+                                       "192.168.151.1 SM static": {
                                             "mode": "SM",
-                                            "address": "200.11.3.1",
+                                            "address": "192.168.151.1",
                                             "info_source_type": "static"
                                        }
                                   },
                                   "static_rp": {
-                                       "200.11.3.1": {
+                                       "192.168.151.1": {
                                             "sm": {
                                                  "policy_name": "STATIC_RP_V4",
                                                  "override": True
@@ -701,7 +701,7 @@ class PimOutput(object):
                                 'hello_packets_out': 8,
                                 'oper_status': 'up',
                                 'enable': True,
-                                'address': ['1.1.1.1/32'],
+                                'address': ['10.4.1.1/32'],
                                 'multicast': {
                                     'switching': 'fast',
                                     'packets_in': 0,
@@ -713,7 +713,7 @@ class PimOutput(object):
                                 'version': 2,
                                 'mode': 'sparse',
                                 'sm': {},
-                                'dr_address': '1.1.1.1',
+                                'dr_address': '10.4.1.1',
                                 'neighbor_count': 0,
                                 'jp_interval': 60,
                                 'state_refresh_processing': 'enabled',
@@ -790,14 +790,14 @@ class PimOutput(object):
                                      "source_address": {
                                           "*": {
                                                "expire": "stopped",
-                                               "rp": "1.1.1.1",
+                                               "rp": "10.4.1.1",
                                                "flags": "SPF",
                                                'msdp_learned': False,
                                                'rp_bit': False,
                                                "uptime": "00:00:03",
                                                "rpf_nbr": "0.0.0.0",
                                           },
-                                          "1.1.1.1": {
+                                          "10.4.1.1": {
                                                "expire": "00:02:57",
                                                "flags": "PFT",
                                                'msdp_learned': False,
@@ -843,7 +843,7 @@ class PimOutput(object):
                                                "flags": "SCL",
                                                'msdp_learned': False,
                                                'rp_bit': False,
-                                               "rp": "2.2.2.2",
+                                               "rp": "10.16.2.2",
                                                "uptime": "2d09h",
                                                "rpf_nbr": "0.0.0.0",
                                           }
@@ -876,7 +876,7 @@ class PimOutput(object):
                            "multicast_group": {
                                 "239.1.1.1": {
                                      "source_address": {
-                                          "11.11.11.11": {
+                                          "10.229.11.11": {
                                                "expire": "00:02:55",
                                                "uptime": "00:00:04",
                                                "flags": "PFT",
@@ -895,7 +895,7 @@ class PimOutput(object):
                                                "flags": "SPF",
                                                'msdp_learned': False,
                                                'rp_bit': False,
-                                               "rp": "11.11.11.11",
+                                               "rp": "10.229.11.11",
                                                "rpf_nbr": "0.0.0.0",
                                           }
                                      }
@@ -916,7 +916,7 @@ class PimOutput(object):
                                                "flags": "SJCL",
                                                'msdp_learned': False,
                                                'rp_bit': False,
-                                               "rp": "11.11.11.11"}}}}}}}}}
+                                               "rp": "10.229.11.11"}}}}}}}}}
 
     ShowIpv6Mroute_default = {
         "vrf": {
@@ -1028,7 +1028,7 @@ class PimOutput(object):
                              "address_family": {
                                   "ipv4": {
                                        "neighbors": {
-                                            "201.0.1.1": {
+                                            "192.168.4.1": {
                                                  "dr_priority": 1,
                                                  "state_refresh_capable": True,
                                                  "proxy_capable": True,
@@ -1046,7 +1046,7 @@ class PimOutput(object):
                              "address_family": {
                                   "ipv4": {
                                        "neighbors": {
-                                            "201.0.4.2": {
+                                            "192.168.205.2": {
                                                  "dr_priority": 1,
                                                  "designated_router": True,
                                                  "proxy_capable": True,
@@ -1292,16 +1292,16 @@ class PimOutput(object):
                          "rp": {
                               "bidir": {
                                    "interface_df_election": {
-                                        "20.1.0.1 Tunnel9": {
-                                             "address": "20.1.0.1",
+                                        "10.186.0.1 Tunnel9": {
+                                             "address": "10.186.0.1",
                                              "interface_name": "Tunnel9",
                                              "metric": 20,
                                              "df_address": "0.0.0.0",
                                              "df_uptime": "00:00:00",
                                              "winner_metric": 20
                                         },
-                                        "20.1.0.1 Ethernet0/1": {
-                                             "address": "20.1.0.1",
+                                        "10.186.0.1 Ethernet0/1": {
+                                             "address": "10.186.0.1",
                                              "interface_name": "Ethernet0/1",
                                              "metric": 20,
                                              "df_address": "10.4.0.4",
@@ -1324,7 +1324,7 @@ class PimOutput(object):
                            "address_family": {
                                 "ipv4": {
                                      "neighbors": {
-                                          "201.0.4.2": {
+                                          "192.168.205.2": {
                                                "expiration": "00:01:19",
                                                "up_time": "4w4d",
                                                "bidir_capable": True,
@@ -1361,7 +1361,7 @@ class PimOutput(object):
                                 },
                                 "ipv4": {
                                      "neighbors": {
-                                          "201.0.1.1": {
+                                          "192.168.4.1": {
                                                "expiration": "00:01:40",
                                                "up_time": "4w4d",
                                                "dr_priority": 1,
@@ -1447,7 +1447,7 @@ class PimOutput(object):
                                      "sm": {},
                                      "dr_priority": 1,
                                      "address": [
-                                          "1.1.1.1/32"
+                                          "10.4.1.1/32"
                                      ],
                                      "jp_interval": 60,
                                      "mode": "sparse-mode",
@@ -1632,7 +1632,7 @@ class PimOutput(object):
                       "ipv4": {
                            "rp": {
                                 "static_rp": {
-                                     "3.3.3.3": {
+                                     "10.36.3.3": {
                                           "bidir": {}
                                      }
                                 },
@@ -1686,28 +1686,28 @@ class PimOutput(object):
                                      }
                                 },
                                 "rp_mappings": {
-                                     "224.0.0.0/4 3.3.3.3 static": {
+                                     "224.0.0.0/4 10.36.3.3 static": {
                                           "group": "224.0.0.0/4",
-                                          "rp_address": "3.3.3.3",
+                                          "rp_address": "10.36.3.3",
                                           "protocol": "static"
                                      },
-                                     "224.0.0.0/4 2.2.2.2 bootstrap": {
+                                     "224.0.0.0/4 10.16.2.2 bootstrap": {
                                           "group": "224.0.0.0/4",
-                                          "rp_address": "2.2.2.2",
+                                          "rp_address": "10.16.2.2",
                                           "up_time": "00:00:35",
                                           "protocol": "bootstrap",
                                           "expiration": "00:02:03"
                                      },
-                                     "224.0.0.0/4 20.0.0.3 autorp": {
+                                     "224.0.0.0/4 10.145.0.3 autorp": {
                                           "group": "224.0.0.0/4",
-                                          "rp_address": "20.0.0.3",
+                                          "rp_address": "10.145.0.3",
                                           "up_time": "00:22:08",
                                           "protocol": "autorp",
                                           "expiration": "00:02:40"
                                      },
-                                     "224.0.0.0/4 3.3.3.3 bootstrap": {
+                                     "224.0.0.0/4 10.36.3.3 bootstrap": {
                                           "group": "224.0.0.0/4",
-                                          "rp_address": "3.3.3.3",
+                                          "rp_address": "10.36.3.3",
                                           "up_time": "00:00:19",
                                           "protocol": "bootstrap",
                                           "expiration": "00:02:19"
@@ -1717,51 +1717,51 @@ class PimOutput(object):
                                      "bsr_next_bootstrap": "00:00:06",
                                      "Loopback0": {
                                           "interface": "Loopback0",
-                                          "address": "2.2.2.2",
+                                          "address": "10.16.2.2",
                                           "priority": 10,
                                           "interval": 60
                                      },
                                      "bsr": {
                                           "hash_mask_length": 0,
-                                          "address": "4.4.4.4",
+                                          "address": "10.64.4.4",
                                           "priority": 0,
                                           "up_time": "3d07h"
                                      },
                                      "rp": {
                                           "group_policy": "224.0.0.0/4",
-                                          "rp_address": "2.2.2.2",
+                                          "rp_address": "10.16.2.2",
                                           "up_time": "00:22:08"
                                      }
                                 },
                                 "rp_list": {
-                                     "20.0.0.3 SM autorp": {
+                                     "10.145.0.3 SM autorp": {
                                           "expiration": "00:02:40",
-                                          "info_source_address": "20.0.0.2",
+                                          "info_source_address": "10.145.0.2",
                                           "info_source_type": "autorp",
                                           "mode": "SM",
                                           "up_time": "00:22:08",
-                                          "address": "20.0.0.3"
+                                          "address": "10.145.0.3"
                                      },
-                                     "3.3.3.3 SM bootstrap": {
+                                     "10.36.3.3 SM bootstrap": {
                                           "expiration": "00:02:19",
-                                          "info_source_address": "4.4.4.4",
+                                          "info_source_address": "10.64.4.4",
                                           "info_source_type": "bootstrap",
                                           "mode": "SM",
                                           "up_time": "00:00:19",
-                                          "address": "3.3.3.3"
+                                          "address": "10.36.3.3"
                                      },
-                                     "3.3.3.3 BIDIR static": {
-                                          "address": "3.3.3.3",
+                                     "10.36.3.3 BIDIR static": {
+                                          "address": "10.36.3.3",
                                           "mode": "BIDIR",
                                           "info_source_type": "static"
                                      },
-                                     "2.2.2.2 SM bootstrap": {
+                                     "10.16.2.2 SM bootstrap": {
                                           "expiration": "00:02:03",
-                                          "info_source_address": "4.4.4.4",
+                                          "info_source_address": "10.64.4.4",
                                           "info_source_type": "bootstrap",
                                           "mode": "SM",
                                           "up_time": "00:00:35",
-                                          "address": "2.2.2.2"
+                                          "address": "10.16.2.2"
                                      }
                                 }
                            },
@@ -1779,7 +1779,7 @@ class PimOutput(object):
                                 },
                                 "239.1.1.1 * True": {
                                      "group": "239.1.1.1",
-                                     "rp_address": "1.1.1.1",
+                                     "rp_address": "10.4.1.1",
                                      "msdp_learned": False,
                                      "rpf_neighbor": "0.0.0.0",
                                      "is_rpt": True,
@@ -1790,7 +1790,7 @@ class PimOutput(object):
                                 },
                                 "224.0.1.40 * True": {
                                      "group": "224.0.1.40",
-                                     "rp_address": "2.2.2.2",
+                                     "rp_address": "10.16.2.2",
                                      "msdp_learned": False,
                                      "rpf_neighbor": "0.0.0.0",
                                      "is_rpt": True,
@@ -1820,13 +1820,13 @@ class PimOutput(object):
                                      },
                                      "expiration": "00:02:54"
                                 },
-                                "239.1.1.1 1.1.1.1 False": {
+                                "239.1.1.1 10.4.1.1 False": {
                                      "group": "239.1.1.1",
                                      "msdp_learned": False,
                                      "rpf_neighbor": "0.0.0.0",
                                      "is_rpt": False,
                                      "rp_bit": False,
-                                     "source_address": "1.1.1.1",
+                                     "source_address": "10.4.1.1",
                                      "incoming_interface": "Loopback0",
                                      "up_time": "00:00:03",
                                      "expiration": "00:02:57"
@@ -1969,7 +1969,7 @@ class PimOutput(object):
                       "ipv4": {
                            "rp": {
                                 "static_rp": {
-                                     "200.11.3.1": {
+                                     "192.168.151.1": {
                                           "sm": {
                                                "policy_name": "STATIC_RP_V4",
                                                "override": True
@@ -1978,13 +1978,13 @@ class PimOutput(object):
                                 },
                                 "bidir": {
                                      "interface_df_election": {
-                                          "20.1.0.1 Tunnel9": {
-                                               "address": "20.1.0.1",
+                                          "10.186.0.1 Tunnel9": {
+                                               "address": "10.186.0.1",
                                                "interface_name": "Tunnel9",
                                                "df_address": "0.0.0.0"
                                           },
-                                          "20.1.0.1 Ethernet0/1": {
-                                               "address": "20.1.0.1",
+                                          "10.186.0.1 Ethernet0/1": {
+                                               "address": "10.186.0.1",
                                                "interface_name": "Ethernet0/1",
                                                "df_address": "10.4.0.4"
                                           }
@@ -1996,9 +1996,9 @@ class PimOutput(object):
                                           "rp_address": "10.1.5.5",
                                           "protocol": "static"
                                      },
-                                     "STATIC_RP_V4 200.11.3.1 static": {
+                                     "STATIC_RP_V4 192.168.151.1 static": {
                                           "group": "STATIC_RP_V4",
-                                          "rp_address": "200.11.3.1",
+                                          "rp_address": "192.168.151.1",
                                           "protocol": "static"
                                      }
                                 },
@@ -2018,8 +2018,8 @@ class PimOutput(object):
                                      }
                                 },
                                 "rp_list": {
-                                     "200.11.3.1 SM static": {
-                                          "address": "200.11.3.1",
+                                     "192.168.151.1 SM static": {
+                                          "address": "192.168.151.1",
                                           "mode": "SM",
                                           "info_source_type": "static"
                                      },
@@ -2033,7 +2033,7 @@ class PimOutput(object):
                            "topology_tree_info": {
                                 "239.1.1.1 * True": {
                                      "group": "239.1.1.1",
-                                     "rp_address": "11.11.11.11",
+                                     "rp_address": "10.229.11.11",
                                      "msdp_learned": False,
                                      "rpf_neighbor": "0.0.0.0",
                                      "is_rpt": True,
@@ -2044,7 +2044,7 @@ class PimOutput(object):
                                 },
                                 "224.0.1.40 * True": {
                                      "group": "224.0.1.40",
-                                     "rp_address": "11.11.11.11",
+                                     "rp_address": "10.229.11.11",
                                      "msdp_learned": False,
                                      "rpf_neighbor": "0.0.0.0",
                                      "is_rpt": True,
@@ -2058,11 +2058,11 @@ class PimOutput(object):
                                      },
                                      "expiration": "00:02:52"
                                 },
-                                "239.1.1.1 11.11.11.11 False": {
+                                "239.1.1.1 10.229.11.11 False": {
                                      "group": "239.1.1.1",
                                      "rpf_neighbor": "0.0.0.0",
                                      "is_rpt": False,
-                                     "source_address": "11.11.11.11",
+                                     "source_address": "10.229.11.11",
                                      "incoming_interface": "Loopback1",
                                      "up_time": "00:00:04",
                                      "expiration": "00:02:55"

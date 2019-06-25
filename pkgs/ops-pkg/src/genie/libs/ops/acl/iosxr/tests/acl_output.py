@@ -242,7 +242,7 @@ class AclOutput(object):
                                     },
                                 'destination_ipv4_network': {
                                     '192.168.1.0 0.0.0.255': {
-                                        'destination_ipv4_network': 'host 1.1.1.1',
+                                        'destination_ipv4_network': 'host 10.4.1.1',
                                         },
                                     },
                                 },
@@ -264,12 +264,12 @@ class AclOutput(object):
                         'l3': {
                             'ipv4': {
                                 'source_ipv4_network': {
-                                    'host 2.2.2.2': {
-                                        'source_ipv4_network': 'host 2.2.2.2',
+                                    'host 10.16.2.2': {
+                                        'source_ipv4_network': 'host 10.16.2.2',
                                         },
                                     },
                                 'destination_ipv4_network': {
-                                    'host 2.2.2.2': {
+                                    'host 10.16.2.2': {
                                         'destination_ipv4_network': 'any',
                                         },
                                     },
@@ -533,13 +533,13 @@ class AclOutput(object):
                                     'ttl_operator': 'eq',
                                     'precedence': 'network',
                                     'destination_ipv4_network': {
-                                        'host 2.2.2.2': {
+                                        'host 10.16.2.2': {
                                             'destination_ipv4_network': 'any',
                                             },
                                         },
                                     'source_ipv4_network': {
-                                        'host 2.2.2.2': {
-                                            'source_ipv4_network': 'host 2.2.2.2',
+                                        'host 10.16.2.2': {
+                                            'source_ipv4_network': 'host 10.16.2.2',
                                             },
                                         },
                                     },
@@ -567,7 +567,7 @@ class AclOutput(object):
                                 'ipv4': {
                                     'destination_ipv4_network': {
                                         '192.168.1.0 0.0.0.255': {
-                                            'destination_ipv4_network': 'host 1.1.1.1',
+                                            'destination_ipv4_network': 'host 10.4.1.1',
                                             },
                                         },
                                     'source_ipv4_network': {

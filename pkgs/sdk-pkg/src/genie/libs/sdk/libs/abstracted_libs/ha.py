@@ -70,7 +70,7 @@ class HA(object):
             
         self._reconnect(steps=steps, timeout=timeout)
 
-    def reload(self, steps, timeout):
+    def reload(self, steps, timeout, reload_timeout, config_lock_retry_sleep, config_lock_retries):
         """Do the reload the whole box action and
         reconnect to router after reload.
 
@@ -116,8 +116,13 @@ class HA(object):
             # TODO - update more with issues when seeing
             # update the error pattern
             self.device.settings.ERROR_PATTERN.append("Write failed: Broken pipe")
+            
             try:
-                self.device.reload(dialog=dialog)
+                self.device.reload(dialog=dialog, 
+                                   timeout=reload_timeout,
+                                   config_lock_retry_sleep=config_lock_retry_sleep,
+                                   config_lock_retries=config_lock_retries)
+                
             except SubCommandFailure:
                 # read the capture setting errors
                 try:

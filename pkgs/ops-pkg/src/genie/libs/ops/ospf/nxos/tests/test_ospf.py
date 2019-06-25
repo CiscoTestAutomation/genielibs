@@ -114,7 +114,7 @@ class test_ospf(unittest.TestCase):
         self.assertEqual(646, ospf.info['vrf']['VRF1']['address_family']\
                                     ['ipv4']['instance']['1']['areas']\
                                     ['0.0.0.1']['database']['lsa_types'][1]\
-                                    ['lsas']['11.11.11.11 11.11.11.11']\
+                                    ['lsas']['10.229.11.11 10.229.11.11']\
                                     ['ospfv2']['header']['age'])
 
     def test_empty_output(self):

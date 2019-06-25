@@ -122,7 +122,7 @@ class VlanOutput(object):
                     'ip_igmp_snooping': 'enabled',
                     'lookup_mode': 'ip',
                     'igmp_querier': {
-                        'address': '50.1.1.1',
+                        'address': '10.51.1.1',
                         'version': 2,
                         'interval': 125,
                         'last_member_query_interval': 1,
@@ -271,13 +271,13 @@ class VlanOutput(object):
                                         {'Vlan100':
                                              {'vlan_id':
                                                   {'100':
-                                                       {'interface_status': 'protocol-down/link-down/admin-up', 'ip_address': '201.0.12.1'}
+                                                       {'interface_status': 'protocol-down/link-down/admin-up', 'ip_address': '192.168.234.1'}
                                                    }
                                               },
                                          'Vlan101':
                                              {'vlan_id':
                                                   {'101':
-                                                       {'interface_status': 'protocol-down/link-down/admin-up', 'ip_address': '201.0.13.1'}
+                                                       {'interface_status': 'protocol-down/link-down/admin-up', 'ip_address': '192.168.151.1'}
                                                    }
                                               }
                                          }
@@ -291,14 +291,14 @@ class VlanOutput(object):
             "Vlan100":{
                 "vlan_id":{
                     "100": {
-                        "ip_address": "201.0.12.1"
+                        "ip_address": "192.168.234.1"
                     }
                 }
             },
             "Vlan101":{
                 "vlan_id":{
                     "101": {
-                        "ip_address": "201.0.13.1"
+                        "ip_address": "192.168.151.1"
                     }
                 }
             }
@@ -427,14 +427,14 @@ class VlanOutput(object):
                                      "Vlan100":{
                                          "vlan_id":{
                                              "100": {
-                                                 "ip_address": "201.0.12.1"
+                                                 "ip_address": "192.168.234.1"
                                              }
                                          }
                                      },
                                      "Vlan101":{
                                          "vlan_id":{
                                              "101": {
-                                                 "ip_address": "201.0.13.1"
+                                                 "ip_address": "192.168.151.1"
                                              }
                                          }
                                      }

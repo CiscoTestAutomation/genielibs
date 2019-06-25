@@ -61,7 +61,7 @@ class test_route_all(unittest.TestCase):
 
         with self.assertRaises(KeyError):
             interfaces = f.info['vrf']['VRF1']['address_family']['ipv4']['routes']\
-                ['1.1.1.1/32']['next_hop']['next_hop_vrf']
+                ['10.4.1.1/32']['next_hop']['next_hop_vrf']
 
     def test_empty_output_route(self):
         self.maxDiff = None

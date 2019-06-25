@@ -131,7 +131,7 @@ class test_pim(unittest.TestCase):
         # info - default vrf
         self.assertEqual(pim.info['vrf']['default']['address_family']\
                                  ['ipv4']['rp']['bsr']\
-                                 ['Loopback0']['address'], '2.2.2.2')
+                                 ['Loopback0']['address'], '10.16.2.2')
         # info - vrf VRF1
         self.assertEqual(pim.info['vrf']['VRF1']['interfaces']\
                                   ['GigabitEthernet3']['address_family']['ipv4']\

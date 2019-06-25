@@ -56,7 +56,7 @@ class test_arp(unittest.TestCase):
         # Check specific attribute values
         # info - interfaces
         self.assertEqual(arp.info['interfaces']['Port-channel10']['ipv4']\
-            ['neighbors']['1.2.1.1']['ip'], '1.2.1.1')
+            ['neighbors']['10.9.1.1']['ip'], '10.9.1.1')
         # info - statistics
         self.assertEqual(arp.info['statistics']['in_drops'], 0)
 

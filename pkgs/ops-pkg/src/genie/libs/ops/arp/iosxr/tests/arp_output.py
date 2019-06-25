@@ -154,8 +154,8 @@ class ArpOutput(object):
           'GigabitEthernet0/0/0/2': {
                'int_status': 'up',
                'ipv4': {
-                    '20.1.5.1/24': {
-                         'ip': '20.1.5.1',
+                    '10.186.5.1/24': {
+                         'ip': '10.186.5.1',
                          'prefix_length': '24'},
                     'broadcast_forwarding': 'disabled',
                     'icmp_redirects': 'never sent',
@@ -194,8 +194,8 @@ class ArpOutput(object):
           'GigabitEthernet0/0/0/4': {
                'int_status': 'up',
                'ipv4': {
-                    '111.111.111.111/32': {
-                         'ip': '111.111.111.111',
+                    '10.69.111.111/32': {
+                         'ip': '10.69.111.111',
                          'prefix_length': '32'},
                     'broadcast_forwarding': 'disabled',
                     'icmp_redirects': 'never sent',
@@ -223,8 +223,8 @@ class ArpOutput(object):
           'Loopback0': {
                'int_status': 'up',
                'ipv4': {
-                    '1.1.1.1/32': {
-                         'ip': '1.1.1.1',
+                    '10.4.1.1/32': {
+                         'ip': '10.4.1.1',
                          'prefix_length': '32'},
                     'broadcast_forwarding': 'disabled',
                     'icmp_redirects': 'never sent',
@@ -240,8 +240,8 @@ class ArpOutput(object):
           'Loopback11': {
                'int_status': 'up',
                'ipv4': {
-                    '111.111.111.111/32': {
-                         'ip': '111.111.111.111',
+                    '10.69.111.111/32': {
+                         'ip': '10.69.111.111',
                          'prefix_length': '32'},
                     'broadcast_forwarding': 'disabled',
                     'icmp_redirects': 'never sent',

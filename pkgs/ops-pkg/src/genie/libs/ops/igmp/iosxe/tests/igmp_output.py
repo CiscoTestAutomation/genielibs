@@ -147,7 +147,7 @@ class IgmpOutput(object):
 
         Global IGMP State Limit : 0 active out of 20 max
         GigabitEthernet2 is up, line protocol is up
-          Internet address is 20.1.2.1/24
+          Internet address is 10.186.2.1/24
           IGMP is enabled on interface
           Multicast Routing table VRF1
           Current IGMP host version is 3
@@ -164,8 +164,8 @@ class IgmpOutput(object):
           Interface IGMP State Limit : 0 active out of 10 max
           Multicast routing is enabled on interface
           Multicast TTL threshold is 0
-          Multicast designated router (DR) is 20.1.2.1 (this system)
-          IGMP querying router is 20.1.2.1 (this system)
+          Multicast designated router (DR) is 10.186.2.1 (this system)
+          IGMP querying router is 10.186.2.1 (this system)
           Multicast groups joined by this system (number of users):
               224.0.1.40(1)  239.1.1.1(1)  239.2.2.2(1)
               239.3.3.3(1)  239.4.4.4(1)
@@ -196,7 +196,7 @@ class IgmpOutput(object):
                             V - Virtual, M - SSM Mapping, L - Local,
                             Ac - Channel accounted towards access control limit)
           Source Address   Uptime    v3 Exp   CSR Exp   Fwd  Flags
-          1.1.1.1          00:05:06  stopped   stopped   Yes  L
+          10.4.1.1          00:05:06  stopped   stopped   Yes  L
 
         Interface:        GigabitEthernet1
         Group:                239.2.2.2
@@ -224,7 +224,7 @@ class IgmpOutput(object):
                             V - Virtual, M - SSM Mapping, L - Local,
                             Ac - Channel accounted towards access control limit)
           Source Address   Uptime    v3 Exp   CSR Exp   Fwd  Flags
-          1.1.1.2          00:05:06  stopped   stopped   Yes  L
+          10.4.1.2          00:05:06  stopped   stopped   Yes  L
 
         Interface:        GigabitEthernet1
         Group:                239.7.7.7
@@ -236,7 +236,7 @@ class IgmpOutput(object):
                             V - Virtual, M - SSM Mapping, L - Local,
                             Ac - Channel accounted towards access control limit)
           Source Address   Uptime    v3 Exp   CSR Exp   Fwd  Flags
-          2.2.2.1          00:05:06  stopped   stopped   Yes  S
+          10.16.2.1          00:05:06  stopped   stopped   Yes  S
 
         Interface:        GigabitEthernet1
         Group:                239.6.6.6
@@ -264,8 +264,8 @@ class IgmpOutput(object):
                             V - Virtual, M - SSM Mapping, L - Local,
                             Ac - Channel accounted towards access control limit)
           Source Address   Uptime    v3 Exp   CSR Exp   Fwd  Flags
-          2.2.2.1          00:05:06  stopped   stopped   Yes  S
-          2.2.2.2          00:05:06  stopped   stopped   Yes  S
+          10.16.2.1          00:05:06  stopped   stopped   Yes  S
+          10.16.2.2          00:05:06  stopped   stopped   Yes  S
 
         Interface:        GigabitEthernet1
         Group:                224.0.1.40
@@ -288,7 +288,7 @@ class IgmpOutput(object):
         Flags:                L U 
         Uptime:                00:06:24
         Group mode:        EXCLUDE (Expires: never)
-        Last reporter:        20.1.2.1
+        Last reporter:        10.186.2.1
         Source list is empty
 
         Interface:        GigabitEthernet2
@@ -296,19 +296,19 @@ class IgmpOutput(object):
         Flags:                L 
         Uptime:                00:06:24
         Group mode:        INCLUDE
-        Last reporter:        20.1.2.1
+        Last reporter:        10.186.2.1
         Group source list: (C - Cisco Src Report, U - URD, R - Remote, S - Static,
                             V - Virtual, M - SSM Mapping, L - Local,
                             Ac - Channel accounted towards access control limit)
           Source Address   Uptime    v3 Exp   CSR Exp   Fwd  Flags
-          1.1.1.1          00:06:24  stopped   stopped   Yes  L
+          10.4.1.1          00:06:24  stopped   stopped   Yes  L
 
         Interface:        GigabitEthernet2
         Group:                239.2.2.2
         Flags:                L U 
         Uptime:                00:06:24
         Group mode:        EXCLUDE (Expires: never)
-        Last reporter:        20.1.2.1
+        Last reporter:        10.186.2.1
         Source list is empty
 
         Interface:        GigabitEthernet2
@@ -324,12 +324,12 @@ class IgmpOutput(object):
         Flags:                L 
         Uptime:                00:06:23
         Group mode:        INCLUDE
-        Last reporter:        20.1.2.1
+        Last reporter:        10.186.2.1
         Group source list: (C - Cisco Src Report, U - URD, R - Remote, S - Static,
                             V - Virtual, M - SSM Mapping, L - Local,
                             Ac - Channel accounted towards access control limit)
           Source Address   Uptime    v3 Exp   CSR Exp   Fwd  Flags
-          1.1.1.2          00:06:23  stopped   stopped   Yes  L
+          10.4.1.2          00:06:23  stopped   stopped   Yes  L
 
         Interface:        GigabitEthernet2
         Group:                239.7.7.7
@@ -341,7 +341,7 @@ class IgmpOutput(object):
                             V - Virtual, M - SSM Mapping, L - Local,
                             Ac - Channel accounted towards access control limit)
           Source Address   Uptime    v3 Exp   CSR Exp   Fwd  Flags
-          2.2.2.1          00:06:06  stopped   stopped   Yes  S
+          10.16.2.1          00:06:06  stopped   stopped   Yes  S
 
         Interface:        GigabitEthernet2
         Group:                239.6.6.6
@@ -361,15 +361,15 @@ class IgmpOutput(object):
                             V - Virtual, M - SSM Mapping, L - Local,
                             Ac - Channel accounted towards access control limit)
           Source Address   Uptime    v3 Exp   CSR Exp   Fwd  Flags
-          2.2.2.1          00:03:56  stopped   stopped   Yes  S
-          2.2.2.2          00:05:57  stopped   stopped   Yes  S
+          10.16.2.1          00:03:56  stopped   stopped   Yes  S
+          10.16.2.2          00:05:57  stopped   stopped   Yes  S
 
         Interface:        GigabitEthernet2
         Group:                224.0.1.40
         Flags:                L U 
         Uptime:                00:25:55
         Group mode:        INCLUDE
-        Last reporter:        20.1.2.1
+        Last reporter:        10.186.2.1
         Source list is empty
      '''
 
@@ -378,8 +378,8 @@ class IgmpOutput(object):
 
         Group address: 239.1.1.1
         Database     : Static
-        Source list  : 1.1.1.1
-                       2.2.2.2
+        Source list  : 10.4.1.1
+                       10.16.2.2
      '''
 
 
@@ -434,8 +434,8 @@ class IgmpOutput(object):
 
         Group address: 239.1.1.1
         Database     : Static
-        Source list  : 1.1.1.1
-                       2.2.2.2
+        Source list  : 10.4.1.1
+                       10.16.2.2
      '''
      ShowIpIgmpSsmMapping_VRF1_2 = '''\
         R4# show ip igmp vrf VRF1 ssm-mapping 239.2.2.2
@@ -483,21 +483,21 @@ class IgmpOutput(object):
                "VRF1": {
                     "max_groups": 20,
                     "ssm_map": {
-                         "1.1.1.1 239.1.1.1": {
-                              "source_addr": "1.1.1.1",
+                         "10.4.1.1 239.1.1.1": {
+                              "source_addr": "10.4.1.1",
                               "group_address": "239.1.1.1"
                          },
-                         "2.2.2.2 239.1.1.1": {
-                              "source_addr": "2.2.2.2",
+                         "10.16.2.2 239.1.1.1": {
+                              "source_addr": "10.16.2.2",
                               "group_address": "239.1.1.1"
                          }
                     },
                     "interfaces": {
                          "GigabitEthernet2": {
-                              "querier": "20.1.2.1",
+                              "querier": "10.186.2.1",
                               "group": {
                                    "224.0.1.40": {
-                                        "last_reporter": "20.1.2.1",
+                                        "last_reporter": "10.186.2.1",
                                         "up_time": "00:25:55"
                                    },
                                    "239.6.6.6": {
@@ -508,19 +508,19 @@ class IgmpOutput(object):
                                         "last_reporter": "0.0.0.0",
                                         "up_time": "00:05:59",
                                         "source": {
-                                             "2.2.2.2": {
+                                             "10.16.2.2": {
                                                   "up_time": "00:05:57"
                                              },
-                                             "2.2.2.1": {
+                                             "10.16.2.1": {
                                                   "up_time": "00:03:56"
                                              }
                                         }
                                    },
                                    "239.3.3.3": {
-                                        "last_reporter": "20.1.2.1",
+                                        "last_reporter": "10.186.2.1",
                                         "up_time": "00:06:24",
                                         "source": {
-                                             "1.1.1.1": {
+                                             "10.4.1.1": {
                                                   "up_time": "00:06:24"
                                              }
                                         }
@@ -532,13 +532,13 @@ class IgmpOutput(object):
                                    "239.2.2.2": {
                                         "expire": "never",
                                         "up_time": "00:06:24",
-                                        "last_reporter": "20.1.2.1"
+                                        "last_reporter": "10.186.2.1"
                                    },
                                    "239.4.4.4": {
-                                        "last_reporter": "20.1.2.1",
+                                        "last_reporter": "10.186.2.1",
                                         "up_time": "00:06:23",
                                         "source": {
-                                             "1.1.1.2": {
+                                             "10.4.1.2": {
                                                   "up_time": "00:06:23"
                                              }
                                         }
@@ -547,7 +547,7 @@ class IgmpOutput(object):
                                         "last_reporter": "0.0.0.0",
                                         "up_time": "00:06:06",
                                         "source": {
-                                             "2.2.2.1": {
+                                             "10.16.2.1": {
                                                   "up_time": "00:06:06"
                                              }
                                         }
@@ -555,7 +555,7 @@ class IgmpOutput(object):
                                    "239.1.1.1": {
                                         "expire": "never",
                                         "up_time": "00:06:24",
-                                        "last_reporter": "20.1.2.1"
+                                        "last_reporter": "10.186.2.1"
                                    }
                               },
                               "oper_status": "up",
@@ -572,20 +572,20 @@ class IgmpOutput(object):
                               },
                               "group_policy": "test2",
                               "join_group": {
-                                   "239.8.8.8 2.2.2.2": {
-                                        "source": "2.2.2.2",
+                                   "239.8.8.8 10.16.2.2": {
+                                        "source": "10.16.2.2",
                                         "group": "239.8.8.8"
                                    },
-                                   "239.4.4.4 1.1.1.2": {
-                                        "source": "1.1.1.2",
+                                   "239.4.4.4 10.4.1.2": {
+                                        "source": "10.4.1.2",
                                         "group": "239.4.4.4"
                                    },
                                    "224.0.1.40 *": {
                                         "source": "*",
                                         "group": "224.0.1.40"
                                    },
-                                   "239.7.7.7 2.2.2.1": {
-                                        "source": "2.2.2.1",
+                                   "239.7.7.7 10.16.2.1": {
+                                        "source": "10.16.2.1",
                                         "group": "239.7.7.7"
                                    },
                                    "239.2.2.2 *": {
@@ -596,12 +596,12 @@ class IgmpOutput(object):
                                         "source": "*",
                                         "group": "239.1.1.1"
                                    },
-                                   "239.3.3.3 1.1.1.1": {
-                                        "source": "1.1.1.1",
+                                   "239.3.3.3 10.4.1.1": {
+                                        "source": "10.4.1.1",
                                         "group": "239.3.3.3"
                                    },
-                                   "239.8.8.8 2.2.2.1": {
-                                        "source": "2.2.2.1",
+                                   "239.8.8.8 10.16.2.1": {
+                                        "source": "10.16.2.1",
                                         "group": "239.8.8.8"
                                    }
                               },
@@ -623,12 +623,12 @@ class IgmpOutput(object):
                "default": {
                     "max_groups": 20,
                     "ssm_map": {
-                         "1.1.1.1 239.1.1.1": {
-                              "source_addr": "1.1.1.1",
+                         "10.4.1.1 239.1.1.1": {
+                              "source_addr": "10.4.1.1",
                               "group_address": "239.1.1.1"
                          },
-                         "2.2.2.2 239.1.1.1": {
-                              "source_addr": "2.2.2.2",
+                         "10.16.2.2 239.1.1.1": {
+                              "source_addr": "10.16.2.2",
                               "group_address": "239.1.1.1"
                          }
                     },
@@ -650,10 +650,10 @@ class IgmpOutput(object):
                                         "last_reporter": "0.0.0.0",
                                         "up_time": "00:05:06",
                                         "source": {
-                                             "2.2.2.2": {
+                                             "10.16.2.2": {
                                                   "up_time": "00:05:06"
                                              },
-                                             "2.2.2.1": {
+                                             "10.16.2.1": {
                                                   "up_time": "00:05:06"
                                              }
                                         }
@@ -662,7 +662,7 @@ class IgmpOutput(object):
                                         "last_reporter": "10.1.2.1",
                                         "up_time": "00:05:06",
                                         "source": {
-                                             "1.1.1.1": {
+                                             "10.4.1.1": {
                                                   "up_time": "00:05:06"
                                              }
                                         }
@@ -683,7 +683,7 @@ class IgmpOutput(object):
                                         "last_reporter": "0.0.0.0",
                                         "up_time": "00:05:06",
                                         "source": {
-                                             "2.2.2.1": {
+                                             "10.16.2.1": {
                                                   "up_time": "00:05:06"
                                              }
                                         }
@@ -692,7 +692,7 @@ class IgmpOutput(object):
                                         "last_reporter": "10.1.2.1",
                                         "up_time": "00:05:06",
                                         "source": {
-                                             "1.1.1.2": {
+                                             "10.4.1.2": {
                                                   "up_time": "00:05:06"
                                              }
                                         }
@@ -715,8 +715,8 @@ class IgmpOutput(object):
                               },
                               "group_policy": "test2",
                               "join_group": {
-                                   "239.8.8.8 2.2.2.2": {
-                                        "source": "2.2.2.2",
+                                   "239.8.8.8 10.16.2.2": {
+                                        "source": "10.16.2.2",
                                         "group": "239.8.8.8"
                                    },
                                    "239.9.9.9 *": {
@@ -727,8 +727,8 @@ class IgmpOutput(object):
                                         "source": "*",
                                         "group": "224.0.1.40"
                                    },
-                                   "239.7.7.7 2.2.2.1": {
-                                        "source": "2.2.2.1",
+                                   "239.7.7.7 10.16.2.1": {
+                                        "source": "10.16.2.1",
                                         "group": "239.7.7.7"
                                    },
                                    "239.1.1.1 *": {
@@ -739,16 +739,16 @@ class IgmpOutput(object):
                                         "source": "*",
                                         "group": "239.2.2.2"
                                    },
-                                   "239.4.4.4 1.1.1.2": {
-                                        "source": "1.1.1.2",
+                                   "239.4.4.4 10.4.1.2": {
+                                        "source": "10.4.1.2",
                                         "group": "239.4.4.4"
                                    },
-                                   "239.3.3.3 1.1.1.1": {
-                                        "source": "1.1.1.1",
+                                   "239.3.3.3 10.4.1.1": {
+                                        "source": "10.4.1.1",
                                         "group": "239.3.3.3"
                                    },
-                                   "239.8.8.8 2.2.2.1": {
-                                        "source": "2.2.2.1",
+                                   "239.8.8.8 10.16.2.1": {
+                                        "source": "10.16.2.1",
                                         "group": "239.8.8.8"
                                    }
                               },

@@ -50,10 +50,10 @@ class test_route_all(unittest.TestCase):
         # Check match
 
         self.assertEqual('local', f.info['vrf']['default']['address_family']['ipv4']['routes']\
-            ['33.33.33.33/32']['source_protocol'])
+            ['10.21.33.33/32']['source_protocol'])
         # Check does not match
         self.assertNotEqual(200, f.info['vrf']['default']['address_family']['ipv4']['routes']\
-            ['33.33.33.33/32']['route_preference'])
+            ['10.21.33.33/32']['route_preference'])
 
 
     def test_missing_attributes_route(self):
@@ -66,7 +66,7 @@ class test_route_all(unittest.TestCase):
 
         with self.assertRaises(KeyError):
             interfaces = f.info['vrf']['VRF1']['address_family']['ipv4']['routes']\
-                ['3.3.3.3/32']['next_hop']['interface']
+                ['10.36.3.3/32']['next_hop']['interface']
 
     def test_empty_output_route(self):
         self.maxDiff = None

@@ -38,11 +38,11 @@ class OspfOutput(object):
                                             'loopback_interfaces': 0,
                                             'passive_interfaces': 0},
                                         'ranges': 
-                                            {'1.1.0.0/16': 
+                                            {'10.4.0.0/16': 
                                                 {'advertise': False,
                                                 'cost': 31,
                                                 'net': 1,
-                                                'prefix': '1.1.0.0/16'}},
+                                                'prefix': '10.4.0.0/16'}},
                                         'statistics': 
                                             {'area_scope_lsa_cksum_sum': '11',
                                             'area_scope_lsa_count': 11,
@@ -80,7 +80,7 @@ class OspfOutput(object):
                                 'preference': 
                                     {'single_value': 
                                         {'all': 110}},
-                                'router_id': '22.22.22.22',
+                                'router_id': '10.151.22.22',
                                 'single_tos_routes_enable': True,
                                 'spf_control': 
                                     {'paths': 8,
@@ -119,11 +119,11 @@ class OspfOutput(object):
                                             'loopback_interfaces': 1,
                                             'passive_interfaces': 0},
                                         'ranges': 
-                                            {'1.1.1.0/24': 
+                                            {'10.4.1.0/24': 
                                                 {'advertise': True,
                                                 'cost': 33,
                                                 'net': 0,
-                                                'prefix': '1.1.1.0/24'}},
+                                                'prefix': '10.4.1.0/24'}},
                                         'statistics': 
                                             {'area_scope_lsa_cksum_sum': '19',
                                             'area_scope_lsa_count': 19,
@@ -165,7 +165,7 @@ class OspfOutput(object):
                                 'opaque_lsa_enable': True,
                                 'preference': 
                                     {'single_value': {'all': 110}},
-                                'router_id': '2.2.2.2',
+                                'router_id': '10.16.2.2',
                                 'single_tos_routes_enable': True,
                                 'spf_control': 
                                     {'paths': 8,
@@ -218,7 +218,7 @@ class OspfOutput(object):
                                                 'name': 'Ethernet2/1',
                                                 'state': 'bdr'}},
                                         'sham_links': 
-                                            {'22.22.22.22 11.11.11.11': 
+                                            {'10.151.22.22 10.229.11.11': 
                                                 {'area': '0.0.0.1',
                                                 'interface_type': 'point_to_point',
                                                 'mpls': 
@@ -226,9 +226,9 @@ class OspfOutput(object):
                                                         {'autoconfig': False,
                                                         'autoconfig_area_id': '0.0.0.1',
                                                         'igp_sync': False}},
-                                                'name': '22.22.22.22 11.11.11.11',
+                                                'name': '10.151.22.22 10.229.11.11',
                                                 'state': 'point_to_point'},
-                                            '22.22.22.22 33.33.33.33': 
+                                            '10.151.22.22 10.21.33.33': 
                                                 {'area': '0.0.0.1',
                                                 'interface_type': 'point_to_point',
                                                 'mpls': 
@@ -236,8 +236,8 @@ class OspfOutput(object):
                                                         {'autoconfig': False,
                                                         'autoconfig_area_id': '0.0.0.1',
                                                         'igp_sync': False}},
-                                                'name': '22.22.22.22 '
-                                                '33.33.33.33',
+                                                'name': '10.151.22.22 '
+                                                '10.21.33.33',
                                                 'state': 'point_to_point'}}}}}}}}},
             'default': 
                 {'address_family': 
@@ -304,7 +304,7 @@ class OspfOutput(object):
                                 {'areas': 
                                     {'0.0.0.1': 
                                         {'virtual_links': 
-                                            {'0.0.0.1 8.8.8.8': 
+                                            {'0.0.0.1 10.1.8.8': 
                                                 {'backbone_area_id': '0.0.0.0',
                                                 'cost': 40,
                                                 'dead_interval': 40,
@@ -319,20 +319,20 @@ class OspfOutput(object):
                                                 'nbr_flood': 1,
                                                 'nbr_total': 1,
                                                 'neighbors': 
-                                                    {'8.8.8.8': 
-                                                        {'address': '20.3.4.4',
+                                                    {'10.1.8.8': 
+                                                        {'address': '10.19.4.4',
                                                         'dbd_option': '0x72',
                                                         'dead_timer': '00:00:33',
                                                         'hello_option': '0x32',
                                                         'last_change': '00:07:51',
                                                         'last_non_hello_received': '00:07:49',
-                                                        'neighbor_router_id': '8.8.8.8',
+                                                        'neighbor_router_id': '10.1.8.8',
                                                         'state': 'full',
                                                         'statistics': 
                                                             {'nbr_event_count': 5}}},
-                                                'remote_addr': '20.3.4.4',
+                                                'remote_addr': '10.19.4.4',
                                                 'retransmit_interval': 5,
-                                                'router_id': '8.8.8.8',
+                                                'router_id': '10.1.8.8',
                                                 'state': 'point_to_point',
                                                 'statistics': 
                                                     {'link_scope_lsa_cksum_sum': 0,
@@ -340,7 +340,7 @@ class OspfOutput(object):
                                                 'transit_area_id': '0.0.0.1',
                                                 'transmit_delay': 1,
                                                 'unnumbered_interface': 'Ethernet1/5',
-                                                'unnumbered_ip_address': '20.3.4.3',
+                                                'unnumbered_ip_address': '10.19.4.3',
                                                 'wait_interval': 40}}}}}}}}}}}
 
     # 'show ip ospf sham-links vrf all'
@@ -354,24 +354,24 @@ class OspfOutput(object):
                                 {'areas': 
                                     {'0.0.0.1': 
                                         {'sham_links': 
-                                            {'22.22.22.22 11.11.11.11': 
+                                            {'10.151.22.22 10.229.11.11': 
                                                 {'backbone_area_id': '0.0.0.0',
                                                 'cost': 1,
                                                 'dead_interval': 40,
-                                                'destination': '11.11.11.11',
+                                                'destination': '10.229.11.11',
                                                 'hello_interval': 10,
                                                 'hello_timer': '00:00:02',
                                                 'index': 6,
                                                 'interface_type': 'point_to_point',
                                                 'link_state': 'up',
-                                                'local_id': '22.22.22.22',
+                                                'local_id': '10.151.22.22',
                                                 'name': 'SL1',
                                                 'nbr_adjs': 1,
                                                 'nbr_flood': 1,
                                                 'nbr_total': 1,
                                                 'neighbors': 
-                                                    {'11.11.11.11': 
-                                                        {'address': '11.11.11.11',
+                                                    {'10.229.11.11': 
+                                                        {'address': '10.229.11.11',
                                                         'area': '0.0.0.1',
                                                         'backbone_area_id': '0.0.0.0',
                                                         'dbd_option': '0x72',
@@ -380,12 +380,12 @@ class OspfOutput(object):
                                                         'instance': '1',
                                                         'last_change': '08:10:01',
                                                         'last_non_hello_received': 'never',
-                                                        'local': '22.22.22.22',
-                                                        'neighbor_router_id': '11.11.11.11',
-                                                        'remote': '11.11.11.11',
+                                                        'local': '10.151.22.22',
+                                                        'neighbor_router_id': '10.229.11.11',
+                                                        'remote': '10.229.11.11',
                                                         'state': 'full',
                                                         'statistics': {'nbr_event_count': 8}}},
-                                                'remote_id': '11.11.11.11',
+                                                'remote_id': '10.229.11.11',
                                                 'retransmit_interval': 5,
                                                 'state': 'point_to_point',
                                                 'statistics': 
@@ -394,9 +394,9 @@ class OspfOutput(object):
                                                 'transit_area_id': '0.0.0.1',
                                                 'transmit_delay': 1,
                                                 'unnumbered_interface': 'loopback1',
-                                                'unnumbered_ip_address': '22.22.22.22',
+                                                'unnumbered_ip_address': '10.151.22.22',
                                                 'wait_interval': 40},
-                                            '22.22.22.22 33.33.33.33': 
+                                            '10.151.22.22 10.21.33.33': 
                                                 {'authentication': 
                                                     {'auth_trailer_key': 
                                                         {'crypto_algorithm': 'simple'},
@@ -406,7 +406,7 @@ class OspfOutput(object):
                                                 'backbone_area_id': '0.0.0.0',
                                                 'cost': 111,
                                                 'dead_interval': 13,
-                                                'destination': '33.33.33.33',
+                                                'destination': '10.21.33.33',
                                                 'hello_interval': 3,
                                                 'hello_timer': '00:00:01',
                                                 'index': 7,
@@ -415,9 +415,9 @@ class OspfOutput(object):
                                                 'nbr_total': 0,
                                                 'interface_type': 'point_to_point',
                                                 'link_state': 'up',
-                                                'local_id': '22.22.22.22',
+                                                'local_id': '10.151.22.22',
                                                 'name': 'SL2',
-                                                'remote_id': '33.33.33.33',
+                                                'remote_id': '10.21.33.33',
                                                 'retransmit_interval': 5,
                                                 'state': 'point_to_point',
                                                 'statistics': 
@@ -426,7 +426,7 @@ class OspfOutput(object):
                                                 'transit_area_id': '0.0.0.1',
                                                 'transmit_delay': 7,
                                                 'unnumbered_interface': 'loopback1',
-                                                'unnumbered_ip_address': '22.22.22.22',
+                                                'unnumbered_ip_address': '10.151.22.22',
                                                 'wait_interval': 13}}}}}}}}}}}
 
     # 'show ip ospf interface vrf all'
@@ -441,21 +441,21 @@ class OspfOutput(object):
                                     {'0.0.0.1': 
                                         {'interfaces': 
                                             {'Ethernet2/1': 
-                                                {'bdr_ip_addr': '20.2.6.2',
-                                                'bdr_router_id': '22.22.22.22',
+                                                {'bdr_ip_addr': '10.229.6.2',
+                                                'bdr_router_id': '10.151.22.22',
                                                 'bfd': 
                                                     {'enable': False},
                                                 'cost': 40,
                                                 'dead_interval': 40,
-                                                'dr_ip_addr': '20.2.6.6',
-                                                'dr_router_id': '66.66.66.66',
+                                                'dr_ip_addr': '10.229.6.6',
+                                                'dr_router_id': '10.84.66.66',
                                                 'enable': True,
                                                 'hello_interval': 10,
                                                 'hello_timer': '00:00:07',
                                                 'if_cfg': True,
                                                 'index': 2,
                                                 'interface_type': 'broadcast',
-                                                'ip_address': '20.2.6.2/24',
+                                                'ip_address': '10.229.6.2/24',
                                                 'line_protocol': 'up',
                                                 'name': 'Ethernet2/1',
                                                 'passive': False,
@@ -471,7 +471,7 @@ class OspfOutput(object):
                                                 'transmit_delay': 1,
                                                 'wait_interval': 40}},
                                         'sham_links': 
-                                            {'22.22.22.22 11.11.11.11': 
+                                            {'10.151.22.22 10.229.11.11': 
                                                 {'bfd': 
                                                     {'enable': False},
                                                 'cost': 1,
@@ -482,9 +482,9 @@ class OspfOutput(object):
                                                 'if_cfg': False,
                                                 'index': 6,
                                                 'interface_type': 'p2p',
-                                                'ip_address': '22.22.22.22',
+                                                'ip_address': '10.151.22.22',
                                                 'line_protocol': 'up',
-                                                'name': 'SL1-0.0.0.0-22.22.22.22-11.11.11.11',
+                                                'name': 'SL1-0.0.0.0-10.151.22.22-10.229.11.11',
                                                 'passive': False,
                                                 'retransmit_interval': 5,
                                                 'state': 'p2p',
@@ -496,7 +496,7 @@ class OspfOutput(object):
                                                     'total_neighbors': 1},
                                                 'transmit_delay': 1,
                                                 'wait_interval': 40},
-                                            '22.22.22.22 33.33.33.33': 
+                                            '10.151.22.22 10.21.33.33': 
                                                 {'authentication': 
                                                     {'auth_trailer_key': 
                                                         {'crypto_algorithm': 'Simple'},
@@ -512,9 +512,9 @@ class OspfOutput(object):
                                                     'if_cfg': False,
                                                     'index': 7,
                                                     'interface_type': 'p2p',
-                                                    'ip_address': '22.22.22.22',
+                                                    'ip_address': '10.151.22.22',
                                                     'line_protocol': 'up',
-                                                    'name': 'SL2-0.0.0.0-22.22.22.22-33.33.33.33',
+                                                    'name': 'SL2-0.0.0.0-10.151.22.22-10.21.33.33',
                                                     'passive': False,
                                                     'retransmit_interval': 5,
                                                     'state': 'p2p',
@@ -527,7 +527,7 @@ class OspfOutput(object):
                                                     'transmit_delay': 7,
                                                     'wait_interval': 13}},
                                         'virtual_links': 
-                                            {'0.0.0.1 8.8.8.8': 
+                                            {'0.0.0.1 10.1.8.8': 
                                                 {'backbone_area_id': '0.0.0.0',
                                                 'bfd': 
                                                     {'enable': False},
@@ -539,9 +539,9 @@ class OspfOutput(object):
                                                 'if_cfg': False,
                                                 'index': 6,
                                                 'interface_type': 'p2p',
-                                                'ip_address': '22.22.22.22',
+                                                'ip_address': '10.151.22.22',
                                                 'line_protocol': 'up',
-                                                'name': 'VL1-0.0.0.0-8.8.8.8-12.12.12.12',
+                                                'name': 'VL1-0.0.0.0-10.1.8.8-10.66.12.12',
                                                 'passive': False,
                                                 'retransmit_interval': 5,
                                                 'state': 'p2p',
@@ -563,13 +563,13 @@ class OspfOutput(object):
                                         {'interfaces': 
                                             {'Ethernet2/2': 
                                                 {'bdr_ip_addr': '10.2.3.2',
-                                                'bdr_router_id': '2.2.2.2',
+                                                'bdr_router_id': '10.16.2.2',
                                                 'bfd': 
                                                     {'enable': False},
                                                 'cost': 1,
                                                 'dead_interval': 40,
                                                 'dr_ip_addr': '10.2.3.3',
-                                                'dr_router_id': '3.3.3.3',
+                                                'dr_router_id': '10.36.3.3',
                                                 'enable': True,
                                                 'hello_interval': 10,
                                                 'hello_timer': '00:00:02',
@@ -593,13 +593,13 @@ class OspfOutput(object):
                                                 'wait_interval': 40},
                                             'Ethernet2/3': 
                                                 {'bdr_ip_addr': '10.2.4.2',
-                                                'bdr_router_id': '2.2.2.2',
+                                                'bdr_router_id': '10.16.2.2',
                                                 'bfd': 
                                                     {'enable': False},
                                                 'cost': 1,
                                                 'dead_interval': 40,
                                                 'dr_ip_addr': '10.2.4.4',
-                                                'dr_router_id': '4.4.4.4',
+                                                'dr_router_id': '10.64.4.4',
                                                 'enable': True,
                                                 'hello_interval': 10,
                                                 'hello_timer': '00:00:00',
@@ -623,13 +623,13 @@ class OspfOutput(object):
                                                 'wait_interval': 40},
                                             'Ethernet2/4': 
                                                 {'bdr_ip_addr': '10.1.2.2',
-                                                'bdr_router_id': '2.2.2.2',
+                                                'bdr_router_id': '10.16.2.2',
                                                 'bfd': 
                                                     {'enable': False},
                                                 'cost': 1,
                                                 'dead_interval': 40,
                                                 'dr_ip_addr': '10.1.2.1',
-                                                'dr_router_id': '1.1.1.1',
+                                                'dr_router_id': '10.4.1.1',
                                                 'enable': True,
                                                 'hello_interval': 10,
                                                 'hello_timer': '00:00:00',
@@ -659,7 +659,7 @@ class OspfOutput(object):
                                                 'if_cfg': True,
                                                 'index': 1,
                                                 'interface_type': 'loopback',
-                                                'ip_address': '2.2.2.2/32',
+                                                'ip_address': '10.16.2.2/32',
                                                 'line_protocol': 'up',
                                                 'name': 'loopback0',
                                                 'state': 'loopback'}}}}}}}}}}}
@@ -677,46 +677,46 @@ class OspfOutput(object):
                                         {'interfaces':
                                             {'Ethernet2/1': 
                                                 {'neighbors': 
-                                                    {'66.66.66.66': 
-                                                        {'address': '20.2.6.6',
-                                                        'bdr_ip_addr': '20.2.6.2',
+                                                    {'10.84.66.66': 
+                                                        {'address': '10.229.6.6',
+                                                        'bdr_ip_addr': '10.229.6.2',
                                                         'dbd_options': '0x52',
                                                         'dead_timer': '00:00:38',
-                                                        'dr_ip_addr': '20.2.6.6',
+                                                        'dr_ip_addr': '10.229.6.6',
                                                         'hello_options': '0x12',
                                                         'last_non_hello_packet_received': 'never',
                                                         'last_state_change': '08:38:39',
                                                         'priority': 1,
-                                                        'neighbor_router_id': '66.66.66.66',
+                                                        'neighbor_router_id': '10.84.66.66',
                                                         'state': 'full',
                                                         'statistics': 
                                                             {'nbr_event_count': 6}}}}},
                                         'sham_links': 
-                                            {'22.22.22.22 11.11.11.11': 
+                                            {'10.151.22.22 10.229.11.11': 
                                                 {'neighbors': 
-                                                    {'11.11.11.11': 
-                                                        {'address': '11.11.11.11',
+                                                    {'10.229.11.11': 
+                                                        {'address': '10.229.11.11',
                                                         'dbd_options': '0x72',
                                                         'dead_timer': '00:00:41',
                                                         'hello_options': '0x32',
                                                         'last_non_hello_packet_received': 'never',
                                                         'last_state_change': '08:16:20',
-                                                        'neighbor_router_id': '11.11.11.11',
+                                                        'neighbor_router_id': '10.229.11.11',
                                                         'state': 'full',
                                                         'statistics': 
                                                             {'nbr_event_count': 8}}}}},
 
                                         'virtual_links': 
-                                            {'0.0.0.1 8.8.8.8': 
+                                            {'0.0.0.1 10.1.8.8': 
                                                 {'neighbors': 
-                                                    {'8.8.8.8': 
-                                                        {'address': '20.3.4.4',
+                                                    {'10.1.8.8': 
+                                                        {'address': '10.19.4.4',
                                                         'dbd_options': '0x72',
                                                         'dead_timer': '00:00:43',
                                                         'hello_options': '0x32',
                                                         'last_non_hello_packet_received': '00:00:18',
                                                         'last_state_change': '00:00:23',
-                                                        'neighbor_router_id': '8.8.8.8',
+                                                        'neighbor_router_id': '10.1.8.8',
                                                         'state': 'full',
                                                         'statistics': 
                                                             {'nbr_event_count': 5}}}}}}}}}}}},
@@ -730,7 +730,7 @@ class OspfOutput(object):
                                         {'interfaces': 
                                             {'Ethernet2/2': 
                                                 {'neighbors': 
-                                                    {'3.3.3.3': 
+                                                    {'10.36.3.3': 
                                                         {'address': '10.2.3.3',
                                                         'bdr_ip_addr': '10.2.3.2',
                                                         'dbd_options': '0x52',
@@ -740,13 +740,13 @@ class OspfOutput(object):
                                                         'last_non_hello_packet_received': 'never',
                                                         'last_state_change': '08:38:40',
                                                         'priority': 1,
-                                                        'neighbor_router_id': '3.3.3.3',
+                                                        'neighbor_router_id': '10.36.3.3',
                                                         'state': 'full',
                                                         'statistics': 
                                                             {'nbr_event_count': 5}}}},
                                             'Ethernet2/3': 
                                                 {'neighbors': 
-                                                    {'4.4.4.4': 
+                                                    {'10.64.4.4': 
                                                         {'address': '10.2.4.4',
                                                         'bdr_ip_addr': '10.2.4.2',
                                                         'dbd_options': '0x52',
@@ -756,13 +756,13 @@ class OspfOutput(object):
                                                         'last_non_hello_packet_received': 'never',
                                                         'last_state_change': '08:38:42',
                                                         'priority': 1,
-                                                        'neighbor_router_id': '4.4.4.4',
+                                                        'neighbor_router_id': '10.64.4.4',
                                                         'state': 'full',
                                                         'statistics': 
                                                             {'nbr_event_count': 6}}}},
                                             'Ethernet2/4': 
                                                 {'neighbors': 
-                                                    {'1.1.1.1': 
+                                                    {'10.4.1.1': 
                                                         {'address': '10.1.2.1',
                                                         'bdr_ip_addr': '10.1.2.2',
                                                         'dbd_options': '0x52',
@@ -772,7 +772,7 @@ class OspfOutput(object):
                                                         'last_non_hello_packet_received': 'never',
                                                         'last_state_change': '08:38:41',
                                                         'priority': 1,
-                                                        'neighbor_router_id': '1.1.1.1',
+                                                        'neighbor_router_id': '10.4.1.1',
                                                         'state': 'full',
                                                         'statistics': 
                                                             {'nbr_event_count': 5}}}}}}}}}}}}}}
@@ -792,9 +792,9 @@ class OspfOutput(object):
                                                 {5: 
                                                     {'lsa_type': 5,
                                                     'lsas': 
-                                                        {'33.33.33.33 3.3.3.3': 
-                                                            {'lsa_id': '33.33.33.33',
-                                                            'adv_router': '3.3.3.3',
+                                                        {'10.21.33.33 10.36.3.3': 
+                                                            {'lsa_id': '10.21.33.33',
+                                                            'adv_router': '10.36.3.3',
                                                             'ospfv2': 
                                                                 {'body': 
                                                                     {'external': 
@@ -808,11 +808,11 @@ class OspfOutput(object):
                                                                                 'mt_id': 0,
                                                                                 'tos': 0}}}},
                                                                 'header': 
-                                                                    {'adv_router': '3.3.3.3',
+                                                                    {'adv_router': '10.36.3.3',
                                                                     'age': 1565,
                                                                     'checksum': '0x7d61',
                                                                     'length': 36,
-                                                                    'lsa_id': '33.33.33.33',
+                                                                    'lsa_id': '10.21.33.33',
                                                                     'option': '0x20',
                                                                     'option_desc': 'No TOS-capability, DC',
                                                                     'seq_num': '0x80000002',
@@ -829,9 +829,9 @@ class OspfOutput(object):
                                                 {5: 
                                                     {'lsa_type': 5,
                                                     'lsas': 
-                                                        {'44.44.44.44 4.4.4.4': 
-                                                            {'lsa_id': '44.44.44.44',
-                                                            'adv_router': '4.4.4.4',
+                                                        {'10.94.44.44 10.64.4.4': 
+                                                            {'lsa_id': '10.94.44.44',
+                                                            'adv_router': '10.64.4.4',
                                                             'ospfv2': 
                                                                 {'body': 
                                                                     {'external': 
@@ -845,11 +845,11 @@ class OspfOutput(object):
                                                                                 'mt_id': 0,
                                                                                 'tos': 0}}}},
                                                                 'header': 
-                                                                    {'adv_router': '4.4.4.4',
+                                                                    {'adv_router': '10.64.4.4',
                                                                     'age': 1565,
                                                                     'checksum': '0x7d61',
                                                                     'length': 36,
-                                                                    'lsa_id': '44.44.44.44',
+                                                                    'lsa_id': '10.94.44.44',
                                                                     'option': '0x20',
                                                                     'option_desc': 'No TOS-capability, DC',
                                                                     'seq_num': '0x80000002',
@@ -870,22 +870,22 @@ class OspfOutput(object):
                                                 {2: 
                                                     {'lsa_type': 2,
                                                     'lsas': 
-                                                        {'20.1.5.1 11.11.11.11': 
-                                                            {'lsa_id': '20.1.5.1',
-                                                            'adv_router': '11.11.11.11',
+                                                        {'10.186.5.1 10.229.11.11': 
+                                                            {'lsa_id': '10.186.5.1',
+                                                            'adv_router': '10.229.11.11',
                                                             'ospfv2': 
                                                                 {'body': 
                                                                     {'network': 
                                                                         {'attached_routers': 
-                                                                            {'11.11.11.11': {},
-                                                                            '55.55.55.55': {}},
+                                                                            {'10.229.11.11': {},
+                                                                            '10.115.55.55': {}},
                                                                         'network_mask': '255.255.255.0'}},
                                                                 'header': 
-                                                                    {'adv_router': '11.11.11.11',
+                                                                    {'adv_router': '10.229.11.11',
                                                                     'age': 1454,
                                                                     'checksum': '0xddd9',
                                                                     'length': 32,
-                                                                    'lsa_id': '20.1.5.1',
+                                                                    'lsa_id': '10.186.5.1',
                                                                     'option': '0x22',
                                                                     'option_desc': 'No TOS-capability, DC',
                                                                     'seq_num': '0x80000033',
@@ -902,18 +902,18 @@ class OspfOutput(object):
                                                 {2: 
                                                     {'lsa_type': 2,
                                                     'lsas': 
-                                                        {'10.1.2.1 1.1.1.1': 
+                                                        {'10.1.2.1 10.4.1.1': 
                                                             {'lsa_id': '10.1.2.1',
-                                                            'adv_router': '1.1.1.1',
+                                                            'adv_router': '10.4.1.1',
                                                             'ospfv2': 
                                                                 {'body': 
                                                                     {'network': 
                                                                         {'attached_routers': 
-                                                                            {'1.1.1.1': {},
-                                                                            '2.2.2.2': {}},
+                                                                            {'10.4.1.1': {},
+                                                                            '10.16.2.2': {}},
                                                                         'network_mask': '255.255.255.0'}},
                                                                 'header': 
-                                                                    {'adv_router': '1.1.1.1',
+                                                                    {'adv_router': '10.4.1.1',
                                                                     'age': 772,
                                                                     'checksum': '0x3bd1',
                                                                     'length': 32,
@@ -938,9 +938,9 @@ class OspfOutput(object):
                                                 {3: 
                                                     {'lsa_type': 3,
                                                     'lsas': 
-                                                        {'10.1.2.0 2.2.2.2': 
+                                                        {'10.1.2.0 10.16.2.2': 
                                                             {'lsa_id': '10.1.2.0',
-                                                            'adv_router': '2.2.2.2',
+                                                            'adv_router': '10.16.2.2',
                                                             'ospfv2': 
                                                                 {'body': 
                                                                     {'summary': 
@@ -951,7 +951,7 @@ class OspfOutput(object):
                                                                                 'mt_id': 0,
                                                                                 'tos': 0}}}},
                                                                 'header': 
-                                                                    {'adv_router': '2.2.2.2',
+                                                                    {'adv_router': '10.16.2.2',
                                                                     'age': 788,
                                                                     'checksum': '0xfc54',
                                                                     'length': 28,
@@ -972,9 +972,9 @@ class OspfOutput(object):
                                                 {3: 
                                                     {'lsa_type': 3,
                                                     'lsas': 
-                                                        {'20.1.3.0 1.1.1.1': 
-                                                            {'lsa_id': '20.1.3.0',
-                                                            'adv_router': '1.1.1.1',
+                                                        {'10.186.3.0 10.4.1.1': 
+                                                            {'lsa_id': '10.186.3.0',
+                                                            'adv_router': '10.4.1.1',
                                                             'ospfv2': 
                                                                 {'body': 
                                                                     {'summary': 
@@ -985,11 +985,11 @@ class OspfOutput(object):
                                                                                 'mt_id': 0,
                                                                                 'tos': 0}}}},
                                                                 'header': 
-                                                                    {'adv_router': '1.1.1.1',
+                                                                    {'adv_router': '10.4.1.1',
                                                                     'age': 694,
                                                                     'checksum': '0x43dc',
                                                                     'length': 28,
-                                                                    'lsa_id': '20.1.3.0',
+                                                                    'lsa_id': '10.186.3.0',
                                                                     'option': '0x22',
                                                                     'option_desc': 'No TOS-capability, DC',
                                                                     'seq_num': '0x80000001',
@@ -1010,16 +1010,16 @@ class OspfOutput(object):
                                                 {1: 
                                                     {'lsa_type': 1,
                                                         'lsas': 
-                                                            {'11.11.11.11 11.11.11.11': 
-                                                                {'adv_router': '11.11.11.11',
-                                                                    'lsa_id': '11.11.11.11',
+                                                            {'10.229.11.11 10.229.11.11': 
+                                                                {'adv_router': '10.229.11.11',
+                                                                    'lsa_id': '10.229.11.11',
                                                                     'ospfv2': 
                                                                         {'body': 
                                                                             {'router': 
                                                                                 {'links': 
-                                                                                    {'20.1.5.1': 
-                                                                                        {'link_data': '20.1.5.1',
-                                                                                        'link_id': '20.1.5.1',
+                                                                                    {'10.186.5.1': 
+                                                                                        {'link_data': '10.186.5.1',
+                                                                                        'link_id': '10.186.5.1',
                                                                                         'num_tos_metrics': 0,
                                                                                         'topologies': 
                                                                                             {0: 
@@ -1027,9 +1027,9 @@ class OspfOutput(object):
                                                                                                 'mt_id': 0,
                                                                                                 'tos': 0}},
                                                                                         'type': 'transit network'},
-                                                                                    '22.22.22.22': 
+                                                                                    '10.151.22.22': 
                                                                                         {'link_data': '0.0.0.14',
-                                                                                        'link_id': '22.22.22.22',
+                                                                                        'link_id': '10.151.22.22',
                                                                                         'num_tos_metrics': 0,
                                                                                         'topologies': 
                                                                                             {0: 
@@ -1039,11 +1039,11 @@ class OspfOutput(object):
                                                                                         'type': 'router (point-to-point)'}},
                                                                                 'num_of_links': 2}},
                                                                     'header': 
-                                                                        {'adv_router': '11.11.11.11',
+                                                                        {'adv_router': '10.229.11.11',
                                                                         'age': 646,
                                                                         'checksum': '0x9ae4',
                                                                         'length': 48,
-                                                                        'lsa_id': '11.11.11.11',
+                                                                        'lsa_id': '10.229.11.11',
                                                                         'option': '0x22',
                                                                         'option_desc': 'No TOS-capability, DC',
                                                                         'seq_num': '0x8000003f',
@@ -1060,16 +1060,16 @@ class OspfOutput(object):
                                                 {1: 
                                                     {'lsa_type': 1,
                                                     'lsas': 
-                                                        {'1.1.1.1 1.1.1.1': 
-                                                            {'adv_router': '1.1.1.1',
-                                                            'lsa_id': '1.1.1.1',
+                                                        {'10.4.1.1 10.4.1.1': 
+                                                            {'adv_router': '10.4.1.1',
+                                                            'lsa_id': '10.4.1.1',
                                                             'ospfv2': 
                                                                 {'body': 
                                                                     {'router': 
                                                                         {'links': 
-                                                                            {'1.1.1.1': 
+                                                                            {'10.4.1.1': 
                                                                                 {'link_data': '255.255.255.255',
-                                                                                'link_id': '1.1.1.1',
+                                                                                'link_id': '10.4.1.1',
                                                                                 'num_tos_metrics': 0,
                                                                                 'topologies': 
                                                                                     {0: 
@@ -1097,11 +1097,11 @@ class OspfOutput(object):
                                                                                         'type': 'transit network'}},
                                                                         'num_of_links': 3}},
                                                                 'header': 
-                                                                    {'adv_router': '1.1.1.1',
+                                                                    {'adv_router': '10.4.1.1',
                                                                     'age': 723,
                                                                     'checksum': '0x6029',
                                                                     'length': 60,
-                                                                    'lsa_id': '1.1.1.1',
+                                                                    'lsa_id': '10.4.1.1',
                                                                     'option': '0x22',
                                                                     'option_desc': 'No TOS-capability, DC',
                                                                     'seq_num': '0x8000003e',
@@ -1122,9 +1122,9 @@ class OspfOutput(object):
                                                 {10: 
                                                     {'lsa_type': 10,
                                                     'lsas': 
-                                                        {'1.0.0.6 3.3.3.3': 
-                                                            {'adv_router': '3.3.3.3',
-                                                            'lsa_id': '1.0.0.6',
+                                                        {'10.1.0.6 10.36.3.3': 
+                                                            {'adv_router': '10.36.3.3',
+                                                            'lsa_id': '10.1.0.6',
                                                             'ospfv2': 
                                                                 {'body': 
                                                                     {'opaque': 
@@ -1207,12 +1207,12 @@ class OspfOutput(object):
                                                                                         {'priority': 7,
                                                                                         'unreserved_bandwidth': 93750000}}}}}},
                                                             'header': 
-                                                                {'adv_router': '3.3.3.3',
+                                                                {'adv_router': '10.36.3.3',
                                                                 'age': 113,
                                                                 'checksum': '0x03ed',
                                                                 'fragment_number': 6,
                                                                 'length': 160,
-                                                                'lsa_id': '1.0.0.6',
+                                                                'lsa_id': '10.1.0.6',
                                                                 'num_links': 1,
                                                                 'opaque_id': 6,
                                                                 'opaque_type': 1,
@@ -1232,9 +1232,9 @@ class OspfOutput(object):
                                                 {10: 
                                                     {'lsa_type': 10,
                                                     'lsas': 
-                                                        {'1.0.0.4 3.3.3.3': 
-                                                            {'adv_router': '3.3.3.3',
-                                                            'lsa_id': '1.0.0.4',
+                                                        {'10.1.0.4 10.36.3.3': 
+                                                            {'adv_router': '10.36.3.3',
+                                                            'lsa_id': '10.1.0.4',
                                                             'ospfv2': 
                                                                 {'body': 
                                                                     {'opaque': 
@@ -1317,12 +1317,12 @@ class OspfOutput(object):
                                                                                         {'priority': 7,
                                                                                         'unreserved_bandwidth': 93750000}}}}}},
                                                                 'header': 
-                                                                    {'adv_router': '3.3.3.3',
+                                                                    {'adv_router': '10.36.3.3',
                                                                     'age': 113,
                                                                     'checksum': '0x8f5e',
                                                                     'fragment_number': 4,
                                                                     'length': 160,
-                                                                    'lsa_id': '1.0.0.4',
+                                                                    'lsa_id': '10.1.0.4',
                                                                     'num_links': 1,
                                                                     'opaque_id': 4,
                                                                     'opaque_type': 1,
@@ -1352,24 +1352,24 @@ class OspfOutput(object):
                                                 {1: 
                                                     {'lsa_type': 1,
                                                     'lsas': 
-                                                        {'11.11.11.11 11.11.11.11': 
-                                                            {'adv_router': '11.11.11.11',
-                                                            'lsa_id': '11.11.11.11',
+                                                        {'10.229.11.11 10.229.11.11': 
+                                                            {'adv_router': '10.229.11.11',
+                                                            'lsa_id': '10.229.11.11',
                                                             'ospfv2': 
                                                                 {'body': 
                                                                     {'router': 
                                                                         {'links': 
-                                                                            {'20.1.5.1': 
-                                                                                {'link_data': '20.1.5.1',
-                                                                                'link_id': '20.1.5.1',
+                                                                            {'10.186.5.1': 
+                                                                                {'link_data': '10.186.5.1',
+                                                                                'link_id': '10.186.5.1',
                                                                                 'topologies': 
                                                                                     {0: 
                                                                                         {'metric': 111,
                                                                                         'mt_id': 0}},
                                                                                 'type': 'transit network'},
-                                                                            '22.22.22.22': 
+                                                                            '10.151.22.22': 
                                                                                 {'link_data': '0.0.0.14',
-                                                                                'link_id': '22.22.22.22',
+                                                                                'link_id': '10.151.22.22',
                                                                                 'topologies': 
                                                                                     {0: 
                                                                                         {'metric': 1,
@@ -1377,41 +1377,41 @@ class OspfOutput(object):
                                                                                 'type': 'router (point-to-point)'}},
                                                                         'num_of_links': 2}},
                                                                 'header': 
-                                                                    {'adv_router': '11.11.11.11',
+                                                                    {'adv_router': '10.229.11.11',
                                                                     'age': 646,
                                                                     'checksum': '0x9ae4',
                                                                     'length': 48,
-                                                                    'lsa_id': '11.11.11.11',
+                                                                    'lsa_id': '10.229.11.11',
                                                                     'option': '0x22',
                                                                     'seq_num': '0x8000003f',
                                                                     'type': 1}}}}},
                                                 2: 
                                                     {'lsa_type': 2,
                                                     'lsas': 
-                                                        {'20.1.5.1 11.11.11.11': 
-                                                            {'adv_router': '11.11.11.11',
-                                                            'lsa_id': '20.1.5.1',
+                                                        {'10.186.5.1 10.229.11.11': 
+                                                            {'adv_router': '10.229.11.11',
+                                                            'lsa_id': '10.186.5.1',
                                                             'ospfv2': 
                                                                 {'body': 
                                                                     {'network': 
                                                                         {'attached_routers': 
-                                                                            {'11.11.11.11': {},
-                                                                            '55.55.55.55': {}},
+                                                                            {'10.229.11.11': {},
+                                                                            '10.115.55.55': {}},
                                                                         'network_mask': '255.255.255.0'}},
                                                                 'header': 
-                                                                    {'adv_router': '11.11.11.11',
+                                                                    {'adv_router': '10.229.11.11',
                                                                     'age': 1454,
                                                                     'checksum': '0xddd9',
                                                                     'length': 32,
-                                                                    'lsa_id': '20.1.5.1',
+                                                                    'lsa_id': '10.186.5.1',
                                                                     'option': '0x22',
                                                                     'seq_num': '0x80000033',
                                                                     'type': 2}}}}},
                                                 3: 
                                                     {'lsa_type': 3,
                                                     'lsas': 
-                                                        {'10.1.2.0 2.2.2.2': 
-                                                            {'adv_router': '2.2.2.2',
+                                                        {'10.1.2.0 10.16.2.2': 
+                                                            {'adv_router': '10.16.2.2',
                                                             'lsa_id': '10.1.2.0',
                                                             'ospfv2': 
                                                                 {'body': 
@@ -1422,7 +1422,7 @@ class OspfOutput(object):
                                                                                 {'metric': 4294,
                                                                                 'mt_id': 0}}}},
                                                                 'header': 
-                                                                    {'adv_router': '2.2.2.2',
+                                                                    {'adv_router': '10.16.2.2',
                                                                     'age': 788,
                                                                     'checksum': '0xfc54',
                                                                     'length': 28,
@@ -1433,9 +1433,9 @@ class OspfOutput(object):
                                                 5: 
                                                     {'lsa_type': 5,
                                                     'lsas': 
-                                                        {'33.33.33.33 3.3.3.3': 
-                                                            {'adv_router': '3.3.3.3',
-                                                            'lsa_id': '33.33.33.33',
+                                                        {'10.21.33.33 10.36.3.3': 
+                                                            {'adv_router': '10.36.3.3',
+                                                            'lsa_id': '10.21.33.33',
                                                             'ospfv2': 
                                                                 {'body': 
                                                                     {'external': 
@@ -1448,20 +1448,20 @@ class OspfOutput(object):
                                                                                 'metric': 20,
                                                                                 'mt_id': 0}}}},
                                                                 'header': 
-                                                                    {'adv_router': '3.3.3.3',
+                                                                    {'adv_router': '10.36.3.3',
                                                                     'age': 1565,
                                                                     'checksum': '0x7d61',
                                                                     'length': 36,
-                                                                    'lsa_id': '33.33.33.33',
+                                                                    'lsa_id': '10.21.33.33',
                                                                     'option': '0x20',
                                                                     'seq_num': '0x80000002',
                                                                     'type': 5}}}}},
                                                 10: 
                                                     {'lsa_type': 10,
                                                     'lsas': 
-                                                        {'1.0.0.6 3.3.3.3': 
-                                                            {'adv_router': '3.3.3.3',
-                                                            'lsa_id': '1.0.0.6',
+                                                        {'10.1.0.6 10.36.3.3': 
+                                                            {'adv_router': '10.36.3.3',
+                                                            'lsa_id': '10.1.0.6',
                                                             'ospfv2': 
                                                                 {'body': 
                                                                     {'opaque': 
@@ -1513,11 +1513,11 @@ class OspfOutput(object):
                                                                                         {'priority': 7,
                                                                                         'unreserved_bandwidth': 93750000}}}}}},
                                                                 'header': 
-                                                                    {'adv_router': '3.3.3.3',
+                                                                    {'adv_router': '10.36.3.3',
                                                                     'age': 113,
                                                                     'checksum': '0x03ed',
                                                                     'length': 160,
-                                                                    'lsa_id': '1.0.0.6',
+                                                                    'lsa_id': '10.1.0.6',
                                                                     'opaque_id': 6,
                                                                     'opaque_type': 1,
                                                                     'option': '0x20',
@@ -1525,27 +1525,27 @@ class OspfOutput(object):
                                                                     'type': 10}}}}}}},
                                         'interfaces': 
                                             {'Ethernet2/1': 
-                                                {'bdr_ip_addr': '20.2.6.2',
-                                                'bdr_router_id': '22.22.22.22',
+                                                {'bdr_ip_addr': '10.229.6.2',
+                                                'bdr_router_id': '10.151.22.22',
                                                 'bfd': 
                                                     {'enable': False},
                                                 'cost': 40,
                                                 'dead_interval': 40,
-                                                'dr_ip_addr': '20.2.6.6',
-                                                'dr_router_id': '66.66.66.66',
+                                                'dr_ip_addr': '10.229.6.6',
+                                                'dr_router_id': '10.84.66.66',
                                                 'enable': True,
                                                 'hello_interval': 10,
                                                 'hello_timer': '00:00:07',
                                                 'interface_type': 'broadcast',
                                                 'name': 'Ethernet2/1',
                                                 'neighbors': 
-                                                    {'66.66.66.66': 
-                                                        {'address': '20.2.6.6',
-                                                        'bdr_ip_addr': '20.2.6.2',
+                                                    {'10.84.66.66': 
+                                                        {'address': '10.229.6.6',
+                                                        'bdr_ip_addr': '10.229.6.2',
                                                         'dead_timer': '00:00:38',
-                                                        'dr_ip_addr': '20.2.6.6',
+                                                        'dr_ip_addr': '10.229.6.6',
                                                         'last_state_change': '08:38:39',
-                                                        'neighbor_router_id': '66.66.66.66',
+                                                        'neighbor_router_id': '10.84.66.66',
                                                         'state': 'full',
                                                         'statistics': 
                                                             {'nbr_event_count': 6}}},
@@ -1561,27 +1561,27 @@ class OspfOutput(object):
                                                 {'auto_config': False,
                                                 'sync': False}},
                                         'ranges': 
-                                            {'1.1.0.0/16': 
+                                            {'10.4.0.0/16': 
                                                 {'advertise': False,
                                                 'cost': 31,
-                                                'prefix': '1.1.0.0/16'}},
+                                                'prefix': '10.4.0.0/16'}},
                                         'sham_links': 
-                                            {'22.22.22.22 11.11.11.11': 
+                                            {'10.151.22.22 10.229.11.11': 
                                                 {'cost': 1,
                                                 'dead_interval': 40,
                                                 'hello_interval': 10,
                                                 'hello_timer': '00:00:02',
-                                                'local_id': '22.22.22.22',
+                                                'local_id': '10.151.22.22',
                                                 'name': 'SL1',
                                                 'neighbors': 
-                                                    {'11.11.11.11': 
-                                                        {'address': '11.11.11.11',
+                                                    {'10.229.11.11': 
+                                                        {'address': '10.229.11.11',
                                                         'dead_timer': '00:00:41',
-                                                        'neighbor_router_id': '11.11.11.11',
+                                                        'neighbor_router_id': '10.229.11.11',
                                                         'state': 'full',
                                                         'statistics': 
                                                             {'nbr_event_count': 8}}},
-                                                'remote_id': '11.11.11.11',
+                                                'remote_id': '10.229.11.11',
                                                 'retransmit_interval': 5,
                                                 'state': 'point_to_point',
                                                 'statistics': 
@@ -1589,7 +1589,7 @@ class OspfOutput(object):
                                                     'link_scope_lsa_count': 0},
                                                 'transit_area_id': '0.0.0.1',
                                                 'transmit_delay': 1},
-                                            '22.22.22.22 33.33.33.33': 
+                                            '10.151.22.22 10.21.33.33': 
                                                 {'authentication': 
                                                     {'auth_trailer_key': 
                                                         {'crypto_algorithm': 'Simple'},
@@ -1599,9 +1599,9 @@ class OspfOutput(object):
                                                 'dead_interval': 13,
                                                 'hello_interval': 3,
                                                 'hello_timer': '00:00:01',
-                                                'local_id': '22.22.22.22',
+                                                'local_id': '10.151.22.22',
                                                 'name': 'SL2',
-                                                'remote_id': '33.33.33.33',
+                                                'remote_id': '10.21.33.33',
                                                 'retransmit_interval': 5,
                                                 'state': 'point_to_point',
                                                 'statistics': 
@@ -1614,22 +1614,22 @@ class OspfOutput(object):
                                             'area_scope_lsa_count': 11,
                                             'spf_runs_count': 33},
                                         'virtual_links': 
-                                            {'0.0.0.1 8.8.8.8': 
+                                            {'0.0.0.1 10.1.8.8': 
                                                 {'cost': 40,
                                                 'dead_interval': 40,
                                                 'hello_interval': 10,
                                                 'hello_timer': '00:00:05',
                                                 'name': 'VL1',
                                                 'neighbors': 
-                                                    {'8.8.8.8': 
-                                                        {'address': '20.3.4.4',
+                                                    {'10.1.8.8': 
+                                                        {'address': '10.19.4.4',
                                                         'dead_timer': '00:00:43',
-                                                        'neighbor_router_id': '8.8.8.8',
+                                                        'neighbor_router_id': '10.1.8.8',
                                                         'state': 'full',
                                                         'statistics': 
                                                             {'nbr_event_count': 5}}},
                                                 'retransmit_interval': 5,
-                                                'router_id': '8.8.8.8',
+                                                'router_id': '10.1.8.8',
                                                 'state': 'point_to_point',
                                                 'statistics': 
                                                     {'link_scope_lsa_cksum_sum': 0,
@@ -1650,7 +1650,7 @@ class OspfOutput(object):
                                 'preference': 
                                     {'single_value': 
                                         {'all': 110}},
-                                'router_id': '22.22.22.22',
+                                'router_id': '10.151.22.22',
                                 'spf_control': 
                                     {'paths': 8,
                                     'throttle': 
@@ -1676,16 +1676,16 @@ class OspfOutput(object):
                                                 {1: 
                                                     {'lsa_type': 1,
                                                     'lsas': 
-                                                        {'1.1.1.1 1.1.1.1': 
-                                                            {'adv_router': '1.1.1.1',
-                                                            'lsa_id': '1.1.1.1',
+                                                        {'10.4.1.1 10.4.1.1': 
+                                                            {'adv_router': '10.4.1.1',
+                                                            'lsa_id': '10.4.1.1',
                                                             'ospfv2': 
                                                                 {'body': 
                                                                     {'router': 
                                                                         {'links': 
-                                                                            {'1.1.1.1': 
+                                                                            {'10.4.1.1': 
                                                                                 {'link_data': '255.255.255.255',
-                                                                                'link_id': '1.1.1.1',
+                                                                                'link_id': '10.4.1.1',
                                                                                 'topologies': 
                                                                                     {0: 
                                                                                         {'mt_id': 0}},
@@ -1708,29 +1708,29 @@ class OspfOutput(object):
                                                                                 'type': 'transit network'}},
                                                                         'num_of_links': 3}},
                                                                 'header': 
-                                                                    {'adv_router': '1.1.1.1',
+                                                                    {'adv_router': '10.4.1.1',
                                                                     'age': 723,
                                                                     'checksum': '0x6029',
                                                                     'length': 60,
-                                                                    'lsa_id': '1.1.1.1',
+                                                                    'lsa_id': '10.4.1.1',
                                                                     'option': '0x22',
                                                                     'seq_num': '0x8000003e',
                                                                     'type': 1}}}}},
                                                 2: 
                                                     {'lsa_type': 2,
                                                     'lsas': 
-                                                        {'10.1.2.1 1.1.1.1': 
-                                                            {'adv_router': '1.1.1.1',
+                                                        {'10.1.2.1 10.4.1.1': 
+                                                            {'adv_router': '10.4.1.1',
                                                             'lsa_id': '10.1.2.1',
                                                             'ospfv2': 
                                                                 {'body': 
                                                                     {'network': 
                                                                         {'attached_routers': 
-                                                                            {'1.1.1.1': {},
-                                                                            '2.2.2.2': {}},
+                                                                            {'10.4.1.1': {},
+                                                                            '10.16.2.2': {}},
                                                                         'network_mask': '255.255.255.0'}},
                                                                 'header': 
-                                                                    {'adv_router': '1.1.1.1',
+                                                                    {'adv_router': '10.4.1.1',
                                                                     'age': 772,
                                                                     'checksum': '0x3bd1',
                                                                     'length': 32,
@@ -1741,9 +1741,9 @@ class OspfOutput(object):
                                                 3: 
                                                     {'lsa_type': 3,
                                                     'lsas': 
-                                                        {'20.1.3.0 1.1.1.1': 
-                                                            {'adv_router': '1.1.1.1',
-                                                            'lsa_id': '20.1.3.0',
+                                                        {'10.186.3.0 10.4.1.1': 
+                                                            {'adv_router': '10.4.1.1',
+                                                            'lsa_id': '10.186.3.0',
                                                             'ospfv2': 
                                                                 {'body': 
                                                                     {'summary': 
@@ -1753,20 +1753,20 @@ class OspfOutput(object):
                                                                                 {'metric': 1,
                                                                                 'mt_id': 0}}}},
                                                                 'header': 
-                                                                    {'adv_router': '1.1.1.1',
+                                                                    {'adv_router': '10.4.1.1',
                                                                     'age': 694,
                                                                     'checksum': '0x43dc',
                                                                     'length': 28,
-                                                                    'lsa_id': '20.1.3.0',
+                                                                    'lsa_id': '10.186.3.0',
                                                                     'option': '0x22',
                                                                     'seq_num': '0x80000001',
                                                                     'type': 3}}}}},
                                                 5: 
                                                     {'lsa_type': 5,
                                                     'lsas': 
-                                                        {'44.44.44.44 4.4.4.4': 
-                                                            {'adv_router': '4.4.4.4',
-                                                            'lsa_id': '44.44.44.44',
+                                                        {'10.94.44.44 10.64.4.4': 
+                                                            {'adv_router': '10.64.4.4',
+                                                            'lsa_id': '10.94.44.44',
                                                             'ospfv2': 
                                                                 {'body': 
                                                                     {'external': 
@@ -1779,20 +1779,20 @@ class OspfOutput(object):
                                                                                 'metric': 20,
                                                                                 'mt_id': 0}}}},
                                                                 'header': 
-                                                                    {'adv_router': '4.4.4.4',
+                                                                    {'adv_router': '10.64.4.4',
                                                                     'age': 1565,
                                                                     'checksum': '0x7d61',
                                                                     'length': 36,
-                                                                    'lsa_id': '44.44.44.44',
+                                                                    'lsa_id': '10.94.44.44',
                                                                     'option': '0x20',
                                                                     'seq_num': '0x80000002',
                                                                     'type': 5}}}}},
                                                 10: 
                                                     {'lsa_type': 10,
                                                     'lsas': 
-                                                        {'1.0.0.4 3.3.3.3': 
-                                                            {'adv_router': '3.3.3.3',
-                                                            'lsa_id': '1.0.0.4',
+                                                        {'10.1.0.4 10.36.3.3': 
+                                                            {'adv_router': '10.36.3.3',
+                                                            'lsa_id': '10.1.0.4',
                                                             'ospfv2': 
                                                                 {'body': 
                                                                     {'opaque': 
@@ -1844,11 +1844,11 @@ class OspfOutput(object):
                                                                                         {'priority': 7,
                                                                                         'unreserved_bandwidth': 93750000}}}}}},
                                                                 'header': 
-                                                                    {'adv_router': '3.3.3.3',
+                                                                    {'adv_router': '10.36.3.3',
                                                                     'age': 113,
                                                                     'checksum': '0x8f5e',
                                                                     'length': 160,
-                                                                    'lsa_id': '1.0.0.4',
+                                                                    'lsa_id': '10.1.0.4',
                                                                     'opaque_id': 4,
                                                                     'opaque_type': 1,
                                                                     'option': '0x20',
@@ -1857,26 +1857,26 @@ class OspfOutput(object):
                                         'interfaces': 
                                             {'Ethernet2/2': 
                                                 {'bdr_ip_addr': '10.2.3.2',
-                                                'bdr_router_id': '2.2.2.2',
+                                                'bdr_router_id': '10.16.2.2',
                                                 'bfd': 
                                                     {'enable': False},
                                                 'cost': 1,
                                                 'dead_interval': 40,
                                                 'dr_ip_addr': '10.2.3.3',
-                                                'dr_router_id': '3.3.3.3',
+                                                'dr_router_id': '10.36.3.3',
                                                 'enable': True,
                                                 'hello_interval': 10,
                                                 'hello_timer': '00:00:02',
                                                 'interface_type': 'broadcast',
                                                 'name': 'Ethernet2/2',
                                                 'neighbors': 
-                                                    {'3.3.3.3': 
+                                                    {'10.36.3.3': 
                                                         {'address': '10.2.3.3',
                                                         'bdr_ip_addr': '10.2.3.2',
                                                         'dead_timer': '00:00:39',
                                                         'dr_ip_addr': '10.2.3.3',
                                                         'last_state_change': '08:38:40',
-                                                        'neighbor_router_id': '3.3.3.3',
+                                                        'neighbor_router_id': '10.36.3.3',
                                                         'state': 'full',
                                                         'statistics': 
                                                             {'nbr_event_count': 5}}},
@@ -1890,26 +1890,26 @@ class OspfOutput(object):
                                                 'transmit_delay': 1},
                                             'Ethernet2/3': 
                                                 {'bdr_ip_addr': '10.2.4.2',
-                                                'bdr_router_id': '2.2.2.2',
+                                                'bdr_router_id': '10.16.2.2',
                                                 'bfd': 
                                                     {'enable': False},
                                                 'cost': 1,
                                                 'dead_interval': 40,
                                                 'dr_ip_addr': '10.2.4.4',
-                                                'dr_router_id': '4.4.4.4',
+                                                'dr_router_id': '10.64.4.4',
                                                 'enable': True,
                                                 'hello_interval': 10,
                                                 'hello_timer': '00:00:00',
                                                 'interface_type': 'broadcast',
                                                 'name': 'Ethernet2/3',
                                                 'neighbors': 
-                                                    {'4.4.4.4': 
+                                                    {'10.64.4.4': 
                                                         {'address': '10.2.4.4',
                                                         'bdr_ip_addr': '10.2.4.2',
                                                         'dead_timer': '00:00:33',
                                                         'dr_ip_addr': '10.2.4.4',
                                                         "last_state_change": "08:38:42",
-                                                        'neighbor_router_id': '4.4.4.4',
+                                                        'neighbor_router_id': '10.64.4.4',
                                                         'state': 'full',
                                                         'statistics': 
                                                             {'nbr_event_count': 6}}},
@@ -1923,26 +1923,26 @@ class OspfOutput(object):
                                                 'transmit_delay': 1},
                                             'Ethernet2/4': 
                                                 {'bdr_ip_addr': '10.1.2.2',
-                                                'bdr_router_id': '2.2.2.2',
+                                                'bdr_router_id': '10.16.2.2',
                                                 'bfd': 
                                                     {'enable': False},
                                                 'cost': 1,
                                                 'dead_interval': 40,
                                                 'dr_ip_addr': '10.1.2.1',
-                                                'dr_router_id': '1.1.1.1',
+                                                'dr_router_id': '10.4.1.1',
                                                 'enable': True,
                                                 'hello_interval': 10,
                                                 'hello_timer': '00:00:00',
                                                 'interface_type': 'broadcast',
                                                 'name': 'Ethernet2/4',
                                                 'neighbors': 
-                                                    {'1.1.1.1': 
+                                                    {'10.4.1.1': 
                                                         {'address': '10.1.2.1',
                                                         'bdr_ip_addr': '10.1.2.2',
                                                         'dead_timer': '00:00:35',
                                                         'dr_ip_addr': '10.1.2.1',
                                                         'last_state_change': '08:38:41',
-                                                        'neighbor_router_id': '1.1.1.1',
+                                                        'neighbor_router_id': '10.4.1.1',
                                                         'state': 'full',
                                                         'statistics': 
                                                             {'nbr_event_count': 5}}},
@@ -1967,10 +1967,10 @@ class OspfOutput(object):
                                                 {'auto_config': False,
                                                 'sync': False}},
                                         'ranges': 
-                                            {'1.1.1.0/24': 
+                                            {'10.4.1.0/24': 
                                                 {'advertise': True,
                                                 'cost': 33,
-                                                'prefix': '1.1.1.0/24'}},
+                                                'prefix': '10.4.1.0/24'}},
                                         'statistics': 
                                             {'area_scope_lsa_cksum_sum': '19',
                                             'area_scope_lsa_count': 19,
@@ -1993,7 +1993,7 @@ class OspfOutput(object):
                                 'preference': 
                                     {'single_value': 
                                         {'all': 110}},
-                                'router_id': '2.2.2.2',
+                                'router_id': '10.16.2.2',
                                 'spf_control': 
                                     {'paths': 8,
                                     'throttle': 

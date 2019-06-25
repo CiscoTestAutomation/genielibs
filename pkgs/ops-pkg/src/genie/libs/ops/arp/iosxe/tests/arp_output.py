@@ -10,15 +10,15 @@ class ArpOutput(object):
 			'Vlan100': {
 				'ipv4': {
 					'neighbors': {
-						'201.0.12.1': {
+						'192.168.234.1': {
 							'age': '-',
-							'ip': '201.0.12.1',
+							'ip': '192.168.234.1',
 							'link_layer_address': '58bf.eab6.2f51',
 							'origin': 'static',
 							'protocol': 'Internet',
 							'type': 'ARPA'},
-						'201.0.12.2': {'age': '29',
-							'ip': '201.0.12.2',
+						'192.168.234.2': {'age': '29',
+							'ip': '192.168.234.2',
 							'link_layer_address': '3820.5672.fc51',
 							'origin': 'dynamic',
 							'protocol': 'Internet',
@@ -29,9 +29,9 @@ class ArpOutput(object):
 			'Vlan200': {
 				'ipv4': {
 					'neighbors': {
-						'201.0.14.1': {
+						'192.168.70.1': {
 							'age': '-',
-							'ip': '201.0.14.1',
+							'ip': '192.168.70.1',
 							'link_layer_address': '58bf.eab6.2f62',
 							'origin': 'static',
 							'protocol': 'Internet',
@@ -43,9 +43,9 @@ class ArpOutput(object):
 	}
 	ShowIpArp_all='''
 			Protocol  Address          Age (min)  Hardware Addr   Type   Interface
-			Internet  201.0.12.1           -   58bf.eab6.2f51  ARPA   Vlan100
-			Internet  201.0.12.2          29   3820.5672.fc51  ARPA   Vlan100
-			Internet  201.0.14.1            -   58bf.eab6.2f62  ARPA   Vlan200
+			Internet  192.168.234.1           -   58bf.eab6.2f51  ARPA   Vlan100
+			Internet  192.168.234.2          29   3820.5672.fc51  ARPA   Vlan100
+			Internet  192.168.70.1            -   58bf.eab6.2f62  ARPA   Vlan200
 			'''
 	ShowIpArp_vrf1='''
 Protocol  Address          Age (min)  Hardware Addr   Type   Interface
@@ -293,9 +293,9 @@ Internet  10.12.110.1             -   fa16.3e24.787a  ARPA   GigabitEthernet2.41
 				"unreachables": "always sent",
 			},
 			"ipv4": {
-				 "201.11.14.1/24": {
+				 "192.168.76.1/24": {
 					  "prefix_length": "24",
-					  "ip": "201.11.14.1",
+					  "ip": "192.168.76.1",
 					  "secondary": False,
 					  "broadcase_address": "255.255.255.255"
 				 }
@@ -455,12 +455,12 @@ Internet  10.12.110.1             -   fa16.3e24.787a  ARPA   GigabitEthernet2.41
 			'Vlan100': {
 				'ipv4': {
 					'neighbors': {
-						'201.0.12.1': {
-							'ip': '201.0.12.1',
+						'192.168.234.1': {
+							'ip': '192.168.234.1',
 							'link_layer_address': '58bf.eab6.2f51',
 							'origin': 'static'},
-						'201.0.12.2': {
-							'ip': '201.0.12.2',
+						'192.168.234.2': {
+							'ip': '192.168.234.2',
 							'link_layer_address': '3820.5672.fc51',
 							'origin': 'dynamic'}
 					}
@@ -469,8 +469,8 @@ Internet  10.12.110.1             -   fa16.3e24.787a  ARPA   GigabitEthernet2.41
 			'Vlan200': {
 				'ipv4': {
 					'neighbors': {
-						'201.0.14.1': {
-							'ip': '201.0.14.1',
+						'192.168.70.1': {
+							'ip': '192.168.70.1',
 							'link_layer_address': '58bf.eab6.2f62',
 							'origin': 'static'}
 					}

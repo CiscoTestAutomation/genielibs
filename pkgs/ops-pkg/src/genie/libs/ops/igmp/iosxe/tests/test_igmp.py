@@ -128,7 +128,7 @@ class test_igmp(unittest.TestCase):
         self.assertEqual(igmp.info['vrfs']['default']['max_groups'], 20)
         # info - vrf VRF1
         self.assertEqual(igmp.info['vrfs']['VRF1']['interfaces']\
-                                  ['GigabitEthernet2']['querier'], '20.1.2.1')
+                                  ['GigabitEthernet2']['querier'], '10.186.2.1')
 
     def test_incomplete_output(self):
         self.maxDiff = None

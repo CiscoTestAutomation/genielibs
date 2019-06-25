@@ -48,7 +48,7 @@ class PimOutput(object):
                                 'oper_status': 'up',
                                 'link_status': 'up',
                                 'admin_status': 'up',
-                                'address': ['10.11.33.11', '11.11.11.11'],
+                                'address': ['10.11.33.11', '10.229.11.11'],
                                 'ip_subnet': '10.11.33.0/24',
                                 'dr_address': '10.11.33.11' ,
                                 'dr_priority': 144,
@@ -114,7 +114,7 @@ class PimOutput(object):
                                 'oper_status': 'up',
                                 'link_status': 'up',
                                 'admin_status': 'up',
-                                'address': ['10.11.66.11', '200.12.0.2'],
+                                'address': ['10.11.66.11', '192.168.64.2'],
                                 'ip_subnet': '10.11.66.0/24',
                                 'dr_address': '10.11.66.11',
                                 'dr_priority': 1,
@@ -465,12 +465,12 @@ class PimOutput(object):
                                                "policy_name": "224.0.0.0/4"
                                           }
                                      },
-                                     "2.2.2.2": {
+                                     "10.16.2.2": {
                                           "sm": {
                                                "policy_name": "224.0.0.0/4"
                                           }
                                      },
-                                     "12.12.12.12": {
+                                     "10.66.12.12": {
                                           "bidir": {
                                                "policy_name": "233.0.0.0/24"
                                           }
@@ -486,22 +486,22 @@ class PimOutput(object):
                                           "address": "10.111.111.111",
                                           "info_source_type": "static"
                                      },
-                                     "2.2.2.2 SM static": {
+                                     "10.16.2.2 SM static": {
                                           "mode": "SM",
                                           "group_ranges": "224.0.0.0/4",
                                           "df_ordinal": 0,
                                           "expiration": "never",
                                           "up_time": "03:52:52",
-                                          "address": "2.2.2.2",
+                                          "address": "10.16.2.2",
                                           "info_source_type": "static"
                                      },
-                                     "12.12.12.12 BIDIR static": {
+                                     "10.66.12.12 BIDIR static": {
                                           "mode": "BIDIR",
                                           "group_ranges": "233.0.0.0/24",
                                           "df_ordinal": 1,
                                           "expiration": "never",
                                           "up_time": "00:00:54",
-                                          "address": "12.12.12.12",
+                                          "address": "10.66.12.12",
                                           "info_source_type": "static"
                                      },
                                      "10.1.5.1 SM bootstrap": {
@@ -517,10 +517,10 @@ class PimOutput(object):
                                      }
                                 },
                                 "rp_mappings": {
-                                     "224.0.0.0/4 2.2.2.2 static": {
+                                     "224.0.0.0/4 10.16.2.2 static": {
                                           "group": "224.0.0.0/4",
                                           "protocol": "static",
-                                          "rp_address": "2.2.2.2",
+                                          "rp_address": "10.16.2.2",
                                           "up_time": "03:52:52",
                                           "expiration": "never"
                                      },
@@ -538,10 +538,10 @@ class PimOutput(object):
                                           "up_time": "01:56:07",
                                           "expiration": "00:02:05"
                                      },
-                                     "233.0.0.0/24 12.12.12.12 static": {
+                                     "233.0.0.0/24 10.66.12.12 static": {
                                           "group": "233.0.0.0/24",
                                           "protocol": "static",
-                                          "rp_address": "12.12.12.12",
+                                          "rp_address": "10.66.12.12",
                                           "up_time": "00:00:54",
                                           "expiration": "never"
                                      }
@@ -595,56 +595,56 @@ class PimOutput(object):
                            "rp": {
                                 "autorp": {
                                      "send_rp_announce": {
-                                          "rp_source": "200.12.0.2",
+                                          "rp_source": "192.168.64.2",
                                           "bidir": True,
                                           "scope": 0,
                                           "group_list": "226.0.0.0/8",
                                           "group": "226.0.0.0"
                                      },
-                                     "address": "11.11.11.11",
+                                     "address": "10.229.11.11",
                                      "bsr_next_discovery": "00:00:15"
                                 },
                                 "static_rp": {
-                                     "33.33.33.33": {
+                                     "10.21.33.33": {
                                           "sm": {
                                                "policy_name": "224.0.0.0/4"
                                           }
                                      }
                                 },
                                 "rp_list": {
-                                     "200.12.0.2 BIDIR autorp": {
+                                     "192.168.64.2 BIDIR autorp": {
                                           "mode": "BIDIR",
                                           "group_ranges": "226.0.0.0/8",
                                           "df_ordinal": 0,
                                           "expiration": "never",
                                           "up_time": "04:30:45",
                                           "priority": 255,
-                                          "address": "200.12.0.2",
-                                          "info_source_address": "200.12.0.2",
+                                          "address": "192.168.64.2",
+                                          "info_source_address": "192.168.64.2",
                                           "info_source_type": "autorp"
                                      },
-                                     "33.33.33.33 SM static": {
+                                     "10.21.33.33 SM static": {
                                           "mode": "SM",
                                           "group_ranges": "224.0.0.0/4",
                                           "df_ordinal": 0,
                                           "expiration": "never",
                                           "up_time": "03:52:52",
-                                          "address": "33.33.33.33",
+                                          "address": "10.21.33.33",
                                           "info_source_type": "static"
                                      }
                                 },
                                 "rp_mappings": {
-                                     "224.0.0.0/4 33.33.33.33 static": {
+                                     "224.0.0.0/4 10.21.33.33 static": {
                                           "group": "224.0.0.0/4",
                                           "protocol": "static",
-                                          "rp_address": "33.33.33.33",
+                                          "rp_address": "10.21.33.33",
                                           "up_time": "03:52:52",
                                           "expiration": "never"
                                      },
-                                     "226.0.0.0/8 200.12.0.2 autorp": {
+                                     "226.0.0.0/8 192.168.64.2 autorp": {
                                           "group": "226.0.0.0/8",
                                           "protocol": "autorp",
-                                          "rp_address": "200.12.0.2",
+                                          "rp_address": "192.168.64.2",
                                           "up_time": "04:30:45",
                                           "expiration": "never"
                                      }
@@ -876,14 +876,14 @@ class PimOutput(object):
                         'rp':{
                             'bidir':{
                                 'interface_df_election':{
-                                    '2.2.2.2 Loopback0':{
-                                        'address': '2.2.2.2',
+                                    '10.16.2.2 Loopback0':{
+                                        'address': '10.16.2.2',
                                         'interface_name': 'Loopback0',
                                         'df_bits': '00000002 (1)',
                                         'metric_pref': 0,
                                         'metric': 0,
                                         'group_range': '224.128.0.0/9',
-                                        'df_address': '1.1.1.1',
+                                        'df_address': '10.4.1.1',
                                         'interface_state': 'win',
                                         'winner_metric_pref': 0,
                                         'winner_metric': 0,
@@ -891,8 +891,8 @@ class PimOutput(object):
                                         'df_ordinal': 2,
 
                                     },
-                                    '2.2.2.2 Ethernet2/2': {
-                                        'address': '2.2.2.2',
+                                    '10.16.2.2 Ethernet2/2': {
+                                        'address': '10.16.2.2',
                                         'interface_name': 'Ethernet2/2',
                                         'df_bits': '00000002 (1)',
                                         'metric_pref': 0,
@@ -921,14 +921,14 @@ class PimOutput(object):
                         'rp': {
                             'bidir': {
                                 'interface_df_election': {
-                                    '12.12.12.12 Loopback1': {
-                                        'address': '12.12.12.12',
+                                    '10.66.12.12 Loopback1': {
+                                        'address': '10.66.12.12',
                                         'interface_name': 'Loopback1',
                                         'df_bits': '00000002 (1)',
                                         'metric_pref': 0,
                                         'metric': 0,
                                         'group_range': '224.128.0.0/9',
-                                        'df_address': '1.1.1.1',
+                                        'df_address': '10.4.1.1',
                                         'interface_state': 'win',
                                         'winner_metric_pref': 0,
                                         'winner_metric': 0,
@@ -1057,7 +1057,7 @@ class PimOutput(object):
                         'sm':{
                             'asm':{
                                 'register_source': 'loopback0',
-                                'register_source_address': '1.1.1.1',
+                                'register_source_address': '10.4.1.1',
                                 'sg_expiry_timer': {
                                     'sg_list': 'sg-expiry-timer-sg-list',
                                     'infinity': True,
@@ -1094,7 +1094,7 @@ class PimOutput(object):
                         'sm': {
                             'asm': {
                                 'register_source': 'loopback1',
-                                'register_source_address': '11.11.11.11',
+                                'register_source_address': '10.229.11.11',
                                 'sg_expiry_timer': {
                                     'sg_list': 'none',
                                     'sg_expiry_timer': 1200,
@@ -1185,7 +1185,7 @@ class PimOutput(object):
                             'asm':{
                                 '224.0.0.0/4': {
                                     'mode': 'asm',
-                                    'rp_address': '33.33.33.33',
+                                    'rp_address': '10.21.33.33',
                                 },
                             },
                         },
@@ -1206,7 +1206,7 @@ class PimOutput(object):
                             'asm':{
                                 '224.0.0.0/4': {
                                     'mode': 'asm',
-                                    'rp_address': '2.2.2.2',
+                                    'rp_address': '10.16.2.2',
                                 },
                                 '224.0.0.0/5': {
                                     'mode': 'asm',
@@ -1414,7 +1414,7 @@ class PimOutput(object):
                                     'expiration': '00:01:58',
                                     'incoming_interface': 'Null',
                                     'rpf_neighbor': '0.0.0.0',
-                                    'rp_address':'12.12.12.12',
+                                    'rp_address':'10.66.12.12',
                                     'mode':'bidir',
                                     'jp_holdtime_roundup': 3,
                                     'oif': '00000000',
@@ -1431,8 +1431,8 @@ class PimOutput(object):
                                     'mode': 'bidir',
                                     'expiration': '00:01:58',
                                     'incoming_interface': 'loopback0',
-                                    'rpf_neighbor': '1.1.1.1',
-                                    'rp_address': '1.1.1.1',
+                                    'rpf_neighbor': '10.4.1.1',
+                                    'rp_address': '10.4.1.1',
                                     'jp_holdtime_roundup': 3,
                                     'oif': '00000000',
                                     'oif_count': 0,
@@ -1736,19 +1736,19 @@ class PimOutput(object):
                              "bidir": True,
                              "rp": {
                                   "rp_mappings": {
-                                       "226.0.0.0/8 200.12.0.2 autorp": {
+                                       "226.0.0.0/8 192.168.64.2 autorp": {
                                             "up_time": "04:30:45",
                                             "expiration": "never",
                                             "protocol": "autorp",
                                             "group": "226.0.0.0/8",
-                                            "rp_address": "200.12.0.2"
+                                            "rp_address": "192.168.64.2"
                                        },
-                                       "224.0.0.0/4 33.33.33.33 static": {
+                                       "224.0.0.0/4 10.21.33.33 static": {
                                             "up_time": "03:52:52",
                                             "expiration": "never",
                                             "protocol": "static",
                                             "group": "224.0.0.0/4",
-                                            "rp_address": "33.33.33.33"
+                                            "rp_address": "10.21.33.33"
                                        }
                                   },
                                   "autorp": {
@@ -1764,24 +1764,24 @@ class PimOutput(object):
                                        }
                                   },
                                   "static_rp": {
-                                       "33.33.33.33": {
+                                       "10.21.33.33": {
                                             "sm": {
                                                  "policy_name": "224.0.0.0/4"
                                             }
                                        }
                                   },
                                   "rp_list": {
-                                       "33.33.33.33 SM static": {
+                                       "10.21.33.33 SM static": {
                                             "info_source_type": "static",
                                             "mode": "SM",
-                                            "address": "33.33.33.33",
+                                            "address": "10.21.33.33",
                                             "up_time": "03:52:52",
                                             "expiration": "never"
                                        },
-                                       "200.12.0.2 BIDIR autorp": {
+                                       "192.168.64.2 BIDIR autorp": {
                                             "info_source_type": "autorp",
-                                            "address": "200.12.0.2",
-                                            "info_source_address": "200.12.0.2",
+                                            "address": "192.168.64.2",
+                                            "info_source_address": "192.168.64.2",
                                             "up_time": "04:30:45",
                                             "expiration": "never",
                                             "mode": "BIDIR"
@@ -1883,7 +1883,7 @@ class PimOutput(object):
                                        },
                                        "address": [
                                             "10.11.33.11",
-                                            "11.11.11.11"
+                                            "10.229.11.11"
                                        ],
                                        "neighbors": {
                                             "10.11.33.43": {
@@ -1956,7 +1956,7 @@ class PimOutput(object):
                                        },
                                        "address": [
                                             "10.11.66.11",
-                                            "200.12.0.2"
+                                            "192.168.64.2"
                                        ],
                                        "oper_status": "up",
                                        "dr_priority": 1,
@@ -2011,19 +2011,19 @@ class PimOutput(object):
                                                  "up_time": "3d11h"
                                             }
                                        },
-                                       "rpf_neighbor": "1.1.1.1",
+                                       "rpf_neighbor": "10.4.1.1",
                                        "msdp_learned": True,
                                        "up_time": "3d11h",
                                        "expiration": "00:01:58",
                                        "incoming_interface": "loopback0",
                                        "is_rpt": True,
                                        "mode": "bidir",
-                                       "rp_address": "1.1.1.1"
+                                       "rp_address": "10.4.1.1"
                                   },
                                   "233.0.0.0/24 * True": {
                                        "group": "233.0.0.0/24",
                                        "source_address": "*",
-                                       "rp_address": "12.12.12.12",
+                                       "rp_address": "10.66.12.12",
                                        "rpf_neighbor": "0.0.0.0",
                                        "msdp_learned": True,
                                        "up_time": "00:41:05",
@@ -2044,12 +2044,12 @@ class PimOutput(object):
                              "bidir": True,
                              "rp": {
                                   "rp_mappings": {
-                                       "224.0.0.0/4 2.2.2.2 static": {
+                                       "224.0.0.0/4 10.16.2.2 static": {
                                             "up_time": "03:52:52",
                                             "expiration": "never",
                                             "protocol": "static",
                                             "group": "224.0.0.0/4",
-                                            "rp_address": "2.2.2.2"
+                                            "rp_address": "10.16.2.2"
                                        },
                                        "224.0.0.0/5 10.1.5.1 bootstrap": {
                                             "up_time": "01:56:07",
@@ -2065,12 +2065,12 @@ class PimOutput(object):
                                             "group": "224.0.0.0/4",
                                             "rp_address": "10.111.111.111"
                                        },
-                                       "233.0.0.0/24 12.12.12.12 static": {
+                                       "233.0.0.0/24 10.66.12.12 static": {
                                             "up_time": "00:00:54",
                                             "expiration": "never",
                                             "protocol": "static",
                                             "group": "233.0.0.0/24",
-                                            "rp_address": "12.12.12.12"
+                                            "rp_address": "10.66.12.12"
                                        }
                                   },
                                   "autorp": {
@@ -2084,12 +2084,12 @@ class PimOutput(object):
                                                  "policy_name": "224.0.0.0/4"
                                             }
                                        },
-                                       "2.2.2.2": {
+                                       "10.16.2.2": {
                                             "sm": {
                                                  "policy_name": "224.0.0.0/4"
                                             }
                                        },
-                                       "12.12.12.12": {
+                                       "10.66.12.12": {
                                             "bidir": {
                                                  "policy_name": "233.0.0.0/24"
                                             }
@@ -2121,17 +2121,17 @@ class PimOutput(object):
                                        }
                                   },
                                   "rp_list": {
-                                       "12.12.12.12 BIDIR static": {
+                                       "10.66.12.12 BIDIR static": {
                                             "info_source_type": "static",
                                             "mode": "BIDIR",
-                                            "address": "12.12.12.12",
+                                            "address": "10.66.12.12",
                                             "up_time": "00:00:54",
                                             "expiration": "never"
                                        },
-                                       "2.2.2.2 SM static": {
+                                       "10.16.2.2 SM static": {
                                             "info_source_type": "static",
                                             "mode": "SM",
-                                            "address": "2.2.2.2",
+                                            "address": "10.16.2.2",
                                             "up_time": "03:52:52",
                                             "expiration": "never"
                                        },

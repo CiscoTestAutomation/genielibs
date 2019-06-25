@@ -17,8 +17,24 @@ from genie.libs.parser.iosxe.show_interface import ShowInterfaces, \
                                         ShowIpv6Interface, \
                                         ShowInterfacesAccounting
                                         
-from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
+from genie.libs.parser.iosxe.show_vrf import ShowVrf
 
+
+outputs = {}
+outputs['show interfaces GigabitEthernet1/0/1'] = InterfaceOutput.ShowInterfaces_gi1
+outputs['show interfaces GigabitEthernet1/0/1 accounting'] = InterfaceOutput.ShowInterfacesAccounting_gi1
+outputs['show ip interface GigabitEthernet1/0/1'] = InterfaceOutput.ShowIpInterfaces_gi1
+outputs['show ipv6 interface GigabitEthernet1/0/1'] = InterfaceOutput.ShowIpv6Interfaces_gi1
+outputs['show interfaces GigabitEthernet1/0/1 switchport']=InterfaceOutput.ShowInterfacesSwitchport_gi1
+outputs['show vrf']=InterfaceOutput.ShowVrf_all
+outputs['show interfaces'] = InterfaceOutput.ShowInterfaces_all
+outputs['show ip interface'] = InterfaceOutput.ShowIpInterfaces_all
+outputs['show ipv6 interface'] = InterfaceOutput.ShowIpv6Interfaces_all
+outputs['show interfaces accounting'] = InterfaceOutput.ShowInterfacesAccounting_all
+outputs['show interfaces switchport']=InterfaceOutput.ShowInterfacesSwitchport_all
+
+def mapper(key):
+    return outputs[key]
 
 class test_interface(unittest.TestCase):
 
@@ -34,113 +50,117 @@ class test_interface(unittest.TestCase):
     def test_complete_output(self):
         self.maxDiff = None
         intf = Interface(device=self.device)
-        # Get outputs
-        intf.maker.outputs[ShowInterfaces] = \
-            {'':InterfaceOutput.ShowInterfaces}
 
-        intf.maker.outputs[ShowInterfacesSwitchport] = \
-            {'':InterfaceOutput.ShowInterfacesSwitchport}
-
-        intf.maker.outputs[ShowIpInterface] = \
-            {'':InterfaceOutput.ShowIpInterface}
-
-        intf.maker.outputs[ShowIpv6Interface] = \
-            {'':InterfaceOutput.ShowIpv6Interface}
-
-        intf.maker.outputs[ShowVrfDetail] = \
-            {'':InterfaceOutput.ShowVrfDetail}
-
-        intf.maker.outputs[ShowInterfacesAccounting] = \
-            {'':InterfaceOutput.ShowInterfacesAccounting}
-
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
         # Learn the feature
         intf.learn()
-
         # Verify Ops was created successfully
-        self.assertEqual(intf.info, InterfaceOutput.InterfaceOpsOutput_info)
+        self.assertDictEqual(intf.info, InterfaceOutput.InterfaceOpsOutput_info)
 
     def test_empty_output(self):
         self.maxDiff = None
         intf = Interface(device=self.device)
         # Get outputs
-        intf.maker.outputs[ShowInterfaces] = {'':''}
-        intf.maker.outputs[ShowInterfacesSwitchport] = {'':''}
-        intf.maker.outputs[ShowIpInterface] = {'':''}
-        intf.maker.outputs[ShowIpv6Interface] = {'':''}
-        intf.maker.outputs[ShowVrfDetail] = {'':''}
-        intf.maker.outputs[ShowInterfacesAccounting] = {'':''}
+        outputs['show interfaces GigabitEthernet1/0/1'] = ''
+        outputs['show interfaces GigabitEthernet1/0/1 accounting'] = ''
+        outputs['show ip interface GigabitEthernet1/0/1'] = ''
+        outputs['show ipv6 interface GigabitEthernet1/0/1'] = ''
+        outputs['show interfaces GigabitEthernet1/0/1 switchport'] =''
+        outputs['show vrf'] =''
+        outputs['show interfaces'] = ''
+        outputs['show ip interface'] = ''
+        outputs['show ipv6 interface'] = ''
+        outputs['show interfaces accounting'] = ''
+        outputs['show interfaces switchport'] = ''
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
 
         # Learn the feature
         intf.learn()
+        outputs[
+            'show interfaces GigabitEthernet1/0/1'] = InterfaceOutput.ShowInterfaces_gi1
+        outputs[
+            'show interfaces GigabitEthernet1/0/1 accounting'] = \
+            InterfaceOutput.ShowInterfacesAccounting_gi1
+        outputs[
+            'show ip interface GigabitEthernet1/0/1'] = \
+            InterfaceOutput.ShowIpInterfaces_gi1
+        outputs[
+            'show ipv6 interface GigabitEthernet1/0/1'] = \
+            InterfaceOutput.ShowIpv6Interfaces_gi1
+        outputs[
+            'show interfaces GigabitEthernet1/0/1 switchport'] = \
+            InterfaceOutput.ShowInterfacesSwitchport_gi1
+
+        outputs['show vrf'] = InterfaceOutput.ShowVrf_all
+        outputs['show interfaces'] = InterfaceOutput.ShowInterfaces_all
+        outputs['show ip interface'] = InterfaceOutput.ShowIpInterfaces_all
+        outputs['show ipv6 interface'] = InterfaceOutput.ShowIpv6Interfaces_all
+        outputs[
+            'show interfaces accounting'] = InterfaceOutput.ShowInterfacesAccounting_all
+        outputs[
+            'show interfaces switchport'] = InterfaceOutput.ShowInterfacesSwitchport_all
 
         # Check no attribute not found
         # info - oper_status
         with self.assertRaises(AttributeError):
             vrf = (intf.info['GigabitEthernet1/0/2']['oper_status'])
 
+    def test_custom_output(self):
+
+        intf = Interface(device=self.device)
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
+        # Learn the feature
+        intf.learn(interface='GigabitEthernet1/0/1', address_family='ipv4')
+
+        self.maxDiff = None
+        # Verify Ops was created successfully
+        self.assertDictEqual(intf.info, InterfaceOutput.interfaceOpsOutput_custom_info)
+
     def test_selective_attribute(self):
         self.maxDiff = None
         intf = Interface(device=self.device)
-        # Get outputs
-        intf.maker.outputs[ShowInterfaces] = \
-            {'':InterfaceOutput.ShowInterfaces}
 
-        intf.maker.outputs[ShowInterfacesSwitchport] = \
-            {'':InterfaceOutput.ShowInterfacesSwitchport}
-
-        intf.maker.outputs[ShowIpInterface] = \
-            {'':InterfaceOutput.ShowIpInterface}
-
-        intf.maker.outputs[ShowIpv6Interface] = \
-            {'':InterfaceOutput.ShowIpv6Interface}
-
-        intf.maker.outputs[ShowVrfDetail] = \
-            {'':InterfaceOutput.ShowVrfDetail}
-
-        intf.maker.outputs[ShowInterfacesAccounting] = \
-            {'':InterfaceOutput.ShowInterfacesAccounting}
-
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
         # Learn the feature
-        intf.learn()        
+        intf.learn()
 
         # Check specific attribute values
         # info - vrf
-        self.assertEqual(intf.info['GigabitEthernet0/0']['vrf'], 'Mgmt-vrf')
+        self.assertEqual(intf.info['GigabitEthernet1/0/1']['vrf'], 'VRF1')
         # info - link_status
         self.assertEqual(intf.info['GigabitEthernet1/0/2']['oper_status'], 'up')
 
     def test_incomplete_output(self):
         self.maxDiff = None
         intf = Interface(device=self.device)
-        # Get outputs
-        intf.maker.outputs[ShowInterfaces] = \
-            {'':InterfaceOutput.ShowInterfaces}
-
-        intf.maker.outputs[ShowInterfacesSwitchport] = \
-            {'':InterfaceOutput.ShowInterfacesSwitchport}
-
-        intf.maker.outputs[ShowIpInterface] = {'':''}
-
-        intf.maker.outputs[ShowIpv6Interface] = \
-            {'':InterfaceOutput.ShowIpv6Interface}
-
-        intf.maker.outputs[ShowVrfDetail] = \
-            {'':InterfaceOutput.ShowVrfDetail}
-
+        custom = {
+            'ShowInterfacesAccounting': {
+                '': 'GigabitEthernet1/0/1',
+            }
+        }
+        outputs['show interfaces accounting'] = ''
+        outputs['show ip interface'] = ''
         intf.maker.outputs[ShowInterfacesAccounting] = \
-            {'':InterfaceOutput.ShowInterfacesAccounting}
-
+            {'':InterfaceOutput.ShowInterfacesAccountingCustom}
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
         # Learn the feature
-        intf.learn()        
+        intf.learn(custom=custom)
 
         # Delete missing specific attribute values
+        outputs[
+            'show interfaces accounting'] = InterfaceOutput.ShowInterfacesAccounting_all
+        outputs['show ip interface'] = InterfaceOutput.ShowIpInterfaces_all
         expect_dict = deepcopy(InterfaceOutput.InterfaceOpsOutput_info)
         del(expect_dict['GigabitEthernet1/0/1']['ipv4'])
-        del(expect_dict['GigabitEthernet0/0']['ipv4'])
-        del(expect_dict['Vlan100']['ipv4'])
-                
+        del(expect_dict['GigabitEthernet1/0/2']['accounting'])
         # Verify Ops was created successfully
-        self.assertEqual(intf.info, expect_dict)
+        self.assertDictEqual(intf.info, expect_dict)
+
 
 
 if __name__ == '__main__':

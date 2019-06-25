@@ -6,8 +6,8 @@ class MsdpOutput(object):
     # 'show ip msdp peer vrf all' output
     showIpMsdpPeerVrf = '''\
     R3_titatnium# show ip msdp peer vrf all
-    MSDP peer 1.1.1.1 for VRF "default"
-    AS 100, local address: 3.3.3.3 (loopback0)
+    MSDP peer 10.4.1.1 for VRF "default"
+    AS 100, local address: 10.36.3.3 (loopback0)
       Description: R1
       Connection status: Established
         Uptime(Downtime): 01:27:25
@@ -32,8 +32,8 @@ class MsdpOutput(object):
         Connection Attempts: 0
         Discontinuity Time: 01:27:25
 
-    MSDP peer 44.44.44.44 for VRF "VRF1"
-    AS 200, local address: 33.33.33.34 (loopback3)
+    MSDP peer 10.94.44.44 for VRF "VRF1"
+    AS 200, local address: 10.21.33.34 (loopback3)
       Description: R4
       Connection status: Inactive, Connecting in: 00:00:23
         Uptime(Downtime): 01:03:22
@@ -63,13 +63,13 @@ class MsdpOutput(object):
     nexus# show ip msdp sa-cache detail vrf all
     MSDP SA Route Cache for VRF "default" - 1 entries
     Source          Group            RP               ASN         Uptime
-    173.1.1.2       228.1.1.1        10.106.106.106   100         00:02:43
+    172.16.25.2       228.1.1.1        10.106.106.106   100         00:02:43
         Peer: 10.106.106.106, Expires: 00:02:32
     '''
 
-    # show ip msdp policy statistics sa-policy 1.1.1.1 in
+    # show ip msdp policy statistics sa-policy 10.4.1.1 in
     ShowIpMsdpPolicyStatisticsSaPolicyIn = '''\
-    N95_2_R2# show ip msdp policy statistics sa-policy 1.1.1.1 in 
+    N95_2_R2# show ip msdp policy statistics sa-policy 10.4.1.1 in 
     C: No. of comparisions, M: No. of matches
 
     route-map filtera permit 10
@@ -81,15 +81,15 @@ class MsdpOutput(object):
     Total reject count for policy: 0  
      '''
 
-    # show ip msdp policy statistics sa-policy 1.1.1.1 in Vrf VRF1
+    # show ip msdp policy statistics sa-policy 10.4.1.1 in Vrf VRF1
     ShowIpMsdpPolicyStatisticsSaPolicyInVRF1 = '''\
-        R4# show ip msdp policy statistics sa-policy 44.44.44.44 in Vrf VRF1
+        R4# show ip msdp policy statistics sa-policy 10.94.44.44 in Vrf VRF1
         No SA input policy set for this peer
      '''
 
-    # show ip msdp policy statistics sa-policy 1.1.1.1 out
+    # show ip msdp policy statistics sa-policy 10.4.1.1 out
     ShowIpMsdpPolicyStatisticsSaPolicyOut = '''\
-    N95_2_R2# show ip msdp policy statistics sa-policy 1.1.1.1 out
+    N95_2_R2# show ip msdp policy statistics sa-policy 10.4.1.1 out
     C: No. of comparisions, M: No. of matches
 
     route-map filtera permit 10
@@ -101,9 +101,9 @@ class MsdpOutput(object):
     Total reject count for policy: 0
      '''
 
-    # show ip msdp policy statistics sa-policy 1.1.1.1 out Vrf VRF1
+    # show ip msdp policy statistics sa-policy 10.4.1.1 out Vrf VRF1
     ShowIpMsdpPolicyStatisticsSaPolicyOutVRF1 = '''\
-        R4# show ip msdp policy statistics sa-policy 44.44.44.44 out Vrf VRF1
+        R4# show ip msdp policy statistics sa-policy 10.94.44.44 out Vrf VRF1
         No SA input policy set for this peer
      '''
 
@@ -111,7 +111,7 @@ class MsdpOutput(object):
     ShowIpMsdpSummary = '''\
     N95_2_R2# show ip msdp summary vrf all
     MSDP Peer Status Summary for VRF "default"
-    Local ASN: 0, originator-id: 2.2.2.2
+    Local ASN: 0, originator-id: 10.16.2.2
 
     Number of configured peers:  1
     Number of established peers: 1
@@ -119,7 +119,7 @@ class MsdpOutput(object):
 
     Peer            Peer        Connection      Uptime/   Last msg  (S,G)s
     Address         ASN         State           Downtime  Received  Received
-    1.1.1.1         0           Established     05:46:19  00:00:51  1
+    10.4.1.1         0           Established     05:46:19  00:00:51  1
      '''
 
     # show ip msdp summary Vrf VRF1
@@ -127,7 +127,7 @@ class MsdpOutput(object):
     N95_2_R2# show ip msdp summary 
 
     MSDP Peer Status Summary for VRF "VRF1"
-    Local ASN: 0, originator-id: 2.2.2.2
+    Local ASN: 0, originator-id: 10.16.2.2
 
     Number of configured peers:  1
     Number of established peers: 1
@@ -135,14 +135,14 @@ class MsdpOutput(object):
 
     Peer            Peer        Connection      Uptime/   Last msg  (S,G)s
     Address         ASN         State           Downtime  Received  Received
-    44.44.44.44     0           Established     05:46:18  00:00:55  0
+    10.94.44.44     0           Established     05:46:18  00:00:55  0
      '''
 
     showOpsOutput={
         "vrf": {
           "VRF1": {
                "global": {
-                    "originator_id": "2.2.2.2",
+                    "originator_id": "10.16.2.2",
                     "statistics": {
                          "num_of_configured_peers": 1,
                          "num_of_established_peers": 1,
@@ -151,7 +151,7 @@ class MsdpOutput(object):
                     "local_as": 0
                },
                "peer": {
-                    "44.44.44.44": {
+                    "10.94.44.44": {
                          "timer": {
                               "holdtime_interval": 90,
                               "connect_retry_interval": 44,
@@ -192,11 +192,11 @@ class MsdpOutput(object):
           },
           "default": {
                "sa_cache": {
-                    "228.1.1.1 173.1.1.2": {
+                    "228.1.1.1 172.16.25.2": {
                          "up_time": "00:02:43",
                          "group": "228.1.1.1",
                          "peer_learned_from": "10.106.106.106",
-                         "source_addr": "173.1.1.2",
+                         "source_addr": "172.16.25.2",
                          "expire": "00:02:32",
                          "origin_rp": {
                               "10.106.106.106": {
@@ -206,7 +206,7 @@ class MsdpOutput(object):
                     }
                },
                "global": {
-                    "originator_id": "2.2.2.2",
+                    "originator_id": "10.16.2.2",
                     "statistics": {
                          "num_of_configured_peers": 1,
                          "num_of_established_peers": 1,
@@ -215,7 +215,7 @@ class MsdpOutput(object):
                     "local_as": 0
                },
                "peer": {
-                    "1.1.1.1": {
+                    "10.4.1.1": {
                          "timer": {
                               "holdtime_interval": 90,
                               "connect_retry_interval": 33,

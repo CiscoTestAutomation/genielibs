@@ -14,13 +14,13 @@ from genie.libs.parser.iosxe.show_interface import ShowInterfacesSwitchport
 class Interface(CommonInterface):
     '''Interface Genie Ops Object'''
 
-    def learn(self, custom=None):
+    def learn(self, interface='', address_family='', custom=None):
         '''Learn Interface Ops'''
         
         # ======================================================================
         #                           common keys
         # ======================================================================
-        super().learn()  
+        super().learn(custom=custom, interface=interface, address_family=address_family)
         if hasattr(self, 'info'):
             for intf in self.info:
                 if 'switchport_enable' in self.info[intf] and self.info[intf]['switchport_enable']== False:
@@ -36,7 +36,8 @@ class Interface(CommonInterface):
         # vlan_id
         self.add_leaf(cmd=ShowInterfacesSwitchport,
                       src=src + '[access_vlan]',
-                      dest=dest + '[vlan_id]')
+                      dest=dest + '[vlan_id]',
+                      interface=interface)
 
         req_keys = ['access_vlan', 'trunk_vlans', 'switchport_mode',
                     'switchport_enable', 'operational_mode']
@@ -44,12 +45,14 @@ class Interface(CommonInterface):
         for key in req_keys:
             self.add_leaf(cmd=ShowInterfacesSwitchport,
                           src=src + '[{}]'.format(key),
-                          dest=dest + '[{}]'.format(key))
+                          dest=dest + '[{}]'.format(key),
+                          interface=interface)
 
         # create overwrite keys for port_channel
         self.add_leaf(cmd=ShowInterfacesSwitchport,
                       src=src + '[port_channel]',
-                      dest=dest + '[overwrite_port_channel]')
+                      dest=dest + '[overwrite_port_channel]',
+                      interface=interface)
 
         # ======================================================================
         #                           encapsulation
@@ -60,7 +63,8 @@ class Interface(CommonInterface):
         # native_vlan
         self.add_leaf(cmd=ShowInterfacesSwitchport,
                       src='[(?P<interface>.*)][encapsulation][native_vlan]',
-                      dest=dest + '[native_vlan]')
+                      dest=dest + '[native_vlan]',
+                      interface=interface)
         # make
         self.make(final_call=True)
 

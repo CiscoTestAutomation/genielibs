@@ -129,11 +129,11 @@ class McastOutput(object):
          Timers: Uptime/Expires
          Interface state: Interface, Next-Hop or VCD, State/Mode
 
-        (*, 239.1.1.1), 00:00:03/stopped, RP 1.1.1.1, flags: SPF
+        (*, 239.1.1.1), 00:00:03/stopped, RP 10.4.1.1, flags: SPF
           Incoming interface: Null, RPF nbr 0.0.0.0
           Outgoing interface list: Null
 
-        (1.1.1.1, 239.1.1.1), 00:00:03/00:02:57, flags: PFT
+        (10.4.1.1, 239.1.1.1), 00:00:03/00:02:57, flags: PFT
           Incoming interface: Loopback0, RPF nbr 0.0.0.0, Registering
           Outgoing interface list: Null
 
@@ -141,7 +141,7 @@ class McastOutput(object):
           Incoming interface: GigabitEthernet2, RPF nbr 0.0.0.0, Registering
           Outgoing interface list: Null
 
-        (*, 224.0.1.40), 2d09h/00:02:56, RP 2.2.2.2, flags: SCL
+        (*, 224.0.1.40), 2d09h/00:02:56, RP 10.16.2.2, flags: SCL
           Incoming interface: Null, RPF nbr 0.0.0.0
           Outgoing interface list:
             Loopback0, Forward/Sparse, 2d09h/00:02:56
@@ -249,15 +249,15 @@ class McastOutput(object):
          Timers: Uptime/Expires
          Interface state: Interface, Next-Hop or VCD, State/Mode
 
-        (*, 239.1.1.1), 00:00:04/stopped, RP 11.11.11.11, flags: SPF
+        (*, 239.1.1.1), 00:00:04/stopped, RP 10.229.11.11, flags: SPF
           Incoming interface: Null, RPF nbr 0.0.0.0
           Outgoing interface list: Null
 
-        (11.11.11.11, 239.1.1.1), 00:00:04/00:02:55, flags: PFT
+        (10.229.11.11, 239.1.1.1), 00:00:04/00:02:55, flags: PFT
           Incoming interface: Loopback1, RPF nbr 0.0.0.0, Registering
           Outgoing interface list: Null
 
-        (*, 224.0.1.40), 00:08:58/00:02:52, RP 11.11.11.11, flags: SJCL
+        (*, 224.0.1.40), 00:08:58/00:02:52, RP 10.229.11.11, flags: SJCL
           Incoming interface: Null, RPF nbr 0.0.0.0
           Outgoing interface list:
             Loopback1, Forward/Sparse, 00:08:58/00:02:52
@@ -284,7 +284,7 @@ class McastOutput(object):
     '''
 
     ShowIpMrouteStatic_vrf1_output = '''\
-        Mroute: 77.77.77.77/32, RPF neighbor: 10.12.12.13, distance: 1
+        Mroute: 10.1.77.77/32, RPF neighbor: 10.12.12.13, distance: 1
     '''
 
     ShowIpMulticast_vrf1_output = '''\
@@ -336,7 +336,7 @@ class McastOutput(object):
                          "enable": True,
                          "multipath": False,
                          "mroute": {
-                              "77.77.77.77/32": {
+                              "10.1.77.77/32": {
                                    "path": {
                                         "10.12.12.13 1": {
                                              "admin_distance": "1",
@@ -459,7 +459,7 @@ class McastOutput(object):
                               "224.0.1.40": {
                                    "source_address": {
                                         "*": {
-                                             "rp": "11.11.11.11",
+                                             "rp": "10.229.11.11",
                                              "uptime": "00:08:58",
                                              "outgoing_interface_list": {
                                                   "Loopback1": {
@@ -477,13 +477,13 @@ class McastOutput(object):
                               "239.1.1.1": {
                                    "source_address": {
                                         "*": {
-                                             "rp": "11.11.11.11",
+                                             "rp": "10.229.11.11",
                                              "expire": "stopped",
                                              "uptime": "00:00:04",
                                              "flags": "SPF",
                                              "rpf_nbr": "0.0.0.0",
                                         },
-                                        "11.11.11.11": {
+                                        "10.229.11.11": {
                                              "expire": "00:02:55",
                                              "uptime": "00:00:04",
                                              "flags": "PFT",
@@ -553,7 +553,7 @@ class McastOutput(object):
                               "224.0.1.40": {
                                    "source_address": {
                                         "*": {
-                                             "rp": "2.2.2.2",
+                                             "rp": "10.16.2.2",
                                              "uptime": "2d09h",
                                              "outgoing_interface_list": {
                                                   "Loopback0": {
@@ -571,7 +571,7 @@ class McastOutput(object):
                               "239.1.1.1": {
                                    "source_address": {
                                         "*": {
-                                             "rp": "1.1.1.1",
+                                             "rp": "10.4.1.1",
                                              "expire": "stopped",
                                              "uptime": "00:00:03",
                                              "flags": "SPF",
@@ -589,7 +589,7 @@ class McastOutput(object):
                                                   }
                                              }
                                         },
-                                        "1.1.1.1": {
+                                        "10.4.1.1": {
                                              "expire": "00:02:57",
                                              "uptime": "00:00:03",
                                              "flags": "PFT",

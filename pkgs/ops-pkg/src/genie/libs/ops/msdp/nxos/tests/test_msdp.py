@@ -14,10 +14,10 @@ from genie.libs.parser.nxos.show_msdp import ShowIpMsdpPeerVrf, \
 
 
 outputs = {}
-outputs['show ip msdp policy statistics sa-policy 1.1.1.1 in'] = MsdpOutput.ShowIpMsdpPolicyStatisticsSaPolicyIn
-outputs['show ip msdp policy statistics sa-policy 44.44.44.44 in vrf VRF1'] = MsdpOutput.ShowIpMsdpPolicyStatisticsSaPolicyInVRF1
-outputs['show ip msdp policy statistics sa-policy 1.1.1.1 out'] = MsdpOutput.ShowIpMsdpPolicyStatisticsSaPolicyOut
-outputs['show ip msdp policy statistics sa-policy 44.44.44.44 out vrf VRF1'] = MsdpOutput.ShowIpMsdpPolicyStatisticsSaPolicyOutVRF1
+outputs['show ip msdp policy statistics sa-policy 10.4.1.1 in'] = MsdpOutput.ShowIpMsdpPolicyStatisticsSaPolicyIn
+outputs['show ip msdp policy statistics sa-policy 10.94.44.44 in vrf VRF1'] = MsdpOutput.ShowIpMsdpPolicyStatisticsSaPolicyInVRF1
+outputs['show ip msdp policy statistics sa-policy 10.4.1.1 out'] = MsdpOutput.ShowIpMsdpPolicyStatisticsSaPolicyOut
+outputs['show ip msdp policy statistics sa-policy 10.94.44.44 out vrf VRF1'] = MsdpOutput.ShowIpMsdpPolicyStatisticsSaPolicyOutVRF1
 outputs['show ip msdp summary'] = MsdpOutput.ShowIpMsdpSummary
 outputs['show ip msdp summary vrf VRF1'] = MsdpOutput.ShowIpMsdpSummaryVRF1
 outputs['show ip msdp sa-cache detail vrf all'] = MsdpOutput.showIpMsdpSaCacheDetailVrf
@@ -57,9 +57,9 @@ class test_msdp(unittest.TestCase):
         # Learn the feature
         f.learn()
 
-        self.assertEqual('R4', f.info['vrf']['VRF1']['peer']['44.44.44.44']['description'])
+        self.assertEqual('R4', f.info['vrf']['VRF1']['peer']['10.94.44.44']['description'])
         # Check does not match
-        self.assertNotEqual(1, f.info['vrf']['VRF1']['peer']['44.44.44.44']['description'])
+        self.assertNotEqual(1, f.info['vrf']['VRF1']['peer']['10.94.44.44']['description'])
 
 
     def test_msdp_missing_attributes(self):
@@ -80,10 +80,10 @@ class test_msdp(unittest.TestCase):
 
         self.device.execute = Mock()
         
-        outputs['show ip msdp policy statistics sa-policy 1.1.1.1 in'] = ''
-        outputs['show ip msdp policy statistics sa-policy 44.44.44.44 in vrf VRF1'] = ''
-        outputs['show ip msdp policy statistics sa-policy 1.1.1.1 out'] = ''
-        outputs['show ip msdp policy statistics sa-policy 44.44.44.44 out vrf VRF1'] = ''
+        outputs['show ip msdp policy statistics sa-policy 10.4.1.1 in'] = ''
+        outputs['show ip msdp policy statistics sa-policy 10.94.44.44 in vrf VRF1'] = ''
+        outputs['show ip msdp policy statistics sa-policy 10.4.1.1 out'] = ''
+        outputs['show ip msdp policy statistics sa-policy 10.94.44.44 out vrf VRF1'] = ''
         outputs['show ip msdp summary'] = ''
         outputs['show ip msdp summary vrf VRF1'] = ''
         outputs['show ip msdp sa-cache detail vrf all'] = ''
@@ -95,13 +95,13 @@ class test_msdp(unittest.TestCase):
         f.learn()
 
         # revert the global outputs back        
-        outputs['show ip msdp policy statistics sa-policy 1.1.1.1 in'] = \
+        outputs['show ip msdp policy statistics sa-policy 10.4.1.1 in'] = \
             MsdpOutput.ShowIpMsdpPolicyStatisticsSaPolicyIn
-        outputs['show ip msdp policy statistics sa-policy 44.44.44.44 in'] = \
+        outputs['show ip msdp policy statistics sa-policy 10.94.44.44 in'] = \
             MsdpOutput.ShowIpMsdpPolicyStatisticsSaPolicyInVRF1
-        outputs['show ip msdp policy statistics sa-policy 1.1.1.1 out'] = \
+        outputs['show ip msdp policy statistics sa-policy 10.4.1.1 out'] = \
             MsdpOutput.ShowIpMsdpPolicyStatisticsSaPolicyOut
-        outputs['show ip msdp policy statistics sa-policy 44.44.44.44 out vrf VRF1'] = \
+        outputs['show ip msdp policy statistics sa-policy 10.94.44.44 out vrf VRF1'] = \
             MsdpOutput.ShowIpMsdpPolicyStatisticsSaPolicyOutVRF1
         outputs['show ip msdp summary'] = MsdpOutput.ShowIpMsdpSummary
         outputs['show ip msdp summary vrf VRF1'] = MsdpOutput.ShowIpMsdpSummaryVRF1

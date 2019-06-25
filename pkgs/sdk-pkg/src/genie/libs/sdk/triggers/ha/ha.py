@@ -181,7 +181,10 @@ class TriggerReload(ReloadTemplate):
         self.print_local_verifications()
 
     @aetest.test
-    def reload(self, uut, abstract, steps):
+    def reload(self, uut, abstract, steps, 
+                          reload_timeout=None, 
+                          config_lock_retry_sleep=None, 
+                          config_lock_retries=None):
         '''Reload and reconnect to device
 
            Args:
@@ -197,7 +200,10 @@ class TriggerReload(ReloadTemplate):
         '''
         self.ha = abstract.sdk.libs.abstracted_libs.ha.HA(device=uut)
         try:
-            self.ha.reload(timeout=self.timeout, steps=steps)
+            self.ha.reload(timeout=self.timeout ,steps=steps, 
+                          reload_timeout=reload_timeout,
+                          config_lock_retry_sleep=config_lock_retry_sleep,
+                          config_lock_retries=config_lock_retries)
         except Exception as e:
             self.failed('Failed to reload', from_exception=e,
                          goto=['next_tc'])

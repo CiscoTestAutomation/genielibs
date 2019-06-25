@@ -184,7 +184,7 @@ class VlanOutput(object):
                                         {'Vlan100':
                                              {'vlan_id':
                                                   {'100':
-                                                       {'status': 'up', 'protocol': 'down', 'interface_is_ok': 'YES', 'ip_address': '201.0.12.1', 'method': 'manual'}}},
+                                                       {'status': 'up', 'protocol': 'down', 'interface_is_ok': 'YES', 'ip_address': '192.168.234.1', 'method': 'manual'}}},
                                          'Vlan1':
                                              {'vlan_id':
                                                   {'1':
@@ -235,7 +235,7 @@ class VlanOutput(object):
                           '30': {'access_map_action_value': 'forward', 'access_map_match_protocol_value': 'la', 'access_map_match_protocol': 'ipv6'},
                           '40': {'access_map_action_value': 'forward', 'access_map_match_protocol_value': 'fa', 'access_map_match_protocol': 'mac'},
                           '50': {'access_map_action_value': 'forward', 'access_map_match_protocol_value': '1301 feq', 'access_map_match_protocol': 'ip'},
-                          '60': {'access_map_action_value': 'drop', 'access_map_match_protocol_value': 'laila suzam', 'access_map_match_protocol': 'ipv6'}}, 'ip_address': '201.0.12.1', 'status': 'active', 'members': None, 'name': 'VLAN0100', 'stp': None, 'type': 'enet', 'parent': None, 'Trans1': '0', 'BrdgMode': None, 'said': '100100', 'RingNo': None, 'Trans2': '0', 'remote_span_vlan': True, 'mtu': '1500', 'BridgeNo': None, 'vlan_min_mtu': '1500', 'vlan_max_mtu': '1500', 'mtu_mismatch': 'No', 'vlan_mtu': '1500', 'remote_span_vlan': True},
+                          '60': {'access_map_action_value': 'drop', 'access_map_match_protocol_value': 'laila suzam', 'access_map_match_protocol': 'ipv6'}}, 'ip_address': '192.168.234.1', 'status': 'active', 'members': None, 'name': 'VLAN0100', 'stp': None, 'type': 'enet', 'parent': None, 'Trans1': '0', 'BrdgMode': None, 'said': '100100', 'RingNo': None, 'Trans2': '0', 'remote_span_vlan': True, 'mtu': '1500', 'BridgeNo': None, 'vlan_min_mtu': '1500', 'vlan_max_mtu': '1500', 'mtu_mismatch': 'No', 'vlan_mtu': '1500', 'remote_span_vlan': True},
                 '200':
                     {'access_map_sequence':
                          {'10': {'access_map_action_value': 'forward'},
@@ -336,7 +336,7 @@ class VlanOutput(object):
                                                                  'access_map_match_protocol': 'ipv6',
                                                                  'access_map_match_protocol_value': 'laila '
                                                                                                     'suzam'}},
-                                  'ip_address': '201.0.12.1',
+                                  'ip_address': '192.168.234.1',
                                   'members': None,
                                   'mtu': '1500',
                                   'name': 'VLAN0100',

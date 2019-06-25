@@ -58,10 +58,10 @@ class test_static_route_all(unittest.TestCase):
         # Check match
 
         self.assertEqual('GigabitEthernet0/2', f.info['vrf']['VRF1']['address_family']['ipv4']['routes']\
-            ['3.3.3.3/32']['next_hop']['outgoing_interface']['GigabitEthernet0/2']['outgoing_interface'])
+            ['10.36.3.3/32']['next_hop']['outgoing_interface']['GigabitEthernet0/2']['outgoing_interface'])
         # Check does not match
         self.assertNotEqual('GigabitEthernet0/0', f.info['vrf']['VRF1']['address_family']['ipv4']['routes']\
-            ['3.3.3.3/32']['next_hop']['outgoing_interface']['GigabitEthernet0/2']['outgoing_interface'])
+            ['10.36.3.3/32']['next_hop']['outgoing_interface']['GigabitEthernet0/2']['outgoing_interface'])
 
 
     def test_missing_attributes_static_route(self):
@@ -76,7 +76,7 @@ class test_static_route_all(unittest.TestCase):
 
         with self.assertRaises(KeyError):
             interfaces = f.info['vrf']['VRF1']['address_family']['ipv4']['routes']\
-                ['3.3.3.3/32']['next_hop']['interface']
+                ['10.36.3.3/32']['next_hop']['interface']
 
     def test_empty_output_static_route(self):
         self.maxDiff = None

@@ -33,7 +33,7 @@ class BgpOutput(object):
                                                                                              'total_entries': 45},
                                                                                     'prefixes': {'memory_usage': 4560,
                                                                                                  'total_entries': 30},
-                                                                                    'route_identifier': '4.4.4.4',
+                                                                                    'route_identifier': '10.64.4.4',
                                                                                     'routing_table_version': 56,
                                                                                     'scan_interval': 60,
                                                                                     'state_pfxrcd': '5',
@@ -41,7 +41,7 @@ class BgpOutput(object):
                                                                                     'total_memory': 9384,
                                                                                     'up_down': '01:03:23',
                                                                                     'version': 4}}},
-                                  '2.2.2.2': {'address_family': {'vpnv4 unicast': {'activity_paths': '120/30',
+                                  '10.16.2.2': {'address_family': {'vpnv4 unicast': {'activity_paths': '120/30',
                                                                                    'activity_prefixes': '85/25',
                                                                                    'as': 100,
                                                                                    'attribute_entries': '6/4',
@@ -65,7 +65,7 @@ class BgpOutput(object):
                                                                                             'total_entries': 45},
                                                                                    'prefixes': {'memory_usage': 4560,
                                                                                                 'total_entries': 30},
-                                                                                   'route_identifier': '4.4.4.4',
+                                                                                   'route_identifier': '10.64.4.4',
                                                                                    'routing_table_version': 56,
                                                                                    'scan_interval': 60,
                                                                                    'state_pfxrcd': '10',
@@ -97,7 +97,7 @@ class BgpOutput(object):
                                                                                             'total_entries': 45},
                                                                                    'prefixes': {'memory_usage': 5280,
                                                                                                 'total_entries': 30},
-                                                                                   'route_identifier': '4.4.4.4',
+                                                                                   'route_identifier': '10.64.4.4',
                                                                                    'routing_table_version': 66,
                                                                                    'scan_interval': 60,
                                                                                    'state_pfxrcd': '10',
@@ -105,7 +105,7 @@ class BgpOutput(object):
                                                                                    'total_memory': 11364,
                                                                                    'up_down': '01:12:00',
                                                                                    'version': 4}}},
-                                  '20.4.6.6': {'address_family': {'vpnv4 unicast': {'activity_paths': '120/30',
+                                  '10.66.6.6': {'address_family': {'vpnv4 unicast': {'activity_paths': '120/30',
                                                                                     'activity_prefixes': '85/25',
                                                                                     'as': 400,
                                                                                     'attribute_entries': '6/4',
@@ -129,7 +129,7 @@ class BgpOutput(object):
                                                                                              'total_entries': 45},
                                                                                     'prefixes': {'memory_usage': 4560,
                                                                                                  'total_entries': 30},
-                                                                                    'route_identifier': '4.4.4.4',
+                                                                                    'route_identifier': '10.64.4.4',
                                                                                     'routing_table_version': 56,
                                                                                     'scan_interval': 60,
                                                                                     'state_pfxrcd': '5',
@@ -137,7 +137,7 @@ class BgpOutput(object):
                                                                                     'total_memory': 9384,
                                                                                     'up_down': '01:03:14',
                                                                                     'version': 4}}},
-                                  '200.0.1.1': {'address_family': {'ipv4 unicast': {'activity_paths': '66/39',
+                                  '192.168.111.1': {'address_family': {'ipv4 unicast': {'activity_paths': '66/39',
                                                                                     'activity_prefixes': '47/20',
                                                                                     'as': 100,
                                                                                     'attribute_entries': '1/1',
@@ -155,7 +155,7 @@ class BgpOutput(object):
                                                                                              'total_entries': 27},
                                                                                     'prefixes': {'memory_usage': 6696,
                                                                                                  'total_entries': 27},
-                                                                                    'route_identifier': '200.0.1.1',
+                                                                                    'route_identifier': '192.168.111.1',
                                                                                     'routing_table_version': 28,
                                                                                     'scan_interval': 60,
                                                                                     'state_pfxrcd': 'Idle',
@@ -163,7 +163,7 @@ class BgpOutput(object):
                                                                                     'total_memory': 10648,
                                                                                     'up_down': '01:07:38',
                                                                                     'version': 4}}},
-                                  '200.0.2.1': {'address_family': {'ipv4 unicast': {'activity_paths': '66/39',
+                                  '192.168.4.1': {'address_family': {'ipv4 unicast': {'activity_paths': '66/39',
                                                                                     'activity_prefixes': '47/20',
                                                                                     'as': 100,
                                                                                     'attribute_entries': '1/1',
@@ -181,7 +181,7 @@ class BgpOutput(object):
                                                                                              'total_entries': 27},
                                                                                     'prefixes': {'memory_usage': 6696,
                                                                                                  'total_entries': 27},
-                                                                                    'route_identifier': '200.0.1.1',
+                                                                                    'route_identifier': '192.168.111.1',
                                                                                     'routing_table_version': 28,
                                                                                     'scan_interval': 60,
                                                                                     'state_pfxrcd': 'Idle',
@@ -189,7 +189,7 @@ class BgpOutput(object):
                                                                                     'total_memory': 10648,
                                                                                     'up_down': 'never',
                                                                                     'version': 4}}},
-                                  '200.0.4.1': {'address_family': {'ipv4 unicast': {'activity_paths': '66/39',
+                                  '192.168.51.1': {'address_family': {'ipv4 unicast': {'activity_paths': '66/39',
                                                                                     'activity_prefixes': '47/20',
                                                                                     'as': 100,
                                                                                     'attribute_entries': '1/1',
@@ -207,7 +207,7 @@ class BgpOutput(object):
                                                                                              'total_entries': 27},
                                                                                     'prefixes': {'memory_usage': 6696,
                                                                                                  'total_entries': 27},
-                                                                                    'route_identifier': '200.0.1.1',
+                                                                                    'route_identifier': '192.168.111.1',
                                                                                     'routing_table_version': 28,
                                                                                     'scan_interval': 60,
                                                                                     'state_pfxrcd': 'Idle',
@@ -222,7 +222,7 @@ class BgpOutput(object):
                                                                                     'msg_rcvd': 0,
                                                                                     'msg_sent': 0,
                                                                                     'output_queue': 0,
-                                                                                    'route_identifier': '200.0.1.1',
+                                                                                    'route_identifier': '192.168.111.1',
                                                                                     'routing_table_version': 1,
                                                                                     'state_pfxrcd': 'Idle',
                                                                                     'tbl_ver': 1,
@@ -235,7 +235,7 @@ class BgpOutput(object):
                                                                                     'msg_rcvd': 0,
                                                                                     'msg_sent': 0,
                                                                                     'output_queue': 0,
-                                                                                    'route_identifier': '200.0.1.1',
+                                                                                    'route_identifier': '192.168.111.1',
                                                                                     'routing_table_version': 1,
                                                                                     'state_pfxrcd': 'Idle',
                                                                                     'tbl_ver': 1,
@@ -248,7 +248,7 @@ class BgpOutput(object):
                                                                                      'msg_rcvd': 0,
                                                                                      'msg_sent': 0,
                                                                                      'output_queue': 0,
-                                                                                     'route_identifier': '200.0.1.1',
+                                                                                     'route_identifier': '192.168.111.1',
                                                                                      'routing_table_version': 1,
                                                                                      'state_pfxrcd': 'Idle',
                                                                                      'tbl_ver': 1,
@@ -261,7 +261,7 @@ class BgpOutput(object):
                                                                                      'msg_rcvd': 0,
                                                                                      'msg_sent': 0,
                                                                                      'output_queue': 0,
-                                                                                     'route_identifier': '200.0.1.1',
+                                                                                     'route_identifier': '192.168.111.1',
                                                                                      'routing_table_version': 1,
                                                                                      'state_pfxrcd': 'Idle',
                                                                                      'tbl_ver': 1,
@@ -291,7 +291,7 @@ class BgpOutput(object):
                                                                                                        'total_entries': 45},
                                                                                               'prefixes': {'memory_usage': 5280,
                                                                                                            'total_entries': 30},
-                                                                                              'route_identifier': '4.4.4.4',
+                                                                                              'route_identifier': '10.64.4.4',
                                                                                               'routing_table_version': 66,
                                                                                               'scan_interval': 60,
                                                                                               'state_pfxrcd': '5',
@@ -323,7 +323,7 @@ class BgpOutput(object):
                                                                                                     'total_entries': 45},
                                                                                            'prefixes': {'memory_usage': 5280,
                                                                                                         'total_entries': 30},
-                                                                                           'route_identifier': '4.4.4.4',
+                                                                                           'route_identifier': '10.64.4.4',
                                                                                            'routing_table_version': 66,
                                                                                            'scan_interval': 60,
                                                                                            'state_pfxrcd': '5',
@@ -331,7 +331,7 @@ class BgpOutput(object):
                                                                                            'total_memory': 11364,
                                                                                            'up_down': '01:03:19',
                                                                                            'version': 4}}},
-                                  '201.0.14.4': {'address_family': {'ipv4 unicast': {'activity_paths': '66/39',
+                                  '192.168.70.4': {'address_family': {'ipv4 unicast': {'activity_paths': '66/39',
                                                                                      'activity_prefixes': '47/20',
                                                                                      'as': 200,
                                                                                      'attribute_entries': '1/1',
@@ -349,7 +349,7 @@ class BgpOutput(object):
                                                                                               'total_entries': 27},
                                                                                      'prefixes': {'memory_usage': 6696,
                                                                                                   'total_entries': 27},
-                                                                                     'route_identifier': '200.0.1.1',
+                                                                                     'route_identifier': '192.168.111.1',
                                                                                      'routing_table_version': 28,
                                                                                      'scan_interval': 60,
                                                                                      'state_pfxrcd': 'Idle',
@@ -357,7 +357,7 @@ class BgpOutput(object):
                                                                                      'total_memory': 10648,
                                                                                      'up_down': 'never',
                                                                                      'version': 4}}},
-                                  '201.0.26.2': {'address_family': {'ipv4 unicast': {'activity_paths': '66/39',
+                                  '192.168.19.2': {'address_family': {'ipv4 unicast': {'activity_paths': '66/39',
                                                                                      'activity_prefixes': '47/20',
                                                                                      'as': 300,
                                                                                      'attribute_entries': '1/1',
@@ -375,7 +375,7 @@ class BgpOutput(object):
                                                                                               'total_entries': 27},
                                                                                      'prefixes': {'memory_usage': 6696,
                                                                                                   'total_entries': 27},
-                                                                                     'route_identifier': '200.0.1.1',
+                                                                                     'route_identifier': '192.168.111.1',
                                                                                      'routing_table_version': 28,
                                                                                      'scan_interval': 60,
                                                                                      'state_pfxrcd': 'Idle',
@@ -383,7 +383,7 @@ class BgpOutput(object):
                                                                                      'total_memory': 10648,
                                                                                      'up_down': '01:07:38',
                                                                                      'version': 4}}},
-                                  '3.3.3.3': {'address_family': {'vpnv4 unicast': {'activity_paths': '120/30',
+                                  '10.36.3.3': {'address_family': {'vpnv4 unicast': {'activity_paths': '120/30',
                                                                                    'activity_prefixes': '85/25',
                                                                                    'as': 100,
                                                                                    'attribute_entries': '6/4',
@@ -407,7 +407,7 @@ class BgpOutput(object):
                                                                                             'total_entries': 45},
                                                                                    'prefixes': {'memory_usage': 4560,
                                                                                                 'total_entries': 30},
-                                                                                   'route_identifier': '200.0.1.1',
+                                                                                   'route_identifier': '192.168.111.1',
                                                                                    'routing_table_version': 1,
                                                                                    'scan_interval': 60,
                                                                                    'state_pfxrcd': 'Idle',
@@ -439,7 +439,7 @@ class BgpOutput(object):
                                                                                             'total_entries': 45},
                                                                                    'prefixes': {'memory_usage': 5280,
                                                                                                 'total_entries': 30},
-                                                                                   'route_identifier': '200.0.1.1',
+                                                                                   'route_identifier': '192.168.111.1',
                                                                                    'routing_table_version': 1,
                                                                                    'scan_interval': 60,
                                                                                    'state_pfxrcd': 'Idle',
@@ -448,7 +448,7 @@ class BgpOutput(object):
                                                                                    'up_down': 'never',
                                                                                    'version': 4}}}}}}}
 
-    ShowBgpAllClusterIds = {'vrf': {'default': {'cluster_id': '4.4.4.4',
+    ShowBgpAllClusterIds = {'vrf': {'default': {'cluster_id': '10.64.4.4',
                      'configured_id': '0.0.0.0',
                      'list_of_cluster_ids': {'192.168.1.1': {'client_to_client_reflection_configured': 'disabled',
                                                              'client_to_client_reflection_used': 'disabled',
@@ -459,7 +459,7 @@ class BgpOutput(object):
                      'reflection_all_configured': 'enabled',
                      'reflection_intra_cluster_configured': 'enabled',
                      'reflection_intra_cluster_used': 'enabled'},
-         'vrf1': {'cluster_id': '4.4.4.4',
+         'vrf1': {'cluster_id': '10.64.4.4',
                   'configured_id': '0.0.0.0',
                   'list_of_cluster_ids': {'192.168.1.1': {'client_to_client_reflection_configured': 'disabled',
                                                           'client_to_client_reflection_used': 'disabled',
@@ -470,7 +470,7 @@ class BgpOutput(object):
                   'reflection_all_configured': 'enabled',
                   'reflection_intra_cluster_configured': 'enabled',
                   'reflection_intra_cluster_used': 'enabled'},
-         'vrf2': {'cluster_id': '4.4.4.4',
+         'vrf2': {'cluster_id': '10.64.4.4',
                   'configured_id': '0.0.0.0',
                   'list_of_cluster_ids': {'192.168.1.1': {'client_to_client_reflection_configured': 'disabled',
                                                           'client_to_client_reflection_used': 'disabled',
@@ -514,15 +514,15 @@ class BgpOutput(object):
                                   'local_policies': '0x200000'}}}
 
     ShowBgpAllNeighbors = {
-        'list_of_neighbors':['2.2.2.2', '3.3.3.3'],
+        'list_of_neighbors':['10.16.2.2', '10.36.3.3'],
         'vrf':
             {'default':
                 {'neighbor':
-                        {'2.2.2.2':
+                        {'10.16.2.2':
                              {'remote_as': 100,
                               'link': 'internal',
                               'bgp_version': 4,
-                              'router_id': '2.2.2.2',
+                              'router_id': '10.16.2.2',
                               'session_state': 'established',
                               'bgp_negotiated_keepalive_timers':
                                   {
@@ -539,14 +539,14 @@ class BgpOutput(object):
                                       },
                                       'transport':
                                       {
-                                           'local_host': '4.4.4.4',
+                                           'local_host': '10.64.4.4',
                                            'local_port': '35281',
-                                           'foreign_host': '2.2.2.2',
+                                           'foreign_host': '10.16.2.2',
                                            'foreign_port': '179',
                                       },
                                       'min_time_between_advertisement_runs': 0,
                                       'address_tracking_status': 'enabled' ,
-                                      'rib_route_ip': '2.2.2.2',
+                                      'rib_route_ip': '10.16.2.2',
                                       'tcp_path_mtu_discovery': 'enabled',
                                       'graceful_restart': 'disabled',
                                       'connection_state': 'estab',
@@ -719,11 +719,11 @@ class BgpOutput(object):
 
                                   },
                               },
-                        '3.3.3.3':
+                        '10.36.3.3':
                              {'remote_as': 100,
                               'link': 'internal',
                               'bgp_version': 4,
-                              'router_id': '3.3.3.3',
+                              'router_id': '10.36.3.3',
                               'session_state': 'established',
                               'bgp_negotiated_keepalive_timers':
                                   {
@@ -738,14 +738,14 @@ class BgpOutput(object):
                                           'dropped': 0,
                                       },
                                       'transport':
-                                          {'local_host': '4.4.4.4',
+                                          {'local_host': '10.64.4.4',
                                            'local_port': '56031',
-                                           'foreign_host': '3.3.3.3',
+                                           'foreign_host': '10.36.3.3',
                                            'foreign_port': '179',
                                            },
                                       'min_time_between_advertisement_runs': 0,
                                       'address_tracking_status': 'enabled',
-                                      'rib_route_ip': '3.3.3.3',
+                                      'rib_route_ip': '10.36.3.3',
                                       'tcp_path_mtu_discovery': 'enabled',
                                       'graceful_restart': 'disabled',
                                       'connection_state': 'estab',
@@ -979,14 +979,14 @@ class BgpOutput(object):
                     {'address_family':
                         {'vpnv4 unicast RD 65535:1':
                             {'default_vrf': 'evpn1',
-                                                                         'prefixes': {'100.1.1.0/17': {'available_path': '1',
+                                                                         'prefixes': {'10.1.1.0/17': {'available_path': '1',
                                                                                                        'best_path': '1',
                                                                                                        'index': {1: {'evpn': {'encap': ':8',
                                                                                                                               'evpn_esi': '00000000000000000000',
                                                                                                                               'ext_community': 'RT:65535:1',
                                                                                                                               'gateway_address': '0.0.0.0',
                                                                                                                               'label': 30000,
-                                                                                                                              'local_vtep': '33.33.33.33',
+                                                                                                                              'local_vtep': '10.21.33.33',
                                                                                                                               'router_mac': 'MAC:001E.7A13.E9BF'},
                                                                                                                      'gateway': '0.0.0.0',
                                                                                                                      'localpref': 100,
@@ -995,7 +995,7 @@ class BgpOutput(object):
                                                                                                                      'next_hop_via': 'vrf '
                                                                                                                                      'evpn1',
                                                                                                                      'origin_codes': '?',
-                                                                                                                     'originator': '33.33.33.33',
+                                                                                                                     'originator': '10.21.33.33',
                                                                                                                      'recipient_pathid': 0,
                                                                                                                      'refresh_epoch': 1,
                                                                                                                      'route_info': 'Local, '
@@ -1013,14 +1013,14 @@ class BgpOutput(object):
                                                                                                                 'table '
                                                                                                                 'EVPN-BGP-Table)',
                                                                                                        'table_version': '4'},
-                                                                                      '3.3.3.0/17': {'available_path': '2',
+                                                                                      '10.36.3.0/17': {'available_path': '2',
                                                                                                      'best_path': '1',
                                                                                                      'index': {1: {'evpn': {'encap': ':8',
                                                                                                                             'evpn_esi': '00000000000000000000',
                                                                                                                             'ext_community': 'RT:65535:1',
                                                                                                                             'gateway_address': '0.0.0.0',
                                                                                                                             'label': 30000,
-                                                                                                                            'local_vtep': '33.33.33.33',
+                                                                                                                            'local_vtep': '10.21.33.33',
                                                                                                                             'router_mac': 'MAC:001E.7A13.E9BF'},
                                                                                                                    'gateway': '0.0.0.0',
                                                                                                                    'localpref': 100,
@@ -1029,7 +1029,7 @@ class BgpOutput(object):
                                                                                                                    'next_hop_via': 'vrf '
                                                                                                                                    'evpn1',
                                                                                                                    'origin_codes': '?',
-                                                                                                                   'originator': '33.33.33.33',
+                                                                                                                   'originator': '10.21.33.33',
                                                                                                                    'recipient_pathid': 0,
                                                                                                                    'refresh_epoch': 1,
                                                                                                                    'route_info': 'Local, '
@@ -1045,12 +1045,12 @@ class BgpOutput(object):
                                                                                                                             'ext_community': 'RT:65535:1',
                                                                                                                             'gateway_address': '0.0.0.0',
                                                                                                                             'label': 30000,
-                                                                                                                            'local_vtep': '33.33.33.33',
+                                                                                                                            'local_vtep': '10.21.33.33',
                                                                                                                             'router_mac': 'MAC:001E.7A13.E9BF'},
-                                                                                                                   'gateway': '3.3.3.254',
+                                                                                                                   'gateway': '10.36.3.254',
                                                                                                                    'localpref': 100,
                                                                                                                    'metric': 0,
-                                                                                                                   'next_hop': '3.3.3.254',
+                                                                                                                   'next_hop': '10.36.3.254',
                                                                                                                    'next_hop_igp_metric': 111,
                                                                                                                    'update_groups': 3,
                                                                                                                    'paths': '(1 '
@@ -1062,7 +1062,7 @@ class BgpOutput(object):
                                                                                                                    'next_hop_via': 'vrf '
                                                                                                                                    'evpn1',
                                                                                                                    'origin_codes': '?',
-                                                                                                                   'originator': '33.33.33.22',
+                                                                                                                   'originator': '10.21.33.22',
                                                                                                                    'refresh_epoch': 1,
                                                                                                                    'route_info': '65530, '
                                                                                                                                  'imported '
@@ -1079,7 +1079,7 @@ class BgpOutput(object):
                                                                                                      'table_version': '3'}},
                                                                          'route_distinguisher': '65535:1'}}},
       'VRF1': {'address_family': {'vpnv4 unicast RD 100:100': {'default_vrf': 'VRF1',
-                                                               'prefixes': {'11.11.11.11/32': {'available_path': '1',
+                                                               'prefixes': {'10.229.11.11/32': {'available_path': '1',
                                                                                                'best_path': '1',
                                                                                                'index': {1: {'gateway': '0.0.0.0',
                                                                                                              'localpref': 100,
@@ -1128,7 +1128,7 @@ class BgpOutput(object):
                                                                                                             'VRF1)',
                                                                                                    'table_version': '2'}},
                                                                'route_distinguisher': '100:100'}}},
-      'default': {'address_family': {'ipv4 unicast': {'prefixes': {'1.1.1.1/32': {'available_path': '1',
+      'default': {'address_family': {'ipv4 unicast': {'prefixes': {'10.4.1.1/32': {'available_path': '1',
                                                                                   'best_path': '1',
                                                                                   'index': {1: {'gateway': '0.0.0.0',
                                                                                                 'localpref': 100,
@@ -1183,7 +1183,7 @@ class BgpOutput(object):
                                                                                             'table '
                                                                                             'default)',
                                                                                    'table_version': '5'},
-                                                                   '2.2.2.2/32': {'available_path': '1',
+                                                                   '10.16.2.2/32': {'available_path': '1',
                                                                                   'best_path': '1',
                                                                                   'index': {1: {'gateway': '10.1.1.2',
                                                                                                 'localpref': 100,
@@ -1280,7 +1280,7 @@ class BgpOutput(object):
                                                                                                   'default)',
                                                                                          'table_version': '5'}}}}},
       'evpn1': {'address_family': {'vpnv4 unicast RD 65535:1': {'default_vrf': 'evpn1',
-                                                                'prefixes': {'100.1.1.0/24': {'available_path': '1',
+                                                                'prefixes': {'10.1.1.0/24': {'available_path': '1',
                                                                                               'best_path': '1',
                                                                                               'index': {1: {'gateway': '0.0.0.0',
                                                                                                             'local_vxlan_vtep': {'bdi': 'BDI200',
@@ -1288,14 +1288,14 @@ class BgpOutput(object):
                                                                                                                                  'local_router_mac': '001E.7A13.E9BF',
                                                                                                                                  'vni': '30000',
                                                                                                                                  'vrf': 'evpn1',
-                                                                                                                                 'vtep_ip': '33.33.33.33'},
+                                                                                                                                 'vtep_ip': '10.21.33.33'},
                                                                                                             'localpref': 100,
                                                                                                             'metric': 0,
                                                                                                             'next_hop': '0.0.0.0',
                                                                                                             'next_hop_via': 'vrf '
                                                                                                                             'evpn1',
                                                                                                             'origin_codes': '?',
-                                                                                                            'originator': '33.33.33.33',
+                                                                                                            'originator': '10.21.33.33',
                                                                                                             'recipient_pathid': 0,
                                                                                                             'refresh_epoch': 1,
                                                                                                             'route_info': 'Local',
@@ -1310,22 +1310,22 @@ class BgpOutput(object):
                                                                                                        'table '
                                                                                                        'evpn1)',
                                                                                               'table_version': '5'},
-                                                                             '3.3.3.0/24': {'available_path': '2',
+                                                                             '10.36.3.0/24': {'available_path': '2',
                                                                                             'best_path': '2',
-                                                                                            'index': {1: {'gateway': '3.3.3.254',
+                                                                                            'index': {1: {'gateway': '10.36.3.254',
                                                                                                           'local_vxlan_vtep': {'bdi': 'BDI200',
                                                                                                                                'encap': '8',
                                                                                                                                'local_router_mac': '001E.7A13.E9BF',
                                                                                                                                'vni': '30000',
                                                                                                                                'vrf': 'evpn1',
-                                                                                                                               'vtep_ip': '33.33.33.33'},
+                                                                                                                               'vtep_ip': '10.21.33.33'},
                                                                                                           'localpref': 100,
                                                                                                           'metric': 0,
-                                                                                                          'next_hop': '3.3.3.254',
+                                                                                                          'next_hop': '10.36.3.254',
                                                                                                           'next_hop_via': 'vrf '
                                                                                                                           'evpn1',
                                                                                                           'origin_codes': '?',
-                                                                                                          'originator': '33.33.33.22',
+                                                                                                          'originator': '10.21.33.22',
                                                                                                           'refresh_epoch': 1,
                                                                                                           'route_info': '65530',
                                                                                                           'status_codes': '* ',
@@ -1336,14 +1336,14 @@ class BgpOutput(object):
                                                                                                                                'local_router_mac': '001E.7A13.E9BF',
                                                                                                                                'vni': '30000',
                                                                                                                                'vrf': 'evpn1',
-                                                                                                                               'vtep_ip': '33.33.33.33'},
+                                                                                                                               'vtep_ip': '10.21.33.33'},
                                                                                                           'localpref': 100,
                                                                                                           'metric': 0,
                                                                                                           'next_hop': '0.0.0.0',
                                                                                                           'next_hop_via': 'vrf '
                                                                                                                           'evpn1',
                                                                                                           'origin_codes': '?',
-                                                                                                          'originator': '33.33.33.33',
+                                                                                                          'originator': '10.21.33.33',
                                                                                                           'recipient_pathid': 0,
                                                                                                           'refresh_epoch': 1,
                                                                                                           'route_info': 'Local',
@@ -1363,10 +1363,10 @@ class BgpOutput(object):
     ShowBgpAll = {'vrf': {'VRF1': {'address_family': {'vpnv4 unicast RD 300:1': {'bgp_table_version': 56,
                                                                 'default_vrf': 'VRF1',
                                                                 'route_distinguisher': '300:1',
-                                                                'route_identifier': '4.4.4.4',
-                                                                'routes': {'15.1.1.0/24': {'index': {1: {'localpref': 100,
+                                                                'route_identifier': '10.64.4.4',
+                                                                'routes': {'10.1.1.0/24': {'index': {1: {'localpref': 100,
                                                                                                          'metric': 2219,
-                                                                                                         'next_hop': '1.1.1.1',
+                                                                                                         'next_hop': '10.4.1.1',
                                                                                                          'origin_codes': 'e',
                                                                                                          'path': '200 '
                                                                                                                  '33299 '
@@ -1378,7 +1378,7 @@ class BgpOutput(object):
                                                                                                          'weight': 0},
                                                                                                      2: {'localpref': 100,
                                                                                                          'metric': 2219,
-                                                                                                         'next_hop': '1.1.1.1',
+                                                                                                         'next_hop': '10.4.1.1',
                                                                                                          'origin_codes': 'e',
                                                                                                          'path': '200 '
                                                                                                                  '33299 '
@@ -1387,9 +1387,9 @@ class BgpOutput(object):
                                                                                                                  '{27016}',
                                                                                                          'status_codes': '*>i',
                                                                                                          'weight': 0}}},
-                                                                           '15.1.2.0/24': {'index': {1: {'localpref': 100,
+                                                                           '10.1.2.0/24': {'index': {1: {'localpref': 100,
                                                                                                          'metric': 2219,
-                                                                                                         'next_hop': '1.1.1.1',
+                                                                                                         'next_hop': '10.4.1.1',
                                                                                                          'origin_codes': 'e',
                                                                                                          'path': '200 '
                                                                                                                  '33299 '
@@ -1401,7 +1401,7 @@ class BgpOutput(object):
                                                                                                          'weight': 0},
                                                                                                      2: {'localpref': 100,
                                                                                                          'metric': 2219,
-                                                                                                         'next_hop': '1.1.1.1',
+                                                                                                         'next_hop': '10.4.1.1',
                                                                                                          'origin_codes': 'e',
                                                                                                          'path': '200 '
                                                                                                                  '33299 '
@@ -1410,7 +1410,7 @@ class BgpOutput(object):
                                                                                                                  '{27016}',
                                                                                                          'status_codes': '*>i',
                                                                                                          'weight': 0}}},
-                                                                           '46.1.1.0/24': {'index': {1: {'metric': 2219,
+                                                                           '10.169.1.0/24': {'index': {1: {'metric': 2219,
                                                                                                          'next_hop': '10.4.6.6',
                                                                                                          'origin_codes': 'e',
                                                                                                          'path': '300 '
@@ -1420,7 +1420,7 @@ class BgpOutput(object):
                                                                                                                  '{27016}',
                                                                                                          'status_codes': '*>',
                                                                                                          'weight': 0}}},
-                                                                           '46.1.2.0/24': {'index': {1: {'metric': 2219,
+                                                                           '10.169.2.0/24': {'index': {1: {'metric': 2219,
                                                                                                          'next_hop': '10.4.6.6',
                                                                                                          'origin_codes': 'e',
                                                                                                          'path': '300 '
@@ -1430,7 +1430,7 @@ class BgpOutput(object):
                                                                                                                  '{27016}',
                                                                                                          'status_codes': '*>',
                                                                                                          'weight': 0}}},
-                                                                           '46.1.3.0/24': {'index': {1: {'metric': 2219,
+                                                                           '10.169.3.0/24': {'index': {1: {'metric': 2219,
                                                                                                          'next_hop': '10.4.6.6',
                                                                                                          'origin_codes': 'e',
                                                                                                          'path': '300 '
@@ -1440,7 +1440,7 @@ class BgpOutput(object):
                                                                                                                  '{27016}',
                                                                                                          'status_codes': '*>',
                                                                                                          'weight': 0}}},
-                                                                           '46.1.4.0/24': {'index': {1: {'metric': 2219,
+                                                                           '10.169.4.0/24': {'index': {1: {'metric': 2219,
                                                                                                          'next_hop': '10.4.6.6',
                                                                                                          'origin_codes': 'e',
                                                                                                          'path': '300 '
@@ -1450,7 +1450,7 @@ class BgpOutput(object):
                                                                                                                  '{27016}',
                                                                                                          'status_codes': '*>',
                                                                                                          'weight': 0}}},
-                                                                           '46.1.5.0/24': {'index': {1: {'metric': 2219,
+                                                                           '10.169.5.0/24': {'index': {1: {'metric': 2219,
                                                                                                          'next_hop': '10.4.6.6',
                                                                                                          'origin_codes': 'e',
                                                                                                          'path': '300 '
@@ -1460,8 +1460,8 @@ class BgpOutput(object):
                                                                                                                  '{27016}',
                                                                                                          'status_codes': '*>',
                                                                                                          'weight': 0}}},
-                                                                           '46.2.2.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '20.4.6.6',
+                                                                           '10.9.2.0/24': {'index': {1: {'metric': 2219,
+                                                                                                         'next_hop': '10.66.6.6',
                                                                                                          'origin_codes': 'e',
                                                                                                          'path': '400 '
                                                                                                                  '33299 '
@@ -1470,13 +1470,13 @@ class BgpOutput(object):
                                                                                                                  '{27016}',
                                                                                                          'status_codes': '*>',
                                                                                                          'weight': 0}}}},
-                                                                'vrf_route_identifier': '44.44.44.44'}}},
+                                                                'vrf_route_identifier': '10.94.44.44'}}},
          'VRF2': {'address_family': {'vpnv4 unicast RD 400:1': {'bgp_table_version': 56,
                                                                 'default_vrf': 'VRF2',
                                                                 'route_distinguisher': '400:1',
-                                                                'route_identifier': '4.4.4.4',
-                                                                'routes': {'46.2.2.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '20.4.6.6',
+                                                                'route_identifier': '10.64.4.4',
+                                                                'routes': {'10.9.2.0/24': {'index': {1: {'metric': 2219,
+                                                                                                         'next_hop': '10.66.6.6',
                                                                                                          'origin_codes': 'e',
                                                                                                          'path': '400 '
                                                                                                                  '33299 '
@@ -1485,8 +1485,8 @@ class BgpOutput(object):
                                                                                                                  '{27016}',
                                                                                                          'status_codes': '*>',
                                                                                                          'weight': 0}}},
-                                                                           '46.2.3.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '20.4.6.6',
+                                                                           '10.9.3.0/24': {'index': {1: {'metric': 2219,
+                                                                                                         'next_hop': '10.66.6.6',
                                                                                                          'origin_codes': 'e',
                                                                                                          'path': '400 '
                                                                                                                  '33299 '
@@ -1495,8 +1495,8 @@ class BgpOutput(object):
                                                                                                                  '{27016}',
                                                                                                          'status_codes': '*>',
                                                                                                          'weight': 0}}},
-                                                                           '46.2.4.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '20.4.6.6',
+                                                                           '10.9.4.0/24': {'index': {1: {'metric': 2219,
+                                                                                                         'next_hop': '10.66.6.6',
                                                                                                          'origin_codes': 'e',
                                                                                                          'path': '400 '
                                                                                                                  '33299 '
@@ -1505,8 +1505,8 @@ class BgpOutput(object):
                                                                                                                  '{27016}',
                                                                                                          'status_codes': '*>',
                                                                                                          'weight': 0}}},
-                                                                           '46.2.5.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '20.4.6.6',
+                                                                           '10.9.5.0/24': {'index': {1: {'metric': 2219,
+                                                                                                         'next_hop': '10.66.6.6',
                                                                                                          'origin_codes': 'e',
                                                                                                          'path': '400 '
                                                                                                                  '33299 '
@@ -1515,8 +1515,8 @@ class BgpOutput(object):
                                                                                                                  '{27016}',
                                                                                                          'status_codes': '*>',
                                                                                                          'weight': 0}}},
-                                                                           '46.2.6.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '20.4.6.6',
+                                                                           '10.9.6.0/24': {'index': {1: {'metric': 2219,
+                                                                                                         'next_hop': '10.66.6.6',
                                                                                                          'origin_codes': 'e',
                                                                                                          'path': '400 '
                                                                                                                  '33299 '
@@ -1527,7 +1527,7 @@ class BgpOutput(object):
                                                                                                          'weight': 0}}},
                                                                            '615:11:11:1::/64': {'index': {1: {'localpref': 100,
                                                                                                               'metric': 2219,
-                                                                                                              'next_hop': '::FFFF:1.1.1.1',
+                                                                                                              'next_hop': '::FFFF:10.4.1.1',
                                                                                                               'origin_codes': 'e',
                                                                                                               'path': '400 '
                                                                                                                       '33299 '
@@ -1539,7 +1539,7 @@ class BgpOutput(object):
                                                                                                               'weight': 0},
                                                                                                           2: {'localpref': 100,
                                                                                                               'metric': 2219,
-                                                                                                              'next_hop': '::FFFF:1.1.1.1',
+                                                                                                              'next_hop': '::FFFF:10.4.1.1',
                                                                                                               'origin_codes': 'e',
                                                                                                               'path': '400 '
                                                                                                                       '33299 '
@@ -1550,7 +1550,7 @@ class BgpOutput(object):
                                                                                                               'weight': 0}}},
                                                                            '615:11:11::/64': {'index': {1: {'localpref': 100,
                                                                                                             'metric': 2219,
-                                                                                                            'next_hop': '::FFFF:1.1.1.1',
+                                                                                                            'next_hop': '::FFFF:10.4.1.1',
                                                                                                             'origin_codes': 'e',
                                                                                                             'path': '400 '
                                                                                                                     '33299 '
@@ -1562,7 +1562,7 @@ class BgpOutput(object):
                                                                                                             'weight': 0},
                                                                                                         2: {'localpref': 100,
                                                                                                             'metric': 2219,
-                                                                                                            'next_hop': '::FFFF:1.1.1.1',
+                                                                                                            'next_hop': '::FFFF:10.4.1.1',
                                                                                                             'origin_codes': 'e',
                                                                                                             'path': '400 '
                                                                                                                     '33299 '
@@ -1571,14 +1571,14 @@ class BgpOutput(object):
                                                                                                                     '{27016}',
                                                                                                             'status_codes': '*>i',
                                                                                                             'weight': 0}}}},
-                                                                'vrf_route_identifier': '44.44.44.44'}}},
+                                                                'vrf_route_identifier': '10.94.44.44'}}},
          'default': {'address_family': {'vpnv4 unicast RD 200:1': {'bgp_table_version': 56,
                                                                    'default_vrf': 'default',
                                                                    'route_distinguisher': '200:1',
-                                                                   'route_identifier': '4.4.4.4',
-                                                                   'routes': {'15.1.1.0/24': {'index': {1: {'localpref': 100,
+                                                                   'route_identifier': '10.64.4.4',
+                                                                   'routes': {'10.1.1.0/24': {'index': {1: {'localpref': 100,
                                                                                                             'metric': 2219,
-                                                                                                            'next_hop': '1.1.1.1',
+                                                                                                            'next_hop': '10.4.1.1',
                                                                                                             'origin_codes': 'e',
                                                                                                             'path': '200 '
                                                                                                                     '33299 '
@@ -1590,7 +1590,7 @@ class BgpOutput(object):
                                                                                                             'weight': 0},
                                                                                                         2: {'localpref': 100,
                                                                                                             'metric': 2219,
-                                                                                                            'next_hop': '1.1.1.1',
+                                                                                                            'next_hop': '10.4.1.1',
                                                                                                             'origin_codes': 'e',
                                                                                                             'path': '200 '
                                                                                                                     '33299 '
@@ -1599,9 +1599,9 @@ class BgpOutput(object):
                                                                                                                     '{27016}',
                                                                                                             'status_codes': '*>i',
                                                                                                             'weight': 0}}},
-                                                                              '15.1.2.0/24': {'index': {1: {'localpref': 100,
+                                                                              '10.1.2.0/24': {'index': {1: {'localpref': 100,
                                                                                                             'metric': 2219,
-                                                                                                            'next_hop': '1.1.1.1',
+                                                                                                            'next_hop': '10.4.1.1',
                                                                                                             'origin_codes': 'e',
                                                                                                             'path': '200 '
                                                                                                                     '33299 '
@@ -1613,7 +1613,7 @@ class BgpOutput(object):
                                                                                                             'weight': 0},
                                                                                                         2: {'localpref': 100,
                                                                                                             'metric': 2219,
-                                                                                                            'next_hop': '1.1.1.1',
+                                                                                                            'next_hop': '10.4.1.1',
                                                                                                             'origin_codes': 'e',
                                                                                                             'path': '200 '
                                                                                                                     '33299 '
@@ -1625,10 +1625,10 @@ class BgpOutput(object):
                                         'vpnv4 unicast RD 200:2': {'bgp_table_version': 56,
                                                                    'default_vrf': 'default',
                                                                    'route_distinguisher': '200:2',
-                                                                   'route_identifier': '4.4.4.4',
-                                                                   'routes': {'15.1.1.0/24': {'index': {1: {'localpref': 100,
+                                                                   'route_identifier': '10.64.4.4',
+                                                                   'routes': {'10.1.1.0/24': {'index': {1: {'localpref': 100,
                                                                                                             'metric': 2219,
-                                                                                                            'next_hop': '1.1.1.1',
+                                                                                                            'next_hop': '10.4.1.1',
                                                                                                             'origin_codes': 'e',
                                                                                                             'path': '200 '
                                                                                                                     '33299 '
@@ -1639,7 +1639,7 @@ class BgpOutput(object):
                                                                                                             'weight': 0},
                                                                                                         2: {'localpref': 100,
                                                                                                             'metric': 2219,
-                                                                                                            'next_hop': '1.1.1.1',
+                                                                                                            'next_hop': '10.4.1.1',
                                                                                                             'origin_codes': 'e',
                                                                                                             'path': '200 '
                                                                                                                     '33299 '
@@ -1649,9 +1649,9 @@ class BgpOutput(object):
                                                                                                             'status_codes': '* '
                                                                                                                             'i',
                                                                                                             'weight': 0}}},
-                                                                              '15.1.2.0/24': {'index': {1: {'localpref': 100,
+                                                                              '10.1.2.0/24': {'index': {1: {'localpref': 100,
                                                                                                             'metric': 2219,
-                                                                                                            'next_hop': '1.1.1.1',
+                                                                                                            'next_hop': '10.4.1.1',
                                                                                                             'origin_codes': 'e',
                                                                                                             'path': '200 '
                                                                                                                     '33299 '
@@ -1662,7 +1662,7 @@ class BgpOutput(object):
                                                                                                             'weight': 0},
                                                                                                         2: {'localpref': 100,
                                                                                                             'metric': 2219,
-                                                                                                            'next_hop': '1.1.1.1',
+                                                                                                            'next_hop': '10.4.1.1',
                                                                                                             'origin_codes': 'e',
                                                                                                             'path': '200 '
                                                                                                                     '33299 '
@@ -1672,9 +1672,9 @@ class BgpOutput(object):
                                                                                                             'status_codes': '* '
                                                                                                                             'i',
                                                                                                             'weight': 0}}},
-                                                                              '15.1.3.0/24': {'index': {1: {'localpref': 100,
+                                                                              '10.1.3.0/24': {'index': {1: {'localpref': 100,
                                                                                                             'metric': 2219,
-                                                                                                            'next_hop': '1.1.1.1',
+                                                                                                            'next_hop': '10.4.1.1',
                                                                                                             'origin_codes': 'e',
                                                                                                             'path': '200 '
                                                                                                                     '33299 '
@@ -1685,7 +1685,7 @@ class BgpOutput(object):
                                                                                                             'weight': 0},
                                                                                                         2: {'localpref': 100,
                                                                                                             'metric': 2219,
-                                                                                                            'next_hop': '1.1.1.1',
+                                                                                                            'next_hop': '10.4.1.1',
                                                                                                             'origin_codes': 'e',
                                                                                                             'path': '200 '
                                                                                                                     '33299 '
@@ -1698,19 +1698,19 @@ class BgpOutput(object):
          'evpn1': {'address_family': {'l2vpn e-vpn RD 65535:1': {'bgp_table_version': 4,
                                                                  'default_vrf': 'evpn1',
                                                                  'route_distinguisher': '65535:1',
-                                                                 'route_identifier': '33.33.33.33',
-                                                                 'routes': {'[5][65535:1][0][24][100.1.1.0]/17': {'index': {1: {'metric': 0,
+                                                                 'route_identifier': '10.21.33.33',
+                                                                 'routes': {'[5][65535:1][0][24][10.1.1.0]/17': {'index': {1: {'metric': 0,
                                                                                                                                 'next_hop': '0.0.0.0',
                                                                                                                                 'origin_codes': '?',
                                                                                                                                 'status_codes': '*>',
                                                                                                                                 'weight': 32768}}},
-                                                                            '[5][65535:1][0][24][3.3.3.0]/17': {'index': {1: {'metric': 0,
+                                                                            '[5][65535:1][0][24][10.36.3.0]/17': {'index': {1: {'metric': 0,
                                                                                                                               'next_hop': '0.0.0.0',
                                                                                                                               'origin_codes': '?',
                                                                                                                               'status_codes': '*>',
                                                                                                                               'weight': 32768},
                                                                                                                           2: {'metric': 0,
-                                                                                                                              'next_hop': '3.3.3.254',
+                                                                                                                              'next_hop': '10.36.3.254',
                                                                                                                               'origin_codes': '?',
                                                                                                                               'path': '65530',
                                                                                                                               'status_codes': '*',
@@ -1722,14 +1722,14 @@ class BgpOutput(object):
                                                                    'pfx_count': 2,
                                                                    'pfx_limit': 1000,
                                                                    'route_distinguisher': '65535:1',
-                                                                   'route_identifier': '33.33.33.33',
-                                                                   'routes': {'100.1.1.0/24': {'index': {1: {'metric': 0,
+                                                                   'route_identifier': '10.21.33.33',
+                                                                   'routes': {'10.1.1.0/24': {'index': {1: {'metric': 0,
                                                                                                              'next_hop': '0.0.0.0',
                                                                                                              'origin_codes': '?',
                                                                                                              'status_codes': '*>',
                                                                                                              'weight': 32768}}},
-                                                                              '3.3.3.0/24': {'index': {1: {'metric': 0,
-                                                                                                           'next_hop': '3.3.3.254',
+                                                                              '10.36.3.0/24': {'index': {1: {'metric': 0,
+                                                                                                           'next_hop': '10.36.3.254',
                                                                                                            'origin_codes': '?',
                                                                                                            'path': '65530',
                                                                                                            'status_codes': '*',
@@ -1741,8 +1741,8 @@ class BgpOutput(object):
                                                                                                            'weight': 32768}}}}}}}}}
 
     nbr1_bgp_policy = '''\
-        R4_iosv#show bgp all neighbors 2.2.2.2 policy
-         Neighbor: 2.2.2.2, Address-Family: VPNv4 Unicast (VRF1)
+        R4_iosv#show bgp all neighbors 10.16.2.2 policy
+         Neighbor: 10.16.2.2, Address-Family: VPNv4 Unicast (VRF1)
          Locally configured policies:
           route-map test in
           route-map test out
@@ -1750,34 +1750,34 @@ class BgpOutput(object):
 
     nbr1_bgp_all_neighbors = '''\
       R4# show bgp all neighbors | i BGP neighbor
-      BGP neighbor is 2.2.2.2,  remote AS 100, internal link
+      BGP neighbor is 10.16.2.2,  remote AS 100, internal link
         '''
 
     nbr1_advertised_routes = '''\
-        R4# show bgp all neighbors 2.2.2.2 advertised-routes
+        R4# show bgp all neighbors 10.16.2.2 advertised-routes
 
         For address family: IPv4 Unicast
-        BGP table version is 648438, local router ID is 44.44.44.44
+        BGP table version is 648438, local router ID is 10.94.44.44
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
-        *>i15.1.1.0/24        1.1.1.1               2219        100          0 200 33299 51178 47751 {27016} e
-        *>i15.1.2.0/24        1.1.1.1               2219        100          0 200 33299 51178 47751 {27016} e
-        *>i15.1.3.0/24        1.1.1.1               2219        100          0 200 33299 51178 47751 {27016} e
-        *>i15.1.4.0/24        1.1.1.1               2219        100          0 200 33299 51178 47751 {27016} e
-        *>i15.1.5.0/24        1.1.1.1               2219        100          0 200 33299 51178 47751 {27016} e
-        *>e46.2.2.0/24        20.4.6.6               100                     0 400 33299 51178 {47751} e
-        *>e46.2.3.0/24        20.4.6.6               100                     0 400 33299 51178 {47751} e
-        *>e46.2.4.0/24        20.4.6.6               100                     0 400 33299 51178 {47751} e
-        *>e46.2.5.0/24        20.4.6.6               100                     0 400 33299 51178 {47751} e
-        *>e46.2.6.0/24        20.4.6.6               100                     0 400 33299 51178 {47751} e
+        *>i10.1.1.0/24        10.4.1.1               2219        100          0 200 33299 51178 47751 {27016} e
+        *>i10.1.2.0/24        10.4.1.1               2219        100          0 200 33299 51178 47751 {27016} e
+        *>i10.1.3.0/24        10.4.1.1               2219        100          0 200 33299 51178 47751 {27016} e
+        *>i10.1.4.0/24        10.4.1.1               2219        100          0 200 33299 51178 47751 {27016} e
+        *>i10.1.5.0/24        10.4.1.1               2219        100          0 200 33299 51178 47751 {27016} e
+        *>e10.9.2.0/24        10.66.6.6               100                     0 400 33299 51178 {47751} e
+        *>e10.9.3.0/24        10.66.6.6               100                     0 400 33299 51178 {47751} e
+        *>e10.9.4.0/24        10.66.6.6               100                     0 400 33299 51178 {47751} e
+        *>e10.9.5.0/24        10.66.6.6               100                     0 400 33299 51178 {47751} e
+        *>e10.9.6.0/24        10.66.6.6               100                     0 400 33299 51178 {47751} e
 
         For address family: IPv4 Multicast
 
         For address family: IPv6 Unicast
-        BGP table version is 256028, local router ID is 44.44.44.44
+        BGP table version is 256028, local router ID is 10.94.44.44
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
@@ -1804,25 +1804,25 @@ class BgpOutput(object):
         '''
 
     nbr1_routes = '''\
-        R4# show bgp all neighbors 2.2.2.2 routes 
+        R4# show bgp all neighbors 10.16.2.2 routes 
 
         For address family: IPv4 Unicast
-        BGP table version is 773961, local router ID is 44.44.44.44
+        BGP table version is 773961, local router ID is 10.94.44.44
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
-        *>e46.1.1.0/24        21.0.0.2              2219                     0 300 33299 51178 47751 {27016} e
-        *>e46.1.2.0/24        21.0.0.2              2219                     0 300 33299 51178 47751 {27016} e
-        *>e46.1.3.0/24        21.0.0.2              2219                     0 300 33299 51178 47751 {27016} e
-        *>e46.1.4.0/24        21.0.0.2              2219                     0 300 33299 51178 47751 {27016} e
-        *>e46.1.5.0/24        21.0.0.2              2219                     0 300 33299 51178 47751 {27016} e
+        *>e10.169.1.0/24        10.186.0.2              2219                     0 300 33299 51178 47751 {27016} e
+        *>e10.169.2.0/24        10.186.0.2              2219                     0 300 33299 51178 47751 {27016} e
+        *>e10.169.3.0/24        10.186.0.2              2219                     0 300 33299 51178 47751 {27016} e
+        *>e10.169.4.0/24        10.186.0.2              2219                     0 300 33299 51178 47751 {27016} e
+        *>e10.169.5.0/24        10.186.0.2              2219                     0 300 33299 51178 47751 {27016} e
 
         For address family: IPv4 Multicast
 
         For address family: IPv6 Unicast
-        BGP table version is 256033, local router ID is 44.44.44.44
+        BGP table version is 256033, local router ID is 10.94.44.44
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
@@ -1849,9 +1849,9 @@ class BgpOutput(object):
             '''
 
     nbr1_received_routes = '''\
-        R4_iosv#show bgp all neighbors 2.2.2.2 received-routes 
+        R4_iosv#show bgp all neighbors 10.16.2.2 received-routes 
         For address family: VPNv4 Unicast
-        BGP table version is 66, local router ID is 4.4.4.4
+        BGP table version is 66, local router ID is 10.64.4.4
         Status codes: s suppressed, d damped, h history, * valid, > best, i - internal, 
                       r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter, 
                       x best-external, a additional-path, c RIB-compressed, 
@@ -1859,19 +1859,19 @@ class BgpOutput(object):
         RPKI validation codes: V valid, I invalid, N Not found
 
              Network          Next Hop            Metric LocPrf Weight Path
-        Route Distinguisher: 300:1 (default for vrf VRF1) VRF Router ID 44.44.44.44
-         *   46.1.1.0/24      21.0.0.2              2219             0 300 33299 51178 47751 {27016} e
-         *   46.1.2.0/24      21.0.0.2              2219             0 300 33299 51178 47751 {27016} e
-         *   46.1.3.0/24      21.0.0.2              2219             0 300 33299 51178 47751 {27016} e
-         *   46.1.4.0/24      21.0.0.2              2219             0 300 33299 51178 47751 {27016} e
-         *   46.1.5.0/24      21.0.0.2              2219             0 300 33299 51178 47751 {27016} e
+        Route Distinguisher: 300:1 (default for vrf VRF1) VRF Router ID 10.94.44.44
+         *   10.169.1.0/24      10.186.0.2              2219             0 300 33299 51178 47751 {27016} e
+         *   10.169.2.0/24      10.186.0.2              2219             0 300 33299 51178 47751 {27016} e
+         *   10.169.3.0/24      10.186.0.2              2219             0 300 33299 51178 47751 {27016} e
+         *   10.169.4.0/24      10.186.0.2              2219             0 300 33299 51178 47751 {27016} e
+         *   10.169.5.0/24      10.186.0.2              2219             0 300 33299 51178 47751 {27016} e
 
         Total number of prefixes 5
         '''
 
     nbr2_bgp_policy = '''\
-        R4_iosv#show bgp all neighbors 3.3.3.3 policy
-         Neighbor: 3.3.3.3, Address-Family: VPNv4 Unicast (VRF1)
+        R4_iosv#show bgp all neighbors 10.36.3.3 policy
+         Neighbor: 10.36.3.3, Address-Family: VPNv4 Unicast (VRF1)
          Locally configured policies:
           route-map test in
           route-map test out
@@ -1879,13 +1879,13 @@ class BgpOutput(object):
 
     nbr2_bgp_all_neighbors = '''\
       R4# show bgp all neighbors | i BGP neighbor
-      BGP neighbor is 3.3.3.3,  remote AS 100, internal link
+      BGP neighbor is 10.36.3.3,  remote AS 100, internal link
         '''
 
     nbr2_advertised_routes = '''\
-        R4# show bgp all neighbors 3.3.3.3 advertised-routes
+        R4# show bgp all neighbors 10.36.3.3 advertised-routes
         For address family: VPNv4 Unicast
-        BGP table version is 56, local router ID is 4.4.4.4
+        BGP table version is 56, local router ID is 10.64.4.4
         Status codes: s suppressed, d damped, h history, * valid, > best, i - internal, 
                       r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter, 
                       x best-external, a additional-path, c RIB-compressed, 
@@ -1893,23 +1893,23 @@ class BgpOutput(object):
         RPKI validation codes: V valid, I invalid, N Not found
 
              Network          Next Hop            Metric LocPrf Weight Path
-        Route Distinguisher: 300:1 (default for vrf VRF1) VRF Router ID 44.44.44.44
-         *>  46.1.1.0/24      10.4.6.6              2219             0 300 33299 51178 47751 {27016} e
-         *>  46.1.2.0/24      10.4.6.6              2219             0 300 33299 51178 47751 {27016} e
-         *>  46.1.3.0/24      10.4.6.6              2219             0 300 33299 51178 47751 {27016} e
-         *>  46.1.4.0/24      10.4.6.6              2219             0 300 33299 51178 47751 {27016} e
-         *>  46.1.5.0/24      10.4.6.6              2219             0 300 33299 51178 47751 {27016} e
-        Route Distinguisher: 400:1 (default for vrf VRF2) VRF Router ID 44.44.44.44
-         *>  46.2.2.0/24      20.4.6.6              2219             0 400 33299 51178 47751 {27016} e
-         *>  46.2.3.0/24      20.4.6.6              2219             0 400 33299 51178 47751 {27016} e
-         *>  46.2.4.0/24      20.4.6.6              2219             0 400 33299 51178 47751 {27016} e
-         *>  46.2.5.0/24      20.4.6.6              2219             0 400 33299 51178 47751 {27016} e
-         *>  46.2.6.0/24      20.4.6.6              2219             0 400 33299 51178 47751 {27016} e
+        Route Distinguisher: 300:1 (default for vrf VRF1) VRF Router ID 10.94.44.44
+         *>  10.169.1.0/24      10.4.6.6              2219             0 300 33299 51178 47751 {27016} e
+         *>  10.169.2.0/24      10.4.6.6              2219             0 300 33299 51178 47751 {27016} e
+         *>  10.169.3.0/24      10.4.6.6              2219             0 300 33299 51178 47751 {27016} e
+         *>  10.169.4.0/24      10.4.6.6              2219             0 300 33299 51178 47751 {27016} e
+         *>  10.169.5.0/24      10.4.6.6              2219             0 300 33299 51178 47751 {27016} e
+        Route Distinguisher: 400:1 (default for vrf VRF2) VRF Router ID 10.94.44.44
+         *>  10.9.2.0/24      10.66.6.6              2219             0 400 33299 51178 47751 {27016} e
+         *>  10.9.3.0/24      10.66.6.6              2219             0 400 33299 51178 47751 {27016} e
+         *>  10.9.4.0/24      10.66.6.6              2219             0 400 33299 51178 47751 {27016} e
+         *>  10.9.5.0/24      10.66.6.6              2219             0 400 33299 51178 47751 {27016} e
+         *>  10.9.6.0/24      10.66.6.6              2219             0 400 33299 51178 47751 {27016} e
 
         Total number of prefixes 10 
 
         For address family: VPNv6 Unicast
-        BGP table version is 66, local router ID is 4.4.4.4
+        BGP table version is 66, local router ID is 10.64.4.4
         Status codes: s suppressed, d damped, h history, * valid, > best, i - internal, 
                       r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter, 
                       x best-external, a additional-path, c RIB-compressed, 
@@ -1917,13 +1917,13 @@ class BgpOutput(object):
         RPKI validation codes: V valid, I invalid, N Not found
 
              Network          Next Hop            Metric LocPrf Weight Path
-        Route Distinguisher: 300:1 (default for vrf VRF1) VRF Router ID 44.44.44.44
+        Route Distinguisher: 300:1 (default for vrf VRF1) VRF Router ID 10.94.44.44
          *>  646:11:11::/64   2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
          *>  646:11:11:1::/64 2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
          *>  646:11:11:2::/64 2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
          *>  646:11:11:3::/64 2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
          *>  646:11:11:4::/64 2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
-        Route Distinguisher: 400:1 (default for vrf VRF2) VRF Router ID 44.44.44.44
+        Route Distinguisher: 400:1 (default for vrf VRF2) VRF Router ID 10.94.44.44
          *>  646:22:22::/64   2001:DB8:20:4:6::6
                                                      2219             0 400 33299 51178 47751 {27016} e
          *>  646:22:22:1::/64 2001:DB8:20:4:6::6
@@ -1939,9 +1939,9 @@ class BgpOutput(object):
         '''
 
     nbr2_routes = '''\
-        R4# show bgp all neighbors 3.3.3.3 routes 
+        R4# show bgp all neighbors 10.36.3.3 routes 
         For address family: VPNv4 Unicast
-        BGP table version is 56, local router ID is 4.4.4.4
+        BGP table version is 56, local router ID is 10.64.4.4
         Status codes: s suppressed, d damped, h history, * valid, > best, i - internal, 
                       r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter, 
                       x best-external, a additional-path, c RIB-compressed, 
@@ -1950,59 +1950,59 @@ class BgpOutput(object):
 
              Network          Next Hop            Metric LocPrf Weight Path
         Route Distinguisher: 200:1
-         *>i 15.1.1.0/24      3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i 15.1.2.0/24      3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i 15.1.3.0/24      3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i 15.1.4.0/24      3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i 15.1.5.0/24      3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+         *>i 10.1.1.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+         *>i 10.1.2.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+         *>i 10.1.3.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+         *>i 10.1.4.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+         *>i 10.1.5.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
         Route Distinguisher: 200:2
-         *>i 15.1.1.0/24      3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i 15.1.2.0/24      3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i 15.1.3.0/24      3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i 15.1.4.0/24      3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i 15.1.5.0/24      3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-        Route Distinguisher: 300:1 (default for vrf VRF1) VRF Router ID 44.44.44.44
-         * i 15.1.1.0/24      3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i                  3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         * i 15.1.2.0/24      3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i                  3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         * i 15.1.3.0/24      3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i                  3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         * i 15.1.4.0/24      3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i                  3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         * i 15.1.5.0/24      3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i                  3.3.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+         *>i 10.1.1.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+         *>i 10.1.2.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+         *>i 10.1.3.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+         *>i 10.1.4.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+         *>i 10.1.5.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+        Route Distinguisher: 300:1 (default for vrf VRF1) VRF Router ID 10.94.44.44
+         * i 10.1.1.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+         *>i                  10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+         * i 10.1.2.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+         *>i                  10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+         * i 10.1.3.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+         *>i                  10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+         * i 10.1.4.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+         *>i                  10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+         * i 10.1.5.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
+         *>i                  10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
 
         Total number of prefixes 20
             '''
 
     nbr2_received_routes = '''\
-        R4_iosv#show bgp all neighbors 3.3.3.3 received-routes
+        R4_iosv#show bgp all neighbors 10.36.3.3 received-routes
         For address family: IPv4 Unicast
-        BGP table version is 174, Local Router ID is 20.0.0.6
+        BGP table version is 174, Local Router ID is 10.145.0.6
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
-        * i1.1.1.0/24         3.3.3.3            2222        100          0 1 2 3 65000 23 i
-        * i1.1.2.0/24         3.3.3.3            2222        100          0 1 2 3 65000 23 i
-        *>i1.6.0.0/16         3.3.3.3                        100          0 10 20 30 40 50 60 70 80 90 i
+        * i10.4.1.0/24         10.36.3.3            2222        100          0 1 2 3 65000 23 i
+        * i10.4.2.0/24         10.36.3.3            2222        100          0 1 2 3 65000 23 i
+        *>i10.49.0.0/16         10.36.3.3                        100          0 10 20 30 40 50 60 70 80 90 i
 
 
         For address family: IPv4 Multicast
-        BGP table version is 175, Local Router ID is 20.0.0.6
+        BGP table version is 175, Local Router ID is 10.145.0.6
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
-        *>i1.2.1.0/24         3.3.3.3                        100          0 2 3 4 i
-        *>i1.2.2.0/24         3.3.3.3                        100          0 2 3 4 i
+        *>i10.9.1.0/24         10.36.3.3                        100          0 2 3 4 i
+        *>i10.9.2.0/24         10.36.3.3                        100          0 2 3 4 i
 
 
         For address family: IPv6 Unicast
-        BGP table version is 173, Local Router ID is 20.0.0.6
+        BGP table version is 173, Local Router ID is 10.145.0.6
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
@@ -2011,7 +2011,7 @@ class BgpOutput(object):
 
 
         For address family: IPv6 Multicast
-        BGP table version is 6, Local Router ID is 20.0.0.6
+        BGP table version is 6, Local Router ID is 10.145.0.6
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
@@ -2020,7 +2020,7 @@ class BgpOutput(object):
 
 
         For address family: VPNv4 Unicast
-        BGP table version is 183, Local Router ID is 20.0.0.6
+        BGP table version is 183, Local Router ID is 10.145.0.6
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
@@ -2029,39 +2029,39 @@ class BgpOutput(object):
         Route Distinguisher: 0:0
 
         Route Distinguisher: 101:100
-        * i1.3.1.0/24         3.3.3.3            4444        100          0 3 10 20 4 5 6 3 10 20 4 5 6 i
-        * i1.3.2.0/24         3.3.3.3            4444        100          0 3 10 20 4 5 6 3 10 20 4 5 6 i
+        * i10.16.1.0/24         10.36.3.3            4444        100          0 3 10 20 4 5 6 3 10 20 4 5 6 i
+        * i10.16.2.0/24         10.36.3.3            4444        100          0 3 10 20 4 5 6 3 10 20 4 5 6 i
 
         Route Distinguisher: 102:100
 
 
         For address family: VPNv6 Unicast
-        BGP table version is 13, Local Router ID is 20.0.0.6
+        BGP table version is 13, Local Router ID is 10.145.0.6
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
         Route Distinguisher: 100:200
-        *>iaaaa:1::/113       ::ffff:3.3.3.3
+        *>iaaaa:1::/113       ::ffff:10.36.3.3
                                                     4444        100          0 i
-        *>iaaaa:1::8000/113   ::ffff:3.3.3.3
+        *>iaaaa:1::8000/113   ::ffff:10.36.3.3
                                                     4444        100          0 i
 
         Route Distinguisher: 0xbb00010000000000
 
 
         For address family: Link-State
-        BGP table version is 173, Local Router ID is 20.0.0.6
+        BGP table version is 173, Local Router ID is 10.145.0.6
         Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
         Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
         Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
 
            Network            Next Hop            Metric     LocPrf     Weight Path
-        *>i[2]:[77][7,0][9.9.9.9,1,151587081][29.1.1.1,22][3.3.3.3,29.0.1.30]/616
-                              3.3.3.3            4444        100          0 3 10 20 30 40 50 60 70 80 90 i
-        *>i[2]:[77][7,0][9.9.9.9,2,151587081][29.1.1.1,22][3.3.3.3,29.0.1.31]/616
-                              3.3.3.3            4444        100          0 3 10 20 30 40 50 60 70 80 90 i
+        *>i[2]:[77][7,0][10.69.9.9,1,151587081][10.135.1.1,22][10.36.3.3,10.76.1.30]/616
+                              10.36.3.3            4444        100          0 3 10 20 30 40 50 60 70 80 90 i
+        *>i[2]:[77][7,0][10.69.9.9,2,151587081][10.135.1.1,22][10.36.3.3,10.76.1.31]/616
+                              10.36.3.3            4444        100          0 3 10 20 30 40 50 60 70 80 90 i
         '''
 
     BgpOpsOutput_info = {'instance': {'default': {'bgp_id': 100,
@@ -2099,9 +2099,9 @@ class BgpOutput(object):
                                                                                 'dampening_max_suppress_time': 3600,
                                                                                 'dampening_reuse_time': 750,
                                                                                 'dampening_suppress_time': 2000}},
-                                           'neighbor': {'3.3.3.3': {'address_family': {'vpnv4 unicast': {'route_map_name_in': 'test',
+                                           'neighbor': {'10.36.3.3': {'address_family': {'vpnv4 unicast': {'route_map_name_in': 'test',
                                                                                                          'route_map_name_out': 'test'}}},
-                                                        '2.2.2.2': {'address_family': {'vpnv4 unicast': {'route_map_name_in': 'test',
+                                                        '10.16.2.2': {'address_family': {'vpnv4 unicast': {'route_map_name_in': 'test',
                                                                                                          'route_map_name_out': 'test'}}}}},
                                   'default': {'address_family': {'ipv4 unicast': {'dampening': True,
                                                                                   'dampening_half_life_time': 2100,
@@ -2118,7 +2118,7 @@ class BgpOutput(object):
                                                                                    'dampening_max_suppress_time': 3600,
                                                                                    'dampening_reuse_time': 750,
                                                                                    'dampening_suppress_time': 2000}},
-                                              'cluster_id': '4.4.4.4',
+                                              'cluster_id': '10.64.4.4',
                                               'neighbor': {'10.4.6.6': {'address_family': {'vpnv4 unicast': {'bgp_table_version': 1,
                                                                                                              'path': {'memory_usage': 3600,
                                                                                                                       'total_entries': 45},
@@ -2126,7 +2126,7 @@ class BgpOutput(object):
                                                                                                                           'total_entries': 30},
                                                                                                              'routing_table_version': 56,
                                                                                                              'total_memory': 9384}}},
-                                                           '2.2.2.2': {'address_family': {'vpnv4 unicast': {'bgp_table_version': 1,
+                                                           '10.16.2.2': {'address_family': {'vpnv4 unicast': {'bgp_table_version': 1,
                                                                                                             'path': {'memory_usage': 3600,
                                                                                                                      'total_entries': 45},
                                                                                                             'prefixes': {'memory_usage': 4560,
@@ -2170,35 +2170,35 @@ class BgpOutput(object):
                                                                                                                        'updates': 11}}},
                                                                        'bgp_session_transport': {'connection': {'last_reset': 'never',
                                                                                                                 'state': 'established'},
-                                                                                                 'transport': {'foreign_host': '2.2.2.2',
+                                                                                                 'transport': {'foreign_host': '10.16.2.2',
                                                                                                                'foreign_port': '179',
-                                                                                                               'local_host': '4.4.4.4',
+                                                                                                               'local_host': '10.64.4.4',
                                                                                                                'local_port': '35281'}},
                                                                        'bgp_version': 4,
                                                                        'remote_as': 100,
                                                                        'session_state': 'established'},
-                                                           '20.4.6.6': {'address_family': {'vpnv4 unicast': {'bgp_table_version': 1,
+                                                           '10.66.6.6': {'address_family': {'vpnv4 unicast': {'bgp_table_version': 1,
                                                                                                              'path': {'memory_usage': 3600,
                                                                                                                       'total_entries': 45},
                                                                                                              'prefixes': {'memory_usage': 4560,
                                                                                                                           'total_entries': 30},
                                                                                                              'routing_table_version': 56,
                                                                                                              'total_memory': 9384}}},
-                                                           '200.0.1.1': {'address_family': {'ipv4 unicast': {'bgp_table_version': 28,
+                                                           '192.168.111.1': {'address_family': {'ipv4 unicast': {'bgp_table_version': 28,
                                                                                                              'path': {'memory_usage': 3672,
                                                                                                                       'total_entries': 27},
                                                                                                              'prefixes': {'memory_usage': 6696,
                                                                                                                           'total_entries': 27},
                                                                                                              'routing_table_version': 28,
                                                                                                              'total_memory': 10648}}},
-                                                           '200.0.2.1': {'address_family': {'ipv4 unicast': {'bgp_table_version': 28,
+                                                           '192.168.4.1': {'address_family': {'ipv4 unicast': {'bgp_table_version': 28,
                                                                                                              'path': {'memory_usage': 3672,
                                                                                                                       'total_entries': 27},
                                                                                                              'prefixes': {'memory_usage': 6696,
                                                                                                                           'total_entries': 27},
                                                                                                              'routing_table_version': 28,
                                                                                                              'total_memory': 10648}}},
-                                                           '200.0.4.1': {'address_family': {'ipv4 unicast': {'bgp_table_version': 28,
+                                                           '192.168.51.1': {'address_family': {'ipv4 unicast': {'bgp_table_version': 28,
                                                                                                              'path': {'memory_usage': 3672,
                                                                                                                       'total_entries': 27},
                                                                                                              'prefixes': {'memory_usage': 6696,
@@ -2227,21 +2227,21 @@ class BgpOutput(object):
                                                                                                                                  'total_entries': 30},
                                                                                                                     'routing_table_version': 66,
                                                                                                                     'total_memory': 11364}}},
-                                                           '201.0.14.4': {'address_family': {'ipv4 unicast': {'bgp_table_version': 28,
+                                                           '192.168.70.4': {'address_family': {'ipv4 unicast': {'bgp_table_version': 28,
                                                                                                               'path': {'memory_usage': 3672,
                                                                                                                        'total_entries': 27},
                                                                                                               'prefixes': {'memory_usage': 6696,
                                                                                                                            'total_entries': 27},
                                                                                                               'routing_table_version': 28,
                                                                                                               'total_memory': 10648}}},
-                                                           '201.0.26.2': {'address_family': {'ipv4 unicast': {'bgp_table_version': 28,
+                                                           '192.168.19.2': {'address_family': {'ipv4 unicast': {'bgp_table_version': 28,
                                                                                                               'path': {'memory_usage': 3672,
                                                                                                                        'total_entries': 27},
                                                                                                               'prefixes': {'memory_usage': 6696,
                                                                                                                            'total_entries': 27},
                                                                                                               'routing_table_version': 28,
                                                                                                               'total_memory': 10648}}},
-                                                           '3.3.3.3': {'address_family': {'vpnv4 unicast': {'bgp_table_version': 1,
+                                                           '10.36.3.3': {'address_family': {'vpnv4 unicast': {'bgp_table_version': 1,
                                                                                                             'path': {'memory_usage': 3600,
                                                                                                                      'total_entries': 45},
                                                                                                             'prefixes': {'memory_usage': 4560,
@@ -2285,43 +2285,43 @@ class BgpOutput(object):
                                                                                                                        'updates': 11}}},
                                                                        'bgp_session_transport': {'connection': {'last_reset': 'never',
                                                                                                                 'state': 'established'},
-                                                                                                 'transport': {'foreign_host': '3.3.3.3',
+                                                                                                 'transport': {'foreign_host': '10.36.3.3',
                                                                                                                'foreign_port': '179',
-                                                                                                               'local_host': '4.4.4.4',
+                                                                                                               'local_host': '10.64.4.4',
                                                                                                                'local_port': '56031'}},
                                                                        'bgp_version': 4,
                                                                        'remote_as': 100,
                                                                        'session_state': 'established'}}},
-                                  'vrf1': {'cluster_id': '4.4.4.4'},
-                                  'vrf2': {'cluster_id': '4.4.4.4'}}}}}
+                                  'vrf1': {'cluster_id': '10.64.4.4'},
+                                  'vrf2': {'cluster_id': '10.64.4.4'}}}}}
 
-    BgpOpsOutput_table = {'instance': {'default': {'vrf': {'EVPN-BGP-Table': {'address_family': {'vpnv4 unicast RD 65535:1': {'prefixes': {'100.1.1.0/17': {'index': {1: {'ext_community': 'RT:65535:1',
+    BgpOpsOutput_table = {'instance': {'default': {'vrf': {'EVPN-BGP-Table': {'address_family': {'vpnv4 unicast RD 65535:1': {'prefixes': {'10.1.1.0/17': {'index': {1: {'ext_community': 'RT:65535:1',
                                                                                                                                                  'gateway': '0.0.0.0',
                                                                                                                                                  'localpref': 100,
                                                                                                                                                  'metric': 0,
                                                                                                                                                  'next_hop': '0.0.0.0',
                                                                                                                                                  'origin_codes': '?',
-                                                                                                                                                 'originator': '33.33.33.33',
+                                                                                                                                                 'originator': '10.21.33.33',
                                                                                                                                                  'status_codes': '*>',
                                                                                                                                                  'weight': '32768'}},
                                                                                                                                    'table_version': '4'},
-                                                                                                                  '3.3.3.0/17': {'index': {1: {'ext_community': 'RT:65535:1',
+                                                                                                                  '10.36.3.0/17': {'index': {1: {'ext_community': 'RT:65535:1',
                                                                                                                                                'gateway': '0.0.0.0',
                                                                                                                                                'localpref': 100,
                                                                                                                                                'metric': 0,
                                                                                                                                                'next_hop': '0.0.0.0',
                                                                                                                                                'origin_codes': '?',
-                                                                                                                                               'originator': '33.33.33.33',
+                                                                                                                                               'originator': '10.21.33.33',
                                                                                                                                                'status_codes': '*>',
                                                                                                                                                'weight': '32768'},
                                                                                                                                            2: {'ext_community': 'RT:65535:1',
-                                                                                                                                               'gateway': '3.3.3.254',
+                                                                                                                                               'gateway': '10.36.3.254',
                                                                                                                                                'localpref': 100,
                                                                                                                                                'metric': 0,
-                                                                                                                                               'next_hop': '3.3.3.254',
+                                                                                                                                               'next_hop': '10.36.3.254',
                                                                                                                                                'next_hop_igp_metric': 111,
                                                                                                                                                'origin_codes': '?',
-                                                                                                                                               'originator': '33.33.33.22',
+                                                                                                                                               'originator': '10.21.33.22',
                                                                                                                                                'status_codes': '* '}},
                                                                                                                                  'table_version': '3'}}}}},
                                   'VRF1': {'address_family': {'vpnv4 unicast RD 100:100': {'paths': '(1 '
@@ -2330,7 +2330,7 @@ class BgpOutput(object):
                                                                                                     '#1, '
                                                                                                     'table '
                                                                                                     'VRF1)',
-                                                                                           'prefixes': {'11.11.11.11/32': {'index': {1: {'gateway': '0.0.0.0',
+                                                                                           'prefixes': {'10.229.11.11/32': {'index': {1: {'gateway': '0.0.0.0',
                                                                                                                                          'localpref': 100,
                                                                                                                                          'metric': 0,
                                                                                                                                          'next_hop': '0.0.0.0',
@@ -2342,7 +2342,7 @@ class BgpOutput(object):
                                                               'vpnv4 unicast RD 300:1': {'bgp_table_version': 56,
                                                                                          'default_vrf': 'VRF1',
                                                                                          'route_distinguisher': '300:1',
-                                                                                         'route_identifier': '4.4.4.4'},
+                                                                                         'route_identifier': '10.64.4.4'},
                                                               'vpnv6 unicast RD 100:100': {'paths': '(1 '
                                                                                                     'available, '
                                                                                                     'best '
@@ -2361,8 +2361,8 @@ class BgpOutput(object):
                                   'VRF2': {'address_family': {'vpnv4 unicast RD 400:1': {'bgp_table_version': 56,
                                                                                          'default_vrf': 'VRF2',
                                                                                          'route_distinguisher': '400:1',
-                                                                                         'route_identifier': '4.4.4.4'}}},
-                                  'default': {'address_family': {'ipv4 unicast': {'prefixes': {'1.1.1.1/32': {'index': {1: {'gateway': '0.0.0.0',
+                                                                                         'route_identifier': '10.64.4.4'}}},
+                                  'default': {'address_family': {'ipv4 unicast': {'prefixes': {'10.4.1.1/32': {'index': {1: {'gateway': '0.0.0.0',
                                                                                                                             'localpref': 100,
                                                                                                                             'metric': 0,
                                                                                                                             'next_hop': '0.0.0.0',
@@ -2391,7 +2391,7 @@ class BgpOutput(object):
                                                                                                                                              'i',
                                                                                                                              'update_group': 3}},
                                                                                                                'table_version': '5'},
-                                                                                               '2.2.2.2/32': {'index': {1: {'gateway': '10.1.1.2',
+                                                                                               '10.16.2.2/32': {'index': {1: {'gateway': '10.1.1.2',
                                                                                                                             'localpref': 100,
                                                                                                                             'metric': 0,
                                                                                                                             'next_hop': '10.1.1.2',
@@ -2440,33 +2440,33 @@ class BgpOutput(object):
                                                                  'vpnv4 unicast RD 200:1': {'bgp_table_version': 56,
                                                                                             'default_vrf': 'default',
                                                                                             'route_distinguisher': '200:1',
-                                                                                            'route_identifier': '4.4.4.4'},
+                                                                                            'route_identifier': '10.64.4.4'},
                                                                  'vpnv4 unicast RD 200:2': {'bgp_table_version': 56,
                                                                                             'default_vrf': 'default',
                                                                                             'route_distinguisher': '200:2',
-                                                                                            'route_identifier': '4.4.4.4'}}},
+                                                                                            'route_identifier': '10.64.4.4'}}},
                                   'evpn1': {'address_family': {'l2vpn e-vpn RD 65535:1': {'bgp_table_version': 4,
                                                                                           'default_vrf': 'evpn1',
                                                                                           'route_distinguisher': '65535:1',
-                                                                                          'route_identifier': '33.33.33.33'},
+                                                                                          'route_identifier': '10.21.33.33'},
                                                                'vpnv4 unicast RD 65535:1': {'bgp_table_version': 5,
                                                                                             'default_vrf': 'evpn1',
-                                                                                            'prefixes': {'100.1.1.0/24': {'index': {1: {'gateway': '0.0.0.0',
+                                                                                            'prefixes': {'10.1.1.0/24': {'index': {1: {'gateway': '0.0.0.0',
                                                                                                                                         'localpref': 100,
                                                                                                                                         'metric': 0,
                                                                                                                                         'next_hop': '0.0.0.0',
                                                                                                                                         'origin_codes': '?',
-                                                                                                                                        'originator': '33.33.33.33',
+                                                                                                                                        'originator': '10.21.33.33',
                                                                                                                                         'status_codes': '*>',
                                                                                                                                         'update_group': 1,
                                                                                                                                         'weight': '32768'}},
                                                                                                                           'table_version': '5'},
-                                                                                                         '3.3.3.0/24': {'index': {1: {'gateway': '3.3.3.254',
+                                                                                                         '10.36.3.0/24': {'index': {1: {'gateway': '10.36.3.254',
                                                                                                                                       'localpref': 100,
                                                                                                                                       'metric': 0,
-                                                                                                                                      'next_hop': '3.3.3.254',
+                                                                                                                                      'next_hop': '10.36.3.254',
                                                                                                                                       'origin_codes': '?',
-                                                                                                                                      'originator': '33.33.33.22',
+                                                                                                                                      'originator': '10.21.33.22',
                                                                                                                                       'status_codes': '* ',
                                                                                                                                       'update_group': 1},
                                                                                                                                   2: {'gateway': '0.0.0.0',
@@ -2474,13 +2474,13 @@ class BgpOutput(object):
                                                                                                                                       'metric': 0,
                                                                                                                                       'next_hop': '0.0.0.0',
                                                                                                                                       'origin_codes': '?',
-                                                                                                                                      'originator': '33.33.33.33',
+                                                                                                                                      'originator': '10.21.33.33',
                                                                                                                                       'status_codes': '*>',
                                                                                                                                       'update_group': 1,
                                                                                                                                       'weight': '32768'}},
                                                                                                                         'table_version': '4'}},
                                                                                             'route_distinguisher': '65535:1',
-                                                                                            'route_identifier': '33.33.33.33'}}}}}}}
+                                                                                            'route_identifier': '10.21.33.33'}}}}}}}
 
     BgpOpsOutput_routesperpeer = {'instance': {'default': {'vrf': {'default': {'neighbor': {'10.4.6.6': {'address_family': {'vpnv4 unicast': {'input_queue': 0,
                                                                                                              'msg_rcvd': 68,
@@ -2489,9 +2489,9 @@ class BgpOutput(object):
                                                                                                              'state_pfxrcd': '5',
                                                                                                              'tbl_ver': 1,
                                                                                                              'up_down': '01:03:23'}}},
-                                                           '2.2.2.2': {'address_family': {'ipv4 unicast': {'advertised': {'15.1.1.0/24': {'index': {1: {'localprf': 100,
+                                                           '10.16.2.2': {'address_family': {'ipv4 unicast': {'advertised': {'10.1.1.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                         'metric': 2219,
-                                                                                                                                                        'next_hop': '1.1.1.1',
+                                                                                                                                                        'next_hop': '10.4.1.1',
                                                                                                                                                         'origin_codes': 'e',
                                                                                                                                                         'path': '200 '
                                                                                                                                                                 '33299 '
@@ -2500,9 +2500,9 @@ class BgpOutput(object):
                                                                                                                                                                 '{27016}',
                                                                                                                                                         'status_codes': '*>',
                                                                                                                                                         'weight': 0}}},
-                                                                                                                          '15.1.2.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                          '10.1.2.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                         'metric': 2219,
-                                                                                                                                                        'next_hop': '1.1.1.1',
+                                                                                                                                                        'next_hop': '10.4.1.1',
                                                                                                                                                         'origin_codes': 'e',
                                                                                                                                                         'path': '200 '
                                                                                                                                                                 '33299 '
@@ -2511,9 +2511,9 @@ class BgpOutput(object):
                                                                                                                                                                 '{27016}',
                                                                                                                                                         'status_codes': '*>',
                                                                                                                                                         'weight': 0}}},
-                                                                                                                          '15.1.3.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                          '10.1.3.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                         'metric': 2219,
-                                                                                                                                                        'next_hop': '1.1.1.1',
+                                                                                                                                                        'next_hop': '10.4.1.1',
                                                                                                                                                         'origin_codes': 'e',
                                                                                                                                                         'path': '200 '
                                                                                                                                                                 '33299 '
@@ -2522,9 +2522,9 @@ class BgpOutput(object):
                                                                                                                                                                 '{27016}',
                                                                                                                                                         'status_codes': '*>',
                                                                                                                                                         'weight': 0}}},
-                                                                                                                          '15.1.4.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                          '10.1.4.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                         'metric': 2219,
-                                                                                                                                                        'next_hop': '1.1.1.1',
+                                                                                                                                                        'next_hop': '10.4.1.1',
                                                                                                                                                         'origin_codes': 'e',
                                                                                                                                                         'path': '200 '
                                                                                                                                                                 '33299 '
@@ -2533,9 +2533,9 @@ class BgpOutput(object):
                                                                                                                                                                 '{27016}',
                                                                                                                                                         'status_codes': '*>',
                                                                                                                                                         'weight': 0}}},
-                                                                                                                          '15.1.5.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                          '10.1.5.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                         'metric': 2219,
-                                                                                                                                                        'next_hop': '1.1.1.1',
+                                                                                                                                                        'next_hop': '10.4.1.1',
                                                                                                                                                         'origin_codes': 'e',
                                                                                                                                                         'path': '200 '
                                                                                                                                                                 '33299 '
@@ -2544,8 +2544,8 @@ class BgpOutput(object):
                                                                                                                                                                 '{27016}',
                                                                                                                                                         'status_codes': '*>',
                                                                                                                                                         'weight': 0}}},
-                                                                                                                          '46.2.2.0/24': {'index': {1: {'metric': 100,
-                                                                                                                                                        'next_hop': '20.4.6.6',
+                                                                                                                          '10.9.2.0/24': {'index': {1: {'metric': 100,
+                                                                                                                                                        'next_hop': '10.66.6.6',
                                                                                                                                                         'origin_codes': 'e',
                                                                                                                                                         'path': '400 '
                                                                                                                                                                 '33299 '
@@ -2553,8 +2553,8 @@ class BgpOutput(object):
                                                                                                                                                                 '{47751}',
                                                                                                                                                         'status_codes': '*>',
                                                                                                                                                         'weight': 0}}},
-                                                                                                                          '46.2.3.0/24': {'index': {1: {'metric': 100,
-                                                                                                                                                        'next_hop': '20.4.6.6',
+                                                                                                                          '10.9.3.0/24': {'index': {1: {'metric': 100,
+                                                                                                                                                        'next_hop': '10.66.6.6',
                                                                                                                                                         'origin_codes': 'e',
                                                                                                                                                         'path': '400 '
                                                                                                                                                                 '33299 '
@@ -2562,8 +2562,8 @@ class BgpOutput(object):
                                                                                                                                                                 '{47751}',
                                                                                                                                                         'status_codes': '*>',
                                                                                                                                                         'weight': 0}}},
-                                                                                                                          '46.2.4.0/24': {'index': {1: {'metric': 100,
-                                                                                                                                                        'next_hop': '20.4.6.6',
+                                                                                                                          '10.9.4.0/24': {'index': {1: {'metric': 100,
+                                                                                                                                                        'next_hop': '10.66.6.6',
                                                                                                                                                         'origin_codes': 'e',
                                                                                                                                                         'path': '400 '
                                                                                                                                                                 '33299 '
@@ -2571,8 +2571,8 @@ class BgpOutput(object):
                                                                                                                                                                 '{47751}',
                                                                                                                                                         'status_codes': '*>',
                                                                                                                                                         'weight': 0}}},
-                                                                                                                          '46.2.5.0/24': {'index': {1: {'metric': 100,
-                                                                                                                                                        'next_hop': '20.4.6.6',
+                                                                                                                          '10.9.5.0/24': {'index': {1: {'metric': 100,
+                                                                                                                                                        'next_hop': '10.66.6.6',
                                                                                                                                                         'origin_codes': 'e',
                                                                                                                                                         'path': '400 '
                                                                                                                                                                 '33299 '
@@ -2580,8 +2580,8 @@ class BgpOutput(object):
                                                                                                                                                                 '{47751}',
                                                                                                                                                         'status_codes': '*>',
                                                                                                                                                         'weight': 0}}},
-                                                                                                                          '46.2.6.0/24': {'index': {1: {'metric': 100,
-                                                                                                                                                        'next_hop': '20.4.6.6',
+                                                                                                                          '10.9.6.0/24': {'index': {1: {'metric': 100,
+                                                                                                                                                        'next_hop': '10.66.6.6',
                                                                                                                                                         'origin_codes': 'e',
                                                                                                                                                         'path': '400 '
                                                                                                                                                                 '33299 '
@@ -2589,8 +2589,8 @@ class BgpOutput(object):
                                                                                                                                                                 '{47751}',
                                                                                                                                                         'status_codes': '*>',
                                                                                                                                                         'weight': 0}}}},
-                                                                                                           'routes': {'46.1.1.0/24': {'index': {1: {'metric': 2219,
-                                                                                                                                                    'next_hop': '21.0.0.2',
+                                                                                                           'routes': {'10.169.1.0/24': {'index': {1: {'metric': 2219,
+                                                                                                                                                    'next_hop': '10.186.0.2',
                                                                                                                                                     'origin_codes': 'e',
                                                                                                                                                     'path': '300 '
                                                                                                                                                             '33299 '
@@ -2599,8 +2599,8 @@ class BgpOutput(object):
                                                                                                                                                             '{27016}',
                                                                                                                                                     'status_codes': '*>',
                                                                                                                                                     'weight': 0}}},
-                                                                                                                      '46.1.2.0/24': {'index': {1: {'metric': 2219,
-                                                                                                                                                    'next_hop': '21.0.0.2',
+                                                                                                                      '10.169.2.0/24': {'index': {1: {'metric': 2219,
+                                                                                                                                                    'next_hop': '10.186.0.2',
                                                                                                                                                     'origin_codes': 'e',
                                                                                                                                                     'path': '300 '
                                                                                                                                                             '33299 '
@@ -2609,8 +2609,8 @@ class BgpOutput(object):
                                                                                                                                                             '{27016}',
                                                                                                                                                     'status_codes': '*>',
                                                                                                                                                     'weight': 0}}},
-                                                                                                                      '46.1.3.0/24': {'index': {1: {'metric': 2219,
-                                                                                                                                                    'next_hop': '21.0.0.2',
+                                                                                                                      '10.169.3.0/24': {'index': {1: {'metric': 2219,
+                                                                                                                                                    'next_hop': '10.186.0.2',
                                                                                                                                                     'origin_codes': 'e',
                                                                                                                                                     'path': '300 '
                                                                                                                                                             '33299 '
@@ -2619,8 +2619,8 @@ class BgpOutput(object):
                                                                                                                                                             '{27016}',
                                                                                                                                                     'status_codes': '*>',
                                                                                                                                                     'weight': 0}}},
-                                                                                                                      '46.1.4.0/24': {'index': {1: {'metric': 2219,
-                                                                                                                                                    'next_hop': '21.0.0.2',
+                                                                                                                      '10.169.4.0/24': {'index': {1: {'metric': 2219,
+                                                                                                                                                    'next_hop': '10.186.0.2',
                                                                                                                                                     'origin_codes': 'e',
                                                                                                                                                     'path': '300 '
                                                                                                                                                             '33299 '
@@ -2629,8 +2629,8 @@ class BgpOutput(object):
                                                                                                                                                             '{27016}',
                                                                                                                                                     'status_codes': '*>',
                                                                                                                                                     'weight': 0}}},
-                                                                                                                      '46.1.5.0/24': {'index': {1: {'metric': 2219,
-                                                                                                                                                    'next_hop': '21.0.0.2',
+                                                                                                                      '10.169.5.0/24': {'index': {1: {'metric': 2219,
+                                                                                                                                                    'next_hop': '10.186.0.2',
                                                                                                                                                     'origin_codes': 'e',
                                                                                                                                                     'path': '300 '
                                                                                                                                                             '33299 '
@@ -2649,8 +2649,8 @@ class BgpOutput(object):
                                                                                                             'state_pfxrcd': '10',
                                                                                                             'tbl_ver': 1,
                                                                                                             'up_down': '01:12:00'},
-                                                                                          'vpnv4 unicast RD 300:1': {'received_routes': {'46.1.1.0/24': {'index': {1: {'metric': 2219,
-                                                                                                                                                                       'next_hop': '21.0.0.2',
+                                                                                          'vpnv4 unicast RD 300:1': {'received_routes': {'10.169.1.0/24': {'index': {1: {'metric': 2219,
+                                                                                                                                                                       'next_hop': '10.186.0.2',
                                                                                                                                                                        'origin_codes': 'e',
                                                                                                                                                                        'path': '300 '
                                                                                                                                                                                '33299 '
@@ -2659,8 +2659,8 @@ class BgpOutput(object):
                                                                                                                                                                                '{27016}',
                                                                                                                                                                        'status_codes': '*',
                                                                                                                                                                        'weight': 0}}},
-                                                                                                                                         '46.1.2.0/24': {'index': {1: {'metric': 2219,
-                                                                                                                                                                       'next_hop': '21.0.0.2',
+                                                                                                                                         '10.169.2.0/24': {'index': {1: {'metric': 2219,
+                                                                                                                                                                       'next_hop': '10.186.0.2',
                                                                                                                                                                        'origin_codes': 'e',
                                                                                                                                                                        'path': '300 '
                                                                                                                                                                                '33299 '
@@ -2669,8 +2669,8 @@ class BgpOutput(object):
                                                                                                                                                                                '{27016}',
                                                                                                                                                                        'status_codes': '*',
                                                                                                                                                                        'weight': 0}}},
-                                                                                                                                         '46.1.3.0/24': {'index': {1: {'metric': 2219,
-                                                                                                                                                                       'next_hop': '21.0.0.2',
+                                                                                                                                         '10.169.3.0/24': {'index': {1: {'metric': 2219,
+                                                                                                                                                                       'next_hop': '10.186.0.2',
                                                                                                                                                                        'origin_codes': 'e',
                                                                                                                                                                        'path': '300 '
                                                                                                                                                                                '33299 '
@@ -2679,8 +2679,8 @@ class BgpOutput(object):
                                                                                                                                                                                '{27016}',
                                                                                                                                                                        'status_codes': '*',
                                                                                                                                                                        'weight': 0}}},
-                                                                                                                                         '46.1.4.0/24': {'index': {1: {'metric': 2219,
-                                                                                                                                                                       'next_hop': '21.0.0.2',
+                                                                                                                                         '10.169.4.0/24': {'index': {1: {'metric': 2219,
+                                                                                                                                                                       'next_hop': '10.186.0.2',
                                                                                                                                                                        'origin_codes': 'e',
                                                                                                                                                                        'path': '300 '
                                                                                                                                                                                '33299 '
@@ -2689,8 +2689,8 @@ class BgpOutput(object):
                                                                                                                                                                                '{27016}',
                                                                                                                                                                        'status_codes': '*',
                                                                                                                                                                        'weight': 0}}},
-                                                                                                                                         '46.1.5.0/24': {'index': {1: {'metric': 2219,
-                                                                                                                                                                       'next_hop': '21.0.0.2',
+                                                                                                                                         '10.169.5.0/24': {'index': {1: {'metric': 2219,
+                                                                                                                                                                       'next_hop': '10.186.0.2',
                                                                                                                                                                        'origin_codes': 'e',
                                                                                                                                                                        'path': '300 '
                                                                                                                                                                                '33299 '
@@ -2707,28 +2707,28 @@ class BgpOutput(object):
                                                                                                             'tbl_ver': 1,
                                                                                                             'up_down': '01:12:00'}},
                                                                        'remote_as': 100},
-                                                           '20.4.6.6': {'address_family': {'vpnv4 unicast': {'input_queue': 0,
+                                                           '10.66.6.6': {'address_family': {'vpnv4 unicast': {'input_queue': 0,
                                                                                                              'msg_rcvd': 67,
                                                                                                              'msg_sent': 72,
                                                                                                              'output_queue': 0,
                                                                                                              'state_pfxrcd': '5',
                                                                                                              'tbl_ver': 1,
                                                                                                              'up_down': '01:03:14'}}},
-                                                           '200.0.1.1': {'address_family': {'ipv4 unicast': {'input_queue': 0,
+                                                           '192.168.111.1': {'address_family': {'ipv4 unicast': {'input_queue': 0,
                                                                                                              'msg_rcvd': 0,
                                                                                                              'msg_sent': 0,
                                                                                                              'output_queue': 0,
                                                                                                              'state_pfxrcd': 'Idle',
                                                                                                              'tbl_ver': 1,
                                                                                                              'up_down': '01:07:38'}}},
-                                                           '200.0.2.1': {'address_family': {'ipv4 unicast': {'input_queue': 0,
+                                                           '192.168.4.1': {'address_family': {'ipv4 unicast': {'input_queue': 0,
                                                                                                              'msg_rcvd': 0,
                                                                                                              'msg_sent': 0,
                                                                                                              'output_queue': 0,
                                                                                                              'state_pfxrcd': 'Idle',
                                                                                                              'tbl_ver': 1,
                                                                                                              'up_down': 'never'}}},
-                                                           '200.0.4.1': {'address_family': {'ipv4 unicast': {'input_queue': 0,
+                                                           '192.168.51.1': {'address_family': {'ipv4 unicast': {'input_queue': 0,
                                                                                                              'msg_rcvd': 0,
                                                                                                              'msg_sent': 0,
                                                                                                              'output_queue': 0,
@@ -2777,39 +2777,39 @@ class BgpOutput(object):
                                                                                                                     'state_pfxrcd': '5',
                                                                                                                     'tbl_ver': 1,
                                                                                                                     'up_down': '01:03:19'}}},
-                                                           '201.0.14.4': {'address_family': {'ipv4 unicast': {'input_queue': 0,
+                                                           '192.168.70.4': {'address_family': {'ipv4 unicast': {'input_queue': 0,
                                                                                                               'msg_rcvd': 0,
                                                                                                               'msg_sent': 0,
                                                                                                               'output_queue': 0,
                                                                                                               'state_pfxrcd': 'Idle',
                                                                                                               'tbl_ver': 1,
                                                                                                               'up_down': 'never'}}},
-                                                           '201.0.26.2': {'address_family': {'ipv4 unicast': {'input_queue': 0,
+                                                           '192.168.19.2': {'address_family': {'ipv4 unicast': {'input_queue': 0,
                                                                                                               'msg_rcvd': 0,
                                                                                                               'msg_sent': 0,
                                                                                                               'output_queue': 0,
                                                                                                               'state_pfxrcd': 'Idle',
                                                                                                               'tbl_ver': 1,
                                                                                                               'up_down': '01:07:38'}}},
-                                                           '3.3.3.3': {'address_family': {'ipv4 multicast': {'received_routes': {'1.2.1.0/24': {'index': {1: {'localprf': 100,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                           '10.36.3.3': {'address_family': {'ipv4 multicast': {'received_routes': {'10.9.1.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'i',
                                                                                                                                                               'path': '2 '
                                                                                                                                                                       '3 '
                                                                                                                                                                       '4',
                                                                                                                                                               'status_codes': '*>',
                                                                                                                                                               'weight': 0}}},
-                                                                                                                                 '1.2.2.0/24': {'index': {1: {'localprf': 100,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                 '10.9.2.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'i',
                                                                                                                                                               'path': '2 '
                                                                                                                                                                       '3 '
                                                                                                                                                                       '4',
                                                                                                                                                               'status_codes': '*>',
                                                                                                                                                               'weight': 0}}}}},
-                                                                                          'ipv4 unicast': {'received_routes': {'1.1.1.0/24': {'index': {1: {'localprf': 100,
+                                                                                          'ipv4 unicast': {'received_routes': {'10.4.1.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                             'metric': 2222,
-                                                                                                                                                            'next_hop': '3.3.3.3',
+                                                                                                                                                            'next_hop': '10.36.3.3',
                                                                                                                                                             'origin_codes': 'i',
                                                                                                                                                             'path': '1 '
                                                                                                                                                                     '2 '
@@ -2818,9 +2818,9 @@ class BgpOutput(object):
                                                                                                                                                                     '23',
                                                                                                                                                             'status_codes': '*',
                                                                                                                                                             'weight': 0}}},
-                                                                                                                               '1.1.2.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                               '10.4.2.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                             'metric': 2222,
-                                                                                                                                                            'next_hop': '3.3.3.3',
+                                                                                                                                                            'next_hop': '10.36.3.3',
                                                                                                                                                             'origin_codes': 'i',
                                                                                                                                                             'path': '1 '
                                                                                                                                                                     '2 '
@@ -2829,8 +2829,8 @@ class BgpOutput(object):
                                                                                                                                                                     '23',
                                                                                                                                                             'status_codes': '*',
                                                                                                                                                             'weight': 0}}},
-                                                                                                                               '1.6.0.0/16': {'index': {1: {'localprf': 100,
-                                                                                                                                                            'next_hop': '3.3.3.3',
+                                                                                                                               '10.49.0.0/16': {'index': {1: {'localprf': 100,
+                                                                                                                                                            'next_hop': '10.36.3.3',
                                                                                                                                                             'origin_codes': 'i',
                                                                                                                                                             'path': '10 '
                                                                                                                                                                     '20 '
@@ -2845,9 +2845,9 @@ class BgpOutput(object):
                                                                                                                                                             'weight': 0}}}}},
                                                                                           'ipv6 multicast': {'received_routes': {}},
                                                                                           'ipv6 unicast': {'received_routes': {}},
-                                                                                          'link-state': {'received_routes': {'[2]:[77][7,0][9.9.9.9,1,151587081][29.1.1.1,22][3.3.3.3,29.0.1.30]/616': {'index': {1: {'localprf': 100,
+                                                                                          'link-state': {'received_routes': {'[2]:[77][7,0][10.69.9.9,1,151587081][10.135.1.1,22][10.36.3.3,10.76.1.30]/616': {'index': {1: {'localprf': 100,
                                                                                                                                                                                                                       'metric': 4444,
-                                                                                                                                                                                                                      'next_hop': '3.3.3.3',
+                                                                                                                                                                                                                      'next_hop': '10.36.3.3',
                                                                                                                                                                                                                       'origin_codes': 'i',
                                                                                                                                                                                                                       'path': '3 '
                                                                                                                                                                                                                               '10 '
@@ -2861,9 +2861,9 @@ class BgpOutput(object):
                                                                                                                                                                                                                               '90',
                                                                                                                                                                                                                       'status_codes': '*>',
                                                                                                                                                                                                                       'weight': 0}}},
-                                                                                                                             '[2]:[77][7,0][9.9.9.9,2,151587081][29.1.1.1,22][3.3.3.3,29.0.1.31]/616': {'index': {1: {'localprf': 100,
+                                                                                                                             '[2]:[77][7,0][10.69.9.9,2,151587081][10.135.1.1,22][10.36.3.3,10.76.1.31]/616': {'index': {1: {'localprf': 100,
                                                                                                                                                                                                                       'metric': 4444,
-                                                                                                                                                                                                                      'next_hop': '3.3.3.3',
+                                                                                                                                                                                                                      'next_hop': '10.36.3.3',
                                                                                                                                                                                                                       'origin_codes': 'i',
                                                                                                                                                                                                                       'path': '3 '
                                                                                                                                                                                                                               '10 '
@@ -2888,9 +2888,9 @@ class BgpOutput(object):
                                                                                                             'tbl_ver': 1,
                                                                                                             'up_down': 'never'},
                                                                                           'vpnv4 unicast RD 0:0': {'received_routes': {}},
-                                                                                          'vpnv4 unicast RD 101:100': {'received_routes': {'1.3.1.0/24': {'index': {1: {'localprf': 100,
+                                                                                          'vpnv4 unicast RD 101:100': {'received_routes': {'10.16.1.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                                         'metric': 4444,
-                                                                                                                                                                        'next_hop': '3.3.3.3',
+                                                                                                                                                                        'next_hop': '10.36.3.3',
                                                                                                                                                                         'origin_codes': 'i',
                                                                                                                                                                         'path': '3 '
                                                                                                                                                                                 '10 '
@@ -2906,9 +2906,9 @@ class BgpOutput(object):
                                                                                                                                                                                 '6',
                                                                                                                                                                         'status_codes': '*',
                                                                                                                                                                         'weight': 0}}},
-                                                                                                                                           '1.3.2.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                                           '10.16.2.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                                         'metric': 4444,
-                                                                                                                                                                        'next_hop': '3.3.3.3',
+                                                                                                                                                                        'next_hop': '10.36.3.3',
                                                                                                                                                                         'origin_codes': 'i',
                                                                                                                                                                         'path': '3 '
                                                                                                                                                                                 '10 '
@@ -2925,9 +2925,9 @@ class BgpOutput(object):
                                                                                                                                                                         'status_codes': '*',
                                                                                                                                                                         'weight': 0}}}}},
                                                                                           'vpnv4 unicast RD 102:100': {'received_routes': {}},
-                                                                                          'vpnv4 unicast RD 200:1': {'routes': {'15.1.1.0/24': {'index': {1: {'localprf': 100,
+                                                                                          'vpnv4 unicast RD 200:1': {'routes': {'10.1.1.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -2936,9 +2936,9 @@ class BgpOutput(object):
                                                                                                                                                                       '{27016}',
                                                                                                                                                               'status_codes': '*>',
                                                                                                                                                               'weight': 0}}},
-                                                                                                                                '15.1.2.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                                '10.1.2.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -2947,9 +2947,9 @@ class BgpOutput(object):
                                                                                                                                                                       '{27016}',
                                                                                                                                                               'status_codes': '*>',
                                                                                                                                                               'weight': 0}}},
-                                                                                                                                '15.1.3.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                                '10.1.3.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -2958,9 +2958,9 @@ class BgpOutput(object):
                                                                                                                                                                       '{27016}',
                                                                                                                                                               'status_codes': '*>',
                                                                                                                                                               'weight': 0}}},
-                                                                                                                                '15.1.4.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                                '10.1.4.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -2969,9 +2969,9 @@ class BgpOutput(object):
                                                                                                                                                                       '{27016}',
                                                                                                                                                               'status_codes': '*>',
                                                                                                                                                               'weight': 0}}},
-                                                                                                                                '15.1.5.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                                '10.1.5.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -2980,9 +2980,9 @@ class BgpOutput(object):
                                                                                                                                                                       '{27016}',
                                                                                                                                                               'status_codes': '*>',
                                                                                                                                                               'weight': 0}}}}},
-                                                                                          'vpnv4 unicast RD 200:2': {'routes': {'15.1.1.0/24': {'index': {1: {'localprf': 100,
+                                                                                          'vpnv4 unicast RD 200:2': {'routes': {'10.1.1.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -2991,9 +2991,9 @@ class BgpOutput(object):
                                                                                                                                                                       '{27016}',
                                                                                                                                                               'status_codes': '*>',
                                                                                                                                                               'weight': 0}}},
-                                                                                                                                '15.1.2.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                                '10.1.2.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -3002,9 +3002,9 @@ class BgpOutput(object):
                                                                                                                                                                       '{27016}',
                                                                                                                                                               'status_codes': '*>',
                                                                                                                                                               'weight': 0}}},
-                                                                                                                                '15.1.3.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                                '10.1.3.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -3013,9 +3013,9 @@ class BgpOutput(object):
                                                                                                                                                                       '{27016}',
                                                                                                                                                               'status_codes': '*>',
                                                                                                                                                               'weight': 0}}},
-                                                                                                                                '15.1.4.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                                '10.1.4.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -3024,9 +3024,9 @@ class BgpOutput(object):
                                                                                                                                                                       '{27016}',
                                                                                                                                                               'status_codes': '*>',
                                                                                                                                                               'weight': 0}}},
-                                                                                                                                '15.1.5.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                                '10.1.5.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -3035,7 +3035,7 @@ class BgpOutput(object):
                                                                                                                                                                       '{27016}',
                                                                                                                                                               'status_codes': '*>',
                                                                                                                                                               'weight': 0}}}}},
-                                                                                          'vpnv4 unicast RD 300:1': {'advertised': {'46.1.1.0/24': {'index': {1: {'metric': 2219,
+                                                                                          'vpnv4 unicast RD 300:1': {'advertised': {'10.169.1.0/24': {'index': {1: {'metric': 2219,
                                                                                                                                                                   'next_hop': '10.4.6.6',
                                                                                                                                                                   'origin_codes': 'e',
                                                                                                                                                                   'path': '300 '
@@ -3045,7 +3045,7 @@ class BgpOutput(object):
                                                                                                                                                                           '{27016}',
                                                                                                                                                                   'status_codes': '*>',
                                                                                                                                                                   'weight': 0}}},
-                                                                                                                                    '46.1.2.0/24': {'index': {1: {'metric': 2219,
+                                                                                                                                    '10.169.2.0/24': {'index': {1: {'metric': 2219,
                                                                                                                                                                   'next_hop': '10.4.6.6',
                                                                                                                                                                   'origin_codes': 'e',
                                                                                                                                                                   'path': '300 '
@@ -3055,7 +3055,7 @@ class BgpOutput(object):
                                                                                                                                                                           '{27016}',
                                                                                                                                                                   'status_codes': '*>',
                                                                                                                                                                   'weight': 0}}},
-                                                                                                                                    '46.1.3.0/24': {'index': {1: {'metric': 2219,
+                                                                                                                                    '10.169.3.0/24': {'index': {1: {'metric': 2219,
                                                                                                                                                                   'next_hop': '10.4.6.6',
                                                                                                                                                                   'origin_codes': 'e',
                                                                                                                                                                   'path': '300 '
@@ -3065,7 +3065,7 @@ class BgpOutput(object):
                                                                                                                                                                           '{27016}',
                                                                                                                                                                   'status_codes': '*>',
                                                                                                                                                                   'weight': 0}}},
-                                                                                                                                    '46.1.4.0/24': {'index': {1: {'metric': 2219,
+                                                                                                                                    '10.169.4.0/24': {'index': {1: {'metric': 2219,
                                                                                                                                                                   'next_hop': '10.4.6.6',
                                                                                                                                                                   'origin_codes': 'e',
                                                                                                                                                                   'path': '300 '
@@ -3075,7 +3075,7 @@ class BgpOutput(object):
                                                                                                                                                                           '{27016}',
                                                                                                                                                                   'status_codes': '*>',
                                                                                                                                                                   'weight': 0}}},
-                                                                                                                                    '46.1.5.0/24': {'index': {1: {'metric': 2219,
+                                                                                                                                    '10.169.5.0/24': {'index': {1: {'metric': 2219,
                                                                                                                                                                   'next_hop': '10.4.6.6',
                                                                                                                                                                   'origin_codes': 'e',
                                                                                                                                                                   'path': '300 '
@@ -3087,9 +3087,9 @@ class BgpOutput(object):
                                                                                                                                                                   'weight': 0}}}},
                                                                                                                      'default_vrf': 'VRF1',
                                                                                                                      'route_distinguisher': '300:1',
-                                                                                                                     'routes': {'15.1.1.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                     'routes': {'10.1.1.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -3100,7 +3100,7 @@ class BgpOutput(object):
                                                                                                                                                               'weight': 0},
                                                                                                                                                           2: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -3109,9 +3109,9 @@ class BgpOutput(object):
                                                                                                                                                                       '{27016}',
                                                                                                                                                               'status_codes': '*',
                                                                                                                                                               'weight': 0}}},
-                                                                                                                                '15.1.2.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                                '10.1.2.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -3122,7 +3122,7 @@ class BgpOutput(object):
                                                                                                                                                               'weight': 0},
                                                                                                                                                           2: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -3131,9 +3131,9 @@ class BgpOutput(object):
                                                                                                                                                                       '{27016}',
                                                                                                                                                               'status_codes': '*',
                                                                                                                                                               'weight': 0}}},
-                                                                                                                                '15.1.3.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                                '10.1.3.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -3144,7 +3144,7 @@ class BgpOutput(object):
                                                                                                                                                               'weight': 0},
                                                                                                                                                           2: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -3153,9 +3153,9 @@ class BgpOutput(object):
                                                                                                                                                                       '{27016}',
                                                                                                                                                               'status_codes': '*',
                                                                                                                                                               'weight': 0}}},
-                                                                                                                                '15.1.4.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                                '10.1.4.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -3166,7 +3166,7 @@ class BgpOutput(object):
                                                                                                                                                               'weight': 0},
                                                                                                                                                           2: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -3175,9 +3175,9 @@ class BgpOutput(object):
                                                                                                                                                                       '{27016}',
                                                                                                                                                               'status_codes': '*',
                                                                                                                                                               'weight': 0}}},
-                                                                                                                                '15.1.5.0/24': {'index': {1: {'localprf': 100,
+                                                                                                                                '10.1.5.0/24': {'index': {1: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -3188,7 +3188,7 @@ class BgpOutput(object):
                                                                                                                                                               'weight': 0},
                                                                                                                                                           2: {'localprf': 100,
                                                                                                                                                               'metric': 2219,
-                                                                                                                                                              'next_hop': '3.3.3.3',
+                                                                                                                                                              'next_hop': '10.36.3.3',
                                                                                                                                                               'origin_codes': 'e',
                                                                                                                                                               'path': '200 '
                                                                                                                                                                       '33299 '
@@ -3199,11 +3199,11 @@ class BgpOutput(object):
                                                                                                                                                               'weight': 0}}}}},
                                                                                           'vpnv4 unicast RD 400:1':
                                                                                             {'advertised':
-                                                                                                {'46.2.2.0/24':
+                                                                                                {'10.9.2.0/24':
                                                                                                     {'index':
                                                                                                         {1:
                                                                                                             {'metric': 2219,
-                                                                                                             'next_hop': '20.4.6.6',
+                                                                                                             'next_hop': '10.66.6.6',
                                                                                                              'origin_codes': 'e',
                                                                                                              'path': '400 '
                                                                                                                      '33299 '
@@ -3212,11 +3212,11 @@ class BgpOutput(object):
                                                                                                                      '{27016}',
                                                                                                              'status_codes': '*>',
                                                                                                              'weight': 0}}},
-                                                                                                '46.2.3.0/24':
+                                                                                                '10.9.3.0/24':
                                                                                                     {'index':
                                                                                                         {1:
                                                                                                             {'metric': 2219,
-                                                                                                             'next_hop': '20.4.6.6',
+                                                                                                             'next_hop': '10.66.6.6',
                                                                                                              'origin_codes': 'e',
                                                                                                              'path': '400 '
                                                                                                                      '33299 '
@@ -3225,11 +3225,11 @@ class BgpOutput(object):
                                                                                                                      '{27016}',
                                                                                                              'status_codes': '*>',
                                                                                                              'weight': 0}}},
-                                                                                                '46.2.4.0/24':
+                                                                                                '10.9.4.0/24':
                                                                                                     {'index':
                                                                                                         {1:
                                                                                                             {'metric': 2219,
-                                                                                                             'next_hop': '20.4.6.6',
+                                                                                                             'next_hop': '10.66.6.6',
                                                                                                              'origin_codes': 'e',
                                                                                                              'path': '400 '
                                                                                                                      '33299 '
@@ -3238,11 +3238,11 @@ class BgpOutput(object):
                                                                                                                      '{27016}',
                                                                                                              'status_codes': '*>',
                                                                                                              'weight': 0}}},
-                                                                                                '46.2.5.0/24':
+                                                                                                '10.9.5.0/24':
                                                                                                     {'index':
                                                                                                         {1:
                                                                                                             {'metric': 2219,
-                                                                                                             'next_hop': '20.4.6.6',
+                                                                                                             'next_hop': '10.66.6.6',
                                                                                                              'origin_codes': 'e',
                                                                                                              'path': '400 '
                                                                                                                      '33299 '
@@ -3251,11 +3251,11 @@ class BgpOutput(object):
                                                                                                                      '{27016}',
                                                                                                              'status_codes': '*>',
                                                                                                              'weight': 0}}},
-                                                                                                '46.2.6.0/24':
+                                                                                                '10.9.6.0/24':
                                                                                                     {'index':
                                                                                                         {1:
                                                                                                             {'metric': 2219,
-                                                                                                             'next_hop': '20.4.6.6',
+                                                                                                             'next_hop': '10.66.6.6',
                                                                                                              'origin_codes': 'e',
                                                                                                              'path': '400 '
                                                                                                                      '33299 '
