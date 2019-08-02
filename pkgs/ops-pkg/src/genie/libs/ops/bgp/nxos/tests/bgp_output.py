@@ -16,7 +16,12 @@ class BgpOutput(object):
                 {'reason': '--',
                 'vrf_id': 1,
                 'vrf_state': 'Up'}}}
-
+    ShowVrf_vrf1 = {
+        'vrfs':
+            {'VRF1':
+                 {'reason': '--',
+                  'vrf_id': 3,
+                  'vrf_state': 'Up'},}}
     ShowRoutingVrfAll = {
         'vrf':
             {'VRF1':
@@ -138,6 +143,77 @@ class BgpOutput(object):
                                                         {'uptime': '18:47:42',
                                                         'preference': '1',
                                                         'metric': '0'}}}}}}}}}}}}}
+    ShowRoutingVrfAll_vrf1 = {
+        'vrf':
+            {'VRF1':
+                {'address_family':
+                    {'vpnv4 unicast':
+                        {'bgp_distance_internal_as': 33,
+                        'bgp_distance_local': 55,
+                        'ip/mask':
+                            {'10.121.0.0/8':
+                                {'ubest_num': '1',
+                                'mbest_num': '0',
+                                'best_route':
+                                    {'unicast':
+                                        {'nexthop':
+                                            {'Null0':
+                                                {'protocol':
+                                                    {'bgp':
+                                                        {'uptime': '5w0d',
+                                                        'preference': '55',
+                                                        'metric': '0',
+                                                        'protocol_id': '100',
+                                                        'attribute': 'discard',
+                                                        'tag': '100'}}}}}}},
+                            '10.21.33.33/32':
+                                {'ubest_num': '1',
+                                'mbest_num': '1',
+                                'best_route':
+                                    {'unicast':
+                                        {'nexthop':
+                                            {'10.36.3.3':
+                                                {'protocol':
+                                                    {'bgp':
+                                                        {'uptime': '5w0d',
+                                                        'preference': '33',
+                                                        'metric': '0',
+                                                        'protocol_id': '100',
+                                                        'attribute': 'internal',
+                                                        'route_table': 'default',
+                                                        'tag': '100 (mpls-vpn)'}}}}},
+                                    'multicast':
+                                        {'nexthop':
+                                            {'10.36.3.3':
+                                                {'protocol':
+                                                    {'bgp':
+                                                        {'uptime': '5w0d',
+                                                        'preference': '33',
+                                                        'metric': '0',
+                                                        'protocol_id': '100',
+                                                        'attribute': 'internal',
+                                                        'route_table': 'default',
+                                                        'tag': '100 (mpls-vpn)'}}}}}}},
+                            '10.229.11.11/32':
+                                {'ubest_num': '2',
+                                'mbest_num': '0',
+                                'attach': 'attached',
+                                'best_route':
+                                    {'unicast':
+                                        {'nexthop':
+                                            {'10.229.11.11':
+                                                {'protocol':
+                                                    {'local':
+                                                        {'uptime': '5w4d',
+                                                        'preference': '0',
+                                                        'metric': '0',
+                                                        'interface': 'Lo1'},
+                                                    'direct':
+                                                        {'uptime': '5w4d',
+                                                        'preference': '0',
+                                                        'metric': '0',
+                                                        'interface': 'Lo1'}}}}}}}}}}},
+            }}
 
     ShowBgpProcessVrfAll = {
         'bgp_as_path_entries': 0,
@@ -269,7 +345,195 @@ class BgpOutput(object):
                  'vrf_id': '1',
                  'vrf_rd': 'not configured',
                  'vrf_state': 'up'}}}
+    ShowBgpProcessVrfAll_vrf1 = {
+        'bgp_as_path_entries': 0,
+        'bgp_memory_state': 'ok',
+        'bgp_paths_per_hwm_attr': 1,
+        'bgp_pid': 29474,
+        'bgp_protocol_state': 'running',
+        'bgp_protocol_status': 'started',
+        'bgp_protocol_status_reason': 'configuration',
+        'bgp_tag': '100',
+        'bytes_used': 368,
+        'bytes_used_as_path_entries': 0,
+        'entries_pending_delete': 0,
+        'hwm_attr_entries': 5,
+        'hwm_entries_pending_delete': 0,
+        'num_attr_entries': 4,
+        'vrf':
+            {'VRF1': {
+                'address_family':
+                    {'ipv4 unicast':
+                        {'aggregate_label': '492287',
+                        'export_rt_list': '100:100',
+                        'import_rt_list': '100:100',
+                        'label_mode': 'per-prefix',
+                        'peers':
+                            {1:
+                                {'active_peers': 0,
+                                 'aggregates': 2,
+                                 'networks': 1,
+                                 'paths': 5,
+                                 'routes': 5}},
+                        'redistribution':
+                            {'direct':
+                                {'route_map': 'genie_redistribution'},
+                             'eigrp':
+                                {'route_map': 'test-map'},
+                             'static':
+                                {'route_map': 'genie_redistribution'}},
+                        'table_id': 10,
+                        'table_state': 'up'},
+                    },
+                'cluster_id': '0.0.0.0',
+                'conf_router_id': '0.0.0.0',
+                'confed_id': 0,
+                'num_conf_peers': 1,
+                'num_established_peers': 0,
+                'num_pending_conf_peers': 0,
+                'router_id': '10.229.11.11',
+                'vrf_id': '3',
+                'vrf_rd': '100:100',
+                'vrf_state': 'up'},
+             }}
 
+    ShowBgpProcessVrfAll_all = '''
+        BGP Process Information
+        BGP Process ID                 : 29474
+        BGP Protocol Started, reason:  : configuration
+        BGP Protocol Tag               : 100
+        BGP Performance Mode:          : No
+        BGP Protocol State             : Running
+        BGP Isolate Mode               : No
+        BGP MMODE                      : Initialized
+        BGP Memory State               : OK
+        BGP asformat                   : asplain
+        Segment Routing Global Block   : 10000-25000
+
+        BGP attributes information
+        Number of attribute entries    : 4
+        HWM of attribute entries       : 5
+        Bytes used by entries          : 368
+        Entries pending delete         : 0
+        HWM of entries pending delete  : 0
+        BGP paths per attribute HWM    : 1
+        BGP AS path entries            : 0
+        Bytes used by AS path entries  : 0
+
+        Confcheck capabilities in use:
+          1. CAP_FEATURE_BGP_5_2_1 (refcount = 7)
+
+        Information regarding configured VRFs:
+
+        BGP Information for VRF VRF1
+        VRF Id                         : 3
+        VRF state                      : UP
+        Router-ID                      : 10.229.11.11
+        Configured Router-ID           : 0.0.0.0
+        Confed-ID                      : 0
+        Cluster-ID                     : 0.0.0.0
+        No. of configured peers        : 1
+        No. of pending config peers    : 0
+        No. of established peers       : 0
+        VRF RD                         : 100:100
+
+            Information for address family IPv4 Unicast in VRF VRF1
+            Table Id                   : 10
+            Table state                : UP
+            Peers      Active-peers    Routes     Paths      Networks   Aggregates
+            1          0               5          5          1          2
+
+            Redistribution
+                direct, route-map genie_redistribution
+                static, route-map genie_redistribution
+                eigrp, route-map test-map
+
+            Export RT list: 100:100
+            Import RT list: 100:100
+            Label mode: per-prefix
+            Aggregate label: 492287
+
+            Information for address family IPv6 Unicast in VRF VRF1
+            Table Id                   : 0x80000010
+            Table state                : UP
+            Peers      Active-peers    Routes     Paths      Networks   Aggregates
+            0          0               4          4          1          1
+
+            Redistribution
+                direct, route-map genie_redistribution
+                static, route-map genie_redistribution
+
+            Export RT list: 100:100
+            Import RT list: 100:100
+            Label mode: per-prefix
+            Aggregate label: 492288
+
+            Nexthop trigger-delay
+                critical 3000 ms
+                non-critical 10000 ms
+
+        BGP Information for VRF default
+        VRF Id                         : 1
+        VRF state                      : UP
+        Router-ID                      : 10.4.1.1
+        Configured Router-ID           : 10.4.1.1
+        Confed-ID                      : 0
+        Cluster-ID                     : 0.0.0.0
+        No. of configured peers        : 3
+        No. of pending config peers    : 0
+        No. of established peers       : 1
+        VRF RD                         : Not configured
+
+            Information for address family IPv4 Unicast in VRF default
+            Table Id                   : 1
+            Table state                : UP
+            Peers      Active-peers    Routes     Paths      Networks   Aggregates
+            1          0               0          0          0          0
+
+            Redistribution
+                None
+
+
+            Information for address family IPv6 Unicast in VRF default
+            Table Id                   : 80000001
+            Table state                : UP
+            Peers      Active-peers    Routes     Paths      Networks   Aggregates
+            0          0               0          0          0          0
+
+            Redistribution
+                None
+
+
+            Information for address family VPNv4 Unicast in VRF default
+            Table Id                   : 1
+            Table state                : UP
+            Peers      Active-peers    Routes     Paths      Networks   Aggregates
+            1          1               5          5          0          0
+
+            Redistribution
+                None
+
+            Retain RT: enabled all
+
+            Information for address family VPNv6 Unicast in VRF default
+            Table Id                   : 80000001
+            Table state                : UP
+            Peers      Active-peers    Routes     Paths      Networks   Aggregates
+            1          1               4          4          0          0
+
+            Redistribution
+                None
+
+
+            Information for address family IPv6 Label Unicast in VRF default
+            Table Id                   : 80000001
+            Table state                : UP
+            Peers      Active-peers    Routes     Paths      Networks   Aggregates
+            0          0               0          0          0          0
+
+            Redistribution
+                None
+        '''
     ShowBgpPeerSession = {
         'peer_session': 
             {'PEER-SESSION': 
@@ -555,6 +819,83 @@ class BgpOutput(object):
                         'v6_aggregate_address_as_set': True,
                         'v6_aggregate_address_ipv6_address': '2000::/8',
                         'v6_aggregate_address_summary_only': True}}}}}
+    ShowBgpVrfAllAll_vrf1 = {
+        'vrf':
+            {'VRF1':
+                {'address_family':
+                    {'ipv4 unicast':
+                        {'aggregate_address_as_set': True,
+                        'aggregate_address_ipv4_address': '10.121.0.0',
+                        'aggregate_address_ipv4_mask': '8',
+                        'aggregate_address_summary_only': True,
+                        'bgp_table_version': 35,
+                        'local_router_id': '10.229.11.11',
+                        'prefixes':
+                            {'10.121.0.0/8':
+                                {'index':
+                                    {1:
+                                        {'next_hop': '0.0.0.0',
+                                        'localprf': 100,
+                                        'origin_codes': 'i',
+                                        'path_type': 'a',
+                                        'status_codes': '*>',
+                                        'weight': 32768},
+                                    2:
+                                        {'next_hop': '10.64.4.4',
+                                        'localprf': 100,
+                                        'metric': 0,
+                                        'origin_codes': 'e',
+                                        'path_type': 'a',
+                                        'status_codes': '*>',
+                                        'weight': 32768},
+                                    3:
+                                        {'next_hop': '10.144.6.6',
+                                        'localprf': 100,
+                                        'metric': 0,
+                                        'origin_codes': 'e',
+                                        'path_type': 'a',
+                                        'status_codes': '*>',
+                                        'weight': 32768}}},
+                                    '10.229.11.11/32':
+                                        {'index':
+                                            {1:
+                                            {'next_hop': '0.0.0.0',
+                                            'localprf': 100,
+                                            'metric': 0,
+                                            'origin_codes': '?',
+                                            'path_type': 'r',
+                                            'status_codes': '*>',
+                                            'weight': 32768}}},
+                            '10.84.0.0/8':
+                                {'index':
+                                    {1:
+                                        {'next_hop': '0.0.0.0',
+                                        'localprf': 100,
+                                        'origin_codes': 'i',
+                                        'path_type': 'a',
+                                        'status_codes': 'None',
+                                        'weight': 32768}}},
+                            '10.21.33.33/32':
+                                {'index':
+                                    {1:
+                                        {'next_hop': '10.36.3.3',
+                                        'localprf': 100,
+                                        'metric': 0,
+                                        'origin_codes': '?',
+                                        'path_type': 'i',
+                                        'status_codes': '*>',
+                                        'weight': 0}}},
+                            '10.34.34.0/24':
+                                {'index':
+                                    {1:
+                                        {'next_hop': '0.0.0.0',
+                                        'localprf': 100,
+                                        'origin_codes': 'i',
+                                        'path_type': 'l',
+                                        'status_codes': 'None',
+                                        'weight': 32768}}}}},
+                  }},
+           }}
 
     ShowBgpVrfAllAllNextHopDatabase = {
         'vrf':
@@ -777,6 +1118,79 @@ class BgpOutput(object):
                             'dampening_max_suppress_time': '2 mins',
                             'dampening_max_suppress_penalty': '40'}}}}}}}
 
+    ShowBgpVrfAllAllNextHopDatabase_vrf1 = {
+        'vrf':
+            {'VRF1':
+                 {'address_family':
+                      {'ipv4 unicast':
+                           {'af_nexthop_trigger_enable': True,
+                            'igp_cost': 0,
+                            'igp_preference': 0,
+                            'igp_route_type': 0,
+                            'metric_next_advertise': 'never',
+                            'next_hop': '0.0.0.0',
+                            'nexthop_last_resolved': 'never',
+                            'nexthop_resolved_using': '0.0.0.0/0',
+                            'nexthop_trigger_delay_critical': 2222,
+                            'nexthop_trigger_delay_non_critical': 3333,
+                            'nexthop_type': 'not-attached '
+                                            'local '
+                                            'unreachable '
+                                            'not-labeled',
+                            'refcount': 4,
+                            'rnh_epoch': 0},
+                       }},
+             }}
+
+    ShowBgpVrfAllAllSummary_vrf1 = {
+        'vrf':
+            {'VRF1':
+                 {'neighbor':
+                      {'10.16.2.10':
+                           {'address_family':
+                                {'ipv4 unicast':
+                                     {'as': 0,
+                                      'as_path_entries': '[0/0]',
+                                      'attribute_entries': '[3/384]',
+                                      'bgp_table_version': 40,
+                                      'capable_peers': 0,
+                                      'clusterlist_entries': '[1/4]',
+                                      'community_entries': '[0/0]',
+                                      'config_peers': 1,
+                                      'dampened_paths': 0,
+                                      'dampening': True,
+                                      'history_paths': 0,
+                                      'inq': 0,
+                                      'local_as': 100,
+                                      'msg_rcvd': 0,
+                                      'msg_sent': 0,
+                                      'outq': 0,
+                                      'path': {'memory_usage': 620,
+                                               'total_entries': 5},
+                                      'prefixes':
+                                          {'memory_usage': 620,
+                                           'total_entries': 5},
+                                      'route_identifier': '10.64.4.4',
+                                      'state_pfxrcd': 'Idle',
+                                      'tbl_ver': 0,
+                                      'up_down': '5w6d',
+                                      'v': 4}}}}},
+            }}
+
+    ShowBgpVrfAllAllDampeningParameters_vrf1 = {
+        'vrf':
+            {'VRF1':
+                 {'address_family':
+                      {'ipv4 unicast':
+                           {'dampening': 'True',
+                            'dampening_route_map': 'dampening1',
+                            'dampening_half_life_time': '45',
+                            'dampening_reuse_time': '10000',
+                            'dampening_suppress_time': '20000',
+                            'dampening_max_suppress_time': '255',
+                            'dampening_max_suppress_penalty': '507968'},
+                       }},
+             }}
     # Set output for 'show bgp vrf VRF1 all neighbors' as input to parser
     vrf_vrf1_output = '''\
         N7k# show bgp vrf VRF1 all neighbors 
@@ -997,7 +1411,23 @@ class BgpOutput(object):
         Can't find neighbor 10.16.2.10
         Can't find neighbor 10.16.2.10
         '''
+    nbr1_advertised_routes_ipv4 = '''
+    pinxdt-n9kv-2# show bgp vrf VRF1 all neighbors 10.16.2.10 advertised-routes 
+        Can't find neighbor 10.16.2.10
 
+        Peer 10.16.2.10 routes for address family IPv4 Unicast:
+        BGP table version is 25, Local Router ID is 10.186.101.1
+        Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+        Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
+        Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
+
+           Network            Next Hop            Metric     LocPrf     Weight Path
+        *>l10.4.1.0/24         0.0.0.0                           100      32768 i
+        *>r10.16.1.0/24         0.0.0.0               4444        100      32768 ?
+        *>r10.16.2.0/24         0.0.0.0               4444        100      32768 ?
+        *>r10.106.0.0/8        0.0.0.0               4444        100      32768 ?
+        *>r192.168.51.0/8        0.0.0.0               4444        100      32768 ?
+        '''
     nbr1_routes = '''\
         pinxdt-n9kv-2# show bgp vrf VRF1 all neighbors 10.16.2.10 routes 
             Can't find neighbor 10.16.2.10
@@ -1106,7 +1536,21 @@ class BgpOutput(object):
             Can't find neighbor 10.16.2.10
             Can't find neighbor 10.16.2.10
             '''
+    nbr1_routes_ipv4 = '''
+    pinxdt-n9kv-2# show bgp vrf VRF1 all neighbors 10.16.2.10 routes 
+        Can't find neighbor 10.16.2.10
 
+        Peer 10.16.2.10 routes for address family IPv4 Unicast:
+        BGP table version is 25, Local Router ID is 10.186.101.1
+        Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+        Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
+        Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
+
+           Network            Next Hop            Metric     LocPrf     Weight Path
+        *>i10.16.0.0/8          10.186.0.2                 0        100          0 ?
+        * i10.106.0.0/8        10.186.0.2                 0        100          0 ?
+        * i192.168.51.0/8        10.186.0.2                 0        100          0 ?
+        '''
     nbr1_received_routes = '''\
         pinxdt-n9kv-2# show bgp vrf VRF1 all neighbors 10.16.2.10 received-routes 
         Can't find neighbor 10.16.2.10
@@ -1143,7 +1587,12 @@ class BgpOutput(object):
         Can't find neighbor 10.16.2.10
         Can't find neighbor 10.16.2.10
         '''
+    nbr1_received_routes_ipv4 = '''\
+            pinxdt-n9kv-2# show bgp vrf VRF1 all neighbors 10.16.2.10 received-routes 
+            Can't find neighbor 10.16.2.10
 
+            Inbound soft reconfiguration for IPv4 Unicast not performed on 10.16.2.10
+            '''
     nbr2_advertised_routes = '''\
         pinxdt-n9kv-2# show bgp vrf default all neighbors 10.16.2.2 advertised-routes 
         Can't find neighbor 10.16.2.2
@@ -1641,9 +2090,188 @@ class BgpOutput(object):
                                 'shutdown': False,
                                 'suppress_four_byte_as_capability': True,
                                 'up_time': '02:20:02',
-                                'update_source': 'loopback0'}},
+                                'update_source': 'Loopback0'}},
                         'router_id': '10.4.1.1'}}}}}
+    BgpOpsOutput_info_custom = {
+        'instance':
+            {'default':
+                {'bgp_id': 100,
+                'peer_policy':
+                    {'PEER-POLICY':
+                        {'allowas_in': True,
+                        'as_override': True,
+                        'default_originate': True,
+                        'default_originate_route_map': 'test',
+                        'maximum_prefix_max_prefix_no': 300,
+                        'route_map_name_in': 'test-map',
+                        'route_map_name_out': 'test-map',
+                        'route_reflector_client': True,
+                        'send_community': True,
+                        'soft_reconfiguration': True,
+                        'soo': True}},
+                'peer_session':
+                    {'PEER-SESSION':
+                        {'description': 'PEER-SESSION',
+                        'disable_connected_check': True,
+                        'ebgp_multihop_enable': True,
+                        'ebgp_multihop_max_hop': 255,
+                        'fall_over_bfd': True,
+                        'holdtime': 111,
+                        'keepalive_interval': 222,
+                        'local_as_as_no': True,
+                        'password_text': True,
+                        'remote_as': True,
+                        'shutdown': True,
+                        'suppress_four_byte_as_capability': True,
+                        'transport_connection_mode': 'Passive',
+                        'update_source': 'interface: '
+                                         'loopback0'}},
+                'protocol_state': 'running',
+                'vrf':
+                    {'VRF1':
+                        {'address_family':
+                            {'ipv4 unicast':
+                                {'aggregate_address_as_set': True,
+                                'aggregate_address_ipv4_address': '10.121.0.0',
+                                'aggregate_address_ipv4_mask': '8',
+                                'aggregate_address_summary_only': True,
+                                'dampening': 'True',
+                                'dampening_half_life_time': '45',
+                                'dampening_max_suppress_time': '255',
+                                'dampening_reuse_time': '10000',
+                                'dampening_route_map': 'dampening1',
+                                'dampening_suppress_time': '20000',
+                                'label_allocation_mode': 'per-prefix',
+                                'nexthop_trigger_delay_critical': 2222,
+                                'nexthop_trigger_delay_non_critical': 3333,
+                                'nexthop_trigger_enable': True},
+                            'vpnv4 unicast':
+                                {'distance_internal_as': 33,
+                                'distance_local': 55},
+                            },
+                        'cluster_id': '0.0.0.0',
+                        'confederation_identifier': 0,
+                        'neighbor':
+                            {'10.16.2.10':
+                                {'address_family':
+                                    {'ipv4 unicast':
+                                        {'bgp_table_version': 21,
+                                        'default_originate': True,
+                                         'session_state':'idle',
+                                        'default_originate_route_map': 'SOMENAME',
+                                        'soo': 'SOO:100:100'}},
+                                'bgp_negotiated_keepalive_timers':
+                                    {'hold_time': 180,
+                                    'keepalive_interval': 60},
+                                'bgp_neighbor_counters':
+                                    {'messages':
+                                        {'received':
+                                            {'bytes_in_queue': 0,
+                                            'capability': 0,
+                                            'keepalives': 0,
+                                            'notifications': 0,
+                                            'opens': 0,
+                                            'route_refresh': 0,
+                                            'total': 0,
+                                            'total_bytes': 0,
+                                            'updates': 0},
+                                        'sent':
+                                            {'bytes_in_queue': 0,
+                                            'capability': 0,
+                                            'keepalives': 0,
+                                            'notifications': 0,
+                                            'opens': 0,
+                                            'route_refresh': 0,
+                                            'total': 0,
+                                            'total_bytes': 0,
+                                            'updates': 0}}},
+                                'bgp_session_transport':
+                                    {'connection':
+                                        {'last_reset': 'never',
+                                         'reset_reason': 'no '
+                                                         'error',
+                                         'state': 'idle'}},
+                                'bgp_version': 4,
+                                'holdtime': 180,
+                                'keepalive_interval': 60,
+                                'local_as_as_no': 'None',
+                                'remote_as': 0,
+                                'session_state': 'idle',
+                                'shutdown': False,
+                                'up_time': '02:19:37'}},
+                        'router_id': '10.229.11.11'},
+                    }}
+             }
+    }
 
+
+    BgpOpsOutput_table_custom = {
+        'instance':
+            {'default':
+                {'vrf':
+                    {'VRF1':
+                        {'address_family':
+                            {'ipv4 unicast':
+                                {'bgp_table_version': 35,
+                                'prefixes':
+                                    {'10.121.0.0/8':
+                                        {'index':
+                                            {1:
+                                                {'next_hop': '0.0.0.0',
+                                                'localpref': 100,
+                                                'origin_codes': 'i',
+                                                'status_codes': '*>',
+                                                'weight': 32768},
+                                            2:
+                                                {'next_hop': '10.64.4.4',
+                                                'localpref': 100,
+                                                'metric': 0,
+                                                'origin_codes': 'e',
+                                                'status_codes': '*>',
+                                                'weight': 32768},
+                                            3:
+                                                {'next_hop': '10.144.6.6',
+                                                'localpref': 100,
+                                                'metric': 0,
+                                                'origin_codes': 'e',
+                                                'status_codes': '*>',
+                                                'weight': 32768}}},
+                                    '10.229.11.11/32':
+                                        {'index':
+                                            {1:
+                                                {'next_hop': '0.0.0.0',
+                                                'localpref': 100,
+                                                'metric': 0,
+                                                'origin_codes': '?',
+                                                'status_codes': '*>',
+                                                'weight': 32768}}},
+                                    '10.84.0.0/8':
+                                        {'index':
+                                            {1:
+                                                {'next_hop': '0.0.0.0',
+                                                'localpref': 100,
+                                                'origin_codes': 'i',
+                                                'status_codes': 'None',
+                                                'weight': 32768}}},
+                                    '10.21.33.33/32':
+                                        {'index':
+                                            {1:
+                                                {'next_hop': '10.36.3.3',
+                                                'localpref': 100,
+                                                'metric': 0,
+                                                'origin_codes': '?',
+                                                'status_codes': '*>',
+                                                'weight': 0}}},
+                                    '10.34.34.0/24':
+                                        {'index':
+                                            {1:
+                                                {'next_hop': '0.0.0.0',
+                                                'localpref': 100,
+                                                'origin_codes': 'i',
+                                                'status_codes': 'None',
+                                                'weight': 32768}}}}},
+                            }},
+                   }}}}
     BgpOpsOutput_table = {
         'instance':
             {'default':
@@ -2401,3 +3029,105 @@ class BgpOutput(object):
                                         'tbl_ver': 45,
                                         'up_down': '5w6d'}},
                                 'remote_as': 100}}}}}}}
+    BgpOpsOutput_routesperpeer_custom = {
+        'instance':
+            {'default':
+                {'vrf':
+                    {'VRF1':
+                        {'neighbor':
+                            {'10.16.2.10':
+                                {'address_family':{
+                                    'ipv4 unicast':
+                                        {'advertised':
+                                            {'10.4.1.0/24':
+                                                {'index':
+                                                    {1:
+                                                        {'next_hop': '0.0.0.0',
+                                                        'locprf': 100,
+                                                        'origin_codes': 'i',
+                                                        'path_type': 'l',
+                                                        'status_codes': '*>',
+                                                        'weight': 32768}}},
+                                            '10.16.1.0/24':
+                                                {'index':
+                                                    {1:
+                                                        {'next_hop': '0.0.0.0',
+                                                        'locprf': 100,
+                                                        'metric': 4444,
+                                                        'origin_codes': '?',
+                                                        'path_type': 'r',
+                                                        'status_codes': '*>',
+                                                        'weight': 32768}}},
+                                            '10.16.2.0/24':
+                                                {'index':
+                                                    {1:
+                                                        {'next_hop': '0.0.0.0',
+                                                        'locprf': 100,
+                                                        'metric': 4444,
+                                                        'origin_codes': '?',
+                                                        'path_type': 'r',
+                                                        'status_codes': '*>',
+                                                        'weight': 32768}}},
+                                            '10.106.0.0/8':
+                                                {'index':
+                                                    {1:
+                                                        {'next_hop': '0.0.0.0',
+                                                        'locprf': 100,
+                                                        'metric': 4444,
+                                                        'origin_codes': '?',
+                                                        'path_type': 'r',
+                                                        'status_codes': '*>',
+                                                        'weight': 32768}}},
+                                            '192.168.51.0/8':
+                                                {'index':
+                                                    {1:
+                                                        {'next_hop': '0.0.0.0',
+                                                        'locprf': 100,
+                                                        'metric': 4444,
+                                                        'origin_codes': '?',
+                                                        'path_type': 'r',
+                                                        'status_codes': '*>',
+                                                        'weight': 32768}}}},
+                                        'input_queue': 0,
+                                        'msg_rcvd': 0,
+                                        'msg_sent': 0,
+                                        'output_queue': 0,
+                                        'routes':
+                                            {'10.106.0.0/8':
+                                                {'index':
+                                                    {1:
+                                                        {'next_hop': '10.186.0.2',
+                                                        'locprf': 100,
+                                                        'metric': 0,
+                                                        'origin_codes': '?',
+                                                        'path_type': 'i',
+                                                        'status_codes': '* ',
+                                                        'weight': 0}}},
+                                            '192.168.51.0/8':
+                                                {'index':
+                                                    {1:
+                                                        {'next_hop': '10.186.0.2',
+                                                        'locprf': 100,
+                                                        'metric': 0,
+                                                        'origin_codes': '?',
+                                                        'path_type': 'i',
+                                                        'status_codes': '* ',
+                                                        'weight': 0}}},
+                                            '10.16.0.0/8':
+                                                {'index':
+                                                    {1:
+                                                        {'next_hop': '10.186.0.2',
+                                                        'locprf': 100,
+                                                        'metric': 0,
+                                                        'origin_codes': '?',
+                                                        'path_type': 'i',
+                                                        'status_codes': '*>',
+                                                        'weight': 0}}}},
+                                        'state_pfxrcd': 'Idle',
+                                        'tbl_ver': 0,
+                                        'up_down': '5w6d'},
+
+                                  },
+                                'remote_as': 0}}},
+                   }}}}
+

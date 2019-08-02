@@ -280,7 +280,7 @@ class Device(HltapiDevice):
                                 sBit = int(i_mpls_label == len(mpls_labels) - 1)
                                 logger.debug('Spirent: append MPLS header with label %r (sBit=%r)', mpls_label, sBit)
                                 self.stc_create(
-                                    'mpls:Mpls', '-under', streamlock,
+                                    'mpls:Mpls', '-under', streamblock,
                                     '-sBit', sBit,
                                     '-label', mpls_label)
                                 need_stc_apply = True
@@ -1013,18 +1013,15 @@ class Device(HltapiDevice):
         return super().build_config(apply=apply, attributes=attributes)
 
     def build_unconfig(self, clean=False, apply=True, attributes=None, **kwargs):
-        # Nothing to do.
 
-        return super().build_unconfig(clean=clean, apply=apply, attributes=attributes, **kwargs)
 
         # Don't call super().build_unconfig
-
         if clean:
             pass  # TODO
 
-        # Nothing to do.
 
-        return ''  # No CLI lines
+        # Nothing to do.
+        return super().build_unconfig(clean=clean, apply=apply, attributes=attributes, **kwargs)
 
     @contextlib.contextmanager
     def defer_apply_context(self):

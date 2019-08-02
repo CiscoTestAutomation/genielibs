@@ -659,7 +659,7 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
 
     @switchport.initter
     def switchport(self):
-        return SwitchportAttributes(interface=self)
+        return EthernetInterface.SwitchportAttributes(interface=self)
 
     mac_aging = None
     auto_negotiate = None
@@ -1019,6 +1019,7 @@ class PortchannelInterface(VirtualInterface, genie.libs.conf.interface.Aggregate
 
     def build_config(self, apply=True, attributes=None, unconfig=False,
                      **kwargs):
+        attributes = AttributesHelper(self, attributes)
         configurations = CliConfigBuilder(unconfig=unconfig)
         
         if attributes:

@@ -90,7 +90,7 @@ class Mroute(ConfigurableBase):
     # Overload __lt__
     def __lt__(self, other):
         if not isinstance(other, Mroute):
-            raise NotImplemented("Cannot compare '{s}' to a '{o}'".format(s=type(s), o=type(o)))
+            raise NotImplemented("Cannot compare '{s}' to a '{o}'".format(s=type(self), o=type(other)))
 
         # Comparing same types (both v4 or both v6)
         if type(self.mroute_address) == type(other.mroute_address):

@@ -118,7 +118,7 @@ class RPAddressGroup(ConfigurableBase):
     # Overload __repr__
     def __repr__(self):
         if isinstance(self.join_group, str):
-            return '%s object at 0x%x with string name %s/%s' % (
+            return '%s object at 0x%x with string name %s/%s/%s/%s/%s/%s/%s' % (
                     self.__class__.__name__,
                     id(self),
                     self.static_rp_address,
@@ -129,7 +129,7 @@ class RPAddressGroup(ConfigurableBase):
                     self.static_rp_bidir,
                     self.static_rp_override,)
         else:
-            return '%s object at 0x%x with none string name %s/%s' % (
+            return '%s object at 0x%x with none string name %s/%s/%s/%s/%s/%s/%s' % (
                     self.__class__.__name__,
                     id(self),
                     self.static_rp_address,

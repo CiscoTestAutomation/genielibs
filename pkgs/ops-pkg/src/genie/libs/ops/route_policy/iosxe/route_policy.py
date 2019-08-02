@@ -5,9 +5,6 @@ RoutePolicy Genie Ops Object for IOSXE - CLI.
 # Genie
 from genie.ops.base import Base
 
-# iosxe show_route_map
-from genie.libs.parser.iosxe.show_route_map import ShowRouteMapAll
-
 
 class RoutePolicy(Base):
     '''RoutePolicy Genie Ops Object'''
@@ -15,7 +12,7 @@ class RoutePolicy(Base):
     def learn(self):
         '''Learn RoutePolicy Ops'''
 
-        self.add_leaf(cmd=ShowRouteMapAll,
+        self.add_leaf(cmd='show route-map all',
                       src='[(?P<policy>.*)][description]',
                       dest='info[(?P<policy>.*)][description]')
 
@@ -37,7 +34,7 @@ class RoutePolicy(Base):
 
         for key in condition_keys:
 
-            self.add_leaf(cmd=ShowRouteMapAll,
+            self.add_leaf(cmd='show route-map all',
                           src='{cond_src}[{key}]'.format(cond_src=cond_src,
                                                          key=key),
                           dest='{cond_dest}[{key}]'.format(cond_dest=cond_dest,
@@ -87,19 +84,19 @@ class RoutePolicy(Base):
             'actions', 'set_ospf_metric_type']
 
         for key in condition_keys:
-            self.add_leaf(cmd=ShowRouteMapAll,
+            self.add_leaf(cmd='show route-map all',
                           src='{cond_src}[{key}]'.format(cond_src=cond_src,
                                                          key=key),
                           dest='{cond_dest}[{key}]'.format(cond_dest=cond_dest,
                                                            key=key))
 
             if key == 'set_metric':
-                self.add_leaf(cmd=ShowRouteMapAll,
+                self.add_leaf(cmd='show route-map all',
                               src='{cond_src}[{key}]'.format(cond_src=cond_src,
                                                              key=key),
                               dest='{cond_dest}[{key}]'.format(cond_dest=cond_dest,
                                                                key='set_med'))
-                self.add_leaf(cmd=ShowRouteMapAll,
+                self.add_leaf(cmd='show route-map all',
                               src='{cond_src}[{key}]'.format(cond_src=cond_src,
                                                              key=key),
                               dest='{cond_dest}[{key}]'.format(cond_dest=cond_dest,

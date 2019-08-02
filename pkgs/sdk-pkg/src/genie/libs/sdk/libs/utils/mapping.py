@@ -17,7 +17,7 @@ from genie.utils.timeout import Timeout
 
 from genie.libs import ops
 from genie.libs.sdk.libs.utils.triggeractions import Configure
-from genie.libs.sdk.libs.utils.normalize import GroupKeys, _to_dict
+from genie.libs.sdk.libs.utils.normalize import GroupKeys, _to_dict, LearnPollDiff
 
 from genie.abstract import Lookup
 
@@ -101,9 +101,11 @@ class Mapping(object):
         if 'static' not in data:
             self._static_learn = True
             self._static = False
+            self.sdata = None
             return
 
-        sdata = data['static']
+        self.sdata = data['static']
+
         # Good we got some work to do;
         # Let's take these static keys and overwrite the mapping
         # requirements with it
@@ -111,15 +113,15 @@ class Mapping(object):
         # We are doing it for:
         # requirements, config_info and verify_ops
         if self.requirements:
-            self._populate_mapping_step(self.requirements, sdata)
+            self._populate_mapping_step(self.requirements)
 
         if self.config_info:
-            self._populate_mapping_step(self.config_info, sdata)
+            self._populate_mapping_step(self.config_info)
 
         if self._verify_ops_dict:
-            self._populate_mapping_step(self._verify_ops_dict, sdata)
+            self._populate_mapping_step(self._verify_ops_dict)
 
-    def _populate_mapping_step(self, data, sdata):
+    def _populate_mapping_step(self, data):
         '''Transform requirements, config_info or verify_ops with static info'''
         for obj, value in data.items():
             # Deal with requirements
@@ -129,9 +131,7 @@ class Mapping(object):
 
             # The requirements will be parsed now
             # and replaced with the new ones
-            value['requirements'] = self._populate_reqs(
-                                        value['requirements'],
-                                        sdata)
+            value['requirements'] = self._populate_reqs(value['requirements'])
 
             # Deal with kwargs
             if 'kwargs' not in value or 'mandatory' not in value['kwargs']:
@@ -140,34 +140,36 @@ class Mapping(object):
 
             new_kwargs = {}
             for key, path in value['kwargs']['mandatory'].items():
-                for static in sdata:
+                for static in self.sdata:
                     if not isinstance(path, str) or not path.startswith('(?P<'):
                         new_kwargs[key] = path
                         continue
                     if static in path:
-                        new_kwargs[key] = sdata[static]
+                        new_kwargs[key] = self.sdata[static]
                         break
                 else:
                     new_kwargs[key] = path
             value['kwargs']['mandatory'] = new_kwargs
 
-    def _populate_reqs(self, reqs, sdata):
+    def _populate_reqs(self, reqs):
         '''Transform a list of requirements'''
         new_requirements = []
         for req in reqs:
             # At this stage this could be a list of a list,  or a
             # list.
-            if isinstance(req[0], str):
-                new_requirements.append(self._populate_req(req, sdata))
-            elif isinstance(req[0], list):
+
+            if isinstance(req[0], list):
                 # Then its a list of list
                 one_req = []
                 for single_req in req:
-                    one_req.append(self._populate_req(single_req, sdata))
+                    one_req.append(self._populate_req(single_req))
                 new_requirements.append(one_req)
+            else:
+                new_requirements.append(self._populate_req(req))
+
         return new_requirements
 
-    def _populate_req(self, req, sdata):
+    def _populate_req(self, req):
         '''Transform 1 requirement'''
         requirement = []
         for item in req:
@@ -177,19 +179,24 @@ class Mapping(object):
             if not isinstance(item, str) or not item.startswith('(?P<'):
                 requirement.append(item)
                 continue
-            for static in sdata:
+            to_del = []
+            for static in self.sdata:
                 if static in item:
-                    if isinstance(sdata[static], str) and\
-                       sdata[static].startswith('(?P<'):
+                    if isinstance(self.sdata[static], str) and\
+                       self.sdata[static].startswith('(?P<'):
                         # The static information is also a regex! so got to
                         # learn
                         self._static_learn = True
-                    requirement.append(sdata[static])
+                        to_del.append(static)
+                    requirement.append(self.sdata[static])
                     break
             else:
                 # A Regex which is not in the sdata
                 self._static_learn = True
                 requirement.append(item)
+            # delete regex from static so it won't be passed to ops
+            for key in to_del:
+                del self.sdata[key]
         return requirement
 
     def _learn_base(self, device, name, step, abstracted_base, is_ops, base,
@@ -233,7 +240,6 @@ class Mapping(object):
                     learn_poll['initial'] = self._ops_ret[base]
                     learn_poll['verify'] = verify_find
                     learn_poll['exclude'] = self._populate_exclude(exclude)
-
                     learn_poll.update(kwargs)
 
                     # skip the learning for verify
@@ -241,7 +247,7 @@ class Mapping(object):
                         return o
 
                 # Learn and verify the ops
-                o.learn_poll(**learn_poll)
+                o.learn_poll(ops_keys=self.sdata, **learn_poll)
                 return o
 
             # process conf requirements
@@ -822,7 +828,7 @@ class Mapping(object):
         if reqs.get('callable', None):
             for item in reqs['callable']:
                 try:
-                    o.learn_poll(verify=item[0].func,
+                    o.learn_poll(ops_keys=self.sdata, verify=item[0].func,
                                  mapping=self, local_reqs=reqs,
                                  timeout=self.timeout, **item[0].keywords)
                 except Exception as e:
@@ -830,7 +836,7 @@ class Mapping(object):
 
         # verify the ops paths values
         try:
-            o.learn_poll(verify=self._verify_finds_ops,
+            o.learn_poll(ops_keys=self.sdata, verify=self._verify_finds_ops,
                          requirements=reqs['list'],
                          timeout=self.timeout,
                          missing=missing,
@@ -1039,78 +1045,79 @@ class Mapping(object):
             else:
                 return ops_obj
 
-    def _one_to_many_path(self, paths, device, many_keys, standard_keys):
+    def _one_to_many_path(self, paths, device, keys, many_keys, standard_keys):
         '''Create the one to many paths out of the paths'''
         if not paths:
             return paths
         ret = []
-        for path in paths:
-            temp_path=[]
-            for item in path:
-                # item is find.operator
-                if isinstance(item, Operator):
-                    if not isinstance(item.value, str):
+        for key in keys:
+            for path in paths:
+                temp_path=[]
+                for item in path:
+                    # item is find.operator
+                    if isinstance(item, Operator):
+                        if not isinstance(item.value, str):
+                            temp_path = self._append_to_many(temp_path, item.value)
+                            continue
+                        if item.value == '{uut}':
+                            temp_path = self._append_to_many(temp_path, device)
+                            continue
+                        if item.regex and item.value.startswith('(?P<'):
+                            # Get the variable name
+                            var = list(item.regex.groupindex)[0]
+                            # Does var exists in key?
+                            if var not in key:
+                                # So key does not exists
+                                # just keep doing with this as a value
+                                temp_path = self._append_to_many(temp_path,
+                                                                item.value)
+                            else:
+                                # This mean var is in key
+                                vkeys = key[var]
+                                if not item == str(vkeys):
+                                    break
+                                temp_path = self._append_to_many(temp_path, vkeys)
+                            continue
                         temp_path = self._append_to_many(temp_path, item.value)
                         continue
-                    if item.value == '{uut}':
+                    if not isinstance(item, str):
+                        temp_path = self._append_to_many(temp_path, item)
+                        continue
+                    if item == '{uut}':
                         temp_path = self._append_to_many(temp_path, device)
                         continue
-                    if item.regex and item.value.startswith('(?P<'):
-                        # Get the variable name
-                        var = list(item.regex.groupindex)[0]
-                        # Does var exists in key?
-                        if var not in key:
-                            # So key does not exists
-                            # just keep doing with this as a value
-                            temp_path = self._append_to_many(temp_path,
-                                                             item.value)
-                        else:
-                            # This mean var is in key
-                            vkeys = key[var]
-                            if not item == str(vkeys):
-                                break
-                            temp_path = self._append_to_many(temp_path, vkeys)
+                    if not item.startswith('(?P<'):
+                        temp_path = self._append_to_many(temp_path, item)
                         continue
-                    temp_path = self._append_to_many(temp_path, item.value)
-                    continue
-                if not isinstance(item, str):
-                    temp_path = self._append_to_many(temp_path, item)
-                    continue
-                if item == '{uut}':
-                    temp_path = self._append_to_many(temp_path, device)
-                    continue
-                if not item.startswith('(?P<'):
-                    temp_path = self._append_to_many(temp_path, item)
-                    continue
-                # Modify it with an item of key
-                try:
-                    com = re.compile(item)
-                except Exception as e:
-                    raise ValueError("'{item}' is not a valid regex "
-                                     "expression".format(item=item)) from e
-                # Get the variable name
-                var = list(com.groupindex)[0]
-                if var in standard_keys:
-                    # This mean var is in key
-                    vkeys = standard_keys[var]
-                    if not com.match(str(vkeys)):
+                    # Modify it with an item of key
+                    try:
+                        com = re.compile(item)
+                    except Exception as e:
+                        raise ValueError("'{item}' is not a valid regex "
+                                        "expression".format(item=item)) from e
+                    # Get the variable name
+                    var = list(com.groupindex)[0]
+                    if var in standard_keys:
+                        # This mean var is in key
+                        vkeys = standard_keys[var]
+                        if not com.match(str(vkeys)):
+                            break
+                        temp_path = self._append_to_many(temp_path, vkeys)
+                        continue
+
+                    # So key does not exists
+                    # just keep doing with this as a value
+                    if var not in many_keys:
+                        temp_path=self._append_to_many(temp_path, item)
+                        continue
+
+                    vkeys = [key for key in list(many_keys[var]) \
+                                                            if com.match(str(key))]
+                    if not vkeys:
                         break
-                    temp_path = self._append_to_many(temp_path, vkeys)
-                    continue
-
-                # So key does not exists
-                # just keep doing with this as a value
-                if var not in many_keys:
-                    temp_path=self._append_to_many(temp_path, item)
-                    continue
-
-                vkeys = [key for key in list(many_keys[var]) \
-                                                         if com.match(str(key))]
-                if not vkeys:
-                    break
-                temp_path=self._append_to_many(temp_path, vkeys, multiply=True)
-            else:
-                ret.extend(temp_path)
+                    temp_path=self._append_to_many(temp_path, vkeys, multiply=True)
+                else:
+                    ret.extend(temp_path)
         return ret
 
     def _append_to_many(self, path, value, multiply=False):
@@ -1441,8 +1448,8 @@ class FilterFindValue():
         '''For now hardcoded for learnpolldiff.ops_diff'''
 
         self.ops_obj.learn_poll(verify=LearnPollDiff.ops_diff,
-                                sleep=sleep_time,
-                                attempt=attempt,
+                                sleep=self.sleep_time,
+                                attempt=self.attempt,
                                 exclude=self.exclude,
                                 ops_modified=self.ops_Verify,
                                 ops_compare=self.pre_snap)

@@ -5,6 +5,7 @@ from collections.abc import Sequence
 from ats.utils.schemaengine import Schema, Optional, Any, Or
 from ats.utils.schemaengine import Use, And, Default, Fallback
 from ats.utils.import_utils import import_from_name
+from genie.metaparser.util.exceptions import SchemaError
 
 from .device import Device
 from .interface import Interface

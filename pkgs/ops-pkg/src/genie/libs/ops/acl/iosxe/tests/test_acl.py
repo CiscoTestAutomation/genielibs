@@ -19,6 +19,7 @@ class test_acl(unittest.TestCase):
     def setUp(self):
         self.device = Device(name='aDevice')
         self.device.os = 'iosxe'
+        self.device.custom['abstraction'] = {'order':['os']}
         self.device.mapping={}
         self.device.mapping['cli']='cli'
         # Give the device as a connection type

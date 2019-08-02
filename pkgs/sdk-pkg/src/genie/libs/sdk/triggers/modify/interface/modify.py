@@ -302,7 +302,7 @@ class TriggerModifyLoopbackInterfaceIpv6(TriggerModify):
         # add old ipv6 attributes in conf_object
         # for remove the original ipv6 configurations        
         ipv6 = IPv6Addr(device=kwargs['device'])
-        for ipInfo in self.keys.values():
+        for ipInfo in self.keys:
             if 'ip' in ipInfo:
                 ipv6.ipv6 = IPv6Address(ipInfo['ip'])
             if 'mask' in ipInfo:

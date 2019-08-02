@@ -46,6 +46,7 @@ class test_mcast(unittest.TestCase):
         self.device = Device(name='aDevice')
         self.device.os = 'iosxe'
         self.device.mapping={}
+        self.device.custom['abstraction'] = {'order':['os']}
         self.device.mapping['cli']='cli'
         # Give the device as a connection type
         # This is done in order to call the parser on the output provided

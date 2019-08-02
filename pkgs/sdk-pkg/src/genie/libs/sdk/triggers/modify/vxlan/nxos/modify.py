@@ -203,8 +203,13 @@ class TriggerModifyNveVniMcastGroup(TriggerModify):
     # adding new value for mcast group
     def configure_mcast_group(self, conf_obj, **kwargs):
         for x in self.__dict__['keys']:
-            mcast_group = IPv4Address(x['mcast'])
-        mcast_group_value = mcast_group.__dict__['_ip']+1
+            # supporting python 3.6
+            try:
+                mcast_group = x['mcast']
+                mcast_group_value = struct.unpack('>L',socket.inet_aton(mcast_group))[0]+1
+            except exception as e:
+                mcast_group = IPv4Address(x['mcast'])
+                mcast_group_value = mcast_group.__dict__['_ip']+1
         t = struct.pack("!L", mcast_group_value)
         new_mcast_group = socket.inet_ntoa(t)
         self.keys[0]['mcast'] = new_mcast_group

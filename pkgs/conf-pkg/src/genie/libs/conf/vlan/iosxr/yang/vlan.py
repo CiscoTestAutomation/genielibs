@@ -9,6 +9,7 @@ from genie.conf.base import Interface
 from genie.conf.base.config import YangConfig
 try:
     from ydk.models.ydkmodels import Cisco_IOS_XR_ifmgr_cfg as xr_ifmgr_cfg
+    from ydk.providers._provider_plugin import _ClientSPPlugin
     from ydk.types import DELETE, Empty
     from ydk.services import CRUDService
     from ydk.services import CodecService

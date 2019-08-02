@@ -6,6 +6,9 @@ from abc import ABC
 from genie.conf.base.attributes import AttributesHelper
 from genie.conf.base.cli import CliConfigBuilder
 from genie.conf.base.config import CliConfig
+from genie.libs.conf.ospf import Ospf
+from genie.libs.conf.isis import Isis
+from genie.libs.conf.rip import Rip
 
 # Structure Hierarchy:
 # Bgp

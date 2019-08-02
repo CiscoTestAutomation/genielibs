@@ -24,9 +24,9 @@ class VniSubAttributes(KeyedSubAttributes):
     @property
     def vni(self):
         for vni in self.parent.vnis:
-            if vni.vni_id == vni_id:
+            if vni.vni_id == VniSubAttributes.vni_id:
                 return vni
-        raise AttributeError('vni: no Vni found matching vni_id=%r' % (vni_id,))
+        raise AttributeError('vni: no Vni found matching vni_id=%r' % (VniSubAttributes.vni_id,))
 
     @classmethod
     def _sanitize_key(cls, key):

@@ -21,7 +21,7 @@ from genie.conf.base.cli import CliConfigBuilder
 
 from genie.libs.conf.l2vpn.pseudowire import PseudowireNeighbor,\
     PseudowireIPv4Neighbor, PseudowireIPv6Neighbor
-from genie.libs.conf.interface.iosxe.interface import EFPInterface
+from genie.libs.conf.interface.iosxe.interface import EFPInterface, EthernetInterface
 
 from ..xconnect import Xconnect as _Xconnect
 

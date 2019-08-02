@@ -81,7 +81,7 @@ class CompareUptime(object):
                                             tt=threshold_time))
             else:
                 raise Exception('Cannot get uptime for neighbor {}'
-                                .format(nei))
+                                .format([r.args for r in r_obj]))
 
             result = {'>': time > threshold_time,
                       '<': time < threshold_time,

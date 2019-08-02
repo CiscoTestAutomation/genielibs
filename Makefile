@@ -46,7 +46,7 @@ PYPIREPO      = pypitest
 # Development pkg requirements
 RELATED_PKGS = genie.libs.conf genie.libs.ops genie.libs.robot genie.libs.sdk
 DEPENDENCIES  = restview psutil Sphinx wheel asynctest
-DEPENDENCIES += setproctitle sphinxcontrib-napoleon sphinx-rtd-theme httplib2
+DEPENDENCIES += setproctitle  sphinx-rtd-theme 
 DEPENDENCIES += pip-tools Cython requests
 
 # Internal variables.
@@ -55,11 +55,6 @@ DEPENDENCIES += pip-tools Cython requests
 PYPI_PKGS      = conf ops robot sdk
 
 ALL_PKGS       = $(PYPI_PKGS)
-
-# build options
-ifeq ($(DEVNET), true)
-    BUILD_CMD += --devnet
-endif
 
 .PHONY: help docs distribute_docs clean check devnet\
 	develop undevelop distribute test install_build_deps
@@ -110,17 +105,10 @@ devnet: all
 	@echo ""
 
 install_build_deps:
-	@echo "--------------------------------------------------------------------"
-	@echo "Installing cisco-distutils"
-	@pip install --index-url=http://pyats-pypi.cisco.com/simple \
-	             --trusted-host=pyats-pypi.cisco.com \
-	             cisco-distutils
+	@echo "nothing to do"
 
 uninstall_build_deps:
-	@echo "--------------------------------------------------------------------"
-	@echo "Uninstalling pyats-distutils"
-	@pip uninstall cisco-distutils
-
+	@echo "nothing to do"
 
 docs:
 	@echo "No documentation to build for genie.libs"
@@ -178,7 +166,24 @@ all: $(ALL_PKGS)
 	@echo "Done."
 	@echo ""
 
-package: all $(ALL_PKGS)
+package_compile: $(ALL_PKGS) build_cythonize
+	@echo "Done Compiling and building"
+	@echo ""
+
+build_cythonize:
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Compiling pyATS distributable"
+
+	cd pkgs/conf-pkg; $(BUILD_CMD) --cythonize
+	cd pkgs/ops-pkg; $(BUILD_CMD) --cythonize
+	cd pkgs/robot-pkg; $(BUILD_CMD) --cythonize
+	cd pkgs/sdk-pkg; $(BUILD_CMD) --cythonize
+
+	@echo "Completed compiling"
+	@echo ""
+
+package: $(ALL_PKGS)
 	@echo ""
 	@echo "Done."
 	@echo ""

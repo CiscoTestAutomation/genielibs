@@ -87,7 +87,7 @@ class Acl(Base):
 
         for src, dst in keys.items():       
 
-            self.add_leaf(cmd=ShowAccessLists,
+            self.add_leaf(cmd='show access-lists',
                           src=src,
                           dest=dst)
 

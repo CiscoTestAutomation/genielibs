@@ -91,7 +91,7 @@ class StubRouter(ConfigurableBase):
     # Overload __lt__
     def __lt__(self, other):
         if not isinstance(other, StubRouter):
-            raise NotImplemented("Cannot compare '{s}' to a '{o}'".format(s=type(s), o=type(o)))
+            raise NotImplemented("Cannot compare '{s}' to a '{o}'".format(s=type(self), o=type(other)))
 
         str1 = '{} {} {} {} {} {}'.format(self.stub_router_always,\
                                         self.stub_router_on_startup,\

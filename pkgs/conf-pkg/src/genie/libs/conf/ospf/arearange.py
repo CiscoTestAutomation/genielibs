@@ -67,7 +67,7 @@ class AreaRange(ConfigurableBase):
     # Overload __lt__
     def __lt__(self, other):
         if not isinstance(other, AreaRange):
-            raise NotImplemented("Cannot compare '{s}' to a '{o}'".format(s=type(s), o=type(o)))
+            raise NotImplemented("Cannot compare '{s}' to a '{o}'".format(s=type(self), o=type(other)))
 
         return (self.area_range_prefix,
                 self.area_range_advertise,

@@ -68,7 +68,7 @@ class MldGroup(ConfigurableBase):
     # Overload __lt__
     def __lt__(self, other):
         if not isinstance(other, MldGroup):
-            raise NotImplemented("Cannot compare '{s}' to a '{o}'".format(s=type(s), o=type(o)))
+            raise NotImplemented("Cannot compare '{s}' to a '{o}'".format(s=type(self), o=type(other)))
 
         group_current = self.join_group if self.join_group else self.static_group
         group_previous = other.join_group if other.join_group else other.static_group
@@ -100,7 +100,7 @@ class MldGroup(ConfigurableBase):
     # Overload __repr__
     def __repr__(self):
         if isinstance(self.join_group, str):
-            return '%s object at 0x%x with string name %s/%s' % (
+            return '%s object at 0x%x with string name %s/%s/%s/%s' % (
                     self.__class__.__name__,
                     id(self),
                     self.join_group,
@@ -108,7 +108,7 @@ class MldGroup(ConfigurableBase):
                     self.static_group,
                     self.static_group_source_addr)
         else:
-            return '%s object at 0x%x with the name %s/%s which is not string' % (
+            return '%s object at 0x%x with the name %s/%s/%s/%s which is not string' % (
                     self.__class__.__name__,
                     id(self),
                     self.join_group,

@@ -1172,7 +1172,7 @@ class Bgp(Routing, DeviceFeature):
                 return self.parent.address_families.copy()
 
             class AddressFamilyAttributes(AddressFamilySubAttributes):
-            	pass
+                pass
 
             address_family_attr = managedattribute(
                 name='address_family_attr',
@@ -1182,7 +1182,7 @@ class Bgp(Routing, DeviceFeature):
             @address_family_attr.initter
             def address_family_attr(self):
                 return SubAttributesDict(self.AddressFamilyAttributes,
-                                         parent=self)
+                                        parent=self)
 
             class NeighborAttributes(IPNeighborSubAttributes):
 
@@ -1196,7 +1196,7 @@ class Bgp(Routing, DeviceFeature):
                     return self.parent.address_families.copy()
 
                 class AddressFamilyAttributes(AddressFamilySubAttributes):
-                	pass
+                    pass
 
                 address_family_attr = managedattribute(
                     name='address_family_attr',

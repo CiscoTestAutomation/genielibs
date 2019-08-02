@@ -6,6 +6,7 @@ __all__ = (
     'Interface',
     'PhysicalInterface',
     'EthernetInterface',
+    'SubInterface',
 )
 
 import functools
@@ -168,5 +169,11 @@ class EthernetInterface(PhysicalInterface,
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-Interface._build_name_to_class_map()
 
+class SubInterface(VirtualInterface, genie.libs.conf.interface.SubInterface):
+    '''Class for pageant sub-interfaces'''
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+Interface._build_name_to_class_map()

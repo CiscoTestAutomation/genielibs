@@ -1,0 +1,574 @@
+Verify_AccessLists:
+  devices: ['uut']
+# Verify_FlowMonitor:
+#   devices: ['uut']
+#   exclude:
+#   - Datalinkmacdst
+Verify_AccessSession:
+  devices: ['uut']
+Verify_Archive:
+  devices: ['uut']
+Verify_Arp:
+  devices: ['uut']
+  exclude: []
+Verify_BgpAll:
+  devices: ['uut']
+  exclude: []
+Verify_BgpAllClusterIds:
+  devices: ['uut']
+  exclude: []
+Verify_BgpAllDetail:
+  devices: ['uut']
+  exclude: []
+  iteration:
+    attempt: 10
+    interval: 10
+Verify_BgpAllNeighbors:
+  devices: ['uut']
+  exclude: []
+  iteration:
+    attempt: 12
+    interval: 10
+Verify_BgpAllSummary:
+  devices: ['uut']
+  exclude: []
+  iteration:
+    attempt: 10
+    interval: 10
+Verify_Boot:
+  devices: ['uut']
+Verify_CryptoPkiCertificates:
+  devices: ['uut']
+  exclude: []
+Verify_Dir:
+  devices: ['uut']
+  exclude: []
+Verify_Dot1x:
+  devices: ['uut']
+Verify_Dot1xAllCount:
+  devices: ['uut']
+Verify_Dot1xAllDetail:
+  devices: ['uut']
+Verify_Dot1xAllStatistics:
+  devices: ['uut']
+Verify_Dot1xAllSummary:
+  devices: ['uut']
+Verify_EnvironmentAll:
+  devices: ['uut']
+  exclude: []
+Verify_ErrdisableRecovery:
+  devices: ['uut']
+  exclude: []
+Verify_EtherchannelSummary:
+  devices: ['uut']
+  exclude: []
+  iteration:
+    attempt: 5
+    interval: 10
+Verify_Interfaces:
+  devices: ['uut']
+  exclude: []
+  iteration:
+    attempt: 5
+    interval: 10
+Verify_InterfacesAccounting:
+  devices: ['uut']
+  exclude: []
+Verify_InterfacesSwitchport:
+  devices: ['uut']
+  exclude: []
+Verify_InterfacesTrunk:
+  devices: ['uut']
+Verify_Inventory:
+  devices: ['uut']
+  exclude: []
+Verify_IpBgpAllDampeningParameters:
+  devices: ['uut']
+  exclude: []
+Verify_IpBgpTemplatePeerPolicy:
+  devices: ['uut']
+  exclude: []
+Verify_IpBgpTemplatePeerSession:
+  devices: ['uut']
+  exclude: []
+Verify_IpIgmpGroupsDetail:
+  devices: ['uut']
+  exclude: []
+  iteration:
+    attempt: 12
+    interval: 10
+Verify_IpIgmpInterface_vrf_default:
+  devices: ['uut']
+  exclude: []
+Verify_IpInterface:
+  devices: ['uut']
+  exclude: []
+  iteration:
+    attempt: 5
+    interval: 10
+Verify_IpInterfaceBrief:
+  devices: ['uut']
+  exclude: []
+Verify_IpInterfaceBriefPipeVlan:
+  devices: ['uut']
+Verify_IpInterfaceBriefPipeVlan_yang:
+  exclude: []
+Verify_IpInterfaceBrief_yang:
+  exclude: []
+Verify_IpMroute:
+  devices: ['uut']
+  exclude: []
+  iteration:
+    attempt: 5
+    interval: 10
+Verify_IpMrouteStatic:
+  devices: ['uut']
+  exclude: []
+Verify_IpMulticast:
+  devices: ['uut']
+  exclude: []
+Verify_IpOspfDatabaseExternal:
+  devices: ['uut']
+Verify_IpOspfDatabaseNetwork:
+  devices: ['uut']
+  exclude: []
+Verify_IpOspfDatabaseOpaqueArea:
+  devices: ['uut']
+Verify_IpOspfDatabaseRouter:
+  devices: ['uut']
+  exclude: []
+Verify_IpOspfDatabaseSummary:
+  devices: ['uut']
+  exclude: []
+Verify_IpOspfInterface_vrf_default:
+  devices: ['uut']
+  exclude: []
+Verify_IpOspfMplsLdpInterface_vrf_default:
+  devices: ['uut']
+Verify_IpOspfMplsTrafficEngLink:
+  devices: ['uut']
+Verify_IpOspfNeighborDetail_vrf_default:
+  devices: ['uut']
+  exclude: []
+Verify_IpOspfShamLinks_vrf_default:
+  devices: ['uut']
+Verify_IpOspfVirtualLinks_vrf_default:
+  devices: ['uut']
+Verify_IpPimBsrRouter:
+  devices: ['uut']
+  exclude: []
+Verify_IpPimInterface:
+  devices: ['uut']
+Verify_IpPimInterfaceDetail:
+  devices: ['uut']
+  exclude: []
+Verify_IpPimInterfaceDf:
+  devices: ['uut']
+Verify_IpPimNeighbor_vrf_default:
+  devices: ['uut']
+  exclude: []
+Verify_IpPimRpMapping:
+  devices: ['uut']
+  exclude: []
+Verify_IpPrefixListDetail:
+  devices: ['uut']
+Verify_IpProtocols:
+  devices: ['uut']
+  exclude: []
+Verify_IpRoute_protocol_bgp:
+  devices: ['uut']
+  exclude:
+  - uptime
+  parameters:
+    protocol: bgp
+Verify_IpRoute_protocol_ospf:
+  devices: ['uut']
+  exclude:
+  - uptime
+  parameters:
+    protocol: ospf
+Verify_IpRoute_vrf_default:
+  devices: ['uut']
+  exclude:
+  - updated
+Verify_IpStaticRoute_vrf_default:
+  devices: ['uut']
+Verify_Ipv6Interface:
+  devices: ['uut']
+  exclude: []
+  iteration:
+    attempt: 5
+    interval: 10
+Verify_Ipv6MldGroupsDetail:
+  devices: ['uut']
+  exclude: []
+Verify_Ipv6MldInterface_vrf_default:
+  devices: ['uut']
+  exclude: []
+Verify_Ipv6Mroute:
+  devices: ['uut']
+  exclude: []
+  iteration:
+    attempt: 5
+    interval: 10
+Verify_Ipv6PimBsrCandidateRp:
+  devices: ['uut']
+  exclude: []
+Verify_Ipv6PimBsrElection:
+  devices: ['uut']
+  exclude: []
+Verify_Ipv6PimInterface:
+  devices: ['uut']
+  exclude: []
+Verify_Ipv6PimNeighborDetail:
+  devices: ['uut']
+  exclude: []
+Verify_Ipv6PimNeighbor_vrf_default:
+  devices: ['uut']
+  exclude: []
+Verify_Ipv6PrefixListDetail:
+  devices: ['uut']
+Verify_Ipv6RouteUpdated:
+  devices: ['uut']
+  exclude: []
+Verify_Ipv6Route_protocol_bgp:
+  devices: ['uut']
+  exclude: []
+  parameters:
+    protocol: bgp
+Verify_Ipv6Route_protocol_ospf:
+  devices: ['uut']
+  exclude: []
+  parameters:
+    protocol: ospf
+Verify_Ipv6StaticDetail:
+  devices: ['uut']
+Verify_IssuRollbackTimer:
+  devices: ['uut']
+Verify_IssuStateDetail:
+  devices: ['uut']
+Verify_LacpCounters:
+  devices: ['uut']
+Verify_LacpInternal:
+  devices: ['uut']
+Verify_LacpNeighbor:
+  devices: ['uut']
+Verify_LacpSysId:
+  devices: ['uut']
+Verify_LispDynamicEidDetail_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+  groups:
+  - lisp
+Verify_LispPlatform:
+  devices: ['uut']
+  groups:
+  - lisp
+Verify_LispServiceDatabase_service_ethernet_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ethernet
+  groups:
+  - lisp
+Verify_LispServiceDatabase_service_ipv4_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ipv4
+  groups:
+  - lisp
+Verify_LispServiceDatabase_service_ipv6_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ipv6
+  groups:
+  - lisp
+Verify_LispServiceMapCache_service_ethernet_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ethernet
+  exclude: []
+  groups:
+  - lisp
+Verify_LispServiceMapCache_service_ipv4_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ipv4
+  exclude: []
+  groups:
+  - lisp
+Verify_LispServiceMapCache_service_ipv6_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ipv6
+  exclude: []
+  groups:
+  - lisp
+Verify_LispServiceRlocMembers_service_ethernet_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ethernet
+  groups:
+  - lisp
+Verify_LispServiceRlocMembers_service_ipv4_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ipv4
+  groups:
+  - lisp
+Verify_LispServiceRlocMembers_service_ipv6_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ipv6
+  groups:
+  - lisp
+Verify_LispServiceServerDetailInternal_service_ethernet_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ethernet
+  groups:
+  - lisp
+Verify_LispServiceServerDetailInternal_service_ipv4_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ipv4
+  groups:
+  - lisp
+Verify_LispServiceServerDetailInternal_service_ipv6_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ipv6
+  groups:
+  - lisp
+Verify_LispServiceServerSummary_service_ethernet_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ethernet
+  groups:
+  - lisp
+Verify_LispServiceServerSummary_service_ipv4_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ipv4
+  groups:
+  - lisp
+Verify_LispServiceServerSummary_service_ipv6_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ipv6
+  groups:
+  - lisp
+Verify_LispServiceSmr_service_ethernet_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ethernet
+  groups:
+  - lisp
+Verify_LispServiceSmr_service_ipv4_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ipv4
+  groups:
+  - lisp
+Verify_LispServiceSmr_service_ipv6_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ipv6
+  groups:
+  - lisp
+Verify_LispServiceStatistics_service_ethernet_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ethernet
+  exclude: []
+  groups:
+  - lisp
+Verify_LispServiceStatistics_service_ipv4_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ipv4
+  exclude: []
+  groups:
+  - lisp
+Verify_LispServiceStatistics_service_ipv6_instance_id_*:
+  devices: ['uut']
+  parameters:
+    instance_id: '*'
+    service: ipv6
+  exclude: []
+  groups:
+  - lisp
+Verify_LispServiceSummary_service_ethernet:
+  devices: ['uut']
+  parameters:
+    service: ethernet
+  groups:
+  - lisp
+Verify_LispServiceSummary_service_ipv4:
+  devices: ['uut']
+  parameters:
+    service: ipv4
+  groups:
+  - lisp
+Verify_LispServiceSummary_service_ipv6:
+  devices: ['uut']
+  parameters:
+    service: ipv6
+  groups:
+  - lisp
+Verify_LispService_service_ethernet:
+  devices: ['uut']
+  parameters:
+    service: ethernet
+  groups:
+  - lisp
+Verify_LispService_service_ipv4:
+  devices: ['uut']
+  parameters:
+    service: ipv4
+  groups:
+  - lisp
+Verify_LispService_service_ipv6:
+  devices: ['uut']
+  parameters:
+    service: ipv6
+  groups:
+  - lisp
+Verify_LispSession:
+  devices: ['uut']
+  exclude: []
+  groups:
+  - lisp
+Verify_Lldp:
+  devices: ['uut']
+  exclude: []
+Verify_LldpEntry:
+  devices: ['uut']
+  exclude: []
+Verify_LldpInterface:
+  devices: ['uut']
+  exclude: []
+Verify_LldpNeighborsDetail:
+  devices: ['uut']
+  exclude: []
+Verify_LldpTraffic:
+  devices: ['uut']
+  exclude: []
+Verify_MacAddressTable:
+  devices: ['uut']
+Verify_MacAddressTableAgingTime:
+  devices: ['uut']
+Verify_MacAddressTableLearning:
+  devices: ['uut']
+Verify_MemoryStatistics:
+  devices: ['uut']
+  exclude: []
+Verify_Module:
+  devices: ['uut']
+  exclude: []
+Verify_PagpCounters:
+  devices: ['uut']
+Verify_PagpInternal:
+  devices: ['uut']
+Verify_PagpNeighbor:
+  devices: ['uut']
+Verify_Platform:
+  devices: ['uut']
+  exclude: []
+Verify_PlatformSoftwareSlotActiveMonitorMem:
+  devices: ['uut']
+  exclude: []
+Verify_PlatformSoftwareStatusControl:
+  devices: ['uut']
+  exclude: []
+  iteration:
+    attempt: 6
+    interval: 10
+Verify_Redundancy:
+  devices: ['uut']
+  exclude: []
+Verify_RouteMapAll:
+  devices: ['uut']
+  exclude: []
+Verify_SpanningTree:
+  devices: ['uut']
+  exclude: []
+Verify_SpanningTreeDetail:
+  devices: ['uut']
+  exclude: []
+Verify_SpanningTreeMstConfiguration:
+  devices: ['uut']
+  exclude: []
+Verify_SpanningTreeMstDetail:
+  devices: ['uut']
+  exclude: []
+Verify_SpanningTreeSummary:
+  devices: ['uut']
+  exclude: []
+Verify_StackPower:
+  devices: ['uut']
+  exclude: []
+Verify_StandbyAll:
+  devices: ['uut']
+  exclude: []
+  iteration:
+    attempt: 6
+    interval: 10
+Verify_StandbyAll_yang:
+  exclude: []
+Verify_StandbyDelay:
+  devices: ['uut']
+  exclude: []
+Verify_StandbyInternal:
+  devices: ['uut']
+  exclude: []
+Verify_Switch:
+  devices: ['uut']
+Verify_SwitchDetail:
+  devices: ['uut']
+  exclude: []
+Verify_Version:
+  devices: ['uut']
+  exclude: []
+Verify_Vlan:
+  devices: ['uut']
+  exclude: []
+Verify_VlanAccessMap:
+  devices: ['uut']
+  exclude: []
+Verify_VlanFilter:
+  devices: ['uut']
+  exclude: []
+Verify_VlanMtu:
+  devices: ['uut']
+  exclude: []
+Verify_VlanRemoteSpan:
+  devices: ['uut']
+  exclude: []
+Verify_VrfDetail:
+  devices: ['uut']
+  exclude: []
+Verify_VtpStatus:
+  devices: ['uut']
+  exclude: []
+extends: '%ENV{VIRTUAL_ENV}/genie_yamls/verification_datafile.yaml'

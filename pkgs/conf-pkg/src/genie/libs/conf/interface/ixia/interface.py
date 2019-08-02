@@ -167,9 +167,9 @@ class PhysicalInterface(Interface,
                 pass  # handled later
             if intf_mode is cls.InterfaceMode.ethernet:
                 factory_cls = EthernetInterface
-            elif self.intf_mode is cls.InterfaceMode.atm:
+            elif intf_mode is cls.InterfaceMode.atm:
                 factory_cls = AtmInterface
-            elif self.intf_mode in (
+            elif intf_mode in (
                 cls.InterfaceMode.pos_hdlc,
                 cls.InterfaceMode.fr,
                 cls.InterfaceMode.pos_ppp,

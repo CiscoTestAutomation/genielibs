@@ -179,7 +179,7 @@ class Ldp(ABC):
                 else:
                     if attributes.value('password_for_acl'):
                         configurations.append_line(attributes.format('mpls ldp vrf {vrf_name} password option 1 for {password_for_acl} '\
-                                                                'password {password}',force=Ture))
+                                                                'password {password}',force=True))
 
                 # TODO : supporting encrypted password
                 for neighbor, neighbor_attributes in attributes.mapping_values('neighbor_attr', keys=self.neighbors, sort=True):

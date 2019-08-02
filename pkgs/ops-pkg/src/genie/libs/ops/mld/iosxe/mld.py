@@ -4,13 +4,9 @@ MLD Genie Ops Object for IOSXE - CLI.
 # super class
 from genie.libs.ops.mld.mld import Mld as SuperMld
 
-# Parser
-from genie.libs.parser.iosxe.show_mld import ShowIpv6MldInterface, \
-                                  ShowIpv6MldGroupsDetail, \
-                                  ShowIpv6MldSsmMap
-
 # iosxe show_vrf
 from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
+
 
 class Mld(SuperMld):
     '''MLD Genie Ops Object'''
@@ -55,7 +51,7 @@ class Mld(SuperMld):
             ########################################################################
 
             # max_groups
-            self.add_leaf(cmd=ShowIpv6MldInterface,
+            self.add_leaf(cmd='show ipv6 mld interface',
                           src='[vrf][(?P<vrf>.*)][max_groups]',
                           dest='info[vrfs][(?P<vrf>.*)][max_groups]',
                           vrf=vrf_name)
@@ -77,7 +73,7 @@ class Mld(SuperMld):
                         '[query_max_response_time]', '[oper_status]',
                         '[querier]', '[version]']
             for key in req_keys:
-                self.add_leaf(cmd=ShowIpv6MldInterface,
+                self.add_leaf(cmd='show ipv6 mld interface',
                               src=src + '[{}]'.format(key),
                               dest=dest + '[{}]'.format(key),
                               vrf=vrf_name)
@@ -99,7 +95,7 @@ class Mld(SuperMld):
                         '[group][(?P<group>.*)][source][(?P<source>.*)][up_time]',
                         '[group][(?P<group>.*)][source][(?P<source>.*)][expire]']
             for key in req_keys:
-                self.add_leaf(cmd=ShowIpv6MldGroupsDetail,
+                self.add_leaf(cmd='show ipv6 mld groups detail',
                               src=src + '[{}]'.format(key),
                               dest=dest + '[{}]'.format(key),
                               vrf=vrf_name)
@@ -125,7 +121,7 @@ class Mld(SuperMld):
                     req_keys = ['[ssm_map][(?P<ssm_map>.*)][source_addr]',
                                 '[ssm_map][(?P<ssm_map>.*)][group_address]']
                     for key in req_keys:
-                        self.add_leaf(cmd=ShowIpv6MldSsmMap,
+                        self.add_leaf(cmd='show ipv6 mld vrf {vrf} ssm-map {group}'.format(vrf=vrf, group=group),
                                       src=src + '[{}]'.format(key),
                                       dest=dest + '[{}]'.format(key),
                                       group=group, vrf=vrf_name)

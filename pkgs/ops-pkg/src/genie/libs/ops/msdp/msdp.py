@@ -6,4 +6,8 @@ class Msdp(Base):
     exclude = ['statistics',
                'elapsed_time',
                'up_time',
-               'expire']
+               'expire',
+               'sa_message',
+               'last_message_received',
+               'total',
+               'keepalive']

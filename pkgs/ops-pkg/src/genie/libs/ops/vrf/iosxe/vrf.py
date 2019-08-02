@@ -6,9 +6,6 @@ Vrf Genie Ops Object for IOSXE - CLI.
 from genie.ops.base import Base
 from genie.ops.base import Context
 
-# iosxe show_vrf
-from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
-
 
 class Vrf(Base):
     '''Vrf Genie Ops Object'''
@@ -28,12 +25,12 @@ class Vrf(Base):
                 '[routing_table_limit][routing_table_limit_number]',
                 '[routing_table_limit][enable_simple_alert]']
         # route_distinguisher
-        self.add_leaf(cmd=ShowVrfDetail,
+        self.add_leaf(cmd='show vrf detail',
                       src='[(?P<vrf>.*)][route_distinguisher]',
                       dest='info[vrfs][(?P<vrf>.*)][route_distinguisher]',
                       vrf=vrf)
         for key in keys:
-            self.add_leaf(cmd=ShowVrfDetail,
+            self.add_leaf(cmd='show vrf detail',
                           src=src + '{key}'.format(key=key),
                           dest=dest + '{key}'.format(key=key), vrf=vrf)
 

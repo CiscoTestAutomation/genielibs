@@ -24,4 +24,6 @@ class HA(HA_main):
                                 loop_continue=True,
                                 continue_timer=False)
         ])
-        self.device.execute('redundancy force-switchover', reply=dialog)
+        out = self.device.execute('redundancy force-switchover', reply=dialog)
+        if 'Switchover aborted' in out:
+            raise NotImplementedError

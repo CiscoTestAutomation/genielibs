@@ -80,8 +80,8 @@ class test_interface(unittest.TestCase):
         intf = Interface(device=self.device)
         # Get outputs
         intf.maker.outputs[ShowInterfacesDetail] = {"{'interface':''}": ''}
-        intf.maker.outputs[ShowIpv4VrfAllInterface] = {"{'vrf':'','interface':''}": ''}
-        intf.maker.outputs[ShowIpv6VrfAllInterface] = {"{'vrf':'','interface':''}": ''}
+        intf.maker.outputs[ShowIpv4VrfAllInterface] = {"{'vrf':None,'interface':''}": ''}
+        intf.maker.outputs[ShowIpv6VrfAllInterface] = {"{'vrf':None,'interface':''}": ''}
         intf.maker.outputs[ShowVrfAllDetail] = {"{'vrf':''}": ''}
         intf.maker.outputs[ShowEthernetTags] = {"{'interface':''}": ''}
         intf.maker.outputs[ShowInterfacesAccounting] = {"{'interface':''}": ''}

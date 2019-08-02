@@ -464,9 +464,9 @@ class RoutePolicyCondition(object):
             a = a.communities
         sb = str(vb)
         return any(
-            fnmatch.fnmatchcase(sb, va)
-            if isinstance(va, str)
-            else vb == va)
+            fnmatch.fnmatchcase(sb, a)
+            if isinstance(a , str)
+            else vb == a)
 
     op = managedattribute(
         name='op',

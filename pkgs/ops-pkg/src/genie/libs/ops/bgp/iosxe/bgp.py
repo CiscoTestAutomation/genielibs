@@ -8,17 +8,22 @@ import re
 # Super class
 from genie.libs.ops.bgp.bgp import Bgp as SuperBgp
 # iosxe show_bgp
-from genie.libs.parser.iosxe.show_bgp import ShowBgpAllSummary, ShowBgpAllClusterIds, \
+from genie.libs.parser.iosxe.show_bgp import ShowBgpAllSummary, \
+                                  ShowBgpAllClusterIds, \
                                   ShowBgpAllNeighborsAdvertisedRoutes, \
                                   ShowBgpAllNeighborsReceivedRoutes, \
                                   ShowBgpAllNeighborsRoutes, \
+                                  ShowBgpNeighborsAdvertisedRoutes, \
+                                  ShowBgpNeighborsReceivedRoutes, \
+                                  ShowBgpNeighborsRoutes, \
                                   ShowIpBgpTemplatePeerPolicy, \
                                   ShowBgpAllNeighbors, \
+                                  ShowBgpNeighbors,\
                                   ShowIpBgpAllDampeningParameters, \
                                   ShowIpBgpTemplatePeerSession, \
                                   ShowBgpAllNeighborsPolicy, \
                                   ShowBgpAllDetail, \
-                                  ShowBgpAll
+                                  ShowBgpAll \
 
 
 class Bgp(SuperBgp):
@@ -35,9 +40,19 @@ class Bgp(SuperBgp):
             item = m.groupdict()['afname']
         return item
 
-    def learn(self):
+    def learn(self, vrf='', address_family='', neighbor=''):
         '''Learn BGP Ops'''
-        
+
+        # if user input address family with RD, trim the rd,
+        # otherwise some command will fail to execute
+        af_regex=re.compile(r'(?P<af>[\w\s]+) +RD +[:\d]+')
+        m = af_regex.match(address_family)
+        if m:
+            af = m.groupdict()['af']
+        else:
+            af = address_family
+
+        restricted = {'ipv4 unicast', 'ipv6 unicast'}
         ########################################################################
         #                               info
         ########################################################################
@@ -46,9 +61,21 @@ class Bgp(SuperBgp):
         self.callables = {'get_af_name': self.get_af_name}
 
         # bgp_id
+        if af in restricted:
+            bgp_nbr_class = ShowBgpNeighbors
+            bgp_adv_route_class = ShowBgpNeighborsAdvertisedRoutes
+            bgp_rec_rout_class = ShowBgpNeighborsReceivedRoutes
+            bgp_route_class = ShowBgpNeighborsRoutes
+        else:
+            bgp_nbr_class = ShowBgpAllNeighbors
+            bgp_adv_route_class = ShowBgpAllNeighborsAdvertisedRoutes
+            bgp_rec_rout_class = ShowBgpAllNeighborsReceivedRoutes
+            bgp_route_class = ShowBgpAllNeighborsRoutes
         self.add_leaf(cmd=ShowBgpAllSummary,
                       src='[bgp_id]',
-                      dest='info[instance][default][bgp_id]')
+                      dest='info[instance][default][bgp_id]',
+                      vrf=vrf,
+                      address_family=af)
 
         # protocol_state - N/A
 
@@ -111,8 +138,13 @@ class Bgp(SuperBgp):
         # ======================================================================
         
         #   vrf_id
-        vrf_src = '[vrf][(?P<vrf>.*)]'
-        vrf_dest = 'info[instance][default][vrf][(?P<vrf>.*)]'
+
+        if vrf:
+            vrf_src = '[vrf][{vrf}]'.format(vrf=vrf)
+            vrf_dest = 'info[instance][default][vrf][{vrf}]'.format(vrf=vrf)
+        else:
+            vrf_src = '[vrf][(?P<vrf>.*)]'
+            vrf_dest = 'info[instance][default][vrf][(?P<vrf>.*)]'
 
         # always_compare_med - N/A
         # bestpath_compare_routerid - N/A
@@ -161,7 +193,6 @@ class Bgp(SuperBgp):
             'dampening_max_suppress_time']
 
         for key in vrf_add_keys:
-
             self.add_leaf(cmd=ShowIpBgpAllDampeningParameters,
                       src='{vrf_add_src}[{key}]'.format(
                         vrf_add_src=vrf_add_src, key=key),
@@ -215,21 +246,36 @@ class Bgp(SuperBgp):
         # ======================================================================
 
         # neighbor_id
-        nbr_src = '[vrf][(?P<vrf>.*)][neighbor][(?P<neighbor_id>.*)]'
-        nbr_dest = 'info[instance][default][vrf][(?P<vrf>.*)][neighbor]'\
-                   '[(?P<neighbor_id>.*)]'
+        if vrf:
+            if neighbor:
+                nbr_src = '[vrf][{vrf}][neighbor][{neighbor}]'.format(vrf=vrf, neighbor=neighbor)
+                nbr_dest = 'info[instance][default][vrf][{vrf}][neighbor]' \
+                           '[{neighbor}]'.format(vrf=vrf, neighbor=neighbor)
+            else:
+                nbr_src = '[vrf][{vrf}][neighbor][(?P<neighbor_id>.*)]'.format(vrf=vrf)
+                nbr_dest = 'info[instance][default][vrf][{vrf}][neighbor]'\
+                           '[(?P<neighbor_id>.*)]'.format(vrf=vrf)
+        else:
+            if neighbor:
+                nbr_src = '[vrf][(?P<vrf>.*)][neighbor][{neighbor}]'.format(neighbor=neighbor)
+                nbr_dest = 'info[instance][default][vrf][(?P<vrf>.*)][neighbor]' \
+                           '[{neighbor}]'.format(neighbor=neighbor)
+            else:
+                nbr_src = '[vrf][(?P<vrf>.*)][neighbor][(?P<neighbor_id>.*)]'
+                nbr_dest = 'info[instance][default][vrf][(?P<vrf>.*)][neighbor]'\
+                           '[(?P<neighbor_id>.*)]'
 
         neighbor_keys = ['description', 'remote_as',\
             'shutdown', 'bgp_version',\
             'session_state']
-
         for key in neighbor_keys:
-
-            self.add_leaf(cmd=ShowBgpAllNeighbors,
-                      src='{nbr_src}[{key}]'.format(nbr_src=nbr_src,
-                                                   key=key),
-                      dest='{nbr_dest}[{key}]'.format(nbr_dest=nbr_dest,
-                                                     key=key))
+            self.add_leaf(cmd=bgp_nbr_class,
+                          src='{nbr_src}[{key}]'.format(nbr_src=nbr_src,
+                                                        key=key),
+                          dest='{nbr_dest}[{key}]'.format(nbr_dest=nbr_dest,
+                                                          key=key),
+                          address_family=af,
+                          neighbor=neighbor)
         # fall_over_bfd - N/A
         # suppress_four_byte_as_capability - N/A
         # disable_connected_check - N/A
@@ -245,27 +291,32 @@ class Bgp(SuperBgp):
 
         # bgp_negotiated_keepalive_timers
         #   keepalive_interval
-        self.add_leaf(cmd=ShowBgpAllNeighbors,
+        self.add_leaf(cmd=bgp_nbr_class,
                       src=nbr_src+'[bgp_negotiated_keepalive_timers]'
                                   '[keepalive_interval]',
                       dest=nbr_dest+'[bgp_negotiated_keepalive_timers]'
-                                    '[keepalive_interval]')
+                                    '[keepalive_interval]',
+                      address_family=af,
+                      neighbor=neighbor)
 
         # bgp_negotiated_keepalive_timers
         #   hold_time
-        self.add_leaf(cmd=ShowBgpAllNeighbors,
+        self.add_leaf(cmd=bgp_nbr_class,
                       src=nbr_src+'[bgp_negotiated_keepalive_timers]'
                                   '[hold_time]',
                       dest=nbr_dest+'[bgp_negotiated_keepalive_timers]'
-                                    '[hold_time]')
+                                    '[hold_time]',
+                      address_family=af,
+                      neighbor=neighbor)
 
         # bgp_session_transport
         #   connection
         #     state
-        self.add_leaf(cmd=ShowBgpAllNeighbors,
-                      src=nbr_src+'[session_state]',
-                      dest=nbr_dest+'[bgp_session_transport][connection]'
-                                    '[state]')
+        self.add_leaf(cmd=bgp_nbr_class,
+                      src=nbr_src + '[session_state]',
+                      dest=nbr_dest + '[bgp_session_transport][connection][state]',
+                      address_family=af,
+                      neighbor=neighbor)
 
         # bgp_session_transport
         #   connection
@@ -274,65 +325,79 @@ class Bgp(SuperBgp):
         # bgp_session_transport
         #   connection
         #     last_reset
-        self.add_leaf(cmd=ShowBgpAllNeighbors,
+        self.add_leaf(cmd=bgp_nbr_class,
                       src=nbr_src+'[bgp_session_transport][connection]'
                                   '[last_reset]',
                       dest=nbr_dest+'[bgp_session_transport][connection]'
-                                    '[last_reset]')
+                                    '[last_reset]',
+                      address_family=af,
+                      neighbor=neighbor)
 
         # bgp_session_transport
         #   connection
         #     reset_reason
-        self.add_leaf(cmd=ShowBgpAllNeighbors,
+        self.add_leaf(cmd=bgp_nbr_class,
                       src=nbr_src+'[bgp_session_transport][connection]'
                                   '[reset_reason]',
                       dest=nbr_dest+'[bgp_session_transport][connection]'
-                                    '[reset_reason]')
+                                '[reset_reason]',
+                      address_family=af,
+                      neighbor=neighbor)
         
         # bgp_session_transport
         #   transport
         #     local_port
-        self.add_leaf(cmd=ShowBgpAllNeighbors,
+        self.add_leaf(cmd=bgp_nbr_class,
                       src=nbr_src+'[bgp_session_transport][transport]'
                                   '[local_port]',
                       dest=nbr_dest+'[bgp_session_transport][transport]'
-                                    '[local_port]')
+                                    '[local_port]',
+                      address_family=af,
+                      neighbor=neighbor)
 
         # bgp_session_transport
         #   transport
         #     local_host
-        self.add_leaf(cmd=ShowBgpAllNeighbors,
+        self.add_leaf(cmd=bgp_nbr_class,
                       src=nbr_src+'[bgp_session_transport][transport]'
                                   '[local_host]',
                       dest=nbr_dest+'[bgp_session_transport][transport]'
-                                    '[local_host]')
+                                    '[local_host]',
+                      address_family=af,
+                      neighbor=neighbor)
 
         # bgp_session_transport
         #   transport
         #     foreign_port
-        self.add_leaf(cmd=ShowBgpAllNeighbors,
+        self.add_leaf(cmd=bgp_nbr_class,
                       src=nbr_src+'[bgp_session_transport][transport]'
                                   '[foreign_port]',
                       dest=nbr_dest+'[bgp_session_transport][transport]'
-                                    '[foreign_port]')
+                                    '[foreign_port]',
+                      address_family=af,
+                      neighbor=neighbor)
 
         # bgp_session_transport
         #   transport
         #     foreign_host
-        self.add_leaf(cmd=ShowBgpAllNeighbors,
+        self.add_leaf(cmd=bgp_nbr_class,
                       src=nbr_src+'[bgp_session_transport][transport]'
                                   '[foreign_host]',
                       dest=nbr_dest+'[bgp_session_transport][transport]'
-                                    '[foreign_host]')
+                                    '[foreign_host]',
+                      address_family=af,
+                      neighbor=neighbor)
         
         # bgp_session_transport
         #   transport
         #     mss
-        self.add_leaf(cmd=ShowBgpAllNeighbors,
+        self.add_leaf(cmd=bgp_nbr_class,
                       src=nbr_src+'[bgp_session_transport][transport]'
                                   '[mss]',
                       dest=nbr_dest+'[bgp_session_transport][transport]'
-                                    '[mss]')
+                                    '[mss]',
+                      address_family=af,
+                      neighbor=neighbor)
 
         # minimum_neighbor_hold - N/A
         # up_time - N/A
@@ -349,12 +414,13 @@ class Bgp(SuperBgp):
             'stateful_switchover']
 
         for key in capabilities_keys:
-
-            self.add_leaf(cmd=ShowBgpAllNeighbors,
-                      src='{capabilities_src}[{key}]'.format(
-                        capabilities_src=capabilities_src, key=key),
-                      dest='{capabilities_dest}[{key}]'.format(
-                        capabilities_dest=capabilities_dest, key=key))
+            self.add_leaf(cmd=bgp_nbr_class,
+                          src='{capabilities_src}[{key}]'.format(
+                              capabilities_src=capabilities_src, key=key),
+                          dest='{capabilities_dest}[{key}]'.format(
+                              capabilities_dest=capabilities_dest, key=key),
+                          address_family=af,
+                          neighbor=neighbor)
 
         # bgp_neighbor_counters_messages
         counters_src = nbr_src+'[bgp_neighbor_counters][messages]'
@@ -365,17 +431,21 @@ class Bgp(SuperBgp):
 
         for key in counters_keys:
 
-            self.add_leaf(cmd=ShowBgpAllNeighbors,
+            self.add_leaf(cmd=bgp_nbr_class,
                       src='{counters_src}[sent][{key}]'.format(
                         counters_src=counters_src, key=key),
                       dest='{counters_dest}[sent][{key}]'.format(
-                        counters_dest=counters_dest, key=key))
+                        counters_dest=counters_dest, key=key),
+                          address_family=af,
+                          neighbor=neighbor)
 
-            self.add_leaf(cmd=ShowBgpAllNeighbors,
+            self.add_leaf(cmd=bgp_nbr_class,
                       src='{counters_src}[received][{key}]'.format(
                         counters_src=counters_src, key=key),
                       dest='{counters_dest}[received][{key}]'.format(
-                        counters_dest=counters_dest, key=key))
+                        counters_dest=counters_dest, key=key),
+                          address_family=af,
+                          neighbor=neighbor)
 
         # ==============================================================
         #                  vrf: neighbor - address_family
@@ -394,14 +464,15 @@ class Bgp(SuperBgp):
             'prefixes', 'path', 'total_memory', 'session_state']
 
         for key in nbr_af_keys:
-
             # address_family
             #   nbr_af_name
             self.add_leaf(cmd=ShowBgpAllSummary,
-                      src='{final_src}[{key}]'.format(
-                        final_src=final_src, key=key),
-                      dest='{final_dest}[{key}]'.format(
-                        final_dest=final_dest, key=key))
+                          src='{final_src}[{key}]'.format(
+                              final_src=final_src, key=key),
+                          dest='{final_dest}[{key}]'.format(
+                              final_dest=final_dest, key=key),
+                          address_family=af,
+                          vrf=vrf)
 
         # allowas_in - N/A
         # allowas_in_as_number - N/A
@@ -417,41 +488,71 @@ class Bgp(SuperBgp):
         # Get neighbors for input to:
         #  * 'show bgp all neighbors <neighbor> policy'
         #  * 'show bgp all neighbors <WORD> received-routes'
-        self.add_leaf(cmd=ShowBgpAllNeighbors,
+
+        self.add_leaf(cmd=bgp_nbr_class,
                       src='[list_of_neighbors]',
-                      dest='info[list_of_neighbors]')
+                      dest='info[list_of_neighbors]',
+                      address_family=af,
+                      neighbor=neighbor)
 
         self.make()
 
         if hasattr (self, 'info') and\
            'list_of_neighbors' in self.info:
 
-            for neighbor in sorted(self.info['list_of_neighbors']):
+            for nbr in sorted(self.info['list_of_neighbors']):
 
-                # address_family
-                #   nbr_af_name
-                #     route_map_name_in
-                self.add_leaf(cmd=ShowBgpAllNeighborsPolicy,
-                              src='[vrf][(?P<vrf>.*)][neighbor]'
-                                  '[{neighbor}]'.format(neighbor=neighbor)+
-                                  nbr_af_src+'[nbr_af_route_map_name_in]',
-                              dest='info[instance][default][vrf][(?P<vrf>.*)]'
-                                   '[neighbor][{neighbor}]'.format(
-                                    neighbor=neighbor)+nbr_af_dest+
-                                   '[route_map_name_in]',
-                              neighbor=neighbor)
+                if vrf:
+                    # address_family
+                    #   nbr_af_name
+                    #     route_map_name_in
+                    self.add_leaf(cmd=ShowBgpAllNeighborsPolicy,
+                                  src='[vrf][{vrf}][neighbor]'
+                                      '[{neighbor}]'.format(neighbor=nbr, vrf=vrf) +
+                                      nbr_af_src + '[nbr_af_route_map_name_in]',
+                                  dest='info[instance][default][vrf][{vrf}]'
+                                       '[neighbor][{neighbor}]'.format(
+                                      neighbor=nbr, vrf=vrf) + nbr_af_dest +
+                                       '[route_map_name_in]',
+                                  neighbor=nbr)
 
-                # address_family
-                #   nbr_af_name
-                #     route_map_name_out
-                self.add_leaf(cmd=ShowBgpAllNeighborsPolicy,
-                              src='[vrf][(?P<vrf>.*)][neighbor][{neighbor}]'.\
-                              format(neighbor=neighbor)+nbr_af_src+
-                              '[nbr_af_route_map_name_out]',
-                              dest='info[instance][default][vrf][(?P<vrf>.*)]'
-                                   '[neighbor][{neighbor}]'.format(neighbor=\
-                                    neighbor)+nbr_af_dest+'[route_map_name_out]',
-                              neighbor=neighbor)
+                    # address_family
+                    #   nbr_af_name
+                    #     route_map_name_out
+                    self.add_leaf(cmd=ShowBgpAllNeighborsPolicy,
+                                  src='[vrf][{vrf}][neighbor][{neighbor}]'. \
+                                  format(neighbor=nbr, vrf=vrf) + nbr_af_src +
+                                      '[nbr_af_route_map_name_out]',
+                                  dest='info[instance][default][vrf][{vrf}]'
+                                       '[neighbor][{neighbor}]'.format(neighbor=nbr,
+                                                                       vrf=vrf) +
+                                       nbr_af_dest + '[route_map_name_out]',
+                                  neighbor=nbr)
+                else:
+                    # address_family
+                    #   nbr_af_name
+                    #     route_map_name_in
+                    self.add_leaf(cmd=ShowBgpAllNeighborsPolicy,
+                                  src='[vrf][(?P<vrf>.*)][neighbor]'
+                                      '[{neighbor}]'.format(neighbor=nbr)+
+                                      nbr_af_src+'[nbr_af_route_map_name_in]',
+                                  dest='info[instance][default][vrf][(?P<vrf>.*)]'
+                                       '[neighbor][{neighbor}]'.format(
+                                        neighbor=nbr)+nbr_af_dest+
+                                       '[route_map_name_in]',
+                                  neighbor=nbr)
+
+                    # address_family
+                    #   nbr_af_name
+                    #     route_map_name_out
+                    self.add_leaf(cmd=ShowBgpAllNeighborsPolicy,
+                                  src='[vrf][(?P<vrf>.*)][neighbor][{neighbor}]'.\
+                                  format(neighbor=nbr)+nbr_af_src+
+                                  '[nbr_af_route_map_name_out]',
+                                  dest='info[instance][default][vrf][(?P<vrf>.*)]'
+                                       '[neighbor][{neighbor}]'.format(neighbor=\
+                                        nbr)+nbr_af_dest+'[route_map_name_out]',
+                                  neighbor=nbr)
 
             # clear list of neighbors
             del self.info['list_of_neighbors']
@@ -478,43 +579,73 @@ class Bgp(SuperBgp):
         #   vrf_id
         #     address_family
         #       af_name
-        table_src = '[vrf][(?P<vrf_name>.*)][address_family]'\
-                    '[(?P<address_family>.*)]'
+        if vrf:
+            table_src = '[vrf][{vrf}][address_family]' \
+                        '[(?P<address_family>.*)]'.format(vrf=vrf)
+        else:
+            table_src = '[vrf][(?P<vrf_name>.*)][address_family][(?P<address_family>.*)]'
+
         table_dest = 'table[instance][default]'+ table_src
 
         table_keys = ['route_identifier', 'bgp_table_version',\
             'route_distinguisher', 'default_vrf']
 
         for key in table_keys:
-
             self.add_leaf(cmd=ShowBgpAll,
                       src='{table_src}[{key}]'.format(
                         table_src=table_src, key=key),
                       dest='{table_dest}[{key}]'.format(
-                        table_dest=table_dest, key=key))
+                        table_dest=table_dest, key=key),
+                          address_family=af)
+
+
+
+
+
 
         # Building prefix section
-        # paths
-        self.add_leaf(cmd=ShowBgpAllDetail,
-                      src='[instance][default][vrf][(?P<vrf_name>.*)]'\
-                          '[address_family][(?P<address_family>.*)][prefixes]'\
-                          '[(?P<prefix>.*)][paths]',
-                      dest=table_dest+'[paths]')
+        if vrf:
+            if address_family:
+                prefix_src = '[instance][default][vrf][{vrf}][address_family][{address_family}][prefixes][(?P<prefix>.*)]'.format(
+                    address_family=address_family, vrf=vrf)
 
+                prefix_dest = 'table[instance][default][vrf][{vrf}][address_family][{address_family}]'.format(
+                    address_family=address_family, vrf=vrf)
+
+            else:
+                prefix_src = '[instance][default][vrf][{vrf}]' \
+                            '[address_family][(?P<address_family>.*)][prefixes]' \
+                            '[(?P<prefix>.*)]'.format(vrf=vrf)
+                prefix_dest = 'table[instance][default][vrf][{vrf}][address_family]' \
+                             '[(?P<address_family>.*)]'.format(vrf=vrf)
+
+        else:
+            if address_family:
+                prefix_src = '[instance][default][vrf][(?P<vrf_name>.*)]' \
+                            '[address_family][{address_family}][prefixes]' \
+                            '[(?P<prefix>.*)]'.format(address_family=address_family)
+                prefix_dest = 'table[instance][default][vrf][(?P<vrf_name>.*)][' \
+                              'address_family][{address_family}]'.format(
+                    address_family=address_family)
+
+            else:
+                prefix_src = '[instance][default][vrf][(?P<vrf_name>.*)]'\
+                            '[address_family][(?P<address_family>.*)][prefixes]'\
+                            '[(?P<prefix>.*)]'
+                prefix_dest = 'table[instance][default][vrf][(?P<vrf_name>.*)][address_family]' \
+                             '[(?P<address_family>.*)]'
+        # path
+        self.add_leaf(cmd=ShowBgpAllDetail,
+                      src=prefix_src + '[paths]',
+                      dest=prefix_dest + '[prefixes][(?P<prefix>.*)][paths]', vrf=vrf,
+                      address_family=af)
         # table_version
         self.add_leaf(cmd=ShowBgpAllDetail,
-                      src='[instance][default][vrf][(?P<vrf_name>.*)]'\
-                          '[address_family][(?P<address_family>.*)][prefixes]'\
-                          '[(?P<prefix>.*)][table_version]',
-                      dest=table_dest+'[prefixes][(?P<prefix>.*)][table_version]')
+                      src=prefix_src + '[table_version]',
+                      dest=prefix_dest + '[prefixes][(?P<prefix>.*)][table_version]',
+                      vrf=vrf, address_family=af)
 
-        # Building index section
-        index_src = '[instance][default][vrf][(?P<vrf_name>.*)]'\
-                    '[address_family][(?P<address_family>.*)][prefixes]'\
-                    '[(?P<prefix>.*)][index][(?P<index>.*)]'
-
-        index_dest = table_dest+'[prefixes][(?P<prefix>.*)][index]'\
-            '[(?P<index>.*)]'
+        # index_dest = table_dest+'[prefixes][(?P<prefix>.*)][index][(?P<index>.*)]'
 
         index_keys = ['next_hop', 'next_hop_igp_metric', 'gateway',\
             'update_group', 'status_codes', 'origin_codes', 'metric',\
@@ -523,10 +654,9 @@ class Bgp(SuperBgp):
         for key in index_keys:
 
             self.add_leaf(cmd=ShowBgpAllDetail,
-                      src='{index_src}[{key}]'.format(
-                        index_src=index_src, key=key),
-                      dest='{index_dest}[{key}]'.format(
-                        index_dest=index_dest, key=key))
+                      src=prefix_src + '[index][(?P<index>.*)][{key}]'.format(key=key),
+                      dest=prefix_dest + '[prefixes][(?P<prefix>.*)][index][(?P<index>.*)][{key}]'.format(key=key),
+                          vrf=vrf, address_family=af)
 
         # cluster_id - N/A
         # mpls_labels_inout - N/A
@@ -534,33 +664,54 @@ class Bgp(SuperBgp):
 
         # local_as
         self.add_leaf(cmd=ShowBgpAllSummary,
-                      src=table_src+'[local_as]',
-                      dest=table_dest+'[local_as]')
+                      src='[vrf][(?P<vrf_name>.*)][address_family][(?P<address_family>.*)][local_as]',
+                      dest='table[instance][default][vrf][(?P<vrf_name>.*)][address_family][(?P<address_family>.*)][local_as]',
+                      vrf=vrf, address_family=af)
 
         # routing_table_version
         self.add_leaf(cmd=ShowBgpAllSummary,
-                      src=table_src+'[routing_table_version]',
-                      dest=table_dest+'[routing_table_version]')
+                      src='[vrf][(?P<vrf_name>.*)][address_family][(?P<address_family>.*)][routing_table_version]',
+                      dest='table[instance][default][vrf][(?P<vrf_name>.*)][address_family][(?P<address_family>.*)][routing_table_version]',
+                      vrf=vrf, address_family=af)
 
         # ext_community
         self.add_leaf(cmd=ShowBgpAllDetail,
-                      src='[instance][default][vrf][(?P<vrf_name>.*)]'
-                          '[address_family][(?P<address_family>.*)]'
-                          '[prefixes][(?P<prefix>.*)][index][(?P<index>.*)]'
+                      src=prefix_src + '[index][(?P<index>.*)]'
                           '[evpn][ext_community]',
-                      dest=table_dest+'[prefixes][(?P<prefix>.*)][index]'
-                                      '[(?P<index>.*)][ext_community]')
+                      dest=prefix_dest+'[prefixes][(?P<prefix>.*)][index][(?P<index>.*)][ext_community]',
+                      vrf=vrf, address_family=af)
 
         ########################################################################
         #                           routes_per_peer
         ########################################################################
 
         # Routes per peer top level key
-        rpp_src = '[vrf][(?P<vrf>.*)][neighbor][(?P<neighbor>.*)]'\
-                  '[address_family][(?P<address_family>.*)]'
-        rpp_dest = 'routes_per_peer[instance][default][vrf][(?P<vrf>.*)]'\
-                   '[neighbor][(?P<neighbor>.*)][address_family]'\
-                   '[(?P<address_family>.*)]'
+        if neighbor:
+            if address_family:
+                rpp_src = '[vrf][(?P<vrf>.*)][neighbor][{neighbor}]' \
+                          '[address_family][{address_family}]'.format(neighbor=neighbor, address_family=address_family)
+                rpp_dest = 'routes_per_peer[instance][default][vrf][(?P<vrf>.*)]' \
+                           '[neighbor][{neighbor}][address_family]' \
+                           '[{address_family}]'.format(neighbor=neighbor, address_family=address_family)
+            else:
+                rpp_src = '[vrf][(?P<vrf>.*)][neighbor][{neighbor}]' \
+                          '[address_family][(?P<address_family>.*)]'.format(neighbor=neighbor)
+                rpp_dest = 'routes_per_peer[instance][default][vrf][(?P<vrf>.*)]' \
+                           '[neighbor][{neighbor}][address_family]' \
+                           '[(?P<address_family>.*)]'.format(neighbor=neighbor)
+        else:
+            if address_family:
+                rpp_src = '[vrf][(?P<vrf>.*)][neighbor][(?P<neighbor>.*)]' \
+                          '[address_family][{address_family}]'.format(address_family=address_family)
+                rpp_dest = 'routes_per_peer[instance][default][vrf][(?P<vrf>.*)]' \
+                           '[neighbor][(?P<neighbor>.*)][address_family]' \
+                           '[{address_family}]'.format(address_family=address_family)
+            else:
+                rpp_src = '[vrf][(?P<vrf>.*)][neighbor][(?P<neighbor>.*)]'\
+                          '[address_family][(?P<address_family>.*)]'
+                rpp_dest = 'routes_per_peer[instance][default][vrf][(?P<vrf>.*)]'\
+                           '[neighbor][(?P<neighbor>.*)][address_family]'\
+                           '[(?P<address_family>.*)]'
 
         rpp_keys = ['msg_rcvd', 'msg_sent', 'tbl_ver',\
             'input_queue', 'output_queue', 'up_down', 'state_pfxrcd']
@@ -571,88 +722,107 @@ class Bgp(SuperBgp):
                       src='{rpp_src}[{key}]'.format(
                         rpp_src=rpp_src, key=key),
                       dest='{rpp_dest}[{key}]'.format(
-                        rpp_dest=rpp_dest, key=key))
+                        rpp_dest=rpp_dest, key=key),
+                          vrf=vrf, address_family=af)
+
 
         # remote_as
-        self.add_leaf(cmd=ShowBgpAllNeighbors,
-                      src='[vrf][(?P<vrf>.*)][neighbor][(?P<neighbor>.*)]'
-                          '[remote_as]',
-                      dest='routes_per_peer[instance][default][vrf]'
-                           '[(?P<vrf>.*)][neighbor][(?P<neighbor>.*)]'
-                           '[remote_as]')
+        if vrf:
+            self.add_leaf(cmd=bgp_nbr_class,
+                          src='[vrf][{vrf}][neighbor][(?P<neighbor>.*)]'
+                              '[remote_as]'.format(vrf=vrf),
+                          dest='routes_per_peer[instance][default][vrf]'
+                               '[{vrf}][neighbor][(?P<neighbor>.*)]'
+                               '[remote_as]'.format(vrf=vrf), neighbor=neighbor,
+                          address_family=af)
+        else:
+            self.add_leaf(cmd=bgp_nbr_class,
+                          src='[vrf][(?P<vrf>.*)][neighbor][(?P<neighbor>.*)]'
+                              '[remote_as]',
+                          dest='routes_per_peer[instance][default][vrf]'
+                               '[(?P<vrf>.*)][neighbor][(?P<neighbor>.*)]'
+                               '[remote_as]', neighbor=neighbor, address_family=af)
 
         # Get neighbors for input to:
         #  * 'show bgp all neighbors <WORD> advertised-routes'
         #  * 'show bgp all neighbors <WORD> received-routes'
         #  * 'show bgp all neighbors <WORD> routes'
-        self.add_leaf(cmd=ShowBgpAllNeighbors,
-                      src='[list_of_neighbors]',
-                      dest='routes_per_peer[list_of_neighbors]')
 
+        self.add_leaf(cmd=bgp_nbr_class,
+                      src='[list_of_neighbors]',
+                      dest='routes_per_peer[list_of_neighbors]',
+                      address_family=af,
+                      neighbor=neighbor)
         self.make()
 
         if hasattr (self, 'routes_per_peer') and\
            'list_of_neighbors' in self.routes_per_peer:
 
-            for neighbor in sorted(self.routes_per_peer['list_of_neighbors']):
+            for nbr in sorted(self.routes_per_peer['list_of_neighbors']):
+                if vrf:
 
+                    if address_family:
+                        rpp_nbr_src = '[vrf][{vrf}][neighbor][{neighbor}][' \
+                                      'address_family][{address_family}]'.format(
+                            vrf=vrf, neighbor=nbr, address_family=address_family)
+                        rpp_nbr_dest = 'routes_per_peer[instance][default][vrf][{vrf}][' \
+                                       'neighbor][{neighbor}][address_family][{address_family}]'.format(
+                            vrf=vrf, neighbor=nbr, address_family=address_family)
+                    else:
+                        rpp_nbr_src = '[vrf][{vrf}][neighbor][{neighbor}][address_family][(' \
+                                      '?P<address_family>.*)]'.format(vrf=vrf, neighbor=nbr)
+                        rpp_nbr_dest = 'routes_per_peer[instance][default][vrf][{vrf}][' \
+                                       'neighbor][{neighbor}]' \
+                                       '[address_family][(?P<address_family>.*)]'.format(
+                            vrf=vrf, neighbor=nbr)
+                else:
+
+                    if address_family:
+                        rpp_nbr_src = '[vrf][(?P<vrf>.*)][neighbor][{neighbor}][' \
+                                      'address_family][{address_family}]'.format(
+                            neighbor=nbr, address_family=address_family)
+
+                        rpp_nbr_dest = 'routes_per_peer[instance][default][vrf][(' \
+                                       '?P<vrf>.*)][neighbor][{neighbor}]' \
+                                       '[address_family][{address_family}]'.format(
+                            neighbor=nbr, address_family=address_family)
+                    else:
+                        rpp_nbr_src = '[vrf][(?P<vrf>.*)][neighbor][{neighbor}][' \
+                                      'address_family][(?P<address_family>.*)]'.format(neighbor=nbr)
+
+                        rpp_nbr_dest = 'routes_per_peer[instance][default][vrf][(' \
+                                       '?P<vrf>.*)][' \
+                                       'neighbor][{neighbor}]' \
+                                       '[address_family][(?P<address_family>.*)]'.format(neighbor=nbr)
                 # route_distinguisher
-                self.add_leaf(cmd=ShowBgpAllNeighborsAdvertisedRoutes,
-                              src='[vrf][(?P<vrf>.*)][neighbor][{neighbor}]'
-                                  '[address_family][(?P<address_family>.*)]'
-                                  '[route_distinguisher]'.format(
-                                    neighbor=neighbor),
-                              dest='routes_per_peer[instance][default][vrf]'
-                                   '[(?P<vrf>.*)][neighbor][{neighbor}]'
-                                   '[address_family][(?P<address_family>.*)]'
-                                   '[route_distinguisher]'.format(
-                                    neighbor=neighbor),
-                              neighbor=neighbor)
+                self.add_leaf(cmd=bgp_adv_route_class,
+                              src=rpp_nbr_src + '[route_distinguisher]',
+                              dest=rpp_nbr_dest + '[route_distinguisher]',
+                              neighbor=nbr, address_family=af)
 
                 # default_vrf
-                self.add_leaf(cmd=ShowBgpAllNeighborsAdvertisedRoutes,
-                              src='[vrf][(?P<vrf>.*)][neighbor][{neighbor}]'
-                                  '[address_family][(?P<address_family>.*)]'
-                                  '[default_vrf]'.format(neighbor=neighbor),
-                              dest='routes_per_peer[instance][default][vrf]'
-                                   '[(?P<vrf>.*)][neighbor][{neighbor}]'
-                                   '[address_family][(?P<address_family>.*)]'
-                                   '[default_vrf]'.format(neighbor=neighbor),
-                              neighbor=neighbor)
+                self.add_leaf(cmd=bgp_adv_route_class,
+                              src=rpp_nbr_src + '[default_vrf]',
+                              dest=rpp_nbr_dest + '[default_vrf]',
+                              neighbor=nbr, address_family=af)
 
                 # advertised
-                self.add_leaf(cmd=ShowBgpAllNeighborsAdvertisedRoutes,
-                              src='[vrf][(?P<vrf>.*)][neighbor][{neighbor}]'
-                                  '[address_family][(?P<address_family>.*)]'
-                                  '[advertised]'.format(neighbor=neighbor),
-                              dest='routes_per_peer[instance][default][vrf]'
-                                   '[(?P<vrf>.*)][neighbor][{neighbor}]'
-                                   '[address_family][(?P<address_family>.*)]'
-                                   '[advertised]'.format(neighbor=neighbor),
-                              neighbor=neighbor)
+                self.add_leaf(cmd=bgp_adv_route_class,
+                              src=rpp_nbr_src + '[advertised]',
+                              dest=rpp_nbr_dest + '[advertised]',
+                              neighbor=nbr, address_family=af)
 
                 # routes
-                self.add_leaf(cmd=ShowBgpAllNeighborsRoutes,
-                              src='[vrf][(?P<vrf>.*)][neighbor][{neighbor}]'
-                                  '[address_family][(?P<address_family>.*)]'
-                                  '[routes]'.format(neighbor=neighbor),
-                              dest='routes_per_peer[instance][default][vrf]'
-                                   '[(?P<vrf>.*)][neighbor][{neighbor}]'
-                                   '[address_family][(?P<address_family>.*)]'
-                                   '[routes]'.format(neighbor=neighbor),
-                              neighbor=neighbor)
+                self.add_leaf(cmd=bgp_route_class,
+                              src=rpp_nbr_src + '[routes]',
+                              dest=rpp_nbr_dest + '[routes]',
+                              neighbor=nbr, address_family=af)
 
                 # received_routes
-                self.add_leaf(cmd=ShowBgpAllNeighborsReceivedRoutes,
-                              src='[vrf][(?P<vrf>.*)][neighbor][{neighbor}]'
-                                  '[address_family][(?P<address_family>.*)]'
-                                  '[received_routes]'.format(neighbor=neighbor),
-                              dest='routes_per_peer[instance][default][vrf]'
-                                   '[(?P<vrf>.*)][neighbor][{neighbor}]'
-                                   '[address_family][(?P<address_family>.*)]'
-                                   '[received_routes]'.format(
-                                    neighbor=neighbor),
-                              neighbor=neighbor)
+                self.add_leaf(cmd=bgp_rec_rout_class,
+                              src=rpp_nbr_src + '[received_routes]',
+                              dest=rpp_nbr_dest + '[received_routes]',
+                              neighbor=nbr, address_family=af)
 
             # clear list of neighbors
             del self.routes_per_peer['list_of_neighbors']

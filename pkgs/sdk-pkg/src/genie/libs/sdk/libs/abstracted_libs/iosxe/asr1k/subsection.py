@@ -11,6 +11,7 @@ log = logging.getLogger(__name__)
 
 # parser
 from genie.libs.parser.iosxe.show_platform import ShowVersion, ShowRedundancy
+from collections import OrderedDict
 
 def save_device_information(device, **kwargs):
     """Check boot variable from show version and show reedundancy
@@ -48,7 +49,7 @@ def save_device_information(device, **kwargs):
 
             # active and standby image mismatch
             if len(redundancy_image) != 1:
-                response = collections.OrderedDict()
+                response = OrderedDict()
                 response[r"Destination +filename +\[.*\].*"] = "econ_send \\\r;exp_continue"
                 response[r"Do +you +want +to +over +write? +\[confirm\]"] = "econ_send no\\\r;exp_continue"
                 # copy image to standby bootflash: 

@@ -12,8 +12,8 @@ from genie.libs.ops.mld.iosxe.tests.mld_output import MldOutput
 
 # Parser
 from genie.libs.parser.iosxe.show_mld import ShowIpv6MldInterface, \
-                                  ShowIpv6MldGroupsDetail, \
-                                  ShowIpv6MldSsmMap
+                                             ShowIpv6MldGroupsDetail, \
+                                             ShowIpv6MldSsmMap
 
 # iosxe show_vrf
 from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
@@ -40,6 +40,7 @@ class test_mld(unittest.TestCase):
     def setUp(self):
         self.device = Device(name='aDevice')
         self.device.os = 'iosxe'
+        self.device.custom['abstraction'] = {'order':['os']}
         self.device.mapping={}
         self.device.mapping['cli']='cli'
         # Give the device as a connection type

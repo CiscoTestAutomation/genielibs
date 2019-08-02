@@ -65,6 +65,8 @@ class HA(object):
                 self._switchover()
             except SubCommandFailure:
                 pass
+            except NotImplementedError:
+                step.failed('Failed to switchover: Switchover Aborted')
             except Exception as e:
                 raise Exception(str(e))
             

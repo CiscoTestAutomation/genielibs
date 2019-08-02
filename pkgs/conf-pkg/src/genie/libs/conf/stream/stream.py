@@ -11,6 +11,7 @@ import enum
 import logging
 import datetime
 import operator
+import re
 logger = logging.getLogger(__name__)
 
 try:
@@ -19,6 +20,7 @@ try:
 except Exception:
     item_cast = None
 
+from collections import defaultdict
 from genie.utils.cisco_collections import Range
 from genie.utils.cisco_collections import typedset
 
@@ -868,7 +870,7 @@ class Stream(ConfigurableBase):
         elif isinstance(start, range_type):
             start = start.start
         else:
-            raise ValueError('mac_discovery_gateway_range: Unexpected mac_discovery_gateway {!r}'.format(mac_discovery_gateway))
+            raise ValueError('mac_discovery_gateway_range: Unexpected mac_discovery_gateway {!r}'.format(self.mac_discovery_gateway))
         start = int(start)
         step = self.mac_discovery_gateway_step
         count = self.mac_discovery_gateway_count
@@ -1339,7 +1341,6 @@ class Stream(ConfigurableBase):
         else:
             # TODO
             raise ValueError('source_ip: Unexpected source {}'.format(source))
-        return None
 
     source_ip_count = managedattribute(
         name='source_ip_count',
@@ -1393,7 +1394,7 @@ class Stream(ConfigurableBase):
         elif isinstance(start, range_type):
             start = start.start
         else:
-            raise ValueError('source_ip_range: Unexpected source_ip {!r}'.format(source_ip))
+            raise ValueError('source_ip_range: Unexpected source_ip {!r}'.format(self.source_ip))
         start = int(start)
         step = self.source_ip_step
         count = self.source_ip_count
@@ -1496,7 +1497,7 @@ class Stream(ConfigurableBase):
         elif isinstance(start, range_type):
             start = start.start
         else:
-            raise ValueError('destination_ip_range: Unexpected destination_ip {!r}'.format(destination_ip))
+            raise ValueError('destination_ip_range: Unexpected destination_ip {!r}'.format(self.destination_ip))
         start = int(start)
         step = self.destination_ip_step
         count = self.destination_ip_count
@@ -2041,7 +2042,6 @@ class Stream(ConfigurableBase):
                                 pass
 
                     elif layer2_protocol is Stream.Layer2Protocol.atm:
-                        raise NotImplementedError(layer2_protocol)
                         l2_encaps += ['atm_snap']  # HLTAPI, Agilent, Ixia, Pagent
                         l2_encaps += ['atm_snap_802.3snap']  # HLTAPI, Agilent, Ixia
                         l2_encaps += ['atm_snap_802.3snap_nofcs']  # Ixia
@@ -2056,6 +2056,7 @@ class Stream(ConfigurableBase):
                         l2_encaps += ['atm_vc_mux_ppp']  # Agilent, Ixia
                         l2_encaps += ['atm_vc_mux_pppoe']  # Agilent, Ixia
                         l2_encaps += ['atm_mpls']  # Pagent
+                        raise NotImplementedError(layer2_protocol)
 
                         # VCI/VPI
                         # hltkwargs['vci'] = TODO
@@ -2079,9 +2080,9 @@ class Stream(ConfigurableBase):
                         l2_encaps += ['ietf_framerelay']  # Ixia
 
                     else:
-                        raise ValueError(layer2_protocol)
                         l2_encaps += ['eth']  # HLTAPI
                         l2_encaps += ['raw_l2']  # Agilent
+                        raise ValueError(layer2_protocol)
 
                     # PPPoE
                     if False:

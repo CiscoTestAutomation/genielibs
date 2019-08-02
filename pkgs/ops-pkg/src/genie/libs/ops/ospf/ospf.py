@@ -19,4 +19,5 @@ class Ospf(Base):
                'dr_ip_addr',
                'state',
                'bdr_router_id',
-               'dr_router_id']
+               'dr_router_id',
+               'area_scope_lsa_cksum_sum']

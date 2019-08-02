@@ -71,15 +71,19 @@ class Restore(object):
             # Enable the feature
             for i in range(1,iteration):
                 try:
-                    self.rollback_checkpoint(device=device, name=self.ckname)
-                    break
+                    out = self.rollback_checkpoint(device=device, name=self.ckname)
                 except Exception as e:
-                    if i == iteration-1:
-                        raise Exception('Unable to rollback config')
-                    else:
-                        log.info('Rollback configuration failed: sleeping {} '
-                                 'seconds and retrying...'.format(interval))
-                        time.sleep(interval)
+                    raise Exception('Unable to rollback config')
+
+                if out and 'Rollback Done' in out:
+                    break
+                else:
+                    log.info('Rollback configuration failed: sleeping {} '
+                             'seconds and retrying...'.format(interval))
+                    time.sleep(interval)
+
+            else:
+                raise Exception('Unable to rollback config')
 
             # Delete the checkpoint
             self.create_delete_checkpoint(device=device, name=self.ckname,
@@ -98,20 +102,26 @@ class Restore(object):
                           action='sendline(Y)',
                           loop_continue=True,
                           continue_timer=False),
+                Statement(pattern=r'less than running config.*',
+                          action='sendline(Y)',
+                          loop_continue=True,
+                          continue_timer=False),
                 ])
 
             for i in range(1,iteration):
                 # configure replace location:<filename>
-                output = device.execute('configure replace {}'.\
-                            format(self.to_url), reply=dialog)
-                if 'Rollback Done' in output:
+                out = device.execute('configure replace {}'.\
+                            format(self.to_url), reply=dialog, error_pattern=[])
+
+                if out and 'Rollback Done' in out:
                     break
-                elif i == iteration-1:
-                    raise Exception('Unable to execute config replace')
                 else:
                     log.info('Config replace failed: sleeping {} seconds before'
                              ' retrying.'.format(interval))
                     time.sleep(interval)
+
+            else:
+                raise Exception('Unable to execute config replace')
 
             # Compare restored configuration to details in file
             if compare:
@@ -217,7 +227,7 @@ class Restore(object):
                 raise SyntaxError("Issue sending {c}".format(c=cfg_strs)) from e
             else:
                 if 'ERROR' in ret:
-                    raise SyntaxError("Issue sending {c}".format(c=cfg_strs)) from e
+                    raise SyntaxError("Issue sending {c}".format(c=cfg_strs))
         else:
             try:
                 # get location
@@ -252,7 +262,7 @@ class Restore(object):
                 raise SyntaxError("Issue sending {c}".format(c=cfg_strs)) from e
             else:
                 if 'ERROR' in ret:
-                    raise SyntaxError("Issue sending {c}".format(c=cfg_strs)) from e
+                    raise SyntaxError("Issue sending {c}".format(c=cfg_strs))
 
 
     def rollback_checkpoint(self, device, name):
@@ -284,7 +294,7 @@ class Restore(object):
                           action='sendline(y)',
                           loop_continue=True,
                           continue_timer=False)])
-            device.execute('configure replace {}'.format(name), reply=dialog)
+            return device.execute('configure replace {}'.format(name), reply=dialog, error_pattern=[])
         except Exception as e:
             raise SyntaxError('Error when running rollback running-config '
                               'checkpoint {}'.format(name)) from e

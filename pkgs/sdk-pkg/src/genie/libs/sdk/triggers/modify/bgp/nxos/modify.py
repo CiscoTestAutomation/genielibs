@@ -703,7 +703,7 @@ class TriggerModifyBgpNeighborUpdateSource(TriggerModify):
                     'ops.bgp.bgp.Bgp':{
                         'requirements':[\
                             ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'session_state', 'established'],
-                            ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'update_source', 'loopback100']],
+                            ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'update_source', 'Loopback100']],
                         'kwargs':{'attributes':['info']},
                         'exclude': bgp_exclude}},
                 num_values={'instance':1, 'vrf':1, 'neighbor':1})

@@ -70,20 +70,24 @@ class test_bgp(unittest.TestCase):
         self.maxDiff = None
         bgp = Bgp(device=self.device)
         # XML output
-        bgp.maker.outputs[ShowBgpProcessVrfAll] = {'':BgpOutput.ShowBgpProcessVrfAll_Xml}
+        bgp.maker.outputs[ShowBgpProcessVrfAll] = {"{'vrf':'all'}":BgpOutput.ShowBgpProcessVrfAll_Xml}
         # Get outputs
-        bgp.maker.outputs[ShowVrf] = {'':BgpOutput.ShowVrf}
-        bgp.maker.outputs[ShowRoutingVrfAll] = {'':BgpOutput.ShowRoutingVrfAll}
+        bgp.maker.outputs[ShowVrf] = {"{'vrf':'all'}":BgpOutput.ShowVrf}
+        bgp.maker.outputs[ShowRoutingVrfAll] = {"{'vrf':'all'}":BgpOutput.ShowRoutingVrfAll}
         bgp.maker.outputs[ShowBgpPeerSession] = {'':BgpOutput.ShowBgpPeerSession}
         bgp.maker.outputs[ShowBgpPeerPolicy] = {'':BgpOutput.ShowBgpPeerPolicy}
         bgp.maker.outputs[ShowBgpPeerTemplate] = {'':BgpOutput.ShowBgpPeerTemplate}
-        bgp.maker.outputs[ShowBgpVrfAllAll] = {'':BgpOutput.ShowBgpVrfAllAll}
+        bgp.maker.outputs[ShowBgpVrfAllAll] = {
+            "{'address_family':'all','vrf':'all'}": BgpOutput.ShowBgpVrfAllAll}
         bgp.maker.outputs[ShowBgpVrfAllAllNextHopDatabase] = \
-            {'':BgpOutput.ShowBgpVrfAllAllNextHopDatabase}
+            {
+                "{'address_family':'all','vrf':'all'}":
+                    BgpOutput.ShowBgpVrfAllAllNextHopDatabase}
         bgp.maker.outputs[ShowBgpVrfAllAllSummary] = \
-            {'':BgpOutput.ShowBgpVrfAllAllSummary}
+            {"{'address_family':'all','vrf':'all'}": BgpOutput.ShowBgpVrfAllAllSummary}
         bgp.maker.outputs[ShowBgpVrfAllAllDampeningParameters] = \
-            {'':BgpOutput.ShowBgpVrfAllAllDampeningParameters}
+            {
+                "{'address_family':'all','vrf':'all'}": BgpOutput.ShowBgpVrfAllAllDampeningParameters}
         # Return outputs above as inputs to parser when called
         self.device.execute = Mock()
         self.device.execute.side_effect = mapper
@@ -100,16 +104,19 @@ class test_bgp(unittest.TestCase):
         self.maxDiff = None
         bgp = Bgp(device=self.device)
         # Get outputs
-        bgp.maker.outputs[ShowVrf] = {'':''}
-        bgp.maker.outputs[ShowRoutingVrfAll] = {'':''}
-        bgp.maker.outputs[ShowBgpProcessVrfAll] = {'':''}
-        bgp.maker.outputs[ShowBgpPeerSession] = {'':''}
-        bgp.maker.outputs[ShowBgpPeerPolicy] = {'':''}
-        bgp.maker.outputs[ShowBgpPeerTemplate] = {'':''}
-        bgp.maker.outputs[ShowBgpVrfAllAll] = {'':''}
-        bgp.maker.outputs[ShowBgpVrfAllAllNextHopDatabase] = {'':''}
-        bgp.maker.outputs[ShowBgpVrfAllAllSummary] = {'':''}
-        bgp.maker.outputs[ShowBgpVrfAllAllDampeningParameters] = {'':''}
+        bgp.maker.outputs[ShowVrf] = {"{'vrf':'all'}": ''}
+        bgp.maker.outputs[ShowRoutingVrfAll] = {"{'vrf':'all'}": ''}
+        bgp.maker.outputs[ShowBgpProcessVrfAll] = {"{'vrf':'all'}": ''}
+        bgp.maker.outputs[ShowBgpPeerSession] = {'': ''}
+        bgp.maker.outputs[ShowBgpPeerPolicy] = {'': ''}
+        bgp.maker.outputs[ShowBgpPeerTemplate] = {'': ''}
+        bgp.maker.outputs[ShowBgpVrfAllAll] = {"{'address_family':'all','vrf':'all'}": ''}
+        bgp.maker.outputs[ShowBgpVrfAllAllNextHopDatabase] = {
+            "{'address_family':'all','vrf':'all'}": ''}
+        bgp.maker.outputs[ShowBgpVrfAllAllSummary] = {
+            "{'address_family':'all','vrf':'all'}": ''}
+        bgp.maker.outputs[ShowBgpVrfAllAllDampeningParameters] = {
+            "{'address_family':'all','vrf':'all'}": ''}
         
         # Learn the feature
         bgp.learn()
@@ -131,19 +138,25 @@ class test_bgp(unittest.TestCase):
         self.maxDiff = None
         bgp = Bgp(device=self.device)
         # Get outputs
-        bgp.maker.outputs[ShowVrf] = {'':BgpOutput.ShowVrf}
-        bgp.maker.outputs[ShowRoutingVrfAll] = {'':BgpOutput.ShowRoutingVrfAll}
-        bgp.maker.outputs[ShowBgpProcessVrfAll] = {'':BgpOutput.ShowBgpProcessVrfAll}
-        bgp.maker.outputs[ShowBgpPeerSession] = {'':BgpOutput.ShowBgpPeerSession}
-        bgp.maker.outputs[ShowBgpPeerPolicy] = {'':BgpOutput.ShowBgpPeerPolicy}
-        bgp.maker.outputs[ShowBgpPeerTemplate] = {'':BgpOutput.ShowBgpPeerTemplate}
-        bgp.maker.outputs[ShowBgpVrfAllAll] = {'':BgpOutput.ShowBgpVrfAllAll}
+        bgp.maker.outputs[ShowVrf] = {"{'vrf':'all'}": BgpOutput.ShowVrf}
+        bgp.maker.outputs[ShowRoutingVrfAll] = {
+            "{'vrf':'all'}": BgpOutput.ShowRoutingVrfAll}
+        bgp.maker.outputs[ShowBgpProcessVrfAll] = {
+            "{'vrf':'all'}": BgpOutput.ShowBgpProcessVrfAll}
+        bgp.maker.outputs[ShowBgpPeerSession] = {'': BgpOutput.ShowBgpPeerSession}
+        bgp.maker.outputs[ShowBgpPeerPolicy] = {'': BgpOutput.ShowBgpPeerPolicy}
+        bgp.maker.outputs[ShowBgpPeerTemplate] = {'': BgpOutput.ShowBgpPeerTemplate}
+        bgp.maker.outputs[ShowBgpVrfAllAll] = {
+            "{'address_family':'all','vrf':'all'}": BgpOutput.ShowBgpVrfAllAll}
         bgp.maker.outputs[ShowBgpVrfAllAllNextHopDatabase] = \
-            {'':BgpOutput.ShowBgpVrfAllAllNextHopDatabase}
+            {"{'address_family':'all','vrf':'all'}":
+                 BgpOutput.ShowBgpVrfAllAllNextHopDatabase}
         bgp.maker.outputs[ShowBgpVrfAllAllSummary] = \
-            {'':BgpOutput.ShowBgpVrfAllAllSummary}
+            {"{'address_family':'all','vrf':'all'}": BgpOutput.ShowBgpVrfAllAllSummary}
         bgp.maker.outputs[ShowBgpVrfAllAllDampeningParameters] = \
-            {'':BgpOutput.ShowBgpVrfAllAllDampeningParameters}
+            {
+                "{'address_family':'all','vrf':'all'}": BgpOutput.ShowBgpVrfAllAllDampeningParameters}
+
         # Return outputs above as inputs to parser when called
         self.device.execute = Mock()
         self.device.execute.side_effect = mapper
@@ -165,19 +178,24 @@ class test_bgp(unittest.TestCase):
         self.maxDiff = None
         bgp = Bgp(device=self.device)
         # Get outputs
-        bgp.maker.outputs[ShowVrf] = {'':BgpOutput.ShowVrf}
-        bgp.maker.outputs[ShowRoutingVrfAll] = {'':BgpOutput.ShowRoutingVrfAll}
-        bgp.maker.outputs[ShowBgpProcessVrfAll] = {'':BgpOutput.ShowBgpProcessVrfAll}
-        bgp.maker.outputs[ShowBgpPeerSession] = {'':BgpOutput.ShowBgpPeerSession}
-        bgp.maker.outputs[ShowBgpPeerPolicy] = {'':BgpOutput.ShowBgpPeerPolicy}
-        bgp.maker.outputs[ShowBgpPeerTemplate] = {'':BgpOutput.ShowBgpPeerTemplate}
-        bgp.maker.outputs[ShowBgpVrfAllAll] = {'':BgpOutput.ShowBgpVrfAllAll}
+        bgp.maker.outputs[ShowVrf] = {"{'vrf':'all'}": BgpOutput.ShowVrf}
+        bgp.maker.outputs[ShowRoutingVrfAll] = {
+            "{'vrf':'all'}": BgpOutput.ShowRoutingVrfAll}
+        bgp.maker.outputs[ShowBgpProcessVrfAll] = {
+            "{'vrf':'all'}": BgpOutput.ShowBgpProcessVrfAll}
+        bgp.maker.outputs[ShowBgpPeerSession] = {'': BgpOutput.ShowBgpPeerSession}
+        bgp.maker.outputs[ShowBgpPeerPolicy] = {'': BgpOutput.ShowBgpPeerPolicy}
+        bgp.maker.outputs[ShowBgpPeerTemplate] = {'': BgpOutput.ShowBgpPeerTemplate}
+        bgp.maker.outputs[ShowBgpVrfAllAll] = {
+            "{'address_family':'all','vrf':'all'}": BgpOutput.ShowBgpVrfAllAll}
         bgp.maker.outputs[ShowBgpVrfAllAllNextHopDatabase] = \
-            {'':BgpOutput.ShowBgpVrfAllAllNextHopDatabase}
+            {"{'address_family':'all','vrf':'all'}":
+                 BgpOutput.ShowBgpVrfAllAllNextHopDatabase}
         bgp.maker.outputs[ShowBgpVrfAllAllSummary] = \
-            {'':BgpOutput.ShowBgpVrfAllAllSummary}
+            {"{'address_family':'all','vrf':'all'}": BgpOutput.ShowBgpVrfAllAllSummary}
         bgp.maker.outputs[ShowBgpVrfAllAllDampeningParameters] = \
-            {'':BgpOutput.ShowBgpVrfAllAllDampeningParameters}
+            {
+                "{'address_family':'all','vrf':'all'}": BgpOutput.ShowBgpVrfAllAllDampeningParameters}
         # Outputs from side_effect set to empty
         bgp.maker.outputs[ShowBgpVrfAllNeighbors] = {'':''}
         bgp.maker.outputs[ShowBgpVrfAllNeighborsAdvertisedRoutes] = {'':''}

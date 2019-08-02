@@ -1,5 +1,9 @@
 from ats.utils import objects
-from ats.utils.yaml.markup import Processor, PATTERN
+try:
+    from ats.utils.yaml.markup import Processor, REFERENCE_PATTERN
+except Exception:
+    from ats.utils.yaml.markup import Processor, PATTERN as REFERENCE_PATTERN
+
 from ats.utils.yaml.exceptions import MarkupError
 
 class TopologyMarkupProcessor(Processor):
@@ -13,7 +17,7 @@ class TopologyMarkupProcessor(Processor):
             # note that this mechanism is also nested - if a refers to b which
             # refers to C, it will recursively replace everything.
 
-            match = PATTERN.search(data)
+            match = REFERENCE_PATTERN.search(data)
 
             if not match: break
 

@@ -7,7 +7,7 @@ from unittest.mock import Mock
 from ats.topology import Device
 
 # Genie
-from genie.libs.ops.dot1x.iosxe.dot1x import Dot1x
+from genie.libs.ops.dot1x.iosxe.dot1x import Dot1X
 from genie.libs.ops.dot1x.iosxe.tests.dot1x_output import Dot1xOutput
 
 # Parser
@@ -22,6 +22,7 @@ class test_dot1x(unittest.TestCase):
     def setUp(self):
         self.device = Device(name='aDevice')
         self.device.os = 'iosxe'
+        self.device.custom['abstraction'] = {'order':['os']}
         self.device.mapping={}
         self.device.mapping['cli']='cli'
         # Give the device as a connection type
@@ -30,7 +31,7 @@ class test_dot1x(unittest.TestCase):
 
     def test_complete_output(self):
         self.maxDiff = None
-        dot1x = Dot1x(device=self.device)
+        dot1x = Dot1X(device=self.device)
         # Get outputs
         dot1x.maker.outputs[ShowDot1xAllDetail] = \
             {'': Dot1xOutput.ShowDot1xAllDetail}
@@ -58,7 +59,7 @@ class test_dot1x(unittest.TestCase):
 
     def test_empty_output(self):
         self.maxDiff = None
-        dot1x = Dot1x(device=self.device)
+        dot1x = Dot1X(device=self.device)
 
         dot1x.maker.outputs[ShowDot1xAllDetail] = \
             {'': {}}
@@ -83,7 +84,7 @@ class test_dot1x(unittest.TestCase):
     def test_incomplete_output(self):
         self.maxDiff = None
         
-        dot1x = Dot1x(device=self.device)
+        dot1x = Dot1X(device=self.device)
         # Get outputs
         dot1x.maker.outputs[ShowDot1xAllDetail] = \
             {'': Dot1xOutput.ShowDot1xAllDetail}

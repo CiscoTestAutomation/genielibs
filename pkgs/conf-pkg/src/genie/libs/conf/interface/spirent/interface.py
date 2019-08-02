@@ -33,6 +33,8 @@ from genie.conf.base.exceptions import UnknownInterfaceTypeError
 from genie.conf.base.attributes import SubAttributes, SubAttributesDict,\
     AttributesHelper
 from genie.conf.base.cli import CliConfigBuilder
+from genie.libs.conf.base.ipaddress import ip_address
+from genie.conf.base.utils import MAC
 
 import genie.libs.conf.interface
 import genie.libs.conf.interface.hltapi
@@ -172,9 +174,9 @@ class PhysicalInterface(Interface,
                 pass  # handled later
             if intf_mode is cls.InterfaceMode.ethernet:
                 factory_cls = EthernetInterface
-            elif self.intf_mode is cls.InterfaceMode.atm:
+            elif intf_mode is cls.InterfaceMode.atm:
                 factory_cls = AtmInterface
-            elif self.intf_mode in (
+            elif intf_mode in (
                 cls.InterfaceMode.pos_hdlc,
                 cls.InterfaceMode.fr,
                 cls.InterfaceMode.pos_ppp,

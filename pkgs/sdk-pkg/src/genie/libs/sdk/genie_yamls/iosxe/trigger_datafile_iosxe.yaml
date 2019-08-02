@@ -1,0 +1,698 @@
+extends: '%ENV{VIRTUAL_ENV}/genie_yamls/trigger_datafile.yaml'
+
+
+#===============================================================================
+#                                PROCESSORS
+#===============================================================================
+
+global_processors:
+  pre:
+    clear_traffic_statistics:
+      method: genie.harness.libs.prepostprocessor.clear_traffic_statistics
+      parameters:
+        clear_stats_time: 10
+  post:
+    check_traffic_loss:
+      method: genie.harness.libs.prepostprocessor.check_traffic_loss
+      parameters:
+        loss_tolerance: 15
+        check_interval: 60
+        check_iteration: 10
+    compare_traffic_profile:
+      method: genie.harness.libs.prepostprocessor.compare_traffic_profile
+      parameters:
+        loss_tolerance: 1
+        frames_tolerance: 2
+        rate_tolerance: 2
+    test_case_genie_telemetry:
+      method: genie.telemetry.processors.genie_telemetry_processor
+    order: ['check_traffic_loss', 'compare_traffic_profile', 'test_case_genie_telemetry']
+
+#===============================================================================
+#                                SLEEP
+#===============================================================================
+
+TriggerSleep:
+    groups: ['sleep']
+    sleep_time: 5
+    message_time: 1
+    count: 1
+    devices: ['uut']
+
+TriggerProfileSystem:
+    groups: ['profile']
+    timeout:
+       max_time: 300
+       interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    features: ['platform', 'interface']
+    devices: ['uut']
+    # golden_file: <golden pts file to compare with, if not provided, no comparison>
+    # location: <Location to save the learnt features pts at, default runtime directory>
+
+TriggerShutNoShutLoopbackInterface:
+    groups: ['shut-noshut', 'interface', 'L3']
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerUnconfigConfigLoopbackInterface:
+    groups: ['unconfig-config', 'interface', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 300 
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerUnconfigConfigMplsStaticBindings:
+    groups: ['unconfig-config', 'mpls', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 900
+       interval: 20
+    tgn_timeout: 900
+    tgn_delay: 10
+    devices: ['uut']
+    l_id: 201
+
+# Not supported on ASR1K
+TriggerShutNoShutTrunkInterface:
+    groups: ['shut-noshut', 'interface', 'L2']
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+# Not supported on ASR1K
+TriggerShutNoShutVlanInterface:
+    groups: ['shut-noshut', 'interface', 'L3']
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+# Not supported on Edison(c3850)
+TriggerModifyEthernetMtu:
+    groups: ['modify', 'interface', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+# Not supported on ASR1K
+TriggerModifySwitchportModeTrunkToAccess:
+    groups: ['modify', 'interface', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+
+# Not supported on ASR1K
+TriggerUnconfigConfigPhysicalTrunkInterface:
+    groups: ['unconfig-config', 'interface', 'L2']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']    
+
+# Not supported on ASR1K
+TriggerUnconfigConfigVirtualTrunkInterface:
+    groups: ['unconfig-config', 'interface', 'L2']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerModifyLoopbackInterfaceIp:
+    groups: ['modify', 'interface', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+# Not supported on ASR1K
+TriggerModifySviInterfaceIp:
+    groups: ['modify', 'interface', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerUnconfigConfigEthernetInterface:
+    groups: ['unconfig-config', 'interface', 'L2']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerUnconfigConfigVrf:
+    groups: ['unconfig-config', 'vrf', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 400
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+    vrf_id: 'blue'
+
+unconfigconfigOspf:
+    groups: ['unconfig-config', 'ospf', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 400
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+    ospf_id: 101
+
+Triggerunconfigconfigcdp:
+    groups: ['unconfig-config', 'cdp', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 400
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerunconfigconfigInterface:
+    groups: ['unconfig-config', 'interface', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 400
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+    flow_monitor: ipv4_flow_monitor
+    interface: hundredGigE 1/0/48
+
+Triggeruserconfigentry:
+    groups: ['unconfig-config', 'ospf', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 400
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+    ospf_id: 101
+    user_config: router ospf 101
+
+Triggermodifyacl:
+    groups: ['modify', 'acl', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 400
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+    aclname: ip_basic_in_abcdefghijklmnopqrstuvwxyz_1234567890
+
+
+# Not supported on Edison(c3850)
+TriggerUnconfigConfigEthernetInterfaceSub:
+    groups: ['unconfig-config', 'interface', 'L2']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+        
+TriggerModifyLoopbackInterfaceIpv6:
+    groups: ['modify', 'interface', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+        
+TriggerShutNoShutEthernetInterface:
+    groups: ['shut', 'interface', 'L3']
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerClearCountersInterfaceAll:
+    groups: ['clear', 'interface', 'L3']
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerUnconfigConfigBgpNeighbor:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 400
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerUnconfigConfigBgp:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 400
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerUnconfigConfigOspfInteface:
+    groups: ['unconfig-config', 'ospf', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 400
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+    ospf_id: 101
+    intrfce: 'HundredGigE1/0/48'
+
+TriggerShutNoShutBgpNeighbors:
+    groups: ['shut-noshut', 'bgp', 'L3']
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerModifyBgpNeighborRoutemapIn:
+    groups: ['modify', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerModifyBgpNeighborRoutemapOut:
+    groups: ['modify', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerModifyBgpNeighborAsn:
+    groups: ['modify', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerModifyBgpNeighborCluster:
+    groups: ['modify', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerUnconfigConfigVlan:
+    groups: ['unconfig-config', 'vlan', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 1800
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerShutNoShutVlan:
+    groups: ['shut-noshut', 'vlan', 'L3']
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerShutNoShutHsrpIpv4VlanInterface:
+    groups: ['shut-noshut', 'vlan', 'L3']
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerShutNoShutHsrpIpv6VlanInterface:
+    groups: ['shut-noshut', 'vlan', 'L3']
+    timeout:
+       max_time: 180
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+Triggermplsaddremove:
+    groups: ['add-remove', 'mpls', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 400
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+    ospf_id: 101
+    isis_name: core
+
+Triggermplsexplicitnull:
+    groups: ['add-remove', 'mpls', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 400
+       interval: 10
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+
+TriggerUnconfigConfigVlanInterface:
+    groups: ['unconfig-config', 'interface', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 400
+       interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerReload:
+    groups: ['ha', 'reload', 'L3']
+    update_verifications: ['Verify_Boot',
+                           'Verify_Dir',
+                           'Verify_Inventory',
+                           'Verify_Platform',
+                           'Verify_Redundancy',
+                           'Verify_Version']
+    update_pts_features: ['platform']
+    timeout:
+       max_time: 1500
+       interval: 60
+    devices: ['uut']
+
+TriggerIssu:
+    groups: ['ha', 'issu', 'L3']
+    update_verifications: ['Verify_Boot',
+                           'Verify_Dir',
+                           'Verify_Inventory',
+                           'Verify_Platform',
+                           'Verify_Redundancy',
+                           'Verify_Version']
+    update_pts_features: ['platform']
+    timeout:
+       max_time: 3600
+       interval: 60
+    devices: ['uut']
+
+TriggerSwitchover:
+    groups: ['ha', 'switchover', 'L3']
+    update_verifications: ['Verify_Boot',
+                           'Verify_Dir',
+                           'Verify_Inventory',
+                           'Verify_Platform',
+                           'Verify_Redundancy',
+                           'Verify_Version']
+    update_pts_features: ['platform']
+    timeout:
+       max_time: 1500
+       interval: 60
+    devices: ['uut']
+
+TriggerReloadActiveRP:
+    groups: ['ha', 'reload', 'L3']
+    update_verifications: ['Verify_Boot',
+                           'Verify_Dir',
+                           'Verify_Inventory',
+                           'Verify_Platform',
+                           'Verify_Redundancy',
+                           'Verify_Version']
+    update_pts_features: ['platform']
+    lcRole: active
+    timeout:
+       max_time: 1500
+       interval: 60
+    devices: ['uut']    
+
+TriggerReloadStandbyRP:
+    groups: ['ha', 'reload', 'L3']
+    update_verifications: ['Verify_Boot',
+                           'Verify_Dir',
+                           'Verify_Inventory',
+                           'Verify_Platform',
+                           'Verify_Redundancy',
+                           'Verify_Version']
+    update_pts_features: ['platform']
+    lcRole: standby
+    timeout:
+       max_time: 900
+       interval: 60
+    devices: ['uut']
+        
+# Not supported on Edison(c3850)
+TriggerReloadActiveFP:
+    groups: ['ha', 'reload', 'L3']
+    lcRole: active
+    timeout:
+       max_time: 900
+       interval: 60
+    devices: ['uut']
+      
+# Not supported on ASR1K
+TriggerReloadMember:
+    groups: ['ha', 'reload', 'L3']
+    timeout:
+       max_time: 900
+       interval: 60
+    devices: ['uut']
+
+TriggerShutNoShutNativeIpv4SviInterface:
+   groups: ['interface', 'xe_sanity']
+   timeout:
+      max_time: 180
+      interval: 10
+   devices: ['uut']
+
+TriggerShutNoShutIpv4SviInterface:
+   groups: ['interface', 'xe_sanity']
+   timeout:
+      max_time: 180
+      interval: 10
+   devices: ['uut']
+
+TriggerModifyPvstDesgToRoot:
+    groups: ['stp', 'xe_sanity']
+    timeout:
+       max_time: 240
+       interval: 20
+    timeout_recovery:
+       max_time: 90
+       interval: 20
+    method: 'checkpoint'
+    devices: ['uut']
+
+TriggerModifyRapidPvstDesgToRoot:
+    groups: ['stp', 'xe_sanity']
+    timeout:
+       max_time: 240
+       interval: 20
+    timeout_recovery:
+       max_time: 90
+       interval: 20
+    method: 'checkpoint'
+    devices: ['uut']
+
+TriggerAddRemoveIpv4StaticRoutes:
+    groups: ['interface', 'xe_sanity']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 10
+    devices: ['uut']
+
+TriggerAddRemoveIpv6StaticRoutes:
+    groups: ['interface', 'xe_sanity']
+    method: 'checkpoint'
+    timeout:
+      max_time: 120
+      interval: 10
+    devices: ['uut']
+
+TriggerAddRemoveEthernetMacAcl:
+   groups: ['stp', 'xe_sanity']
+   timeout:
+      max_time: 180
+      interval: 10
+   timeout_recovery:
+      max_time: 90
+      interval: 10
+   method: 'checkpoint'
+   devices: ['uut']
+
+TriggerAddRemoveEthernetIpAclPermit:
+   groups: ['stp', 'xe_sanity']
+   timeout:
+      max_time: 180
+      interval: 10
+   timeout_recovery:
+      max_time: 90
+      interval: 10
+   method: 'checkpoint'
+   devices: ['uut']
+
+TriggerAddRemoveEthernetIpAclDeny:
+   groups: ['stp', 'xe_sanity']
+   timeout:
+      max_time: 180
+      interval: 10
+   timeout_recovery:
+      max_time: 90
+      interval: 10
+   method: 'checkpoint'
+   devices: ['uut']
+
+TriggerAddRemoveVlanIpAclPermit:
+   groups: ['stp', 'xe_sanity']
+   timeout:
+      max_time: 180
+      interval: 10
+   timeout_recovery:
+      max_time: 90
+      interval: 10
+   method: 'checkpoint'
+   devices: ['uut']
+
+# peer is the alias of uut's peer device
+TriggerModifyLldpTimer:
+   groups: ['stp', 'xe_sanity']
+   timeout:
+      max_time: 60
+      interval: 10
+   timeout_recovery:
+      max_time: 60
+      interval: 10
+   method: 'checkpoint'
+   devices: ['uut']
+
+TriggerAddRemoveTrunkEtherchannelLacp:
+    groups: ['interface', 'xe_sanity']
+    method: 'checkpoint'
+    timeout:
+      max_time: 240
+      interval: 20
+    timeout_recovery:
+      max_time: 120
+      interval: 20
+    devices: ['uut']
+
+TriggerAddRemoveAccessEtherchannelPagp:
+    groups: ['interface', 'xe_sanity']
+    method: 'checkpoint'
+    timeout:
+      max_time: 200
+      interval: 20
+    timeout_recovery:
+      max_time: 120
+      interval: 20
+    devices: ['uut']
+
+TriggerAddRemoveL3EtherchannelPagp:
+    groups: ['interface', 'xe_sanity']
+    method: 'checkpoint'
+    timeout:
+      max_time: 80
+      interval: 20
+    timeout_recovery:
+      max_time: 120
+      interval: 20
+    devices: ['uut']
+
+TriggerAddRemoveMplsLdpAutoConfig:
+    groups: ['add-remove', 'mpls', 'L3']
+    method: 'checkpoint'
+    timeout:
+       max_time: 200
+       interval: 2
+    tgn_timeout: 300
+    tgn_delay: 10
+    devices: ['uut']
+
+TriggerShutNoShutDot1xInterface:
+    groups: ['interface', 'xe_sanity']
+    timeout:
+      max_time: 120
+      interval: 10
+    timeout_recovery:
+      max_time: 60
+      interval: 10
+    devices: ['uut']
+
+TriggerModifyDot1xUserCredential:
+    groups: ['interface', 'xe_sanity']
+    method: 'archive'
+    timeout:
+      max_time: 90
+      interval: 10
+    timeout_recovery:
+      max_time: 60
+      interval: 10
+    devices: ['uut']

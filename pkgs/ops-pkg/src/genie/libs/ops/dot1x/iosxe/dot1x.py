@@ -5,13 +5,8 @@ Dot1x Genie Ops Object for IOSXE - CLI.
 from genie.ops.base import Base
 from genie.ops.base import Context
 
-# Parser
-from genie.libs.parser.iosxe.show_dot1x import ShowDot1xAllDetail, \
-                                               ShowDot1xAllStatistics, \
-                                               ShowDot1xAllSummary, \
-                                               ShowDot1xAllCount
 
-class Dot1x(Base):
+class Dot1X(Base):
     '''Dot1x Genie Ops Object'''
 
     def learn(self):
@@ -25,12 +20,12 @@ class Dot1x(Base):
 
         # version, system_auth_control
         for key in ['version', 'system_auth_control']:
-            self.add_leaf(cmd=ShowDot1xAllDetail,
+            self.add_leaf(cmd='show dot1x all details',
                           src='[{}]'.format(key),
                           dest='info[{}]'.format(key))
 
         # sessions
-        self.add_leaf(cmd=ShowDot1xAllCount,
+        self.add_leaf(cmd='show dot1x all count',
                       src='[sessions]',
                       dest='info[sessions]')
 
@@ -43,18 +38,18 @@ class Dot1x(Base):
         # supplicant, max_start
         for key in ['max_req', 'max_reauth_req', 'interface', 'pae',
             'credentials', 'authenticator', 'supplicant', 'max_start']:
-            self.add_leaf(cmd=ShowDot1xAllDetail,
+            self.add_leaf(cmd='show dot1x all details',
                           src=intf_src + '[{}]'.format(key),
                           dest=intf_dst + '[{}]'.format(key))
 
         # timeout
         for key in ['auth_period', 'held_period', 'quiet_period', 'ratelimit_period',
             'server_timeout', 'start_period', 'supp_timeout', 'tx_period']:
-            self.add_leaf(cmd=ShowDot1xAllDetail,
+            self.add_leaf(cmd='show dot1x all details',
                           src=intf_src + '[timeout][{}]'.format(key),
                           dest=intf_dst + '[timeout][{}]'.format(key))
         # statistics
-        self.add_leaf(cmd=ShowDot1xAllStatistics,
+        self.add_leaf(cmd='show dot1x all statistics',
                       src=intf_src + '[statistics]',
                       dest=intf_dst + '[statistics]')
         # client
@@ -62,13 +57,13 @@ class Dot1x(Base):
         client_dst = 'info[interfaces][(?P<intf>.*)][clients][(?P<clients>.*)]'
         #    client, status, pae
         for key in ['client', 'status', 'pae']:
-            self.add_leaf(cmd=ShowDot1xAllSummary,
+            self.add_leaf(cmd='show dot1x all summary',
                           src=client_src + '[{}]'.format(key),
                           dest=client_dst + '[{}]'.format(key))
         # client
         #    eap_method, session
         for key in ['eap_method', 'session']:
-            self.add_leaf(cmd=ShowDot1xAllDetail,
+            self.add_leaf(cmd='show dot1x all details',
                           src=client_src + '[{}]'.format(key),
                           dest=client_dst + '[{}]'.format(key))
 

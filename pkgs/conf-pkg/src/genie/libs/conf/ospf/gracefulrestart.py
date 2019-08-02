@@ -91,7 +91,7 @@ class GracefulRestart(ConfigurableBase):
     # Overload __lt__
     def __lt__(self, other):
         if not isinstance(other, GracefulRestart):
-            raise NotImplemented("Cannot compare '{s}' to a '{o}'".format(s=type(s), o=type(o)))
+            raise NotImplemented("Cannot compare '{s}' to a '{o}'".format(s=type(self), o=type(other)))
 
         str1 = '{} {} {} {} {}'.format(self.gr_enable,\
                                        self.gr_type.value,\
@@ -116,7 +116,7 @@ class GracefulRestart(ConfigurableBase):
 
     # Overload __repr__
     def __repr__(self):
-        if isinstance(self.gr_type, GR_TYPE):
+        if isinstance(self.gr_type, GracefulRestart.GR_TYPE):
             return '%s object at 0x%x with graceful restart type %s' % (
                     self.__class__.__name__,
                     id(self),

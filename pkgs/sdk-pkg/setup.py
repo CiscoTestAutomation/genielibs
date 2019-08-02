@@ -14,31 +14,6 @@ from setuptools import setup, find_packages
 from setuptools.command.develop import develop as setupdevelop
 
 
-_INTERNAL_SUPPORT = 'asg-genie-support@cisco.com'
-_EXTERNAL_SUPPORT = 'pyats-support-ext@cisco.com'
-
-_INTERNAL_LICENSE = 'Cisco Systems, Inc. Cisco Confidential',
-_EXTERNAL_LICENSE = 'Apache 2.0'
-
-_INTERNAL_URL = 'http://wwwin-genie.cisco.com/'
-_EXTERNAL_URL = 'https://developer.cisco.com/site/pyats/'
-
-DEVNET_CMDLINE_OPT = '--devnet'
-devnet = False
-if DEVNET_CMDLINE_OPT in sys.argv:
-    # avoiding argparse complexity :o
-    sys.argv.remove(DEVNET_CMDLINE_OPT)
-    devnet = True
-
-# pyats support mailer
-SUPPORT = _EXTERNAL_SUPPORT if devnet else _INTERNAL_SUPPORT
-
-# license statement
-LICENSE = _EXTERNAL_LICENSE if devnet else _INTERNAL_LICENSE
-
-# project url
-URL = _EXTERNAL_URL if devnet else _INTERNAL_URL
-
 def read(*paths):
     '''read and return txt content of file'''
     with open(os.path.join(*paths)) as fp:
@@ -78,7 +53,7 @@ class DevelopCommand(setupdevelop):
     def run(self, *args, **kwargs):
         super().run(*args, **kwargs)
 
-        src = os.path.abspath('genie_yamls')
+        src = os.path.abspath('src/genie/libs/sdk/genie_yamls')
         dst = os.path.join(sys.prefix, 'genie_yamls')
 
         if self.uninstall is None:
@@ -93,10 +68,11 @@ class DevelopCommand(setupdevelop):
                 print('Removing symbolic link {dst}'.format(dst=dst))
                 os.unlink(dst)
 
-def find_yamls(*paths):
+def find_yamls(paths):
     '''finds all genie_yamls'''
     files = []
-    for (dirpath, dirnames, filenames) in os.walk(os.path.join(*paths)):
+
+    for (dirpath, dirnames, filenames) in os.walk(os.path.join(paths)):
         files.append((dirpath, [os.path.join(dirpath, f) for f in filenames]))
 
     return files
@@ -125,24 +101,28 @@ setup(
     # project licensing
     license = 'Apache 2.0',
 
-    # see https://pypi.python.org/pypi?%3Aaction=list_classifiers
-    classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        'Environment :: Console',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Telecommunications Industry',
-        'Intended Audience :: Information Technology',
-        'License :: OSI Approved :: Apache Software License',
-        'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: Implementation :: CPython',
-        'Topic :: Software Development :: Testing',
-        'Topic :: Software Development :: Build Tools',
-        'Topic :: Software Development :: Libraries',
-        'Topic :: Software Development :: Libraries :: Python Modules',
+    classifiers = [
+    'Development Status :: 6 - Mature',
+    'Development Status :: 5 - Production/Stable',
+    'Environment :: Console',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Telecommunications Industry',
+    'Intended Audience :: Information Technology',
+    'Intended Audience :: System Administrators',
+    'License :: OSI Approved :: Apache Software License',
+    'Operating System :: MacOS',
+    'Operating System :: POSIX :: Linux',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: Implementation :: CPython',
+    'Topic :: Software Development :: Testing',
+    'Topic :: Software Development :: Build Tools',
+    'Topic :: Software Development :: Libraries',
+    'Topic :: Software Development :: Libraries :: Python Modules',
     ],
-
+    
     # project keywords
     keywords = 'genie pyats test automation',
 
@@ -156,9 +136,10 @@ setup(
     package_dir = {
         '': 'src',
     },
-
     # additional package data files that goes into the package itself
     package_data = {
+            '': ['genie_yamls/*.yaml',
+                 'genie_yamls/*/*.yaml'],
     },
 
     # console entry point

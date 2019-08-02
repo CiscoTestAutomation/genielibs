@@ -59,7 +59,7 @@ class Ssm(ConfigurableBase):
     # Overload __lt__
     def __lt__(self, other):
         if not isinstance(other, Ssm):
-            raise NotImplemented("Cannot compare '{s}' to a '{o}'".format(s=type(s), o=type(o)))
+            raise NotImplemented("Cannot compare '{s}' to a '{o}'".format(s=type(self), o=type(other)))
 
         # Comparing same types
         if type(self.ssm_source_addr) == type(other.ssm_source_addr):
@@ -86,14 +86,14 @@ class Ssm(ConfigurableBase):
     # Overload __repr__
     def __repr__(self):
         if isinstance(self.ssm_source_addr, str):
-            return '%s object at 0x%x with string %s/%s' % (
+            return '%s object at 0x%x with string %s/%s/%s' % (
                     self.__class__.__name__,
                     id(self),
                     self.ssm_source_addr,
                     self.ssm_group_range,
                     self.ssm_group_policy)
         else:
-            return '%s object at 0x%x with the name %s/%s which is not string' % (
+            return '%s object at 0x%x with the name %s/%s/%s which is not string' % (
                     self.__class__.__name__,
                     id(self),
                     self.ssm_source_addr,

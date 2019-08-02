@@ -78,7 +78,7 @@ class IPv4Addr(ConfigurableBase):
     # Overload __lt__
     def __lt__(self, other):
         if not isinstance(other, IPv4Addr):
-            return NotImplemented("Cannot compare '{s}' to a '{o}'".format(s=type(s), o=type(o)))
+            return NotImplemented("Cannot compare '{s}' to a '{o}'".format(s=type(self), o=type(other)))
 
         if self.ipv4 and other.ipv4:
             # compare v4 addresses if both v4

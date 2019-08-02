@@ -183,12 +183,9 @@ def stack_ha_redundancy_state(device, timeout, platform_pts=None):
                 log.warning(e)
                 timeout.sleep()
                 pass_flag = False
-                continue
+                raise AssertionError('Redundancy status does not reach to "SSO"',
+                    from_exception=e)
             break
-
-    if not pass_flag:
-        raise AssertionError('Redundancy status does not reach to "SSO"',
-                from_exception=e)
 
 def process_check(device):
     """Verify that all critical process are up and running

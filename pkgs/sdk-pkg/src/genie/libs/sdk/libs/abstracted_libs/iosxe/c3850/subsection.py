@@ -40,7 +40,7 @@ def save_device_information(device, **kwargs):
         try:
             out = ShowVersion(device).parse()
             ver_sys_img = out['version']['system_image']
-        except:
+        except Exception as e:
             raise Exception('Cannot get the image information '
                             'from "show version"') from e
     else:

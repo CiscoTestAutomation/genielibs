@@ -115,7 +115,7 @@ class GroupKeys():
                                 com = re.compile(req)
                             except Exception as e:
                                 raise ValueError("'{v}' is not a valid regex "
-                                                 "expression".format(v=path)) from e
+                                                 "expression".format(v=found_path)) from e
                         # check if it's type of find.operator
                         elif is_find_operator and req.value.startswith('(?P<'):
                             com = req.regex
@@ -148,7 +148,7 @@ class GroupKeys():
                                 com = re.compile(req)
                             except Exception as e:
                                 raise ValueError("'{v}' is not a valid regex "
-                                                 "expression".format(v=path)) from e
+                                                 "expression".format(v=sour)) from e
                         # check if it's type of find.operator
                         elif is_find_operator and req.value.startswith('(?P<'):
                             com = req.regex

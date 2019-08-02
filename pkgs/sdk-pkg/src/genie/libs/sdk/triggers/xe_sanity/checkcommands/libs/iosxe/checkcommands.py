@@ -166,14 +166,14 @@ def verify_requirements(keys_dict, reqs, full_stack='', raise_exception=True):
             key_dict = keys_dict.get(key, {})
             if not key_dict:
                 raise KeyError('{k} status is not up and ready'
-                    '\nrequirements: {r}'.format(kkey, r=reqs)) \
+                    '\nrequirements: {r}'.format(key, r=reqs)) \
                         if raise_exception else None
             for item in key_dict:
                 try:
                     log.info('    System {k}: {v}'.format(k=key, v=item[key]))
                 except Exception:
                     raise KeyError('{k} status is not up and ready'
-                        '\nrequirements: {r}'.format(kkey, r=reqs)) \
+                        '\nrequirements: {r}'.format(key, r=reqs)) \
                             if raise_exception else None
 
 def verify_switches(keys_dict, full_stack):

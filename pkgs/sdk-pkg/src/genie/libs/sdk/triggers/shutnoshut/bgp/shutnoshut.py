@@ -270,7 +270,7 @@ class TriggerShutNoShutBgpLoopbackInterface(TriggerShutNoShut):
     """
 
     # Add more keys to be excluded for this trigger only
-    interface_exclude = interface_exclude + ['ipv6']
+    interface_exclude = interface_exclude + ['ipv6', 'origin']
 
     requirements = OrderedDict()
     requirements['ops.bgp.bgp.Bgp'] = {

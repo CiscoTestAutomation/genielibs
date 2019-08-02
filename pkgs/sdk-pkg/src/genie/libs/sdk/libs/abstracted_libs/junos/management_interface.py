@@ -2,6 +2,7 @@
 
 # parser
 from genie.libs.parser.junos.show_interface import ShowInterfacesTerse
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # ManagementInterface
 from ..management_interface import ManagementInterface as ManagementInterface_main

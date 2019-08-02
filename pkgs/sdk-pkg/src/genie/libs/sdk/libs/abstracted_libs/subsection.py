@@ -125,13 +125,15 @@ def learn_the_system(self, testbed, steps, features=None):
 
     # get platform PTS 
     platform_pts = self.parameters.get('pts', {}).get('platform', {}).get('uut', None)
-
-    try:
-        lookup.sdk.libs.abstracted_libs\
-              .subsection.learn_system(device=uut, steps=steps, platform_pts=platform_pts)
-    except Exception as e:
-        step.passx('Cannot Learn and Store system info',
-                    from_exception=e)
+    
+    with steps.start("Store and learn platform information from 'show lldp neighbors detail' on {}"
+          .format(self.name)) as step:
+        try:
+            lookup.sdk.libs.abstracted_libs\
+                .subsection.learn_system(device=uut, steps=steps, platform_pts=platform_pts)
+        except Exception as e:
+            step.passx('Cannot Learn and Store system info',
+                        from_exception=e)
 
     # learn platform lldp neighbors
     with steps.start("learn platform lldp neighbors on device {}"

@@ -504,6 +504,57 @@ class test_nx_interface(TestCase):
                 'default interface Ethernet3/7',
                 ]))
 
+    def test_port_channel_interface(self):
+        # For failures
+        self.maxDiff = None
+
+        # Set Genie Tb
+        testbed = Testbed()
+        Genie.testbed = testbed
+
+        # Device
+        dev1 = Device(name='PE1', testbed=testbed, os='nxos')
+        intf1 = Interface(name='port-channel10', device=dev1)
+
+        # Apply configuration
+        intf1.channel_group_mode = 'on'
+        intf1.switchport_enable = False         
+        intf1.ipv4 = '11.0.1.1/24'
+        intf1.shutdown = False
+        intf1.switchport_enable = False
+        intf1.mtu = 9111
+        uut1_int3 = Interface(name='Ethernet0/0/1',device=dev1)
+        intf1.add_member(uut1_int3)
+
+        # Build config
+        cfgs = intf1.build_config(apply=False)
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(cfgs),
+            '\n'.join([
+                'interface Ethernet0/0/1',
+                ' channel-group 10 mode on',
+                ' exit',
+                'interface port-channel10',
+                ' mtu 9111',
+                ' no shutdown',
+                ' no switchport',
+                ' ip address 11.0.1.1 255.255.255.0',
+                ' exit'
+                ]))        
+
+        # Build unconfig
+        uncfgs = intf1.build_unconfig(apply=False)
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(uncfgs),
+            '\n'.join([
+                'interface Ethernet0/0/1',
+                ' no channel-group 10 mode on',
+                ' exit',
+                'no interface port-channel10'
+                ]))
+
 if __name__ == '__main__':
     unittest.main()
 

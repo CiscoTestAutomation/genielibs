@@ -450,7 +450,7 @@ class Resolver(object):
                         if len(self.dynobj_mappings_link_parts[group_name][link_name]) != len(self.dynobj_mappings_link_parts[None][link_name]):
                             test = functools.partial(self._test_link_parts_in_mapping,
                                     link_name=link_name,
-                                    dynobj_mapping_link_parts=dynobj_mappings_link_parts[group_name][link_name])
+                                    dynobj_mapping_link_parts=self.dynobj_mappings_link_parts[group_name][link_name])
                             self.object_tests[link_name].append(
                                     self._create_group_constraint(
                                         group_name=group_name,
@@ -647,13 +647,13 @@ class Resolver(object):
                 group_weight = self.cg_info.groups[group_name].weight
                 if group_weight >= float('inf'):
                     new_weight = float('inf')
-                elif group_weight <= - float(inf):
+                elif group_weight <= - float('inf'):
                     new_weight = - float('inf')
                     break
                 elif new_weight < float('inf'):
                     new_weight = new_weight + cg_state.ratio * group_weight
         if new_weight != self.cg_state.cur_weight:
-            if not self._find_all and new_weight < best_weight:
+            if not self._find_all and new_weight < self.best_weight:
                 # Not a "jump", just forcing rejection...
                 raise JumpException(self.cur_object_choice)
             self.cg_state.reducing_choices.append(self.cur_object_choice)
@@ -897,7 +897,7 @@ class TopologyMapper(object):
                     name=topo_device.next_interface_name,  # R#I#
                     link=sL)
             topo_device.add_interface(topo_intf)
-            self.assign(sLI, xos_intf)
+            self.assign(sL, xos_intf)
 
     def remove_device(self, device_name, gc_collect=True):
         assert device_name in self.device_names
@@ -1737,7 +1737,7 @@ class TopologyMapper(object):
                         else:
                             r.max_weight += group_weight
                 r.best_weight = - float('inf')
-                r.cg_state.cur_weight = max_weight
+                r.cg_state.cur_weight = r.max_weight
 
             # }}}
 

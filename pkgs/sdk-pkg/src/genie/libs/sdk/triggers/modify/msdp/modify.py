@@ -9,7 +9,7 @@ class TriggerModifyMsdpOriginatorId(TriggerModify):
 
 
 class TriggerModifyMsdpSaFilterIn(TriggerModify):
-    pass
+	pass
 
 
 class TriggerModifyMsdpSaFilterOut(TriggerModify):

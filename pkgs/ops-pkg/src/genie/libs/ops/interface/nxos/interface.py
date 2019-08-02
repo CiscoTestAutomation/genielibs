@@ -20,9 +20,8 @@ class Interface(SuperInterface):
     def convert_intf_name(self, item):
         return item.capitalize()
 
-    def learn(self, interface='', vrf='', address_family=''):
+    def learn(self, interface=None, vrf=None, address_family=None):
         '''Learn Interface Ops'''
-        
         ########################################################################
         #                               info
         ########################################################################

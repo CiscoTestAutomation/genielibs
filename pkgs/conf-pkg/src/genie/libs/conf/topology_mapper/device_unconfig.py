@@ -29,7 +29,7 @@ class Device(genie.libs.conf.device.Device):
         default=genie.libs.conf.device.Device.Role.router)
 
     def __init__(self, *args, **kwargs):
-        log.warning("This class is deprecated, use the one at "
+        logging.warning("This class is deprecated, use the one at "
                     "'genie.libs/conf/device/'")
         super().__init__(*args, **kwargs)
 

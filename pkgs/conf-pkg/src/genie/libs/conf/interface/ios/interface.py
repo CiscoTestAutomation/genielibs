@@ -8,6 +8,7 @@ __all__ = (
     'VirtualInterface',
     'LoopbackInterface',
     'EthernetInterface',
+    'SubInterface',
 )
 
 import re
@@ -243,6 +244,12 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
                 if not unconfig:
                     configurations.append_line('no negotiation auto',unconfig_cmd = 'default negotiation auto')
 
+class SubInterface(VirtualInterface,
+                   genie.libs.conf.interface.SubInterface):
+    '''Class for ios sub-interfaces'''
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
 
 Interface._build_name_to_class_map()
-

@@ -350,9 +350,9 @@ class UpdateLearntDatabase(object):
             if isinstance(output, dict):
                 self.obj.verf[self.device.name][ver].name = output
                 self.obj.parent.verf[self.device.name][ver].name = output
-            elif isinstance(execute_obj, object):
-                self.obj.verf[self.device.name][ver] = execute_obj
-                self.obj.parent.verf[self.device.name][ver] = execute_obj
+            elif isinstance(output, object):
+                self.obj.verf[self.device.name][ver] = output
+                self.obj.parent.verf[self.device.name][ver] = output
         
         # update local specific
         for ver in tmp_list_local:
@@ -371,8 +371,8 @@ class UpdateLearntDatabase(object):
 
             if isinstance(output, dict):
                 self.obj.verf[self.device.name][ver].name = output
-            elif isinstance(execute_obj, object):
-                self.obj.verf[self.device.name][ver] = execute_obj
+            elif isinstance(output, object):
+                self.obj.verf[self.device.name][ver] = output
         
         # update global  specific
         for ver in tmp_list_global:
@@ -391,8 +391,8 @@ class UpdateLearntDatabase(object):
 
             if isinstance(output, dict):
                 self.obj.parent.verf[self.device.name][ver].name = output
-            elif isinstance(execute_obj, object):
-                self.obj.parent.verf[self.device.name][ver] = execute_obj
+            elif isinstance(output, object):
+                self.obj.parent.verf[self.device.name][ver] = output
 
         # print out messages
         # - LOCAL
@@ -823,8 +823,8 @@ def check_regexp_uptime(log_output, expect_uptime, pre_time, tolerance=0.5):
             # find the lastest one
             try:
                 assert uptimes
-            except AssertionError:
-                step.failed('Cannot find log message for {}'.format(regexp))
+            except Exception as e:
+                raise AssertionError('Cannot find log message for {}'.format(regexp)) from e
             else:
                 latest_uptime = list(uptimes)[-1]
 

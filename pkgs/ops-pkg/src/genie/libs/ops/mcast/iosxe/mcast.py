@@ -4,10 +4,6 @@ MCAST Genie Ops Object for IOSXE - CLI.
 # super class
 from genie.libs.ops.mcast.mcast import Mcast as SuperMacst
 
-# iosxe show_mcast
-from genie.libs.parser.iosxe.show_mcast import ShowIpMroute, ShowIpv6Mroute,\
-                                   ShowIpMrouteStatic, ShowIpMulticast
-
 # iosxe show_rpf
 from genie.libs.parser.iosxe.show_rpf import ShowIpv6Rpf
 
@@ -61,13 +57,13 @@ class Mcast(SuperMacst):
             ########################################################################
 
             # enable - ipv4
-            self.add_leaf(cmd=ShowIpMulticast,
+            self.add_leaf(cmd='show ip multicast vrf {vrf}'.format(vrf=vrf),
                           src='[vrf][(?P<vrf>.*)][enable]',
                           dest='info[vrf][(?P<vrf>.*)][address_family][ipv4][enable]',
                           vrf=vrf_name)
 
             # multipath - ipv4
-            self.add_leaf(cmd=ShowIpMulticast,
+            self.add_leaf(cmd='show ip multicast vrf {vrf}'.format(vrf=vrf),
                           src='[vrf][(?P<vrf>.*)][multipath]',
                           dest='info[vrf][(?P<vrf>.*)][address_family][ipv4][multipath]',
                           vrf=vrf_name)
@@ -87,7 +83,7 @@ class Mcast(SuperMacst):
                         '[mroute][(?P<mroute>.*)][path][(?P<path>.*)]'
 
             for key in ['neighbor_address', 'admin_distance']:
-                self.add_leaf(cmd=ShowIpMrouteStatic,
+                self.add_leaf(cmd='show ip mroute vrf {vrf} static'.format(vrf=vrf),
                               src=info_src+'[{key}]'.format(key=key),
                               dest=info_dest+'[{key}]'.format(key=key),
                               vrf=vrf_name)
@@ -107,7 +103,7 @@ class Mcast(SuperMacst):
                         'incoming_interface_list', 'outgoing_interface_list']:
 
                 # ipv4 & ipv6
-                for cmd in [ShowIpMroute, ShowIpv6Mroute]:
+                for cmd in ['show ip mroute', 'show ipv6 mroute']:
                     self.add_leaf(cmd=cmd,
                                   src=tbl_src+'[{key}]'.format(key=key),
                                   dest=tbl_dest+'[{key}]'.format(key=key),

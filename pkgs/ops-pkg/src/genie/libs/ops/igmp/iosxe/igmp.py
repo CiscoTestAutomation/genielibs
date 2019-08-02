@@ -4,13 +4,9 @@ IGMP Genie Ops Object for IOSXE - CLI.
 # super class
 from genie.libs.ops.igmp.igmp import Igmp as SuperIgmp
 
-# Parser
-from genie.libs.parser.iosxe.show_igmp import ShowIpIgmpInterface, \
-                                   ShowIpIgmpGroupsDetail, \
-                                   ShowIpIgmpSsmMapping
-
 # iosxe show_vrf
 from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
+
 
 class Igmp(SuperIgmp):
     '''IGMP Genie Ops Object'''
@@ -55,7 +51,7 @@ class Igmp(SuperIgmp):
             ########################################################################
 
             # max_groups
-            self.add_leaf(cmd=ShowIpIgmpInterface,
+            self.add_leaf(cmd='show ip igmp vrf {vrf} interface'.format(vrf=vrf),
                           src='[vrf][(?P<vrf>.*)][global_max_groups]',
                           dest='info[vrfs][(?P<vrf>.*)][max_groups]',
                           vrf=vrf_name)
@@ -78,20 +74,20 @@ class Igmp(SuperIgmp):
                         '[query_max_response_time]', '[oper_status]',
                         '[querier]']
             for key in req_keys:
-                self.add_leaf(cmd=ShowIpIgmpInterface,
+                self.add_leaf(cmd='show ip igmp vrf {vrf} interface'.format(vrf=vrf),
                               src=src + '[{}]'.format(key),
                               dest=dest + '[{}]'.format(key),
                               vrf=vrf_name)
 
             # version
-            self.add_leaf(cmd=ShowIpIgmpInterface,
+            self.add_leaf(cmd='show ip igmp vrf {vrf} interface'.format(vrf=vrf),
                           src=src + '[router_version]',
                           dest=dest + '[version]',
                           vrf=vrf_name)
 
             # interfaces
             #     --  joined_group
-            self.add_leaf(cmd=ShowIpIgmpInterface,
+            self.add_leaf(cmd='show ip igmp vrf {vrf} interface'.format(vrf=vrf),
                           src=src + '[joined_group]',
                           dest=dest + '[joined_group]',
                           vrf=vrf_name,
@@ -116,7 +112,7 @@ class Igmp(SuperIgmp):
                         '[group][(?P<group>.*)][source][(?P<source>.*)][expire]',
                         '[group][(?P<group>.*)][source][(?P<source>.*)][last_reporter]']
             for key in req_keys:
-                self.add_leaf(cmd=ShowIpIgmpGroupsDetail,
+                self.add_leaf(cmd='show ip igmp vrf {vrf} groups detail'.format(vrf=vrf),
                               src=src + '[{}]'.format(key),
                               dest=dest + '[{}]'.format(key),
                               vrf=vrf_name)
@@ -147,7 +143,8 @@ class Igmp(SuperIgmp):
                     req_keys = ['[ssm_map][(?P<ssm_map>.*)][source_addr]',
                                 '[ssm_map][(?P<ssm_map>.*)][group_address]']
                     for key in req_keys:
-                        self.add_leaf(cmd=ShowIpIgmpSsmMapping,
+                        self.add_leaf(cmd='show ip igmp vrf {vrf} ssm-mapping {group}' \
+                                           .format(vrf=vrf, group=group),
                                       src=src + '[{}]'.format(key),
                                       dest=dest + '[{}]'.format(key),
                                       group=group, vrf=vrf_name)

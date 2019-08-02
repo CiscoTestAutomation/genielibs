@@ -12,8 +12,8 @@ from genie.libs.ops.igmp.iosxe.tests.igmp_output import IgmpOutput
 
 # Parser
 from genie.libs.parser.iosxe.show_igmp import ShowIpIgmpInterface, \
-                                   ShowIpIgmpGroupsDetail, \
-                                   ShowIpIgmpSsmMapping
+                                              ShowIpIgmpGroupsDetail, \
+                                              ShowIpIgmpSsmMapping
 
 # iosxe show_vrf
 from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
@@ -52,7 +52,8 @@ class test_igmp(unittest.TestCase):
 
     def setUp(self):
         self.device = Device(name='aDevice')
-        self.device.os = 'iosxe'
+        self.device.os = 'ios'
+        self.device.custom['abstraction'] = {'order':['os']}
         self.device.mapping={}
         self.device.mapping['cli']='cli'
         # Give the device as a connection type

@@ -125,21 +125,22 @@ class TriggerAddRemoveBgpNeighborUpdateSource(TriggerAddRemove):
                         'exclude': bgp_exclude},
                     'ops.interface.interface.Interface':{
                         'requirements':[\
-                            ['info', '(?P<intf_name>(Loopback|loopback)[0-9]+)', 'vrf', '(?P<vrf>.*)'],
-                            ['info', '(?P<intf_name>(Loopback|loopback)[0-9]+)', 'enabled', True],
-                            ['info', '(?P<intf_name>(Loopback|loopback)[0-9]+)', 'oper_status', 'up']],
+                            ['info', '(?P<intf_name>(L|l)oopback.*)', 'vrf', '(?P<vrf>.*)'],
+                            ['info', '(?P<intf_name>(L|l)oopback.*)', 'enabled', True],
+                            ['info', '(?P<intf_name>(L|l)oopback.*)', 'oper_status', 'up']],
+                        'all_keys':True,
                         'exclude': interface_exclude}},
                 config_info={\
                     'conf.bgp.Bgp':{
                         'requirements':[\
-                            ['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)', 'neighbor_attr','(?P<neighbor>.*)', 'nbr_update_source', '(?P<intf_name>(Loopback|loopback)[0-9]+)']],
+                            ['device_attr', '{uut}', 'vrf_attr', '(?P<vrf>.*)', 'neighbor_attr','(?P<neighbor>.*)', 'nbr_update_source', '(?P<intf_name>(L|l)oopback.*)']],
                         'verify_conf':False,
                         'kwargs':{'mandatory':{'bgp_id': '(?P<bgp_id>.*)'}}}},
                 verify_ops={\
                     'ops.bgp.bgp.Bgp':{
                         'requirements':[\
                             ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'session_state', 'established'],
-                            ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'update_source', '(?P<intf_name>(Loopback|loopback)[0-9]+)']],
+                            ['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'update_source', '(?P<intf_name>(L|l)oopback.*)']],
                         'kwargs':{'attributes':['info']},
                         'exclude': bgp_exclude}},
                 num_values={'instance':1, 'vrf':1, 'neighbor':1, 'intf_name':1})

@@ -63,7 +63,7 @@ class test_interface(unittest.TestCase):
         outputs['show interfaces GigabitEthernet1/0/1 accounting'] = ''
         outputs['show ip interface GigabitEthernet1/0/1'] = ''
         outputs['show ipv6 interface GigabitEthernet1/0/1'] = ''
-        outputs['show vrf'] =''
+        outputs['show vrf'] = ''
         outputs['show interfaces'] = ''
         outputs['show ip interface'] = ''
         outputs['show ipv6 interface'] = ''
@@ -132,8 +132,6 @@ class test_interface(unittest.TestCase):
         }
         outputs['show interfaces accounting'] = ''
         outputs['show ip interface'] = ''
-        # intf.maker.outputs[ShowInterfacesAccounting] = \
-        #     {"{'intf': 'GigabitEthernet1/0/1'}":InterfaceOutput.ShowInterfacesAccountingCustom}
 
         intf.maker.outputs[ShowInterfacesAccounting] = \
             {'':InterfaceOutput.ShowInterfacesAccountingCustom}

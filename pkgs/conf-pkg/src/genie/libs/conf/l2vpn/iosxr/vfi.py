@@ -1,4 +1,3 @@
-
 from abc import ABC
 import warnings
 import contextlib
@@ -104,7 +103,7 @@ class Vfi(ABC):
                     else:
                         cfg = 'route-target export {}'.format(v.route_target)
                     if v.stitching:
-                        warning.warn(UnsupportedAttributeWarning,
+                        warnings.warn(UnsupportedAttributeWarning,
                                      'route-target export/import stitching')
                     configurations.append_line(cfg)
 
@@ -115,7 +114,7 @@ class Vfi(ABC):
                     if v not in both_route_targets:
                         cfg = 'route-target import {}'.format(v.route_target)
                         if v.stitching:
-                            warning.warn(UnsupportedAttributeWarning,
+                            warnings.warn(UnsupportedAttributeWarning,
                                          'route-target export/import stitching')
                         configurations.append_line(cfg)
 

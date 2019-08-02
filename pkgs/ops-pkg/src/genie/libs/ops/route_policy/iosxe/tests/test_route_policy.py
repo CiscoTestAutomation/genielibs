@@ -18,6 +18,7 @@ class test_route_policy(unittest.TestCase):
     def setUp(self):
         self.device = Device(name='aDevice')
         self.device.os = 'iosxe'
+        self.device.custom['abstraction'] = {'order':['os']}
         self.device.mapping={}
 
     def test_sample(self):

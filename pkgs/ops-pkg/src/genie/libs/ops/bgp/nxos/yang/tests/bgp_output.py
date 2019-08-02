@@ -2221,7 +2221,7 @@ class BgpOutput(object):
                                 'shutdown': False,
                                 'suppress_four_byte_as_capability': True,
                                 'up_time': '02:20:02',
-                                'update_source': 'loopback0'}},
+                                'update_source': 'Loopback0'}},
                         'router_id': '0.0.0.0'},
                     'vpn1': 
                         {'address_family': 
