@@ -564,6 +564,8 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
     _interface_name_types = (
         'ethernet',
         'Ethernet',
+        'gigabitethernet',
+        'GigabitEthernet',
     )
 
     class SwitchportAttributes(ConfigurableInterfaceNamespace):
@@ -1104,7 +1106,6 @@ class PortchannelInterface(VirtualInterface, genie.libs.conf.interface.Aggregate
     def __init__(self, *args, **kwargs):
         self.members  # init!
         super().__init__(*args, **kwargs)
-
 
 class NveInterface(VirtualInterface, genie.libs.conf.interface.NveInterface):
 

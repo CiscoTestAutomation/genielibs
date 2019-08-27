@@ -1,20 +1,8 @@
 ''' 
-PIM Genie Ops Object for IOSXE - CLI.
+Pim Genie Ops Object for IOSXE - CLI
 '''
 # super class
 from genie.libs.ops.pim.pim import Pim as SuperPim
-
-# Parser
-from genie.libs.parser.iosxe.show_pim import ShowIpv6PimInterface,\
-                                  ShowIpPimInterfaceDetail,\
-                                  ShowIpPimInterface, \
-                                  ShowIpv6PimBsrCandidateRp, \
-                                  ShowIpPimRpMapping, \
-                                  ShowIpv6PimBsrElection, \
-                                  ShowIpPimBsrRouter, \
-                                  ShowIpPimNeighbor, \
-                                  ShowIpv6PimNeighborDetail, \
-                                  ShowIpPimInterfaceDf
 
 from genie.libs.parser.iosxe.show_mcast import ShowIpMroute,\
                                     ShowIpv6Mroute
@@ -199,7 +187,7 @@ class Pim(SuperPim):
             static_keys = ['[sm][policy_name]', '[sm][override]','[bidir]']
 
             for key in static_keys:
-                self.add_leaf(cmd=ShowIpPimRpMapping,
+                self.add_leaf(cmd='show ip pim vrf {vrf} rp mapping'.format(vrf=vrf),
                               src=src + key,
                               dest=dest + key,
                               vrf=vrf_name)
@@ -227,7 +215,7 @@ class Pim(SuperPim):
                         '[bsr][address]', '[bsr][hash_mask_length]', '[bsr][priority]',
                         '[bsr][up_time]', '[bsr][expires]']
 
-            for cmd in [ShowIpPimBsrRouter, ShowIpv6PimBsrElection]:
+            for cmd in ['show ip pim vrf {vrf} bsr-router'.format(vrf=vrf), 'show ipv6 pim vrf {vrf} bsr election'.format(vrf=vrf)]:
                 for key in bsr_keys:
                     self.add_leaf(cmd=cmd,
                                   src=src + key,
@@ -235,7 +223,7 @@ class Pim(SuperPim):
                                   vrf=vrf_name)
 
             # rp_candidate_next_advertisement
-            self.add_leaf(cmd=ShowIpv6PimBsrCandidateRp,
+            self.add_leaf(cmd='show ipv6 pim vrf {vrf} bsr candidate-rp'.format(vrf=vrf),
                           src=src + '[rp_candidate_next_advertisement]',
                           dest=dest + '[rp_candidate_next_advertisement]',
                           vrf=vrf_name)
@@ -245,7 +233,7 @@ class Pim(SuperPim):
             #     --  rp_address, up_time, group_policy
             src = '[vrf][(?P<vrf>.*)][address_family][(?P<af>.*)][rp][bsr][rp]'
             dest = 'info[vrf][(?P<vrf>.*)][address_family][(?P<af>.*)][rp][bsr][rp]'
-            self.add_leaf(cmd=ShowIpPimRpMapping,
+            self.add_leaf(cmd='show ip pim vrf {vrf} rp mapping'.format(vrf=vrf),
                           src=src,
                           dest=dest,
                           vrf=vrf_name)
@@ -261,7 +249,7 @@ class Pim(SuperPim):
             bsr_keys = ['[address]', '[interface]', '[priority]',
                         '[mode]', '[interval]']
 
-            for cmd in [ShowIpPimBsrRouter, ShowIpv6PimBsrCandidateRp]:
+            for cmd in ['show ip pim vrf {vrf} bsr-router'.format(vrf=vrf), 'show ipv6 pim vrf {vrf} bsr candidate-rp'.format(vrf=vrf)]:
                 for key in bsr_keys:
                     self.add_leaf(cmd=cmd,
                                   src=src + key,
@@ -278,7 +266,7 @@ class Pim(SuperPim):
                             '[info_source_type]', '[up_time]', '[expiration]']
 
             for key in rp_list_keys:
-                self.add_leaf(cmd=ShowIpPimRpMapping,
+                self.add_leaf(cmd='show ip pim vrf {vrf} rp mapping'.format(vrf=vrf),
                               src=src + key,
                               dest=dest + key,
                               vrf=vrf_name)
@@ -293,7 +281,7 @@ class Pim(SuperPim):
                             '[up_time]', '[expiration]']
 
             for key in rp_list_keys:
-                self.add_leaf(cmd=ShowIpPimRpMapping,
+                self.add_leaf(cmd='show ip pim vrf {vrf} rp mapping'.format(vrf=vrf),
                               src=src + key,
                               dest=dest + key,
                               vrf=vrf_name)
@@ -313,7 +301,7 @@ class Pim(SuperPim):
             df_election_keys = ['[address]', '[interface_name]', '[df_address]']
 
             for key in df_election_keys:
-                self.add_leaf(cmd=ShowIpPimInterfaceDf,
+                self.add_leaf(cmd='show ip pim vrf {vrf} interface df'.format(vrf=vrf),
                               src=src + key,
                               dest=dest + key,
                               vrf=vrf_name)           
@@ -338,19 +326,19 @@ class Pim(SuperPim):
                         '[neighbor_filter]', '[dm]', '[sm]']
 
             for key in intf_keys:
-                self.add_leaf(cmd=ShowIpPimInterfaceDetail,
+                self.add_leaf(cmd='show ip pim vrf {vrf} interface detail'.format(vrf=vrf),
                               src=src + key,
                               dest=dest + key,
                               vrf=vrf_name)
 
             # dr_priority
-            self.add_leaf(cmd=ShowIpPimInterface,
+            self.add_leaf(cmd='show ip pim vrf {vrf} interface'.format(vrf=vrf),
                           src=src + '[dr_priority]',
                           dest=dest + '[dr_priority]',
                           vrf=vrf_name)
 
             # mode for dm under ssm
-            self.add_leaf(cmd=ShowIpPimInterface,
+            self.add_leaf(cmd='show ip pim vrf {vrf} interface'.format(vrf=vrf),
                           src=src + '[mode]',
                           dest=dest + '[mode]',
                           vrf=vrf_name)
@@ -362,7 +350,7 @@ class Pim(SuperPim):
             intf_keys = ['[hello_interval]', '[address]', '[dr_priority]']
 
             for key in intf_keys:
-                self.add_leaf(cmd=ShowIpv6PimInterface,
+                self.add_leaf(cmd='show ipv6 pim vrf {vrf} interface'.format(vrf=vrf),
                               src=src + key,
                               dest=dest + key,
                               vrf=vrf_name)
@@ -380,7 +368,7 @@ class Pim(SuperPim):
             nei_keys = ['[expiration]', '[dr_priority]',
                         '[up_time]', '[interface]', '[bidir_capable]']
 
-            for cmd in [ShowIpPimNeighbor, ShowIpv6PimNeighborDetail]:
+            for cmd in ['show ip pim neighbor', 'show ipv6 pim neighbor detail']:
                 for key in nei_keys:
                     self.add_leaf(cmd=cmd,
                                   src=src + key,

@@ -87,6 +87,10 @@ def save_bootvar(self, testbed):
                 msg = "    - Failed to save boot variable or copy "\
                     "running-config to startup-config"
                 summarize(summary, message=msg, device=dev)
+            elif res == 'Skipped':
+                msg = "    - Skipped saving boot variable or copy "\
+                    "running-config to startup-config"
+                summarize(summary, message=msg, device=dev)
             else:
                 msg = "    - Successfully saved boot variable"
                 summarize(summary, message=msg, device=dev)
@@ -284,6 +288,27 @@ def load_config_as_string(self, testbed, steps, configs, connect=False):
                 self.passx('Cannot disconnect the console on {}'.format(dev.name),
                   from_exception=e)
 
+
+@aetest.subsection
+def configure_replace(self, testbed, steps, devices, timeout=60):
+
+    for name, dev in devices.items():
+        try:
+            device = testbed.devices.get(name, None)
+            if not device or not device.is_connected():
+                continue
+            try:
+                file_location = dev['file_location']
+            except KeyError:
+                log.error('Missing file_location for device {}'.format(name))
+                continue
+            lookup = Lookup.from_device(device)
+            lookup.sdk.libs.abstracted_libs.subsection.configure_replace(device, file_location, timeout=timeout)
+        except Exception as e:
+            self.failed("Failed to replace config : {}".format(str(e)))
+        log.info("Configure replace is done for device {}".format(name))
+
+
 @aetest.subsection
 def learn_system_defaults(self, testbed):
     """Execute commands to learn default system information
@@ -374,11 +399,16 @@ def asynchronous_save_boot_variable(self, device, device_dict):
         device.name, None)
 
     try:
-        Lookup.from_device(device).sdk.libs.abstracted_libs.subsection.\
+        result = Lookup.from_device(device).sdk.libs.abstracted_libs.subsection.\
             save_device_information(device=device, platform_pts=platform_pts)
     except Exception as e:
         device_dict[device.name] = 'Failed'
     else:
-        device_dict[device.name] = 'Passed'
+        if result == 'Skipped':
+            device_dict[device.name] = 'Skipped'
+        else:
+            device_dict[device.name] = 'Passed'
 
     return device_dict
+
+

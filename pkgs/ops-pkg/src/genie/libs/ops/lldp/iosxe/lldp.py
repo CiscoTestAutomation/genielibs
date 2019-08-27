@@ -5,13 +5,6 @@ LLDP Genie Ops Object for IOSXE - CLI.
 from genie.ops.base import Base
 from genie.ops.base import Context
 
-# Parser
-from genie.libs.parser.iosxe.show_lldp import ShowLldp, \
-                                   ShowLldpEntry, \
-                                   ShowLldpNeighborsDetail,\
-                                   ShowLldpTraffic, \
-                                   ShowLldpInterface
-
 
 class Lldp(Base):
     '''LLDP Genie Ops Object'''
@@ -100,13 +93,13 @@ class Lldp(Base):
         #                               enabled
         
         for key in ['enabled', 'hello_timer', 'hold_timer']:
-            self.add_leaf(cmd=ShowLldp,
+            self.add_leaf(cmd='show lldp',
                           src='[{}]'.format(key),
                           dest='info[{}]'.format(key))
 
         for key in ['frame_in', 'frame_out', 'frame_error_in', 'frame_discard',
           'tlv_discard', 'tlv_unknown', 'entries_aged_out']:
-            self.add_leaf(cmd=ShowLldpTraffic,
+            self.add_leaf(cmd='show lldp traffic',
                           src='[{}]'.format(key),
                           dest='info[counters][{}]'.format(key))
 
@@ -116,29 +109,29 @@ class Lldp(Base):
         nbr_src = '[interfaces][(?P<intf>.*)][port_id][(?P<p_id>.*)][neighbors][(?P<nei>.*)]'
         nbr_dest = 'info[interfaces][(?P<intf>.*)][port_id][(?P<p_id>.*)][neighbors][(?P<nei>.*)]'
 
-        self.add_leaf(cmd=ShowLldpEntry,
+        self.add_leaf(cmd='show lldp entry *',
                       src=intf_src + '[if_name]',
                       dest=intf_dest + '[if_name]')
 
-        self.add_leaf(cmd=ShowLldpNeighborsDetail,
+        self.add_leaf(cmd='show lldp neighbors detail',
                       src=intf_src + '[if_name]',
                       dest=intf_dest + '[if_name]')
 
         for key in ['[chassis_id]', '[port_id]', '[neighbor_id]', '[system_name]',
           '[system_description]', '[port_description]', '[management_address]',
           '[capabilities][(?P<cap>.*)][enabled]','[capabilities][(?P<cap>.*)][name]' ]:
-            self.add_leaf(cmd=ShowLldpEntry,
+            self.add_leaf(cmd='show lldp entry *',
                           src=nbr_src + key,
                           dest=nbr_dest + key)
             
         for key in ['[chassis_id]', '[port_id]', '[neighbor_id]', '[system_name]',
           '[system_description]', '[port_description]', '[management_address]',
           '[capabilities][(?P<cap>.*)][enabled]','[capabilities][(?P<cap>.*)][name]' ]:
-            self.add_leaf(cmd=ShowLldpNeighborsDetail,
+            self.add_leaf(cmd='show lldp neighbors detail',
                           src=nbr_src + key,
                           dest=nbr_dest + key)
         # enabled
-        self.add_leaf(cmd=ShowLldpInterface,
+        self.add_leaf(cmd='show lldp interface',
                       src=intf_src,
                       dest=intf_dest + '[enabled]',
                       action=self.tx_rx_both_enabled)

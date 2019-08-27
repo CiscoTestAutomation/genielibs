@@ -18,8 +18,6 @@ from genie.libs.parser.iosxe.show_vlan import ShowVlan, \
                                    ShowVlanRemoteSpan, \
                                    ShowVlanAccessMap, \
                                    ShowVlanFilter
-from genie.libs.parser.iosxe.show_interface import ShowIpInterfaceBriefPipeVlan, \
-                                        ShowInterfacesSwitchport
 
 
 class test_vlan_new_all(unittest.TestCase):
@@ -27,9 +25,10 @@ class test_vlan_new_all(unittest.TestCase):
     def setUp(self):
         self.device = Device(name='aDevice')
         self.device.os = 'iosxe'
+        self.device.custom['abstraction'] = {'order':['os']}
         self.device.mapping={}
         self.device.mapping['cli']='cli'
-        self.device.connectionmgr.connections['cli'] = '5'
+        self.device.connectionmgr.connections['cli'] = self.device
 
     def test_full_vlan_new(self):
         f = Vlan(device=self.device)

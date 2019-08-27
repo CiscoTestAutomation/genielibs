@@ -655,3 +655,7 @@ def check_xe_sanity_device_ready(self, testbed, steps,
                       .subsection.chasfs_properties(device=uut, timeout=timeout)
                 except Exception as e:
                     step.passx('Chasfs verification test failed\n{}'.format(e))
+
+
+def configure_replace(device, file_location, timeout=60):
+    device.execute('configure replace {} force'.format(file_location), timeout=timeout)

@@ -139,6 +139,7 @@ setup(
     # additional package data files that goes into the package itself
     package_data = {
             '': ['genie_yamls/*.yaml',
+                 '*.json',
                  'genie_yamls/*/*.yaml'],
     },
 

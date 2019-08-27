@@ -31,4 +31,3 @@ class TriggerUnconfigConfigBfdTimer(Trigger):
         output = uut.parse('show bfd neighbors details')
         print(output)
        # pprint.pprint(output)
-        pdb.set_trace()

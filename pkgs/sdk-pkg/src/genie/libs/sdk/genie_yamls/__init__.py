@@ -8,6 +8,7 @@ trigger_datafiles['nxos'] = os.path.join(curr_dir, 'nxos/trigger_datafile_nxos.y
 trigger_datafiles['iosxe'] = os.path.join(curr_dir, 'iosxe/trigger_datafile_iosxe.yaml')
 trigger_datafiles['iosxr'] = os.path.join(curr_dir, 'iosxr/trigger_datafile_xr.yaml')
 trigger_datafiles['junos'] = os.path.join(curr_dir, 'junos/trigger_datafile_junos.yaml')
+trigger_datafiles['virl'] = os.path.join(curr_dir, 'virl/trigger_datafile_virl.yaml')
 
 verification_datafiles = {}
 verification_datafiles['main'] = os.path.join(curr_dir, 'verification_datafile.yaml')

@@ -1,0 +1,13 @@
+extends: '%ENV{VIRTUAL_ENV}/genie_yamls/trigger_datafile.yaml'
+
+#===============================================================================
+#                                VIRL
+#===============================================================================
+
+TriggerStopStartSimulation:
+    groups: ['stopstart', 'simulation']
+    devices: ['uut']
+    simulation_name: example_testbed_genie-tahigash
+    virl_file: ./example_testbed.virl
+    
+

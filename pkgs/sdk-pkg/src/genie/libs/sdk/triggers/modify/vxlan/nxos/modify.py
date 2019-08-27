@@ -207,7 +207,7 @@ class TriggerModifyNveVniMcastGroup(TriggerModify):
             try:
                 mcast_group = x['mcast']
                 mcast_group_value = struct.unpack('>L',socket.inet_aton(mcast_group))[0]+1
-            except exception as e:
+            except Exception as e:
                 mcast_group = IPv4Address(x['mcast'])
                 mcast_group_value = mcast_group.__dict__['_ip']+1
         t = struct.pack("!L", mcast_group_value)

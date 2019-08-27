@@ -11,10 +11,27 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 log = logging.getLogger(__name__)
 
 def save_device_information(device, **kwargs):
-    '''Save information'''
+    '''Save running configuration to startup configuration'''
+
+    # Check if device is VDC
+    try:
+        output = device.parse('show vdc current-vdc')
+    except Exception as e:
+        raise Exception("Unable to execute 'show vdc current-vdc' to check "
+                        "if device is VDC") from e
+
+    # Check if device is VDC
+    if 'current_vdc' in output and output['current_vdc']['id'] != '1':
+        cmd = 'copy running-config startup-config'
+    else:
+        cmd = 'copy running-config startup-config vdc-all'
 
     # Copy boot variables
-    device.execute('copy running-config startup-config')
+    try:
+        device.execute(cmd)
+    except Exception as e:
+        raise Exception("Unable to save running-config to startup-config") from e
+
 
 def get_default_dir(device):
     """ Get the default directory of this device

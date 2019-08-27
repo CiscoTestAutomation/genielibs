@@ -2,8 +2,6 @@
 from genie.ops.base import Base
 
 # genie.libs
-from genie.libs.parser.iosxe.show_routing import ShowIpRoute,\
-                                      ShowIpv6RouteUpdated
 from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
 
 class Routing(Base):
@@ -76,7 +74,7 @@ class Routing(Base):
 
             req_key = ['route', 'active', 'route_preference', 'metric','source_protocol','source_protocol_codes']
             for key in req_key:
-                self.add_leaf(cmd=ShowIpRoute,
+                self.add_leaf(cmd='show ip route vrf {vrf}'.format(vrf=vrf),
                               src=src_routing_route + '[{}]'.format(key),
                               dest=dest_routing_route + '[{}]'.format(key),
                               vrf=vrf_name)
@@ -84,7 +82,7 @@ class Routing(Base):
             src_routing_intf = src_routing_route +'[next_hop][outgoing_interface][(?P<intf>.*)]'
             dest_routing_intf = 'info' + src_routing_intf
 
-            self.add_leaf(cmd=ShowIpRoute,
+            self.add_leaf(cmd='show ip route vrf {vrf}'.format(vrf=vrf),
                           src=src_routing_intf + '[outgoing_interface]',
                           dest=dest_routing_intf + '[outgoing_interface]',
                           vrf=vrf_name)
@@ -95,7 +93,7 @@ class Routing(Base):
 
             req_key = ['index', 'next_hop','outgoing_interface', 'updated']
             for key in req_key:
-                self.add_leaf(cmd=ShowIpRoute,
+                self.add_leaf(cmd='show ip route vrf {vrf}'.format(vrf=vrf),
                               src=src_routing_hop + '[{}]'.format(key),
                               dest=dest_routing_hop + '[{}]'.format(key),
                               vrf=vrf_name)
@@ -104,20 +102,20 @@ class Routing(Base):
             ##############################################
             ####            Ipv6                ##########
 
-            self.add_leaf(cmd=ShowIpv6RouteUpdated,
+            self.add_leaf(cmd='show ipv6 route vrf {vrf} updated'.format(vrf=vrf),
                           src='[ipv6_unicast_routing_enabled]',
                           dest='info[ipv6_unicast_routing_enabled]',
                           vrf=vrf_name)
 
             req_key = ['route', 'active', 'route_preference', 'metric', 'source_protocol', 'source_protocol_codes']
             for key in req_key:
-                self.add_leaf(cmd=ShowIpv6RouteUpdated,
+                self.add_leaf(cmd='show ipv6 route vrf {vrf} updated'.format(vrf=vrf),
                               src=src_routing_route + '[{}]'.format(key),
                               dest=dest_routing_route + '[{}]'.format(key),
                               vrf=vrf_name)
 
 
-            self.add_leaf(cmd=ShowIpv6RouteUpdated,
+            self.add_leaf(cmd='show ipv6 route vrf {vrf} updated'.format(vrf=vrf),
                           src=src_routing_intf + '[outgoing_interface]',
                           dest=dest_routing_intf + '[outgoing_interface]',
                           vrf=vrf_name)
@@ -125,7 +123,7 @@ class Routing(Base):
 
             req_key = ['index', 'next_hop', 'updated', 'outgoing_interface']
             for key in req_key:
-                self.add_leaf(cmd=ShowIpv6RouteUpdated,
+                self.add_leaf(cmd='show ipv6 route vrf {vrf} updated'.format(vrf=vrf),
                               src=src_routing_hop + '[{}]'.format(key),
                               dest=dest_routing_hop + '[{}]'.format(key),
                               vrf=vrf_name)

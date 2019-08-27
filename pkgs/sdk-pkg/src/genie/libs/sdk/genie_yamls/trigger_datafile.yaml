@@ -2124,3 +2124,12 @@ TriggerAddRemoveMldStaticGroup:
     source:
       pkg: genie.libs.sdk
       class: triggers.addremove.mld.addremove.TriggerAddRemoveMldStaticGroup
+
+# =========================================================
+#                   VIRL
+# =========================================================
+
+TriggerStopStartSimulation:
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.virl.virl.TriggerStopStartSimulation

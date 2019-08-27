@@ -1,4 +1,4 @@
-'''LAG Genie Ops Object Outputs for IOSXE.'''
+'''Lag Genie Ops Object Outputs for IOSXE.'''
 
 
 class LagOutput(object):

@@ -1,22 +1,13 @@
 ''' 
-LAG Genie Ops Object for IOSXE - CLI.
+Lag Genie Ops Object for IOSXE - CLI.
 '''
 # Genie
 from genie.ops.base import Base
 from genie.ops.base import Context
 
-# Parser
-from genie.libs.parser.iosxe.show_lag import ShowLacpSysId, \
-                                             ShowLacpCounters, \
-                                             ShowEtherchannelSummary,\
-                                             ShowLacpNeighbor,\
-                                             ShowPagpCounters, \
-                                             ShowPagpNeighbor,\
-                                             ShowPagpInternal
-
 
 class Lag(Base):
-    '''LAG Genie Ops Object'''
+    '''Lag Genie Ops Object'''
 
     def learn(self):
         '''Learn lag Ops'''
@@ -31,7 +22,7 @@ class Lag(Base):
         # collecting, distributing, system_id, partner_key, partner_port_num
         
         # system_priority
-        self.add_leaf(cmd=ShowLacpSysId,
+        self.add_leaf(cmd='show lacp sys-id',
                       src='[system_priority]',
                       dest='info[system_priority]')
 
@@ -41,13 +32,13 @@ class Lag(Base):
 
         # name, bundle_id, protocol, oper_status
         for key in ['name', 'bundle_id', 'protocol', 'oper_status']:
-            self.add_leaf(cmd=ShowEtherchannelSummary,
+            self.add_leaf(cmd='show etherchannel summary',
                           src=intf_src + '[{}]'.format(key),
                           dest=intf_dst + '[{}]'.format(key))
 
         # system_priority, system_id_mac
         for key in ['system_priority', 'system_id_mac']:
-            self.add_leaf(cmd=ShowLacpSysId,
+            self.add_leaf(cmd='show lacp sys-id',
                           src='[{}]'.format(key),
                           dest=intf_dst + '[{}]'.format(key))
 
@@ -57,25 +48,25 @@ class Lag(Base):
 
         # bundled, interface
         for key in ['bundled', 'interface']:
-            self.add_leaf(cmd=ShowEtherchannelSummary,
+            self.add_leaf(cmd='show etherchannel summary',
                           src=mem_src + '[{}]'.format(key),
                           dest=mem_dst + '[{}]'.format(key))
 
         # activity, partner_id, age
         for key in ['activity', 'partner_id', 'age']:
-            for cmd in [ShowLacpNeighbor, ShowPagpNeighbor]:
+            for cmd in ['show lacp neighbor', 'show pagp neighbor']:
                 self.add_leaf(cmd=cmd,
                               src=mem_src + '[{}]'.format(key),
                               dest=mem_dst + '[{}]'.format(key))
 
         # oper_key, port_num, lacp_port_priority
         for key in ['oper_key', 'port_num', 'lacp_port_priority']:
-            self.add_leaf(cmd=ShowLacpNeighbor,
+            self.add_leaf(cmd='show lacp neighbor',
                           src=mem_src + '[{}]'.format(key),
                           dest=mem_dst + '[{}]'.format(key))       
 
         # pagp_port_priority
-        self.add_leaf(cmd=ShowPagpInternal,
+        self.add_leaf(cmd='show pagp internal',
                       src=mem_src + '[pagp_port_priority]',
                       dest=mem_dst + '[pagp_port_priority]')
 
@@ -85,7 +76,7 @@ class Lag(Base):
 
         # lacp_in_pkts, lacp_out_pkts, lacp_errors
         for key in ['lacp_in_pkts', 'lacp_out_pkts', 'lacp_errors']:
-            for cmd in [ShowLacpCounters, ShowPagpCounters]:
+            for cmd in ['show lacp counters', 'show pagp counters']:
                 self.add_leaf(cmd=cmd,
                               src=count_src + '[{}]'.format(key),
                               dest=count_dst + '[{}]'.format(key))
@@ -101,4 +92,3 @@ class Lag(Base):
                     continue
                 for mem in self.info['interfaces'][intf].get('members', {}):
                     self.info['interfaces'][intf]['members'][mem]['bundle_id'] = bundle_id
-

@@ -610,7 +610,7 @@ class PimOutput(object):
                         }
                    }
               }
-        }
+         }
     }
 
     ShowIpPimInterfaceDetail_default = {
@@ -1066,7 +1066,52 @@ class PimOutput(object):
               }
          }
     }
-    ShowIpPimNeighbor_VRF1 = {}
+    ShowIpPimNeighbor_VRF1 = {
+        "vrf": {
+              "VRF1": {
+                   "interfaces": {
+                        "Port-channel1.100": {
+                             "address_family": {
+                                  "ipv4": {
+                                       "neighbors": {
+                                            "192.168.4.1": {
+                                                 "dr_priority": 1,
+                                                 "state_refresh_capable": True,
+                                                 "proxy_capable": True,
+                                                 "interface": "Port-channel1.100",
+                                                 "genid_capable": True,
+                                                 "version": "v2",
+                                                 "expiration": "00:01:40",
+                                                 "up_time": "4w4d"
+                                            }
+                                       }
+                                  }
+                             }
+                        },
+                        "GigabitEthernet0/2/3.100": {
+                             "address_family": {
+                                  "ipv4": {
+                                       "neighbors": {
+                                            "192.168.205.2": {
+                                                 "dr_priority": 1,
+                                                 "designated_router": True,
+                                                 "proxy_capable": True,
+                                                 "interface": "GigabitEthernet0/2/3.100",
+                                                 "bidir_capable": True,
+                                                 "expiration": "00:01:19",
+                                                 "version": "v2",
+                                                 "state_refresh_capable": True,
+                                                 "genid_capable": True,
+                                                 "up_time": "4w4d"
+                                            }
+                                       }
+                                  }
+                             }
+                        }
+                   }
+              }
+         }   
+    }
 
     ShowIpv6PimNeighborDetail_default = {
         "vrf": {
@@ -1193,7 +1238,130 @@ class PimOutput(object):
          }
     }
 
-    ShowIpv6PimNeighborDetail_VRF1 = {}
+    ShowIpv6PimNeighborDetail_VRF1 = {
+      "vrf": {
+              "VRF1": {
+                   "interfaces": {
+                        "Port-channel1.100": {
+                             "address_family": {
+                                  "ipv6": {
+                                       "neighbors": {
+                                            "secondary_address": [
+                                                 "2001::1:1"
+                                            ],
+                                            "FE80::21A:30FF:FE47:6EC0": {
+                                                 "up_time": "3w3d",
+                                                 "dr_priority": 1,
+                                                 "expiration": "00:01:37",
+                                                 "interface": "Port-channel1.100",
+                                                 "genid_capable": True,
+                                                 "bidir_capable": True
+                                            }
+                                       }
+                                  }
+                             }
+                        },
+                        "Port-channel1.101": {
+                             "address_family": {
+                                  "ipv6": {
+                                       "neighbors": {
+                                            "secondary_address": [
+                                                 "2001:1::1:1"
+                                            ],
+                                            "FE80::21A:30FF:FE47:6EC0": {
+                                                 "up_time": "3w3d",
+                                                 "dr_priority": 1,
+                                                 "expiration": "00:01:38",
+                                                 "interface": "Port-channel1.101",
+                                                 "genid_capable": True,
+                                                 "bidir_capable": True
+                                            }
+                                       }
+                                  }
+                             }
+                        },
+                        "GigabitEthernet0/2/3.100": {
+                             "address_family": {
+                                  "ipv6": {
+                                       "neighbors": {
+                                            "secondary_address": [
+                                                 "2001::4:2"
+                                            ],
+                                            "FE80::2D7:8FFF:FECB:8602": {
+                                                 "up_time": "3w3d",
+                                                 "designated_router": True,
+                                                 "dr_priority": 1,
+                                                 "expiration": "00:01:25",
+                                                 "interface": "GigabitEthernet0/2/3.100",
+                                                 "genid_capable": True,
+                                                 "bidir_capable": True
+                                            }
+                                       }
+                                  }
+                             }
+                        },
+                        "GigabitEthernet0/2/0.101": {
+                             "address_family": {
+                                  "ipv6": {
+                                       "neighbors": {
+                                            "FE80::21A:30FF:FE47:6E01": {
+                                                 "up_time": "3w3d",
+                                                 "dr_priority": 1,
+                                                 "expiration": "00:01:24",
+                                                 "interface": "GigabitEthernet0/2/0.101",
+                                                 "genid_capable": True,
+                                                 "bidir_capable": True
+                                            },
+                                            "secondary_address": [
+                                                 "2001:1::1"
+                                            ]
+                                       }
+                                  }
+                             }
+                        },
+                        "GigabitEthernet0/2/3.101": {
+                             "address_family": {
+                                  "ipv6": {
+                                       "neighbors": {
+                                            "secondary_address": [
+                                                 "2001:1::4:2"
+                                            ],
+                                            "FE80::2D7:8FFF:FECB:8602": {
+                                                 "up_time": "3w3d",
+                                                 "designated_router": True,
+                                                 "dr_priority": 1,
+                                                 "expiration": "00:01:42",
+                                                 "interface": "GigabitEthernet0/2/3.101",
+                                                 "genid_capable": True,
+                                                 "bidir_capable": True
+                                            }
+                                       }
+                                  }
+                             }
+                        },
+                        "GigabitEthernet0/2/0.100": {
+                             "address_family": {
+                                  "ipv6": {
+                                       "neighbors": {
+                                            "FE80::21A:30FF:FE47:6E01": {
+                                                 "up_time": "3w3d",
+                                                 "dr_priority": 1,
+                                                 "expiration": "00:01:33",
+                                                 "interface": "GigabitEthernet0/2/0.100",
+                                                 "genid_capable": True,
+                                                 "bidir_capable": True
+                                            },
+                                            "secondary_address": [
+                                                 "2001::1"
+                                            ]
+                                       }
+                                  }
+                             }
+                        }
+                   }
+              }
+         }
+    }
     
     ShowIpPimInterfaceDf_default = {
         "vrf": {
@@ -1838,6 +2006,117 @@ class PimOutput(object):
             },
             "VRF1": {
                  "interfaces": {
+                      "GigabitEthernet0/2/3.100": {
+                           "address_family": {
+                                "ipv4": {
+                                     "neighbors": {
+                                          "192.168.205.2": {
+                                               "expiration": "00:01:19",
+                                               "up_time": "4w4d",
+                                               "bidir_capable": True,
+                                               "dr_priority": 1,
+                                               "interface": "GigabitEthernet0/2/3.100"
+                                          }
+                                     }
+                                },
+                                "ipv6": {
+                                     "neighbors": {
+                                          "FE80::2D7:8FFF:FECB:8602": {
+                                               "expiration": "00:01:25",
+                                               "bidir_capable": True,
+                                               "up_time": "3w3d",
+                                               "dr_priority": 1,
+                                               "interface": "GigabitEthernet0/2/3.100"
+                                          }
+                                     }
+                                }
+                           }
+                      },
+                      "Port-channel1.100": {
+                           "address_family": {
+                                "ipv6": {
+                                     "neighbors": {
+                                          "FE80::21A:30FF:FE47:6EC0": {
+                                               "expiration": "00:01:37",
+                                               "bidir_capable": True,
+                                               "up_time": "3w3d",
+                                               "dr_priority": 1,
+                                               "interface": "Port-channel1.100"
+                                          }
+                                     }
+                                },
+                                "ipv4": {
+                                     "neighbors": {
+                                          "192.168.4.1": {
+                                               "expiration": "00:01:40",
+                                               "up_time": "4w4d",
+                                               "dr_priority": 1,
+                                               "interface": "Port-channel1.100"
+                                          }
+                                     }
+                                }
+                           }
+                      },
+                      "GigabitEthernet0/2/0.101": {
+                           "address_family": {
+                                "ipv6": {
+                                     "neighbors": {
+                                          "FE80::21A:30FF:FE47:6E01": {
+                                               "expiration": "00:01:24",
+                                               "bidir_capable": True,
+                                               "up_time": "3w3d",
+                                               "dr_priority": 1,
+                                               "interface": "GigabitEthernet0/2/0.101"
+                                          }
+                                     }
+                                }
+                           }
+                      },
+                      "GigabitEthernet0/2/3.101": {
+                           "address_family": {
+                                "ipv6": {
+                                     "neighbors": {
+                                          "FE80::2D7:8FFF:FECB:8602": {
+                                               "expiration": "00:01:42",
+                                               "bidir_capable": True,
+                                               "up_time": "3w3d",
+                                               "dr_priority": 1,
+                                               "interface": "GigabitEthernet0/2/3.101"
+                                          }
+                                     }
+                                }
+                           }
+                      },
+                      "GigabitEthernet0/2/0.100": {
+                           "address_family": {
+                                "ipv6": {
+                                     "neighbors": {
+                                          "FE80::21A:30FF:FE47:6E01": {
+                                               "expiration": "00:01:33",
+                                               "bidir_capable": True,
+                                               "up_time": "3w3d",
+                                               "dr_priority": 1,
+                                               "interface": "GigabitEthernet0/2/0.100"
+                                          }
+                                     }
+                                }
+                           }
+                      },
+                      "Port-channel1.101": {
+                           "address_family": {
+                                "ipv6": {
+                                     "neighbors": {
+                                          "FE80::21A:30FF:FE47:6EC0": {
+                                               "expiration": "00:01:38",
+                                               "bidir_capable": True,
+                                               "up_time": "3w3d",
+                                               "dr_priority": 1,
+                                               "interface": "Port-channel1.101"
+                                          }
+                                     }
+                                }
+                           }
+                      },
                       "GigabitEthernet3": {
                            "address_family": {
                                 "ipv6": {

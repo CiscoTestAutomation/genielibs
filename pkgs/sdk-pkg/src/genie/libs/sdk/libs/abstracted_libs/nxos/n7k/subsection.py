@@ -27,6 +27,19 @@ def save_device_information(device, **kwargs):
         >>> save_device_information(device=Device())
     """
 
+    # Check if device is a VDC, if so, skip this section
+    try:
+        output = device.parse('show vdc current-vdc')
+    except Exception as e:
+        raise Exception("Unable to execute 'show vdc current-vdc' to check "
+                        "if device is VDC") from e
+
+    # Check if device is VDC - then return
+    if 'current_vdc' in output and output['current_vdc']['id'] != '1':
+        log.info("Device '{}' is a VDC - skipping section for this device".\
+                 format(device.name))
+        return "Skipped"
+
     # Get current running image
     try:
         out = ShowVersion(device).parse()

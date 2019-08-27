@@ -54,7 +54,7 @@ class GroupKeys():
                 >>> group_keys(source = \
                                   [('Established', ['instance', 'default',
                                     'vrf', 'default', 'neighbor',
-                                    '200.1.1.1', 'session_state']),
+                                    '192.168.4.1', 'session_state']),
                                     ('Established', ['instance', 'default',
                                      'vrf', 'default', 'neighbor',
                                      '200:1::1:1', 'session_state'])],
@@ -62,7 +62,7 @@ class GroupKeys():
 
                 >>> {'vrf': ['default', 'default'],
                      'instance': ['default', 'default'],
-                     'neighbor': ['200.1.1.1', '200:1::1:1']}
+                     'neighbor': ['192.168.4.1', '200:1::1:1']}
 
         '''
 

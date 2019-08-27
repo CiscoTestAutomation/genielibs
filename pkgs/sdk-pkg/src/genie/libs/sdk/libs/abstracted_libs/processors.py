@@ -533,7 +533,7 @@ def traceroute_loopback(section, traceroute_args, action='traceroute'):
                 continue
 
         # get ip address from returned peers value which is  
-        # {'1.1.1.0/24': {'1.1.1.1': {'R5': {'intf': 'Loopback1', 'vrf': 'default', 'route': '1.1.1.0/24'}}}}
+        # {'10.4.1.0/24': {'10.4.1.1': {'R5': {'intf': 'Loopback1', 'vrf': 'default', 'route': '10.4.1.0/24'}}}}
         peers = [ ip for item in peers.values() for ip in item ]
 
         log.info(banner('Get the routing group information as {}'.format(peers)))

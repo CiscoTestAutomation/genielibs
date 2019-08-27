@@ -1,0 +1,8 @@
+root_directories:
+  genie_apis:
+     root: 'genie.libs.sdk.apis'
+     mod_name: 'apis'
+     url:
+         link: 'https://github.com/CiscoTestAutomation/genielibs/tree/{branch}/'
+         branch: 'master'
+         style: 'github'

@@ -58,3 +58,7 @@ def get_default_dir(device):
     log.info("Default directory on '{d}' is '{dir}'".format(d=device.name,
                                                             dir=default_dir))
     return default_dir
+
+
+def configure_replace(device, file_location, timeout=60):
+    device.configure('load override {}'.format(file_location), timeout=timeout)

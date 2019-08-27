@@ -23,7 +23,7 @@ class PrefixList(Base):
         #                               info
         ########################################################################
 
-        for cmd in [ShowIpPrefixListDetail, ShowIpv6PrefixListDetail]:
+        for cmd in ['show ip prefix-list detail', 'show ipv6 prefix-list detail']:
 
             # Global source
             src = '[prefix_set_name][(?P<name>.*)]'

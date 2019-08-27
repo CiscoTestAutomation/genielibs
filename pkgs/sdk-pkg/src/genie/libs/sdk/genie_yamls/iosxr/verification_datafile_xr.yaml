@@ -324,11 +324,6 @@ Verify_RplRoutePolicy:
 Verify_SdrDetail:
   devices: ['uut']
   exclude: []
-ShowStaticTopologyDetail:
-  devices: ['uut']
-  exclude: []
-  parameters:
-    vrf: all
 Verify_StaticTopologyDetail_vrf_all_af_ipv4:
   devices: ['uut']
   exclude: []

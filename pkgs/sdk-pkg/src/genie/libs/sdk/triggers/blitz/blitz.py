@@ -55,7 +55,23 @@ class Blitz(Trigger):
 
         for dev, config in data['devices'].items():
             device = testbed.devices[dev]
-            device.configure(config)
+
+            # if config is a dict, then try apply config with api
+            if isinstance(config, dict):
+                for c in config:
+                    function = config[c].get('api')
+                    if not function:
+                        self.error('No API function is found, the config must be a string or a dict contatining the key "api"')
+
+                    args = config[c].get('arguments')
+                    if 'device' in args:
+                        arg_device = testbed.devices[args['device']]
+                        args['device'] = arg_device
+                    getattr(device.api, function)(**args)
+
+            # if not a dict then apply config directly
+            else:
+                device.configure(config)
 
         if 'sleep' in data:
             log.info('Sleeping for {s} seconds to stabilize '
@@ -74,22 +90,43 @@ class Blitz(Trigger):
         for dev, command in data['devices'].items():
             device = testbed.devices[dev]
             for i, data in sorted(command.items()):
-                with steps.start("Verify the output of "
-                                 "'{c}'".format(c=data['command']),
-                                 continue_=True) as step:
+                command = data.get('command')
+                function = data.get('api')
+                # if command is given, validate with parser
+                if command:
+                    with steps.start("Verify the output of '{c}'".format(c=command),
+                                     continue_=True) as step:
+                        if 'parsed' in data:
+                            output = device.parse(command)
+                            for key in data['parsed']:
+                                self.check_parsed_key(key, output, step)
+                        if 'include' in data:
+                            output = device.execute(command)
+                            for key in data['include']:
+                                self.check_output(key, output, step, 'include')
+                        if 'exclude' in data:
+                            output = device.execute(command)
+                            for key in data['exclude']:
+                                self.check_output(key, output, step, 'exclude')
 
-                    if 'parsed' in data:
-                        output = device.parse(data['command'])
-                        for key in data['parsed']:
-                            self.check_parsed_key(key, output, step)
-                    if 'include' in data:
-                        output = device.execute(data['command'])
-                        for key in data['include']:
-                            self.check_output(key, output, step, 'include')
-                    if 'exclude' in data:
-                        output = device.execute(data['command'])
-                        for key in data['exclude']:
-                            self.check_output(key, output, step, 'exclude')
+                # if no command given, validate with api function
+                elif function:
+                    with steps.start(function) as step:
+                        try:
+                            args = data.get('arguments')
+                            if 'device' in args:
+                                arg_device = testbed.devices[args['device']]
+                                args['device'] = arg_device
+                            result = getattr(device.api, function)(**args)
+                        except Exception as e:
+                            step.failed('Verification "{}" failed : {}'.format(function, str(e)))
+                        else:
+                            if result:
+                                step.passed()
+                            else:
+                                step.failed('Failed to {}'.format(function))
+                else:
+                    self.error('No command or API found for verification # {}.'.format(i))
 
     @aetest.setup
     def apply_configuration(self, testbed, configure=None):
@@ -98,7 +135,7 @@ class Blitz(Trigger):
 
     @aetest.test
     def validate_configuration(self, steps, testbed, validate_configure=None):
-        '''Valide'''
+        '''Validate configuration on the devices'''
         return self._validate(validate_configure, testbed, steps)
 
     @aetest.test
@@ -108,5 +145,5 @@ class Blitz(Trigger):
 
     @aetest.test
     def validate_unconfiguration(self, steps, testbed, validate_unconfigure=None):
-        '''validate_unconfigure'''
+        '''Validate unconfiguration on the devices'''
         return self._validate(validate_unconfigure, testbed, steps)

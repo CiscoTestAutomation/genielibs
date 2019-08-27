@@ -1,8 +1,6 @@
 # Genie package
 from genie.ops.base import Base
 
-# genie.libs
-from genie.libs.parser.iosxe import show_vlan, show_interface
 
 class Vlan(Base):
     '''Vlan Ops Object'''
@@ -23,7 +21,7 @@ class Vlan(Base):
 
         req_key =['vlan_id','name','state','shutdown']
         for key in req_key:
-            self.add_leaf(cmd=show_vlan.ShowVlan,
+            self.add_leaf(cmd='show vlan',
                           src=src_vlan + '[{}]'.format(key),
                           dest=dest_vlan + '[{}]'.format(key))
 

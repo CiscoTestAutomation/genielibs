@@ -1,0 +1,8 @@
+root_directories:
+  genie_apis:
+     root: 'genie.libs.sdk.apis'
+     mod_name: 'apis'
+     url:
+         link: 'https://bitbucket-eng-sjc1.cisco.com/bitbucket/projects/PYATS-PYPI/repos/genielibs/browse/'
+         branch: ''
+         style: 'bitbucket'

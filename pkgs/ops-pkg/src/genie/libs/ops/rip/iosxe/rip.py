@@ -168,7 +168,7 @@ class Rip(Base):
 
             req_key = ['summary_type','redistributed','next_hop','metric','interface','route_type']
             for key in req_key:
-                self.add_leaf(cmd=ShowIpRipDatabase,
+                self.add_leaf(cmd='show ip rip database vrf {vrf}'.format(vrf=vrf),
                               src=src_route + '[{}]'.format(key),
                               dest=dest_route + '[{}]'.format(key),
                               vrf=vrf_name)
@@ -272,14 +272,14 @@ class Rip(Base):
 
                     req_key = ['update_interval','invalid_interval','holddown_interval','flush_interval']
                     for key in req_key:
-                        self.add_leaf(cmd=ShowIpv6Rip,
+                        self.add_leaf(cmd='show ipv6 rip vrf {vrf}'.format(vrf=vrf),
                                       src=src_ipv6_timers + '[{}]'.format(key),
                                       dest=dest_ipv6_timers + '[{}]'.format(key),
                                       vrf=vrf_name)
 
                     req_key = ['split_horizon','poison_reverse','maximum_paths','distance']
                     for key in req_key:
-                        self.add_leaf(cmd=ShowIpv6Rip,
+                        self.add_leaf(cmd='show ipv6 rip vrf {vrf}'.format(vrf=vrf),
                                       src=src_ipv6 + '[{}]'.format(key),
                                       dest=dest_ipv6 + '[{}]'.format(key),
                                       vrf=vrf_name)
@@ -287,12 +287,12 @@ class Rip(Base):
                     src_interface = src_ipv6 + '[interfaces][(?P<interface>.*)]'
                     dest_interface = dest_ipv6 + '[interfaces][(?P<interface>.*)]'
 
-                    self.add_leaf(cmd=ShowIpv6Rip,
+                    self.add_leaf(cmd='show ipv6 rip vrf {vrf}'.format(vrf=vrf),
                                   src=src_interface,
                                   dest=dest_interface,
                                   vrf=vrf_name)
 
-                    self.add_leaf(cmd=ShowIpv6Rip,
+                    self.add_leaf(cmd='show ipv6 rip vrf {vrf}'.format(vrf=vrf),
                                   src=src_ipv6 + '[originate_default_route]',
                                   dest=dest_ipv6 + '[originate_default_route]',
                                   vrf=vrf_name)
@@ -302,7 +302,7 @@ class Rip(Base):
 
                     req_key = ['expire_time','next_hop','metric','interface','route_type']
                     for key in req_key:
-                        self.add_leaf(cmd=ShowIpv6RipDatabase,
+                        self.add_leaf(cmd='show ipv6 rip vrf {vrf} database'.format(vrf=vrf),
                                       src=src_ipv6_route + '[{}]'.format(key),
                                       dest=dest_ipv6_route + '[{}]'.format(key),
                                       vrf=vrf_name)

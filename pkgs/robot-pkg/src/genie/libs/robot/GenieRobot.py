@@ -397,7 +397,7 @@ class GenieRobot(object):
             if structure == 'neighbors':
                 # then count the number of neighbor
                 ops = self.genie_ops_on_device_alias('bgp', device, alias)
-                rs = [R(['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'session_state', 'established'])]
+                rs = [R(['info', 'instance', '(?P<instance>.*)', 'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)', 'session_state', '([e|E]stablished)'])]
 
             elif structure == 'routes':
                 # then count the number of routes
@@ -409,13 +409,13 @@ class GenieRobot(object):
             if structure == 'neighbors':
                 # then count the number of neighbor
                 ops = self.genie_ops_on_device_alias('ospf', device, alias)
-                rs = [R(['info', 'vrf', '(?P<vrf>.*)', 'address_family', '(?P<af>.*)', 'instance', '(?P<instance>.*)', 'areas', '(?P<areas>.*)', '(?P<mode>.*)', '(?P<interface>.*)', 'neighbors', '(?P<neighbors>.*)', 'state', 'full'])]
+                rs = [R(['info', 'vrf', '(?P<vrf>.*)', 'address_family', '(?P<af>.*)', 'instance', '(?P<instance>.*)', 'areas', '(?P<areas>.*)', '(?P<mode>.*)', '(?P<interface>.*)', 'neighbors', '(?P<neighbors>.*)', 'state', '([f|F]ull)'])]
 
         elif protocol == 'interface':
             if structure == 'up':
                 # then count the number of interface
                 ops = self.genie_ops_on_device_alias('interface', device, alias)
-                rs = [R(['info', '(?P<interface>.*)', 'oper_status', 'up'])]
+                rs = [R(['info', '(?P<interface>.*)', 'oper_status', '([u|U]p)'])]
 
         count = len(find([ops], *rs, filter_=False, all_keys=True))
         if count != int(number):

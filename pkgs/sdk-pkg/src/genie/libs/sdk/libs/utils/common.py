@@ -611,8 +611,8 @@ def get_ops_diff(new, original, exclude=None, modified_path=None, keys=None):
                         modified_path = [['info', 'instance', '(?P<instance>.*)',
                                           'vrf', '(?P<vrf>.*)', 'neighbor', '(?P<neighbor>.*)',
                                           'remote_as', '900']],
-                        keys = [{'instance': '1', 'vrf': 'default', 'neighbor': '1.1.1.1'},
-                                {'instance': '1', 'vrf': 'VRF1', 'neighbor': '2.2.2.2'},])
+                        keys = [{'instance': '1', 'vrf': 'default', 'neighbor': '10.4.1.1'},
+                                {'instance': '1', 'vrf': 'VRF1', 'neighbor': '10.16.2.2'},])
     '''
 
     def _modify_ops_snapshot(original, current, path):

@@ -5,14 +5,6 @@ Spanning-tree Genie Ops Object for IOSXE - CLI.
 from genie.ops.base import Base
 from genie.ops.base import Context
 
-# Parser
-from genie.libs.parser.iosxe.show_spanning_tree import ShowSpanningTreeDetail, \
-                                    ShowSpanningTreeMstDetail, \
-                                    ShowSpanningTreeSummary, \
-                                    ShowErrdisableRecovery, \
-                                    ShowSpanningTree, \
-                                    ShowSpanningTreeMstConfiguration
-
 
 class Stp(Base):
     '''Spanning-tree Genie Ops Object'''
@@ -35,34 +27,34 @@ class Stp(Base):
         # loop_guard, bpdu_guard, bpdu_filter
         for key in ['etherchannel_misconfig_guard',
                     'loop_guard', 'bpdu_guard', 'bpdu_filter']:
-            self.add_leaf(cmd=ShowSpanningTreeSummary,
+            self.add_leaf(cmd='show spanning-tree summary',
                           src='[%s]' % key,
                           dest='info[global][%s]' % key)
 
         # bpduguard_timeout_recovery
-        self.add_leaf(cmd=ShowErrdisableRecovery,
+        self.add_leaf(cmd='show errdisable recovery',
                       src='[bpduguard_timeout_recovery]',
                       dest='info[global][bpduguard_timeout_recovery]')
 
         # ----------------- Mode Attributes --------------------------
         # # max_hop  --- only for mode mstp
-        self.add_leaf(cmd=ShowSpanningTreeMstDetail,
+        self.add_leaf(cmd='show spanning-tree mst detail',
                       src='[mst_instances]',
                       dest='info[mstp][default][max_hop]',
                       action=self.choose_one_max_hop)
 
         # name, revision
         for key in ['name', 'revision']:
-            self.add_leaf(cmd=ShowSpanningTreeMstConfiguration,
+            self.add_leaf(cmd='show spanning-tree mst configuration',
                           src='[(?P<mode>.*)][%s]' % key,
                           dest='info[(?P<mode>.*)][default][%s]' % key)
 
         # hello_time, max_age, forwarding_delay, hold_count
         for key in ['hello_time', 'max_age', 'forwarding_delay', 'hold_count']:
-            self.add_leaf(cmd=ShowSpanningTreeDetail,
+            self.add_leaf(cmd='show spanning-tree detail',
                           src='[(?P<mode>.*)][%s]' % key,
                           dest='info[(?P<mode>.*)][default][%s]' % key)
-            self.add_leaf(cmd=ShowSpanningTreeDetail,
+            self.add_leaf(cmd='show spanning-tree detail',
                           src='[(?P<mode_vlan>(pvst|rapid_pvst))][vlans][(?P<vlans>.*)][%s]' % key,
                           dest='info[(?P<mode_vlan>(pvst|rapid_pvst))][default][vlans][(?P<vlans>.*)][%s]' % key)
 
@@ -73,11 +65,11 @@ class Stp(Base):
         dest = 'info[(?P<mode>.*)][default][(?P<mode_inst_type>.*)][(?P<inst>.*)]'
         for key in ['mst_id', 'vlan', 'vlan_id', 'bridge_priority', 'bridge_address',
                     'topology_changes', 'time_since_topology_change', 'hold_time']:
-            self.add_leaf(cmd=ShowSpanningTreeDetail,
+            self.add_leaf(cmd='show spanning-tree detail',
                           src=src + '[%s]' % key,
                           dest=dest + '[%s]' % key)
         # mstp vlan
-        self.add_leaf(cmd=ShowSpanningTreeMstDetail,
+        self.add_leaf(cmd='show spanning-tree mst detail',
                       src='[mst_instances][(?P<inst>.*)][vlan]',
                       dest='info[mstp][default][mst_instances][(?P<inst>.*)][vlan]')
 
@@ -87,12 +79,12 @@ class Stp(Base):
                          'priority': 'designated_root_priority',
                          'address': 'designated_root_address'}
         for key_src, key_dest in root_map_dict.items():
-            self.add_leaf(cmd=ShowSpanningTree,
+            self.add_leaf(cmd='show spanning-tree',
                           src=src + '[root][%s]' % key_src,
                           dest=dest + '[%s]' % key_dest)
 
         for key in ['configured_bridge_priority', 'sys_id_ext']:
-            self.add_leaf(cmd=ShowSpanningTree,
+            self.add_leaf(cmd='show spanning-tree',
                           src=src + '[bridge][%s]' % key,
                           dest=dest + '[%s]' % key)
 
@@ -110,25 +102,25 @@ class Stp(Base):
                      'designated_bridge_address', 'counters']
 
         for key in intf_Keys:
-            self.add_leaf(cmd=ShowSpanningTreeDetail,
+            self.add_leaf(cmd='show spanning-tree detail',
                           src=src + '[%s]' % key,
                           dest=dest + '[%s]' % key)
 
         for src_key, dest_key in {'number_of_forward_transitions':'forward_transitions',
                                   'designated_path_cost': 'designated_cost'}.items():
-            self.add_leaf(cmd=ShowSpanningTreeDetail,
+            self.add_leaf(cmd='show spanning-tree detail',
                           src=src + '[%s]' % src_key,
                           dest=dest + '[%s]' % dest_key)
 
         # role, port_state, designated_port_priority, designated_port_num
         for key in ['role', 'port_state']:
-            self.add_leaf(cmd=ShowSpanningTree,
+            self.add_leaf(cmd='show spanning-tree',
                           src=src + '[{}]'.format(key),
                           dest=dest + '[{}]'.format(key))
 
         for src_key, dest_key in {'port_priority': 'designated_port_priority',
                                   'port_num': 'designated_port_num'}.items():
-            self.add_leaf(cmd=ShowSpanningTree,
+            self.add_leaf(cmd='show spanning-tree',
                           src=src + '[{}]'.format(src_key),
                           dest=dest + '[{}]'.format(dest_key))
 

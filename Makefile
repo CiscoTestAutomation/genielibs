@@ -38,10 +38,11 @@ BUILD_CMD     = python setup.py bdist_wheel --dist-dir=$(DIST_DIR)
 PROD_USER     = pyadm@pyats-ci
 PROD_PKGS     = /auto/pyats/packages/cisco-shared
 PROD_SCRIPTS  = /auto/pyats/bin
-TESTCMD       = ./tests/runAll --path tests/
+TESTCMD       = runAll --path tests/
 WATCHERS      = asg-genie-dev@cisco.com
 HEADER        = [Watchdog]
 PYPIREPO      = pypitest
+PYTHON		  = python
 
 # Development pkg requirements
 RELATED_PKGS = genie.libs.conf genie.libs.ops genie.libs.robot genie.libs.sdk
@@ -99,6 +100,22 @@ help:
 	@echo "     --- build arguments ---"
 	@echo " DEVNET=true              build for devnet style (cythonized, no ut)"
 	@echo " INCLUDE_TESTS=true       build include unittests in cythonized pkgs"
+
+compile:
+	@echo ""
+	@echo "Compiling to C code"
+	@echo --------------------------
+	$(PYTHON) compile.py
+	@echo "Done Compiling"
+	@echo ""
+
+coverage_all:
+	@echo ""
+	@echo "Running code coverage on all unittests"
+	@echo ---------------------------------------
+	@runAll --path tests/ --coverage
+	@echo "Done Compiling"
+	@echo ""
 
 devnet: all
 	@echo "Completed building DevNet packages"
@@ -220,3 +237,8 @@ check:
 
 	@echo "Done"
 	@echo ""
+
+json:
+	python ./pkgs/sdk-pkg/api_generator/apis.py -datafile pkgs/sdk-pkg/api_generator/github/api_datafile.yaml -save_location pkgs/sdk-pkg/api_generator/output/github_apis.json
+	python ./pkgs/sdk-pkg/api_generator/apis.py -datafile pkgs/sdk-pkg/api_generator/bitbucket/api_datafile.yaml -save_location pkgs/sdk-pkg/api_generator/output/bitbucket_apis.json
+	@cp pkgs/sdk-pkg/api_generator/output/github_apis.json pkgs/sdk-pkg/src/genie/libs/sdk/apis/apis.json

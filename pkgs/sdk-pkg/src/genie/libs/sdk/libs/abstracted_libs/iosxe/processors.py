@@ -94,13 +94,13 @@ def learn_routing(device, address_family, paths, ops_container=[], ret_container
               information in the container to let parent update on it.
 
               The container values for ret_container looks like below
-              1.2.1.0/24: {
-                 1.2.1.2: {'R5': {route: 1.2.1.0/24, intf: Vlan99, vrf: default}},
-                 1.2.1.1: {'R1': {route: 1.2.1.0/24, intf: Vlan99, vrf: default}},
+              10.9.1.0/24: {
+                 10.9.1.2: {'R5': {route: 10.9.1.0/24, intf: Vlan99, vrf: default}},
+                 10.9.1.1: {'R1': {route: 10.9.1.0/24, intf: Vlan99, vrf: default}},
               }
-              1.2.1.0/24: {
-                 1.2.1.2: {'R5': {route: 1.2.1.0/24, intf: GigabitEthernet1/0/4, vrf: test2}},
-                 1.2.1.1: {'R5': {route: 1.2.1.0/24, intf: Vlan99, vrf: test1}},
+              10.9.1.0/24: {
+                 10.9.1.2: {'R5': {route: 10.9.1.0/24, intf: GigabitEthernet1/0/4, vrf: test2}},
+                 10.9.1.1: {'R5': {route: 10.9.1.0/24, intf: Vlan99, vrf: test1}},
               }
 
 
