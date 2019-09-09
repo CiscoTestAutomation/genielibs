@@ -28,8 +28,7 @@ def verify_sid_in_segment_routing(device, address_family="ipv4", local=False):
         Raises:
             None
         Returns
-            True
-            False
+            True/False
 
     """
 
@@ -75,8 +74,7 @@ def verify_status_of_segment_routing(device, state="ENABLED"):
         Raises:
             None
         Returns
-            True
-            False
+            True/False
 
     """
 
@@ -92,9 +90,9 @@ def verify_status_of_segment_routing(device, state="ENABLED"):
     return state_found.upper() == state.upper()
 
 
-def verify_ip_and_sid_in_segment_routing(
-    device, address_sid_dict, algorithm, address_family="ipv4", local=False
-):
+def verify_ip_and_sid_in_segment_routing(device, address_sid_dict, algorithm, 
+    address_family='ipv4', local=False, max_time=90, check_interval=10, 
+    expected_result=True):
     """ Verifies if IP address and SID is present in Segment Routing
         from command 'show segment-routing mpls connected-prefix-sid-map local <address_family>' or
         from command 'show segment-routing mpls connected-prefix-sid-map <address_family>'
@@ -103,94 +101,104 @@ def verify_ip_and_sid_in_segment_routing(
             address_sid_dict (`dict`): Dictionary containing ip address and SID as key and value pair
             ex.)
                 {
-                    '10.4.1.1/32': '1',
-                    '10.4.1.2/32': '2',
-                }
+                    '10.4.1.1/32': 1,
+                    '10.4.1.2/32': 2,
+                } 
             algorithm (`str`): Algorithm to check
-            ex.)
+            ex.) 
                 algorithm = 'ALGO_0'
             address_family (`str`): Address family
             local (`bool`): Flag to check command with local
-
+            max_time ('int'): maximum time to wait
+            check_interval ('int'): how often to check
+            expected_result ('bool'): Expected result
+                set expected_result = False if method should fail
+                set expected_result = True if method should pass (default value)
+                
         Raises:
             None
         Returns
-            True
-            False
+            True/False
 
     """
 
-    prefix_mapping = {"ipv4": "ipv4_prefix_sid", "ipv6": "ipv6_prefix_sid"}
-
-    prefix_mapping_local = {
-        "ipv4": "ipv4_prefix_sid_local",
-        "ipv6": "ipv6_prefix_sid_local",
+    prefix_mapping = {
+        'ipv4': 'ipv4_prefix_sid',
+        'ipv6': 'ipv6_prefix_sid'
     }
 
-    try:
-        if local:
-            out = device.parse(
-                "show segment-routing mpls connected-prefix-sid-map local {}".format(
-                    address_family
+    prefix_mapping_local = {
+        'ipv4': 'ipv4_prefix_sid_local',
+        'ipv6': 'ipv6_prefix_sid_local'
+    }
+    
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        out = None
+        try:
+            if local:
+                out = device.parse(
+                    "show segment-routing mpls connected-prefix-sid-map local {}".format(address_family)
                 )
-            )
-        else:
-            out = device.parse(
-                "show segment-routing mpls connected-prefix-sid-map {}".format(
-                    address_family
+            else:
+                out = device.parse(
+                    "show segment-routing mpls connected-prefix-sid-map {}".format(address_family)
                 )
-            )
+        except (SchemaEmptyParserError):
+            pass
+        
+        found_local = None
+        found = None 
+        
+        for ip_address, sid in address_sid_dict.items():
+            
+            # find using Prefix SID local
+            # It will use ipv4_prefix_sid_local or ipv6_prefix_sid_local as key for search data
+            # based on address_family provided
+            sid = str(sid)
+            if out:
+                reqs_local = R(
+                    ['segment_routing',
+                    'bindings',
+                    'local_prefix_sid',
+                    address_family,
+                    prefix_mapping_local[address_family],
+                    ip_address,
+                    'algorithm',
+                    algorithm,
+                    'sid',
+                    sid]
+                )
+                
+                # find using just Prefix SID
+                # It will use ipv4_prefix_sid or ipv6_prefix_sid as key for search data
+                # based on address_family provided
+                reqs = R(
+                    ['segment_routing',
+                    'bindings',
+                    'connected_prefix_sid_map',
+                    address_family,
+                    prefix_mapping[address_family],
+                    ip_address,
+                    'algorithm',
+                    algorithm,
+                    'sid',
+                    sid]
+                )
+                
+                found_local = find([out], reqs_local, filter_=False, all_keys=True)
+                found = find([out], reqs, filter_=False, all_keys=True)
+                
+                # Returns false if SID is not found Prefix SID or Prefix SID local
+                if not expected_result and (not found_local or not found):
+                    return expected_result
+        
+        if expected_result and found_local and found:
+            return expected_result
+        
+        timeout.sleep()
 
-    except (SchemaEmptyParserError):
-        return False
-
-    for ip_address, sid in address_sid_dict.items():
-
-        # find using Prefix SID local
-        # It will use ipv4_prefix_sid_local or ipv6_prefix_sid_local as key for search data
-        # based on address_family provided
-        reqs_local = R(
-            [
-                "segment_routing",
-                "bindings",
-                "local_prefix_sid",
-                address_family,
-                prefix_mapping_local[address_family],
-                ip_address,
-                "algorithm",
-                algorithm,
-                "sid",
-                sid,
-            ]
-        )
-
-        # find using just Prefix SID
-        # It will use ipv4_prefix_sid or ipv6_prefix_sid as key for search data
-        # based on address_family provided
-        reqs = R(
-            [
-                "segment_routing",
-                "bindings",
-                "connected_prefix_sid_map",
-                address_family,
-                prefix_mapping[address_family],
-                ip_address,
-                "algorithm",
-                algorithm,
-                "sid",
-                sid,
-            ]
-        )
-
-        found_local = find([out], reqs_local, filter_=False, all_keys=True)
-        found = find([out], reqs, filter_=False, all_keys=True)
-
-        # Returns false if SID is not found Prefix SID or Prefix SID local
-        if not found_local or not found:
-            return False
-
-    return True
-
+    return False
 
 def verify_segment_routing_lb_range(
     device,
@@ -292,5 +300,101 @@ def verify_segment_routing_gb_range(
             )
 
         timeout.sleep()
+
+    return False
+
+def verify_ip_and_sid_in_segment_routing_mapping_server(device, address_sid_dict, address_family, 
+    algorithm, mapping_server, max_time=300, check_interval=30, expected_result=True, output=None):
+    """ Verifies if IP address and SID is present in Segment Routing mapping server
+        from show segment-routing mpls mapping-server {address_family}'
+        Args:
+            device (`obj`): Device to be executed command
+            address_family (`str`): Address family
+            address_sid_dict (`dict`): Dictionary containing ip address and SID as key and value pair
+            ex.)
+                {
+                    '10.4.1.1/32': 1,
+                    '10.4.1.2/32': 2,
+                } 
+            algorithm (`str`): Algorithm to check
+            ex.) 
+                algorithm = 'ALGO_0' 
+            mapping_server (`str`): mapping server to check
+            ex.)
+                mapping_server = 'PREFIX_SID_EXPORT_MAP'   or
+                mapping_server = 'PREFIX_SID_REMOTE_EXPORT_MAP'
+            max_time ('int'): maximum time to wait
+            check_interval ('int'): how often to check
+            expected_result ('bool'): Expected result
+                set expected_result = False if method should fail
+                set expected_result = True if method should pass (default value)
+                
+        Raises:
+            None
+        Returns
+            True/False
+
+    """
+
+    mapping_dict_export = {
+        'ipv4': 'ipv4_prefix_sid_export_map',
+        'ipv6': 'ipv6_prefix_sid_export_map',
+    }
+
+    mapping_dict_remote_export = {
+        'ipv4': 'ipv4_prefix_sid_remote_export_map',
+        'ipv6': 'ipv6_prefix_sid_remote_export_map',
+    }
+    
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = None
+            if output:
+                out = device.parse(
+                    "show segment-routing mpls mapping-server {}".format(address_family),
+                    output=output
+                )
+            else:
+                out = device.parse(
+                    "show segment-routing mpls mapping-server {}".format(address_family)
+                )
+            output = None
+        except (SchemaEmptyParserError):
+            pass
+        
+        found = None
+
+        for ip_address, sid in address_sid_dict.items():
+            
+            # find using Prefix SID local
+            # It will use ipv4_prefix_sid_local or ipv6_prefix_sid_local as key for search data
+            # based on address_family provided
+            if out:
+                reqs = R(
+                    ['segment_routing',
+                    'bindings',
+                    'mapping_server',
+                    'policy',
+                    mapping_server.lower(),
+                    address_family,
+                    'mapping_entry',
+                    ip_address,
+                    'algorithm',
+                    algorithm,
+                    'sid',
+                    sid]
+                )
+                
+                found = find([out], reqs, filter_=False, all_keys=True)
+                
+            # Returns false if SID is not found Prefix SID or Prefix SID local
+            if not expected_result and not found:
+                return expected_result
+        if expected_result and found:
+            return expected_result
+        
+        if not found:
+            timeout.sleep()
 
     return False

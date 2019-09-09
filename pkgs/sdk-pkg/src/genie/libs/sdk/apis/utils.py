@@ -8,6 +8,7 @@ import shlex, subprocess
 import time
 from time import strptime
 from datetime import datetime
+from netaddr import IPAddress
 
 # pyATS
 from ats.easypy import runtime
@@ -681,3 +682,31 @@ def reconnect_device(device, max_time=300, interval=30, sleep_disconnect=30):
         )
 
     log.info("Reconnected to device {dev}".format(dev=device.name))
+
+def netmask_to_bits(net_mask):
+    """ Convert netmask to bits
+        Args:
+            net_mask ('str'): Net mask IP address
+            ex.) net_mask = '255.255.255.255'
+        Raise:
+            None
+        Returns:
+            Net mask bits
+    """
+    return IPAddress(net_mask).netmask_bits()
+
+def bits_to_netmask(bits):
+    """ Convert bits to netmask
+        Args:
+            bits ('int'): bits to converts
+            ex.) bits = 32
+        Raise:
+            None
+        Returns:
+            Net mask
+    """
+    mask = (0xffffffff >> (32 - bits)) << (32 - bits)
+    return (str( (0xff000000 & mask) >> 24)   + '.' +
+          str( (0x00ff0000 & mask) >> 16)   + '.' +
+          str( (0x0000ff00 & mask) >> 8)    + '.' +
+          str( (0x000000ff & mask)))

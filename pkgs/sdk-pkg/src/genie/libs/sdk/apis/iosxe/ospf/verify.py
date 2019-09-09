@@ -4,8 +4,7 @@
 import logging
 
 # pyATS
-from ats.utils.objects import find, R
-
+from pyats.utils.objects import find, R
 # Genie
 from genie.utils.timeout import Timeout
 from genie.metaparser.util.exceptions import (
@@ -282,16 +281,9 @@ def is_interface_igp_sync_ospf_enabled(
         timeout.sleep()
     return False
 
-
-def verify_sid_in_ospf(
-    device,
-    process_id=None,
-    sid=None,
-    code=None,
-    ip_address=None,
-    avoid_codes=None,
-    prefix=None,
-):
+def verify_sid_in_ospf(device, process_id=None, sid=None, code=None, ip_address=None, 
+    avoid_codes=None, prefix=None, max_time=90, check_interval=10, 
+    expected_result=True, output=None):
     """ Verifies if SID is found in ospf
         from command 'show ip ospf segment-routing sid-database'
 
@@ -307,72 +299,157 @@ def verify_sid_in_ospf(
                     avoid_codes = ['L', 'C']
             prefix (`str`): IP address to check as prefix in output
                 ex.) prefix = '10.66.12.12/32'
+            max_time ('int'): maximum time to wait
+            check_interval ('int'): how often to check
+            expected_result ('bool'): Expected result
+                set expected_result = False if method should fail
+                set expected_result = True if method should pass (default value)
+            output ('str'): Pass output as value
+            output ('list'): Pass output as reference - modifies the calling output
         Raises:
             None
         Returns
-            True
-            False
+            True/False
 
     """
-    try:
-        out = device.parse("show ip ospf segment-routing sid-database")
-    except (SchemaEmptyParserError):
-        return False
-    sid_count = 0
+    timeout = Timeout(max_time, check_interval)
+    out = None
+    while timeout.iterate():
+        
+        try:
+            if output:
+                # Can change to reference type and modify original output
+                if isinstance(output, list):
+                    out = device.parse("show ip ospf segment-routing sid-database", output=output[0])
+                else:
+                    out = device.parse("show ip ospf segment-routing sid-database", output=output)
+            else:
+                out = device.parse("show ip ospf segment-routing sid-database")
+            
+        except (SchemaEmptyParserError):
+            return False
+        sid_count = 0
 
-    if not avoid_codes:
-        avoid_codes = []
+        if not avoid_codes:
+            avoid_codes = []
 
-    try:
-        """
-        ex.) Ouput for reference for dictionary out["process_id"]
-        {
-            'process_id': {
-                '65109': {
-                    'router_id': '10.66.12.12',
-                    'sids': {
-                        'total_entries': 1,
-                        1: {
-                            'sid': 1,
-                            'codes': 'L',
-                            'prefix': '10.66.12.12/32',
-                            'adv_rtr_id': '10.66.12.12',
-                            'area_id': 10.49.0.0
-                        }
-                    }
-                }
-            }
-        }
-        """
-        for p_id, sid_dict in out["process_id"].items():
-            if process_id and p_id != process_id:
-                continue
-            values = sid_dict["sids"].values()
-            for v in values:
-                if isinstance(v, int):
-                    continue
-                if sid and ("sid" not in v or v["sid"] != sid):
-                    continue
-                if ip_address and (
-                    "adv_rtr_id" not in v or v["adv_rtr_id"] != ip_address
-                ):
-                    continue
-                if code and ("codes" not in v or v["codes"] != code):
-                    continue
-                if avoid_codes and (
-                    "codes" in v and v["codes"] in avoid_codes
-                ):
-                    continue
-                if prefix and ("prefix" not in v or v["prefix"] != prefix):
-                    continue
-                sid_count += 1
+        found = None
 
-    except KeyError:
-        pass
+        # ex.) Ouput for reference for dictionary out["process_id"]
+        # {
+        #     'process_id': {
+        #         '65109': {
+        #             'router_id': '10.66.12.12',
+        #             'sids': {
+        #                 'total_entries': 1,
+        #                 1: {
+        #                     'sid': 1,
+        #                     'codes': 'L',
+        #                     'prefix': '10.66.12.12/32',
+        #                     'adv_rtr_id': '10.66.12.12',
+        #                     'area_id': 10.49.0.0
+        #                 }
+        #             }
+        #         }
+        #     }
+        # }
+        
+        reqs = R(
+            ['process_id',
+            '(?P<process_id>.*)' if not process_id else process_id,
+            'sids',
+            '(?P<sids>.*)' if not sid else sid,
+            'sid',
+            '(?P<sid>.*)'
+            ]
+        )
 
-    return sid_count != 0
+        found = find([out], reqs, filter_=False, all_keys=True)
+        
+        result = False
 
-def is_type_10_opaque_area_link_states_originated(device, max_time=300, check_interval=30, expected_result=True):
+        if found:
+            key_list = GroupKeys.group_keys(
+                reqs=reqs.args, ret_num={}, source=found, all_keys=True
+            )
+            
+            for v in key_list:
+                # Get current dictionary from filtered values
+                # Current process id
+                c_process_id = v.get('process_id', None)
+                # Current SID
+                c_sid = v.get('sid', None)
+                
+                # sid_dict:
+                #             'sids': {
+                #                 'total_entries': 1,
+                #                 1: {
+                #                     'sid': 1,
+                #                     'codes': 'L',
+                #                     'prefix': '10.66.12.12/32',
+                #                     'adv_rtr_id': '10.66.12.12',
+                #                     'area_id': 10.49.0.0
+                #                 }
+                #             }
+                sid_dict = out['process_id'][c_process_id]\
+                    ['sids'][c_sid]
+                
+                # Current prefix for SID - Move to next SID values
+                c_prefix = sid_dict.get('prefix', None)
+                
+                # Current IP address for SID - Move to next SID values
+                c_ip_address = sid_dict.get('adv_rtr_id', None)
+                
+                # Current code for SID - Move to next SID values
+                c_code = sid_dict.get('codes', None)
+                
+
+                # If SID is passed as argument and is not equal to current SID - Move to next SID values
+                if sid and c_sid != sid:
+                    continue
+                
+                # If prefix is passed as argument and is not equal to current Prefix - Move to next SID values
+                if prefix and c_prefix != prefix:
+                    continue
+
+                # If IP address is passed as argument and is not equal to current IP address - Move to next SID values
+                if ip_address and c_ip_address != ip_address:
+                    continue
+                
+                # If list of codes passed as avoid_codes
+                # If Current code c_code is not None
+                # If c_code is found in avoid_codes - Move to next SID values
+                if avoid_codes and c_code in avoid_codes:
+                    continue
+
+                # If code is passed as argument
+                # If Current code c_code is not None
+                # If c_code is not equal to code - Move to next SID values
+                if code and c_code != code:
+                    continue
+                
+                # Result is only set to True, if it did not failed in all previous criterias
+                # There are some records found in output based on filter
+                result = True
+                if result and expected_result:
+                    return result
+
+        if not expected_result and not result:
+            return expected_result
+        elif not result or not expected_result:
+            timeout.sleep()
+            out = device.execute("show ip ospf segment-routing sid-database")
+            if isinstance(output, list):
+                # Change original ouput pass as refernce type
+                output[0] = out
+            else:
+                output = out
+        else:
+            return result
+    return result
+
+def is_type_10_opaque_area_link_states_originated(device, max_time=60, check_interval=10, 
+    expected_result=True):
     """ Verifies if Type 10 opaque area link states are originated
         from command 'show ip ospf database opaque-area self-originate'
 
@@ -390,7 +467,7 @@ def is_type_10_opaque_area_link_states_originated(device, max_time=300, check_in
             False
 
     """
-
+    
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
         out = None
@@ -419,29 +496,27 @@ def is_type_10_opaque_area_link_states_originated(device, max_time=300, check_in
             )
 
             found = find([out], reqs, filter_=False, all_keys=True)
-
+            
             if not found and not expected_result:
                 return expected_result
-
+                
             if found:
                 key_list = GroupKeys.group_keys(
                     reqs=reqs.args, ret_num={}, source=found, all_keys=True
                 )
-
+                
                 if (key_list.pop()['lsa_type'] == 10) == expected_result:
                     return expected_result
-
+        
         timeout.sleep()
-
+    
     return False
 
-
-def verify_opaque_type_7_prefix_and_flags(
-    device, vrf, address_family, instance, prefix, flags
-):
+def verify_opaque_type_7_prefix_and_flags(device, vrf, address_family, instance, prefix, 
+    flags, max_time=60, check_interval=10, expected_result=True):
     """ Verifies if SID is found in ospf
         from command 'show ip ospf segment-routing sid-database'
-
+        
         Args:
             device (`obj`): Device to be executed command
             vrf (`str`): VRF name
@@ -459,52 +534,60 @@ def verify_opaque_type_7_prefix_and_flags(
             False
 
     """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        out = None
+        result = True
+        try:
+            out = device.parse('show ip ospf database opaque-area self-originate') 
+        except (SchemaEmptyParserError):
+            pass
+        if out:
+            filter_dict = {}
+            filter_dict.update({'flags': flags})
+            filter_dict.update({'prefix': prefix})
 
-    out = device.parse("show ip ospf database opaque-area self-originate")
+            for k,v in filter_dict.items():
+                reqs = R(
+                    [
+                        'vrf',
+                        vrf,
+                        'address_family',
+                        address_family,
+                        'instance',
+                        instance,
+                        'areas',
+                        '(?P<area>.*)',
+                        'database',
+                        'lsa_types',
+                        '(?P<lsa_types>.*)',
+                        'lsas',
+                        '(?P<lsas>7.*)',
+                        'ospfv2',
+                        'body',
+                        'opaque',
+                        'extended_prefix_tlvs',
+                        '(?P<extended_prefix_tlvs>.*)',
+                        k,
+                        v
+                    ]
+                )
+                found = find([out], reqs, filter_=False, all_keys=True)
+                if not found:
+                    result = False
+                if not result and not expected_result:
+                    return expected_result
 
-    filter_dict = {}
-    filter_dict.update({"flags": flags})
-    filter_dict.update({"prefix": prefix})
+            if result and expected_result:
+                return expected_result
+        timeout.sleep()
+    return False
 
-    for k, v in filter_dict.items():
-        reqs = R(
-            [
-                "vrf",
-                vrf,
-                "address_family",
-                address_family,
-                "instance",
-                instance,
-                "areas",
-                "(?P<area>.*)",
-                "database",
-                "lsa_types",
-                "(?P<lsa_types>.*)",
-                "lsas",
-                "(?P<lsas>7.*)",
-                "ospfv2",
-                "body",
-                "opaque",
-                "extended_prefix_tlvs",
-                "(?P<extended_prefix_tlvs>.*)",
-                k,
-                v,
-            ]
-        )
-        found = find([out], reqs, filter_=False, all_keys=True)
-
-        if not found:
-            return False
-
-    return True
-
-
-def verify_sid_is_advertised_in_ospf(
-    device, router_id, vrf, address_family, instance, prefix, flags
-):
+def verify_sid_is_advertised_in_ospf(device, router_id, vrf, address_family, instance, prefix, 
+    flags, max_time=90, check_interval=10, expected_result=True):
     """ Verifies if SID is advertised in ospf
         from command 'show ip ospf database opaque-area adv-router {router_id}'
-
+        
         Args:
             device (`obj`): Device to be executed command
             router_id (`str`): Router ID
@@ -523,47 +606,60 @@ def verify_sid_is_advertised_in_ospf(
             False
 
     """
-    out = device.parse(
-        "show ip ospf database opaque-area adv-router {router_id}".format(
-            router_id=router_id
-        )
-    )
+    timeout = Timeout(max_time, check_interval)
 
-    filter_dict = {}
-    filter_dict.update({"flags": flags})
-    filter_dict.update({"prefix": prefix})
+    while timeout.iterate():
+        out = None
+        result = True
+        try:
+            out = device.parse('show ip ospf database opaque-area adv-router {router_id}'.
+                    format(router_id=router_id)) 
+        except (SchemaEmptyParserError):
+            pass
 
-    for k, v in filter_dict.items():
-        reqs = R(
-            [
-                "vrf",
-                vrf,
-                "address_family",
-                address_family,
-                "instance",
-                instance,
-                "areas",
-                "(?P<area>.*)",
-                "database",
-                "lsa_types",
-                "(?P<lsa_types>.*)",
-                "lsas",
-                "(?P<lsas>7.*)",
-                "ospfv2",
-                "body",
-                "opaque",
-                "extended_prefix_tlvs",
-                "(?P<extended_prefix_tlvs>.*)",
-                k,
-                v,
-            ]
-        )
-        found = find([out], reqs, filter_=False, all_keys=True)
+        if out:
+            filter_dict = {}
+            filter_dict.update({'flags': flags})
+            filter_dict.update({'prefix': prefix})
 
-        if not found:
-            return False
+            for k,v in filter_dict.items():
+                reqs = R(
+                    [
+                        'vrf',
+                        vrf,
+                        'address_family',
+                        address_family,
+                        'instance',
+                        instance,
+                        'areas',
+                        '(?P<area>.*)',
+                        'database',
+                        'lsa_types',
+                        '(?P<lsa_types>.*)',
+                        'lsas',
+                        '(?P<lsas>7.*)',
+                        'ospfv2',
+                        'body',
+                        'opaque',
+                        'extended_prefix_tlvs',
+                        '(?P<extended_prefix_tlvs>.*)',
+                        k,
+                        v
+                    ]
+                )
+                found = find([out], reqs, filter_=False, all_keys=True)
+                
+                if not found:
+                    result = False
+                
+                if not result and not expected_result:
+                    return expected_result
 
-    return True
+            if result and expected_result:
+                return expected_result
+        timeout.sleep()
+
+    return False
 
 def verify_ospf_tilfa_in_state_in_ospf(
     device,
@@ -810,73 +906,6 @@ def is_ospf_sr_label_preferred(device, process_id, output=None, max_time=60, che
         timeout.sleep()
     
     return is_sr_label_prefered
-
-def verify_ospf_segment_routing_lb_srlb_base_and_range(
-    device,
-    process_id,
-    router_id,
-    expected_srlb_base=None,
-    expected_srlb_range=None,
-    max_time=30,
-    check_interval=10,
-):
-    """ Verifies segment routing gb SRLB Base value
-
-        Args:
-            device ('obj'): Device to use
-            process_id ('str'): Ospf process id
-            router_id ('str'): Router entry to look under
-            expected_srlb_base ('int'): Expected value for SRLB Base
-            expected_srlb_range ('int'): Expected value for SRLB Range
-            max_time ('int'): Maximum time to wait
-            check_interval ('int'): How often to check
-
-        Returns:
-             True/False
-
-        Raises:
-            None
-    """
-    log.info(
-        "Verifying router {router} has SRLB Base value of {value} and SRLB Range value of {value2}".format(
-            router=router_id,
-            value=expected_srlb_base,
-            value2=expected_srlb_range,
-        )
-    )
-
-    timeout = Timeout(max_time, check_interval)
-    while timeout.iterate():
-        srlb_base, srlb_range = device.api.get_ospf_segment_routing_lb_srlb_base_and_range(
-            device=device, process_id=process_id, router_id=router_id
-        )
-
-        if not (expected_srlb_base and expected_srlb_base != srlb_base) or (
-            expected_srlb_range and expected_srlb_range != srlb_range
-        ):
-            return True
-
-        if expected_srlb_base and expected_srlb_base != srlb_base:
-            log.info(
-                "Router {router} has SRLB Base value of {value}. Expected value is {expected}".format(
-                    router=router_id,
-                    value=srlb_base,
-                    expected=expected_srlb_base,
-                )
-            )
-        if expected_srlb_range and expected_srlb_range != srlb_range:
-            log.info(
-                "Router {router} has SRLB Range value of {value}. Expected value is {expected}".format(
-                    router=router_id,
-                    value=srlb_range,
-                    expected=expected_srlb_range,
-                )
-            )
-
-        timeout.sleep()
-
-    return False
-
 
 def verify_ospf_segment_routing_gb_srgb_base_and_range(
     device,
