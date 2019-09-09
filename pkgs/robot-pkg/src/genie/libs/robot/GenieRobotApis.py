@@ -4,7 +4,7 @@ from robot.libraries.BuiltIn import BuiltIn
 import logging
 log = logging.getLogger(__name__)
 
-DOC_LINK = 'pubhub.devnetcloud.com/media/genie-feature-browser/docs/#/apis/'
+DOC_LINK = 'https://pubhub.devnetcloud.com/media/genie-feature-browser/docs/#/apis/'
 
 class GenieRobotApis:
     ROBOT_LIBRARY_SCOPE = "TEST CASE"
@@ -16,6 +16,9 @@ class GenieRobotApis:
         return self.api.function_data.keys()
 
     def get_keyword_documentation(self, kw):
+        if kw == '__intro__':
+            return "Available networking APIs provided by Genie"
+
         return ''.join(['''Checkout this url for detailed doc on this keyword:
         
         ''', DOC_LINK, kw])

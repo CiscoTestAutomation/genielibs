@@ -38,11 +38,13 @@ BUILD_CMD     = python setup.py bdist_wheel --dist-dir=$(DIST_DIR)
 PROD_USER     = pyadm@pyats-ci
 PROD_PKGS     = /auto/pyats/packages/cisco-shared
 PROD_SCRIPTS  = /auto/pyats/bin
-TESTCMD       = runAll --path tests/
+TESTCMD       = runAll
 WATCHERS      = asg-genie-dev@cisco.com
 HEADER        = [Watchdog]
 PYPIREPO      = pypitest
 PYTHON		  = python
+PYLINT_CMD	  = pylintAll
+CYTHON_CMD	  = compileAll
 
 # Development pkg requirements
 RELATED_PKGS = genie.libs.conf genie.libs.ops genie.libs.robot genie.libs.sdk
@@ -75,6 +77,9 @@ help:
 	@echo " devnet                Build DevNet package."
 	@echo " install_build_deps    install pyats-distutils"
 	@echo " uninstall_build_deps  remove pyats-distutils"
+	@echo "compile		 		  Compile all python modules to c"
+	@echo "coverage_all			  Run code coverage on all test files"
+	@echo "pylint_all			  Run python linter on all python modules"
 	@echo ""
 	@echo "     --- build all targets ---"
 	@echo ""
@@ -105,7 +110,7 @@ compile:
 	@echo ""
 	@echo "Compiling to C code"
 	@echo --------------------------
-	$(PYTHON) compile.py
+	@$(CYTHON_CMD) --exclude *iosxe/ip_precedence/verify.py *iosxe/udp/get.py
 	@echo "Done Compiling"
 	@echo ""
 
@@ -113,8 +118,16 @@ coverage_all:
 	@echo ""
 	@echo "Running code coverage on all unittests"
 	@echo ---------------------------------------
-	@runAll --path tests/ --coverage
+	@$(TESTCMD) --coverage
 	@echo "Done Compiling"
+	@echo ""
+
+pylint_all:
+	@echo ""
+	@echo "Running Pylint on all modules"
+	@echo "-----------------------------"
+	@$(PYLINT_CMD)
+	@echo "Done linting"
 	@echo ""
 
 devnet: all
@@ -181,23 +194,6 @@ distribute:
 all: $(ALL_PKGS)
 	@echo ""
 	@echo "Done."
-	@echo ""
-
-package_compile: $(ALL_PKGS) build_cythonize
-	@echo "Done Compiling and building"
-	@echo ""
-
-build_cythonize:
-	@echo ""
-	@echo "--------------------------------------------------------------------"
-	@echo "Compiling pyATS distributable"
-
-	cd pkgs/conf-pkg; $(BUILD_CMD) --cythonize
-	cd pkgs/ops-pkg; $(BUILD_CMD) --cythonize
-	cd pkgs/robot-pkg; $(BUILD_CMD) --cythonize
-	cd pkgs/sdk-pkg; $(BUILD_CMD) --cythonize
-
-	@echo "Completed compiling"
 	@echo ""
 
 package: $(ALL_PKGS)

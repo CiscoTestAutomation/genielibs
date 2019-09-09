@@ -178,14 +178,80 @@ def get_ospf_router_self_originate_metric(device, vrf, ospf_process_id):
     return metric_dict
 
 
-def get_ospf_process_number(device, vrf="default", interface=None):
+def get_ospf_area_of_interface(
+    device,
+    interface,
+    process_id,
+    vrf="default",
+    address_family="ipv4",
+    output=None,
+):
+    """ Get area value of an interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            vrf ('str'): VRF name
+            process_id ('str'): Process id
+            address_family ('str'): Address family
+        Returns:
+            area ('str'): If area found
+            None: If area not found
+        Raises:
+            ValueError: Command found more than one area
+    """
+
+    log.info(
+        "Getting area of interface {interface}".format(interface=interface)
+    )
+    if not output:
+        try:
+            output = device.parse(
+                "show ip ospf interface {interface}".format(
+                    interface=interface
+                )
+            )
+        except SchemaEmptyParserError:
+            log.info("Could not find any area")
+            return None
+
+    if process_id:
+        areas = list(
+            output["vrf"]
+            .get(vrf, {})
+            .get("address_family", {})
+            .get(address_family, {})
+            .get("instance", {})
+            .get(process_id, {})
+            .get("areas", {})
+            .keys()
+        )
+
+        if len(areas) > 1:
+            raise ValueError(
+                "Command has returned more than one area. The following "
+                "areas have been returned:\n{areas}".format(
+                    areas="\n".join(areas)
+                )
+            )
+
+        area = areas[0]
+
+        log.info("Found area {area}".format(area=area))
+
+    return area
+
+
+def get_ospf_process_number(
+    device, vrf="default", interface=None, output=None
+):
     """ Get ospf process number
 
         Args:
             device ('obj'): device to run on
             vrf ('str'): vrf to search under
             interface ('str') interface to serach under
-        
+            output ('dict'): Output from parser otherwise will get from device
+
         Returns:
             None if error occured
             str: ospf process number
@@ -193,27 +259,27 @@ def get_ospf_process_number(device, vrf="default", interface=None):
         Raises:
             SchemaEmptyParserError
     """
-
-    try:
-        if interface:
-            out = device.parse(
-                "show ip ospf interface {interface}".format(
-                    interface=interface
+    if not output:
+        try:
+            if interface:
+                output = device.parse(
+                    "show ip ospf interface {interface}".format(
+                        interface=interface
+                    )
                 )
-            )
-        else:
-            out = device.parse("show ip ospf")
-    except SchemaEmptyParserError:
-        return None
+            else:
+                output = device.parse("show ip ospf")
+        except SchemaEmptyParserError:
+            return None
 
     if (
-        out
-        and "vrf" in out
-        and vrf in out["vrf"]
-        and "address_family" in out["vrf"][vrf]
-        and "ipv4" in out["vrf"][vrf]["address_family"]
+        output
+        and "vrf" in output
+        and vrf in output["vrf"]
+        and "address_family" in output["vrf"][vrf]
+        and "ipv4" in output["vrf"][vrf]["address_family"]
     ):
-        for number in out["vrf"][vrf]["address_family"]["ipv4"].get(
+        for number in output["vrf"][vrf]["address_family"]["ipv4"].get(
             "instance", {}
         ):
             return number
@@ -452,8 +518,9 @@ def get_ospf_interfaces(device, bgp_as):
     return interfaces
 
 
-def get_ospf_process_id_and_area(device, vrf='default', interface=None,
-        address_family='ipv4'):
+def get_ospf_process_id_and_area(
+    device, vrf="default", interface=None, address_family="ipv4"
+):
     """ Get ospf process id and area
 
         Args:
@@ -461,7 +528,7 @@ def get_ospf_process_id_and_area(device, vrf='default', interface=None,
             vrf ('str'): vrf to search under
             interface ('str') interface to serach under
             address_family (`str`): Address family name
-            
+
         Returns:
             None if error occured
             tuple: ospf process number and area
@@ -471,7 +538,7 @@ def get_ospf_process_id_and_area(device, vrf='default', interface=None,
         Raises:
             None
     """
-    
+
     try:
         if interface:
             out = device.parse(
@@ -494,7 +561,200 @@ def get_ospf_process_id_and_area(device, vrf='default', interface=None,
         for number, areas in out["vrf"][vrf]["address_family"][address_family][
             "instance"
         ].items():
-            if 'areas' in areas:
+            if "areas" in areas:
                 return number, list(areas["areas"])
 
     return None, None
+
+def get_ospf_global_block_range(device, process_id, output=None):
+    ''' Get global block range from segment-routing
+        Args:
+            device ('obj'): Device object
+            process_id ('str'): Ospf process id
+            output ('dict'): Optional. Parsed output of command 'show ip ospf segment-routing'
+        Returns:
+            tuple: (
+                int: Global range minimum
+                int: Global range maximum
+            )
+        Raises:
+            None
+    '''
+
+    log.info('Getting global block range from segment-routing')
+
+    if not output:
+        try:
+            output = device.parse('show ip ospf segment-routing')
+        except SchemaEmptyParserError:
+            log.info('Could not find any block range '
+                     'information for process {id}'.format(id=process_id))
+            return None, None
+
+    srgb_min=output['process_id'].get(process_id, {}).get('global_block_srgb', {}).get('range', {}).get('start', None)    
+    srgb_max=output['process_id'].get(process_id, {}).get('global_block_srgb', {}).get('range', {}).get('end', None)
+
+    if (srgb_min and srgb_max):
+        log.info('Found range {rmin} - {rmax}'.format(rmin=srgb_min, rmax=srgb_max))
+
+    elif not (srgb_min or srgb_max):
+        log.info('Could not find any range information')
+    elif not srgb_min:
+        log.info('Could not find minimum range information')
+    elif not srgb_max:
+        log.info('Could not find maximum range information')
+
+    return srgb_min, srgb_max
+
+def get_ospf_local_block_range(device, process_id, output=None):
+    ''' Get local block range from segment-routing
+        Args:
+            device ('obj'): Device object
+            process_id ('str'): Ospf process id
+            output ('dict'): Optional. Parsed output of command 'show ip ospf segment-routing'
+        Returns:
+            tuple: (
+                int: Local range minimum
+                int: Local range maximum
+            )
+        Raises:
+            None
+    '''
+
+    log.info('Getting local block range from segment-routing')
+
+    if not output:
+        try:
+            output = device.parse('show ip ospf segment-routing')
+        except SchemaEmptyParserError:
+            log.info('Could not find any block range '
+                     'information for process {id}'.format(id=process_id))
+            return None, None
+
+    srlb_min=output['process_id'].get(process_id, {}).get('local_block_srlb', {}).get('range', {}).get('start', None)    
+    srlb_max=output['process_id'].get(process_id, {}).get('local_block_srlb', {}).get('range', {}).get('end', None)
+
+    if (srlb_min and srlb_max):
+        log.info('Found range {rmin} - {rmax}'.format(rmin=srlb_min, rmax=srlb_max))
+
+    elif not (srlb_min or srlb_max):
+        log.info('Could not find any range information')
+    elif not srlb_min:
+        log.info('Could not find min range information')
+    elif not srlb_max:
+        log.info('Could not find max range information')
+
+    return srlb_min, srlb_max
+
+def get_ospf_segment_routing_lb_srlb_base_and_range(
+    device, process_id, router_id
+):
+    """ Gets 'SRLB Base' and 'SRLB Range' values
+
+        Args:
+            device ('obj'): Device to use
+            process_id ('str'): Ospf process_id
+            router_id ('str'): Which router_id entry to use
+
+        Returns:
+            if can filter down to one result:
+                (('int'): SRLB Base value, ('dict'): Output from parser)
+
+        Raises:
+            None
+    """
+    try:
+        output = device.parse("show ip ospf segment-routing local-block")
+    except SchemaEmptyParserError:
+        return None, None
+
+    reqs_base = R(
+        [
+            "instance",
+            process_id,
+            "areas",
+            "(?P<area>.*)",
+            "router_id",
+            router_id,
+            "srlb_base",
+            "(?P<srlb_base>.*)",
+        ]
+    )
+    found_base = find(output, reqs_base, filter_=False, all_keys=True)
+    if not found_base:
+        return None, None
+
+    reqs_range = R(
+        [
+            "instance",
+            process_id,
+            "areas",
+            "(?P<area>.*)",
+            "router_id",
+            router_id,
+            "srlb_range",
+            "(?P<srlb_range>.*)",
+        ]
+    )
+    found_range = find(output, reqs_range, filter_=False, all_keys=True)
+    if not found_range:
+        return None, None
+
+    return found_base[0][0], found_range[0][0]
+
+
+def get_ospf_segment_routing_gb_srgb_base_and_range(
+    device,
+    process_id,
+    router_id
+):
+    """ Gets 'SRGB Base' and 'SRGB Range' values
+
+        Args:
+            device ('obj'): Device to use
+            process_id ('int'): Ospf process_id
+            router_id ('str'): Which router_id entry to use
+
+        Returns:
+            if can filter down to one result:
+                (('int'): SRGB Base value, ('dict'): Output from parser)
+            if cannot filter due to lack of arguments:
+                ([{key:value},{key:value}], ('dict'): Output from parser)
+
+        Raises:
+            None
+    """
+    try:
+        output = device.parse("show ip ospf segment-routing global-block")
+    except SchemaEmptyParserError:
+        return None, None
+
+    reqs_base = R(
+        [
+            "process_id",
+            process_id,
+            "routers",
+            router_id,
+            'srgb_base',
+            "(?P<srgb_base>.*)",
+        ]
+    )
+    found_base = find(output, reqs_base, filter_=False, all_keys=True)
+    if not found_base:
+        return None, None
+
+    reqs_range = R(
+        [
+            "process_id",
+            process_id,
+            "routers",
+            router_id,
+            'srgb_range',
+            "(?P<srgb_range>.*)",
+        ]
+    )
+    found_range = find(output, reqs_range, filter_=False, all_keys=True)
+    if not found_range:
+        return None, None
+
+    return found_base[0][0], found_range[0][0]

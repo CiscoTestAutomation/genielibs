@@ -64,6 +64,7 @@ class TriggerUnconfigConfigVlan(TriggerUnconfigConfig):
                                                             ,'vlan_id','(?P<vlan>^([2-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1][0][0][0-1]))$'],
                                                         ['info','vlans','(?P<vlan>.*)','shutdown',False]],
                                         'kwargs': {'attributes': ['info']},
+                                        'all_keys':True,
                                         'exclude': vlan_exclude}},
                       config_info={'conf.vlan.Vlan':{
                                      'requirements':[['device_attr', '{uut}', 'vlan_attr', '(?P<vlan>.*)']],

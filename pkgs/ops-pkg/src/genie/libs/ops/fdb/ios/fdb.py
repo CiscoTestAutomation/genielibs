@@ -1,7 +1,7 @@
 '''
 FDB Genie Ops Object for IOS - CLI.
 '''
-from ..iosxe.fdb import Fdb as Fdbs
+from ..iosxe.fdb import Fdb as FdbXE
 
-class Fdb(Fdbs):
+class Fdb(FdbXE):
     pass

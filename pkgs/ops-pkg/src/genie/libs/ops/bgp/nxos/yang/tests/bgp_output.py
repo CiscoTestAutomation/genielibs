@@ -469,7 +469,7 @@ class BgpOutput(object):
                         {'af_nexthop_trigger_enable': True,
                         'nexthop_trigger_delay_critical': 3000,
                         'nexthop_trigger_delay_non_critical': 10000},
-                    'ipv6 label unicast':
+                    'ipv6 labeled-unicast':
                         {'af_nexthop_trigger_enable': True,
                         'nexthop_trigger_delay_critical': 3000,
                         'nexthop_trigger_delay_non_critical': 10000},
@@ -2099,7 +2099,7 @@ class BgpOutput(object):
                                 'distance_local': 55}}},
                     'default': 
                         {'address_family': 
-                            {'ipv4 label unicast': 
+                            {'ipv4 labeled-unicast':
                                 {'maximum_paths_ebgp': 1,
                                 'maximum_paths_ibgp': 1},
                             'ipv4 multicast': {},
@@ -2116,7 +2116,7 @@ class BgpOutput(object):
                                 'nexthop_trigger_delay_critical': 3000,
                                 'nexthop_trigger_delay_non_critical': 10000,
                                 'nexthop_trigger_enable': True},
-                            'ipv6 label unicast': 
+                            'ipv6 labeled-unicast':
                                 {'nexthop_trigger_delay_critical': 3000,
                                 'nexthop_trigger_delay_non_critical': 10000,
                                 'nexthop_trigger_enable': True},
@@ -2455,7 +2455,7 @@ class BgpOutput(object):
                         {'neighbor': 
                             {'10.16.2.2': 
                                 {'address_family': 
-                                    {'ipv4 label unicast': 
+                                    {'ipv4 labeled-unicast':
                                         {'advertised': {},
                                         'routes': 
                                             {'10.106.0.0/8': 

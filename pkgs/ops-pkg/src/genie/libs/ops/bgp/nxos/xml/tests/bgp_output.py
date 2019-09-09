@@ -199,7 +199,7 @@ class BgpOutput(object):
                 'vrf_state': 'up'},
             'default':
                 {'address_family':
-                    {'ipv4 label unicast':
+                    {'ipv4 labeled-unicast':
                         {'next_hop_trigger_delay':
                             {'critical': 3000,
                             'non_critical': 10000},
@@ -560,7 +560,7 @@ class BgpOutput(object):
                                 'routes': 0}},
                          'table_id': 1,
                          'table_state': 'up'},
-                    'ipv6 label unicast': 
+                    'ipv6 labeled-unicast': 
                         {'peers': 
                             {0: 
                                 {'active_peers': 0,
@@ -939,7 +939,7 @@ class BgpOutput(object):
                         {'af_nexthop_trigger_enable': True,
                         'nexthop_trigger_delay_critical': 3000,
                         'nexthop_trigger_delay_non_critical': 10000},
-                    'ipv6 label unicast':
+                    'ipv6 labeled-unicast':
                         {'af_nexthop_trigger_enable': True,
                         'nexthop_trigger_delay_critical': 3000,
                         'nexthop_trigger_delay_non_critical': 10000},
@@ -2451,7 +2451,7 @@ class BgpOutput(object):
                                          'cluster_id': '0.0.0.0',
                                          'confederation_identifier': 0,
                                          'router_id': '0.0.0.0'},
-                                  'default': {'address_family': {'ipv4 label unicast': {},
+                                  'default': {'address_family': {'ipv4 labeled-unicast': {},
                                                                  'ipv4 multicast': {},
                                                                  'ipv4 unicast': {'dampening': 'True',
                                                                                   'dampening_half_life_time': '45',
@@ -2464,7 +2464,7 @@ class BgpOutput(object):
                                                                                   'nexthop_trigger_delay_critical': 3000,
                                                                                   'nexthop_trigger_delay_non_critical': 10000,
                                                                                   'nexthop_trigger_enable': True},
-                                                                 'ipv6 label unicast': {'nexthop_trigger_delay_critical': 3000,
+                                                                 'ipv6 labeled-unicast': {'nexthop_trigger_delay_critical': 3000,
                                                                                         'nexthop_trigger_delay_non_critical': 10000,
                                                                                         'nexthop_trigger_enable': True},
                                                                  'ipv6 multicast': {},
@@ -2860,7 +2860,7 @@ class BgpOutput(object):
                         {'neighbor':
                             {'10.16.2.10':
                                 {'address_family':
-                                    {'ipv4 label unicast':
+                                    {'ipv4 labeled-unicast':
                                         {'advertised': {},
                                         'routes':
                                             {'10.106.0.0/8':
@@ -3152,7 +3152,7 @@ class BgpOutput(object):
                         {'neighbor':
                             {'10.16.2.2':
                                 {'address_family':
-                                    {'ipv4 label unicast':
+                                    {'ipv4 labeled-unicast':
                                         {'advertised': {},
                                         'routes':
                                             {'10.106.0.0/8':
@@ -3418,7 +3418,7 @@ class BgpOutput(object):
                                 'remote_as': 100},
                             '10.16.2.25':
                                 {'address_family':
-                                    {'ipv4 label unicast':
+                                    {'ipv4 labeled-unicast':
                                         {'advertised': {},
                                         'routes':
                                             {'10.106.0.0/8':
@@ -3701,7 +3701,7 @@ class BgpOutput(object):
                                 'remote_as': 0},
                             '10.16.2.5':
                                 {'address_family':
-                                    {'ipv4 label unicast':
+                                    {'ipv4 labeled-unicast':
                                         {'advertised': {},
                                         'routes':
                                             {'10.106.0.0/8':

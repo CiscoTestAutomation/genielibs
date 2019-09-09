@@ -96,13 +96,17 @@ def get_running_config_section_dict(
             options=options, section=section
         )
     elif options:
-        cmd = "show run {options}".formay(options=options)
+        cmd = "show run {options}".format(options=options)
     elif section:
         cmd = "show run | section {section}".format(section=section)
     else:
         cmd = "show run"
 
-    output = device.execute(cmd)
+    try:
+        output = device.execute(cmd)
+    except SubCommandFailure:
+        return None
+        
     config_dict = get_config_dict(output)
 
     return config_dict

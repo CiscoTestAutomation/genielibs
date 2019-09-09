@@ -1,7 +1,7 @@
 '''
 ACL Genie Ops Object for IOS - CLI.
 '''
-from ..iosxe.acl import Acl as Acls
+from ..iosxe.acl import Acl as AclXE
 
-class Acl(Acls):
+class Acl(AclXE):
     pass

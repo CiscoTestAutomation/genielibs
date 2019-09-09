@@ -160,3 +160,80 @@ def get_routing_routes(device, vrf, address_family):
         raise KeyError("Key issue with exception : {}".format(str(e)))
 
     return routes_received
+
+
+def get_routing_repair_path_information(device, route):
+    """ Get 'repair path' information under route
+
+        Args:
+            device ('obj'): Device object
+            route ('str'): Route address
+        Returns:
+            tuple : (
+                next_hop ('str'): Next hop ip
+                outgoing_interface ('str'): Outgoing interface name
+            )            
+        Raises:
+            None
+    """
+
+    try:
+        output = device.parse("show ip route {route}".format(route=route))
+    except SchemaEmptyParserError:
+        log.info("Could not find any information about repair path")
+        return None, None
+
+    for rt in output["entry"]:
+        for path_index in output["entry"][rt]["paths"]:
+            if output["entry"][rt]["paths"][path_index]["from"] == route:
+                repair_path = output["entry"][rt]["paths"][path_index].get(
+                    "repair_path", {}
+                )
+                if repair_path:
+                    log.info(
+                        "Found repair path {path[repair_path]} via {path[via]}".format(
+                            path=repair_path
+                        )
+                    )
+                    next_hop = repair_path["repair_path"]
+                    outgoing_interface = repair_path["via"]
+
+                    return next_hop, outgoing_interface
+
+    log.info("Could not find any information about repair path")
+    return None, None
+
+def get_routing_mpls_label(device, prefix, output=None):
+    ''' Get registered MPLS label to prefix 
+        Args:
+            device ('obj'): Device object
+            prefix ('str'): Prefix address
+            output ('dict'): Optional. Parsed output of command 'show ip route {prefix}'
+        Returns:
+            int: registered MPLS label
+        Raises:
+            None
+
+    '''
+
+    log.info('Getting registered MPLS label to prefix {prefix}'.format(prefix=prefix))
+
+    if not output:
+        try:
+            output = device.parse('show ip route {prefix}'.format(prefix=prefix))
+        except SchemaEmptyParserError:
+            log.info('Could not find any MPLS label to prefix '
+                     'address {prefix}'.format(prefix=prefix))
+
+    for entry in output['entry']:
+        if prefix in entry:
+            for path in output['entry'][entry].get('paths', {}):
+                label = output['entry'][entry]['paths'][path].get('mpls_label', None)
+                if label:
+                    log.info('Found MPLS label {label}'.format(label=label))
+                    return int(label)
+
+    log.info('Could not find any MPLS label to prefix '
+             'address {prefix}'.format(prefix=prefix))
+
+    return None

@@ -4,7 +4,10 @@
 import re
 import logging
 
+# Genie
 from genie.utils.timeout import Timeout
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
+
 
 # BGP
 from genie.libs.sdk.apis.iosxe.bgp.get import (
@@ -15,6 +18,9 @@ from genie.libs.sdk.apis.iosxe.bgp.get import (
 
 # ROUTING
 from genie.libs.sdk.apis.iosxe.routing.get import get_routing_routes
+from genie.libs.sdk.apis.iosxe.routing.get import (
+    get_routing_repair_path_information,
+)
 
 log = logging.getLogger(__name__)
 
@@ -377,3 +383,35 @@ def is_routing_route_targets_present(
             result = False
 
     return result
+
+
+def is_routing_repair_path_in_route_database(
+    device, route, max_time=60, check_interval=10
+):
+    """ Verify if 'repair path' is present in route database
+
+        Args:
+            device ('obj'): Device object
+            route ('str'): Route address
+            max_time ('int'): Max time in seconds checking output
+            check_interval ('int'): Interval in seconds of each checking 
+        Return:
+            True/False
+        Raises:
+            None
+    """
+
+    log.info("Getting 'repair path' information")
+
+    timeout = Timeout(max_time=max_time, interval=check_interval)
+    while timeout.iterate():
+        next_hop, outgoing_interface = get_routing_repair_path_information(
+            device=device, route=route
+        )
+        if next_hop and outgoing_interface:
+            return True
+
+        timeout.sleep()
+
+    log.info("Could not find any information about repair path")
+    return False

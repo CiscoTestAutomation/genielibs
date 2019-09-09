@@ -1,29 +1,30 @@
 # Python
-import re
 import jinja2
 from jinja2.exceptions import TemplateNotFound
 
-from unicon.core.errors import SubCommandFailure
 
 def get_jinja_template(templates_dir, template_name):
-    """ Get free and total space on disk
+    """ Gets the jinja template specified
+
         Args:
             templates_dir ('str'): Templates directory
             template_name ('str'): Template name
-        Return: 
-            Template object
-        Raise:
-            SubCommandFailure
-    """
 
+        Returns:
+            ('obj') jinja template
+            None
+
+        Raises:
+            None
+    """
     env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(searchpath=templates_dir)
+        loader=jinja2.FileSystemLoader(searchpath=templates_dir),
+        undefined=jinja2.StrictUndefined
     )
 
     try:
         template = env.get_template(template_name)
     except TemplateNotFound:
-        raise SubCommandFailure('Could not find template {template}' \
-                            .format(template=template_name))
+        return
 
     return template
