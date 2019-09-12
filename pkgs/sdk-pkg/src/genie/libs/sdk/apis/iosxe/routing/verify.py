@@ -4,10 +4,13 @@
 import re
 import logging
 
+# pyATS
+from pyats.utils.objects import find, R
+
 # Genie
 from genie.utils.timeout import Timeout
+from genie.libs.sdk.libs.utils.normalize import GroupKeys
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
-
 
 # BGP
 from genie.libs.sdk.apis.iosxe.bgp.get import (
@@ -25,6 +28,73 @@ from genie.libs.sdk.apis.iosxe.routing.get import (
 log = logging.getLogger(__name__)
 
 
+def verify_ip_cef_nexthop_label(device, ip, expected_label='', has_label=True, 
+                                vrf='default', max_time=30, check_interval=10):
+    """ Verify ip cef nexthop does (not) have expected label
+
+        Args:
+            device (`obj`): Device object
+            ip (`str`): IP address
+            expected_label (`str`): Expected label
+            has_label (`bool`): True if expect to have label
+                                False if expect not to have label
+            vrf (`str`): Vrf name
+            max_time (`int`): Max time, default: 30
+            check_interval (`int`): Check interval, default: 10
+        Returns:
+            result (`bool`): Verified result
+     """
+    timeout = Timeout(max_time, check_interval)
+    if vrf and vrf != 'default':
+        cmd = 'show ip cef vrf {vrf} {ip} detail'.format(vrf=vrf, ip=ip)
+    else:
+        cmd = 'show ip cef {} detail'.format(ip)
+
+    while timeout.iterate():
+        try:
+            out = device.parse(cmd)
+        except Exception as e:
+            log.error("Failed to parse '{}':\n{}".format(cmd, e))
+            timeout.sleep()
+            continue
+
+        reqs = R(['vrf', vrf, 'address_family', '(.*)', 
+                  'prefix', '(.*)', 'nexthop', '(.*)', 
+                  'outgoing_interface', '(?P<interface>.*)',
+                  'outgoing_label', '(?P<outgoing_label>.*)'])
+        found = find([out], reqs, filter_=False, all_keys=True)
+
+        if has_label:
+            if found:
+                for item in found:
+                    interface = item[1][-2]
+                    label = ' '.join(item[0])
+                    log.info("Found outgoing interface '{}' has outgoing label '{}', "
+                             "expected to have label '{}'".format(
+                                interface, label, expected_label))
+
+                    if expected_label in label:
+                        return True
+            else:
+                log.error("Failed to get outgoing label for '{}'".format(ip))
+                timeout.sleep()
+                continue
+        else:
+            if found:
+                log.error("Found outgoing label for '{}', "
+                          "but expected no label".format(ip))
+                timeout.sleep()
+                continue
+            else:
+                log.info("No outgoing label aftar the nexthop info for '{}'"
+                    .format(ip))
+                return True
+
+        timeout.sleep()
+
+    return False
+
+    
 def verify_routing_local_and_connected_route(device, vrf):
     """ Verify there is local and connected route registered for the vrf
 

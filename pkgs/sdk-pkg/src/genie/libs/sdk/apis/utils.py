@@ -11,7 +11,7 @@ from datetime import datetime
 from netaddr import IPAddress
 
 # pyATS
-from ats.easypy import runtime
+from pyats.easypy import runtime
 
 # Genie
 from genie.utils.config import Config

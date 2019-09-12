@@ -1067,6 +1067,7 @@ def configure_interface_monitor_session(device, monitor_config):
             config.append("source interface {}\n".format(mc["interface"]))
             config.append("destination\n")
             config.append("erspan-id {}\n".format(mc["erspan_id"]))
+            config.append("ip address {}\n".format(mc["ip_address"]))
             config.append("origin ip address {}\n".format(mc["ip_address"]))
         else:
             unshut_interface(device=device, interface=mc["interface"])

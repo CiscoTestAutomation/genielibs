@@ -28,3 +28,21 @@ def get_jinja_template(templates_dir, template_name):
         return
 
     return template
+
+
+def load_jinja_template(path, file, **kwargs):
+    """Use Jinja templates to build the device configuration
+
+        Args:
+            path (`str`): Path to file directory
+            file (`str`): File name
+            kwargs (`dict`): Key value pairs
+        Returns:
+            out (`str`): Rendered template
+    """
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=path))
+
+    template = env.get_template(file)
+    out = template.render(**kwargs)
+
+    return out

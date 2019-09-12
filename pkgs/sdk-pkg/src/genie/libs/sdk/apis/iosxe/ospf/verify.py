@@ -2,14 +2,14 @@
 
 # Python
 import logging
+from prettytable import PrettyTable
 
 # pyATS
 from pyats.utils.objects import find, R
+
 # Genie
 from genie.utils.timeout import Timeout
-from genie.metaparser.util.exceptions import (
-    SchemaEmptyParserError
-)
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.sdk.libs.utils.normalize import GroupKeys
 
 # OSPF
@@ -19,6 +19,72 @@ from genie.libs.sdk.apis.iosxe.ospf.get import (
 )
 
 log = logging.getLogger(__name__)
+
+
+def verify_ospf_database_flag(device, lsa_id, expected_flag, has_flag=True, 
+                              max_time=30, check_interval=10):
+    """ Verify ospf database flag does (not) have expected value
+
+        Args: 
+            device (`obj`): Device object
+            lsa_id (`str`): Link State ID
+            expected_flag (`str`): Expected flag value
+            has_flag (`bool`): True if expect to contain flag
+                               False if expect not to contain flag
+            max_time (`int`): Max time, default: 30
+            check_interval (`int`): Check interval, default: 10
+        Returns:
+            result (`bool`): Verified result
+    """
+    timeout = Timeout(max_time, check_interval)
+    cmd = 'show ip ospf database opaque-area {} self-originate'.format(lsa_id)
+
+    while timeout.iterate():
+        try:
+            out = device.parse(cmd)
+        except Exception as e:
+            log.error("Failed to parse '{}':\n{}".format(cmd, e))
+            timeout.sleep()
+            continue
+
+        reqs = R(['vrf', '(.*)', 'address_family', '(.*)', 
+                  'instance', '(.*)', 'areas', '(.*)', 
+                  'database', 'lsa_types', '(.*)', 
+                  'lsas', '(.*)', 'ospfv2', 'body',
+                  'opaque', 'extended_prefix_tlvs', '(.*)', 
+                  'sub_tlvs', '(.*)', 'flags', '(?P<flags>.*)'])
+        found = find([out], reqs, filter_=False, all_keys=True)
+        if found:
+            keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={}, 
+                                         source=found, all_keys=True)
+        else:
+            log.error("Failed to get flags from ospf database with Link State ID: '{}'"
+                .format(lsa_id))
+            timeout.sleep()
+            continue
+
+        if len(keys) == 1:
+            flags = keys[0]['flags']
+        else:
+            log.error("Found multiple items {}, expected to have only one item"
+                .format(keys))
+            timeout.sleep()
+            continue
+
+        if has_flag:
+            log.info("Found flags '{}' in ospf database, expected to contain '{}'"
+                .format(flags, expected_flag))
+            if expected_flag in flags:
+                return True
+        else:
+            log.info("Found flags '{}' in ospf database, expected not to contain '{}'"
+                .format(flags, expected_flag))
+            if expected_flag not in flags:
+                return True
+
+        timeout.sleep()
+
+    return False
 
 
 def verify_ospf_max_metric_configuration(
@@ -962,4 +1028,152 @@ def verify_ospf_segment_routing_gb_srgb_base_and_range(
 
         timeout.sleep()
 
+    return False
+
+def verify_sid_in_ospf_pairs(device, pairs, process_id=None, max_time=90, check_interval=10, 
+    expected_result=True, output=None, verbose=True,
+    ):
+
+    """ Verifies if SID is found in ospf pairs
+        from command 'show ip ospf segment-routing sid-database'
+
+        Args:
+            device (`obj`): Device to be executed command
+            process_id (`int`): Process Id to check in output
+            max_time ('int'): maximum time to wait
+            check_interval ('int'): how often to check
+            expected_result ('bool'): Expected result
+                set expected_result = False if method should fail
+                set expected_result = True if method should pass (default value)
+            output ('str'): Pass output as value
+            pairs = {
+                        'sids':
+                        {
+                            1: {
+                                'sid': 1,
+                                'codes': 'L',
+                                'prefix': '10.66.12.12/32'
+                                'adv_rtr_id': '10.66.12.12',
+                                'area_id': '10.49.0.0',
+                            },
+                            2: {
+                                'sid': 2,
+                                'codes': 'M'
+                            }
+                        }
+                    }
+            
+
+        Raises:
+            None
+        Returns
+            True/False
+
+    """
+    timeout = Timeout(max_time, check_interval)
+    out = None
+
+    verified_dict = {}
+    pt = PrettyTable()
+
+    pt.field_names = ['SID', 'Codes', 'Prefix', 'Adv Rtr Id', 'Area ID', 'Entry Exist']
+    
+    fields_index = {
+        'sid': 0,
+        'codes': 1,
+        'prefix': 2,
+        'adv_rtr_id': 3,
+        'area_id': 4,
+        'entry_exist': 5
+    }
+    
+    while timeout.iterate():
+        row = None
+        try:
+            out = device.parse("show ip ospf segment-routing sid-database", output=output)
+            # Set output to None for next iteration
+            output = None
+        except (SchemaEmptyParserError):
+            return False
+
+        # ex.) Ouput for reference for dictionary out["process_id"]
+        # {
+        #     'process_id': {
+        #         '65109': {
+        #             'router_id': '10.66.12.12',
+        #             'sids': {
+        #                 'total_entries': 1,
+        #                 1: {
+        #                     'sid': 1,
+        #                     'codes': 'L',
+        #                     'prefix': '10.66.12.12/32',
+        #                     'adv_rtr_id': '10.66.12.12',
+        #                     'area_id': 10.49.0.0
+        #                 }
+        #             }
+        #         }
+        #     }
+        # }
+
+        for p_id in out['process_id'].keys():
+            if process_id and p_id != process_id:
+                continue
+            sids_dict = (out.get('process_id', None).
+                            get(p_id, None).
+                            get('sids', None)
+                        )
+            if sids_dict:
+                # ex.) Ouput for reference for dictionary pairs
+                # pairs = {
+                #         'sids':
+                #         {
+                #             1: {
+                #                 'sid': 1,
+                #                 'codes': 'L',
+                #                 'prefix': '10.66.12.12/32'
+                #                 'adv_rtr_id': '10.66.12.12',
+                #                 'area_id': '10.49.0.0',
+                #             },
+                #             2: {
+                #                 'sid': 2,
+                #                 'codes': 'M'
+                #             }
+                #         }
+                #     }
+                for sid, pairs_dict in pairs.get('sids', {}).items():
+                    sid_dict = sids_dict.get(sid, {})
+                    
+                    # sid_dict will be True if record found with matching SID
+                    if sid_dict:
+                        value_dict = verified_dict.setdefault('sids', {}). \
+                                    setdefault(sid, {})
+                        result = True
+                        # Will update verified_dict if key/value found else will set to None
+                        for key, value in pairs_dict.items():
+                            c_value = sid_dict.get(key, 'N/A')
+                            value_dict.update({key : c_value})
+                            if c_value == 'N/A':
+                                result = False
+                    else:
+                        result = False
+                    
+                    # Create row for PrettyTable
+                    row = ['N/A'] * len(pt.field_names)
+                    for key_name, key_index in fields_index.items():
+                        # Add all values if result found else add values which we were expecting
+                        row[key_index] = sid_dict.get(key_name, 'N/A') if result else pairs_dict.get(key_name, 'N/A')
+                    # Update result field of current row
+                    row[fields_index['sid']] = sid
+                    row[fields_index['entry_exist']] = 'True' if result else 'False'
+                    pt.add_row(row)
+
+        # By default verbose=True will print the PrettyTable. verbose=False will avoid printing PrettyTable. 
+        if verbose:
+            log.info(pt)
+        pt.clear_rows()
+        if expected_result and verified_dict == pairs:
+            return True
+        if not expected_result and verified_dict != pairs:
+            return False
+        timeout.sleep()
     return False
