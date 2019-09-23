@@ -55,7 +55,7 @@ about conf/ops functionalities.
 ###### Triggers and Verifications
 
 * Verify if an existing trigger exists for this action (ex: ShutNoshut,
-ConfigUnconfig,..) on the feature(ex: BGP, OSPF,..) at genielibs/src/sdk/triggers/. If not, create a new one
+ConfigUnconfig,..) on the feature(ex: BGP, OSPF,..) at genielibs/pkgs/sdk-pkg/src/genie/libs/sdk/triggers. If not, create a new one
 following [triggers] and [verifications] guides.
 
 *********All developed triggers and verifications can be accesed at
