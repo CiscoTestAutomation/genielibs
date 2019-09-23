@@ -37,18 +37,26 @@ class ProcessRestartLib(ProcessRestartLibNxos):
             raise Exception('No debug plugin has been loaded on the device.')
 
         ha = self.abstract.sdk.libs.abstracted_libs.ha.HA(device=self.device,
-                                                        tftp=self.device.tftp)
+                                                          filetransfer=self.device.filetransfer)
         # https://devxsupport.cisco.com/scp/tickets.php?id=39483
         State('config', r'Linux')
         State('exec', r'Linux')
 
         ha.load_debug_plugin(self.device.debug_plugin)
 
-        # Set pattern
-        self.device.execute('kill -{cm} {p}\n'.\
-                              format(p=self.previous_pid,
-                                     cm=self.obj.crash_method),
-                            timeout=10)
+        try:
+            self.device.execute('kill -{cm} {p}\n'.\
+                                  format(p=self.previous_pid,
+                                         cm=self.obj.crash_method),
+                                timeout=10)
+        except Exception as e:
+            log.info('Exception raised is expected when running trigger '\
+                'through management connection. Exception: {e}'.format(e=e))
+            # Set pattern
+            restore_state = State(name='config', pattern=r'^.(%N\(config\))#\s?')
+            return
+
         self.device.execute('exit', timeout=10)
 
-        restore_state =  State(name='config', pattern=r'^.(%N\(config\))#\s?')
+        # Set pattern
+        restore_state = State(name='config', pattern=r'^.(%N\(config\))#\s?')

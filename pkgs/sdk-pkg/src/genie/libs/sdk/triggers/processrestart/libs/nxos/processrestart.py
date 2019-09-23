@@ -34,6 +34,7 @@ class ProcessRestartLib(object):
         '''Initialize library'''
         self.device = device
         self.process = process
+        self.helper = None
 
         # Trigger object
         self.obj = obj
@@ -43,9 +44,18 @@ class ProcessRestartLib(object):
     def process_information(self):
         '''Use for gathering initial information on the process'''
 
+        if 'helper' in self.obj.parameters:
+            for dev in self.device.testbed.devices:
+                if self.device.testbed.devices[dev].alias == \
+                    self.obj.parameters['helper']:
+                    self.helper = device = self.device.testbed.devices[dev]
+                    self.helper.connect()
+        else:
+            device = self.device
+
         if self.process in self.expected_no_show_sysmgr:
             # Instead just use show process
-            self.previous_pid, self.cmd = self._process_information_no_sysmgr()
+            self.previous_pid, self.cmd = self._process_information_no_sysmgr(device)
 
             # TODO - get timestamp
             # TO BE TESTED WHEN SWITCH TO UNICON
@@ -53,7 +63,7 @@ class ProcessRestartLib(object):
             return
 
         output = self.abstract.parser.show_system.\
-                      ShowSystemInternalSysmgrServiceName(device=self.device).\
+                      ShowSystemInternalSysmgrServiceName(device=device).\
                       parse(process=self.process)
 
         # TODO: Add log to say what we are checking
@@ -99,10 +109,11 @@ class ProcessRestartLib(object):
         self.instance = instance
         self.previous_output = output
 
-    def _process_information_no_sysmgr(self):
+    def _process_information_no_sysmgr(self, device=None):
         '''Get process information with show process'''
+
         output = self.abstract.parser.show_process.\
-                      ShowProcesses(device=self.device).parse(process=self.process)
+                      ShowProcesses(device=device).parse(process=self.process)
         # Get pid
         if 'process' in output and self.process in output['process'] and\
            output['process'][self.process]:
@@ -138,6 +149,11 @@ class ProcessRestartLib(object):
                pyATS Results
         '''
 
+        if self.helper:
+            device = self.helper
+        else:
+            device = self.device
+
         # reconnect if needed
         if self.process in self.reconnect:
             self._reconnect(steps, timeout)
@@ -165,7 +181,7 @@ class ProcessRestartLib(object):
                              continue_=True) as step:
                 filetransfer = self.device.filetransfer if hasattr(self.device, 'filetransfer') else None
                 ha = self.abstract.sdk.libs.abstracted_libs.ha.HA(
-                    device=self.device, filetransfer=filetransfer)
+                    device=device, filetransfer=filetransfer)
                 cores = None
                 exception = None
                 while timeout.iterate():
@@ -201,14 +217,14 @@ class ProcessRestartLib(object):
                 with steps.start('Verify information has been printed to log',
                                  continue_=True) as step:
 
-                    msg = self.device.execute("show logging logfile | i '(core "
-                                              "will be saved)' | i '(PID {pid})' |"
-                                              "count".format(pid=self.previous_pid))
+                    msg = device.execute("show logging logfile | i '(core "
+                                         "will be saved)' | i '(PID {pid})' |"
+                                         "count".format(pid=self.previous_pid))
 
-                    msg2 = self.device.execute("show logging logfile | "
-                                               "i 'SYSMGR-2-SERVICE_CRASHED:' |"
-                                               "i '(PID {pid})' | count".\
-                                                format(pid=self.previous_pid))
+                    msg2 = device.execute("show logging logfile | "
+                                          "i 'SYSMGR-2-SERVICE_CRASHED:' |"
+                                          "i '(PID {pid})' | count".format(
+                                          pid=self.previous_pid))
                     # Make sure the count is not 0
                     if int(msg) == 0 or int(msg2) == 0:
                         # TOOD Better message?
@@ -236,13 +252,18 @@ class ProcessRestartLib(object):
                None
         '''
 
+        if self.helper:
+            device = self.helper
+        else:
+            device = self.device
+
         with steps.start('Verify process has restarted correctly') as step:
             temp = TempResult(container=step)
 
             while timeout.iterate():
                 output = self.abstract.parser.show_system.\
                              ShowSystemInternalSysmgrServiceName(device=\
-                                        self.device).parse(process=self.process)
+                                        device).parse(process=self.process)
 
                 if 'instance' not in output:
                     temp.failed("No output for 'show system internal sysmgr "
@@ -336,7 +357,10 @@ class ProcessRestartLib(object):
                          continue_=True) as step:
             temp = TempResult(container=step)
             while timeout.iterate():
-                previous_pid, _ = self._process_information_no_sysmgr()
+                if self.helper:
+                    previous_pid, _ = self._process_information_no_sysmgr(self.helper)
+                else:
+                    previous_pid, _ = self._process_information_no_sysmgr(self.device)
                 # Make sure time has changed
                 if not self.previous_pid != previous_pid:
                     temp.failed("The restart pid has changed for "

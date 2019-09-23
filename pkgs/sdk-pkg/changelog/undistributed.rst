@@ -3,5 +3,5 @@
 
 | Module                  | Version       |
 | ------------------------|:-------------:|
-| ``genie.libs.sdk``      |               |
+| ``genie.libs.sdk``      | 19.9          |
 

@@ -67,10 +67,10 @@ class test_ospf(unittest.TestCase):
         ospf = Ospf(device=self.device)
         
         # Set outputs
-        ospf.maker.outputs[ShowIpProtocols] = {'':OspfOutput.ShowIpProtocols}
+        ospf.maker.outputs[ShowIpProtocols] = {"{'vrf':''}":OspfOutput.ShowIpProtocols}
         ospf.maker.outputs[ShowIpOspf] = {'':OspfOutput.ShowIpOspf}
-        ospf.maker.outputs[ShowIpOspfInterface] = {'':OspfOutput.ShowIpOspfInterface}
-        ospf.maker.outputs[ShowIpOspfNeighborDetail] = {'':OspfOutput.ShowIpOspfNeighborDetail}
+        ospf.maker.outputs[ShowIpOspfInterface] = {"{'interface':''}":OspfOutput.ShowIpOspfInterface}
+        ospf.maker.outputs[ShowIpOspfNeighborDetail] = {"{'neighbor':''}":OspfOutput.ShowIpOspfNeighborDetail}
         ospf.maker.outputs[ShowIpOspfShamLinks] = {'':OspfOutput.ShowIpOspfShamLinks}
         ospf.maker.outputs[ShowIpOspfVirtualLinks] = {'':OspfOutput.ShowIpOspfVirtualLinks}
         ospf.maker.outputs[ShowIpOspfDatabaseRouter] = {'':OspfOutput.ShowIpOspfDatabaseRouter}
@@ -78,7 +78,7 @@ class test_ospf(unittest.TestCase):
         ospf.maker.outputs[ShowIpOspfDatabaseNetwork] = {'':OspfOutput.ShowIpOspfDatabaseNetwork}
         ospf.maker.outputs[ShowIpOspfDatabaseSummary] = {'':OspfOutput.ShowIpOspfDatabaseSummary}
         ospf.maker.outputs[ShowIpOspfDatabaseOpaqueArea] = {'':OspfOutput.ShowIpOspfDatabaseOpaqueArea}
-        ospf.maker.outputs[ShowIpOspfMplsLdpInterface] = {'':OspfOutput.ShowIpOspfMplsLdpInterface}
+        ospf.maker.outputs[ShowIpOspfMplsLdpInterface] = {"{'interface':''}":OspfOutput.ShowIpOspfMplsLdpInterface}
         ospf.maker.outputs[ShowIpOspfMplsTrafficEngLink] = {'':OspfOutput.ShowIpOspfMplsTrafficEngLink}
 
         # Return outputs above as inputs to parser when called
@@ -96,10 +96,10 @@ class test_ospf(unittest.TestCase):
         ospf = Ospf(device=self.device)
         
         # Set outputs
-        ospf.maker.outputs[ShowIpProtocols] = {'':OspfOutput.ShowIpProtocols}
+        ospf.maker.outputs[ShowIpProtocols] = {"{'vrf':''}":OspfOutput.ShowIpProtocols}
         ospf.maker.outputs[ShowIpOspf] = {'':OspfOutput.ShowIpOspf}
-        ospf.maker.outputs[ShowIpOspfInterface] = {'':OspfOutput.ShowIpOspfInterface}
-        ospf.maker.outputs[ShowIpOspfNeighborDetail] = {'':OspfOutput.ShowIpOspfNeighborDetail}
+        ospf.maker.outputs[ShowIpOspfInterface] = {"{'interface':''}":OspfOutput.ShowIpOspfInterface}
+        ospf.maker.outputs[ShowIpOspfNeighborDetail] = {"{'neighbor':''}":OspfOutput.ShowIpOspfNeighborDetail}
         ospf.maker.outputs[ShowIpOspfShamLinks] = {'':OspfOutput.ShowIpOspfShamLinks}
         ospf.maker.outputs[ShowIpOspfVirtualLinks] = {'':OspfOutput.ShowIpOspfVirtualLinks}
         ospf.maker.outputs[ShowIpOspfDatabaseRouter] = {'':OspfOutput.ShowIpOspfDatabaseRouter}
@@ -107,7 +107,7 @@ class test_ospf(unittest.TestCase):
         ospf.maker.outputs[ShowIpOspfDatabaseNetwork] = {'':OspfOutput.ShowIpOspfDatabaseNetwork}
         ospf.maker.outputs[ShowIpOspfDatabaseSummary] = {'':OspfOutput.ShowIpOspfDatabaseSummary}
         ospf.maker.outputs[ShowIpOspfDatabaseOpaqueArea] = {'':OspfOutput.ShowIpOspfDatabaseOpaqueArea}
-        ospf.maker.outputs[ShowIpOspfMplsLdpInterface] = {'':OspfOutput.ShowIpOspfMplsLdpInterface}
+        ospf.maker.outputs[ShowIpOspfMplsLdpInterface] = {"{'interface':''}":OspfOutput.ShowIpOspfMplsLdpInterface}
         ospf.maker.outputs[ShowIpOspfMplsTrafficEngLink] = {'':OspfOutput.ShowIpOspfMplsTrafficEngLink}
 
         # Return outputs above as inputs to parser when called
@@ -130,10 +130,10 @@ class test_ospf(unittest.TestCase):
         ospf = Ospf(device=self.device)
         
         # Set outputs
-        ospf.maker.outputs[ShowIpProtocols] = {'':{}}
+        ospf.maker.outputs[ShowIpProtocols] = {"{'vrf':''}":{}}
         ospf.maker.outputs[ShowIpOspf] = {'':{}}
-        ospf.maker.outputs[ShowIpOspfInterface] = {'':{}}
-        ospf.maker.outputs[ShowIpOspfNeighborDetail] = {'':{}}
+        ospf.maker.outputs[ShowIpOspfInterface] = {"{'interface':''}":{}}
+        ospf.maker.outputs[ShowIpOspfNeighborDetail] = {"{'neighbor':''}":{}}
         ospf.maker.outputs[ShowIpOspfShamLinks] = {'':{}}
         ospf.maker.outputs[ShowIpOspfVirtualLinks] = {'':{}}
         ospf.maker.outputs[ShowIpOspfDatabaseRouter] = {'':{}}
@@ -141,7 +141,7 @@ class test_ospf(unittest.TestCase):
         ospf.maker.outputs[ShowIpOspfDatabaseNetwork] = {'':{}}
         ospf.maker.outputs[ShowIpOspfDatabaseSummary] = {'':{}}
         ospf.maker.outputs[ShowIpOspfDatabaseOpaqueArea] = {'':{}}
-        ospf.maker.outputs[ShowIpOspfMplsLdpInterface] = {'':{}}
+        ospf.maker.outputs[ShowIpOspfMplsLdpInterface] = {"{'interface':''}":{}}
         ospf.maker.outputs[ShowIpOspfMplsTrafficEngLink] = {'':{}}
 
         # Return outputs above as inputs to parser when called
@@ -161,10 +161,10 @@ class test_ospf(unittest.TestCase):
         ospf = Ospf(device=self.device)
         
         # Set outputs
-        ospf.maker.outputs[ShowIpProtocols] = {'':{}}
+        ospf.maker.outputs[ShowIpProtocols] = {"{'vrf':''}":{}}
         ospf.maker.outputs[ShowIpOspf] = {'':OspfOutput.ShowIpOspf}
-        ospf.maker.outputs[ShowIpOspfInterface] = {'':OspfOutput.ShowIpOspfInterface}
-        ospf.maker.outputs[ShowIpOspfNeighborDetail] = {'':OspfOutput.ShowIpOspfNeighborDetail}
+        ospf.maker.outputs[ShowIpOspfInterface] = {"{'interface':''}":OspfOutput.ShowIpOspfInterface}
+        ospf.maker.outputs[ShowIpOspfNeighborDetail] = {"{'neighbor':''}":OspfOutput.ShowIpOspfNeighborDetail}
         ospf.maker.outputs[ShowIpOspfShamLinks] = {'':OspfOutput.ShowIpOspfShamLinks}
         ospf.maker.outputs[ShowIpOspfVirtualLinks] = {'':OspfOutput.ShowIpOspfVirtualLinks}
         ospf.maker.outputs[ShowIpOspfDatabaseRouter] = {'':OspfOutput.ShowIpOspfDatabaseRouter}
@@ -172,7 +172,7 @@ class test_ospf(unittest.TestCase):
         ospf.maker.outputs[ShowIpOspfDatabaseNetwork] = {'':OspfOutput.ShowIpOspfDatabaseNetwork}
         ospf.maker.outputs[ShowIpOspfDatabaseSummary] = {'':OspfOutput.ShowIpOspfDatabaseSummary}
         ospf.maker.outputs[ShowIpOspfDatabaseOpaqueArea] = {'':OspfOutput.ShowIpOspfDatabaseOpaqueArea}
-        ospf.maker.outputs[ShowIpOspfMplsLdpInterface] = {'':OspfOutput.ShowIpOspfMplsLdpInterface}
+        ospf.maker.outputs[ShowIpOspfMplsLdpInterface] = {"{'interface':''}":OspfOutput.ShowIpOspfMplsLdpInterface}
         ospf.maker.outputs[ShowIpOspfMplsTrafficEngLink] = {'':OspfOutput.ShowIpOspfMplsTrafficEngLink}
 
         # Return outputs above as inputs to parser when called

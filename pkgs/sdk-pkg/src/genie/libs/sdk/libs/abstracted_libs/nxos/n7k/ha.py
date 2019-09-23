@@ -21,20 +21,35 @@ class HA(HA_nxos):
                 "'protocol' is missing. Check the testbed yaml file and the "
                 "provided arguments.")
 
-        from_URL = '{protocol}://{address}/{debug_plugin}'.format(
-            protocol=self.device.filetransfer_attributes['protocol'],
-            address=self.device.filetransfer_attributes['server_address'],
-            path=self.device.filetransfer_attributes['path'])
+        # Case when user pass one debug plugin as an argument in
+        # in the job file
+        if os.path.isfile(debug_plugin):
+            from_URL = '{protocol}://{address}/{debug_plugin}'.format(
+                protocol=self.device.filetransfer_attributes['protocol'],
+                address=self.device.filetransfer_attributes['server_address'],
+                debug_plugin=debug_plugin)
 
-        to_URL = 'bootflash://'
+            to_URL = 'bootflash:{}'.format(debug_plugin.split('/')[-1])
+        elif hasattr(self.device.custom, 'debug_plugin'):
+            # Case when user pass multiple debug plugins, path as an argument
+            # in the job file and the actual plugins in the testbed yaml file
+            from_URL = '{protocol}://{address}/{debug_plugin_path}/{debug_plugin}'.format(
+                protocol=self.device.filetransfer_attributes['protocol'],
+                address=self.device.filetransfer_attributes['server_address'],
+                debug_plugin_path=debug_plugin, debug_plugin=self.device.custom.debug_plugin)
+
+            to_URL = 'bootflash:{}'.format(self.device.custom.debug_plugin)
+        else:
+            raise Exception("Debug plugin is missing from the \
+                testbed yaml file.\ndevices:\n   'device_name':\n\
+                        custom:\n            \debug_plugin:'debug_plugin_image'")
 
         self.filetransfer.copyfile(device=self.device,
-                                   from_file_url=from_URL,
-                                   to_file_url=to_URL)
+                                   source=from_URL,
+                                   destination=to_URL)
 
-        location = 'bootflash:////'
-        log.info('Copied debug plugin at : {l}'.format(l=location))
-        return location
+        log.info('Copied debug plugin at : {l}'.format(l=to_URL))
+        return to_URL
 
     def _copy_temp_debug_plugin(self, debug_plugin):
         self.device.execute('copy {dp} bootflash:debug_plugin.tmp'.format(\
@@ -42,4 +57,7 @@ class HA(HA_nxos):
 
     def load_debug_plugin(self, debug_plugin):
         self._copy_temp_debug_plugin(debug_plugin)
+        self.device.state_machine.get_state('enable').add_state_pattern(
+            [r'^(.*)Linux\(debug\)#\s?$'])
         self.device.execute('load bootflash:debug_plugin.tmp', timeout=5)
+        #self.device.sendline('exit')

@@ -591,7 +591,7 @@ def get_ospf_global_block_range(device, process_id, output=None):
                      'information for process {id}'.format(id=process_id))
             return None, None
 
-    srgb_min=output['process_id'].get(process_id, {}).get('global_block_srgb', {}).get('range', {}).get('start', None)    
+    srgb_min=output['process_id'].get(process_id, {}).get('global_block_srgb', {}).get('range', {}).get('start', None)
     srgb_max=output['process_id'].get(process_id, {}).get('global_block_srgb', {}).get('range', {}).get('end', None)
 
     if (srgb_min and srgb_max):
@@ -631,7 +631,7 @@ def get_ospf_local_block_range(device, process_id, output=None):
                      'information for process {id}'.format(id=process_id))
             return None, None
 
-    srlb_min=output['process_id'].get(process_id, {}).get('local_block_srlb', {}).get('range', {}).get('start', None)    
+    srlb_min=output['process_id'].get(process_id, {}).get('local_block_srlb', {}).get('range', {}).get('start', None)
     srlb_max=output['process_id'].get(process_id, {}).get('local_block_srlb', {}).get('range', {}).get('end', None)
 
     if (srlb_min and srlb_max):
@@ -758,3 +758,66 @@ def get_ospf_segment_routing_gb_srgb_base_and_range(
         return None, None
 
     return found_base[0][0], found_range[0][0]
+
+
+def get_ospf_neighbor_address_in_state(device, state=None):
+    """ Gets the ospf neighbors address' in state
+
+        Args:
+            device ('obj'): Device to use
+            state ('str'): full/sub-string of the state you want
+                           search for
+
+        Returns:
+            ('list'): of ospf neighbor address' in state
+
+        Raises:
+            N/A
+    """
+    try:
+        out = device.parse("show ip ospf neighbor")
+    except SchemaEmptyParserError:
+        return []
+
+    addresses = []
+
+    for intf in out.get("interfaces", {}):
+        for neighbor in out["interfaces"][intf].get("neighbors", {}):
+            if not state:
+                addresses.append(out["interfaces"][intf]["neighbors"][neighbor].get("address"))
+            elif state.lower() in out["interfaces"][intf]["neighbors"][neighbor].get("state", "").lower():
+                addresses.append(out["interfaces"][intf]["neighbors"][neighbor].get("address"))
+
+    return addresses
+
+
+def get_ospf_sr_adj_sid_and_neighbor_address(device, process_id, neighbor_addresses=None):
+    """ Gets adjacency sids and corresponding neighbor address.
+
+        Args:
+            device ('obj'): Device to use
+            process_id ('str'): Ospf process id
+            neighbor_addresses ('list'): If provided, function will only return adj-sid/neighbor_address
+                                         pairs that exist in the list
+
+        Returns:
+            {(192.168.0.1, 123), (192.168.0.2, 231), ...}
+    """
+    try:
+        out = device.parse('show ip ospf segment-routing adjacency-sid')
+    except SchemaEmptyParserError:
+        return {}
+
+    ret_dict = {}
+
+    for sid in out.get("process_id", {}).get(process_id, {}).get("adjacency_sids", {}):
+        neighbor_address = out["process_id"][process_id]["adjacency_sids"][sid].get("neighbor_address")
+
+        if neighbor_addresses:
+            if neighbor_address and neighbor_address in neighbor_addresses:
+                ret_dict.update({neighbor_address: sid})
+        else:
+            if neighbor_address:
+                ret_dict.update({neighbor_address: sid})
+
+    return ret_dict

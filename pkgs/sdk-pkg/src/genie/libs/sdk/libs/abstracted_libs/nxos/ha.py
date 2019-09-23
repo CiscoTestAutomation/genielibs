@@ -46,13 +46,24 @@ class HA(HA_main):
         Example:
             >>> check_cores()
         """
+
         cores = []
         # Execute command to check for cores
         header = [ "VDC", "Module", "Instance",
                     "Process-name", "PID", "Date\(Year-Month-Day Time\)" ]
-        output = oper_fill_tabular(device = self.device,
-                                   show_command = 'show cores vdc-all',
-                                   header_fields = header, index = [5])
+
+        if self.device.alias == 'uut':
+            # In case of restarting process on a the main VDC
+            output = oper_fill_tabular(device = self.device,
+                                       show_command = 'show cores vdc-all',
+                                       header_fields = header, index = [5])
+        else:
+            # In case of restarting process on a sub-VDC
+            self.device.disconnect()
+            output = oper_fill_tabular(device = self.device,
+                                       show_command = 'show cores',
+                                       header_fields = header, index = [5])
+
         if not output.entries:
             log.info('No core found')
             return []

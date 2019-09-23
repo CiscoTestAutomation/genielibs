@@ -65,7 +65,7 @@ class test_msdp(unittest.TestCase):
         msdp.learn()
 
         self.assertEqual('Loopback0', msdp.info['vrf']['default']\
-                        ['peer']['2.2.2.2']['connect_source'])
+                        ['peer']['10.16.2.2']['connect_source'])
 
     def test_empty_output(self):
         self.maxDiff = None

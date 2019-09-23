@@ -165,9 +165,9 @@ def configure_ospf_passive_interface(device, interface, ospf_process_id):
         Args:
             device (`obj`): Device object
             ospf_process_id (`int`): ospf process id
-            interface (`str`): interface to configure
+            interface (`list`): interfaces to configure
             ex.)
-                interface = 'tenGigabitEthernet0/4/0'
+                interface = ['tenGigabitEthernet0/4/0']
 
         Return:
             None
@@ -176,16 +176,21 @@ def configure_ospf_passive_interface(device, interface, ospf_process_id):
             SubCommandFailure
     """
 
-    config = []
-    config.append("router ospf {}".format(ospf_process_id))
-    config.append(
-        "passive-interface {}".format(Common.convert_intf_name(interface))
-    )
+    config = ["router ospf {}".format(ospf_process_id)]
+
+    if not isinstance(interface, list):
+        interface = [interface]
+
+    for intf in interface:
+        config.append(
+            "passive-interface {}".format(Common.convert_intf_name(intf))
+        )
+
     try:
-        device.configure("\n".join(config))
+        device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Failed in configuring passive interface {interface} "
+            "Failed in configuring passive interfaces {interface} "
             "with OSPF process id {ospf_process_id} on device {device}, "
             "Error: {e}".format(
                 interface=interface,
@@ -202,9 +207,9 @@ def remove_ospf_passive_interface(device, interface, ospf_process_id):
         Args:
             device (`obj`): Device object
             ospf_process_id (`int`): OSPF process id
-            interface (`str`): interface to configure
+            interface (`list`): interfaces to configure
             ex.)
-                interface = 'tenGigabitEthernet0/4/0'
+                interface = ['tenGigabitEthernet0/4/0']
 
         Return:
             None
@@ -212,17 +217,21 @@ def remove_ospf_passive_interface(device, interface, ospf_process_id):
         Raises:
             SubCommandFailure
     """
+    config = ["router ospf {}".format(ospf_process_id)]
 
-    config = []
-    config.append("router ospf {}".format(ospf_process_id))
-    config.append(
-        "no passive-interface {}".format(Common.convert_intf_name(interface))
-    )
+    if not isinstance(interface, list):
+        interface = [interface]
+
+    for intf in interface:
+        config.append(
+            "no passive-interface {}".format(Common.convert_intf_name(intf))
+        )
+
     try:
-        device.configure("\n".join(config))
+        device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Failed in removing passive interface {interface}"
+            "Failed in removing passive interfaces {interface}"
             "with OSPF process id {ospf_process_id}"
             " on device {device}, Error: {e}".format(
                 interface=interface,
@@ -261,3 +270,28 @@ def configure_ospf_cost(device, interface, ospf_cost):
                 ospf_cost=ospf_cost, device=device, interface=interface
             )
         ) from e
+
+
+def configure_ospf_networks(device, ospf_process_id, ip_address, netmask, area):
+    """ Configures ospf on networks
+
+        Args:
+            device ('obj'): Device to use
+            ospf_process_id ('str'): Process id for ospf process
+            ip_address ('list'): List of ip_address' to configure
+            netmask ('str'): Netmask to use
+            area ('str'): Area to configure under
+
+        Returns:
+            N/A
+
+        Raises:
+            SubCommandFailure
+    """
+    cmd = ['router ospf {pid}'.format(pid=ospf_process_id)]
+
+    for ip in ip_address:
+        cmd.append('network {ip_address} {netmask} area {area}'
+                   .format(ip_address=ip, netmask=netmask, area=area))
+
+    device.configure(cmd)

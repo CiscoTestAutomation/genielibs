@@ -3,6 +3,7 @@
 # Python
 import re
 import logging
+from prettytable import PrettyTable
 
 # pyATS
 from pyats.utils.objects import find, R
@@ -43,7 +44,7 @@ def verify_ip_cef_nexthop_label(device, ip, expected_label='', has_label=True,
             check_interval (`int`): Check interval, default: 10
         Returns:
             result (`bool`): Verified result
-     """
+    """
     timeout = Timeout(max_time, check_interval)
     if vrf and vrf != 'default':
         cmd = 'show ip cef vrf {vrf} {ip} detail'.format(vrf=vrf, ip=ip)
@@ -94,7 +95,186 @@ def verify_ip_cef_nexthop_label(device, ip, expected_label='', has_label=True,
 
     return False
 
-    
+
+def verify_rib_fib_lfib_consistency(device, route, none_pattern='', 
+                                    max_time=30, check_interval=10):
+    """ Verify the outgoing label for route are the same in:
+        - show ip route <route>
+        - show ip cef <route>
+        - show mpls forwarding-table <route>
+
+        Args:
+            device (`obj`): Device object
+            route (`str`): Route or ipn
+            none_pattern (`list`): None label pattern
+            max_time (`int`): Max time, default: 30
+            check_interval (`int`): Check interval, default: 10
+        Returns:
+            result (`bool`): Verified result
+    """
+    route = route.split('/')[0]
+    patterns = ['No Label', 'implicit-null', 'Pop Label', '']
+    if none_pattern:
+        patterns.extend(none_pattern)
+
+    cmd1 = "show ip route {}".format(route)
+    cmd2 = "show ip cef {}".format(route)
+    cmd3 = "show mpls forwarding-table {}".format(route)
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        result = True
+        table = PrettyTable()
+        table.field_names = ['RIB (INTF)', 'RIB (NH)', 'RIB (LABEL)', 
+                             'FIB (INTF)', 'FIB(NH) ', 'FIB (LABEL)', 
+                             'FIB (LOCAL LABEL)', 'LFIB (INTF)', 'LFIB(NH)', 
+                             'LFIB (LABEL)', 'LFIB (LOCAL LABEL)', 'PASS/FAIL']
+
+        try:
+            out1 = device.parse(cmd1)
+        except Exception as e:
+            log.error("Failed to parse '{}':\n{}".format(cmd1, e))
+            result = False
+            timeout.sleep()
+            continue
+
+        try:
+            out2 = device.parse(cmd2)
+        except Exception as e:
+            log.error("Failed to parse '{}':\n{}".format(cmd2, e))
+            result = False
+            timeout.sleep()
+            continue
+
+        try:
+            out3 = device.parse(cmd3)
+        except Exception as e:
+            log.error("Failed to parse '{}':\n{}".format(cmd3, e))
+            result = False
+            timeout.sleep()
+            continue
+
+        reqs1 = R(['entry', '(.*)',
+                   'paths', '(.*)',
+                   '(?P<route>.*)'])
+        found1 = find([out1], reqs1, filter_=False, all_keys=True)
+        route_dict1 = {}
+        # eg: {"GigabitEthernet2": {
+        #         "nexthop": "10.0.0.5",
+        #         "from": "2.2.2.2",
+        #         "age": "2w0d",
+        #         "interface": "GigabitEthernet2",
+        #         "prefer_non_rib_labels": true,
+        #         "merge_labels": true,
+        #         "metric": "3",
+        #         "share_count": "1",
+        #         "mpls_label": "16002",
+        #         "mpls_flags": "NSF"}}
+
+        if found1:
+            for item in found1:
+                route_dict1.update({item[0]['interface']: item[0]})
+        else:
+            log.error("Failed to find route from '{}'".format(cmd1))
+            result = False
+            timeout.sleep()
+            continue
+
+        reqs2 = R(['vrf', '(.*)',
+                   'address_family', '(.*)',
+                   'prefix', '(.*)', 'nexthop', '(?P<nexthop>.*)',
+                   'outgoing_interface', '(?P<interface>.*)', '(?P<sub>.*)'])
+        found2 = find([out2], reqs2, filter_=False, all_keys=True)
+        route_dict2 = {}
+        # eg: {'GigabitEthernet2': {
+        #        'local_label': 16002, 
+        #        'outgoing_label': ['16002'], 
+        #        'nexthop': '10.0.0.5'}}
+
+        if found2:
+            for item in found2:
+                interface = item[1][-1]
+                nexthop = item[1][-3]
+                item[0].update({'nexthop': nexthop})
+                route_dict2.update({interface: item[0]})
+        else:
+            log.error("Failed to find outgoing interface from '{}'".format(cmd2))
+            result = False
+            timeout.sleep()
+            continue
+
+        reqs3 = R(['vrf', '(.*)',
+                   'local_label', '(?P<local_label>.*)',
+                   'outgoing_label_or_vc', '(?P<outgoing_label>.*)',
+                   'prefix_or_tunnel_id', '(?P<prefix>.*)',
+                   'outgoing_interface', '(?P<interface>.*)',
+                   'next_hop', '(?P<next_hop>.*)'])
+        found3 = find([out3], reqs3, filter_=False, all_keys=True)
+        route_dict3 = {}
+        # eg: {'GigabitEthernet4': {
+        #         "local_label": 16,
+        #         "outgoing_label": "Pop Label",
+        #         "prefix": "10.0.0.13-A",
+        #         "interface": "GigabitEthernet4",
+        #         "next_hop": "10.0.0.13"}}
+
+        if found3:
+            keys = GroupKeys.group_keys(reqs=reqs3.args, ret_num={}, 
+                                        source=found3, all_keys=True)
+            for item in keys:
+                route_dict3.update({item['interface']: item})
+        else:
+            log.error("Failed to get outgoing interface from '{}'".format(cmd3))
+            result = False
+            timeout.sleep()
+            continue
+
+        if len(route_dict1) != len(route_dict2) != len(route_dict3):
+            log.error("The number of routes are different in the 3 output")
+            result = False
+            timeout.sleep()
+            continue
+
+        for interface in route_dict1.keys():
+            rib_intf = interface
+            rib_nh = route_dict1[interface].get('nexthop', '')
+            rib_label = route_dict1[interface].get('mpls_label', '')
+            tmp_rib_label = None if rib_label in patterns else rib_label
+
+            fib_intf = interface if route_dict2.get(interface, '') else ''
+            fib_nh = route_dict2.get(interface, {}).get('nexthop', '')
+            fib_label = ' '.join(route_dict2.get(interface, {}).get('outgoing_label', []))
+            fib_local = route_dict2.get(interface, {}).get('local_label', '')
+            tmp_fib_label = None if fib_label in patterns else fib_label
+
+            lfib_intf = interface if route_dict3.get(interface, '') else ''
+            lfib_nh = route_dict3.get(interface, {}).get('next_hop', '')
+            lfib_label = route_dict3.get(interface, {}).get('outgoing_label', '')
+            lfib_local = route_dict3.get(interface, {}).get('local_label', '')
+            tmp_lfib_label = None if lfib_label in patterns else lfib_label
+
+            if (rib_intf == fib_intf == lfib_intf and 
+                rib_nh == fib_nh == lfib_nh and 
+                tmp_rib_label == tmp_fib_label == tmp_lfib_label):
+                table.add_row([rib_intf, rib_nh, rib_label, 
+                               fib_intf, fib_nh, fib_label, fib_local, 
+                               lfib_intf, lfib_nh, lfib_label, lfib_local, 'PASS'])
+            else:
+                result = False
+                table.add_row([rib_intf, rib_nh, rib_label, 
+                               fib_intf, fib_nh, fib_label, fib_local,
+                               lfib_intf, lfib_nh, lfib_label, lfib_local, 'FAIL'])
+
+        log.info("Summary Result for {}:\n{}".format(route, table))
+
+        if result is True:
+            return result
+
+        timeout.sleep()
+
+    return result
+
+
 def verify_routing_local_and_connected_route(device, vrf):
     """ Verify there is local and connected route registered for the vrf
 

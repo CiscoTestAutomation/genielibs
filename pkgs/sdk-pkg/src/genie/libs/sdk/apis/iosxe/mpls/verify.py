@@ -3,14 +3,84 @@
 # Python
 import logging
 
+# pyats
+from pyats.utils.objects import find, R
+
 # Genie
 from genie.utils.timeout import Timeout
+from genie.libs.sdk.libs.utils.normalize import GroupKeys
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # Mpls
 from genie.libs.sdk.apis.iosxe.mpls.get import get_mpls_ldp_peer_state
 
 log = logging.getLogger(__name__)
+
+
+def verify_mpls_forwarding_table_outgoing_label(
+    device, ip, expected_label="", same_as_local=False, 
+    max_time=30, check_interval=10):
+    """ Verify local and remote binding labels for ipv4
+
+        Args:
+            device (`obj`): Device object
+            ip (`str`): IP address
+            expected_label (`str`): Expected label
+            same_as_local (`bool`): 
+                True if verify outgoing labels with local label
+                False if verify outgoing labels with expected label
+            max_time (`int`): Max time, default: 30
+            check_interval (`int`): Check interval, default: 10
+        Returns:
+            result (`bool`): Verified result
+    """
+    cmd = 'show mpls forwarding-table {}'.format(ip)
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        result = True
+        try:
+            out = device.parse(cmd)
+        except Exception as e:
+            log.error("Failed to parse '{}':\n{}".format(cmd, e))
+            result = False
+            timeout.sleep()
+            continue
+
+        reqs = R(['vrf', '(.*)', 
+                'local_label', '(?P<local_label>.*)', 
+                'outgoing_label_or_vc', '(?P<outgoing_label>.*)', 
+                'prefix_or_tunnel_id', '(?P<prefix>.*)',
+                'outgoing_interface', '(?P<interface>.*)',
+                'next_hop', '(?P<next_hop>.*)'])
+        found = find([out], reqs, filter_=False, all_keys=True)
+
+        if found:
+            keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={}, 
+                                        source=found, all_keys=True)
+            for route in keys:
+                if same_as_local:
+                    log.info("Interface {route[interface]} has local label "
+                            "'{route[local_label]}' and outgoing label "
+                            "'{route[outgoing_label]}'".format(route=route))
+                    if str(route['outgoing_label']) != str(route['local_label']):
+                        result = False
+                else:
+                    log.info("Interface {route[interface]} outgoing label is "
+                            "'{route[outgoing_label]}', exepected to have label "
+                            "'{expected}'".format(route=route, expected=expected_label))
+                    if str(route['outgoing_label']) != str(expected_label):
+                        result = False
+        else:
+            log.error("Could not find any mpls route for {}".format(ip))
+            result = False
+
+        if result is True:
+            return result
+
+        timeout.sleep()
+ 
+    return result
 
 
 def is_interface_igp_sync_mpls_enabled(

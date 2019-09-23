@@ -741,7 +741,7 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
         if self.switchport_mode == L2_type.TRUNK.name.lower():
             # switchport trunk allowed vlan <trunk_vlans>
             configurations.append_line(
-                attributes.format('switchport trunk allowed vlan {trunk_vlan}'),
+                attributes.format('switchport trunk allowed vlan {trunk_vlans}'),
                 unconfig_cmd='no switchport trunk allowed vlan')
 
             # switchport trunk allowed vlan add <trunk_add_vlans>
@@ -759,7 +759,7 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
                 unconfig_cmd=attributes.format(uncmd))
 
             # switchport trunk native vlan <native_vlan>
-            cmd = 'switchport trunk native vlan {trunk_remove_vlans}'
+            cmd = 'switchport trunk native vlan {native_vlan}'
             uncmd = 'no switchport trunk native vlan'
             configurations.append_line(
                 attributes.format(cmd),

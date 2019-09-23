@@ -1092,3 +1092,52 @@ def configure_interface_monitor_session(device, monitor_config):
                     error=e
                 )
             )
+
+
+def configure_subinterfaces_for_vlan_range(device, interface, vlan_id_start, vlan_id_step,
+                                           vlan_id_count, network_start, network_step,
+                                           host_address_step, netmask, ospf_network_type=None):
+    """ Configures multiple subinterfaces looping through vlan range
+
+        Args:
+            device ('obj'): Device to use
+            interface ('str'): Physical interface to configure
+            vlan_id_start ('int'): Start of vlan range
+            vlan_id_step ('int'): Size of vlan range step
+            vlan_id_count ('int'): How many steps for vlan range
+            netmask ('str'): Netmask to configure
+            network_start ('str'): Start of network
+            network_step ('str'): Size of network step
+            ospf_network_type ('str'): Ospf network type to configure
+
+        Raises:
+            SubCommandFailure
+
+        Returns:
+            list of configured interfaces
+
+    """
+    cmds = []
+    vlan_id = vlan_id_start
+    network = IPv4Address(network_start)
+    interfaces = []
+
+    for i in range(vlan_id_count):
+        interfaces.append('{interface}.{vlan_id}'.format(interface=interface, vlan_id=vlan_id))
+        ip_address = network + int(IPv4Address(host_address_step))
+
+        cmds.extend(['interface {interface}.{vlan_id}'.format(interface=interface, vlan_id=vlan_id),
+                     'encapsulation dot1q {vlan_id}'.format(vlan_id=vlan_id),
+                     'ip address {ip_address} {netmask}'.format(ip_address=ip_address, netmask=netmask)])
+
+        if ospf_network_type:
+            cmds.append('ip ospf network {ospf_network_type}'.format(ospf_network_type=ospf_network_type))
+
+        cmds.append('exit')
+
+        vlan_id += vlan_id_step
+        network += int(IPv4Address(network_step))
+
+    device.configure(cmds)
+
+    return interfaces

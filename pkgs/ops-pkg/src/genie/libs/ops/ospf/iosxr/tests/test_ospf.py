@@ -58,6 +58,46 @@ class test_ospf(unittest.TestCase):
         # This is done in order to call the parser on the output provided
         self.device.connectionmgr.connections['cli'] = self.device
 
+    def test_custom_output(self):
+        self.maxDiff = None
+        ospf = Ospf(device=self.device)
+
+        # Set outputs
+        ospf.maker.outputs[ShowProtocolsAfiAllAll] = {
+            '': OspfOutput.ShowProtocolsAfiAllAll}
+        ospf.maker.outputs[ShowOspfVrfAllInclusive] = {
+            "{'vrf':'VRF1'}": OspfOutput.ShowOspfVrfAllInclusive_custom}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveShamLinks] = {
+            "{'vrf':'VRF1'}": OspfOutput.ShowOspfVrfAllInclusiveShamLinks}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveVirtualLinks] = {
+            "{'vrf':'VRF1'}": OspfOutput.ShowOspfVrfAllInclusiveVirtualLinks}
+        ospf.maker.outputs[ShowOspfMplsTrafficEngLink] = {
+            '': OspfOutput.ShowOspfMplsTrafficEngLink}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseRouter] = {
+            "{'vrf':'VRF1'}": OspfOutput.ShowOspfVrfAllInclusiveDatabaseRouter_custom}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseExternal] = {
+            "{'vrf':'VRF1'}": OspfOutput.ShowOspfVrfAllInclusiveDatabaseExternal_custom}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseNetwork] = {
+            "{'vrf':'VRF1'}": OspfOutput.ShowOspfVrfAllInclusiveDatabaseNetwork_custom}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseSummary] = {
+            "{'vrf':'VRF1'}": OspfOutput.ShowOspfVrfAllInclusiveDatabaseSummary_custom}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseOpaqueArea] = {
+            "{'vrf':'VRF1'}": OspfOutput.ShowOspfVrfAllInclusiveDatabaseOpaqueArea_custom}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveInterface] = {
+            "{'interface':'GigabitEthernet0/0/0/1','vrf':'VRF1'}": OspfOutput.ShowOspfVrfAllInclusiveInterface_custom}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveNeighborDetail] = {
+            "{'interface':'GigabitEthernet0/0/0/1','neighbor':'10.36.3.3','vrf':'VRF1'}":
+                OspfOutput.ShowOspfVrfAllInclusiveNeighborDetail_custom}
+
+        # Return outputs above as inputs to parser when called
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
+
+        # Learn the feature
+        ospf.learn(vrf='VRF1', interface='GigabitEthernet0/0/0/1', neighbor='10.36.3.3')
+
+        # Verify Ops was created successfully
+        self.assertEqual(ospf.info, OspfOutput.OspfInfo_custom)
 
     def test_complete_output(self):
         self.maxDiff = None
@@ -65,17 +105,17 @@ class test_ospf(unittest.TestCase):
         
         # Set outputs
         ospf.maker.outputs[ShowProtocolsAfiAllAll] = {'':OspfOutput.ShowProtocolsAfiAllAll}
-        ospf.maker.outputs[ShowOspfVrfAllInclusive] = {'':OspfOutput.ShowOspfVrfAllInclusive}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveShamLinks] = {'':OspfOutput.ShowOspfVrfAllInclusiveShamLinks}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveVirtualLinks] = {'':OspfOutput.ShowOspfVrfAllInclusiveVirtualLinks}
+        ospf.maker.outputs[ShowOspfVrfAllInclusive] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusive}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveShamLinks] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveShamLinks}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveVirtualLinks] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveVirtualLinks}
         ospf.maker.outputs[ShowOspfMplsTrafficEngLink] = {'':OspfOutput.ShowOspfMplsTrafficEngLink}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseRouter] = {'':OspfOutput.ShowOspfVrfAllInclusiveDatabaseRouter}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseExternal] = {'':OspfOutput.ShowOspfVrfAllInclusiveDatabaseExternal}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseNetwork] = {'':OspfOutput.ShowOspfVrfAllInclusiveDatabaseNetwork}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseSummary] = {'':OspfOutput.ShowOspfVrfAllInclusiveDatabaseSummary}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseOpaqueArea] = {'':OspfOutput.ShowOspfVrfAllInclusiveDatabaseOpaqueArea}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveInterface] = {'':OspfOutput.ShowOspfVrfAllInclusiveInterface}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveNeighborDetail] = {'':OspfOutput.ShowOspfVrfAllInclusiveNeighborDetail}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseRouter] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveDatabaseRouter}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseExternal] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveDatabaseExternal}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseNetwork] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveDatabaseNetwork}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseSummary] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveDatabaseSummary}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseOpaqueArea] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveDatabaseOpaqueArea}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveInterface] = {"{'interface':'','vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveInterface}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveNeighborDetail] = {"{'interface':'','neighbor':'','vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveNeighborDetail}
 
         # Return outputs above as inputs to parser when called
         self.device.execute = Mock()
@@ -93,17 +133,17 @@ class test_ospf(unittest.TestCase):
         
         # Set outputs
         ospf.maker.outputs[ShowProtocolsAfiAllAll] = {'':OspfOutput.ShowProtocolsAfiAllAll}
-        ospf.maker.outputs[ShowOspfVrfAllInclusive] = {'':OspfOutput.ShowOspfVrfAllInclusive}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveShamLinks] = {'':OspfOutput.ShowOspfVrfAllInclusiveShamLinks}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveVirtualLinks] = {'':OspfOutput.ShowOspfVrfAllInclusiveVirtualLinks}
+        ospf.maker.outputs[ShowOspfVrfAllInclusive] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusive}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveShamLinks] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveShamLinks}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveVirtualLinks] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveVirtualLinks}
         ospf.maker.outputs[ShowOspfMplsTrafficEngLink] = {'':OspfOutput.ShowOspfMplsTrafficEngLink}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseRouter] = {'':OspfOutput.ShowOspfVrfAllInclusiveDatabaseRouter}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseExternal] = {'':OspfOutput.ShowOspfVrfAllInclusiveDatabaseExternal}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseNetwork] = {'':OspfOutput.ShowOspfVrfAllInclusiveDatabaseNetwork}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseSummary] = {'':OspfOutput.ShowOspfVrfAllInclusiveDatabaseSummary}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseOpaqueArea] = {'':OspfOutput.ShowOspfVrfAllInclusiveDatabaseOpaqueArea}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveInterface] = {'':OspfOutput.ShowOspfVrfAllInclusiveInterface}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveNeighborDetail] = {'':OspfOutput.ShowOspfVrfAllInclusiveNeighborDetail}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseRouter] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveDatabaseRouter}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseExternal] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveDatabaseExternal}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseNetwork] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveDatabaseNetwork}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseSummary] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveDatabaseSummary}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseOpaqueArea] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveDatabaseOpaqueArea}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveInterface] = {"{'interface':'','vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveInterface}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveNeighborDetail] = {"{'interface':'','neighbor':'','vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveNeighborDetail}
 
         # Return outputs above as inputs to parser when called
         self.device.execute = Mock()
@@ -125,17 +165,17 @@ class test_ospf(unittest.TestCase):
         
         # Set outputs
         ospf.maker.outputs[ShowProtocolsAfiAllAll] = {'':{}}
-        ospf.maker.outputs[ShowOspfVrfAllInclusive] = {'':{}}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveShamLinks] = {'':{}}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveVirtualLinks] = {'':{}}
+        ospf.maker.outputs[ShowOspfVrfAllInclusive] = {"{'vrf':''}":{}}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveShamLinks] = {"{'vrf':''}":{}}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveVirtualLinks] = {"{'vrf':''}":{}}
         ospf.maker.outputs[ShowOspfMplsTrafficEngLink] = {'':{}}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseRouter] = {'':{}}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseExternal] = {'':{}}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseNetwork] = {'':{}}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseSummary] = {'':{}}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseOpaqueArea] = {'':{}}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveInterface] = {'':{}}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveNeighborDetail] = {'':{}}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseRouter] = {"{'vrf':''}":{}}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseExternal] = {"{'vrf':''}":{}}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseNetwork] = {"{'vrf':''}":{}}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseSummary] = {"{'vrf':''}":{}}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseOpaqueArea] = {"{'vrf':''}":{}}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveInterface] = {"{'interface':'','vrf':''}":{}}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveNeighborDetail] = {"{'interface':'','neighbor':'','vrf':''}":{}}
 
         # Return outputs above as inputs to parser when called
         self.device.execute = Mock()
@@ -155,17 +195,17 @@ class test_ospf(unittest.TestCase):
         
         # Set outputs
         ospf.maker.outputs[ShowProtocolsAfiAllAll] = {'':{}}
-        ospf.maker.outputs[ShowOspfVrfAllInclusive] = {'':OspfOutput.ShowOspfVrfAllInclusive}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveShamLinks] = {'':OspfOutput.ShowOspfVrfAllInclusiveShamLinks}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveVirtualLinks] = {'':OspfOutput.ShowOspfVrfAllInclusiveVirtualLinks}
+        ospf.maker.outputs[ShowOspfVrfAllInclusive] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusive}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveShamLinks] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveShamLinks}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveVirtualLinks] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveVirtualLinks}
         ospf.maker.outputs[ShowOspfMplsTrafficEngLink] = {'':OspfOutput.ShowOspfMplsTrafficEngLink}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseRouter] = {'':OspfOutput.ShowOspfVrfAllInclusiveDatabaseRouter}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseExternal] = {'':OspfOutput.ShowOspfVrfAllInclusiveDatabaseExternal}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseNetwork] = {'':OspfOutput.ShowOspfVrfAllInclusiveDatabaseNetwork}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseSummary] = {'':OspfOutput.ShowOspfVrfAllInclusiveDatabaseSummary}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseOpaqueArea] = {'':OspfOutput.ShowOspfVrfAllInclusiveDatabaseOpaqueArea}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveInterface] = {'':OspfOutput.ShowOspfVrfAllInclusiveInterface}
-        ospf.maker.outputs[ShowOspfVrfAllInclusiveNeighborDetail] = {'':OspfOutput.ShowOspfVrfAllInclusiveNeighborDetail}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseRouter] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveDatabaseRouter}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseExternal] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveDatabaseExternal}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseNetwork] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveDatabaseNetwork}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseSummary] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveDatabaseSummary}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveDatabaseOpaqueArea] = {"{'vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveDatabaseOpaqueArea}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveInterface] = {"{'interface':'','vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveInterface}
+        ospf.maker.outputs[ShowOspfVrfAllInclusiveNeighborDetail] = {"{'interface':'','neighbor':'','vrf':''}":OspfOutput.ShowOspfVrfAllInclusiveNeighborDetail}
 
         # Return outputs above as inputs to parser when called
         self.device.execute = Mock()

@@ -21,11 +21,11 @@ from genie.libs.sdk.apis.iosxe.ospf.get import (
 log = logging.getLogger(__name__)
 
 
-def verify_ospf_database_flag(device, lsa_id, expected_flag, has_flag=True, 
+def verify_ospf_database_flag(device, lsa_id, expected_flag, has_flag=True,
                               max_time=30, check_interval=10):
     """ Verify ospf database flag does (not) have expected value
 
-        Args: 
+        Args:
             device (`obj`): Device object
             lsa_id (`str`): Link State ID
             expected_flag (`str`): Expected flag value
@@ -47,15 +47,15 @@ def verify_ospf_database_flag(device, lsa_id, expected_flag, has_flag=True,
             timeout.sleep()
             continue
 
-        reqs = R(['vrf', '(.*)', 'address_family', '(.*)', 
-                  'instance', '(.*)', 'areas', '(.*)', 
-                  'database', 'lsa_types', '(.*)', 
+        reqs = R(['vrf', '(.*)', 'address_family', '(.*)',
+                  'instance', '(.*)', 'areas', '(.*)',
+                  'database', 'lsa_types', '(.*)',
                   'lsas', '(.*)', 'ospfv2', 'body',
-                  'opaque', 'extended_prefix_tlvs', '(.*)', 
+                  'opaque', 'extended_prefix_tlvs', '(.*)',
                   'sub_tlvs', '(.*)', 'flags', '(?P<flags>.*)'])
         found = find([out], reqs, filter_=False, all_keys=True)
         if found:
-            keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={}, 
+            keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={},
                                          source=found, all_keys=True)
         else:
             log.error("Failed to get flags from ospf database with Link State ID: '{}'"
@@ -347,8 +347,8 @@ def is_interface_igp_sync_ospf_enabled(
         timeout.sleep()
     return False
 
-def verify_sid_in_ospf(device, process_id=None, sid=None, code=None, ip_address=None, 
-    avoid_codes=None, prefix=None, max_time=90, check_interval=10, 
+def verify_sid_in_ospf(device, process_id=None, sid=None, code=None, ip_address=None,
+    avoid_codes=None, prefix=None, max_time=90, check_interval=10,
     expected_result=True, output=None):
     """ Verifies if SID is found in ospf
         from command 'show ip ospf segment-routing sid-database'
@@ -381,7 +381,7 @@ def verify_sid_in_ospf(device, process_id=None, sid=None, code=None, ip_address=
     timeout = Timeout(max_time, check_interval)
     out = None
     while timeout.iterate():
-        
+
         try:
             if output:
                 # Can change to reference type and modify original output
@@ -391,7 +391,7 @@ def verify_sid_in_ospf(device, process_id=None, sid=None, code=None, ip_address=
                     out = device.parse("show ip ospf segment-routing sid-database", output=output)
             else:
                 out = device.parse("show ip ospf segment-routing sid-database")
-            
+
         except (SchemaEmptyParserError):
             return False
         sid_count = 0
@@ -419,7 +419,7 @@ def verify_sid_in_ospf(device, process_id=None, sid=None, code=None, ip_address=
         #         }
         #     }
         # }
-        
+
         reqs = R(
             ['process_id',
             '(?P<process_id>.*)' if not process_id else process_id,
@@ -431,21 +431,21 @@ def verify_sid_in_ospf(device, process_id=None, sid=None, code=None, ip_address=
         )
 
         found = find([out], reqs, filter_=False, all_keys=True)
-        
+
         result = False
 
         if found:
             key_list = GroupKeys.group_keys(
                 reqs=reqs.args, ret_num={}, source=found, all_keys=True
             )
-            
+
             for v in key_list:
                 # Get current dictionary from filtered values
                 # Current process id
                 c_process_id = v.get('process_id', None)
                 # Current SID
                 c_sid = v.get('sid', None)
-                
+
                 # sid_dict:
                 #             'sids': {
                 #                 'total_entries': 1,
@@ -459,21 +459,21 @@ def verify_sid_in_ospf(device, process_id=None, sid=None, code=None, ip_address=
                 #             }
                 sid_dict = out['process_id'][c_process_id]\
                     ['sids'][c_sid]
-                
+
                 # Current prefix for SID - Move to next SID values
                 c_prefix = sid_dict.get('prefix', None)
-                
+
                 # Current IP address for SID - Move to next SID values
                 c_ip_address = sid_dict.get('adv_rtr_id', None)
-                
+
                 # Current code for SID - Move to next SID values
                 c_code = sid_dict.get('codes', None)
-                
+
 
                 # If SID is passed as argument and is not equal to current SID - Move to next SID values
                 if sid and c_sid != sid:
                     continue
-                
+
                 # If prefix is passed as argument and is not equal to current Prefix - Move to next SID values
                 if prefix and c_prefix != prefix:
                     continue
@@ -481,7 +481,7 @@ def verify_sid_in_ospf(device, process_id=None, sid=None, code=None, ip_address=
                 # If IP address is passed as argument and is not equal to current IP address - Move to next SID values
                 if ip_address and c_ip_address != ip_address:
                     continue
-                
+
                 # If list of codes passed as avoid_codes
                 # If Current code c_code is not None
                 # If c_code is found in avoid_codes - Move to next SID values
@@ -493,7 +493,7 @@ def verify_sid_in_ospf(device, process_id=None, sid=None, code=None, ip_address=
                 # If c_code is not equal to code - Move to next SID values
                 if code and c_code != code:
                     continue
-                
+
                 # Result is only set to True, if it did not failed in all previous criterias
                 # There are some records found in output based on filter
                 result = True
@@ -514,7 +514,7 @@ def verify_sid_in_ospf(device, process_id=None, sid=None, code=None, ip_address=
             return result
     return result
 
-def is_type_10_opaque_area_link_states_originated(device, max_time=60, check_interval=10, 
+def is_type_10_opaque_area_link_states_originated(device, max_time=60, check_interval=10,
     expected_result=True):
     """ Verifies if Type 10 opaque area link states are originated
         from command 'show ip ospf database opaque-area self-originate'
@@ -533,7 +533,7 @@ def is_type_10_opaque_area_link_states_originated(device, max_time=60, check_int
             False
 
     """
-    
+
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
         out = None
@@ -562,27 +562,28 @@ def is_type_10_opaque_area_link_states_originated(device, max_time=60, check_int
             )
 
             found = find([out], reqs, filter_=False, all_keys=True)
-            
+
             if not found and not expected_result:
                 return expected_result
-                
+
             if found:
                 key_list = GroupKeys.group_keys(
                     reqs=reqs.args, ret_num={}, source=found, all_keys=True
                 )
-                
+
                 if (key_list.pop()['lsa_type'] == 10) == expected_result:
                     return expected_result
-        
+
         timeout.sleep()
-    
+
     return False
 
-def verify_opaque_type_7_prefix_and_flags(device, vrf, address_family, instance, prefix, 
+
+def verify_opaque_type_7_prefix_and_flags(device, vrf, address_family, instance, prefix,
     flags, max_time=60, check_interval=10, expected_result=True):
     """ Verifies if SID is found in ospf
         from command 'show ip ospf segment-routing sid-database'
-        
+
         Args:
             device (`obj`): Device to be executed command
             vrf (`str`): VRF name
@@ -605,7 +606,7 @@ def verify_opaque_type_7_prefix_and_flags(device, vrf, address_family, instance,
         out = None
         result = True
         try:
-            out = device.parse('show ip ospf database opaque-area self-originate') 
+            out = device.parse('show ip ospf database opaque-area self-originate')
         except (SchemaEmptyParserError):
             pass
         if out:
@@ -649,11 +650,11 @@ def verify_opaque_type_7_prefix_and_flags(device, vrf, address_family, instance,
         timeout.sleep()
     return False
 
-def verify_sid_is_advertised_in_ospf(device, router_id, vrf, address_family, instance, prefix, 
+def verify_sid_is_advertised_in_ospf(device, router_id, vrf, address_family, instance, prefix,
     flags, max_time=90, check_interval=10, expected_result=True):
     """ Verifies if SID is advertised in ospf
         from command 'show ip ospf database opaque-area adv-router {router_id}'
-        
+
         Args:
             device (`obj`): Device to be executed command
             router_id (`str`): Router ID
@@ -679,7 +680,7 @@ def verify_sid_is_advertised_in_ospf(device, router_id, vrf, address_family, ins
         result = True
         try:
             out = device.parse('show ip ospf database opaque-area adv-router {router_id}'.
-                    format(router_id=router_id)) 
+                    format(router_id=router_id))
         except (SchemaEmptyParserError):
             pass
 
@@ -714,10 +715,10 @@ def verify_sid_is_advertised_in_ospf(device, router_id, vrf, address_family, ins
                     ]
                 )
                 found = find([out], reqs, filter_=False, all_keys=True)
-                
+
                 if not found:
                     result = False
-                
+
                 if not result and not expected_result:
                     return expected_result
 
@@ -928,18 +929,18 @@ def is_ospf_tilfa_enabled_in_sr(
     log.info("TI-LFA is not enabled in SR")
     return False
 
-def is_ospf_sr_label_preferred(device, process_id, output=None, max_time=60, check_interval=10):
-    """ Verify if SR label is preferred for a process id
+
+def verify_ospf_sr_label_preference(device, process_id, expected_preference, output=None, max_time=60, check_interval=10):
+    """ Verify SR label preference for a process id
         Args:
             device ('obj'): Device object
             process_id ('str'): Process if
+            expected_preference ('bool'): Sr label preference that is expected
         Returns:
-            True: SR labels are preferred
-            False: SR labels are not preferred
+            True/False
         Raises:
             None
     """
-
     log.info("Getting SR attributes")
     if not output:
         try:
@@ -950,16 +951,20 @@ def is_ospf_sr_label_preferred(device, process_id, output=None, max_time=60, che
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
 
-        is_sr_label_prefered = (
+        actual_preference = (
             output["process_id"]
             .get(process_id, {})
             .get("sr_attributes", {})
             .get("sr_label_preferred", False)
         )
 
-        if is_sr_label_prefered:
-            log.info("SR labels are the preferred ones")
-            return True        
+        if expected_preference == actual_preference:
+            if actual_preference:
+                log.info("As expected: SR labels are the preferred ones")
+            else:
+                log.info("As expected: SR labels are not the preferred ones")
+
+            return True
 
         try:
             output = device.parse("show ip ospf segment-routing")
@@ -967,11 +972,16 @@ def is_ospf_sr_label_preferred(device, process_id, output=None, max_time=60, che
             log.info("Could not find any SR attributes")
             timeout.sleep()
             continue
-        
-        log.info("SR labels are not the preferred ones")
+
+        if actual_preference:
+            log.info("As NOT expected: SR labels are the preferred ones")
+        else:
+            log.info("As NOT expected: SR labels are not the preferred ones")
+
         timeout.sleep()
-    
-    return is_sr_label_prefered
+
+    return False
+
 
 def verify_ospf_segment_routing_gb_srgb_base_and_range(
     device,
@@ -1030,7 +1040,73 @@ def verify_ospf_segment_routing_gb_srgb_base_and_range(
 
     return False
 
-def verify_sid_in_ospf_pairs(device, pairs, process_id=None, max_time=90, check_interval=10, 
+def verify_ospf_segment_routing_lb_srlb_base_and_range(
+    device,
+    process_id,
+    router_id,
+    expected_srlb_base=None,
+    expected_srlb_range=None,
+    max_time=30,
+    check_interval=10,
+):
+    """ Verifies segment routing lb SRLB Base value
+
+        Args:
+            device ('obj'): Device to use
+            process_id ('str'): Ospf process id
+            router_id ('str'): Router entry to look under
+            expected_srlb_base ('int'): Expected value for SRLB Base
+            expected_srlb_range ('int'): Expected value for SRLB Range
+            max_time ('int'): Maximum time to wait
+            check_interval ('int'): How often to check
+
+        Returns:
+             True/False
+
+        Raises:
+            None
+    """
+    log.info(
+        "Verifying router {router} has SRLB Base value of {value} and SRLB Range value of {value2}".format(
+            router=router_id,
+            value=expected_srlb_base,
+            value2=expected_srlb_range,
+        )
+    )
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        srlb_base, srlb_range = device.api.get_ospf_segment_routing_lb_srlb_base_and_range(
+            device=device, process_id=process_id, router_id=router_id
+        )
+
+        if not (expected_srlb_base and expected_srlb_base != srlb_base) or (
+            expected_srlb_range and expected_srlb_range != srlb_range
+        ):
+            return True
+
+        if expected_srlb_base and expected_srlb_base != srlb_base:
+            log.info(
+                "Router {router} has SRLB Base value of {value}. Expected value is {expected}".format(
+                    router=router_id,
+                    value=srlb_base,
+                    expected=expected_srlb_base,
+                )
+            )
+        if expected_srlb_range and expected_srlb_range != srlb_range:
+            log.info(
+                "Router {router} has SRLB Range value of {value}. Expected value is {expected}".format(
+                    router=router_id,
+                    value=srlb_range,
+                    expected=expected_srlb_range,
+                )
+            )
+
+        timeout.sleep()
+
+    return False
+
+def verify_sid_in_ospf_pairs(device, pairs, process_id=None, max_time=90, check_interval=10,
     expected_result=True, output=None, verbose=True,
     ):
 
@@ -1062,7 +1138,7 @@ def verify_sid_in_ospf_pairs(device, pairs, process_id=None, max_time=90, check_
                             }
                         }
                     }
-            
+
 
         Raises:
             None
@@ -1077,7 +1153,7 @@ def verify_sid_in_ospf_pairs(device, pairs, process_id=None, max_time=90, check_
     pt = PrettyTable()
 
     pt.field_names = ['SID', 'Codes', 'Prefix', 'Adv Rtr Id', 'Area ID', 'Entry Exist']
-    
+
     fields_index = {
         'sid': 0,
         'codes': 1,
@@ -1086,7 +1162,7 @@ def verify_sid_in_ospf_pairs(device, pairs, process_id=None, max_time=90, check_
         'area_id': 4,
         'entry_exist': 5
     }
-    
+
     while timeout.iterate():
         row = None
         try:
@@ -1142,7 +1218,7 @@ def verify_sid_in_ospf_pairs(device, pairs, process_id=None, max_time=90, check_
                 #     }
                 for sid, pairs_dict in pairs.get('sids', {}).items():
                     sid_dict = sids_dict.get(sid, {})
-                    
+
                     # sid_dict will be True if record found with matching SID
                     if sid_dict:
                         value_dict = verified_dict.setdefault('sids', {}). \
@@ -1156,7 +1232,7 @@ def verify_sid_in_ospf_pairs(device, pairs, process_id=None, max_time=90, check_
                                 result = False
                     else:
                         result = False
-                    
+
                     # Create row for PrettyTable
                     row = ['N/A'] * len(pt.field_names)
                     for key_name, key_index in fields_index.items():
@@ -1167,7 +1243,7 @@ def verify_sid_in_ospf_pairs(device, pairs, process_id=None, max_time=90, check_
                     row[fields_index['entry_exist']] = 'True' if result else 'False'
                     pt.add_row(row)
 
-        # By default verbose=True will print the PrettyTable. verbose=False will avoid printing PrettyTable. 
+        # By default verbose=True will print the PrettyTable. verbose=False will avoid printing PrettyTable.
         if verbose:
             log.info(pt)
         pt.clear_rows()
@@ -1177,3 +1253,128 @@ def verify_sid_in_ospf_pairs(device, pairs, process_id=None, max_time=90, check_
             return False
         timeout.sleep()
     return False
+
+
+def verify_ospf_neighbor_address_in_state(device, addresses, state, max_time=60, check_interval=10):
+    """ Verifies that an ospf neighbor using the provided address is in a specific state
+
+        Args:
+            device ('obj'): Device to use
+            addresses ('list'): List of addresses to check
+            state ('str'): State to verify the interfaces are in
+            max_time ('int'): Maximum time to wait
+            check_interval ('int'): How often to check
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        addresses_in_state = device.api.get_ospf_neighbor_address_in_state(device, state)
+
+        if set(addresses).issubset(addresses_in_state):
+            return True
+
+        log.info("The following addresses are not in state {state}: {addresses}"
+                 .format(state=state, addresses=set(addresses)-set(addresses_in_state)))
+
+        timeout.sleep()
+
+    return False
+
+
+def verify_ospf_neighbor_addresses_are_not_listed(device, addresses, max_time=60, check_interval=10):
+    """ Verifies that an ospf neighbor using the provided address is not listed
+
+        Args:
+            device ('obj'): Device to use
+            addresses ('list'): List of addresses to check
+            max_time ('int'): Maximum time to wait
+            check_interval ('int'): How often to check
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        addresses_listed = device.api.get_ospf_neighbor_address_in_state(device)
+        if set(addresses).isdisjoint(addresses_listed):
+            return True
+
+        log.info('The following addresses are still listed: {}'
+                 .format(list(set(addresses).intersection(addresses_listed))))
+
+        timeout.sleep()
+
+    return False
+
+
+def verify_ospf_database_contains_sid_neighbor_address_pairs(device, router_id, pairs, vrf, address_family, instance, area, max_time=60, check_interval=10, contains=True):
+    """ Verifies the ospf database contains the sid and neighbor address pairs provided
+
+        Args:
+            device ('obj'): Device to use
+            router_id ('str'): Ospf router id
+            pairs ('dict'): Get from 'get_ospf_sr_adj_sid_and_neighbor_address'
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse('show ip ospf database opaque-area type ext-link adv-router {router_id}'
+                               .format(router_id=router_id))
+        except SchemaEmptyParserError:
+            return False
+
+        verified_dict = {}
+
+        for lsa in (out.get("vrf", {})
+                    .get(vrf, {})
+                    .get("address_family", {})
+                    .get(address_family, {})
+                    .get("instance", {})
+                    .get(instance, {})
+                    .get("areas", {})
+                    .get(area, {})
+                    .get("database", {})
+                    .get("lsa_types", {})
+                    .get(10, {})  # 10 is the opaque type. Hardcoded because show command is the opaque type
+                    .get("lsas", {})):
+
+            lsa_dict = (out["vrf"][vrf]["address_family"][address_family]["instance"][instance]
+                           ["areas"][area]["database"]["lsa_types"][10]["lsas"][lsa]["ospfv2"]
+                           ["body"]["opaque"])  # Last 3 keys are mandatory in schema
+
+            for link in lsa_dict.get("extended_link_tlvs", {}):
+                link_id = lsa_dict["extended_link_tlvs"][link]["link_id"]  # link_id is a mandatory key
+
+                # Check provided pairs to see if link_id exists.
+                # If it does get corresponding adj-sid.
+                adj_sid_from_pair = pairs.get(link_id)
+                if adj_sid_from_pair:
+                    for index in lsa_dict["extended_link_tlvs"][link].get("sub_tlvs", {}):
+                        if ("Adj SID" in lsa_dict["extended_link_tlvs"][link]["sub_tlvs"][index]["type"] and
+                                adj_sid_from_pair in str(lsa_dict["extended_link_tlvs"][link]["sub_tlvs"][index].get("label", ""))):
+                            verified_dict.update({link_id: adj_sid_from_pair})
+
+        if contains and pairs == verified_dict:
+            return True
+
+        if not contains and not verified_dict:
+            return True
+
+        timeout.sleep()
+
+    return False
+

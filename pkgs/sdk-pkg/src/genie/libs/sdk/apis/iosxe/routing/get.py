@@ -2,17 +2,73 @@
 
 # Python
 import os
-import logging
 import re
+import logging
 
 # pyATS
-from ats.easypy import runtime
+from pyats.easypy import runtime
+from pyats.utils.objects import find, R
 
 # Genie
 from genie.utils.config import Config
+from genie.libs.sdk.libs.utils.normalize import GroupKeys
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 log = logging.getLogger(__name__)
+
+
+def get_routing_ospf_routes(device):
+    """ Retrieve all ospf routes - show ip route
+
+        Args:
+            device ('obj'): Device object
+        Returns:
+            routes ('list'): List of ospf routes
+    """
+    log.info("Getting all ospf routes")
+    protocol_codes = 'O'
+    routes = get_routes(device, protocol_codes)
+    return routes
+
+
+def get_routes(device, protocol_codes=None):
+    """ Retrieve all routes in specific protocal - show ip route
+
+        Args:
+            device ('obj'): Device object
+            protocol_codes ('str'): Protocol codes
+                If not provided, it will get all protocal routes
+        Returns:
+            routes ('list'): List of routes
+    """
+    routes = []
+    cmd = 'show ip route'
+
+    if protocol_codes is None:
+        protocol_codes = '(.*)'
+
+    try:
+        out = device.parse(cmd)
+    except Exception as e:
+        log.error("Failed to parse '{}':\n{}".format(cmd, e))
+        return routes
+
+    reqs = R(['vrf', '(.*)', 
+              'address_family', '(.*)', 
+              'routes', '(?P<route>.*)', 
+              'source_protocol_codes', protocol_codes])
+    found = find([out], reqs, filter_=False, all_keys=True)
+
+    if found:
+        keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={}, 
+                                    source=found, all_keys=True)
+        for route in keys:
+            routes.append(route['route'])
+    else:
+        log.error("Could not find any route with protocol_codes '{}'".\
+            format(protocol_codes))
+ 
+    return routes
 
 
 def get_routing_outgoing_interface(

@@ -53,6 +53,10 @@ def get_cef_repair_path_of_route(device, prefix, vrf="default", address_family="
                         .get(hop, {})["outgoing_interface"][out_interface]
                         .get("repair", None)
                     )
+
+                    if repair_path is None:
+                        continue
+
                     result = r1.match(repair_path)
                     if result:
                         group = result.groupdict()

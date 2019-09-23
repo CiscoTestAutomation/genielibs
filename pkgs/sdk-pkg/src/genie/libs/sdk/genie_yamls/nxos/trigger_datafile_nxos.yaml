@@ -1157,16 +1157,16 @@ TriggerUnconfigConfigNveSourceInterfaceLoopback:
     devices: ['uut']
 
 # Removed from vxlan trigger list due to it makes changes on config
-# TriggerUnconfigConfigNveAdvertiseVirtualRmac:
-#     groups: ['unconfig-config', 'L3']
-#     method: 'checkpoint'
-#     timeout:
-#       max_time: 360
-#       interval: 20
-#     timeout_recovery:
-#       max_time: 750
-#       interval: 20
-#     devices: ['uut']
+TriggerUnconfigConfigNveAdvertiseVirtualRmac:
+    groups: ['unconfig-config']
+    method: 'checkpoint'
+    timeout:
+      max_time: 360
+      interval: 20
+    timeout_recovery:
+      max_time: 750
+      interval: 20
+    devices: ['uut']
 
 TriggerUnconfigConfigNveVniMcastGroup:
     groups: ['unconfig-config', 'L3']
@@ -1565,13 +1565,13 @@ TriggerAddRemoveNveMultisiteBgwInterface:
       max_time: 180
       interval: 10
 
-# TriggerAddRemoveBgpAfL2vpnEvpnRewriteEvpnRtAsn:
-#    groups: ['add-remove', 'vxlan']
-#    method: 'checkpoint'
-#    timeout:
-#       max_time: 180
-#       interval: 10
-#    devices: ['uut']
+TriggerAddRemoveBgpAfL2vpnEvpnRewriteEvpnRtAsn:
+   groups: ['add-remove']
+   method: 'checkpoint'
+   timeout:
+      max_time: 180
+      interval: 10
+   devices: ['uut']
 
 TriggerAddRemoveNveVniMcastGroup:
     groups: ['add-remove', 'vxlan', 'L3']
@@ -1581,16 +1581,16 @@ TriggerAddRemoveNveVniMcastGroup:
       interval: 10
     devices: ['uut']
 
-# TriggerDisableEnableNveOverlay:
-#    groups: ['disable-enable', 'vxlan', 'L3']
-#    method: 'checkpoint'
-#    timeout:
-#      max_time: 180
-#      interval: 10
-#    timeout_recovery:
-#      max_time: 400
-#      interval: 20
-#    devices: ['uut']
+TriggerDisableEnableNveOverlay:
+   groups: ['disable-enable']
+   method: 'checkpoint'
+   timeout:
+     max_time: 180
+     interval: 10
+   timeout_recovery:
+     max_time: 400
+     interval: 20
+   devices: ['uut']
 
 TriggerDisableEnableVnSegmentVlanWithNvOverlay:
     groups: ['disable-enable', 'L3']
@@ -1644,13 +1644,13 @@ TriggerModifyEvpnRd:
       interval: 10
     devices: ['uut']
 
-# TriggerUnconfigConfigNveMultisiteBgwInterface:
-#    groups: ['add-remove', 'vxlan', 'L3']
-#    method: 'checkpoint'
-#    timeout:
-#      max_time: 180
-#      interval: 10
-#    devices: ['uut']
+TriggerUnconfigConfigNveMultisiteBgwInterface:
+   groups: ['add-remove']
+   method: 'checkpoint'
+   timeout:
+     max_time: 180
+     interval: 10
+   devices: ['uut']
 
 TriggerAddRemoveNveVniMultisiteIngressReplication:
     groups: ['add-remove', 'vxlan', 'L3']
@@ -1672,18 +1672,16 @@ TriggerAddRemoveEvpnMsiteBgwDelayRestoreTime:
     devices: ['uut']
 
 # Removed from vxlan trigger list due to it makes changes on config
-# TriggerAddRemoveNveAdvertiseVirtualRmac:
-#    groups: ['add-remove', 'L3']
-#    method: 'checkpoint'
-#    timeout:
-#      max_time: 360
-#      interval: 10
-#    timeout_recovery:
-#      max_time: 500
-#      interval: 20
-#    devices:
-#      R8:
-#        None
+TriggerAddRemoveNveAdvertiseVirtualRmac:
+    groups: ['add-remove']
+    method: 'checkpoint'
+    timeout:
+      max_time: 360
+      interval: 10
+    timeout_recovery:
+      max_time: 500
+      interval: 20
+    devices: ['uut']
 
 TriggerAddRemoveBgpNeighborRoutemap:
     groups: ['add-remove', 'bgp', 'L3']

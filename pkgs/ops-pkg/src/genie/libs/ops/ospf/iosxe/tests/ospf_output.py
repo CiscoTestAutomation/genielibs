@@ -618,6 +618,82 @@ class OspfOutput(object):
                                                         'disabled': False,
                                                         'name': 'Base',
                                                         'shutdown': False}}}}}}}}}}}}}
+    ShowIpOspfInterface_custom = {
+        'vrf':{
+             'default':
+                 {'address_family':
+                      {'ipv4':
+                           {'instance':
+                                {'1':
+                                     {'areas':
+                                          {'0.0.0.0':
+                                               {'interfaces':
+                                                    {'GigabitEthernet1':
+                                                         {'attached': 'interface enable',
+                                                          'authentication':
+                                                              {'auth_trailer_key':
+                                                                   {
+                                                                       'crypto_algorithm': 'md5',
+                                                                       'youngest_key_id': 2}},
+                                                          'bdr_ip_addr': '10.1.4.1',
+                                                          'bdr_router_id': '10.4.1.1',
+                                                          'bfd':
+                                                              {'enable': False},
+                                                          'cost': 1,
+                                                          'dead_interval': 40,
+                                                          'demand_circuit': False,
+                                                          'dr_ip_addr': '10.1.4.4',
+                                                          'dr_router_id': '10.64.4.4',
+                                                          'enable': True,
+                                                          'flood_queue_length': 0,
+                                                          'frr_enabled': True,
+                                                          'frr_protected': True,
+                                                          'graceful_restart':
+                                                              {'cisco':
+                                                                   {'helper': True,
+                                                                    'type': 'cisco'},
+                                                               'ietf':
+                                                                   {'helper': True,
+                                                                    'type': 'ietf'}},
+                                                          'lls': True,
+                                                          'oob_resync_timeout': 40,
+                                                          'hello_interval': 10,
+                                                          'hello_timer': '00:00:08',
+                                                          'if_cfg': True,
+                                                          'index': '1/2/2',
+                                                          'interface_id': 7,
+                                                          'interface_type': 'broadcast',
+                                                          'ip_address': '10.1.4.1/24',
+                                                          'last_flood_scan_length': 3,
+                                                          'last_flood_scan_time_msec': 0,
+                                                          'line_protocol': True,
+                                                          'max_flood_scan_length': 3,
+                                                          'max_flood_scan_time_msec': 1,
+                                                          'name': 'GigabitEthernet1',
+                                                          'neighbors':
+                                                              {'10.64.4.4':
+                                                                   {
+                                                                       'dr_router_id':
+                                                                           '10.64.4.4'}},
+                                                          'next': '0x0(0)/0x0(0)/0x0(0)',
+                                                          'passive': False,
+                                                          'priority': 1,
+                                                          'retransmit_interval': 5,
+                                                          'router_id': '10.4.1.1',
+                                                          'state': 'bdr',
+                                                          'statistics':
+                                                              {'adj_nbr_count': 1,
+                                                               'nbr_count': 1,
+                                                               'num_nbrs_suppress_hello': 0},
+                                                          'ti_lfa_protected': False,
+                                                          'topology':
+                                                              {0:
+                                                                   {'cost': 1,
+                                                                    'disabled': False,
+                                                                    'name': 'Base',
+                                                                    'shutdown': False}},
+                                                          'transmit_delay': 1,
+                                                          'wait_interval': 40},}}}}}}}}}}
 
     # 'show ip ospf neighbor detail'
     ShowIpOspfNeighborDetail = {
@@ -758,6 +834,47 @@ class OspfOutput(object):
                                                             'nbr_event_count': 6,
                                                             'nbr_retrans_qlen': 0,
                                                             'total_retransmission': 0}}}}}}}}}}}}}}
+    ShowIpOspfNeighborDetail_custom = {
+        'vrf':
+            {'default':
+                 {'address_family':
+                      {'ipv4':
+                           {'instance':
+                                {'1':
+                                     {'areas':
+                                          {'0.0.0.0':
+                                               {'interfaces':
+                                                    {'GigabitEthernet1':
+                                                         {'neighbors':
+                                                              {'10.64.4.4':
+                                                                   {'address': '10.1.4.4',
+                                                                    'bdr_ip_addr':
+                                                                        '10.1.4.1',
+                                                                    'dead_timer':
+                                                                        '00:00:35',
+                                                                    'dr_ip_addr':
+                                                                        '10.1.4.4',
+                                                                    'first': '0x0('
+                                                                             '0)/0x0(0)/0x0(0)',
+                                                                    'index': '1/1/1,',
+                                                                    'interface':
+                                                                        'GigabitEthernet1',
+                                                                    'neighbor_router_id': '10.64.4.4',
+                                                                    'neighbor_uptime':
+                                                                        '1d01h',
+                                                                    'next': '0x0('
+                                                                            '0)/0x0(0)/0x0(0)',
+                                                                    'priority': 1,
+                                                                    'state': 'full',
+                                                                    'statistics':
+                                                                        {
+                                                                            'last_retrans_max_scan_length': 1,
+                                                                            'last_retrans_max_scan_time_msec': 0,
+                                                                            'last_retrans_scan_length': 0,
+                                                                            'last_retrans_scan_time_msec': 0,
+                                                                            'nbr_event_count': 6,
+                                                                            'nbr_retrans_qlen': 0,
+                                                                            'total_retransmission': 1}}}}}}}}}}}}}}
 
     # 'show ip ospf sham-links'
     ShowIpOspfShamLinks = {
@@ -1412,6 +1529,32 @@ class OspfOutput(object):
                                         {'autoconfig': False,
                                         'autoconfig_area_id': '0.0.0.0',
                                         'igp_sync': False}}}}}}}}}
+
+    ShowIpOspfMplsLdpInterface_custom = {
+        'vrf':
+            {'default':
+                 {'address_family':
+                      {'ipv4':
+                           {'instance':
+                                {'1':
+                                     {'areas':
+                                          {'0.0.0.0':
+                                               {'interfaces':
+                                                    {'GigabitEthernet1':
+                                                         {'mpls':
+                                                              {'ldp':
+                                                                   {'autoconfig': False,
+                                                                    'autoconfig_area_id': '0.0.0.0',
+                                                                    'holddown_timer':
+                                                                        False,
+                                                                    'igp_sync': False,
+                                                                    'state': 'up'}}},
+                                                     }}},
+                                      'mpls':
+                                          {'ldp':
+                                               {'autoconfig': False,
+                                                'autoconfig_area_id': '0.0.0.0',
+                                                'igp_sync': False}}}}}}}}}
 
     # 'show ip ospf mpls traffic-eng link'
     ShowIpOspfMplsTrafficEngLink = {
@@ -2178,6 +2321,296 @@ class OspfOutput(object):
                                             'start': 50}}},
                                 'stub_router': 
                                     {'always': 
+                                        {'always': False,
+                                        'external_lsa': False,
+                                        'include_stub': False,
+                                        'summary_lsa': False}}}}}}}}}
+    OspfInfo_custom = {
+        'vrf':
+            {'default':
+                {'address_family':
+                    {'ipv4':
+                        {'instance':
+                            {'1':
+                                {'adjacency_stagger':
+                                    {'initial_number': 300,
+                                    'maximum_number': 300},
+                                'areas':
+                                    {'0.0.0.0':
+                                        {'area_id': '0.0.0.0',
+                                        'area_type': 'normal',
+                                        'database':
+                                            {'lsa_types':
+                                                {1:
+                                                    {'lsa_type': 1,
+                                                    'lsas':
+                                                        {'10.4.1.1 10.4.1.1':
+                                                            {'adv_router': '10.4.1.1',
+                                                            'lsa_id': '10.4.1.1',
+                                                            'ospfv2':
+                                                                {'body':
+                                                                    {'router':
+                                                                        {'links':
+                                                                            {'10.4.1.1':
+                                                                                {'link_data': '255.255.255.255',
+                                                                                'link_id': '10.4.1.1',
+                                                                                'topologies':
+                                                                                    {0:
+                                                                                        {'metric': 1,
+                                                                                        'mt_id': 0},
+                                                                                    32:
+                                                                                        {'metric': 1,
+                                                                                        'mt_id': 32},
+                                                                                    33:
+                                                                                        {'metric': 1,
+                                                                                        'mt_id': 33}},
+                                                                                'type': 'stub network'},
+                                                                            '10.1.2.1':
+                                                                                {'link_data': '10.1.2.1',
+                                                                                'link_id': '10.1.2.1',
+                                                                                'topologies':
+                                                                                    {0:
+                                                                                        {'metric': 1,
+                                                                                        'mt_id': 0}},
+                                                                                'type': 'transit network'},
+                                                                            '10.1.4.4':
+                                                                                {'link_data': '10.1.4.1',
+                                                                                'link_id': '10.1.4.4',
+                                                                                'topologies':
+                                                                                    {0:
+                                                                                        {'metric': 1,
+                                                                                        'mt_id': 0}},
+                                                                                'type': 'transit network'}},
+                                                                        'num_of_links': 3}},
+                                                                'header':
+                                                                    {'adv_router': '10.4.1.1',
+                                                                    'age': 742,
+                                                                    'checksum': '0x6228',
+                                                                    'length': 60,
+                                                                    'lsa_id': '10.4.1.1',
+                                                                    'option': 'None',
+                                                                    'seq_num': '8000003D',
+                                                                    'type': 1}}}}},
+                                                2:
+                                                    {'lsa_type': 2,
+                                                    'lsas':
+                                                        {'10.3.4.4 10.64.4.4':
+                                                            {'adv_router': '10.64.4.4',
+                                                            'lsa_id': '10.3.4.4',
+                                                            'ospfv2':
+                                                                {'body':
+                                                                    {'network':
+                                                                        {'attached_routers':
+                                                                            {'10.36.3.3': {},
+                                                                            '10.64.4.4': {}},
+                                                                        'network_mask': '255.255.255.0'}},
+                                                                'header':
+                                                                    {'adv_router': '10.64.4.4',
+                                                                    'age': 992,
+                                                                    'checksum': '0xF0DA',
+                                                                    'length': 32,
+                                                                    'lsa_id': '10.3.4.4',
+                                                                    'option': 'None',
+                                                                    'seq_num': '8000002E',
+                                                                    'type': 2}}}}},
+                                                3:
+                                                    {'lsa_type': 3,
+                                                    'lsas':
+                                                        {'10.186.3.0 10.4.1.1':
+                                                            {'adv_router': '10.4.1.1',
+                                                            'lsa_id': '10.186.3.0',
+                                                            'ospfv2':
+                                                                {'body':
+                                                                    {'summary':
+                                                                        {'network_mask': '255.255.255.0',
+                                                                        'topologies':
+                                                                            {0:
+                                                                                {'metric': 1,
+                                                                                'mt_id': 0}}}},
+                                                                        'header':
+                                                                            {'adv_router': '10.4.1.1',
+                                                                            'age': 422,
+                                                                            'checksum': '0x43DC',
+                                                                            'length': 28,
+                                                                            'lsa_id': '10.186.3.0',
+                                                                            'option': 'None',
+                                                                            'seq_num': '80000001',
+                                                                            'type': 3}}}}},
+                                                5:
+                                                    {'lsa_type': 5,
+                                                    'lsas':
+                                                        {'10.94.44.44 10.64.4.4':
+                                                            {'adv_router': '10.64.4.4',
+                                                            'lsa_id': '10.94.44.44',
+                                                            'ospfv2':
+                                                                {'body':
+                                                                    {'external':
+                                                                        {'network_mask': '255.255.255.255',
+                                                                        'topologies':
+                                                                            {0:
+                                                                                {'external_route_tag': 0,
+                                                                                'flags': 'E',
+                                                                                'forwarding_address': '0.0.0.0',
+                                                                                'metric': 20,
+                                                                                'mt_id': 0}}}},
+                                                                'header':
+                                                                    {'adv_router': '10.64.4.4',
+                                                                    'age': 1595,
+                                                                    'checksum': '0x7F60',
+                                                                    'length': 36,
+                                                                    'lsa_id': '10.94.44.44',
+                                                                    'option': 'None',
+                                                                    'seq_num': '80000001',
+                                                                    'type': 5}}}}},
+                                                10:
+                                                    {'lsa_type': 10,
+                                                    'lsas':
+                                                        {'10.1.0.1 10.4.1.1':
+                                                            {'adv_router': '10.4.1.1',
+                                                            'lsa_id': '10.1.0.1',
+                                                            'ospfv2':
+                                                                {'body':
+                                                                    {'opaque':
+                                                                        {'link_tlvs':
+                                                                            {1:
+                                                                                {'admin_group': '0x0',
+                                                                                'link_id': '10.1.4.4',
+                                                                                'link_name': 'broadcast network',
+                                                                                'link_type': 2,
+                                                                                'local_if_ipv4_addrs':
+                                                                                    {'10.1.4.1': {}},
+                                                                                'max_bandwidth': 125000000,
+                                                                                'max_reservable_bandwidth': 93750000,
+                                                                                'remote_if_ipv4_addrs':
+                                                                                    {'0.0.0.0': {}},
+                                                                                'te_metric': 1,
+                                                                                'unreserved_bandwidths':
+                                                                                    {'0 93750000':
+                                                                                        {'priority': 0,
+                                                                                        'unreserved_bandwidth': 93750000},
+                                                                                    '1 93750000':
+                                                                                        {'priority': 1,
+                                                                                        'unreserved_bandwidth': 93750000},
+                                                                                    '2 93750000':
+                                                                                        {'priority': 2,
+                                                                                        'unreserved_bandwidth': 93750000},
+                                                                                    '3 93750000':
+                                                                                        {'priority': 3,
+                                                                                        'unreserved_bandwidth': 93750000},
+                                                                                    '4 93750000':
+                                                                                        {'priority': 4,
+                                                                                        'unreserved_bandwidth': 93750000},
+                                                                                    '5 93750000':
+                                                                                        {'priority': 5,
+                                                                                        'unreserved_bandwidth': 93750000},
+                                                                                    '6 93750000':
+                                                                                        {'priority': 6,
+                                                                                        'unreserved_bandwidth': 93750000},
+                                                                                    '7 93750000':
+                                                                                        {'priority': 7,
+                                                                                        'unreserved_bandwidth': 93750000}}}}}},
+                                                                'header':
+                                                                    {'adv_router': '10.4.1.1',
+                                                                    'age': 370,
+                                                                    'checksum': '0x6586',
+                                                                    'length': 124,
+                                                                    'lsa_id': '10.1.0.1',
+                                                                    'opaque_id': 1,
+                                                                    'opaque_type': 1,
+                                                                    'option': 'None',
+                                                                    'seq_num': '80000002',
+                                                                    'type': 10}}}}}}},
+                                        'interfaces':
+                                            {'GigabitEthernet1':
+                                                {'authentication':
+                                                    {'auth_trailer_key':
+                                                        {'crypto_algorithm': 'md5'}},
+                                                'bdr_ip_addr': '10.1.4.1',
+                                                'bdr_router_id': '10.4.1.1',
+                                                'bfd': {'enable': False},
+                                                'cost': 1,
+                                                'dead_interval': 40,
+                                                'demand_circuit': False,
+                                                'dr_ip_addr': '10.1.4.4',
+                                                'dr_router_id': '10.64.4.4',
+                                                'enable': True,
+                                                'hello_interval': 10,
+                                                'hello_timer': '00:00:08',
+                                                'interface_type': 'broadcast',
+                                                'lls': True,
+                                                'name': 'GigabitEthernet1',
+                                                'neighbors':
+                                                    {'10.64.4.4':
+                                                        {'address': '10.1.4.4',
+                                                        'bdr_ip_addr': '10.1.4.1',
+                                                        'dead_timer': '00:00:35',
+                                                        'dr_ip_addr': '10.1.4.4',
+                                                        'neighbor_router_id': '10.64.4.4',
+                                                        'state': 'full',
+                                                        'statistics':
+                                                            {'nbr_event_count': 6,
+                                                            'nbr_retrans_qlen': 0}}},
+                                                'passive': False,
+                                                'priority': 1,
+                                                'retransmit_interval': 5,
+                                                'state': 'bdr',
+                                                'transmit_delay': 1},
+                                            },
+                                        'mpls':
+                                            {'te':
+                                                {'enable': True}},
+                                        'ranges':
+                                            {'10.4.0.0/16':
+                                                {'advertise': True,
+                                                'cost': 10,
+                                                'prefix': '10.4.0.0/16'}},
+                                        'statistics':
+                                            {'area_scope_lsa_cksum_sum': '0x07CF20',
+                                            'area_scope_lsa_count': 19,
+                                            'spf_runs_count': 41}}},
+                                'auto_cost':
+                                    {'enable': False},
+                                'bfd':
+                                    {'enable': True,
+                                    'strict_mode': True},
+                                'database_control':
+                                    {'max_lsa': 123},
+                                'graceful_restart':
+                                    {'cisco':
+                                        {'enable': False,
+                                        'type': 'cisco'},
+                                    'ietf':
+                                        {'enable': False,
+                                        'type': 'ietf'}},
+                                'mpls':
+                                    {'ldp':
+                                        {'autoconfig': False,
+                                        'autoconfig_area_id': '0.0.0.0',
+                                        'igp_sync': False}},
+                                'nsr':
+                                    {'enable': False},
+                                'preference':
+                                    {'multi_values':
+                                        {'external': 114,
+                                        'granularity':
+                                            {'detail':
+                                                {'inter_area': 113,
+                                                'intra_area': 112}}},
+                                    'single_value': {'all': 110}},
+                                'router_id': '10.4.1.1',
+                                'spf_control':
+                                    {'paths': 4,
+                                    'throttle':
+                                        {'lsa':
+                                            {'hold': 200,
+                                            'maximum': 5000,
+                                            'start': 50},
+                                        'spf':
+                                            {'hold': 200,
+                                            'maximum': 5000,
+                                            'start': 50}}},
+                                'stub_router':
+                                    {'always':
                                         {'always': False,
                                         'external_lsa': False,
                                         'include_stub': False,

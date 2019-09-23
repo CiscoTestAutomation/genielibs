@@ -555,6 +555,43 @@ class test_nx_interface(TestCase):
                 'no interface port-channel10'
                 ]))
 
+class test_nx_interface(TestCase):
+
+    def test_native_vlans(self):
+        # Set Genie Tb
+        testbed = Testbed()
+        Genie.testbed = testbed
+        
+         # Device
+        dev1 = Device(name='BL1', testbed=testbed, os='nxos')
+        intf1 = Interface(
+                    name='Ethernet2/22', 
+                    device=dev1,
+                    description='Native vlan testing',
+                    enabled=True,
+                    switchport_mode='trunk',
+                    trunk_vlans='101-120,131-140,151-170,200-209',
+                    native_vlan='1',
+                    switchport_enable=True
+                    )
+
+        # Build config
+        cfgs = intf1.build_config(apply=False)
+
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(cfgs),
+            '\n'.join([
+                'interface Ethernet2/22',
+                ' description Native vlan testing',
+                ' no shutdown',
+                ' switchport',
+                ' switchport mode trunk',
+                ' switchport trunk allowed vlan 101-120,131-140,151-170,200-209',
+                ' switchport trunk native vlan 1',
+                ' exit'
+            ]))
+            
 if __name__ == '__main__':
     unittest.main()
 

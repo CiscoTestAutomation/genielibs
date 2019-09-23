@@ -11,12 +11,12 @@ class MsdpOutput(object):
         "vrf": {
             "default": {
                 "peer": {
-                    "2.2.2.2": {
+                    "10.16.2.2": {
                         "peer_as": 65000,
                         "session_state": "Up",
                         "resets": "0",
                         "connect_source": "Loopback0",
-                        "connect_source_address": "1.1.1.1",
+                        "connect_source_address": "10.4.1.1",
                         "elapsed_time": "00:13:18",
                         "statistics": {
                             "sent": {
@@ -52,12 +52,12 @@ class MsdpOutput(object):
                         "sa_learned_from": 0,
                         "signature_protection": False,
                     },
-                    "3.3.3.3": {
+                    "10.36.3.3": {
                         "peer_as": 65000,
                         "session_state": "Up",
                         "resets": "0",
                         "connect_source": "Loopback0",
-                        "connect_source_address": "1.1.1.1",
+                        "connect_source_address": "10.4.1.1",
                         "elapsed_time": "00:16:57",
                         "statistics": {
                             "sent": {
@@ -99,9 +99,9 @@ class MsdpOutput(object):
     }
 
     ShowIpMsdpPeer_golden = """
-        MSDP Peer 2.2.2.2 (?), AS 65000
+        MSDP Peer 10.16.2.2 (?), AS 65000
           Connection status:
-            State: Up, Resets: 0, Connection source: Loopback0 (1.1.1.1)
+            State: Up, Resets: 0, Connection source: Loopback0 (10.4.1.1)
             Uptime(Downtime): 00:13:18, Messages sent/received: 15/28
             Output messages discarded: 0
             Connection and counters cleared 00:22:05 ago
@@ -123,9 +123,9 @@ class MsdpOutput(object):
             SA Requests in: 0
             SA Responses out: 0
             Data Packets in/out: 0/0
-        MSDP Peer 3.3.3.3 (?), AS 65000
+        MSDP Peer 10.36.3.3 (?), AS 65000
           Connection status:
-            State: Up, Resets: 0, Connection source: Loopback0 (1.1.1.1)
+            State: Up, Resets: 0, Connection source: Loopback0 (10.4.1.1)
             Uptime(Downtime): 00:16:57, Messages sent/received: 20/19
             Output messages discarded: 0
             Connection and counters cleared 00:22:14 ago
@@ -185,7 +185,7 @@ class MsdpOutput(object):
         "vrf": {
             "default": {
                 "peer": {
-                    "3.3.3.3": {
+                    "10.36.3.3": {
                         "elapsed_time": "00:16:57",
                         "peer_as": 65000,
                         "connect_source": "Loopback0",
@@ -198,7 +198,7 @@ class MsdpOutput(object):
                             "error": {"rpf_failure": 0},
                         },
                     },
-                    "2.2.2.2": {
+                    "10.16.2.2": {
                         "elapsed_time": "00:13:18",
                         "peer_as": 65000,
                         "connect_source": "Loopback0",
