@@ -1,6 +1,6 @@
 include *.rst
 
-recursive-include src *.py *.html
+recursive-include src *.py *.html *.json
 
 global-exclude *.dll
 global-exclude *.pyc
