@@ -57,8 +57,8 @@ class MldOutput(object):
                            "next_query_sent_in": "00:05:18",
                            "querier_timeout": 2570,
                            "ipv6": {
-                                "2001:db1:1::1/64": {
-                                     "ip": "2001:db1:1::1",
+                                "2001:db8:8404:751c::1/64": {
+                                     "ip": "2001:db8:8404:751c::1",
                                      "prefix_length": "64",
                                      "status": "valid"
                                 }
@@ -126,8 +126,8 @@ class MldOutput(object):
                            "next_query_sent_in": "00:03:01",
                            "querier_timeout": 2570,
                            "ipv6": {
-                                "2001:db1:1:1::1/64": {
-                                     "ip": "2001:db1:1:1::1",
+                                "2001:db8:8404:907f::1/64": {
+                                     "ip": "2001:db8:8404:907f::1",
                                      "prefix_length": "64",
                                      "status": "valid"
                                 }
@@ -158,7 +158,7 @@ class MldOutput(object):
                                 "ff30::2": {
                                      "source": {
                                           "2001:db8:0:abcd::2": {
-                                               "last_reporter": "2001:db1:1:1::1",
+                                               "last_reporter": "2001:db8:8404:907f::1",
                                                "expire": "never",
                                                "type": "static",
                                                "up_time": "00:26:28"
@@ -166,7 +166,7 @@ class MldOutput(object):
                                      }
                                 },
                                 "fffe::2": {
-                                     "last_reporter": "2001:db1:1:1::1",
+                                     "last_reporter": "2001:db8:8404:907f::1",
                                      "expire": "never",
                                      "type": "static",
                                      "up_time": "00:26:05"
@@ -183,7 +183,7 @@ class MldOutput(object):
                                 "ff30::2": {
                                      "source": {
                                           "2001:db8:0:abcd::2": {
-                                               "last_reporter": "2001:db1:1::1",
+                                               "last_reporter": "2001:db8:8404:751c::1",
                                                "expire": "never",
                                                "type": "static",
                                                "up_time": "00:25:49"
@@ -191,7 +191,7 @@ class MldOutput(object):
                                      }
                                 },
                                 "fffe::2": {
-                                     "last_reporter": "2001:db1:1::1",
+                                     "last_reporter": "2001:db8:8404:751c::1",
                                      "expire": "never",
                                      "type": "static",
                                      "up_time": "00:25:49"
@@ -328,14 +328,14 @@ class MldOutput(object):
 	                              "ff30::2": {
 	                                   "source": {
 	                                        "2001:db8:0:abcd::2": {
-	                                             "last_reporter": "2001:db1:1::1",
+	                                             "last_reporter": "2001:db8:8404:751c::1",
 	                                             "up_time": "00:25:49",
 	                                             "expire": "never"
 	                                        }
 	                                   }
 	                              },
 	                              "fffe::2": {
-	                                   "last_reporter": "2001:db1:1::1",
+	                                   "last_reporter": "2001:db8:8404:751c::1",
 	                                   "up_time": "00:25:49",
 	                                   "expire": "never"
 	                              }
@@ -381,14 +381,14 @@ class MldOutput(object):
 	                              "ff30::2": {
 	                                   "source": {
 	                                        "2001:db8:0:abcd::2": {
-	                                             "last_reporter": "2001:db1:1:1::1",
+	                                             "last_reporter": "2001:db8:8404:907f::1",
 	                                             "up_time": "00:26:28",
 	                                             "expire": "never"
 	                                        }
 	                                   }
 	                              },
 	                              "fffe::2": {
-	                                   "last_reporter": "2001:db1:1:1::1",
+	                                   "last_reporter": "2001:db8:8404:907f::1",
 	                                   "up_time": "00:26:05",
 	                                   "expire": "never"
 	                              }

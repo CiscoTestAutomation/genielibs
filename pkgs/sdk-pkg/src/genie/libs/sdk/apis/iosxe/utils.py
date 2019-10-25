@@ -170,7 +170,7 @@ def export_packet_capture(device, testbed, filename, capture_name):
             capture_name (`str`): Packet capture name
 
         Returns:
-            None
+            pcap_file_name or None
 
         Raises:
             pyATS Results
@@ -184,15 +184,21 @@ def export_packet_capture(device, testbed, filename, capture_name):
     pcap_file_name = filename.replace(".", "_") + ".pcap"
     log.info("Export the capture to {p}".format(p=pcap_file_name))
 
-    out = device.execute(
-        "monitor capture {capture_name} export tftp://{server}/"
-        "{pcap_file_name}".format(
-            capture_name=capture_name,
-            server=execution_server,
-            pcap_file_name=pcap_file_name,
-        ),
-        error_pattern=["Failed to Export"],
-    )
+    try:
+        out = device.execute(
+            "monitor capture {capture_name} export tftp://{server}/"
+            "{pcap_file_name}".format(
+                capture_name=capture_name,
+                server=execution_server,
+                pcap_file_name=pcap_file_name,
+            ),
+            error_pattern=["Failed to Export"],
+        )
+    except SubCommandFailure:
+        log.error("Invalid command: Failed to Export packet capture")
+    except Exception as e:
+        log.error("Failed to export pcap file: {e}".format(e=e))
+        return None
 
     # Making sure packet buffers are empty the next
     # time when capturing packets

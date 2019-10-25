@@ -1,6 +1,7 @@
 """Common verification functions for Segment-Routing"""
 
 # Python
+import re
 import logging
 
 # pyATS
@@ -12,7 +13,261 @@ from genie.utils.timeout import Timeout
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.sdk.libs.utils.normalize import GroupKeys
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(__name__)  
+
+
+def verify_segment_routing_policy_attributes(device, policy, expected_bsid=None, 
+    expected_mode='dynamic', expected_state='programmed', policy_dict=None, 
+    max_time=30, check_interval=10):
+    """ Verify segment-routing policy attributes is as expected
+        using 'show segment-routing traffic-eng policy name {policy}'
+        
+        Args:
+            device (`obj`): Device object
+            policy (`str`): Policy name
+            expected_bsid (`int`): Expected Binding SID
+            expected_mode (`str`): Expected allocation mode
+            expected_state (`str`): Expected binding state
+            policy_dict (`dict`): Policy dict from parser output 
+                IOSXE Parser - ShowSegmentRoutingTrafficEngPolicy
+                cmd - show segment-routing traffic-eng policy all
+            max_time (`int`): Max time, default: 30
+            check_interval (`int`): Check interval, default: 10
+        Returns
+            result (`bool`): Verified result
+            sid (`int`): Binding sid
+    """
+    cmd = 'show segment-routing traffic-eng policy name {policy}'.format(policy=policy)
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+
+        if policy_dict is None:
+            try:
+                out = device.parse(cmd)
+            except Exception as e:
+                log.error("Failed to parse '{cmd}': {e}".format(cmd=cmd, e=e))
+                timeout.sleep()
+                continue
+        else:
+            out = policy_dict
+
+        bsid_dict = out.get(policy, {}).get('attributes', {}).get('binding_sid', {})
+
+        if bsid_dict:
+            for key, value in bsid_dict.items():
+                sid = key
+                mode = value.get('allocation_mode', '')
+                state = value.get('state', '')
+        else:
+            log.error("No binding SID was found in policy '{policy}'"
+                .format(policy=policy))
+            timeout.sleep()
+            continue
+
+        check_sid = True
+        if expected_bsid is None:
+            log.info("Policy {policy} binding SID is {sid}, expected it to "
+                     "be an integer".format(policy=policy, sid=sid))
+            check_sid = isinstance(sid, int)
+        else:
+            log.info("Policy {policy} binding SID is {sid}, expected value "
+                     "is {expected_bsid}".format(policy=policy,
+                        sid=sid, expected_bsid=expected_bsid))
+            check_sid = str(sid) == str(expected_bsid)
+
+        log.info("Policy {policy} allocation mode is {mode}, expected value "
+                 "is {expected_mode}".format(policy=policy,
+                    mode=mode, expected_mode=expected_mode))
+        log.info("Policy {policy} binding state is {state}, expected value "
+                 "is {expected_state}".format(policy=policy,
+                    state=state, expected_state=expected_state))
+
+        if (mode.lower() == expected_mode.lower() and 
+            state.lower() == expected_state.lower() and check_sid):
+            return True, sid
+
+        timeout.sleep()
+
+    return False, None
+
+
+def verify_segment_routing_policy_state(device, policy, expected_admin='up', 
+    expected_oper='up', max_time=30, check_interval=10):
+    """ Verify segment-routing policy state is as expected (Admin/Operational)
+        using 'show segment-routing traffic-eng policy name {policy}'
+        
+        Args:
+            device (`obj`): Device object
+            policy (`str`): Policy name
+            expected_admin (`str`): Expected admin state
+            expected_oper (`str`): Expected operational state
+            max_time (`int`): Max time, default: 30
+            check_interval (`int`): Check interval, default: 10
+        Returns
+            result (`bool`): Verified result
+    """
+    cmd = 'show segment-routing traffic-eng policy name {policy}'.format(policy=policy)
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            out = device.parse(cmd)
+        except Exception as e:
+            log.error("Failed to parse '{cmd}': {e}".format(cmd=cmd, e=e))
+            timeout.sleep()
+            continue
+
+        admin = out.get(policy, {}).get('status', {}).get('admin', '')
+        oper = out.get(policy, {}).get('status', {}).\
+                   get('operational', {}).get('state', '')
+
+        log.info("Policy {policy} Admin state is {admin}, expected state "
+                 "is {expected_admin}".format(policy=policy, admin=admin,
+                    expected_admin=expected_admin))
+        log.info("Policy {policy} Operational state is {oper}, expected "
+                 "state is {expected_oper}".format(policy=policy,
+                    oper=oper, expected_oper=expected_oper))
+
+        if (admin.lower() == expected_admin.lower() and 
+            oper.lower() == expected_oper.lower()):
+            return True
+
+        timeout.sleep()
+
+    return False
+
+
+def verify_segment_routing_policy_hops(device, policy, segment_list, 
+    max_time=30, check_interval=10):
+    """ Verify segment-routing policy hops with order and extract labels
+        using 'show segment-routing traffic-eng policy name {policy}'
+        
+        Args:
+            device (`obj`): Device object
+            policy (`str`): Policy name
+            segment_list (`list`): Segment list to verify
+            max_time (`int`): Max time, default: 30
+            check_interval (`int`): Check interval, default: 10
+        Returns
+            result (`bool`): Verified result
+            labels (`list`): Hops labels
+    """
+    cmd = 'show segment-routing traffic-eng policy name {policy}'.format(policy=policy)
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            out = device.parse(cmd)
+        except Exception as e:
+            log.error("Failed to parse '{cmd}': {e}".format(cmd=cmd, e=e))
+            timeout.sleep()
+            continue
+
+        # Get label or ip value to verify (with order)
+        slist = []
+        p = re.compile(r'[\d\.]+$')
+        for line in segment_list:
+            value = p.search(line).group()
+            if value:
+                slist.append(value)
+
+        reqs = R([policy,'candidate_paths',
+                'preference','(?P<preference>.*)',
+                'path_type','explicit',
+                '(?P<category>.*)','(?P<name>.*)',
+                'hops','(?P<hops>.*)'])
+        found = find([out], reqs, filter_=False, all_keys=True)
+
+        labels = []
+        result = True
+        if found:
+            item = found[0][0]
+            if len(item) == len(slist):
+                for index, dct in sorted(item.items()):
+                    s_value = slist[index-1]
+                    sid = dct.get('sid', '')
+                    local_address = dct.get('local_address', '')
+                    remote_address = dct.get('remote_address', '')
+                    log.info("Expect '{val}' is present in label '{sid}', "
+                             "or local_address '{local_address}', or "
+                             "remote_address '{remote_address}'".format(
+                                 val=s_value, sid=sid, 
+                                 local_address=local_address, 
+                                 remote_address=remote_address))
+                    if (s_value == str(sid) or 
+                        s_value == local_address or 
+                        s_value == remote_address):
+                        labels.append(sid)
+                    else:
+                        result = False
+            else:
+                log.error("The length of segment list does not match:\n"
+                          "Configured value: {conf}   Operational value: {oper}"
+                            .format(conf=len(item), oper=len(slist)))
+                result = False
+        else:
+            log.error("Failed to find any hop in policy '{policy}'".format(policy=policy))
+            result = False
+
+        if result:
+            return result, labels
+
+        timeout.sleep()
+
+    return False, None
+
+
+def verify_segment_routing_dynamic_metric_type(device, policy, expected_type='TE', 
+    max_time=30, check_interval=10):
+    """ Verify segment-routing metric type under dynamic path with active state
+        using 'show segment-routing traffic-eng policy name {policy}'
+        
+        Args:
+            device (`obj`): Device object
+            policy (`str`): Policy name
+            expected_type (`str`): Expected metric type
+            max_time (`int`): Max time, default: 30
+            check_interval (`int`): Check interval, default: 10
+        Returns
+            result (`bool`): Verified result
+    """
+    cmd = 'show segment-routing traffic-eng policy name {policy}'.format(policy=policy)
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            out = device.parse(cmd)
+        except Exception as e:
+            log.error("Failed to parse '{cmd}': {e}".format(cmd=cmd, e=e))
+            timeout.sleep()
+            continue
+
+        reqs = R([policy,'candidate_paths',
+                'preference','(?P<preference>.*)',
+                'path_type','dynamic','(?P<path>.*)'])
+        found = find([out], reqs, filter_=False, all_keys=True)
+
+        for item in found:
+            if item[0]['status'].lower() == 'active':
+                metric_type = item[0]['metric_type']
+                break
+        else:
+            log.error("Failed to find a dynamic path in active state")
+            timeout.sleep()
+            continue
+
+        log.info("Policy {policy} active dynamic path's metric_type is "
+                 "{metric_type}, expected type is {expected_type}".format(
+                     policy=policy, metric_type=metric_type, 
+                     expected_type=expected_type))
+
+        if (metric_type.lower() == expected_type.lower()):
+            return True
+
+        timeout.sleep()
+    
+    return False
 
 
 def verify_sid_in_segment_routing(device, address_family="ipv4", local=False):
@@ -200,6 +455,7 @@ def verify_ip_and_sid_in_segment_routing(device, address_sid_dict, algorithm,
 
     return False
 
+
 def verify_segment_routing_lb_range(
     device,
     expected_minimum=None,
@@ -303,6 +559,7 @@ def verify_segment_routing_gb_range(
 
     return False
 
+
 def verify_ip_and_sid_in_segment_routing_mapping_server(device, address_sid_dict, address_family, 
     algorithm, mapping_server, max_time=300, check_interval=30, expected_result=True, output=None):
     """ Verifies if IP address and SID is present in Segment Routing mapping server
@@ -396,5 +653,106 @@ def verify_ip_and_sid_in_segment_routing_mapping_server(device, address_sid_dict
         
         if not found:
             timeout.sleep()
+
+    return False
+
+
+def verify_segment_routing_traffic_eng_policies(device, admin_status=None, operational_status=None,
+                                                metric_type=None, path_accumulated_metric=None, path_status=None,
+                                                max_time=30, check_interval=10):
+    """ Verifies all configured traffic_eng policies have specific configurations
+
+        Args:
+            device ('obj'): Device to use
+            admin_status ('str'): Admin status to verify
+            operational_status ('str'): Operational status to verify
+            metric_type ('str'): Metric type to verify
+            path_status ('str'): Path status to verify
+            max_time ('int'): Maximum amount of time to keep checking
+            check_interval ('int'): How often to check
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """
+    if (not admin_status and
+            not operational_status and
+            not metric_type and
+            not path_status and
+            not path_accumulated_metric):
+        log.info('Must provide at-least one optional argument to verify')
+        return False
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse('show segment-routing traffic-eng policy all')
+        except SchemaEmptyParserError:
+            log.info('Parser output is empty')
+            timeout.sleep()
+            continue
+
+        for policy in out:
+            admin = out[policy].get('status', {}).get('admin', '')
+            if admin_status and admin_status not in admin:
+                log.info('Expected admin status is "{admin_status}" actual is "{admin}"'
+                         .format(admin_status=admin_status,
+                                 admin=admin))
+                break
+
+            operational = out[policy].get('status', {}).get('operational', {}).get('state', '')
+            if operational_status and operational_status not in admin:
+                log.info('Expected operational status is "{operational_status}" actual is "{operational}"'
+                         .format(operational_status=operational_status,
+                                 operational=operational))
+                break
+
+            for preference in out[policy].get('candidate_paths', {}).get('preference', {}):
+                if out[policy]['candidate_paths']['preference'][preference].get('path_type'):
+
+                    path_type_dict = out[policy]['candidate_paths']['preference'][preference]['path_type']
+
+                    if 'dynamic' in path_type_dict:
+                        metric = path_type_dict['dynamic'].get('metric_type', '')
+                        status = path_type_dict['dynamic'].get('status', '')
+                        accumulated_metric = path_type_dict['dynamic'].get('path_accumulated_metric', '')
+                    elif 'explicit' in path_type_dict:
+                        segment = list(path_type_dict['explicit'].get('segment_list', {}))[0]
+                        metric = path_type_dict['explicit'].get('segment_list', {}).get(segment, {}).get('metric_type', '')
+                        status = path_type_dict['explicit'].get('segment_list', {}).get(segment, {}).get('status', '')
+                        accumulated_metric = None  # Not possible from schema perspective but needed for logic
+                    else:
+                        log.info('Path type not defined in api call.')
+                        break
+
+                    if metric_type and metric_type not in metric:
+                        log.info('Expected metric type is "{expected}" actual is "{actual}"'
+                                 .format(expected=metric_type,
+                                         actual=metric))
+                        break
+
+                    if path_status and path_status not in status:
+                        log.info('Expected path status is "{expected}" actual is "{actual}"'
+                                 .format(expected=path_status,
+                                         actual=status))
+                        break
+
+                    if (path_accumulated_metric and
+                            type(accumulated_metric) is int and
+                            path_accumulated_metric != accumulated_metric):
+                        log.info('Expected path accumulated metric is "{expected}" '
+                                 'actual is "{actual}"'
+                                 .format(expected=path_accumulated_metric,
+                                         actual=accumulated_metric))
+                        break
+            else:
+                continue
+            break
+
+        else:
+            return True
+        timeout.sleep()
 
     return False

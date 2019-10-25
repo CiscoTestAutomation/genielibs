@@ -554,9 +554,7 @@ class test_nx_interface(TestCase):
                 ' exit',
                 'no interface port-channel10'
                 ]))
-
-class test_nx_interface(TestCase):
-
+    
     def test_native_vlans(self):
         # Set Genie Tb
         testbed = Testbed()

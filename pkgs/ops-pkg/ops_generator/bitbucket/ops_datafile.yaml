@@ -1,0 +1,8 @@
+root_directories:
+  genie_ops:
+     root: 'genie.libs.ops'
+     mod_name: 'ops'
+     url:
+         link: 'https://bitbucket-eng-sjc1.cisco.com/bitbucket/projects/PYATS-PYPI/repos/genielibs/browse/'
+         branch: ''
+         style: 'bitbucket'

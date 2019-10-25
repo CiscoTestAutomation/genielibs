@@ -1,11 +1,11 @@
-# Genie package
-from genie.ops.base import Base
+# super class
+from genie.libs.ops.routing.routing import Routing as SuperRouting
 
 # genie.libs
 from genie.libs.parser.iosxr.show_routing import ShowRouteIpv4,\
                                       ShowRouteIpv6
 
-class Routing(Base):
+class Routing(SuperRouting):
     '''Routing Ops Object'''
 
     def learn(self):

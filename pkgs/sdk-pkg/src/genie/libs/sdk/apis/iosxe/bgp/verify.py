@@ -129,13 +129,18 @@ def verify_bgp_configuration_and_operation_state(
 
     if "ipv4" in sr_dict:
         for vrf, vrf_dict in sr_dict["ipv4"].items():
-            nbr = vrf_dict["neighbor"]
-            remote_as = vrf_dict["remote_as"]
-            sm_vrf_dict = sm_dict["vrf"]
+            nbr = vrf_dict.get("neighbor", '')
+            remote_as = vrf_dict.get("remote_as", '')
+            sm_vrf_dict = sm_dict.get("vrf", {})
+
+            if not nbr or not remote_as:
+                result = False
+                info.append("ipv4 vrf '{}' don't have neighbor or remote-as".format(vrf))
+                continue
+
             try:
-                nbr_as = sm_vrf_dict[vrf]["neighbor"][nbr]["address_family"][
-                    "vpnv4 unicast"
-                ]["as"]
+                nbr_as = sm_vrf_dict[vrf]["neighbor"][nbr]["address_family"]\
+                                    ["vpnv4 unicast"]["as"]
                 if nbr_as != remote_as:
                     result = False
                     info.append(
@@ -720,7 +725,7 @@ def verify_bgp_routes_have_community(
     vrf=None,
     rd_export=None,
     address_family="",
-    check_not_exist=False,
+    check_not_match=False,
     max_time=60,
     check_interval=10,
 ):
@@ -732,7 +737,7 @@ def verify_bgp_routes_have_community(
             community ('str'): community name to search
             vrf ('str'): vrf name
             rd_export ('str'): rd export value
-            check_not_exist ('bool'): flag whether to check community or not
+            check_not_match ('bool'): flag check community match or not
         Returns:
             True
             False
@@ -770,7 +775,7 @@ def verify_bgp_routes_have_community(
                 community_found = None
 
         else:
-            log.message(
+            log.error(
                 "Argument rd and vrf are mutually exclusive, "
                 "Only rd export or vrf name can be inserted"
             )
@@ -790,13 +795,22 @@ def verify_bgp_routes_have_community(
                 "Key: '{}' is not found from the command output".format(str(e))
             )
 
-        if check_not_exist and not community_found:
-            return False
-        elif community_found and not check_not_exist:
-            return True
+        if check_not_match:
+            if community_found == community:
+                log.error("Found community {} in the command output"
+                    .format(community))
+            else:
+                return True
+        else:
+            if community_found == community:
+                return True
+            else:
+                log.error("Failed to find community {} in the command output"
+                    .format(community))
+
         timeout.sleep()
 
-    return community_found is not None
+    return False
 
 
 def is_bgp_neighbors_state(

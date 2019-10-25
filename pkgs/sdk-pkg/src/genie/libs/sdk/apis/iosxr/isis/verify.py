@@ -61,3 +61,29 @@ def verify_isis_neighbor_in_state(device, interfaces, state='up',
         timeout.sleep()
 
     return False
+
+
+def verify_no_isis_neighbor(device):
+    ''' Verify ISIS neighbors not found
+
+        Args:
+            device (`obj`): Device object
+        Returns:
+            result (`bool`): Verified result
+    '''
+    cmd = 'show isis neighbors'
+
+    try:
+        out = device.parse(cmd)
+    except Exception as e:
+        log.error("Failed to parse '{}':\n{}".format(cmd, e))
+        return False
+
+    reqs = R(['isis', '(.*)', 
+              'vrf', '(.*)', '(?P<interface>.*)'])
+
+    found = find([out], reqs, filter_=False, all_keys=True)
+    if found and not found[0][0]:
+        return True
+
+    return False

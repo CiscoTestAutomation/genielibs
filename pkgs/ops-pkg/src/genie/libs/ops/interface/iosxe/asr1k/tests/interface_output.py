@@ -746,8 +746,8 @@ class InterfaceOutput(object):
                     "prefix_length": "64",
                     "status": "tentative"
                 },
-                "2000::1/126": {
-                    "ip": "2000::1",
+                "2001:db8:400::1/126": {
+                    "ip": "2001:db8:400::1",
                     "prefix_length": "126",
                     "status": "tentative"
                 },
@@ -1153,7 +1153,7 @@ class InterfaceOutput(object):
         No Virtual link-local address(es):
         Description: desc
         Global unicast address(es):
-          2000::1, subnet is 2000::/126 [TEN]
+          2001:db8:400::1, subnet is 2001:db8:400::/126 [TEN]
           2001:DB8:1:1::1, subnet is 2001:DB8:1:1::/64 [TEN]
           2001:DB8:2:2::2, subnet is 2001:DB8:2:2::/64 [TEN]
           2001:DB8:3:3::3, subnet is 2001:DB8:3:3::/64 [ANY/TEN]
@@ -1285,7 +1285,7 @@ class InterfaceOutput(object):
         No Virtual link-local address(es):
         Description: desc
         Global unicast address(es):
-          2000::1, subnet is 2000::/126 [TEN]
+          2001:db8:400::1, subnet is 2001:db8:400::/126 [TEN]
           2001:DB8:1:1::1, subnet is 2001:DB8:1:1::/64 [TEN]
           2001:DB8:2:2::2, subnet is 2001:DB8:2:2::/64 [TEN]
           2001:DB8:3:3::3, subnet is 2001:DB8:3:3::/64 [ANY/TEN]
@@ -1524,8 +1524,8 @@ class InterfaceOutput(object):
                     "prefix_length": "64",
                     "status": "tentative"
                 },
-                "2000::1/126": {
-                    "ip": "2000::1",
+                "2001:db8:400::1/126": {
+                    "ip": "2001:db8:400::1",
                     "prefix_length": "126",
                     "status": "tentative"
                 },

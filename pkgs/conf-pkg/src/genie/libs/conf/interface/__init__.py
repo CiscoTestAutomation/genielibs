@@ -11,10 +11,13 @@ from enum import Enum
 
 from genie.utils.cisco_collections import typedset
 from genie.decorator import managedattribute, mixedmethod
-from genie.conf.base import Base, Interface as Intf, ConfigurableBase
-import genie.conf.base
-import genie.conf.base.interface
-
+from genie.conf.base import Base, Interface as Intf, ConfigurableBase, Device
+from genie.conf.base.interface import BaseInterface,\
+                                PhysicalInterface as BasePhysicalInterface,\
+                                VirtualInterface as BaseVirtualInterface,\
+                                LoopbackInterface as BaseLoopbackInterface,\
+                                PseudoInterface as BasePseudoInterface
+                                      
 from .ipv4addr import IPv4Addr
 from .ipv6addr import IPv6Addr
 from genie.libs import conf
@@ -175,7 +178,7 @@ class ParsedInterfaceName(types.SimpleNamespace):
         )
 
 
-class Interface(genie.conf.base.interface.BaseInterface):
+class Interface(BaseInterface):
 
     ipv4addr = managedattribute(
         name='ipv4addr',
@@ -390,7 +393,7 @@ class Interface(genie.conf.base.interface.BaseInterface):
         name='bandwidth',
         default=None,
         type=(None, managedattribute.test_istype(int)),
-        doc='Set bandwidth informational parameter') 
+        doc='Set bandwidth informational parameter')
 
     # cdp
     cdp = managedattribute(
@@ -419,7 +422,7 @@ class Interface(genie.conf.base.interface.BaseInterface):
         default=None,
         type=(None, managedattribute.test_istype(bool)),
         doc='Enable/disable an interface')
-    
+
     switchport_enable = managedattribute(
         name='switchport_enable',
         default=None,
@@ -559,11 +562,8 @@ class Interface(genie.conf.base.interface.BaseInterface):
                 except (ImportError, AttributeError) as e:
                     # it does not exist, then just use the default one,
                     # but configuration is not possible
-                    warnings.warn(
-                        'Interfaces for {dev} OS {os!r} are not supported'
-                        '; Configuration will not be available: {e}'.format(
-                            dev=device.name, os=device.os, e=e),
-                        UnsupportedInterfaceOsWarning)
+                    pass
+
             elif not cls.device:
                 raise TypeError('\'device\' argument missing')
 
@@ -854,7 +854,7 @@ class OpticsController(Controller):
 
 
 class PhysicalInterface(Interface,
-                        genie.conf.base.interface.PhysicalInterface):
+                        BasePhysicalInterface):
 
     @abc.abstractmethod
     def __init__(self, *args, **kwargs):
@@ -862,7 +862,7 @@ class PhysicalInterface(Interface,
 
 
 class VirtualInterface(Interface,
-                       genie.conf.base.interface.VirtualInterface):
+                       BaseVirtualInterface):
     '''Base class for all sorts of virtual interfaces.
 
     Example:
@@ -882,7 +882,7 @@ class VirtualInterface(Interface,
 
     @classmethod
     def _generate_unused_interface_name(cls, device, range=None):
-        assert isinstance(device, genie.conf.base.Device)
+        assert isinstance(device, Device)
         # Find the os-specific version of this class
         cls = _get_descendent_subclass(
             cls._get_os_specific_Interface_class(device.os),
@@ -914,7 +914,7 @@ class VirtualInterface(Interface,
 
 
 class PseudoInterface(VirtualInterface,
-                      genie.conf.base.interface.PseudoInterface):
+                      BasePseudoInterface):
     pass
 
 
@@ -1005,7 +1005,7 @@ class LagInterface(VirtualInterface):
         doc= 'lag_bfd_v6_min_interval')
 
 class LoopbackInterface(VirtualInterface,
-                        genie.conf.base.interface.LoopbackInterface):
+                        BaseLoopbackInterface):
     pass
 
 
@@ -1298,7 +1298,7 @@ class SubInterface(VirtualInterface):
 
     @classmethod
     def _generate_unused_sub_interface_name(cls, parent_interface, range=None):
-        assert isinstance(parent_interface, genie.conf.base.Interface)
+        assert isinstance(parent_interface, BaseInterface)
         device = parent_interface.device
         # Find the os-specific version of this class
         cls = _get_descendent_subclass(

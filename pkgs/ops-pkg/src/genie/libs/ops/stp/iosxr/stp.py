@@ -2,7 +2,7 @@
 Stp Genie Ops Object for IOSXR - CLI.
 '''
 # Genie
-from genie.ops.base import Base
+from genie.libs.ops.stp.stp import Stp as SuperStp
 from genie.ops.base import Context
 
 # Parser
@@ -12,7 +12,7 @@ from genie.libs.parser.iosxr.show_spanning_tree import ShowSpanningTreeMst, \
                                         ShowSpanningTreePvrsTag, \
                                         ShowSpanningTreePvsTag
 
-class Stp(Base):
+class Stp(SuperStp):
     '''STP Genie Ops Object'''
 
     def learn(self, mst_domain=None, mstag_domain=None, pvst_id=None, pvrstag_domain=None, pvstag_domain=None):

@@ -956,7 +956,7 @@ class PimOutput(object):
                                                },
                                                "incoming_interface_list": {
                                                     "Tunnel5": {
-                                                         "rpf_nbr": "6:6:6::6"
+                                                         "rpf_nbr": "2001:db8:90:24::6"
                                                     }
                                                },
                                                "uptime": "00:04:45",
@@ -964,7 +964,7 @@ class PimOutput(object):
                                                "flags": "S",
                                                'msdp_learned': False,
                                                'rp_bit': False,
-                                               "rpf_nbr": "6:6:6::6",
+                                               "rpf_nbr": "2001:db8:90:24::6",
                                                "expire": "00:02:47"
                                           }}}}}}}}}
 
@@ -1006,7 +1006,7 @@ class PimOutput(object):
                                                },
                                                "incoming_interface_list": {
                                                     "Tunnel5": {
-                                                         "rpf_nbr": "6:6:6::6"
+                                                         "rpf_nbr": "2001:db8:90:24::6"
                                                     }
                                                },
                                                "uptime": "00:04:45",
@@ -1014,7 +1014,7 @@ class PimOutput(object):
                                                "flags": "S",
                                                'msdp_learned': False,
                                                'rp_bit': False,
-                                               "rpf_nbr": "6:6:6::6",
+                                               "rpf_nbr": "2001:db8:90:24::6",
                                                "expire": "00:02:47"
                                           }}}}}}}}
 
@@ -1530,7 +1530,7 @@ class PimOutput(object):
                                                                                            'outgoing_interface': {'POS4/0': {'up_time': '00:04:45'}},
                                                                                            'rp_address': '2001:DB8:6::6',
                                                                                            'rp_bit': False,
-                                                                                           'rpf_neighbor': '6:6:6::6',
+                                                                                           'rpf_neighbor': '2001:db8:90:24::6',
                                                                                            'source_address': '*',
                                                                                            'up_time': '00:04:45'},
                                                                         'FF07::1 2001:DB8:999::99 False': {'expiration': '00:01:23',

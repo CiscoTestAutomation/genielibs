@@ -7,9 +7,8 @@ import operator
 
 from genie.decorator import managedattribute
 from genie.conf.base import DeviceFeature
-import genie.conf.base.attributes
 from genie.conf.base.attributes import SubAttributes, SubAttributesDict,\
-    AttributesInheriter, AttributesHelper
+    AttributesInheriter, AttributesHelper, DeviceSubAttributes
 
 from genie.libs.conf.base import ip_address, ip_network
 
@@ -24,7 +23,7 @@ class CommunitySet(DeviceFeature):
         name='communities',
         finit=list)
 
-    class DeviceAttributes(genie.conf.base.attributes.DeviceSubAttributes):
+    class DeviceAttributes(DeviceSubAttributes):
 
         pass
 

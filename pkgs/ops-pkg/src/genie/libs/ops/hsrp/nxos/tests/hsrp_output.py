@@ -78,7 +78,7 @@ class HsrpOutput(object):
                                     "lower_fwd_threshold": 0,
                                     "num_state_changes": 2,
                                     "priority": 100,
-                                    "secondary_vips": "192:168::1",
+                                    "secondary_vips": "2001:db8:7746:fa41::1",
                                     "standby_expire": 8.96,
                                     "standby_priority": 90,
                                     "standby_router": "fe80::20c:29ff:fe69:14bb",

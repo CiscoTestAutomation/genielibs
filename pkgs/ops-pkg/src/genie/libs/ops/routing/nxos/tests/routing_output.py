@@ -737,5 +737,66 @@ class RouteOutput(object):
                 },
             },
         },
-
+    }
+    routeOpsOutput_custom = {
+        'vrf': {
+            'VRF1': {
+                'address_family': {
+                    'ipv4': {
+                        'routes': {
+                            '10.4.1.1/32': {
+                                'route': '10.4.1.1/32',
+                                'active': True,
+                                'source_protocol': 'local',
+                                'metric': 0,
+                                'route_preference': 0,
+                                'next_hop': {
+                                    'next_hop_list': {
+                                        2: {
+                                            'index': 2,
+                                            'next_hop': '10.4.1.1',
+                                            'updated': '00:00:10',
+                                            'outgoing_interface': 'Loopback4',
+                                        },
+                                        1: {
+                                            'index': 1,
+                                            'next_hop': '10.4.1.1',
+                                            'updated': '00:00:10',
+                                            'outgoing_interface': 'Loopback4',
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    'ipv6': {
+                        'routes': {
+                            '2001:1:1:1::1/128': {
+                                'route': '2001:1:1:1::1/128',
+                                'active': True,
+                                'route_preference': 0,
+                                'metric': 0,
+                                'source_protocol': 'local',
+                                'next_hop': {
+                                    'next_hop_list': {
+                                        2: {
+                                            'index': 2,
+                                            'next_hop': '2001:1:1:1::1',
+                                            'updated': '00:00:35',
+                                            'outgoing_interface': 'Loopback4',
+                                        },
+                                        1: {
+                                            'index': 1,
+                                            'next_hop': '2001:1:1:1::1',
+                                            'updated': '00:00:35',
+                                            'outgoing_interface': 'Loopback4',
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
     }

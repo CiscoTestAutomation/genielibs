@@ -82,25 +82,23 @@ class test_vrf(TestCase):
         vrf.device_attr['PE1'].scale_mode = 'big'
         vrf.description = 'my description'
         cfgs = vrf.build_config(apply=False)
+        
         self.assertMultiLineDictEqual(cfgs, {
             self.dev1.name: '\n'.join([
                 'vrf vrf1',
                 ' description my description',
-                ' address-family ipv4 unicast',
-                '  exit',
                 ' mode big',
                 ' exit',
             ]),
             self.dev2.name: '\n'.join([
                 'vrf vrf1',
                 ' description my description',
-                ' address-family ipv4 unicast',
-                '  exit',
                 ' exit',
             ]),
         })
 
         cfgs = vrf.build_config(apply=False, attributes='device_attr__*__description')
+
         self.assertMultiLineDictEqual(cfgs, {
             self.dev1.name: '\n'.join([
                 'vrf vrf1',
@@ -199,13 +197,12 @@ class test_vrf(TestCase):
                 ]
 
         cfgs = vrf.build_config(apply=False)
+
         self.assertMultiLineDictEqual(cfgs, {
             self.dev1.name: '\n'.join([
                 'vrf vrf1',
                 ' address-family ipv4 unicast',
                 '  export route-target 100:200 stitching',
-                '  exit',
-                ' address-family ipv6 unicast',
                 '  exit',
                 ' exit',
             ]),

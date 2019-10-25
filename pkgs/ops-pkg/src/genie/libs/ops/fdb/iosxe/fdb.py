@@ -2,11 +2,11 @@
 Fdb Genie Ops Object for IOSXE - CLI.
 '''
 # Genie
-from genie.ops.base import Base
+from genie.libs.ops.fdb.fdb import Fdb as SuperFdb
 from genie.ops.base import Context
 
 
-class Fdb(Base):
+class Fdb(SuperFdb):
     '''Fdb Genie Ops Object'''
 
     def learn(self):

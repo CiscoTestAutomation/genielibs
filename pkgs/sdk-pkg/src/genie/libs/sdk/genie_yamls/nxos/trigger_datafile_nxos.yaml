@@ -137,7 +137,7 @@ TriggerClearBgpNeighborSoftIpv6:
       interval: 10
     devices: ['uut']
 
-TriggerClearIpRouteAll:
+TriggerClearIpRouteCheckBgp:
     groups: ['clear', 'bgp', 'L3']
     timeout:
       max_time: 180

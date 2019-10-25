@@ -1,15 +1,13 @@
 ''' 
 ACL Genie Ops Object for IOSXE - CLI.
 '''
-# Genie
-from genie.ops.base import Base
-from genie.ops.base import Context
-
+# # super class
+from genie.libs.ops.acl.acl import Acl as SuperAcl
 # Parser
 from genie.libs.parser.iosxe.show_acl import ShowAccessLists
 
 
-class Acl(Base):
+class Acl(SuperAcl):
     '''ACL Genie Ops Object'''
 
     def learn(self):

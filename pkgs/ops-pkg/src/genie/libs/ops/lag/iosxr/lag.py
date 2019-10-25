@@ -121,7 +121,7 @@ class Lag(Base):
         self.make()
         
         # system_priority
-        if hasattr(self, 'info') and 'system_priority' in self.info:
+        if hasattr(self, 'info') and 'system_priority' in self.info and 'interfaces' in self.info:
             system_priority = self.info['system_priority']
             for interface, intf_dict in self.info['interfaces'].items():
                 intf_dict['system_priority'] = system_priority

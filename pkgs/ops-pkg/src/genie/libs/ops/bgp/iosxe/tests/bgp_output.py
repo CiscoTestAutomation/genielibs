@@ -215,7 +215,7 @@ class BgpOutput(object):
                                                                                     'total_memory': 10648,
                                                                                     'up_down': '01:07:38',
                                                                                     'version': 4}}},
-                                  '2000::1:1': {'address_family': {'ipv6 unicast': {'as': 100,
+                                  '2001:db8:400::1:1': {'address_family': {'ipv6 unicast': {'as': 100,
                                                                                     'bgp_table_version': 1,
                                                                                     'input_queue': 0,
                                                                                     'local_as': 100,
@@ -228,7 +228,7 @@ class BgpOutput(object):
                                                                                     'tbl_ver': 1,
                                                                                     'up_down': '01:07:38',
                                                                                     'version': 4}}},
-                                  '2000::4:1': {'address_family': {'ipv6 unicast': {'as': 100,
+                                  '2001:db8:400::4:1': {'address_family': {'ipv6 unicast': {'as': 100,
                                                                                     'bgp_table_version': 1,
                                                                                     'input_queue': 0,
                                                                                     'local_as': 100,
@@ -241,7 +241,7 @@ class BgpOutput(object):
                                                                                     'tbl_ver': 1,
                                                                                     'up_down': '01:07:38',
                                                                                     'version': 4}}},
-                                  '2001::14:4': {'address_family': {'ipv6 unicast': {'as': 200,
+                                  '2002001:db8:1::14:4': {'address_family': {'ipv6 unicast': {'as': 200,
                                                                                      'bgp_table_version': 1,
                                                                                      'input_queue': 0,
                                                                                      'local_as': 100,
@@ -1589,7 +1589,7 @@ class BgpOutput(object):
                                                'route_distinguisher': '100:100'},
                                            'vpnv6 unicast RD 100:100': {
                                                'default_vrf': 'VRF1',
-                                               'prefixes': {'2001:11:11::11/128': {
+                                               'prefixes': {'2001:11:12001:db8:1::11/128': {
                                                    'available_path': '1',
                                                    'best_path': '1',
                                                    'index': {1: {'gateway': '0.0.0.0',
@@ -1704,7 +1704,7 @@ class BgpOutput(object):
                                                               'table_version': '2'}}},
                                                                       'ipv6 unicast': {
                                                                           'prefixes': {
-                                                                              '20010.4.1.1::1/128': {
+                                                                              '20010.4.1.2001:db8:1::1/128': {
                                                                                   'available_path': '1',
                                                                                   'best_path': '1',
                                                                                   'index': {
@@ -2105,7 +2105,7 @@ class BgpOutput(object):
                                                                                                                  '{27016}',
                                                                                                          'status_codes': '*>',
                                                                                                          'weight': 0}}},
-                                                                           '615:11:11:1::/64': {'index': {1: {'localpref': 100,
+                                                                           '2001:db8:cdc9:144::/64': {'index': {1: {'localpref': 100,
                                                                                                               'metric': 2219,
                                                                                                               'next_hop': '::FFFF:10.4.1.1',
                                                                                                               'origin_codes': 'e',
@@ -2128,7 +2128,7 @@ class BgpOutput(object):
                                                                                                                       '{27016}',
                                                                                                               'status_codes': '*>i',
                                                                                                               'weight': 0}}},
-                                                                           '615:11:11::/64': {'index': {1: {'localpref': 100,
+                                                                           '2001:db8:cdc9:121::/64': {'index': {1: {'localpref': 100,
                                                                                                             'metric': 2219,
                                                                                                             'next_hop': '::FFFF:10.4.1.1',
                                                                                                             'origin_codes': 'e',
@@ -2484,7 +2484,7 @@ class BgpOutput(object):
                                                                                                                  '{27016}',
                                                                                                          'status_codes': '*>',
                                                                                                          'weight': 0}}},
-                                                                           '615:11:11:1::/64': {'index': {1: {'localpref': 100,
+                                                                           '2001:db8:cdc9:144::/64': {'index': {1: {'localpref': 100,
                                                                                                               'metric': 2219,
                                                                                                               'next_hop': '::FFFF:10.4.1.1',
                                                                                                               'origin_codes': 'e',
@@ -2507,7 +2507,7 @@ class BgpOutput(object):
                                                                                                                       '{27016}',
                                                                                                               'status_codes': '*>i',
                                                                                                               'weight': 0}}},
-                                                                           '615:11:11::/64': {'index': {1: {'localpref': 100,
+                                                                           '2001:db8:cdc9:121::/64': {'index': {1: {'localpref': 100,
                                                                                                             'metric': 2219,
                                                                                                             'next_hop': '::FFFF:10.4.1.1',
                                                                                                             'origin_codes': 'e',
@@ -2884,21 +2884,21 @@ class BgpOutput(object):
 
              Network          Next Hop            Metric LocPrf Weight Path
         Route Distinguisher: 300:1 (default for vrf VRF1) VRF Router ID 10.94.44.44
-         *>  646:11:11::/64   2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
-         *>  646:11:11:1::/64 2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
-         *>  646:11:11:2::/64 2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
-         *>  646:11:11:3::/64 2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
-         *>  646:11:11:4::/64 2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
+         *>  2001:db8:31b9:121::/64   2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
+         *>  2001:db8:31b9:144::/64 2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
+         *>  2001:db8:31b9:169::/64 2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
+         *>  2001:db8:31b9:190::/64 2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
+         *>  2001:db8:31b9:1b9::/64 2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
         Route Distinguisher: 400:1 (default for vrf VRF2) VRF Router ID 10.94.44.44
-         *>  646:22:22::/64   2001:DB8:20:4:6::6
+         *>  2001:db8:a69:484::/64   2001:DB8:20:4:6::6
                                                      2219             0 400 33299 51178 47751 {27016} e
-         *>  646:22:22:1::/64 2001:DB8:20:4:6::6
+         *>  2001:db8:a69:4c9::/64 2001:DB8:20:4:6::6
                                                      2219             0 400 33299 51178 47751 {27016} e
-         *>  646:22:22:2::/64 2001:DB8:20:4:6::6
+         *>  2001:db8:a69:510::/64 2001:DB8:20:4:6::6
                                                      2219             0 400 33299 51178 47751 {27016} e
-         *>  646:22:22:3::/64 2001:DB8:20:4:6::6
+         *>  2001:db8:a69:559::/64 2001:DB8:20:4:6::6
                                                      2219             0 400 33299 51178 47751 {27016} e
-         *>  646:22:22:4::/64 2001:DB8:20:4:6::6
+         *>  2001:db8:a69:5a4::/64 2001:DB8:20:4:6::6
                                                      2219             0 400 33299 51178 47751 {27016} e
 
         Total number of prefixes 10
@@ -3009,9 +3009,9 @@ class BgpOutput(object):
 
            Network            Next Hop            Metric     LocPrf     Weight Path
         Route Distinguisher: 100:200
-        *>iaaaa:1::/113       ::ffff:10.36.3.3
+        *>i2001:db8:aaaa:1::/113       ::ffff:10.36.3.3
                                                     4444        100          0 i
-        *>iaaaa:1::8000/113   ::ffff:10.36.3.3
+        *>i2001:db8:2001:db8:aaaa:1::8000/113   ::ffff:10.36.3.3
                                                     4444        100          0 i
 
         Route Distinguisher: 0xbb00010000000000
@@ -3171,11 +3171,11 @@ class BgpOutput(object):
                                                                                                                           'total_entries': 27},
                                                                                                              'routing_table_version': 28,
                                                                                                              'total_memory': 10648}}},
-                                                           '2000::1:1': {'address_family': {'ipv6 unicast': {'bgp_table_version': 1,
+                                                           '2001:db8:400::1:1': {'address_family': {'ipv6 unicast': {'bgp_table_version': 1,
                                                                                                              'routing_table_version': 1}}},
-                                                           '2000::4:1': {'address_family': {'ipv6 unicast': {'bgp_table_version': 1,
+                                                           '2001:db8:400::4:1': {'address_family': {'ipv6 unicast': {'bgp_table_version': 1,
                                                                                                              'routing_table_version': 1}}},
-                                                           '2001::14:4': {'address_family': {'ipv6 unicast': {'bgp_table_version': 1,
+                                                           '2002001:db8:1::14:4': {'address_family': {'ipv6 unicast': {'bgp_table_version': 1,
                                                                                                               'routing_table_version': 1}}},
                                                            '2001::26:2': {'address_family': {'ipv6 unicast': {'bgp_table_version': 1,
                                                                                                               'routing_table_version': 1}}},
@@ -3460,7 +3460,7 @@ class BgpOutput(object):
                                     '10.64.4.4'},
                             'vpnv6 unicast RD 100:100': {
                                 'prefixes': {
-                                    '2001:11:11::11/128': {
+                                    '2001:11:12001:db8:1::11/128': {
                                         'index': {
                                             1: {
                                                 'gateway':
@@ -3562,7 +3562,7 @@ class BgpOutput(object):
                                                  'default)',
                                         'table_version': '2'}}},
                             'ipv6 unicast': {'prefixes': {
-                                '20010.4.1.1::1/128': {
+                                '20010.4.1.2001:db8:1::1/128': {
                                     'index': {
                                         1: {
                                             'gateway': '0.0.0.0',
@@ -4023,7 +4023,7 @@ class BgpOutput(object):
                                                                        'tbl_ver': 1,
                                                                        'up_down':
                                                                            '01:07:38'}}},
-                     '2000::1:1': {'address_family': {'ipv6 unicast': {'input_queue': 0,
+                     '2001:db8:400::1:1': {'address_family': {'ipv6 unicast': {'input_queue': 0,
                                                                        'msg_rcvd': 0,
                                                                        'msg_sent': 0,
                                                                        'output_queue': 0,
@@ -4032,7 +4032,7 @@ class BgpOutput(object):
                                                                        'tbl_ver': 1,
                                                                        'up_down':
                                                                            '01:07:38'}}},
-                     '2000::4:1': {'address_family': {'ipv6 unicast': {'input_queue': 0,
+                     '2001:db8:400::4:1': {'address_family': {'ipv6 unicast': {'input_queue': 0,
                                                                        'msg_rcvd': 0,
                                                                        'msg_sent': 0,
                                                                        'output_queue': 0,
@@ -4041,7 +4041,7 @@ class BgpOutput(object):
                                                                        'tbl_ver': 1,
                                                                        'up_down':
                                                                            '01:07:38'}}},
-                     '2001::14:4': {'address_family': {'ipv6 unicast': {'input_queue': 0,
+                     '2002001:db8:1::14:4': {'address_family': {'ipv6 unicast': {'input_queue': 0,
                                                                         'msg_rcvd': 0,
                                                                         'msg_sent': 0,
                                                                         'output_queue': 0,
@@ -4686,13 +4686,13 @@ class BgpOutput(object):
                                                         'received_routes': {}},
                                                     'vpnv6 unicast RD 100:200': {
                                                         'received_routes': {
-                                                            'aaaa:1::/113': {'index': {
+                                                            '2001:db8:aaaa:1::/113': {'index': {
                                                                 1: {'localprf': 100,
                                                                     'next_hop': '4444',
                                                                     'origin_codes': 'i',
                                                                     'status_codes': '*>',
                                                                     'weight': 0}}},
-                                                            'aaaa:1::8000/113': {
+                                                            '2001:db8:2001:db8:aaaa:1::8000/113': {
                                                                 'index': {
                                                                     1: {'localprf': 100,
                                                                         'next_hop':
@@ -4704,7 +4704,7 @@ class BgpOutput(object):
                                                                         'weight': 0}}}}},
                                                     'vpnv6 unicast RD 300:1': {
                                                         'advertised': {
-                                                            '646:11:11:1::/64': {
+                                                            '2001:db8:31b9:144::/64': {
                                                                 'index': {
                                                                     1: {'metric': 2219,
                                                                         'next_hop':
@@ -4719,7 +4719,7 @@ class BgpOutput(object):
                                                                         'status_codes':
                                                                             '*>',
                                                                         'weight': 0}}},
-                                                            '646:11:11:2::/64': {
+                                                            '2001:db8:31b9:169::/64': {
                                                                 'index': {
                                                                     1: {'metric': 2219,
                                                                         'next_hop':
@@ -4734,7 +4734,7 @@ class BgpOutput(object):
                                                                         'status_codes':
                                                                             '*>',
                                                                         'weight': 0}}},
-                                                            '646:11:11:3::/64': {
+                                                            '2001:db8:31b9:190::/64': {
                                                                 'index': {
                                                                     1: {'metric': 2219,
                                                                         'next_hop':
@@ -4749,7 +4749,7 @@ class BgpOutput(object):
                                                                         'status_codes':
                                                                             '*>',
                                                                         'weight': 0}}},
-                                                            '646:11:11:4::/64': {
+                                                            '2001:db8:31b9:1b9::/64': {
                                                                 'index': {
                                                                     1: {'metric': 2219,
                                                                         'next_hop':
@@ -4764,7 +4764,7 @@ class BgpOutput(object):
                                                                         'status_codes':
                                                                             '*>',
                                                                         'weight': 0}}},
-                                                            '646:11:11::/64': {'index': {
+                                                            '2001:db8:31b9:121::/64': {'index': {
                                                                 1: {'metric': 2219,
                                                                     'next_hop':
                                                                         '2001:DB8:4:6::6',
@@ -4780,7 +4780,7 @@ class BgpOutput(object):
                                                         'route_distinguisher': '300:1'},
                                                     'vpnv6 unicast RD 400:1': {
                                                         'advertised': {
-                                                            '646:22:22:1::/64': {
+                                                            '2001:db8:a69:4c9::/64': {
                                                                 'index': {
                                                                     1: {'metric': 2219,
                                                                         'next_hop':
@@ -4795,7 +4795,7 @@ class BgpOutput(object):
                                                                         'status_codes':
                                                                             '*>',
                                                                         'weight': 0}}},
-                                                            '646:22:22:2::/64': {
+                                                            '2001:db8:a69:510::/64': {
                                                                 'index': {
                                                                     1: {'metric': 2219,
                                                                         'next_hop':
@@ -4810,7 +4810,7 @@ class BgpOutput(object):
                                                                         'status_codes':
                                                                             '*>',
                                                                         'weight': 0}}},
-                                                            '646:22:22:3::/64': {
+                                                            '2001:db8:a69:559::/64': {
                                                                 'index': {
                                                                     1: {'metric': 2219,
                                                                         'next_hop':
@@ -4825,7 +4825,7 @@ class BgpOutput(object):
                                                                         'status_codes':
                                                                             '*>',
                                                                         'weight': 0}}},
-                                                            '646:22:22:4::/64': {
+                                                            '2001:db8:a69:5a4::/64': {
                                                                 'index': {
                                                                     1: {'metric': 2219,
                                                                         'next_hop':
@@ -4840,7 +4840,7 @@ class BgpOutput(object):
                                                                         'status_codes':
                                                                             '*>',
                                                                         'weight': 0}}},
-                                                            '646:22:22::/64': {'index': {
+                                                            '2001:db8:a69:484::/64': {'index': {
                                                                 1: {'metric': 2219,
                                                                     'next_hop':
                                                                         '2001:DB8:20:4:6::6',

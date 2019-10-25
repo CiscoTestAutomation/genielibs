@@ -127,17 +127,17 @@ class Vxlan(SuperVxlan):
                     self.add_leaf(cmd=ShowNveInterfaceDetail,
                                   src=src_nve + '[{}]'.format(key),
                                   dest=dest_nve + '[{}]'.format(key),
-                                  intf=nve_name)
+                                  interface=nve_name)
 
                 self.add_leaf(cmd=ShowNveInterfaceDetail,
                               src=src_nve + '[source_if][(?P<source_if>.*)]',
                               dest=dest_nve + '[source_if][(?P<source_if>.*)]',
-                              intf=nve_name,
+                              interface=nve_name,
                               action=self.convert_intf_name)
                 self.add_leaf(cmd=ShowNveInterfaceDetail,
                               src=src_nve + '[multisite_bgw_if][(?P<multisite_bgw_if>.*)]',
                               dest=dest_nve + '[multisite_bgw_if][(?P<multisite_bgw_if>.*)]',
-                              intf=nve_name,
+                              interface=nve_name,
                               action=self.convert_intf_name)
         # nve - enabled
         self.add_leaf(cmd=ShowFeature,

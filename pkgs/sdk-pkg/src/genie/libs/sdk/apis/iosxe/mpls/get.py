@@ -4,8 +4,13 @@
 import re
 import logging
 
+# pyats
+from pyats.utils.objects import find, R
+
 # Genie
+from genie.libs.sdk.libs.utils.normalize import GroupKeys
 from genie.libs.parser.utils.common import Common
+from genie.libs.sdk.libs.utils.normalize import GroupKeys
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # Utils
@@ -14,6 +19,63 @@ from genie.libs.sdk.apis.iosxe.running_config.get import (
 )
 
 log = logging.getLogger(__name__)
+
+
+def get_mpls_outgoing_label(device, label):
+    """ Get mpls outgoing label 
+        using 'show mpls forwarding-table labels {label}'
+
+        Args:
+            device ('obj'): Device object
+            label ('str'): Local label
+        Returns:
+            out_label ('str'): Outgoing label
+    """
+    cmd = 'show mpls forwarding-table labels {label}'.format(label=label)
+    try:
+        out = device.parse(cmd)
+    except Exception as e:
+        log.error("Failed to parse '{cmd}': {e}".format(cmd=cmd, e=e))
+        return None
+
+    reqs = R(['vrf','(.*)','local_label','(?P<local_label>.*)',
+              'outgoing_label_or_vc','(?P<outgoing_label>.*)','(.*)'])
+    found = find([out], reqs, filter_=False, all_keys=True)
+
+    if found:
+        return found[0][1][-1]
+    else:
+        return None
+
+
+def get_mpls_label_stack(device, label):
+    """ Get mpls Label Stack
+        using 'show mpls forwarding-table labels {label} detail'
+
+        Args:
+            device ('obj'): Device object
+            label ('str'): Local label
+        Returns:
+            stack ('list'): Label stack
+    """
+    stack = []
+    cmd = 'show mpls forwarding-table labels {label} detail'.format(label=label)
+    try:
+        out = device.parse(cmd)
+    except Exception as e:
+        log.error("Failed to parse '{cmd}': {e}".format(cmd=cmd, e=e))
+        return stack
+
+    reqs = R(['vrf','(.*)','local_label','(?P<local_label>.*)',
+              'outgoing_label_or_vc','(?P<outgoing_label>.*)',
+              'prefix_or_tunnel_id','(.*)','outgoing_interface','(.*)',
+              'label_stack','(?P<label_stack>.*)'])
+    found = find([out], reqs, filter_=False, all_keys=True)
+
+    if found:
+        stack = found[0][0].split()
+
+    return [int(label) for label in stack]
 
 
 def get_interface_interfaces_ldp_enabled(device, vrf=""):
@@ -134,3 +196,39 @@ def get_mpls_ldp_peer_state(device, interface):
                         "interface", None
                     ):
                         return state
+
+
+def get_mpls_forwarding_table_key_value_pairs(device, ip):
+    """ Gets all key:value pairs from the mpls forwarding table
+
+        Args:
+            device (`obj`): Device object
+            ip (`str`): IP address
+
+        Returns:
+            result (`bool`): Verified result
+
+        Raises:
+            N/A
+    """
+
+    try:
+        out = device.parse('show mpls forwarding-table {}'.format(ip))
+    except SchemaEmptyParserError:
+        log.info("Device output is empty.")
+        return {}
+
+    reqs = R(['vrf', '(.*)',
+            'local_label', '(?P<local_label>.*)',
+            'outgoing_label_or_vc', '(?P<outgoing_label>.*)',
+            'prefix_or_tunnel_id', '(?P<prefix>.*)',
+            'outgoing_interface', '(?P<interface>.*)',
+            'next_hop', '(?P<next_hop>.*)'])
+    found = find([out], reqs, filter_=False, all_keys=True)
+
+    if found:
+        return GroupKeys.group_keys(
+            reqs=reqs.args, ret_num={}, source=found, all_keys=True)
+
+    return {}
+

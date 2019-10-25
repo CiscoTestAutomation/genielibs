@@ -78,14 +78,7 @@ class Device(genie.conf.base.device.Device):
                 except (ImportError, AttributeError) as e:
                     # it does not exist, then just use the default one.
                     # At this time, this is expected, so don't warn at all.
-                    if True:
-                        warnings.warn(
-                            'Device {dev} OS {os!r} is not supported;'
-                            ' Extended Device functionality will not be'
-                            ' available:'
-                            ' {e}'.format(
-                                dev=name, os=device_os, e=e),
-                            UnsupportedDeviceOsWarning)
+                    pass
 
         if factory_cls is not cls:
             self = factory_cls.__new__(factory_cls, *args, **kwargs)

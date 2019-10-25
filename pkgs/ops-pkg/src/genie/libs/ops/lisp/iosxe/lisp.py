@@ -3,11 +3,11 @@ LISP Genie Ops Object for IOSXE - CLI.
 '''
 
 # Genie
-from genie.ops.base import Base
+from genie.libs.ops.lisp.lisp import Lisp as SuperLisp
 from genie.ops.base import Context
 
 
-class Lisp(Base):
+class Lisp(SuperLisp):
     '''Lisp Ops Object'''
 
     def learn(self):

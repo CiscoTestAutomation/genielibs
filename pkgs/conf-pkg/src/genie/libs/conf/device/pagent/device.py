@@ -7,7 +7,7 @@ __all__ = (
 )
 
 from enum import Enum
-import collections
+import collections.abc
 import logging
 logger = logging.getLogger(__name__)
 
@@ -268,7 +268,7 @@ class Device(HltapiDevice, genie.libs.conf.device.ios.Device):
                 # ----------------------------------------------------------------------
                 stopped = True
                 for k, v in hltkl.items():
-                    if not isinstance(v, collections.Mapping):
+                    if not isinstance(v, collections.abc.Mapping):
                         continue
                     if 'stopped' not in v:
                         continue

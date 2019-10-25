@@ -72,7 +72,7 @@ class Interface(genie.libs.conf.interface.Interface):
                 try:
                     factory_cls = cls._name_to_class_map[d_parsed.type]
                 except KeyError:
-                    raise UnknownInterfaceTypeError
+                    pass
 
         if factory_cls is not cls:
             self = factory_cls.__new__(factory_cls, *args, **kwargs)

@@ -168,7 +168,7 @@ class Interface(SuperInterface):
                         self.add_leaf(cmd=ShowInterfacesAccounting,
                                       src=src + '[accounting]',
                                       dest=dest + '[accounting]',
-                                      intf=custom[cmd]['intf'])
+                                      interface=custom[cmd]['intf'])
                     else:
                         self.add_leaf(cmd=ShowInterfacesAccounting,
                                       src=src + '[accounting]',
@@ -177,7 +177,7 @@ class Interface(SuperInterface):
                 self.add_leaf(cmd=ShowInterfacesAccounting,
                               src=src + '[accounting]',
                               dest=dest + '[accounting]',
-                              intf=intf)
+                              interface=intf)
 
                 # ======================================================================
                 #                           ipv4
@@ -283,7 +283,7 @@ class Interface(SuperInterface):
                     self.add_leaf(cmd=ShowInterfacesAccounting,
                                   src=src + '[accounting]',
                                   dest=dest + '[accounting]',
-                                  intf=custom[cmd]['intf'])
+                                  interface=custom[cmd]['intf'])
                 else:
                     self.add_leaf(cmd=ShowInterfacesAccounting,
                                   src=src + '[accounting]',
@@ -292,7 +292,7 @@ class Interface(SuperInterface):
             self.add_leaf(cmd=ShowInterfacesAccounting,
                           src=src + '[accounting]',
                           dest=dest + '[accounting]',
-                          intf=interface)
+                          interface=interface)
 
 
             # ======================================================================

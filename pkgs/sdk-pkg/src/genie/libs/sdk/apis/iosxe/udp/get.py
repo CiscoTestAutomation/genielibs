@@ -3,10 +3,6 @@
 # Python
 import logging
 
-try:
-    from scapy.all import load_contrib, UDP
-except ImportError:
-    pass
 
 log = logging.getLogger(__name__)
 
@@ -28,7 +24,11 @@ def analyze_udp_in_mpls_packets(
         Raises:
             None 
     """
-
+    try:
+        from scapy.all import load_contrib, UDP
+    except ImportError:
+        raise ImportError('scapy is not installed, please install it by running: '
+                          'pip install scapy') from None
     count = 0
 
     for pkt in packets:

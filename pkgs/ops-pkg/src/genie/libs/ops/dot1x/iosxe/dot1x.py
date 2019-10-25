@@ -2,11 +2,11 @@
 Dot1x Genie Ops Object for IOSXE - CLI.
 '''
 # Genie
-from genie.ops.base import Base
+from genie.libs.ops.dot1x.dot1x import Dot1X as SuperDot1X
 from genie.ops.base import Context
 
 
-class Dot1X(Base):
+class Dot1X(SuperDot1X):
     '''Dot1x Genie Ops Object'''
 
     def learn(self):

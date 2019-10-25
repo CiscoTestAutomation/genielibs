@@ -145,10 +145,10 @@ TriggerClearBgpNeighborSoftIpv6:
       pkg: genie.libs.sdk
       class: triggers.clear.bgp.clear.TriggerClearBgpNeighborSoftIpv6
 
-TriggerClearIpRouteAll:
+TriggerClearIpRouteCheckBgp:
     source:
       pkg: genie.libs.sdk
-      class: triggers.clear.bgp.clear.TriggerClearIpRouteAll
+      class: triggers.clear.bgp.clear.TriggerClearIpRouteCheckBgp
       
 # ---------------
 # UNCONFIG-CONFIG

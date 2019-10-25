@@ -821,3 +821,38 @@ def get_ospf_sr_adj_sid_and_neighbor_address(device, process_id, neighbor_addres
                 ret_dict.update({neighbor_address: sid})
 
     return ret_dict
+
+
+def get_ospf_interface_affinity_bits(device, interface):
+    """ Get affinity bits value of an ospf interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+        Returns:
+            bits ('str'): Affinity bits
+    """
+
+    log.info("Getting Affinity bits of interface {intf}".format(intf=interface))
+
+    cmd = 'show ip ospf interface {intf}'.format(intf=interface)
+    try:
+        out = device.parse(cmd)
+    except Exception as e:
+        log.error("Failed to parse '{cmd}': {e}".format(cmd=cmd, e=e))
+        return None
+
+    reqs = R(['vrf','(.*)',
+              'address_family','(.*)',
+              'instance','(.*)','areas','(.*)',
+              'interfaces','(.*)','teapp','(.*)',
+              'affinity','bits','(?P<bits>.*)'])
+    found = find([out], reqs, filter_=False, all_keys=True)
+    if found:
+        keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={}, 
+                                    source=found, all_keys=True)
+        bits = keys[0]['bits']
+        log.info("Get affinity bits '{bits}' on {intf}".format(bits=bits, intf=interface))
+        return bits
+    else:
+        log.error("Failed to get affinity bits on {intf}".format(intf=interface))
+        return None

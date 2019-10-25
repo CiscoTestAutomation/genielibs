@@ -5,7 +5,7 @@ __all__ = (
 
 import functools
 from copy import copy
-import collections
+import collections.abc
 
 from genie.libs.conf.base import MAC, IPv4Address
 
@@ -120,12 +120,12 @@ class ESI(object):
                 else:
                     self.bytes = bytes
 
-        elif isinstance(value, collections.Sequence) and len(value) == 10:
+        elif isinstance(value, collections.abc.Sequence) and len(value) == 10:
             if _type is not None and _type != int(value[0]):
                 raise ValueError('type argument does not match value')
             _type, *self.bytes = value
 
-        elif isinstance(value, collections.Sequence) and len(value) == 9:
+        elif isinstance(value, collections.abc.Sequence) and len(value) == 9:
             self.bytes = value
 
         elif isinstance(value, int):
@@ -146,7 +146,7 @@ class ESI(object):
     @bytes.setter
     def bytes(self, value):
         if isinstance(value, str) \
-                or not isinstance(value, collections.Sequence):
+                or not isinstance(value, collections.abc.Sequence):
             raise ValueError('ESI bytes sequence expected: %r' % (value,))
         value = tuple(
             (int(byte, 16) if isinstance(byte, str) else int(byte))

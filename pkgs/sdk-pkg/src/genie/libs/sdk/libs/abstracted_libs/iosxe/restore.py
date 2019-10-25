@@ -66,7 +66,7 @@ class Restore(object):
             return self.to_url
 
     def restore_configuration(self, device, method, abstract, iteration=10,
-                              interval=60, compare=False, compare_exclude=[]):
+                              interval=60, compare=False, compare_exclude=[], reload_timeout=1200):
         if method == 'checkpoint':
             # Enable the feature
             for i in range(1,iteration):
@@ -107,6 +107,13 @@ class Restore(object):
                           loop_continue=True,
                           continue_timer=False),
                 ])
+            # dialog for plan B
+            alt_dialog = Dialog([
+            Statement(pattern=r'Destination filename.*',
+                      action='sendline()',
+                      loop_continue=True,
+                      continue_timer=False),
+            ])
 
             for i in range(1,iteration):
                 # configure replace location:<filename>
@@ -114,6 +121,12 @@ class Restore(object):
                             format(self.to_url), reply=dialog, error_pattern=[])
 
                 if out and 'Rollback Done' in out:
+                    break
+                elif 'invalid' in out.lower():
+                    # device does not support config replace, do it in different way
+                    device.execute('erase startup-config')
+                    device.execute('copy {} startup-config'.format(self.to_url), reply=alt_dialog)
+                    device.reload(reload_timeout=reload_timeout)
                     break
                 else:
                     log.info('Config replace failed: sleeping {} seconds before'

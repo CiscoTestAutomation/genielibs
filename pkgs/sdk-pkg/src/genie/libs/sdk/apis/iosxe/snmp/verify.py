@@ -70,6 +70,13 @@ def verify_cli_and_snmp_cpu_memory(
         )
         return False
 
+    if not snmp_dict or not cli_dict:
+        log.error(
+            "Failed to get CPU and Memory information "
+            "from CLI and SNMP"
+        )
+        return False
+
     for slot, data in snmp_dict.items():
         if slot in cli_dict:
             for key, value in data.items():

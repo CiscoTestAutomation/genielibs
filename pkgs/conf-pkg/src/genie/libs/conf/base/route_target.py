@@ -9,7 +9,7 @@ __all__ = (
         )
 
 from copy import copy
-import collections
+import collections.abc
 import re
 from ipaddress import IPv4Address
 from enum import Enum
@@ -209,7 +209,7 @@ class RouteTarget(object):
 
             raise ValueError(value)
 
-        if isinstance(value, collections.Sequence):
+        if isinstance(value, collections.abc.Sequence):
             if type_ is not None:
                 raise TypeError
             self.fields = value

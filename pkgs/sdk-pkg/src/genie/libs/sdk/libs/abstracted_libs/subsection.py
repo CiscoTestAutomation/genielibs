@@ -344,7 +344,7 @@ def learn_system_defaults(self, testbed):
             self.parent.default_file_system[dev.name] = lookup.sdk.libs.\
                             abstracted_libs.subsection.get_default_dir(
                                 device=dev)
-            msg = "    - Successfully learnt system default directroy"
+            msg = "    - Successfully learnt system default directory"
             summarize(summary, message=msg, device=device)
         except LookupError as e:
             log.info('Cannot find device {d} correspoding get_default_dir'.\

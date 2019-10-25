@@ -2,6 +2,7 @@
 
 # Python
 import logging
+from netaddr import IPNetwork
 
 # pyats
 from pyats.utils.objects import find, R
@@ -18,15 +19,15 @@ log = logging.getLogger(__name__)
 
 
 def verify_mpls_forwarding_table_outgoing_label(
-    device, ip, expected_label="", same_as_local=False, 
-    max_time=30, check_interval=10):
+        device, ip, expected_label="", same_as_local=False,
+        max_time=30, check_interval=10):
     """ Verify local and remote binding labels for ipv4
 
         Args:
             device (`obj`): Device object
             ip (`str`): IP address
             expected_label (`str`): Expected label
-            same_as_local (`bool`): 
+            same_as_local (`bool`):
                 True if verify outgoing labels with local label
                 False if verify outgoing labels with expected label
             max_time (`int`): Max time, default: 30
@@ -34,41 +35,40 @@ def verify_mpls_forwarding_table_outgoing_label(
         Returns:
             result (`bool`): Verified result
     """
-    cmd = 'show mpls forwarding-table {}'.format(ip)
     timeout = Timeout(max_time, check_interval)
-
     while timeout.iterate():
         result = True
+
         try:
-            out = device.parse(cmd)
-        except Exception as e:
-            log.error("Failed to parse '{}':\n{}".format(cmd, e))
+            out = device.parse('show mpls forwarding-table {}'.format(ip))
+        except SchemaEmptyParserError:
+            log.info("Device output is empty.")
             result = False
             timeout.sleep()
             continue
 
-        reqs = R(['vrf', '(.*)', 
-                'local_label', '(?P<local_label>.*)', 
-                'outgoing_label_or_vc', '(?P<outgoing_label>.*)', 
-                'prefix_or_tunnel_id', '(?P<prefix>.*)',
-                'outgoing_interface', '(?P<interface>.*)',
-                'next_hop', '(?P<next_hop>.*)'])
+        reqs = R(['vrf', '(.*)',
+                  'local_label', '(?P<local_label>.*)',
+                  'outgoing_label_or_vc', '(?P<outgoing_label>.*)',
+                  'prefix_or_tunnel_id', '(?P<prefix>.*)',
+                  'outgoing_interface', '(?P<interface>.*)',
+                  'next_hop', '(?P<next_hop>.*)'])
         found = find([out], reqs, filter_=False, all_keys=True)
 
         if found:
-            keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={}, 
+            keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={},
                                         source=found, all_keys=True)
             for route in keys:
                 if same_as_local:
                     log.info("Interface {route[interface]} has local label "
-                            "'{route[local_label]}' and outgoing label "
-                            "'{route[outgoing_label]}'".format(route=route))
+                             "'{route[local_label]}' and outgoing label "
+                             "'{route[outgoing_label]}'".format(route=route))
                     if str(route['outgoing_label']) != str(route['local_label']):
                         result = False
                 else:
                     log.info("Interface {route[interface]} outgoing label is "
-                            "'{route[outgoing_label]}', exepected to have label "
-                            "'{expected}'".format(route=route, expected=expected_label))
+                             "'{route[outgoing_label]}', exepected to have label "
+                             "'{expected}'".format(route=route, expected=expected_label))
                     if str(route['outgoing_label']) != str(expected_label):
                         result = False
         else:
@@ -79,7 +79,7 @@ def verify_mpls_forwarding_table_outgoing_label(
             return result
 
         timeout.sleep()
- 
+
     return result
 
 
@@ -211,6 +211,154 @@ def is_mpls_ldp_neighbor_in_state(
         current_state = get_mpls_ldp_peer_state(device, interface)
         if current_state and state in current_state:
             return True
+
+        timeout.sleep()
+
+    return False
+
+
+def verify_mpls_forwarding_table_has_prefix_in_subnet_range(device, subnet, max_time=30, check_interval=10):
+    """ Verifies local label for entries with a prefix inside subnet
+
+        Args:
+            device ('obj'): Device to use
+            subnet ('str'): Subnet to verify inside
+            max_time ('int'): Max time to check
+            check_interval ('int'): How often to check
+
+        returns:
+            True/False
+
+        raises:
+            N/A
+    """
+    log.info('Checking atleast one entry has a prefix in subnet {subnet} range'
+             .format(subnet=subnet))
+
+    try:
+        subnet = IPNetwork(subnet)
+    except Exception:
+        log.info('Bad subnet provided')
+        return False
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse('show mpls forwarding-table')
+        except SchemaEmptyParserError:
+            log.info('Parser output is empty')
+            timeout.sleep()
+            continue
+
+        reqs = R(['vrf',
+                  '(.*)',
+                  'local_label',
+                  '(?P<local_label>.*)',
+                  'outgoing_label_or_vc',
+                  '(.*)',
+                  'prefix_or_tunnel_id',
+                  '(?P<prefix>.*)',
+                  'outgoing_interface',
+                  '(.*)', ])
+
+        found = find([out], reqs, filter_=False, all_keys=True)
+        if found:
+            keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={}, source=found, all_keys=True)
+
+            for key in keys:
+                try:
+                    prefix = IPNetwork(key['prefix'])
+                except Exception:
+                    continue
+
+                if prefix in subnet:
+                    return True
+
+    return False
+
+
+def verify_mpls_forwarding_table_local_label_for_subnet(device, subnet, min_range, max_range, in_range=True, max_time=60, check_interval=15):
+    """ Verifies local label for entries with a prefix inside subnet
+
+        Args:
+            device ('obj'): Device to use
+            subnet ('str'): Subnet to verify inside
+            min_range ('int'): Minimum label
+            max_range ('int'): Maximum label
+            in_range ('bool'): True to verify between min_range/max_range, False to verify outside
+            max_time ('int'): Max time to check
+            check_interval ('int'): How often to check
+
+        returns:
+            True/False
+
+        raises:
+            N/A
+    """
+
+    log.info('Checking all entries where the prefix falls inside subnet {subnet} range'
+             .format(subnet=subnet))
+
+    try:
+        subnet = IPNetwork(subnet)
+    except Exception:
+        log.info('Bad subnet provided')
+        return False
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        result = True
+
+        try:
+            out = device.parse('show mpls forwarding-table')
+        except SchemaEmptyParserError:
+            log.info('Parser output is empty')
+            timeout.sleep()
+            continue
+
+        reqs = R(['vrf',
+                  '(.*)',
+                  'local_label',
+                  '(?P<local_label>.*)',
+                  'outgoing_label_or_vc',
+                  '(.*)',
+                  'prefix_or_tunnel_id',
+                  '(?P<prefix>.*)',
+                  'outgoing_interface',
+                  '(.*)'])
+
+        found = find([out], reqs, filter_=False, all_keys=True)
+        if found:
+            keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={}, source=found, all_keys=True)
+
+            for key in keys:
+                try:
+                    prefix = IPNetwork(key['prefix'])
+                except Exception:
+                    continue
+
+                if prefix in subnet:
+                    if in_range and min_range <= key['local_label'] <= max_range:
+                        continue
+                    elif in_range and not min_range <= key['local_label'] <= max_range:
+                        log.info('Entry with prefix {prefix} has label {label} which is outside '
+                                 'given range {range}. Expected to be inside.'
+                                 .format(prefix=prefix,
+                                         label=key['local_label'],
+                                         range='{}-{}'.format(min_range, max_range)))
+                        result = False
+                    elif not in_range and min_range <= key['local_label'] <= max_range:
+                        log.info('Entry with prefix {prefix] has label {label} which is inside '
+                                 'given range {range}. Expected to be outside.'
+                                 .format(prefix=prefix,
+                                         label=key['local_label'],
+                                         range='{}-{}'.format(min_range, max_range)))
+                        result = False
+                    elif not in_range and not min_range <= key['local_label'] <= max_range:
+                        continue
+
+            if result:
+                return True
 
         timeout.sleep()
 

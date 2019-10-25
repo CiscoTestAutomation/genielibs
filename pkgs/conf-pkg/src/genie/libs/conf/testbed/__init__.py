@@ -1,6 +1,7 @@
 '''genie.libs Testbed class.'''
 
 import collections
+from collections import abc
 import contextlib
 import functools
 import types
@@ -103,13 +104,13 @@ def _clean_cfgs_dict_inner(cfgs, *, testbed=None, device=None, add_to_cfgs=None)
         cfgs = CliConfig(cfgs, device=device)
         # Fallthrough to Config case below...
 
-    elif isinstance(cfgs, collections.Mapping):
+    elif isinstance(cfgs, abc.Mapping):
         for device, device_cfgs in cfgs.items():
             _clean_cfgs_dict_inner(device_cfgs, testbed=testbed, device=device,
                                    add_to_cfgs=add_to_cfgs)
         return add_to_cfgs
 
-    elif isinstance(cfgs, collections.Iterable):
+    elif isinstance(cfgs, abc.Iterable):
         for device_cfg in cfgs:
             _clean_cfgs_dict_inner(device_cfg, testbed=testbed, device=device,
                                    add_to_cfgs=add_to_cfgs)

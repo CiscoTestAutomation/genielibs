@@ -64,7 +64,7 @@ class Restore(object):
             return self.to_url
 
     def restore_configuration(self, device, method, abstract, iteration=10,
-                              interval=60, compare=False, compare_exclude=[]):
+                              interval=60, compare=False, compare_exclude=[], reload_timeout=None):
         if method == 'checkpoint':
             # Enable the feature
             dialog = Dialog([

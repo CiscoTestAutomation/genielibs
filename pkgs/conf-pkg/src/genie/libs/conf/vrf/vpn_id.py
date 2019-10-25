@@ -4,7 +4,7 @@ __all__ = (
         )
 
 from copy import copy
-import collections
+import collections.abc
 import re
 from enum import Enum
 import functools
@@ -48,7 +48,7 @@ class VpnId(object):
             else:
                 raise ValueError(value)
 
-        elif isinstance(value, collections.Sequence):
+        elif isinstance(value, collections.abc.Sequence):
             self.parts = value
 
         else:

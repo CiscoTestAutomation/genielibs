@@ -1,10 +1,10 @@
-# Genie package
-from genie.ops.base import Base
+# super class
+from genie.libs.ops.routing.routing import Routing as SuperRouting
 
 # genie.libs
 from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
 
-class Routing(Base):
+class Routing(SuperRouting):
     '''Routing Ops Object'''
 
     def keys(self, item):

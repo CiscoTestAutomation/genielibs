@@ -111,11 +111,11 @@ class AclOutput(object):
                                       'name': '30'},
                                '80': {'actions': {'forwarding': 'permit',
                                                   'logging': 'log-syslog'},
-                                      'matches': {'l3': {'ipv6': {'destination_network': {'1:1::1 6:6::6': {'destination_network': '1:1::1 '
-                                                                                                                                             '6:6::6'}},
+                                      'matches': {'l3': {'ipv6': {'destination_network': {'2001:db8:1:1::1 2001:db8:24:24::6': {'destination_network': '2001:db8:1:1::1 '
+                                                                                                                                             '2001:db8:24:24::6'}},
                                                                   'protocol': 'ipv6',
-                                                                  'source_network': {'3:3::3 4:4::4': {'source_network': '3:3::3 '
-                                                                                                                                   '4:4::4'}}}},
+                                                                  'source_network': {'2001:db8:9:9::3 2001:db8:10:10::4': {'source_network': '2001:db8:9:9::3 '
+                                                                                                                                   '2001:db8:10:10::4'}}}},
                                                   'l4': {'ipv6': {'established': False}}},
                                       'name': '80'}},
                       'name': 'ipv6_acl',
@@ -222,11 +222,11 @@ class AclOutput(object):
                                              'name': '30'},
                                       '80': {'actions': {'forwarding': 'permit',
                                                          'logging': 'log-syslog'},
-                                             'matches': {'l3': {'ipv6': {'destination_ipv6_network': {'1:1::1 6:6::6': {'destination_ipv6_network': '1:1::1 '
-                                                                                                                                                    '6:6::6'}},
+                                             'matches': {'l3': {'ipv6': {'destination_ipv6_network': {'2001:db8:1:1::1 2001:db8:24:24::6': {'destination_ipv6_network': '2001:db8:1:1::1 '
+                                                                                                                                                    '2001:db8:24:24::6'}},
                                                                          'protocol': 'ipv6',
-                                                                         'source_ipv6_network': {'3:3::3 4:4::4': {'source_ipv6_network': '3:3::3 '
-                                                                                                                                          '4:4::4'}}}}},
+                                                                         'source_ipv6_network': {'2001:db8:9:9::3 2001:db8:10:10::4': {'source_ipv6_network': '2001:db8:9:9::3 '
+                                                                                                                                          '2001:db8:10:10::4'}}}}},
                                              'name': '80'}},
                              'name': 'ipv6_acl',
                              'type': 'ipv6-acl-type'},

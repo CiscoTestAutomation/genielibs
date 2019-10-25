@@ -118,8 +118,7 @@ coverage_all:
 	@echo ""
 	@echo "Running code coverage on all unittests"
 	@echo ---------------------------------------
-	@$(TESTCMD) --coverage
-	@echo "Done Compiling"
+	@$(TESTCMD) --path tests/ --coverage --no-refresh
 	@echo ""
 
 pylint_all:
@@ -153,7 +152,7 @@ clean:
 	@find . -type f -name "*.pyc" | xargs rm -vrf
 	@find . -type f -name "*.c" | xargs rm -vrf
 	@find . -type d -name "__pycache__" | xargs rm -vrf
-	@echo ""
+	@find . -type d -name "build" | xargs rm -vrf
 	@echo "Done."
 	@echo ""
 
@@ -218,7 +217,7 @@ test:
 	@echo "Running all unit tests..."
 	@echo ""
 
-	@$(TESTCMD)
+	@$(TESTCMD) --path tests/
 
 	@echo "Completed unit testing"
 	@echo ""
@@ -238,3 +237,6 @@ json:
 	python ./pkgs/sdk-pkg/api_generator/apis.py -datafile pkgs/sdk-pkg/api_generator/github/api_datafile.yaml -save_location pkgs/sdk-pkg/api_generator/output/github_apis.json
 	python ./pkgs/sdk-pkg/api_generator/apis.py -datafile pkgs/sdk-pkg/api_generator/bitbucket/api_datafile.yaml -save_location pkgs/sdk-pkg/api_generator/output/bitbucket_apis.json
 	@cp pkgs/sdk-pkg/api_generator/output/github_apis.json pkgs/sdk-pkg/src/genie/libs/sdk/apis/apis.json
+	python ./pkgs/ops-pkg/ops_generator/ops.py -datafile pkgs/ops-pkg/ops_generator/bitbucket/ops_datafile.yaml -save_location pkgs/ops-pkg/ops_generator/output/bitbucket_ops.json
+	python ./pkgs/ops-pkg/ops_generator/ops.py -datafile pkgs/ops-pkg/ops_generator/github/ops_datafile.yaml -save_location pkgs/ops-pkg/ops_generator/output/github_ops.json
+	@cp pkgs/ops-pkg/ops_generator/output/github_ops.json pkgs/ops-pkg/src/genie/libs/ops/ops.json

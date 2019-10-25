@@ -744,14 +744,14 @@ class PimOutput(object):
                                           "up_time": "03:29:13",
                                           "address": "2001:db8:1:1::1"
                                      },
-                                     "2010::1 SM static": {
+                                     "2001:db8:504::1 SM static": {
                                           "expiration": "0.000000",
                                           "info_source_type": "static",
                                           "mode": "SM",
                                           "group_ranges": "ff1e::3002/128 ff1e::3001/128",
                                           "df_ordinal": 0,
                                           "up_time": "00:00:02",
-                                          "address": "2010::1"
+                                          "address": "2001:db8:504::1"
                                      },
                                      "2001:db8:12:12::12 BIDIR static": {
                                           "expiration": "0.000000",
@@ -794,9 +794,9 @@ class PimOutput(object):
                                           "protocol": "static",
                                           "up_time": "00:58:17"
                                      },
-                                     "ff1e::3002/128 ff1e::3001/128 2010::1 static": {
+                                     "ff1e::3002/128 ff1e::3001/128 2001:db8:504::1 static": {
                                           "group": "ff1e::3002/128 ff1e::3001/128",
-                                          "rp_address": "2010::1",
+                                          "rp_address": "2001:db8:504::1",
                                           "expiration": "0.000000",
                                           "protocol": "static",
                                           "up_time": "00:00:02"
@@ -808,7 +808,7 @@ class PimOutput(object):
                                                "policy_name": "ff09::/16"
                                           }
                                      },
-                                     "2010::1": {
+                                     "2001:db8:504::1": {
                                           "sm": {
                                                "route_map": "PIM6-STATIC-RP",
                                                "policy_name": "ff1e::3002/128 ff1e::3001/128"
@@ -2187,12 +2187,12 @@ class PimOutput(object):
                                             "group": "ff09::/16",
                                             "rp_address": "2001:db8:111:111::111"
                                        },
-                                       "ff1e::3002/128 ff1e::3001/128 2010::1 static": {
+                                       "ff1e::3002/128 ff1e::3001/128 2001:db8:504::1 static": {
                                             "up_time": "00:00:02",
                                             "expiration": "0.000000",
                                             "protocol": "static",
                                             "group": "ff1e::3002/128 ff1e::3001/128",
-                                            "rp_address": "2010::1"
+                                            "rp_address": "2001:db8:504::1"
                                        },
                                        "ff08::/16 2001:db8:12:12::12 static": {
                                             "up_time": "00:58:17",
@@ -2228,7 +2228,7 @@ class PimOutput(object):
                                        }
                                   },
                                   "static_rp": {
-                                       "2010::1": {
+                                       "2001:db8:504::1": {
                                             "sm": {
                                                  "policy_name": "ff1e::3002/128 ff1e::3001/128",
                                                  "route_map": "PIM6-STATIC-RP"
@@ -2293,10 +2293,10 @@ class PimOutput(object):
                                             "up_time": "00:58:17",
                                             "expiration": "0.000000"
                                        },
-                                       "2010::1 SM static": {
+                                       "2001:db8:504::1 SM static": {
                                             "info_source_type": "static",
                                             "mode": "SM",
-                                            "address": "2010::1",
+                                            "address": "2001:db8:504::1",
                                             "up_time": "00:00:02",
                                             "expiration": "0.000000"
                                        },

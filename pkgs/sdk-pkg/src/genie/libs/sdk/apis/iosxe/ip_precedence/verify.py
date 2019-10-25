@@ -3,11 +3,6 @@
 # Python
 import logging
 
-try:
-    from scapy.all import load_contrib
-except ImportError:
-    pass
-
 log = logging.getLogger(__name__)
 
 
@@ -23,6 +18,11 @@ def verify_ip_precedence_ip_precedence(packets):
         Raises:
             None
     """
+    try:
+        from scapy.all import load_contrib
+    except ImportError:
+        raise ImportError('scapy is not installed, please install it by running: '
+                          'pip install scapy') from None
     log.info(
         "Verifying that all the packets have mapped IP precedence value to EXP"
     )

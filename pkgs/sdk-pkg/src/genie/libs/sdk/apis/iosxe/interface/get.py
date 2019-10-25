@@ -245,9 +245,14 @@ def get_interface_ip_address(device, interface):
             interface=interface, device=device.name
         )
     )
+
+    cmd = "show ip interface brief {i}".format(i=interface)
     try:
-        out = device.parse("show ip interface brief {i}".format(i=interface))
-    except SchemaEmptyParserError as e:
+        out = device.parse(cmd)
+    except SubCommandFailure:
+        log.error("Invalid command")
+    except Exception as e:
+        log.error("Failed to parse '{cmd}': {e}".format(cmd=cmd, e=e))
         return
 
     address = out["interface"].get(interface, {}).get("ip_address", None)
@@ -550,6 +555,9 @@ def get_interface_packet_counter(
         Returns
             counter: number of output packet
 
+            if any error or no counter_field was found return None
+            - to separate 0 packet and None value
+
         Raises:
             None
     """
@@ -669,11 +677,12 @@ def get_bundled_interface(device, port_channel, exclude_interface=None):
                 return intf
 
 
-def get_interface_address_mask_running_config(device, interface):
+def get_interface_address_mask_running_config(device, interface, address_family=None):
     """ Get interface address and mask from show running-config interface {interface}
         Args:
             device ('obj'): Device object
-            interface('str'): Interface name
+            interface ('str'): Interface name
+            address_family ('str'): Not used in IOSXE. Address family
 
         Returns:
             (Interface IP address, Interface Mask)
@@ -721,6 +730,9 @@ def get_interface_packet_output_rate(device, interface, seconds=60):
         Returns:
             Traffic rate
 
+            if any error return None
+            - to separate rate 0.0 and None value
+
         Raises:
             None
     """
@@ -760,7 +772,7 @@ def get_interface_packet_output_rate(device, interface, seconds=60):
             counter_field="out_pkts",
             output=parsed_output_before,
         )
-        if not counter_before:
+        if counter_before is None:
             return
 
         counter_after = get_interface_packet_counter(
@@ -769,7 +781,7 @@ def get_interface_packet_output_rate(device, interface, seconds=60):
             counter_field="out_pkts",
             output=parsed_output_after,
         )
-        if not counter_after:
+        if counter_after is None:
             return
 
         output_rate = round((counter_after - counter_before) / delta_time, 2)

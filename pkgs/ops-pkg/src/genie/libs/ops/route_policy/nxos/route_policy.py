@@ -2,14 +2,14 @@
 RoutePolicy Genie Ops Object for NXOS - CLI.
 '''
 
-# Genie
-from genie.ops.base import Base
+
+from genie.libs.ops.route_policy.route_policy import RoutePolicy as SuperRoutePolicy
 
 # nxos show_route_map
 from genie.libs.parser.nxos.show_route_map import ShowRouteMap
 
 
-class RoutePolicy(Base):
+class RoutePolicy(SuperRoutePolicy):
     '''RoutePolicy Genie Ops Object'''
 
     def learn(self):

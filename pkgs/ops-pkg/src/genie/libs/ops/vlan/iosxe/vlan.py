@@ -1,8 +1,8 @@
 # Genie package
-from genie.ops.base import Base
+from genie.libs.ops.vlan.vlan import Vlan as SuperVlan
 
 
-class Vlan(Base):
+class Vlan(SuperVlan):
     '''Vlan Ops Object'''
 
     def learn(self):

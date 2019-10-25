@@ -242,5 +242,64 @@ def apply_traffic(section, apply_wait_time=30):
             apply_traffic.result = Passed
 
 
+# ==============================================================================
+# processor: create_genie_statistics_view
+# ==============================================================================
+
+@report
+def create_genie_statistics_view(section, view_create_interval=30, view_create_iteration=5, disable_tracking=False, disable_port_pair=False):
+
+    '''Trigger Processor:
+        * Creates GENIE traffic statistics view on traffic generator device
+        * This processor is useful if we want to check compare traffic profile
+          after we do stop_traffic and apply_traffic in a trigger. 
+          apply_traffic will delete the existing GENIE statistic view. 
+    '''
+
+    # Init
+
+    log.info(banner("processor: 'create_genie_statistics_view'"))
+
+    # Find TGN devices
+    tgn_devices = section.parameters['testbed'].find_devices(type='tgn')
+    if not tgn_devices:
+        log.info("SKIP: Traffic generator devices not found in testbed YAML")
+        return
+
+    for dev in tgn_devices:
+        if dev.name not in section.parent.mapping_data['devices']:
+            log.info("Traffic generator devices not specified in --devices")
+            return
+
+        # Connect to TGN
+        try:
+            dev.connect(via='tgn')
+        except GenieTgnError as e:
+            log.error(e)
+            log.error("Unable to connect to traffic generator device '{}'".\
+                      format(dev.name))
+            create_genie_statistics_view.result = Failed
+            section.result += create_genie_statistics_view.result
+
+        else:
+            log.info("Connected to traffic generator device '{}'".\
+                     format(dev.name))
+            create_genie_statistics_view.result = Passed
+            section.result += create_genie_statistics_view.result
+
+        # Creating GENIE traffic view on TGN
+        try:
+            dev.create_genie_statistics_view(view_create_interval=view_create_interval, \
+                    view_create_iteration=view_create_iteration, \
+                    disable_tracking=disable_tracking, \
+                    disable_port_pair=disable_port_pair)
+        except GenieTgnError as e:
+            log.error(e)
+            log.error("Unable to create GENIE traffic statistics view on '{}'".format(dev.name))
+            create_genie_statistics_view.result = Failed
+        else:
+            log.info("Creating GENIE traffic statistic view on '{}'".format(dev.name))
+            create_genie_statistics_view.result = Passed
+
 
 ######################################################################################################################################################

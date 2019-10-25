@@ -10,7 +10,7 @@ from ..clear import TriggerClearBgp, \
                     TriggerClearBgpNeighborSoft, \
                     TriggerClearBgpNeighborSoftIpv6,\
                     TriggerClearBgpNeighborSoftIpv4, \
-                    TriggerClearIpRouteAll,\
+                    TriggerClearIpRouteCheckBgp,\
                     TriggerClearBgpVpnv4UnicastVrfAll,\
                     TriggerClearBgpVpnv6UnicastVrfAll,\
                     TriggerClearIpBgpVrfAll,\
@@ -271,7 +271,7 @@ class TriggerClearBgpNeighborSoftIpv6(TriggerClearBgpNeighborSoftIpv6):
     clear_cmd = ['clear bgp vrf all all (?P<neighbor>.*) soft']
 
 
-class TriggerClearIpRouteAll(TriggerClearIpRouteAll):
+class TriggerClearIpRouteCheckBgp(TriggerClearIpRouteCheckBgp):
     """Reset the BGP neighbors using CLI command "clear ip route *"."""
 
     __description__ =  """Reset the BGP neighbors using CLI command "clear ip route *".

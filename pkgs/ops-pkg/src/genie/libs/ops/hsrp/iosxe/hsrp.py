@@ -2,8 +2,7 @@
 HSRP Genie Ops Object for IOSXE.
 '''
 
-# Genie
-from genie.ops.base import Base
+from genie.libs.ops.hsrp.hsrp import Hsrp as SuperHsrp
 from genie.ops.base import Context
 
 # Parser
@@ -11,7 +10,7 @@ from genie.libs.parser.iosxe.show_standby import ShowStandbyInternal,\
                                       ShowStandbyAll, \
                                       ShowStandbyDelay
 
-class Hsrp(Base):
+class Hsrp(SuperHsrp):
     '''HSRP Genie Ops Object'''
 
     def learn(self):

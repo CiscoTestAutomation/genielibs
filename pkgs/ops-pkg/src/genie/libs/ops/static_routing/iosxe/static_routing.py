@@ -1,13 +1,13 @@
 # Genie package
+from genie.libs.ops.static_routing.static_routing import StaticRouting as SuperStaticRouting
 from genie.ops.base import Base
-
 # genie.libs
 from genie.libs.parser.iosxe.show_static_routing import ShowIpStaticRoute,\
                                              ShowIpv6StaticDetail
 # iosxe show_vrf
 from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
 
-class StaticRouting(Base):
+class StaticRouting(SuperStaticRouting):
     '''StaticRouting Ops Object'''
 
     def keys(self, item):

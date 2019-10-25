@@ -2,14 +2,13 @@
 RoutePolicy Genie Ops Object for IOSXR - CLI.
 '''
 
-# Genie
-from genie.ops.base import Base
+from genie.libs.ops.route_policy.route_policy import RoutePolicy as SuperRoutePolicy
 
 # iosxr show_rpl
 from genie.libs.parser.iosxr.show_rpl import ShowRplRoutePolicy
 
 
-class RoutePolicy(Base):
+class RoutePolicy(SuperRoutePolicy):
     '''RoutePolicy Genie Ops Object'''
 
     def learn(self):

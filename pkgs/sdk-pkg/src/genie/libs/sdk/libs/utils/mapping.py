@@ -501,6 +501,10 @@ class Mapping(object):
             # update mapping.keys with static values
             if self._static:
                 uid = self.parent.uid.rsplit('.', 1)[0]
+                # remove <dev> part when there is count in datafile and
+                # name is <key>.<dev>.<counter>
+                if uid.rsplit('.', 1):
+                    uid = uid.rsplit('.', 1)[0]
                 data = self.parent.parent.triggers[uid]
                 for item in self.keys:
                     for k, v in data['static'].items():

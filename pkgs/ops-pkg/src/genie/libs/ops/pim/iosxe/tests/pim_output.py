@@ -956,7 +956,7 @@ class PimOutput(object):
                                                },
                                                "incoming_interface_list": {
                                                     "Tunnel5": {
-                                                         "rpf_nbr": "6:6:6::6"
+                                                         "rpf_nbr": "2001:db8:90:24::6"
                                                     }
                                                },
                                                "uptime": "00:04:45",
@@ -964,7 +964,7 @@ class PimOutput(object):
                                                "flags": "S",
                                                'msdp_learned': False,
                                                'rp_bit': False,
-                                               "rpf_nbr": "6:6:6::6",
+                                               "rpf_nbr": "2001:db8:90:24::6",
                                                "expire": "00:02:47"
                                           }}}}}}}}}
 
@@ -1006,7 +1006,7 @@ class PimOutput(object):
                                                },
                                                "incoming_interface_list": {
                                                     "Tunnel5": {
-                                                         "rpf_nbr": "6:6:6::6"
+                                                         "rpf_nbr": "2001:db8:90:24::6"
                                                     }
                                                },
                                                "uptime": "00:04:45",
@@ -1014,7 +1014,7 @@ class PimOutput(object):
                                                "flags": "S",
                                                'msdp_learned': False,
                                                'rp_bit': False,
-                                               "rpf_nbr": "6:6:6::6",
+                                               "rpf_nbr": "2001:db8:90:24::6",
                                                "expire": "00:02:47"
                                           }}}}}}}}
 
@@ -1782,7 +1782,7 @@ class PimOutput(object):
                                      "group": "FF07::1",
                                      "rp_address": "2001:DB8:6::6",
                                      "msdp_learned": False,
-                                     "rpf_neighbor": "6:6:6::6",
+                                     "rpf_neighbor": "2001:db8:90:24::6",
                                      "is_rpt": True,
                                      "rp_bit": False,
                                      "source_address": "*",
@@ -2230,7 +2230,7 @@ class PimOutput(object):
                                      "group": "FF07::1",
                                      "rp_address": "2001:DB8:6::6",
                                      "msdp_learned": False,
-                                     "rpf_neighbor": "6:6:6::6",
+                                     "rpf_neighbor": "2001:db8:90:24::6",
                                      "is_rpt": True,
                                      "rp_bit": False,
                                      "source_address": "*",

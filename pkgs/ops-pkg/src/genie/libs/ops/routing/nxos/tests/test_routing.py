@@ -25,6 +25,16 @@ class test_route_all(unittest.TestCase):
         self.device.mapping['cli']='cli'
         self.device.connectionmgr.connections['cli'] = '5'
 
+    def test_custom_output(self):
+        f = Routing(device=self.device)
+        # Get outputs
+        f.maker.outputs[ShowIpRoute] = {"{'vrf':'VRF1'}": RouteOutput.showIpRoute}
+        f.maker.outputs[ShowIpv6Route] = {"{'vrf':'VRF1'}": RouteOutput.showIpv6Route}
+        self.device.execute = Mock()
+        # Learn the feature
+        f.learn(vrf='VRF1')
+        self.maxDiff = None
+        self.assertEqual(f.info, RouteOutput.routeOpsOutput_custom)
 
     def test_full_route(self):
         f = Routing(device=self.device)
@@ -34,7 +44,6 @@ class test_route_all(unittest.TestCase):
         self.device.execute = Mock()
         # Learn the feature
         f.learn()
-
         self.maxDiff = None
         self.assertEqual(f.info, RouteOutput.routeOpsOutput)
 
@@ -82,7 +91,6 @@ class test_route_all(unittest.TestCase):
         # Check no attribute not found
         with self.assertRaises(AttributeError):
             f.info['vrf']
-
 
 if __name__ == '__main__':
     unittest.main()

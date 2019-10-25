@@ -1,10 +1,14 @@
 """ Common get functions for segment-routing """
 
 # Python
-import logging
 import re
+import logging
+
+# pyATS
+from pyats.utils.objects import find, R
 
 # Genie
+from genie.libs.sdk.libs.utils.normalize import GroupKeys
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # Running-Config
@@ -13,6 +17,118 @@ from genie.libs.sdk.apis.iosxe.running_config.get import (
 )
 
 log = logging.getLogger(__name__)
+
+
+def get_segment_routing_policy_active_path_hop_labels(device, policy, policy_dict=None):
+    """ Find a segement-routing policy in expected state
+
+        Args:
+            device ('obj'): Device object
+            policy ('str'): Policy name
+            policy_dict ('dict'): Policy dict from parser output
+                IOSXE Parser - ShowSegmentRoutingTrafficEngPolicy
+                cmd - show segment-routing traffic-eng policy all
+        Returns:
+            labels ('list'): Hop labels
+    """
+    labels = []
+    cmd = 'show segment-routing traffic-eng policy name {policy}'.format(policy=policy)
+    if policy_dict is None:
+        try:
+            out = device.parse(cmd)
+        except Exception as e:
+            log.error("Failed to parse '{cmd}': {e}".format(cmd=cmd, e=e))
+            return labels
+    else:
+        out = policy_dict
+
+    # Check explicit path
+    reqs = R([policy,'candidate_paths',
+              'preference','(?P<preference>.*)',
+              'path_type','explicit',
+              '(?P<category>.*)','(?P<name>.*)',
+              'status','(?P<status>.*)'])
+    explicit = find([out], reqs, filter_=False, all_keys=True)
+    if explicit:
+        keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={},
+                                    source=explicit, all_keys=True)
+    
+        for item in keys:
+            if item['status'] == 'active':
+                path_index = item['preference']
+
+                reqs2 = R([policy,'candidate_paths',
+                          'preference',path_index,
+                          'path_type','explicit',
+                          '(?P<category>.*)','(?P<name>.*)',
+                          'hops','(?P<hops>.*)'])
+                hops = find([out], reqs2, filter_=False, all_keys=True)
+                if hops:
+                    hop = hops[0][0]
+                    for value in hop.values():
+                        sid = value.get('sid', '')
+                        labels.append(sid)
+
+                    return labels
+
+    # Check dynamic path if no active path in explicit path
+    reqs = R([policy,'candidate_paths',
+              'preference','(?P<preference>.*)',
+              'path_type','dynamic',
+              'status','(?P<status>.*)'])
+    dynamic = find([out], reqs, filter_=False, all_keys=True)
+    if dynamic:
+        keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={},
+                                    source=dynamic, all_keys=True)
+
+        for item in keys:
+            if item['status'] == 'active':
+                path_index = item['preference']
+
+                reqs2 = R([policy,'candidate_paths',
+                          'preference',path_index,
+                          'path_type','dynamic',
+                          'hops','(?P<hops>.*)'])
+                hops = find([out], reqs2, filter_=False, all_keys=True)
+                if hops:
+                    hop = hops[0][0]
+                    for value in hop.values():
+                        sid = value.get('sid', '')
+                        labels.append(sid)
+
+    return labels
+
+
+def get_segment_routing_policy_in_state(device, expected_admin='up', expected_oper='up'):
+    """ Find a segement-routing policy in expected state
+
+        Args:
+            device ('obj'): Device object
+            expected_admin ('str'): Expected admin state
+            expected_oper ('str'): Expected operational state
+        Returns:
+            policy ('str'): Policy name
+    """
+    cmd = 'show segment-routing traffic-eng policy all'
+    try:
+        out = device.parse(cmd)
+    except Exception as e:
+        log.error("Failed to parse '{cmd}': {e}".format(cmd=cmd, e=e))
+        return None
+
+    for policy in out.keys():
+        admin = out.get(policy, {}).get('status', {}).get('admin', '')
+        oper = out.get(policy, {}).get('status', {}).\
+                   get('operational', {}).get('state', '')
+
+        if (admin.lower() == expected_admin.lower() and 
+            oper.lower() == expected_oper.lower()):
+            return policy
+    else:
+        log.info("Failed to find a policy with admin state {admin} "
+                 "and oper state {oper}".format(admin=expected_admin,
+                    oper=expected_oper))
+        return None
 
 
 def get_segment_routing_sid_map_configuration(device, address_family="ipv4"):

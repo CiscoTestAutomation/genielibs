@@ -1,14 +1,6 @@
 import os
 from pyats.utils.fileutils import FileUtils
 
-try:
-    from scapy.all import rdpcap
-except ImportError:
-    # This lib requires Scapy
-    # If I put a message here, because of abstraction it will always
-    # print, so yea...
-    pass
-
 
 class TcpDump(object):
     '''
@@ -82,6 +74,12 @@ class TcpDump(object):
         return output
 
     def parse(self):
+        try:
+            from scapy.all import rdpcap
+        except ImportError:
+            raise ImportError('scapy is not installed, please install it by running: '
+            'pip install scapy') from None
+
         local_file = os.path.join(self.local_dir,
                                   os.path.basename(self.pcap_file))
         # Make sure it is not of size 0

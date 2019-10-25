@@ -67,6 +67,18 @@ class test_lag(unittest.TestCase):
         with self.assertRaises(KeyError):
             system_priority = lag.info['system_priority']
 
+    def test_only_system_id(self):
+        lag = Lag(device=self.device)
+        # Get outputs
+        lag.maker.outputs[ShowLacpSystemId] = {'': LagOutput.ShowLacpSystemId}
+        lag.maker.outputs[ShowBundle] = {'': {}}
+        lag.maker.outputs[ShowLacp] = {'': {}}
+
+        # Learn the feature
+        lag.learn()
+
+        self.assertIn("system_priority", lag.info)
+
     def test_empty_output_lag(self):
         self.maxDiff = None
         lag = Lag(device=self.device)

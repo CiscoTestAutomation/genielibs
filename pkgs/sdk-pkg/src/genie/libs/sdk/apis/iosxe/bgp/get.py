@@ -826,7 +826,8 @@ def get_bgp_neighbor_session_state(
         vrf = "default"
 
     session_state = (
-        output["vrf"]
+        output
+        .get("vrf", {})
         .get(vrf, {})
         .get("neighbor", {})
         .get(neighbor_address, {})
@@ -840,7 +841,8 @@ def get_bgp_neighbor_session_state(
             raise TypeError("address_families must be of type list")
         try:
             af_list = (
-                output["vrf"]
+                output
+                .get("vrf", {})
                 .get(vrf, {})
                 .get("neighbor", {})
                 .get(neighbor_address, {})

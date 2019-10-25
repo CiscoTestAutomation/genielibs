@@ -1,10 +1,10 @@
 # Genie package
+from genie.libs.ops.static_routing.static_routing import StaticRouting as SuperStaticRouting
 from genie.ops.base import Base
-
 # genie.libs
 from genie.libs.parser.iosxr.show_static_routing import ShowStaticTopologyDetail
 
-class StaticRouting(Base):
+class StaticRouting(SuperStaticRouting):
     '''StaticRouting Ops Object'''
 
     def learn(self):

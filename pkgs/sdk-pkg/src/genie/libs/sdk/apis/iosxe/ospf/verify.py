@@ -87,60 +87,64 @@ def verify_ospf_database_flag(device, lsa_id, expected_flag, has_flag=True,
     return False
 
 
-def verify_ospf_max_metric_configuration(
-    device, ospf_process_id, metric_value, max_time=15, check_interval=5
-):
+def verify_ospf_max_metric_configuration(device, ospf_process_id, 
+    metric_value, expected_state, max_time=15, check_interval=5):
     """Verify OSPF max-metric configuration
 
         Args:
             device (`obj`): Device object
             ospf_process_id (`int`): OSPF process ID
             metric_value (`int`): Metric value to be configured
+            expected_state (`str`): State to check
             max_time (int): Maximum wait time for the trigger,
-                            in second. Default: 15
+                             in second. Default: 15
             check_interval (int): Wait time between iterations when looping is needed,
                             in second. Default: 5
         Returns:
             result(`bool`): verify result
             state
     """
+    cmd = "show ip ospf max-metric"
     timeout = Timeout(max_time, check_interval)
+
     while timeout.iterate():
-        out = None
         try:
-            out = device.parse("show ip ospf max-metric")
-        except SchemaEmptyParserError:
-            pass
+            out = device.parse(cmd)
+        except Exception as e:
+            log.error("Failed to parse {cmd}: {e}".format(cmd=cmd, e=e))
+            timeout.sleep()
+            continue
 
-        if out:
-            try:
-                for area in out["vrf"]["default"]["address_family"]["ipv4"][
-                    "instance"
-                ][str(ospf_process_id)]["base_topology_mtid"]:
-                    res = out["vrf"]["default"]["address_family"]["ipv4"][
-                        "instance"
-                    ][str(ospf_process_id)]["base_topology_mtid"][area][
-                        "router_lsa_max_metric"
-                    ][
-                        True
-                    ][
-                        "condition"
-                    ]
-                    state = out["vrf"]["default"]["address_family"]["ipv4"][
-                        "instance"
-                    ][str(ospf_process_id)]["base_topology_mtid"][area][
-                        "router_lsa_max_metric"
-                    ][
-                        True
-                    ][
-                        "state"
-                    ]
+        reqs = R(['vrf', '(.*)',
+                  'address_family', 'ipv4',
+                  'instance', str(ospf_process_id),
+                  'base_topology_mtid', '(?P<mtid>.*)',
+                  'router_lsa_max_metric', True, '(?P<sub>.*)'])
+        found = find([out], reqs, filter_=False, all_keys=True)
 
-                    if str(metric_value) in res:
-                        return state
-            except KeyError:
-                pass
+        if found:
+            for item in found:
+                condition = item[0].get('condition', '')
+                state = item[0].get('state', '')
+                if not state:
+                    log.error("Failed to get max metric state")
+                    break
+
+                log.info("Max metric state is '{state}', expected state is '{exp}'"
+                    .format(state=state, exp=expected_state))
+
+                log.info("Configured metric value is '{val}', expected it in '{con}'"
+                    .format(val=metric_value, con=condition))
+
+                if (str(metric_value) in condition and 
+                    state.lower() == expected_state.lower()):
+                    return True
+        else:
+            log.error("Failed to get max-metric information for ospf id {id}"
+                .format(id=ospf_process_id))
+
         timeout.sleep()
+
     return False
 
 
@@ -347,6 +351,100 @@ def is_interface_igp_sync_ospf_enabled(
         timeout.sleep()
     return False
 
+
+def verify_ospf_sid_database_prefixes_advertised(device, advertising_router, allowed_prefixes,
+                                                 max_time=90, check_interval=10):
+    """ Verifies prefixes advertised by advertising_router are only allowed_prefixes
+
+        Args:
+            device ('obj'): Device to execute command on
+            advertising_router ('str'): Advertising router id
+            allowed_prefixes ('list'): Prefixes allowed to be advertised.
+                                       Can be subset of full prefix.
+            max_time ('int'): Maximum time to wait
+            check_interval ('int'): How often to check
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse("show ip ospf segment-routing sid-database")
+        except SchemaEmptyParserError:
+            return False
+
+        reqs = R(
+            ['process_id',
+            '(?P<process_id>.*)',
+            'sids',
+            '(?P<sids>.*)',
+            'sid',
+            '(?P<sid>.*)'
+            ]
+        )
+
+        found = find([out], reqs, filter_=False, all_keys=True)
+        if found:
+            key_list = GroupKeys.group_keys(
+                reqs=reqs.args, ret_num={}, source=found, all_keys=True
+            )
+
+            unexpected_prefix = False
+            for v in key_list:
+                # Get current dictionary from filtered values
+                # Current process id
+                c_process_id = v.get('process_id', None)
+                # Current SID
+                c_sid = v.get('sid', None)
+
+                # sid_dict:
+                #             'sids': {
+                #                 'total_entries': 1,
+                #                 1: {
+                #                     'sid': 1,
+                #                     'codes': 'L',
+                #                     'prefix': '10.66.12.12/32',
+                #                     'adv_rtr_id': '10.66.12.12',
+                #                     'area_id': 10.49.0.0
+                #                 }
+                #             }
+                sid_dict = out['process_id'][c_process_id]\
+                    ['sids'][c_sid]
+
+                # Current prefix for SID - Move to next SID values
+                c_prefix = sid_dict.get('prefix', None)
+
+                # Current IP address for SID - Move to next SID values
+                c_advertising_router = sid_dict.get('adv_rtr_id', None)
+
+                if c_advertising_router and c_advertising_router == advertising_router:
+                    for prefix in allowed_prefixes:
+                        if prefix in c_prefix:
+                            log.info('Found allowed prefix {}'.format(c_prefix))
+                            break
+                    else:
+                        log.info('Found prefix {}. Allowed prefixes are {}'
+                                 .format(c_prefix, allowed_prefixes))
+                        unexpected_prefix = True
+                        break
+
+            if unexpected_prefix:
+                log.info('Unexpected prefixes were found')
+                timeout.sleep()
+                continue
+
+            log.info('All advertised prefixes under router id {} are allowed'
+                     .format(advertising_router))
+            return True
+
+    return False
+
+
+
 def verify_sid_in_ospf(device, process_id=None, sid=None, code=None, ip_address=None,
     avoid_codes=None, prefix=None, max_time=90, check_interval=10,
     expected_result=True, output=None):
@@ -475,7 +573,7 @@ def verify_sid_in_ospf(device, process_id=None, sid=None, code=None, ip_address=
                     continue
 
                 # If prefix is passed as argument and is not equal to current Prefix - Move to next SID values
-                if prefix and c_prefix != prefix:
+                if prefix and prefix not in c_prefix:
                     continue
 
                 # If IP address is passed as argument and is not equal to current IP address - Move to next SID values
@@ -843,88 +941,98 @@ def is_ospf_tilfa_enabled_in_sr(
             log.info("TI-LFA is not enabled in SR")
             return False
 
-    if area and process_id and interface:
-        neighbors = (
-            output["process_id"]
-            .get(process_id, {})
-            .get("areas", {})
-            .get(area, {})
-            .get("neighbors", {})
-        )
-        for neighbor in neighbors:
-            is_enabled = neighbors[neighbor]["interface"].get(interface, False)
-            if is_enabled:
-                log.info(
-                    "TI-LFA is enabled in SR for interface {interface}".format(
-                        interface=interface
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+
+        if area and process_id and interface:
+            neighbors = (
+                output["process_id"]
+                .get(process_id, {})
+                .get("areas", {})
+                .get(area, {})
+                .get("neighbors", {})
+            )
+            for neighbor in neighbors:
+                is_enabled = neighbors[neighbor]["interface"].get(interface, False)
+                if is_enabled:
+                    log.info(
+                        "TI-LFA is enabled in SR for interface {interface}".format(
+                            interface=interface
+                        )
                     )
-                )
-                break
+                    return True
 
-    elif process_id and area:
-        is_enabled = (
-            output["process_id"]
-            .get(process_id, {})
-            .get("areas", {})
-            .get(area, False)
-        )
-        if is_enabled:
-            log.info(
-                "TI-LFA is enabled for process id {process_id} and area {area}".format(
-                    process_id=process_id, area=area
-                )
-            )
-
-    elif process_id:
-        is_enabled = (
-            output["process_id"].get(process_id, {}).get("areas", False)
-        )
-        if is_enabled:
-            log.info(
-                "TI-LFA is enabled for process id {process_id}".format(
-                    process_id=process_id
-                )
-            )
-
-    elif area:
-        for process_id in output["process_id"]:
-            is_enabled = output["process_id"][process_id]["areas"].get(
-                area, False
+        elif process_id and area:
+            is_enabled = (
+                output["process_id"]
+                .get(process_id, {})
+                .get("areas", {})
+                .get(area, False)
             )
             if is_enabled:
-                log.info("TI-LFA is enabled on area {area}".format(area=area))
-                break
-
-    elif interface:
-        for process_id in output["process_id"]:
-            for area in output["process_id"][process_id]["areas"]:
-                for neighbor in output["process_id"][process_id]["areas"][
-                    area
-                ]["neighbors"]["neighbors"]:
-                    for intf in output["process_id"][process_id]["areas"][
-                        area
-                    ]["neighbors"]["neighbors"][neighbor]["interface"]:
-                        if intf == interface:
-                            log.info(
-                                "TI-LFA is enabled in SR for interface {interface}".format(
-                                    interface=interface
-                                )
-                            )
-                            log.info("TI-LFA is enabled in SR")
-                            return True
-    else:
-        for process_id in output["process_id"]:
-            for area in output["process_id"][process_id].get("areas", {}):
                 log.info(
-                    "TI-LFA is enabled in SR for process {process_id} and area {area}".format(
+                    "TI-LFA is enabled for process id {process_id} and area {area}".format(
                         process_id=process_id, area=area
                     )
                 )
                 return True
 
-    if is_enabled:
-        log.info("TI-LFA is enabled in SR")
-        return True
+        elif process_id:
+            is_enabled = (
+                output["process_id"].get(process_id, {}).get("areas", False)
+            )
+            if is_enabled:
+                log.info(
+                    "TI-LFA is enabled for process id {process_id}".format(
+                        process_id=process_id
+                    )
+                )
+                return True
+
+        elif area:
+            for process_id in output["process_id"]:
+                is_enabled = output["process_id"][process_id]["areas"].get(
+                    area, False
+                )
+                if is_enabled:
+                    log.info("TI-LFA is enabled on area {area}".format(area=area))
+                    return True
+
+        elif interface:
+            for process_id in output["process_id"]:
+                for area in output["process_id"][process_id]["areas"]:
+                    for neighbor in output["process_id"][process_id]["areas"][
+                        area
+                    ]["neighbors"]["neighbors"]:
+                        for intf in output["process_id"][process_id]["areas"][
+                            area
+                        ]["neighbors"]["neighbors"][neighbor]["interface"]:
+                            if intf == interface:
+                                log.info(
+                                    "TI-LFA is enabled in SR for interface {interface}".format(
+                                        interface=interface
+                                    )
+                                )
+                                log.info("TI-LFA is enabled in SR")
+                                return True
+        else:
+            for process_id in output["process_id"]:
+                for area in output["process_id"][process_id].get("areas", {}):
+                    log.info(
+                        "TI-LFA is enabled in SR for process {process_id} and area {area}".format(
+                            process_id=process_id, area=area
+                        )
+                    )
+                    return True
+
+        timeout.sleep()
+        try:
+            output = device.parse(
+                "show ip ospf segment-routing protected-adjacencies"
+            )
+        except SchemaEmptyParserError:
+            log.info("TI-LFA is not enabled in SR")
+            return False
 
     log.info("TI-LFA is not enabled in SR")
     return False
@@ -1273,7 +1381,7 @@ def verify_ospf_neighbor_address_in_state(device, addresses, state, max_time=60,
     """
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
-        addresses_in_state = device.api.get_ospf_neighbor_address_in_state(device, state)
+        addresses_in_state = device.api.get_ospf_neighbor_address_in_state(state)
 
         if set(addresses).issubset(addresses_in_state):
             return True
@@ -1303,7 +1411,7 @@ def verify_ospf_neighbor_addresses_are_not_listed(device, addresses, max_time=60
     """
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
-        addresses_listed = device.api.get_ospf_neighbor_address_in_state(device)
+        addresses_listed = device.api.get_ospf_neighbor_address_in_state()
         if set(addresses).isdisjoint(addresses_listed):
             return True
 

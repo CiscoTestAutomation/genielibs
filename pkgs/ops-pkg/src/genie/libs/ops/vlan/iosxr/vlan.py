@@ -1,11 +1,11 @@
 # Genie package
-from genie.ops.base import Base
+from genie.libs.ops.vlan.vlan import Vlan as SuperVlan
 
 # genie.libs
 from genie.libs.parser.iosxr import show_ethernet
 
 
-class Vlan(Base):
+class Vlan(SuperVlan):
     '''Vlan Ops Object'''
 
     def learn(self):

@@ -267,12 +267,12 @@ class McastOutput(object):
         Mon May 29 14:37:26.421 UTC
         IP Multicast Static Routes Information
 
-         * 3001:10:10::10/128 via GigabitEthernet1/0/0/0 with nexthop 2001:11:11::10 and distance 10 
-         * 3001:10:10::11/128 via GigabitEthernet1/0/0/1 with nexthop 2001:11:11::11 and distance 11 
-         * 3001:10:10::12/128 via GigabitEthernet1/0/0/2 with nexthop 2001:11:11::12 and distance 12
-         * 3001:10:10::13/128 via GigabitEthernet1/0/0/3 with nexthop 2001:11:11::13 and distance 13
-         * 3001:10:10::14/128 via GigabitEthernet1/0/0/4 with nexthop 2001:11:11::14 and distance 14
-         * 3001:10:10::15/128 via GigabitEthernet1/0/0/5 with nexthop 2001:11:11::15 and distance 15
+         * 2001:db8:6a27:100::10/128 via GigabitEthernet1/0/0/0 with nexthop 2001:11:11::10 and distance 10 
+         * 2001:db8:6a27:100::11/128 via GigabitEthernet1/0/0/1 with nexthop 2001:11:11::11 and distance 11 
+         * 2001:db8:6a27:100::12/128 via GigabitEthernet1/0/0/2 with nexthop 2001:11:11::12 and distance 12
+         * 2001:db8:6a27:100::13/128 via GigabitEthernet1/0/0/3 with nexthop 2001:11:11::13 and distance 13
+         * 2001:db8:6a27:100::14/128 via GigabitEthernet1/0/0/4 with nexthop 2001:11:11::14 and distance 14
+         * 2001:db8:6a27:100::15/128 via GigabitEthernet1/0/0/5 with nexthop 2001:11:11::15 and distance 15
         '''
 
     PimVrfVRF1Ipv4InterfaceDetail = '''\
@@ -521,7 +521,7 @@ class McastOutput(object):
             IRMI - IR MDT Interface
 
         (*,ff00::/8)
-          RPF nbr: 150::150:150:150:150 Flags: L C RPF P
+          RPF nbr: 2001:db8:b901:0:150:150:150:150 Flags: L C RPF P
           Up: 00:04:45
           Outgoing Interface List
             Decaps6tunnel0 Flags: NS DI, Up: 00:04:40
@@ -542,8 +542,8 @@ class McastOutput(object):
           Flags: D P
           Up: 00:04:45
 
-        (1::1:1:1:2,ff15::1:1)
-          RPF nbr: 1::1:1:1:2 Flags: L RPF MT
+        (2001:db8:1:0:1:1:1:2,ff15::1:1)
+          RPF nbr: 2001:db8:1:0:1:1:1:2 Flags: L RPF MT
           MT Slot: 0/2/CPU0
           Up: 00:02:53
           Incoming Interface List
@@ -551,7 +551,7 @@ class McastOutput(object):
           Outgoing Interface List
             mdtvpn1 Flags: F NS MI MT MA, Up: 00:02:53
 
-        (4::4:4:4:5,ff15::2:1)
+        (2001:db8:10:0:4:4:4:5,ff15::2:1)
           RPF nbr: ::ffff:192.168.195.200 Flags: L RPF
           Up: 00:03:59
           Incoming Interface List
@@ -719,37 +719,37 @@ class McastOutput(object):
                     'ipv6': 
                         {'enable': True,
                         'mroute': 
-                            {'3001:10:10::10/128': 
+                            {'2001:db8:6a27:100::10/128': 
                                 {'path': 
                                     {'2001:11:11::10 GigabitEthernet1/0/0/0 10': 
                                         {'admin_distance': 10,
                                         'interface_name': 'GigabitEthernet1/0/0/0',
                                         'neighbor_address': '2001:11:11::10'}}},
-                                    '3001:10:10::11/128': 
+                                    '2001:db8:6a27:100::11/128': 
                                         {'path': 
                                             {'2001:11:11::11 GigabitEthernet1/0/0/1 11': 
                                                 {'admin_distance': 11,
                                                 'interface_name': 'GigabitEthernet1/0/0/1',
                                                 'neighbor_address': '2001:11:11::11'}}},
-                                    '3001:10:10::12/128': 
+                                    '2001:db8:6a27:100::12/128': 
                                         {'path': 
                                             {'2001:11:11::12 GigabitEthernet1/0/0/2 12': 
                                                 {'admin_distance': 12,
                                                 'interface_name': 'GigabitEthernet1/0/0/2',
                                                 'neighbor_address': '2001:11:11::12'}}},
-                                    '3001:10:10::13/128': 
+                                    '2001:db8:6a27:100::13/128': 
                                         {'path': 
                                             {'2001:11:11::13 GigabitEthernet1/0/0/3 13': 
                                                 {'admin_distance': 13,
                                                 'interface_name': 'GigabitEthernet1/0/0/3',
                                                 'neighbor_address': '2001:11:11::13'}}},
-                                    '3001:10:10::14/128': 
+                                    '2001:db8:6a27:100::14/128': 
                                         {'path': 
                                             {'2001:11:11::14 GigabitEthernet1/0/0/4 14': 
                                                 {'admin_distance': 14,
                                                 'interface_name': 'GigabitEthernet1/0/0/4',
                                                 'neighbor_address': '2001:11:11::14'}}},
-                                    '3001:10:10::15/128': 
+                                    '2001:db8:6a27:100::15/128': 
                                         {'path': 
                                             {'2001:11:11::15 GigabitEthernet1/0/0/5 15': 
                                                 {'admin_distance': 15,
@@ -1020,11 +1020,11 @@ class McastOutput(object):
                                         'uptime': '00:04:45'}}},
                             'ff15::1:1': 
                                 {'source_address': 
-                                    {'1::1:1:1:2': 
+                                    {'2001:db8:1:0:1:1:1:2': 
                                         {'flags': 'L RPF MT',
                                         'incoming_interface_list': 
                                             {'GigabitEthernet150/0/0/6': 
-                                                {'rpf_nbr': '1::1:1:1:2'}},
+                                                {'rpf_nbr': '2001:db8:1:0:1:1:1:2'}},
                                         'outgoing_interface_list': 
                                             {'mdtvpn1': 
                                                 {'flags': 'F NS MI MT MA',
@@ -1032,7 +1032,7 @@ class McastOutput(object):
                                             'uptime': '00:02:53'}}},
                             'ff15::2:1': 
                                 {'source_address': 
-                                    {'4::4:4:4:5': 
+                                    {'2001:db8:10:0:4:4:4:5': 
                                         {'flags': 'L RPF',
                                         'incoming_interface_list': 
                                             {'mdtvpn1': 

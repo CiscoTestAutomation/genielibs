@@ -1,15 +1,15 @@
 ''' 
 ACL Genie Ops Object for IOSXR - CLI.
 '''
-# Genie
-from genie.ops.base import Base
+# # super class
+from genie.libs.ops.acl.acl import Acl as SuperAcl
 from genie.ops.base import Context
 
 # Parser
 from genie.libs.parser.iosxr.show_acl import ShowAclAfiAll, \
                                         ShowAclEthernetServices
 
-class Acl(Base):
+class Acl(SuperAcl):
     '''ACL Genie Ops Object'''
     def actions_forwarding(self, item):
         '''return accept when forwarding is permit and return drop if forwarding is deny'''

@@ -50,7 +50,7 @@ class Restore(object):
                                       format(method))
 
     def restore_configuration(self, device, method, abstract, iteration=10,
-                              interval=60, compare=False, compare_exclude=[]):
+                              interval=60, compare=False, compare_exclude=[], reload_timeout=None):
         ''' Restore configuration from a checkpoint file using load replace'''
 
         if method == 'checkpoint' or method == 'config_replace':

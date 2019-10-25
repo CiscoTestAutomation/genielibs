@@ -1,5 +1,5 @@
 # Genie package
-from genie.ops.base import Base
+from genie.libs.ops.vlan.vlan import Vlan as SuperVlan
 
 # genie.libs
 #from genie.libs.parser.nxos import show_vlan, \
@@ -10,7 +10,7 @@ from genie.libs.parser.nxos import show_vlan,\
                         show_interface
 
 
-class Vlan(Base):
+class Vlan(SuperVlan):
     '''Vlan Ops Object'''
     
     def set_enable(self, item):

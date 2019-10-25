@@ -120,7 +120,7 @@ class BgpOutput(object):
                                 'best_route':
                                     {'unicast':
                                         {'nexthop':
-                                            {'fec1::1002':
+                                            {'2001:db8:8b05::1002':
                                                 {'protocol':
                                                     {'bgp':
                                                         {'uptime': '15:57:39',
@@ -666,7 +666,7 @@ class BgpOutput(object):
                         {'bgp_table_version': 28,
                         'local_router_id': '10.229.11.11',
                         'prefixes':
-                            {'2000::/8':
+                            {'2001:db8:400::/8':
                                 {'index':
                                     {1:
                                         {'next_hop': '0::',
@@ -705,7 +705,7 @@ class BgpOutput(object):
                                         'status_codes': '*>',
                                         'weight': 0}}}},
                         'v6_aggregate_address_as_set': True,
-                        'v6_aggregate_address_ipv6_address': '2000::/8',
+                        'v6_aggregate_address_ipv6_address': '2001:db8:400::/8',
                         'v6_aggregate_address_summary_only': True}}},
             'default':
                 {'address_family':
@@ -777,7 +777,7 @@ class BgpOutput(object):
                         'default_vrf': 'VRF1',
                         'local_router_id': '10.4.1.1',
                         'prefixes':
-                            {'2000::/8':
+                            {'2001:db8:400::/8':
                                 {'index':
                                     {1:
                                         {'next_hop': '0::',
@@ -817,7 +817,7 @@ class BgpOutput(object):
                                         'weight': 0}}}},
                         'route_distinguisher': '100:100',
                         'v6_aggregate_address_as_set': True,
-                        'v6_aggregate_address_ipv6_address': '2000::/8',
+                        'v6_aggregate_address_ipv6_address': '2001:db8:400::/8',
                         'v6_aggregate_address_summary_only': True}}}}}
     ShowBgpVrfAllAll_vrf1 = {
         'vrf':
@@ -1916,7 +1916,7 @@ class BgpOutput(object):
                                 'nexthop_trigger_delay_non_critical': 10000,
                                 'nexthop_trigger_enable': True,
                                 'v6_aggregate_address_as_set': True,
-                                'v6_aggregate_address_ipv6_address': '2000::/8',
+                                'v6_aggregate_address_ipv6_address': '2001:db8:400::/8',
                                 'v6_aggregate_address_summary_only': True}},
                         'cluster_id': '0.0.0.0',
                         'confederation_identifier': 0,
@@ -2004,7 +2004,7 @@ class BgpOutput(object):
                                 'nexthop_trigger_delay_non_critical': 10000,
                                 'nexthop_trigger_enable': True,
                                 'v6_aggregate_address_as_set': True,
-                                'v6_aggregate_address_ipv6_address': '2000::/8',
+                                'v6_aggregate_address_ipv6_address': '2001:db8:400::/8',
                                 'v6_aggregate_address_summary_only': True}},
                         'cluster_id': '0.0.0.0',
                         'confederation_identifier': 0,
@@ -2340,7 +2340,7 @@ class BgpOutput(object):
                             'ipv6 unicast':
                                 {'bgp_table_version': 28,
                                 'prefixes':
-                                    {'2000::/8':
+                                    {'2001:db8:400::/8':
                                         {'index':
                                             {1:
                                                 {'next_hop': '0::',
@@ -2429,7 +2429,7 @@ class BgpOutput(object):
                                 {'bgp_table_version': 41,
                                 'default_vrf': 'VRF1',
                                 'prefixes':
-                                    {'2000::/8':
+                                    {'2001:db8:400::/8':
                                         {'index':
                                             {1:
                                                 {'next_hop': '0::',

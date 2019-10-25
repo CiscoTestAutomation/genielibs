@@ -493,17 +493,18 @@ def verify_interface_port_channel_status_up_and_interfaces_bundled(
     return
 
 
-def verify_interface_bundled_interfaces_mode(device, interfaces, port_channel):
+def verify_interface_bundled_interfaces_mode(device, interfaces, port_channel, lacp_id):
     """ Verify bundled interfaces mode
 
         Args:
             device (`obj`): Device object
             interfaces (`list`): Interfaces list
             port_channel (`str`): Port channel interface
+            lacp_id (`int`): lacp ID
         Returns:
             None
     """
-    out = device.parse("show lacp 1 internal")
+    out = device.parse("show lacp {id} internal".format(id=lacp_id))
 
     intfs_list = interfaces[0:3]
     mode_list = ["S", "S", "S", "F"]

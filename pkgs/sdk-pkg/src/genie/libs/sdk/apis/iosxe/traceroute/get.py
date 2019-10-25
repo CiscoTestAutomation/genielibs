@@ -13,19 +13,38 @@ from genie.libs.parser.iosxe.traceroute import Traceroute
 log = logging.getLogger(__name__)
 
 
-def get_traceroute_parsed_output(device, prefix):
+def get_traceroute_parsed_output(device, addr, vrf=None, proto=None, ingress=None, source=None,
+                                 dscp=None, numeric=None, timeout=None, probe=None,
+                                 minimum_ttl=None, maximum_ttl=None, port=None, style=None):
     """ Get parsed output of traceroute command
         Args:
             device ('obj'): Device object
-            prefix ('str'): Prefix address
+            addr ('str'): Destination address
+            proto ('str'): Protocol(ip/ipv6)
+            ingress ('str'): Ingress traceroute
+            source ('str'): Source address or interface
+            dscp ('int'): DSCP Value
+            numeric ('str'): Numeric display
+            timeout ('int'): Timeout in seconds
+            probe ('int'): Probe count
+            minimum_ttl ('int'): Minimum Time to Live
+            maximum_ttl ('int'): Maximum Time to Live
+            port ('int'): Port Number
+            style ('str'): Loose, Strict, Record, Timestamp, Verbose
+
         Returns:
             Dictionary: Parsed output of traceroute command
         Raises:
             None
     """
-
+    # kwargs is used to pass args that aren't "None" to traceroute()
+    kwargs = {k: v for k, v in locals().items() if v}
+    kwargs.pop('device')
+    if vrf:
+        kwargs.pop('vrf')
+        kwargs['command'] = 'traceroute vrf {}'.format(vrf)
     try:
-        output = device.traceroute(addr=prefix)
+        output = device.traceroute(**kwargs)
     except SubCommandFailure as e:
         log.info("Could not find any traceroute information")
         return False
@@ -36,14 +55,14 @@ def get_traceroute_parsed_output(device, prefix):
     except SchemaEmptyParserError as e:
         log.info(
             "Could find any traceroute information for prefix {address}".format(
-                address=prefix
+                address=addr
             )
         )
         return None
 
     return parsed_ouput
 
-def get_traceroute_mpls_label_to_prefix(device, prefix):
+def get_traceroute_mpls_label_to_prefix(device, prefix, timeout=None):
     """ Get traceroute label to prefix address
         Args:
             device ('obj'): Device object
@@ -60,7 +79,7 @@ def get_traceroute_mpls_label_to_prefix(device, prefix):
         )
     )
 
-    parsed_output = get_traceroute_parsed_output(device=device, prefix=prefix)
+    parsed_output = get_traceroute_parsed_output(device=device, addr=prefix, timeout=timeout)
 
     if not parsed_output:
         return None
@@ -78,10 +97,11 @@ def get_traceroute_mpls_label_to_prefix(device, prefix):
                 .get(index_path, {})
                 .get("label_info", {})
                 .get("MPLS", {})
-                .get("label", {})
+                .get("label")
             )
-            log.info("Found label {label}".format(label=label))
-            return int(label)
+            if label:
+                log.info("Found label {label}".format(label=label))
+                return int(label.split('/')[0])
 
     log.info(
         "Could not find any MPLS label to prefix {prefix}".format(

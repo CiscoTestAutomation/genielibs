@@ -3,10 +3,10 @@ RoutePolicy Genie Ops Object for IOSXE - CLI.
 '''
 
 # Genie
-from genie.ops.base import Base
+from genie.libs.ops.route_policy.route_policy import RoutePolicy as SuperRoutePolicy
 
 
-class RoutePolicy(Base):
+class RoutePolicy(SuperRoutePolicy):
     '''RoutePolicy Genie Ops Object'''
 
     def learn(self):

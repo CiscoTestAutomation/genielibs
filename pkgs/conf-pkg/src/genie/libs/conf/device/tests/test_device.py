@@ -36,9 +36,6 @@ class test_device(TestCase):
             self.assertIsInstance(dev1, XbuDevice)
             self.assertIs(type(dev1), XbuDevice)
 
-            with self.assertWarns(UnsupportedDeviceOsWarning,
-                                  msg='Device PE1 with OS \'foo\'; Extended Device functionality will not be available: mandatory field \'os\' was  not given in the yaml file'):
-                dev1 = Device(name='PE1', os='foo')
             self.assertIsInstance(dev1, Device)
             self.assertIsInstance(dev1, XbuDevice)
             self.assertIs(type(dev1), XbuDevice)

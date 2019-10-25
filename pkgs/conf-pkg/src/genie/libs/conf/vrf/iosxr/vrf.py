@@ -7,6 +7,8 @@
 #             def build_config/build_unconfig:
 #             class AddressFamilyAttributes:
 #                 def build_config/build_unconfig:
+#                 class RouteTargetAttributes:
+#                     def build_config/build_unconfig:
 
 from abc import ABC
 import warnings
@@ -38,7 +40,7 @@ class Vrf(ABC):
 
                 # iosxr: vrf vrf1 / address-family ipv4 unicast (config-vrf-af)
                 for key, sub, attributes2 in attributes.mapping_items(
-                        'address_family_attr', keys=self.address_families, sort=True):
+                        'address_family_attr', keys=self.address_family_attr, sort=True):
                     configurations.append_block(
                         sub.build_config(apply=False, attributes=attributes2, unconfig=unconfig))
 
@@ -145,8 +147,42 @@ class Vrf(ABC):
                                 warnings.warn('vrf maximum prefix reinstall threshold', UnsupportedAttributeWarning)
                         configurations.append_line(cfg)
 
+                    # loop over all route-target
+                    for sub, attributes2 in attributes.mapping_values(
+                            'route_target_attr', keys=self.route_target_attr, sort=True):
+                        configurations.append_block(sub.build_config(apply=False,
+                            attributes=attributes2, unconfig=unconfig, **kwargs))
+
                 return str(configurations)
 
             def build_unconfig(self, apply=True, attributes=None, **kwargs):
                 return self.build_config(apply=apply, attributes=attributes, unconfig=False, **kwargs)
+
+
+            class RouteTargetAttributes(ABC):
+
+                def build_config(self, apply=True, attributes=None,
+                                 unconfig=False, **kwargs):
+                    assert not apply
+                    attributes = AttributesHelper(self, attributes)
+                    configurations = CliConfigBuilder(unconfig=unconfig)
+
+                    # route-target <rt_type> <rt>
+                    if attributes.value('rt_type'):
+                        if attributes.value('rt_type').value == 'both':
+                            configurations.append_line(
+                                'import route-target {rt}'.format(rt=self.rt))
+                            configurations.append_line(
+                                'export route-target {rt}'.format(rt=self.rt))
+                        else:
+                            configurations.append_line(
+                                '{type} route-target {rt}'.format(
+                                    rt=self.rt,
+                                    type=attributes.value('rt_type').value))
+
+                    return str(configurations)
+
+                def build_unconfig(self, apply=True, attributes=None, **kwargs):
+                    return self.build_config(apply=apply, attributes=attributes,
+                                             unconfig=True, **kwargs)
 

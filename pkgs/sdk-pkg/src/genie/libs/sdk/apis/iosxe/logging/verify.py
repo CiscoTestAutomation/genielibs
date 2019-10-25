@@ -31,19 +31,29 @@ def is_logging_string_matching_regex_logged(device, oldest_timestamp, regex):
 
     p1 = re.compile(regex)
     FMT = "%b %d %H:%M:%S.%f"
+    FMT1 = "%b %d %H:%M:%S"
 
     for line in reversed(logs):
         line = line.strip()
 
         m = p1.match(line)
         if m:
-            tdelta = datetime.strptime(
-                m.groupdict()["timestamp"], FMT
-            ) - datetime.strptime(oldest_timestamp, FMT)
+            timestamp = m.groupdict()["timestamp"]
+            if '.' in timestamp:
+                t1 = datetime.strptime(timestamp, FMT)
+            else:
+                t1 = datetime.strptime(timestamp, FMT1)
+
+            if '.' in oldest_timestamp:
+                t2 = datetime.strptime(oldest_timestamp, FMT)
+            else:
+                t2 = datetime.strptime(oldest_timestamp, FMT1)
+
+            tdelta = t1 - t2
             if tdelta.days < 0:
                 return False
             else:
-                return m.groupdict()["timestamp"]
+                return timestamp
 
     return False
 
@@ -85,10 +95,11 @@ def is_logging_ospf_neighbor_down_logged(*args, **kwargs):
     """
     log.info("Checking logs for OSPF-5-ADJCHG: Neighbor Down: BFD node down")
 
-    # Jan 24 18:13:10.814 EST: %OSPF-5-ADJCHG: Process 1111, Nbr 524.524.524.524 on GigabitEthernet1 from FULL to DOWN, Neighbor Down: BFD node down
-    # *Jan 24 18:13:10.814 EST: %OSPF-5-ADJCHG: Process 1111, Nbr 524.524.524.524 on GigabitEthernet1 from FULL to DOWN, Neighbor Down: BFD node down
+    # Jan 24 18:13:10.814 EST: %OSPF-5-ADJCHG: Process 1111, Nbr 10.24.24.24 on GigabitEthernet1 from FULL to DOWN, Neighbor Down: BFD node down
+    # *Jan 24 18:13:10.814 EST: %OSPF-5-ADJCHG: Process 1111, Nbr 10.24.24.24 on GigabitEthernet1 from FULL to DOWN, Neighbor Down: BFD node down
+    # Jan 24 18:13:10.814: %OSPF-5-ADJCHG: Process 1111, Nbr 10.24.24.24 on GigabitEthernet1 from FULL to DOWN, Neighbor Down: BFD node down
     return is_logging_string_matching_regex_logged(
-        regex="^\*?(?P<timestamp>\w+ +\d+ +\S+) +\w+: +%OSPF-5-ADJCHG.*FULL +to +DOWN, +Neighbor +Down: +BFD +node +down$",
+        regex=r"^\*?(?P<timestamp>\w+ +\d+ +\S+)( +\w+)?: +%OSPF-5-ADJCHG.*FULL +to +DOWN, +Neighbor +Down: +BFD +node +down$",
         *args,
         **kwargs
     )
@@ -110,8 +121,9 @@ def is_logging_static_route_down_logged(*args, **kwargs):
 
     # Jan 24 18:13:10.814 EST: IP-ST(default):  10.4.1.1/32 [1], GigabitEthernet2 Path = 4 6, no change, not active state
     # *Jan 24 18:13:10.814 EST: IP-ST(default):  10.4.1.1/32 [1], GigabitEthernet3 Path = 4 6, no change, not active state
+    # Oct 24 09:48:52.617: IP-ST(default):  1.1.1.1/32 [1], GigabitEthernet0/2/1 Path = 1 8, no change, not active state
     return is_logging_string_matching_regex_logged(
-        regex="^\*?(?P<timestamp>\w+ +\d+ +\S+) +\w+: +IP-ST.*not +active +state$",
+        regex=r"^\*?(?P<timestamp>\w+ +\d+ +\S+)( +\w+)?: +IP-ST.*not +active +state$",
         *args,
         **kwargs
     )

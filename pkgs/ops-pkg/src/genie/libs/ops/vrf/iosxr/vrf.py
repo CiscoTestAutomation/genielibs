@@ -3,14 +3,14 @@ Vrf Genie Ops Object for IOSXR - CLI.
 '''
 
 # Genie
-from genie.ops.base import Base
+from genie.libs.ops.vrf.vrf import Vrf as SuperVrf
 from genie.ops.base import Context
 
 # iosxe show_vrf
 from genie.libs.parser.iosxr.show_vrf import ShowVrfAllDetail
 
 
-class Vrf(Base):
+class Vrf(SuperVrf):
     '''Vrf Genie Ops Object'''
 
     def learn(self, vrf=''):

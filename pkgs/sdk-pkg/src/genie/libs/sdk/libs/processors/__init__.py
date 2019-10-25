@@ -1,3 +1,4 @@
 from .processors import send_arp, \
                         send_ns, \
-                        apply_traffic
+                        apply_traffic, \
+                        create_genie_statistics_view

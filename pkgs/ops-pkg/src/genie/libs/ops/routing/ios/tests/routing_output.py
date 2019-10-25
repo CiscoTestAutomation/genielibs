@@ -201,7 +201,7 @@ class RouteOutput(object):
               Last updated 22:57:34 04 December 2017
              via GigabitEthernet0/3, directly connected
               Last updated 22:57:43 04 December 2017
-        B   20:0:0:1::/64 [200/1]
+        B   2001:db8:400:1::/64 [200/1]
             via 192.168.51.1%default, indirectly connected
             Last updated 09:43:27 06 December 2017
     '''
@@ -216,13 +216,13 @@ class RouteOutput(object):
                OE2 - OSPF ext 2, ON1 - OSPF NSSA ext 1, ON2 - OSPF NSSA ext 2
                la - LISP alt, lr - LISP site-registrations, ld - LISP dyn-eid
                a - Application
-        O   10::/64 [110/1]
+        O   2001:db8:100::/64 [110/1]
              via FE80::211:1FF:FE00:1, GigabitEthernet0/0/2.100
               Last updated 09:42:39 06 December 2017
-        O   10:0:0:1::/64 [110/1]
+        O   2001:db8:100:1::/64 [110/1]
              via FE80::211:1FF:FE00:1, GigabitEthernet0/0/2.100
               Last updated 09:42:39 06 December 2017
-        O   10:0:0:2::/64 [110/1]
+        O   2001:db8:100:4::/64 [110/1]
              via FE80::211:1FF:FE00:1, GigabitEthernet0/0/2.100
               Last updated 09:42:39 06 December 2017
        '''
@@ -235,7 +235,7 @@ class RouteOutput(object):
                "address_family": {
                     "ipv6": {
                          "routes": {
-                              "20:0:0:1::/64": {
+                              "2001:db8:400:1::/64": {
                                    "active": True,
                                    "metric": 1,
                                    "source_protocol": "bgp",
@@ -250,7 +250,7 @@ class RouteOutput(object):
                                         }
                                    },
                                    "route_preference": 200,
-                                   "route": "20:0:0:1::/64"
+                                   "route": "2001:db8:400:1::/64"
                               },
                               "2001:3:3:3::3/128": {
                                    "route_preference": 1,
@@ -489,7 +489,7 @@ class RouteOutput(object):
                "address_family": {
                     "ipv6": {
                          "routes": {
-                              "10:0:0:1::/64": {
+                              "2001:db8:100:1::/64": {
                                    "active": True,
                                    "next_hop": {
                                         "next_hop_list": {
@@ -504,10 +504,10 @@ class RouteOutput(object):
                                    "metric": 1,
                                    "route_preference": 110,
                                    "source_protocol_codes": "O",
-                                   "route": "10:0:0:1::/64",
+                                   "route": "2001:db8:100:1::/64",
                                    "source_protocol": "ospf"
                               },
-                              "10:0:0:2::/64": {
+                              "2001:db8:100:4::/64": {
                                    "active": True,
                                    "next_hop": {
                                         "next_hop_list": {
@@ -522,10 +522,10 @@ class RouteOutput(object):
                                    "metric": 1,
                                    "route_preference": 110,
                                    "source_protocol_codes": "O",
-                                   "route": "10:0:0:2::/64",
+                                   "route": "2001:db8:100:4::/64",
                                    "source_protocol": "ospf"
                               },
-                              "10::/64": {
+                              "2001:db8:100::/64": {
                                    "active": True,
                                    "next_hop": {
                                         "next_hop_list": {
@@ -540,7 +540,7 @@ class RouteOutput(object):
                                    "metric": 1,
                                    "route_preference": 110,
                                    "source_protocol_codes": "O",
-                                   "route": "10::/64",
+                                   "route": "2001:db8:100::/64",
                                    "source_protocol": "ospf"
                               }
                          }

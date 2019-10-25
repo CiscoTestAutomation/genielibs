@@ -33,7 +33,7 @@ class Ospf(SuperOspf):
                 return True
         return False
 
-    def learn(self):
+    def learn(self, vrf='all', interface='', neighbor=''):
         '''Learn Ospf object'''
 
         # feature_ospf
@@ -60,7 +60,7 @@ class Ospf(SuperOspf):
         self.add_leaf(cmd=ShowIpOspf,
                       src=info_src+'[router_id]',
                       dest=info_dest+'[router_id]',
-                      vrf='all')
+                      vrf=vrf)
 
         #  maximum_interfaces - N/A
 
@@ -76,7 +76,7 @@ class Ospf(SuperOspf):
         self.add_leaf(cmd=ShowIpOspf,
                       src=info_src+'[preference][single_value][all]',
                       dest=info_dest+'[preference][single_value][all]',
-                      vrf='all')
+                      vrf=vrf)
         
         # redistribution
         #   max_prefix - N/A
@@ -111,7 +111,7 @@ class Ospf(SuperOspf):
         self.add_leaf(cmd=ShowIpOspf,
                       src=info_src+'[nsr][enable]',
                       dest=info_dest+'[nsr][enable]',
-                      vrf='all')
+                      vrf=vrf)
 
         # graceful_restart
         #   gr_type
@@ -124,13 +124,13 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspf,
                           src=info_src+'[graceful_restart][ietf][{key}]'.format(key=key),
                           dest=info_dest+'[graceful_restart][ietf][{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf)
         
         # enable
         self.add_leaf(cmd=ShowIpOspf,
                       src=info_src+'[enable]',
                       dest=info_dest+'[enable]',
-                      vrf='all')
+                      vrf=vrf)
 
         # auto_cost
         #   enable
@@ -139,14 +139,14 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspf,
                           src=info_src+'[auto_cost][{key}]'.format(key=key),
                           dest=info_dest+'[auto_cost][{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf)
 
         # spf_control
         #   paths
         self.add_leaf(cmd=ShowIpOspf,
                       src=info_src+'[spf_control][paths]',
                       dest=info_dest+'[spf_control][paths]',
-                      vrf='all')
+                      vrf=vrf)
 
         # spf_control
         #   throttle
@@ -163,14 +163,14 @@ class Ospf(SuperOspf):
                 self.add_leaf(cmd=ShowIpOspf,
                               src=info_src+'[spf_control][throttle][{key1}][{key2}]'.format(key1=key1, key2=key2),
                               dest=info_dest+'[spf_control][throttle][{key1}][{key2}]'.format(key1=key1, key2=key2),
-                              vrf='all')
+                              vrf=vrf)
 
         # database_control
         #   max_lsa
         self.add_leaf(cmd=ShowIpOspf,
                       src=info_src+'[database_control][max_lsa]',
                       dest=info_dest+'[database_control][max_lsa]',
-                      vrf='all')
+                      vrf=vrf)
 
         # stub_router
         #   always
@@ -182,7 +182,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspf,
                           src=info_src+'[stub_router][always][{key}]'.format(key=key),
                           dest=info_dest+'[stub_router][always][{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf)
         # stub_router
         #   on_startup
         #     on_startup
@@ -193,7 +193,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspf,
                           src=info_src+'[stub_router][on_startup][{key}]'.format(key=key),
                           dest=info_dest+'[stub_router][on_startup][{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf)
 
         # stub_router
         #   on_switchover - N/A
@@ -232,7 +232,7 @@ class Ospf(SuperOspf):
         self.add_leaf(cmd=ShowIpOspf,
                       src=info_src+'[bfd][enable]',
                       dest=info_dest+'[bfd][enable]',
-                      vrf='all')
+                      vrf=vrf)
 
         # log_adjacency_changes - N/A
         #   enable - N/A
@@ -261,7 +261,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspf,
                           src=area_src+'[{key}]'.format(key=key),
                           dest=area_dest+'[{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf)
 
         # bfd - N/A
         #   enable
@@ -284,7 +284,7 @@ class Ospf(SuperOspf):
         self.add_leaf(cmd=ShowIpOspfMplsLdpInterface,
                       src=area_src+'[mpls][ldp][autoconfig]',
                       dest=area_dest+'[mpls][ldp][auto_config]',
-                      vrf='all')
+                      vrf=vrf, interface=interface)
 
         # mpls
         #   ldp
@@ -292,7 +292,7 @@ class Ospf(SuperOspf):
         self.add_leaf(cmd=ShowIpOspfMplsLdpInterface,
                       src=area_src+'[mpls][ldp][igp_sync]',
                       dest=area_dest+'[mpls][ldp][sync]',
-                      vrf='all')
+                      vrf=vrf, interface=interface)
 
         # ranges
         #   range_name
@@ -303,7 +303,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspf,
                               src=area_src+'[ranges][(?P<range>.*)][{key}]'.format(key=key),
                               dest=area_dest+'[ranges][(?P<range>.*)][{key}]'.format(key=key),
-                              vrf='all')
+                              vrf=vrf)
 
         # statistics
         #   spf_runs_count
@@ -316,7 +316,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspf,
                           src=area_src+'[statistics][{key}]'.format(key=key),
                           dest=area_dest+'[statistics][{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf)
 
         # passive - N/A
         # mtu_ignore - N/A
@@ -352,19 +352,19 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=cmd,
                           src=area_src+'[database][lsa_types][(?P<lsa_type>.*)][lsa_type]',
                           dest=area_dest+'[database][lsa_types][(?P<lsa_type>.*)][lsa_type]',
-                          vrf='all')
+                          vrf=vrf)
 
             # lsa_id
             self.add_leaf(cmd=cmd,
                           src=db_src+'[lsa_id]',
                           dest=db_dest+'[lsa_id]',
-                          vrf='all')
+                          vrf=vrf)
 
             # adv_router
             self.add_leaf(cmd=cmd,
                           src=db_src+'[adv_router]',
                           dest=db_dest+'[adv_router]',
-                          vrf='all')
+                          vrf=vrf)
             
             # decoded_completed - N/A
             # raw_data - N/A
@@ -386,7 +386,7 @@ class Ospf(SuperOspf):
                 self.add_leaf(cmd=cmd,
                               src=db_src+'[ospfv2][header][{key}]'.format(key=key),
                               dest=db_dest+'[ospfv2][header][{key}]'.format(key=key),
-                              vrf='all')
+                              vrf=vrf)
 
         # ======================================================================
         #                       database router: body
@@ -407,7 +407,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfDatabaseRouterDetail,
                           src=rbody_src+'[{key}]'.format(key=key),
                           dest=rbody_dest+'[{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf)
 
         # body
         #  router
@@ -427,7 +427,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfDatabaseRouterDetail,
                           src=rbody_links_src+'[{key}]'.format(key=key),
                           dest=rbody_links_dest+'[{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf)
 
         # body
         #  router
@@ -451,7 +451,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfDatabaseRouterDetail,
                           src=rbody_links_topo_src+'[{key}]'.format(key=key),
                           dest=rbody_links_topo_dest+'[{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf)
 
         # ======================================================================
         #                       database network: body
@@ -473,7 +473,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfDatabaseNetworkDetail,
                           src=nbody_src+'[{key}]'.format(key=key),
                           dest=nbody_dest+'[{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf)
 
         # ======================================================================
         #                       database summary: body
@@ -492,7 +492,7 @@ class Ospf(SuperOspf):
         self.add_leaf(cmd=ShowIpOspfDatabaseSummaryDetail,
                           src=sbody_src+'[network_mask]',
                           dest=sbody_dest+'[network_mask]',
-                          vrf='all')
+                          vrf=vrf)
 
         # ospfv2
         #   body
@@ -513,7 +513,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfDatabaseSummaryDetail,
                           src=sbody_topo_src+'[{key}]'.format(key=key),
                           dest=sbody_topo_dest+'[{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf)
 
         # ======================================================================
         #                       database external: body
@@ -532,7 +532,7 @@ class Ospf(SuperOspf):
         self.add_leaf(cmd=ShowIpOspfDatabaseExternalDetail,
                       src=ebody_src+'[network_mask]',
                       dest=ebody_dest+'[network_mask]',
-                      vrf='all')
+                      vrf=vrf)
 
         # ospfv2
         #   body
@@ -557,7 +557,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfDatabaseExternalDetail,
                           src=ebody_topo_src+'[{key}]'.format(key=key),
                           dest=ebody_topo_dest+'[{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf)
 
         # ======================================================================
         #                       database opaque-area: body
@@ -627,7 +627,7 @@ class Ospf(SuperOspf):
         self.add_leaf(cmd=ShowIpOspfDatabaseOpaqueAreaDetail,
                       src=obody_src+'[link_tlvs]',
                       dest=obody_dest+'[link_tlvs]',
-                      vrf='all')
+                      vrf=vrf)
 
         # ======================================================================
         #                           virtual_links
@@ -653,7 +653,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfVirtualLinks,
                           src=vl_src+'[{key}]'.format(key=key),
                           dest=vl_dest+'[{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf)
 
         # virtual_links
         #   vl_link_name
@@ -668,8 +668,8 @@ class Ospf(SuperOspf):
         self.add_leaf(cmd=ShowIpOspfInterface,
                       src=vl_src+'[authentication][auth_trailer_key_chain][key_chain]',
                       dest=vl_dest+'[authentication][auth_trailer_key_chain][key_chain]',
-                      vrf='all')
-        
+                      vrf=vrf, interface=interface)
+
         # virtual_links
         #   vl_link_name
         #     authentication
@@ -679,7 +679,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfInterface,
                           src=vl_src+'[authentication][auth_trailer_key][{key}]'.format(key=key),
                           dest=vl_dest+'[authentication][auth_trailer_key][{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf, interface=interface)
 
         # virtual_links
         #   vl_link_name
@@ -691,7 +691,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfVirtualLinks,
                           src=vl_src+'[{key}]'.format(key=key),
                           dest=vl_dest+'[{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf)
 
         # virtual_links
         #   vl_link_name
@@ -704,7 +704,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfInterface,
                           src=vl_src+'[{key}]'.format(key=key),
                           dest=vl_dest+'[{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf, interface=interface)
 
         # virtual_links
         #   vl_link_name
@@ -721,7 +721,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfInterface,
                           src=vl_src+'[statistics][{key}]'.format(key=key),
                           dest=vl_dest+'[statistics][{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf, interface=interface)
 
         # virtual_links
         #   vl_link_name
@@ -740,7 +740,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfNeighborDetail,
                           src=vl_src+'[neighbors][(?P<neighbor>(.*))][{key}]'.format(key=key),
                           dest=vl_dest+'[neighbors][(?P<neighbor>(.*))][{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf, neighbor=neighbor)
 
         # virtual_links
         #   vl_link_name
@@ -752,7 +752,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfNeighborDetail,
                           src=vl_src+'[neighbors][(?P<neighbor>(.*))][statistics][{key}]'.format(key=key),
                           dest=vl_dest+'[neighbors][(?P<neighbor>(.*))][statistics][{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf, neighbor=neighbor)
 
         # ======================================================================
         #                           sham_links
@@ -780,7 +780,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfShamLinks,
                           src=sl_src+'[{key}]'.format(key=key),
                           dest=sl_dest+'[{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf)
 
         # sham_links
         #   sl_link_name
@@ -795,7 +795,7 @@ class Ospf(SuperOspf):
         self.add_leaf(cmd=ShowIpOspfInterface,
                       src=sl_src+'[authentication][auth_trailer_key_chain][key_chain]',
                       dest=sl_dest+'[authentication][auth_trailer_key_chain][key_chain]',
-                      vrf='all')
+                      vrf=vrf, interface=interface)
         
         # sham_links
         #   sl_link_name
@@ -806,7 +806,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfInterface,
                           src=sl_src+'[authentication][auth_trailer_key][{key}]'.format(key=key),
                           dest=sl_dest+'[authentication][auth_trailer_key][{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf, interface=interface)
 
         # sham_links
         #   sl_link_name
@@ -819,7 +819,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfShamLinks,
                           src=sl_src+'[{key}]'.format(key=key),
                           dest=sl_dest+'[{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf)
 
         # sham_links
         #   sl_link_name
@@ -831,7 +831,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfInterface,
                           src=sl_src+'[{key}]'.format(key=key),
                           dest=sl_dest+'[{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf, interface=interface)
 
         # sham_links
         #   sl_link_name
@@ -848,7 +848,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfInterface,
                           src=sl_src+'[statistics][{key}]'.format(key=key),
                           dest=sl_dest+'[statistics][{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf, interface=interface)
 
         # sham_links
         #   sl_link_name
@@ -867,7 +867,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfNeighborDetail,
                           src=sl_src+'[neighbors][(?P<neighbor>(.*))][{key}]'.format(key=key),
                           dest=sl_dest+'[neighbors][(?P<neighbor>(.*))][{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf, neighbor=neighbor)
 
         # sham_links
         #   sl_link_name
@@ -879,7 +879,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfNeighborDetail,
                           src=sl_src+'[neighbors][(?P<neighbor>(.*))][statistics][{key}]'.format(key=key),
                           dest=sl_dest+'[neighbors][(?P<neighbor>(.*))][statistics][{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf, neighbor=neighbor)
 
         # ======================================================================
         #                           interfaces
@@ -887,8 +887,12 @@ class Ospf(SuperOspf):
         
         # interfaces
         #   interface
-        intf_src = area_src + '[interfaces][(?P<intf>.*)]'
-        intf_dest = area_dest + '[interfaces][(?P<intf>.*)]'
+        if interface:
+            intf_src = area_src + '[interfaces][{interface}]'.format(interface=interface)
+            intf_dest = area_dest + '[interfaces][{interface}]'.format(interface=interface)
+        else:
+            intf_src = area_src + '[interfaces][(?P<intf>.*)]'
+            intf_dest = area_dest + '[interfaces][(?P<intf>.*)]'
 
         # interfaces
         #   interface
@@ -902,7 +906,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfInterface,
                           src=intf_src+'[{key}]'.format(key=key),
                           dest=intf_dest+'[{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf, interface=interface)
         
         # interfaces
         #   interface
@@ -924,7 +928,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfInterface,
                           src=intf_src+'[bfd][{key}]'.format(key=key),
                           dest=intf_dest+'[bfd][{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf, interface=interface)
 
         # interfaces
         #   interface
@@ -941,7 +945,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfInterface,
                           src=intf_src+'[{key}]'.format(key=key),
                           dest=intf_dest+'[{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf, interface=interface)
 
         # interfaces
         #   interface
@@ -951,7 +955,7 @@ class Ospf(SuperOspf):
         self.add_leaf(cmd=ShowIpOspfInterface,
                       src=intf_src+'[authentication][auth_trailer_key_chain][key_chain]',
                       dest=intf_dest+'[authentication][auth_trailer_key_chain][key_chain]',
-                      vrf='all')
+                      vrf=vrf, interface=interface)
         
         # interfaces
         #   interface
@@ -962,7 +966,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfInterface,
                           src=intf_src+'[authentication][auth_trailer_key][{key}]'.format(key=key),
                           dest=intf_dest+'[authentication][auth_trailer_key][{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf, interface=interface)
 
         # interfaces
         #   interface
@@ -981,7 +985,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfInterface,
                           src=intf_src+'[{key}]'.format(key=key),
                           dest=intf_dest+'[{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf, interface=interface)
 
         # interfaces
         #   interface
@@ -998,7 +1002,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfInterface,
                           src=intf_src+'[statistics][{key}]'.format(key=key),
                           dest=intf_dest+'[statistics][{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf, interface=interface)
 
         # interfaces
         #   interface
@@ -1018,7 +1022,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfNeighborDetail,
                           src=intf_src+'[neighbors][(?P<neighbor>(.*))][{key}]'.format(key=key),
                           dest=intf_dest+'[neighbors][(?P<neighbor>(.*))][{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf, neighbor=neighbor)
 
         # interfaces
         #   interface
@@ -1030,7 +1034,7 @@ class Ospf(SuperOspf):
             self.add_leaf(cmd=ShowIpOspfNeighborDetail,
                           src=intf_src+'[neighbors][(?P<neighbor>(.*))][statistics][{key}]'.format(key=key),
                           dest=intf_dest+'[neighbors][(?P<neighbor>(.*))][statistics][{key}]'.format(key=key),
-                          vrf='all')
+                          vrf=vrf, neighbor=neighbor)
 
         # ======================================================================
         #                          BUILD STRUCTURE

@@ -2,11 +2,11 @@
 Spanning-tree Genie Ops Object for IOSXE - CLI.
 '''
 # Genie
-from genie.ops.base import Base
+from genie.libs.ops.stp.stp import Stp as SuperStp
 from genie.ops.base import Context
 
 
-class Stp(Base):
+class Stp(SuperStp):
     '''Spanning-tree Genie Ops Object'''
 
     def choose_one_max_hop(self, item):

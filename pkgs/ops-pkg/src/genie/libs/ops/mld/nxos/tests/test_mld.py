@@ -90,7 +90,7 @@ class test_mld(unittest.TestCase):
         # info - vrf VRF1
         self.assertEqual(mld.info['vrfs']['VRF1']['interfaces']\
                                   ['Ethernet2/2']['group']\
-                                  ['fffe::2']['last_reporter'], '2001:db1:1::1')
+                                  ['fffe::2']['last_reporter'], '2001:db8:8404:751c::1')
 
     def test_incomplete_output(self):
         self.maxDiff = None

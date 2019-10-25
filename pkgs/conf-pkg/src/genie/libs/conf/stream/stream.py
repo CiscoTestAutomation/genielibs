@@ -6,6 +6,7 @@ __all__ = (
 
 import functools
 import collections
+from collections import abc
 import itertools
 import enum
 import logging
@@ -69,7 +70,7 @@ def _asdict(self):
             continue
         if getattr(v, 'asdict', None):
             v = v.asdict()
-        elif isinstance(v, collections.Mapping):
+        elif isinstance(v, abc.Mapping):
             v = {k2: v2.asdict() if getattr(v2, 'asdict', None) else v2
                  for k2, v2 in v.items()}
         d[k] = v

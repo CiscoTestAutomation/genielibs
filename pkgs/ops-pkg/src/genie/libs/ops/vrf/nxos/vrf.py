@@ -3,14 +3,14 @@ Vrf Genie Ops Object for NXOS - CLI.
 '''
 
 # Genie
-from genie.ops.base import Base
+from genie.libs.ops.vrf.vrf import Vrf as SuperVrf
 from genie.ops.base import Context
 
 # nxos show_vrf
 from genie.libs.parser.nxos.show_vrf import ShowVrfDetail
 
 
-class Vrf(Base):
+class Vrf(SuperVrf):
     '''Vrf Genie Ops Object'''
 
     def keys(self, item):

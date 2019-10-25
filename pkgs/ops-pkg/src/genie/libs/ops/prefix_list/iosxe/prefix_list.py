@@ -4,8 +4,7 @@ Prefix-list Genie Ops Object for IOSXE - CLI.
 
 import re
 
-# Genie
-from genie.ops.base import Base
+from genie.libs.ops.prefix_list.prefix_list import PrefixList as SuperPrefixList
 from genie.ops.base import Context
 
 # iosxe show_prefix_list
@@ -13,7 +12,7 @@ from genie.libs.parser.iosxe.show_prefix_list import ShowIpPrefixListDetail, \
                                           ShowIpv6PrefixListDetail
 
 
-class PrefixList(Base):
+class PrefixList(SuperPrefixList):
     '''Prefix-list Genie Ops Object'''
 
     def learn(self):

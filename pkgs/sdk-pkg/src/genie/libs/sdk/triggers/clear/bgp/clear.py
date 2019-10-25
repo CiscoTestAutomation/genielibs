@@ -270,7 +270,7 @@ class TriggerClearBgpNeighborSoftIpv6(TriggerClear):
                       num_values={'vrf':'1', 'instance':'1','neighbor':'1'})
 
 
-class TriggerClearIpRouteAll(TriggerClearBgp):
+class TriggerClearIpRouteCheckBgp(TriggerClearBgp):
 
     # Argument with dynamic value for verify callable
     # As verify callable can be re-used in multiple triggers

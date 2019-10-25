@@ -202,18 +202,22 @@ def get_routing_routes(device, vrf, address_family):
             KeyError
 
     """
+    # only accept ipv4 address family
+    address_family = address_family.split()[0]
     try:
         out = device.parse("show ip route vrf {}".format(vrf))
     except SchemaEmptyParserError:
-        raise SchemaEmptyParserError(
-            "Parser did not return any routes for " "vrf {vrf}".format(vrf=vrf)
+        log.error(
+            "Parser did not return any routes for vrf {vrf}".format(vrf=vrf)
         )
+        return None
     try:
         routes_received = out["vrf"][vrf]["address_family"][address_family][
             "routes"
         ]
     except KeyError as e:
-        raise KeyError("Key issue with exception : {}".format(str(e)))
+        log.error("Key issue with exception : {}".format(str(e)))
+        return None
 
     return routes_received
 
@@ -241,20 +245,19 @@ def get_routing_repair_path_information(device, route):
 
     for rt in output["entry"]:
         for path_index in output["entry"][rt]["paths"]:
-            if output["entry"][rt]["paths"][path_index]["from"] == route:
-                repair_path = output["entry"][rt]["paths"][path_index].get(
-                    "repair_path", {}
-                )
-                if repair_path:
-                    log.info(
-                        "Found repair path {path[repair_path]} via {path[via]}".format(
-                            path=repair_path
-                        )
+            repair_path = output["entry"][rt]["paths"][path_index].get(
+                "repair_path", {}
+            )
+            if repair_path:
+                log.info(
+                    "Found repair path {path[repair_path]} via {path[via]}".format(
+                        path=repair_path
                     )
-                    next_hop = repair_path["repair_path"]
-                    outgoing_interface = repair_path["via"]
+                )
+                next_hop = repair_path["repair_path"]
+                outgoing_interface = repair_path["via"]
 
-                    return next_hop, outgoing_interface
+                return next_hop, outgoing_interface
 
     log.info("Could not find any information about repair path")
     return None, None

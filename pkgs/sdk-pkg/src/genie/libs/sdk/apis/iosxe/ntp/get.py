@@ -195,14 +195,29 @@ def get_ntp_packet(packets, ip_address_source, ip_address_destination):
         Returns:
             pkt (`obj`): verified ntp packet
     """
+    try:
+        from scapy.contrib.mpls import MPLS
+    except ImportError:
+        raise ImportError('scapy is not installed, please install it by running: '
+                          'pip install scapy') from None
     for pkt in packets:
-        if (
-            pkt.haslayer("IP")
+        if pkt.haslayer("Raw"):
+            mpls_pkt = MPLS(pkt["Raw"])
+            if (mpls_pkt.haslayer("IP")
+                and mpls_pkt.haslayer("NTPHeader")
+                and mpls_pkt["IP"].src == ip_address_source
+                and mpls_pkt["IP"].dst == ip_address_destination):
+
+                log.info("Found NTP packet:\n{pkt}".format(
+                          pkt=mpls_pkt.show(dump=True)))
+                return pkt
+
+        elif (pkt.haslayer("IP")
+            and pkt.haslayer("NTPHeader")
             and pkt["IP"].src == ip_address_source
-            and pkt["IP"].dst == ip_address_destination
-        ):
-            log.info(
-                "Found NTP packet:\n{pkt}".format(pkt=pkt.show(dump=True))
-            )
+            and pkt["IP"].dst == ip_address_destination):
+
+            log.info("Found NTP packet:\n{pkt}".format(pkt=pkt.show(dump=True)))
             return pkt
+
     return None

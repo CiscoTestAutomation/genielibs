@@ -12,9 +12,9 @@ from ipaddress import IPv4Address, IPv6Address
 
 from genie.decorator import managedattribute
 from genie.conf.base import DeviceFeature, Interface
-import genie.conf.base.attributes
 from genie.conf.base.attributes import SubAttributes, SubAttributesDict,\
-    AttributesInheriter, AttributesHelper, KeyedSubAttributes
+    AttributesInheriter, AttributesHelper, KeyedSubAttributes, \
+    DeviceSubAttributes
 
 from genie.libs.conf.base import ip_address, ip_network
 from genie.libs.conf.community_set import CommunitySet
@@ -543,7 +543,7 @@ class RoutePolicy(RoutePolicyAttributes, RoutePolicyMixin, DeviceFeature):
         finit=str,
         type=managedattribute.test_istype(str))
 
-    class DeviceAttributes(genie.conf.base.attributes.DeviceSubAttributes):
+    class DeviceAttributes(DeviceSubAttributes):
 
         def rpl_apply_attributes(self, obj, **kwargs):
             '''Apply device-specific RoutePolicyAttributes rules to an object.

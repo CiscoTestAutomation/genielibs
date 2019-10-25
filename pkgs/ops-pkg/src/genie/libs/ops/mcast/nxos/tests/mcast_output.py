@@ -148,7 +148,7 @@ class McastOutput(object):
                                         {'flags': 'mld pim6 ipv6',
                                         'incoming_interface_list': 
                                             {'loopback10': 
-                                                {'rpf_nbr': '2001:9999::1'}},
+                                                {'rpf_nbr': '2001:db8:4401:9999::1'}},
                                         'oil_count': '3',
                                         'uptime': '00:04:03'},
                                     '2001::222:1:1:1234/128': 
@@ -399,7 +399,7 @@ class McastOutput(object):
                 {'address_family': 
                     {'ipv6': 
                         {'mroute': 
-                            {'126::/16': 
+                            {'2001:db8:51a5::/16': 
                                 {'path': 
                                     {'0:: Null0': 
                                         {'bfd_enable': False,
@@ -414,7 +414,7 @@ class McastOutput(object):
                                                       'in '
                                                       'u6rib',
                                         'vrf_id': '1'}}},
-                            '127::/16': 
+                            '2001:db8:53f2::/16': 
                                 {'path': 
                                     {'0:: port-channel8': 
                                         {'bfd_enable': False,
@@ -429,7 +429,7 @@ class McastOutput(object):
                                                       'in '
                                                       'u6rib',
                                         'vrf_id': '1'}}},
-                            '226::/16': 
+                            '2001:db8:9da8::/16': 
                                 {'path': 
                                     {'0:: Null0': 
                                         {'bfd_enable': False,
@@ -444,7 +444,7 @@ class McastOutput(object):
                                                       'in '
                                                       'u6rib',
                                         'vrf_id': '1'}}},
-                            '227::/16': 
+                            '2001:db8:a1f5::/16': 
                                 {'path': 
                                     {'0:: Ethernet1/2.10': 
                                         {'bfd_enable': False,
@@ -494,22 +494,22 @@ class McastOutput(object):
                     'ipv6': 
                         {'enable': True,
                         'mroute': 
-                            {'126::/16': 
+                            {'2001:db8:51a5::/16': 
                                 {'path': 
                                     {'0:: Null0': 
                                         {'interface_name': 'Null0',
                                         'neighbor_address': '0::'}}},
-                            '127::/16': 
+                            '2001:db8:53f2::/16': 
                                 {'path': 
                                     {'0:: port-channel8': 
                                         {'interface_name': 'port-channel8',
                                         'neighbor_address': '0::'}}},
-                            '226::/16': 
+                            '2001:db8:9da8::/16': 
                                 {'path': 
                                     {'0:: Null0': 
                                         {'interface_name': 'Null0',
                                         'neighbor_address': '0::'}}},
-                            '227::/16': 
+                            '2001:db8:a1f5::/16': 
                                 {'path': 
                                     {'0:: Ethernet1/2.10': 
                                         {'interface_name': 'Ethernet1/2.10',
@@ -571,7 +571,7 @@ class McastOutput(object):
                                         {'flags': 'mld pim6 ipv6',
                                         'incoming_interface_list': 
                                             {'loopback10': 
-                                                {'rpf_nbr': '2001:9999::1'}},
+                                                {'rpf_nbr': '2001:db8:4401:9999::1'}},
                                         'uptime': '00:04:03'},
                                     '2001::222:1:1:1234/128': 
                                         {'flags': 'ipv6 pim6 m6rib',

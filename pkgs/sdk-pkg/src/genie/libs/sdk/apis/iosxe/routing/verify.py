@@ -11,11 +11,9 @@ from pyats.utils.objects import find, R
 # Genie
 from genie.utils.timeout import Timeout
 from genie.libs.sdk.libs.utils.normalize import GroupKeys
-from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # BGP
 from genie.libs.sdk.apis.iosxe.bgp.get import (
-    get_ip_bgp_summary,
     get_bgp_route_from_neighbors,
     get_bgp_neighbors_advertised_routes,
 )
@@ -29,21 +27,22 @@ from genie.libs.sdk.apis.iosxe.routing.get import (
 log = logging.getLogger(__name__)
 
 
-def verify_ip_cef_nexthop_label(device, ip, expected_label='', has_label=True, 
-                                vrf='default', max_time=30, check_interval=10):
+def verify_ip_cef_nexthop_label(device, ip, expected_label=None, vrf='default',
+                                table=None, max_time=30, check_interval=10):
     """ Verify ip cef nexthop does (not) have expected label
 
         Args:
             device (`obj`): Device object
             ip (`str`): IP address
-            expected_label (`str`): Expected label
-            has_label (`bool`): True if expect to have label
-                                False if expect not to have label
+            expected_label (`str`): Expected label. None if no label expected
             vrf (`str`): Vrf name
+            table (`str`): Not used on IOSXE
             max_time (`int`): Max time, default: 30
             check_interval (`int`): Check interval, default: 10
         Returns:
             result (`bool`): Verified result
+        Raises:
+            N/A
     """
     timeout = Timeout(max_time, check_interval)
     if vrf and vrf != 'default':
@@ -65,14 +64,14 @@ def verify_ip_cef_nexthop_label(device, ip, expected_label='', has_label=True,
                   'outgoing_label', '(?P<outgoing_label>.*)'])
         found = find([out], reqs, filter_=False, all_keys=True)
 
-        if has_label:
+        if expected_label:
             if found:
                 for item in found:
                     interface = item[1][-2]
                     label = ' '.join(item[0])
                     log.info("Found outgoing interface '{}' has outgoing label '{}', "
-                             "expected to have label '{}'".format(
-                                interface, label, expected_label))
+                             "expected to have label '{}'"
+                             .format(interface, label, expected_label))
 
                     if expected_label in label:
                         return True
@@ -88,7 +87,7 @@ def verify_ip_cef_nexthop_label(device, ip, expected_label='', has_label=True,
                 continue
             else:
                 log.info("No outgoing label aftar the nexthop info for '{}'"
-                    .format(ip))
+                         .format(ip))
                 return True
 
         timeout.sleep()
@@ -112,8 +111,13 @@ def verify_rib_fib_lfib_consistency(device, route, none_pattern='',
         Returns:
             result (`bool`): Verified result
     """
-    route = route.split('/')[0]
-    patterns = ['No Label', 'implicit-null', 'Pop Label', '']
+    route = route.split('/')
+    if len(route) > 1:
+        route = '{} {}'.format(route[0], device.api.int_to_mask(int(route[1])))
+    else:
+        route = route[0]
+
+    patterns = ['No Label', 'implicit-null', 'Pop Label', 'none', '']
     if none_pattern:
         patterns.extend(none_pattern)
 

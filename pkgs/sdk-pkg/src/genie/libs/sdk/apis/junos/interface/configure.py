@@ -42,3 +42,82 @@ def default_interface(device, interfaces):
                     interface=intf, error=e
                 )
             )
+
+
+def shut_interface(device, interface):
+    """ Shut interface on device
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    config_command = "set interfaces {interface} disable".format(
+        interface=interface
+    )
+
+    log.info(
+        "Disabling interface {interface} on device {device}".format(
+            interface=interface, device=device.name
+        )
+    )
+
+    try:
+        device.configure(config_command)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not disable interface {interface} on device {device}".format(
+                interface=interface, device=device.name
+            )
+        )
+
+    log.info(
+        "Interface {interface} is disabled on device {device}".format(
+            interface=interface, device=device.name
+        )
+    )
+
+
+def unshut_interface(device, interface):
+    """ Unshut interface on device
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    config_command = "delete interfaces {interface} disable".format(
+        interface=interface
+    )
+
+    log.info(
+        "Enabling interface {interface} on device {device}".format(
+            interface=interface, device=device.name
+        )
+    )
+
+    try:
+        device.configure(config_command)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not enabled interface {interface} on device {device}".format(
+                interface=interface, device=device.name
+            )
+        )
+
+    log.info(
+        "Interface {interface} is enabled on device {device}".format(
+            interface=interface, device=device.name
+        )
+    )
