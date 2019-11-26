@@ -28,6 +28,81 @@ from genie.libs.sdk.apis.iosxe.interface.get import (
 log = logging.getLogger(__name__)
 
 
+def verify_interface_config_carrier_delay(
+    device, interface, max_time=60, check_interval=10, flag=True
+):
+    """Verify interface carrier_delay config in - show run interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            max_time (`int`): max time
+            check_interval (`int`): check interval
+            flag (`bool`): True if verify has carrier delay
+                           False if verify no carrier delay
+        Returns:
+            result(`bool`): verify result
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        out = device.execute("show run interface {}".format(interface))
+
+        cfg_dict = get_config_dict(out)
+        key = "interface {}".format(interface)
+
+        if key in cfg_dict:
+            for line in cfg_dict[key].keys():
+                if "carrier-delay" in line:
+                    result = True
+                    break
+            else:
+                result = False
+        else:
+            result = False
+
+        if flag == result:
+            return True
+        timeout.sleep()
+
+    return False
+
+
+def verify_interface_config_ospf_bfd(
+    device, interface, max_time=60, check_interval=10, flag=True
+):
+    """Verify interface ospf bfd config in - show run interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            max_time (`int`): max time
+            check_interval (`int`): check interval
+            flag (`bool`): True if verify shutdown 
+                           False if verify no shutdown
+        Returns:
+            result(`bool`): verify result
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        out = device.execute("show run interface {}".format(interface))
+
+        cfg_dict = get_config_dict(out)
+        key = "interface {}".format(interface)
+
+        if key in cfg_dict and "ip ospf bfd" in cfg_dict[key]:
+            result = True
+        else:
+            result = False
+
+        if flag == result:
+            return True
+        timeout.sleep()
+
+    return False
+
+
 def verify_interface_mtu_packets(pkts, peer_ip):
     """ Verify one mtu packet split into two packets
 

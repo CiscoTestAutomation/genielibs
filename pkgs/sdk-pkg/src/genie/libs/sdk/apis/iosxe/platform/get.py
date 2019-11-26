@@ -83,7 +83,7 @@ def get_diffs_platform(platform_before, platform_after):
                     platform_before["slot"]
                     .get(slot, {})
                     .get(rp_lc, {})
-                    .get(type_)
+                    .get(type_, {})
                     .get("state", False)
                 )
 
@@ -112,7 +112,7 @@ def get_diffs_platform(platform_before, platform_after):
                             )
                         )
 
-                if "ok" in state_after and "ok" in state_before:
+                if state_after == state_before or ("ok" in state_after and "ok" in state_before):
                     continue
                 else:
                     log.info(

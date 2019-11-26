@@ -19,8 +19,8 @@ from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
 outputs = {}
 outputs['show ip route'] = RouteOutput.showIpRoute_default
 outputs['show ip route vrf VRF1'] = RouteOutput.showIpRoute_VRF1
-outputs['show ipv6 route updated'] = RouteOutput.showIpv6RouteUpdated_default
-outputs['show ipv6 route vrf VRF1 updated'] = RouteOutput.showIpv6RouteUpdated_VRF1
+outputs['show ipv6 route'] = RouteOutput.showIpv6RouteUpdated_default
+outputs['show ipv6 route vrf VRF1'] = RouteOutput.showIpv6RouteUpdated_VRF1
 
 def mapper(key):
     return outputs[key]
@@ -47,7 +47,6 @@ class test_route_all(unittest.TestCase):
 
         # Learn the feature
         f.learn()
-
         self.maxDiff = None
         self.assertEqual(f.info, RouteOutput.routeOpsOutput)
 
@@ -89,8 +88,8 @@ class test_route_all(unittest.TestCase):
 
         outputs['show ip route'] = ''
         outputs['show ip route vrf VRF1'] = ''
-        outputs['show ipv6 route updated'] = ''
-        outputs['show ipv6 route vrf VRF1 updated'] = ''
+        outputs['show ipv6 route'] = ''
+        outputs['show ipv6 route vrf VRF1'] = ''
 
         # Return outputs above as inputs to parser when called
         self.device.execute = Mock()
@@ -102,8 +101,8 @@ class test_route_all(unittest.TestCase):
         # revert back
         outputs['show ip route'] = RouteOutput.showIpRoute_default
         outputs['show ip route vrf VRF1'] = RouteOutput.showIpRoute_VRF1
-        outputs['show ipv6 route updated'] = RouteOutput.showIpv6RouteUpdated_default
-        outputs['show ipv6 route vrf VRF1 updated'] = RouteOutput.showIpv6RouteUpdated_VRF1
+        outputs['show ipv6 route'] = RouteOutput.showIpv6RouteUpdated_default
+        outputs['show ipv6 route vrf VRF1'] = RouteOutput.showIpv6RouteUpdated_VRF1
 
         # Check no attribute not found
         with self.assertRaises(AttributeError):

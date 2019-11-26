@@ -209,3 +209,39 @@ def get_segment_routing_gb_range(device):
         return None, None
 
     return out.get("label_min"), out.get("label_max")
+
+def get_segment_routing_accumulated_path_metric(device, preference, policy_name=None):
+    """ Get accumulated path metric for a preference path
+
+        Args:
+            device ('obj'): Device to use
+            policy_name ('str'): Policy name to verify. If not specified will verify all
+            preference ('int'): Preference path
+
+        Returns:
+            accumulated_metric (None, 'int'): Accumulated path metric
+
+        Raises:
+            N/A
+    """
+    if policy_name:
+        cmd = 'show segment-routing traffic-eng policy name {policy}'.format(policy=policy_name)
+    else:
+        cmd = 'show segment-routing traffic-eng policy all'
+    
+    try:
+        out = device.parse(cmd)
+    except SchemaEmptyParserError:
+        return None
+    
+    for policy in out:
+        for preference_found in out[policy].get('candidate_paths', {}).get('preference', {}):
+            if preference != preference_found:
+                continue
+            if out[policy]['candidate_paths']['preference'][preference].get('path_type'):
+                path_type_dict = out[policy]['candidate_paths']['preference'][preference]['path_type']
+                if 'dynamic' in path_type_dict:
+                    accumulated_metric = path_type_dict['dynamic'].get('path_accumulated_metric', '')
+                    return accumulated_metric
+    return None
+

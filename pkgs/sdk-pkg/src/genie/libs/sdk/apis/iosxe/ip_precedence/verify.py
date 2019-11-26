@@ -6,11 +6,12 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def verify_ip_precedence_ip_precedence(packets):
+def verify_ip_precedence_ip_precedence(packets, exclude_src_ip=None):
     """Verify that all packets have mapped IP precedence value to EXP
 
         Args:
-            packets('obj'): Packets to analyze
+            packets ('obj'): Packets to analyze
+            exclude_src_ip ('str'): Source ip to exclude
 
         Returns:
             True / False
@@ -26,13 +27,18 @@ def verify_ip_precedence_ip_precedence(packets):
     log.info(
         "Verifying that all the packets have mapped IP precedence value to EXP"
     )
+
+    if exclude_src_ip:
+        log.info("Exclude packets with source ip {ip}".format(ip=exclude_src_ip))
+
     load_contrib("mpls")
     not_matched = False
     no_check = True
     for pkt in packets:
         if pkt.haslayer("Raw"):
             mpls_pkt = MPLS(pkt["Raw"])
-            if mpls_pkt.haslayer("IP"):
+            if mpls_pkt.haslayer("IP") and (exclude_src_ip is None
+                or mpls_pkt["IP"].src != exclude_src_ip):
                 no_check = False
                 log.info(
                     "Analyzing the following packet:"

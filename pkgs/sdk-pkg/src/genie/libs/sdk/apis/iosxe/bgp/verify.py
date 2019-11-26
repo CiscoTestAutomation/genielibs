@@ -8,9 +8,11 @@ from prettytable import PrettyTable
 
 # import Steps
 from pyats.aetest.steps import Steps
+from pyats.utils.objects import find, R
 
 # Genie
 from genie.utils.timeout import Timeout
+from genie.libs.sdk.libs.utils.normalize import GroupKeys
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # BGP
@@ -746,9 +748,10 @@ def verify_bgp_routes_have_community(
     """
     neighbor_modified = neighbor_address.split("/")[0]
     timeout = Timeout(max_time=max_time, interval=check_interval)
-    community_found = None
+    community_found = []
     while timeout.iterate():
         neighbor_output = None
+        community_found = []
         if vrf and not rd_export:
 
             try:
@@ -759,7 +762,6 @@ def verify_bgp_routes_have_community(
                 )
 
             except SchemaEmptyParserError as e:
-                community_found = None
                 log.error(str(e))
 
         elif rd_export and not vrf:
@@ -771,9 +773,6 @@ def verify_bgp_routes_have_community(
                 address_family=address_family,
             )
 
-            if not neighbor_output:
-                community_found = None
-
         else:
             log.error(
                 "Argument rd and vrf are mutually exclusive, "
@@ -781,28 +780,29 @@ def verify_bgp_routes_have_community(
             )
             return False
 
-        vrf = vrf if vrf else "default"
-
-        try:
-            neighbors = neighbor_output["instance"]["default"]["vrf"][vrf][
-                "address_family"
-            ][address_family]["prefixes"][neighbor_address]
-            community_found = neighbors["index"][1]["community"]
-
-        except Exception as e:
-            community_found = None
-            log.error(
-                "Key: '{}' is not found from the command output".format(str(e))
-            )
+        reqs = R(['instance','default','vrf','(?P<vrf>.*)',
+                  'address_family',address_family,'prefixes',
+                  neighbor_address,'index','(?P<index>.*)',
+                  'community','(?P<community>.*)'])
+        found = find([neighbor_output], reqs, filter_=False, all_keys=True)
+        if found:
+            keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={},
+                                        source=found, all_keys=True)
+            for item in keys:
+                community_found.append(item['community'])
 
         if check_not_match:
-            if community_found == community:
+            if community in community_found:
                 log.error("Found community {} in the command output"
                     .format(community))
             else:
+                log.info("No community {} in the command output"
+                    .format(community))
                 return True
         else:
-            if community_found == community:
+            if community in community_found:
+                log.info("Found community {} in the command output"
+                    .format(community))
                 return True
             else:
                 log.error("Failed to find community {} in the command output"
@@ -1613,6 +1613,48 @@ def verify_bgp_status_codes_exist(
                 for status in status_codes:
                     if status in codes:
                         return status
+
+        timeout.sleep()
+
+    return False
+
+
+def verify_bgp_neighbor_exist(device, neighbor, address_family, vrf='',
+                              max_time=60, check_interval=10):
+    """ Verify bgp neighbor exists in 'show ip bgp {address_family} summary'
+
+        Args:
+            device ('obj'): device to use
+            neighbor ('str'): neighbor to check under
+            address_family ('str'): address family
+            vrf ('str'): vrf
+            max_time ('int'): maximum time to wait
+            check_interval ('int'): how often to check
+
+        Returns:
+            result ('bool'): verified result
+    """
+    if vrf:
+        cmd = 'show ip bgp {address_family} vrf {vrf} summary'.format(
+                address_family=address_family, vrf=vrf)
+    else:
+        cmd = 'show ip bgp {address_family} summary'.format(
+                address_family=address_family)
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            out = device.parse(cmd)
+        except Exception as e:
+            log.error("Failed to parse '{cmd}': {e}".format(cmd=cmd, e=e))
+            timeout.sleep()
+            continue
+
+        reqs = R(['vrf', '(?P<vrf>.*)', 'neighbor', neighbor, '(.*)'])
+        found = find([out], reqs, filter_=False, all_keys=True)
+        if found:
+            log.info("BGP neighbor {nbr} is present".format(nbr=neighbor))
+            return True
 
         timeout.sleep()
 

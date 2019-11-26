@@ -259,9 +259,34 @@ class Interface(SuperInterface):
                           src='[(?P<interface>{convert_intf_name})][ipv4][unnumbered]',
                           dest='info[(?P<interface>{convert_intf_name})][ipv4][unnumbered]',
                           interface=interface, vrf=vrf)
+
+            # get routing output
             self.add_leaf(cmd=ShowRoutingVrfAll,
-                          src='[vrf][(?P<vrf>.*)][address_family][(?P<af>.*)][ip]',
-                          dest='info[routing_v4][(?P<vrf>.*)]', vrf=vrf)
+                          src='[vrf][(?P<vrf>.*)][address_family][(?P<af>.*)][ip][(?P<ip>.*)][ubest_num]',
+                          dest='info[routing_v4][(?P<vrf>.*)][(?P<ip>.*)][ubest_num]', vrf=vrf)
+
+            # get routing output
+            self.add_leaf(cmd=ShowRoutingVrfAll,
+                          src='[vrf][(?P<vrf>.*)][address_family][(?P<af>.*)][ip][(?P<ip>.*)][mbest_num]',
+                          dest='info[routing_v4][(?P<vrf>.*)][(?P<ip>.*)][mbest_num]', vrf=vrf)
+
+            # get routing output
+            self.add_leaf(cmd=ShowRoutingVrfAll,
+                          src='[vrf][(?P<vrf>.*)][address_family][(?P<af>.*)][ip][(?P<ip>.*)][attach]',
+                          dest='info[routing_v4][(?P<vrf>.*)][(?P<ip>.*)][attach]', vrf=vrf)
+
+            src = '[vrf][(?P<vrf>.*)][address_family][(?P<af>.*)][ip][(?P<ip>.*)][best_route]'\
+                  '[(?P<best_route>.*)][nexthop][(?P<nexthop>.*)][protocol][(?P<protocol>.*)]'
+            dest = 'info[routing_v4][(?P<vrf>.*)][(?P<ip>.*)][best_route][(?P<best_route>.*)]'\
+                   '[nexthop][(?P<nexthop>.*)][protocol][(?P<protocol>.*)]'
+
+            req_keys = ['route_table', 'interface', 'preference', 'metric', 'protocol_id', 'attribute',
+                        'tag', 'mpls', 'mpls_vpn', 'evpn', 'segid', 'tunnelid', 'encap']
+
+            for key in req_keys:
+                self.add_leaf(cmd=ShowRoutingVrfAll,
+                              src=src + '[{}]'.format(key),
+                              dest=dest + '[{}]'.format(key), vrf=vrf)
 
         # ======================================================================
         #                           ipv6
@@ -282,9 +307,31 @@ class Interface(SuperInterface):
 
             # get routing output
             self.add_leaf(cmd=ShowRoutingIpv6VrfAll,
-                          src='[vrf][(?P<vrf>.*)][address_family][(?P<af>.*)][ip]',
-                          dest='info[routing_v6][(?P<vrf>.*)]',vrf=vrf)
+                          src='[vrf][(?P<vrf>.*)][address_family][(?P<af>.*)][ip][(?P<ip>.*)][ubest_num]',
+                          dest='info[routing_v6][(?P<vrf>.*)][(?P<ip>.*)][ubest_num]', vrf=vrf)
 
+            # get routing output
+            self.add_leaf(cmd=ShowRoutingIpv6VrfAll,
+                          src='[vrf][(?P<vrf>.*)][address_family][(?P<af>.*)][ip][(?P<ip>.*)][mbest_num]',
+                          dest='info[routing_v6][(?P<vrf>.*)][(?P<ip>.*)][mbest_num]', vrf=vrf)
+
+            # get routing output
+            self.add_leaf(cmd=ShowRoutingIpv6VrfAll,
+                          src='[vrf][(?P<vrf>.*)][address_family][(?P<af>.*)][ip][(?P<ip>.*)][attach]',
+                          dest='info[routing_v6][(?P<vrf>.*)][(?P<ip>.*)][attach]', vrf=vrf)
+
+            src = '[vrf][(?P<vrf>.*)][address_family][(?P<af>.*)][ip][(?P<ip>.*)][best_route]'\
+                  '[(?P<best_route>.*)][nexthop][(?P<nexthop>.*)][protocol][(?P<protocol>.*)]'
+            dest = 'info[routing_v6][(?P<vrf>.*)][(?P<ip>.*)][best_route][(?P<best_route>.*)]'\
+                   '[nexthop][(?P<nexthop>.*)][protocol][(?P<protocol>.*)]'
+
+            req_keys = ['route_table', 'interface', 'preference', 'metric', 'protocol_id', 'attribute',
+                        'tag', 'mpls', 'mpls_vpn', 'evpn', 'segid', 'tunnelid', 'encap']
+
+            for key in req_keys:
+                self.add_leaf(cmd=ShowRoutingIpv6VrfAll,
+                              src=src + '[{}]'.format(key),
+                              dest=dest + '[{}]'.format(key), vrf=vrf)
 
         # make to write in cache
         self.make(final_call=True)
@@ -295,7 +342,7 @@ class Interface(SuperInterface):
         if hasattr(self, 'info'): 
             for intf in self.info:
                 # check vrf
-                if 'vrf' in self.info[intf]:                  
+                if 'vrf' in self.info[intf]:
                     if 'routing_v4' in self.info and \
                       self.info[intf]['vrf'] in self.info['routing_v4']:
                         dict_v4 = self.info['routing_v4'][self.info[intf]['vrf']]

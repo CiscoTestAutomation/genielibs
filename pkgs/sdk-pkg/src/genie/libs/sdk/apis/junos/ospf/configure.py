@@ -71,3 +71,34 @@ def remove_ospf_passive_interface(device, interface, area):
                 interface=interface, error=e
             )
         )
+
+
+def configure_ospf_interface_metric_cost(device, interface, area, cost, cost_type='ospf'):
+    """ Configure ospf interface metric cost
+
+        Args:
+            device ('obj'): Device to configure
+            interface ('str'): Interface to configure
+            area ('str'): Area
+            cost_type ('str'): Cost type
+            cost ('int'): Cost
+    """
+    if 'ospf' in cost_type.lower():
+        config = 'set protocols ospf area {area} interface {interface} metric {cost}'.format(
+            area=area, interface=interface, cost=cost
+        )
+    elif 'te' in cost_type.lower():
+        config = 'set protocols ospf area {area} interface {interface} te-metric {cost}'.format(
+            area=area, interface=interface, cost=cost
+        )
+    else:
+        raise SubCommandFailure('Cost type {cost} not supported by api'.format(cost=cost))
+
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure cost {cost}. Error:\n{error}".format(
+                cost=cost, error=e
+            )
+        )

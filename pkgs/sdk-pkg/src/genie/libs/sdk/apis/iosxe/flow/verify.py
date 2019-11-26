@@ -111,3 +111,53 @@ def verify_flow_exporter_records_added_and_sent_are_equal(
         timeout.sleep()
 
     return False
+
+
+def verify_flow_cache_record_exists(device, flow_monitor, expected_source_address,
+    expected_destination_address, format=False, max_time=60, check_interval=10):
+    """ Verifies a flow under flow_monitor with specified
+        source and destination address' exist
+
+        Args:
+            device ('obj'): Device to use
+            flow_monitor ('str'): Flow monitor to search under
+            expected_source_address ('str'): Source address to match
+            expected_destination_address ('str'): Destination address to match
+            format ('bool'): Format output or not
+            max_time ('int'): Max time to keep checking
+            check_interval ('int'): How often to check
+
+        Raises:
+            N/A
+
+        Returns:
+            True/False
+    """
+    if format:
+        cmd = 'show flow monitor {name} cache format record'.format(name=flow_monitor)
+    else:
+        cmd = 'show flow monitor {name} cache'.format(name=flow_monitor)
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse(cmd)
+        except Exception as e:
+            log.error("Failed to parse {cmd}: {e}".format(cmd=cmd, e=e))
+            timeout.sleep()
+            continue
+
+        records = out.get("entries", {})
+        if not records:
+            log.error("No record was found.")
+            timeout.sleep()
+            continue
+
+        for item in records.values():
+            if (item['ipv4_src_addr'] == expected_source_address and
+                item['ipv4_dst_addr'] == expected_destination_address):
+                return True
+
+        timeout.sleep()
+
+    return False

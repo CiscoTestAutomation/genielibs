@@ -1,7 +1,7 @@
 '''IOSXR implementation of ManagementInterface class'''
 
 # parser
-from genie.libs.parser.iosxr.show_interface import ShowIpInterfaceBrief
+from genie.libs.parser.iosxr.show_interface import ShowIpv4InterfaceBrief
 
 # ManagementInterface
 from ..management_interface import ManagementInterface as ManagementInterface_main
@@ -48,7 +48,7 @@ class ManagementInterface(ManagementInterface_main):
         """
 
         # Create parser object
-        parser_obj = ShowIpInterfaceBrief(device=device)
+        parser_obj = ShowIpv4InterfaceBrief(device=device)
 
         intf_name = super().get_interface_name(device, ipaddress, parser_obj)
 

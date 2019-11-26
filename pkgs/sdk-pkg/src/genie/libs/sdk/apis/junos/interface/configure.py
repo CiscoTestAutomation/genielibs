@@ -62,12 +62,6 @@ def shut_interface(device, interface):
         interface=interface
     )
 
-    log.info(
-        "Disabling interface {interface} on device {device}".format(
-            interface=interface, device=device.name
-        )
-    )
-
     try:
         device.configure(config_command)
     except SubCommandFailure:
@@ -76,13 +70,6 @@ def shut_interface(device, interface):
                 interface=interface, device=device.name
             )
         )
-
-    log.info(
-        "Interface {interface} is disabled on device {device}".format(
-            interface=interface, device=device.name
-        )
-    )
-
 
 def unshut_interface(device, interface):
     """ Unshut interface on device
@@ -101,12 +88,6 @@ def unshut_interface(device, interface):
         interface=interface
     )
 
-    log.info(
-        "Enabling interface {interface} on device {device}".format(
-            interface=interface, device=device.name
-        )
-    )
-
     try:
         device.configure(config_command)
     except SubCommandFailure:
@@ -115,9 +96,3 @@ def unshut_interface(device, interface):
                 interface=interface, device=device.name
             )
         )
-
-    log.info(
-        "Interface {interface} is enabled on device {device}".format(
-            interface=interface, device=device.name
-        )
-    )

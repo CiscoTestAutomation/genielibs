@@ -460,7 +460,7 @@ def verify_policy_map_packets_counting_up(
 
         if class_maps and packet_classes:
             for packet_class in packet_classes:
-                packets_count = class_maps[packet_class]["packets"]
+                packets_count = class_maps.get(packet_class, {}).get("packets", 0)
                 log.info(
                     "Verifying if packets are counting up for {}".format(
                         packet_class

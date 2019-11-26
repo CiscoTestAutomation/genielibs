@@ -6,6 +6,7 @@ import logging
 
 # Genie
 from genie.harness.utils import connect_device
+from genie.harness._commons_internal import _error_patterns
 
 # Unicon
 from unicon import Connection
@@ -37,6 +38,9 @@ def write_erase_reload_device(
     mgmt_netmask,
     config_sleep,
     post_reconnect_time,
+    reload_hostname='Router',
+    username=None,
+    password=None
 ):
     """Execute 'write erase' on device
 
@@ -55,8 +59,8 @@ def write_erase_reload_device(
         [
             Statement(
                 pattern=r"Erasing the nvram filesystem will "
-                "remove all configuration files! "
-                "Continue? \[confirm\].*",
+                        r"remove all configuration files! "
+                        r"Continue? \[confirm\].*",
                 action="sendline()",
                 loop_continue=True,
                 continue_timer=False,
@@ -73,7 +77,7 @@ def write_erase_reload_device(
             "Error while executing 'write erase' on device '{}'".format(
                 device.name
             )
-        )
+        ) from e
     else:
         log.info(
             "Successfully executed 'write erase' command on device '{}'".format(
@@ -84,8 +88,17 @@ def write_erase_reload_device(
     # Collect device base information before reload
     os = device.os
     hostname = device.name
-    username = device.tacacs["username"]
-    password = device.passwords["enable"]
+    if username is None or password is None:
+        if hasattr(device, 'credentials') and device.credentials:
+            username = device.credentials.get("default", {}).get("username", "")
+            password = device.credentials.get("default", {}).get("password", "")
+        else:
+            username = device.tacacs.get("username", "")
+            password = device.passwords.get("line", "")
+
+    if not username or not password:
+        raise Exception("No username or password was provided.")
+        
     ip = str(device.connections[via_console]["ip"])
     port = str(device.connections[via_console]["port"])
     mgmt_ip = str(device.connections[via_mgmt]["ip"])
@@ -137,10 +150,10 @@ def write_erase_reload_device(
             )
         )
         device.destroy()
-    except:
+    except Exception as e:
         raise Exception(
             "Error while reloading device '{}'".format(device.name)
-        )
+        ) from e
 
     # Wait until reload has completed and device can be reachable
     log.info(
@@ -158,7 +171,7 @@ def write_erase_reload_device(
         username=username,
         password=password,
         os=os,
-        hostname="Router",
+        hostname=reload_hostname,
         start=["telnet {ip} {port}".format(ip=ip, port=port)],
         prompt_recovery=True,
     )
@@ -173,11 +186,11 @@ def write_erase_reload_device(
                 hostname
             )
         )
-    except:
+    except Exception as e:
         raise Exception(
             "Error reconnecting to device '{}' after 'write erase'"
             " and reload".format(hostname)
-        )
+        ) from e
     else:
         new_device.disconnect()
         log.info(
@@ -203,12 +216,12 @@ def write_erase_reload_device(
         log.info(
             "Successfully configured hostname on device '{}'".format(hostname)
         )
-    except:
+    except Exception as e:
         raise Exception(
             "Error while trying to configure hostname on device '{}'".format(
                 hostname
-            )
-        )
+            ) 
+        ) from e
 
     # Configure mgmt IP configuration
     log.info(
@@ -259,7 +272,7 @@ def write_erase_reload_device(
             "Unable to configure mgmt IP configuration on '{}'".format(
                 hostname
             )
-        )
+        ) from e
     else:
         new_device2.disconnect()
         log.info(
@@ -281,10 +294,12 @@ def write_erase_reload_device(
     )
     try:
         connect_device(device=device)
-    except:
+        # add error pattern
+        _error_patterns(device=device)
+    except Exception as e:
         raise Exception(
             "'write erase' and 'reload' did not complete successfully"
-        )
+        ) from e
     else:
         log.info(
             "Successfully erased all device configurations with "

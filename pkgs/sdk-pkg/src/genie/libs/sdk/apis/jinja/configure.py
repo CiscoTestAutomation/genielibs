@@ -23,7 +23,7 @@ def change_configuration_using_jinja_templates(device, template, **kwargs):
             SubCommandFailure: Failed configuring device
     """
 
-    out = template.render(**kwargs)
+    out = [x.lstrip() for x in template.render(**kwargs).splitlines()]
 
     try:
         device.configure(out)

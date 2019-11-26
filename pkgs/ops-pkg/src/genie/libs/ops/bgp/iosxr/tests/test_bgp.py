@@ -94,7 +94,7 @@ class test_bgp(unittest.TestCase):
 
         # Verify Ops was created successfully
         self.assertDictEqual(bgp.info, BgpOutput.BgpInfo)
-        self.assertEqual(bgp.table, BgpOutput.BgpTable)
+        self.assertDictEqual(bgp.table, BgpOutput.BgpTable)
         self.assertDictEqual(bgp.routes_per_peer, BgpOutput.BgpRoutesPerPeer)
 
     def test_custom_output(self):

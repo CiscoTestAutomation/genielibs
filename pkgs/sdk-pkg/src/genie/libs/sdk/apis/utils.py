@@ -12,18 +12,18 @@ from netaddr import IPAddress
 
 # pyATS
 from pyats.easypy import runtime
+from pyats.utils.fileutils import FileUtils
 
 # Genie
 from genie.utils.config import Config
 from genie.utils.diff import Diff
-from genie.libs.parser.utils.common import Common
 from genie.utils.timeout import Timeout
+from genie.harness._commons_internal import _error_patterns
 
 # unicon
 from unicon.eal.dialogs import Dialog, Statement
 from unicon.core.errors import ConnectionError
 from unicon.plugins.generic.statements import default_statement_list
-from unicon.core.errors import SubCommandFailure
 
 log = logging.getLogger(__name__)
 
@@ -368,6 +368,51 @@ def mask_to_int(mask):
     return sum(bin(int(x)).count("1") for x in mask.split("."))
 
 
+def copy_to_server(testbed, protocol, server, local_path, remote_path):
+    """ Copy file from directory to server
+
+        Args:
+            testbed ('obj'): Testbed object
+            protocol ('str'): Transfer protocol
+            server ('str'): Server name in testbed yaml or server ip address
+            local_path ('str'): File to copy, including path
+            remote_path ('str'): Where to save the file, including file name
+
+        Returns:
+            None
+
+        Raises:
+            Exception
+    """
+    try:
+        # Check if server argument is an IP address
+        IPAddress(server)
+    except Exception:
+        try:
+            # Check if server argument is a server defined in testbed yaml
+            server = testbed.servers[server]["address"]
+        except Exception:
+            raise Exception(">  For 'server' argument either provide an ip address\n"
+                            ">    OR\n"
+                            ">  configure the following in your testbed yaml and provide <protocol>:\n"
+                            ">  --------------------------------\n"
+                            ">  testbed:\n"
+                            ">    servers:\n"
+                            ">      <protocol>:\n"
+                            ">        address: <address>\n"
+                            ">  --------------------------------")
+
+    # Building remote address
+    remote = "{p}://{s}:/{f}".format(p=protocol, s=server, f=remote_path)
+
+    log.info("Copying {local_path} to {remote_path}"
+             .format(local_path=local_path,
+                     remote_path=remote))
+
+    with FileUtils(testbed=testbed) as futils:
+        futils.copyfile(source=local_path, destination=remote)
+
+
 def copy_file_from_tftp_ftp(testbed, filename, pro):
     """Copy file to runtime directory for analysis
 
@@ -504,6 +549,8 @@ def get_time_source_from_output(output):
                 year, month, day, hour, minute, second, milliseconds * 1000
             )
 
+    log.warning('Time source could not be found in output')
+
 
 def get_delta_time_from_outputs(output_before, output_after):
     """ Get delta time from Time source of two outputs 
@@ -617,6 +664,7 @@ def reconnect_device_with_new_credentials(
     else:
         device.connect()
 
+    _error_patterns(device=device)
     return device
 
 
@@ -665,6 +713,7 @@ def reconnect_device(device, max_time=300, interval=30, sleep_disconnect=30):
     while timeout.iterate():
         try:
             device.connect()
+            _error_patterns(device=device)
         except Exception as e:
             log.info("Device {dev} is not connected".format(dev=device.name))
             destroy_connection(device=device)

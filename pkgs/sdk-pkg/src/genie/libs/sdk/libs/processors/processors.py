@@ -84,7 +84,7 @@ def _get_connection_class(section):
 # processor: send_arp
 # ==============================================================================
 
-@report
+#@report
 def send_arp(section, arp_wait_time=30):
 
     '''Trigger Processor:
@@ -138,7 +138,7 @@ def send_arp(section, arp_wait_time=30):
 # processor: send_ns
 # ==============================================================================
 
-@report
+#@report
 def send_ns(section, ns_wait_time=30):
 
     '''Trigger Processor:
@@ -192,7 +192,7 @@ def send_ns(section, ns_wait_time=30):
 # processor: apply_traffic
 # ==============================================================================
 
-@report
+#@report
 def apply_traffic(section, apply_wait_time=30):
 
     '''Trigger Processor:
@@ -246,7 +246,7 @@ def apply_traffic(section, apply_wait_time=30):
 # processor: create_genie_statistics_view
 # ==============================================================================
 
-@report
+#@report
 def create_genie_statistics_view(section, view_create_interval=30, view_create_iteration=5, disable_tracking=False, disable_port_pair=False):
 
     '''Trigger Processor:

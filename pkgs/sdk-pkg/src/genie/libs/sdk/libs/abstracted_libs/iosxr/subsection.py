@@ -9,6 +9,9 @@ from genie.abstract import Lookup
 from genie.libs import parser
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
+#unicon
+from unicon.eal.dialogs import Statement, Dialog
+
 log = logging.getLogger(__name__)
 
 def save_device_information(device, **kwargs):
@@ -77,3 +80,12 @@ def get_default_dir(device):
     log.info("Default directory on '{d}' is '{dir}'".format(d=device.name,
                                                             dir=default_dir))
     return default_dir
+
+def configure_replace(device, file_location, timeout=60):
+    dialog = Dialog([
+        Statement(pattern=r'\[no\]',
+                  action='sendline(y)',
+                  loop_continue=True,
+                  continue_timer=False)])
+    device.configure("load {}\ncommit replace".format(file_location),
+                     timeout=timeout, reply=dialog)

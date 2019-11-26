@@ -300,12 +300,12 @@ def get_policy_map_class_maps(device, policy_map, control_plane_policy):
     try:
         out = device.parse("show policy-map {}".format(policy_map))
     except SchemaEmptyParserError as e:
-        return None
+        return {}
     try:
         class_maps = out["Control Plane"]["service_policy"]["input"][
             "policy_name"
         ][control_plane_policy]["class_map"]
     except KeyError as e:
-        return None
+        return {}
 
     return class_maps

@@ -240,34 +240,45 @@ def verify_rib_fib_lfib_consistency(device, route, none_pattern='',
             continue
 
         for interface in route_dict1.keys():
+            # get info from show ip route
             rib_intf = interface
             rib_nh = route_dict1[interface].get('nexthop', '')
             rib_label = route_dict1[interface].get('mpls_label', '')
             tmp_rib_label = None if rib_label in patterns else rib_label
 
+            # get info from show ip cef
             fib_intf = interface if route_dict2.get(interface, '') else ''
             fib_nh = route_dict2.get(interface, {}).get('nexthop', '')
             fib_label = ' '.join(route_dict2.get(interface, {}).get('outgoing_label', []))
             fib_local = route_dict2.get(interface, {}).get('local_label', '')
             tmp_fib_label = None if fib_label in patterns else fib_label
 
+            # get info from show mpls forwarding table
             lfib_intf = interface if route_dict3.get(interface, '') else ''
             lfib_nh = route_dict3.get(interface, {}).get('next_hop', '')
             lfib_label = route_dict3.get(interface, {}).get('outgoing_label', '')
             lfib_local = route_dict3.get(interface, {}).get('local_label', '')
             tmp_lfib_label = None if lfib_label in patterns else lfib_label
 
-            if (rib_intf == fib_intf == lfib_intf and 
-                rib_nh == fib_nh == lfib_nh and 
-                tmp_rib_label == tmp_fib_label == tmp_lfib_label):
-                table.add_row([rib_intf, rib_nh, rib_label, 
-                               fib_intf, fib_nh, fib_label, fib_local, 
-                               lfib_intf, lfib_nh, lfib_label, lfib_local, 'PASS'])
+            # if multiple entried forwarding table and prefer not rib labels, only check rib and lfib lable
+            # other wise check all labels
+            if (len(found3)>1 and route_dict1[interface].get('prefer_non_rib_labels') and (
+                    tmp_rib_label == tmp_lfib_label and
+                    rib_intf == fib_intf == lfib_intf and
+                    rib_nh == fib_nh == lfib_nh)) \
+                or (rib_intf == fib_intf == lfib_intf and
+                 rib_nh == fib_nh == lfib_nh and
+                 tmp_rib_label == tmp_fib_label == tmp_lfib_label):
+
+                status='PASS'
+
             else:
                 result = False
-                table.add_row([rib_intf, rib_nh, rib_label, 
-                               fib_intf, fib_nh, fib_label, fib_local,
-                               lfib_intf, lfib_nh, lfib_label, lfib_local, 'FAIL'])
+                status = 'FAIL'
+
+            table.add_row([rib_intf, rib_nh, rib_label,
+                           fib_intf, fib_nh, fib_label, fib_local,
+                           lfib_intf, lfib_nh, lfib_label, lfib_local, status])
 
         log.info("Summary Result for {}:\n{}".format(route, table))
 

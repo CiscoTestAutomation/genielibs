@@ -230,7 +230,6 @@ def verify_ntp_association_with_server(
     timeout = Timeout(max_time, check_interval)
 
     while timeout.iterate():
-        result = False
         try:
             out = device.parse("show ntp associations detail")
         except SchemaEmptyParserError as e:
@@ -238,7 +237,9 @@ def verify_ntp_association_with_server(
                 "Parser not found for command "
                 "'show ntp associations detail'"
             )
-            return False
+            timeout.sleep()
+            continue
+
         for vrf in out["vrf"].keys():
             try:
                 allowed_ip_dict = out["vrf"][vrf]["associations"]["address"][
@@ -250,19 +251,14 @@ def verify_ntp_association_with_server(
                     peer_mode
                 ]["local_mode"]
             except KeyError as e:
-                log.error(
-                    "Could not find following key{}, exception {}".format(
-                        peer_mode, str(e)
-                    )
-                )
-                result = False
+                log.error("Could not find peer mode '{mode}' in '{ip}'"
+                    .format(mode=peer_mode, ip=ip_address_server))
+                timeout.sleep()
+                break
 
-            if stratum_found < max_stratum and peer_mode_found == peer_mode:
-                result = True
-            else:
-                result = False
-        if result:
-            return result
+            if stratum_found <= max_stratum and peer_mode_found == peer_mode:
+                return True
+
         timeout.sleep()
 
-    return result
+    return False

@@ -107,7 +107,7 @@ def configure_ntp_iburst(device, route):
         ) from e
 
 
-def configure_ntp_server(device, ntp_config, unconfig=False):
+def configure_ntp_server(device, ntp_config, auth_key=None, unconfig=False):
     """ Configures ntp server
 
         Args:
@@ -118,21 +118,37 @@ def configure_ntp_server(device, ntp_config, unconfig=False):
                         '192.168.1.1',
                         '192.168.1.2'
                     ]
+            auth_key ('list'): Authentication key number corresponding
+                               to server ip
+                ex.)
+                   auth_key = [
+                        '1',
+                        '2',
+                   ]
         Returns:
             None
         Raises:
             SubCommandFailure
     """
 
-    if not isinstance(ntp_config, list):
-        raise SubCommandFailure("ntp_config must be a list")
+    if not isinstance(ntp_config, list) and not isinstance(auth_key, list):
+        raise SubCommandFailure("ntp_config or auth_key must be a list")
 
     config = []
-    for ip in ntp_config:
+    if auth_key:
+        if len(ntp_config) != len(auth_key):
+            raise SubCommandFailure("ntp_config and auth_key should have same number of value in list")
+    for num, ip in enumerate(ntp_config):
         if unconfig:
-            config.append("no ntp server {}".format(ip))
+            cmd = "no ntp server {ip}".format(ip=ip)
+            if auth_key:
+                cmd += " key {auth_key}".format(auth_key=auth_key[num])
+                config.append(cmd)
         else:
-            config.append("ntp server {}".format(ip))
+            if auth_key:
+                cmd = "ntp server {ip}".format(ip=ip)
+                cmd += " key {auth_key}".format(auth_key=auth_key[num])
+            config.append(cmd)
 
     try:
         device.configure("\n".join(config))

@@ -147,7 +147,9 @@ def get_routing_route_count(device, vrf=None):
     if not vrf:
         vrf = "default"
 
-    return output["vrf"][vrf]["total_route_source"]["networks"]
+    count = output.get("vrf", {}).get(vrf, {}).\
+            get("total_route_source", {}).get("subnets")
+    return count
 
 
 def get_routing_route_count_all_vrf(device):

@@ -329,6 +329,53 @@ def config_interface_carrier_delay(device, interface, delay, delay_type):
         )
 
 
+def remove_interface_carrier_delay(device, interface):
+    """ Remove interface carrier delay on device
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            "interface {interface}\n"
+            "no carrier-delay up\n"
+            "no carrier-delay down".format(interface=interface))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to remove carrier delay on {interface}. "
+            "Error:\n{e}".format(interface=interface, e=e)) from e
+
+
+def remove_interface_ospf_bfd(device, interface):
+    """ Remove interface ospf bfd on device
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            "interface {interface}\n"
+            "no ip ospf bfd".format(interface=interface))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to remove ospf bfd on {interface}. "
+            "Error:\n{e}".format(interface=interface, e=e)) from e
+
+
 def config_interface_mtu(device, interface, mtu_bytes):
     """ Config MTU on interface
 

@@ -58,8 +58,9 @@ class DevelopCommand(setupdevelop):
 
         if self.uninstall is None:
             # If directory/symlink already exists, then error out
-            if os.path.lexists(dst):
-                raise Exception("'{dst}' already exists, delete/move it".format(dst=dst))
+            if os.path.exists(dst):
+                print("'{dst}' already exists, removing it".format(dst=dst))
+                os.unlink(dst)
 
             print('Creating symbolic link at from {src} to {dst}'.format(src=src, dst=dst))
             os.symlink(src, dst)

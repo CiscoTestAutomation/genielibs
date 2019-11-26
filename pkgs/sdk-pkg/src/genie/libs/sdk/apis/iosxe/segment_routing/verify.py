@@ -92,14 +92,14 @@ def verify_segment_routing_policy_attributes(device, policy, expected_bsid=None,
     return False, None
 
 
-def verify_segment_routing_policy_state(device, policy, expected_admin='up', 
+def verify_segment_routing_policy_state(device, policy=None, expected_admin='up',
     expected_oper='up', max_time=30, check_interval=10):
     """ Verify segment-routing policy state is as expected (Admin/Operational)
         using 'show segment-routing traffic-eng policy name {policy}'
         
         Args:
             device (`obj`): Device object
-            policy (`str`): Policy name
+            policy (`str`): Policy name, if not specified will verify all
             expected_admin (`str`): Expected admin state
             expected_oper (`str`): Expected operational state
             max_time (`int`): Max time, default: 30
@@ -107,10 +107,14 @@ def verify_segment_routing_policy_state(device, policy, expected_admin='up',
         Returns
             result (`bool`): Verified result
     """
-    cmd = 'show segment-routing traffic-eng policy name {policy}'.format(policy=policy)
-    timeout = Timeout(max_time, check_interval)
+    if policy:
+        cmd = 'show segment-routing traffic-eng policy name {policy}'.format(policy=policy)
+    else:
+        cmd = 'show segment-routing traffic-eng policy all'
 
+    timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
+        result = True
         try:
             out = device.parse(cmd)
         except Exception as e:
@@ -118,28 +122,37 @@ def verify_segment_routing_policy_state(device, policy, expected_admin='up',
             timeout.sleep()
             continue
 
-        admin = out.get(policy, {}).get('status', {}).get('admin', '')
-        oper = out.get(policy, {}).get('status', {}).\
-                   get('operational', {}).get('state', '')
+        policy_list = []
+        if policy:
+            policy_list.append(policy)
+        else:
+            policy_list = list(out)
 
-        log.info("Policy {policy} Admin state is {admin}, expected state "
-                 "is {expected_admin}".format(policy=policy, admin=admin,
-                    expected_admin=expected_admin))
-        log.info("Policy {policy} Operational state is {oper}, expected "
-                 "state is {expected_oper}".format(policy=policy,
-                    oper=oper, expected_oper=expected_oper))
+        for plc in policy_list:
+            admin = out.get(plc, {}).get('status', {}).get('admin', '')
+            oper = out.get(plc, {}).get('status', {}).\
+                    get('operational', {}).get('state', '')
 
-        if (admin.lower() == expected_admin.lower() and 
-            oper.lower() == expected_oper.lower()):
+            log.info("Policy {policy} Admin state is {admin}, expected state "
+                    "is {expected_admin}".format(policy=plc, admin=admin,
+                        expected_admin=expected_admin))
+            log.info("Policy {policy} Operational state is {oper}, expected "
+                    "state is {expected_oper}".format(policy=plc,
+                        oper=oper, expected_oper=expected_oper))
+
+            if (admin.lower() != expected_admin.lower() or 
+                oper.lower() != expected_oper.lower()):
+                result = False
+
+        if result:
             return True
-
         timeout.sleep()
 
     return False
 
 
 def verify_segment_routing_policy_hops(device, policy, segment_list, 
-    max_time=30, check_interval=10):
+    max_time=30, check_interval=10, path_type='explicit'):
     """ Verify segment-routing policy hops with order and extract labels
         using 'show segment-routing traffic-eng policy name {policy}'
         
@@ -149,6 +162,7 @@ def verify_segment_routing_policy_hops(device, policy, segment_list,
             segment_list (`list`): Segment list to verify
             max_time (`int`): Max time, default: 30
             check_interval (`int`): Check interval, default: 10
+            path_type (`int`): Tath Type, default: explicit
         Returns
             result (`bool`): Verified result
             labels (`list`): Hops labels
@@ -171,16 +185,23 @@ def verify_segment_routing_policy_hops(device, policy, segment_list,
             value = p.search(line).group()
             if value:
                 slist.append(value)
-
         reqs = R([policy,'candidate_paths',
                 'preference','(?P<preference>.*)',
-                'path_type','explicit',
+                'path_type', path_type,
                 '(?P<category>.*)','(?P<name>.*)',
                 'hops','(?P<hops>.*)'])
         found = find([out], reqs, filter_=False, all_keys=True)
-
+        # for dynamic path type
+        reqs2 = R([policy,'candidate_paths',
+                'preference','(?P<preference>.*)',
+                'path_type', path_type,
+                'hops','(?P<hops>.*)'])
+        found2 = find([out], reqs2, filter_=False, all_keys=True)
         labels = []
         result = True
+        # if can't find explicit type, try the dynamic one
+        if not found:
+            found = found2
         if found:
             item = found[0][0]
             if len(item) == len(slist):
@@ -657,17 +678,24 @@ def verify_ip_and_sid_in_segment_routing_mapping_server(device, address_sid_dict
     return False
 
 
-def verify_segment_routing_traffic_eng_policies(device, admin_status=None, operational_status=None,
-                                                metric_type=None, path_accumulated_metric=None, path_status=None,
+def verify_segment_routing_traffic_eng_policies(device, policy_name=None, expected_preference=None, expected_admin_status=None,
+                                                expected_oper_status=None, expected_metric_type=None,
+                                                expected_path_accumulated_metric=None, expected_path_status=None,
+                                                expected_affinity_type=None, expected_affinities=None,
                                                 max_time=30, check_interval=10):
-    """ Verifies all configured traffic_eng policies have specific configurations
+    """ Verifies configured traffic_eng policies have expected configurations
 
         Args:
             device ('obj'): Device to use
-            admin_status ('str'): Admin status to verify
-            operational_status ('str'): Operational status to verify
-            metric_type ('str'): Metric type to verify
-            path_status ('str'): Path status to verify
+            policy_name ('str'): Policy name to verify. If not specified will verify all
+            expected_admin_status ('str'): Expected admin status
+            expected_oper_status ('str'): Expected operational status
+            expected_metric_type ('str'): Expected metric type
+            expected_path_accumulated_metric ('int'): Expected path accumulated metric
+            expected_path_status ('str'): Expected path status
+            expected_affinity_type ('str'): Expected affinity type
+            expected_affinities ('list'): Expected affinities
+            expected_preference ('int'): Expected preference path 
             max_time ('int'): Maximum amount of time to keep checking
             check_interval ('int'): How often to check
 
@@ -677,82 +705,137 @@ def verify_segment_routing_traffic_eng_policies(device, admin_status=None, opera
         Raises:
             N/A
     """
-    if (not admin_status and
-            not operational_status and
-            not metric_type and
-            not path_status and
-            not path_accumulated_metric):
+    if (not expected_admin_status and
+            not expected_oper_status and
+            not expected_metric_type and
+            not expected_path_accumulated_metric and
+            not expected_path_status and
+            not expected_affinity_type and
+            not expected_affinities):
         log.info('Must provide at-least one optional argument to verify')
         return False
+
+    if policy_name:
+        cmd = 'show segment-routing traffic-eng policy name {policy}'.format(policy=policy_name)
+    else:
+        cmd = 'show segment-routing traffic-eng policy all'
 
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
         try:
-            out = device.parse('show segment-routing traffic-eng policy all')
+            out = device.parse(cmd)
         except SchemaEmptyParserError:
             log.info('Parser output is empty')
             timeout.sleep()
             continue
-
         for policy in out:
             admin = out[policy].get('status', {}).get('admin', '')
-            if admin_status and admin_status not in admin:
+            if expected_admin_status and expected_admin_status != admin:
                 log.info('Expected admin status is "{admin_status}" actual is "{admin}"'
-                         .format(admin_status=admin_status,
+                         .format(admin_status=expected_admin_status,
                                  admin=admin))
                 break
 
             operational = out[policy].get('status', {}).get('operational', {}).get('state', '')
-            if operational_status and operational_status not in admin:
+            if expected_oper_status and expected_oper_status != operational:
                 log.info('Expected operational status is "{operational_status}" actual is "{operational}"'
-                         .format(operational_status=operational_status,
+                         .format(operational_status=expected_oper_status,
                                  operational=operational))
                 break
 
             for preference in out[policy].get('candidate_paths', {}).get('preference', {}):
+                if expected_preference and expected_preference != preference:
+                    continue
                 if out[policy]['candidate_paths']['preference'][preference].get('path_type'):
-
                     path_type_dict = out[policy]['candidate_paths']['preference'][preference]['path_type']
 
                     if 'dynamic' in path_type_dict:
                         metric = path_type_dict['dynamic'].get('metric_type', '')
+                        if expected_metric_type and expected_metric_type != metric:
+                            log.info('Expected metric type for path {path} is "{expected}" actual is "{actual}"'
+                                     .format(
+                                         expected=expected_metric_type, 
+                                         actual=metric,
+                                         path=preference))
+                            break
+
                         status = path_type_dict['dynamic'].get('status', '')
+                        if expected_path_status and expected_path_status != status:
+                            log.info('Expected status for path {path} is "{expected}" actual is "{actual}"'
+                                     .format(
+                                         expected=expected_path_status, 
+                                         actual=status,
+                                         path=preference))
+                            break
+
                         accumulated_metric = path_type_dict['dynamic'].get('path_accumulated_metric', '')
+                        if (expected_path_accumulated_metric and
+                                isinstance(accumulated_metric, int) and
+                                expected_path_accumulated_metric != accumulated_metric):
+                            log.info('Expected accumulated metric for path {path} is "{expected}" actual is "{actual}"'
+                                     .format(
+                                         expected=expected_path_accumulated_metric, 
+                                         actual=accumulated_metric,
+                                         path=preference))
+                            break
+
                     elif 'explicit' in path_type_dict:
-                        segment = list(path_type_dict['explicit'].get('segment_list', {}))[0]
-                        metric = path_type_dict['explicit'].get('segment_list', {}).get(segment, {}).get('metric_type', '')
-                        status = path_type_dict['explicit'].get('segment_list', {}).get(segment, {}).get('status', '')
-                        accumulated_metric = None  # Not possible from schema perspective but needed for logic
+                        for segment in path_type_dict['explicit'].get('segment_list', {}):
+                            metric = path_type_dict['explicit'].get('segment_list', {}).get(segment, {}).get('metric_type', '')
+
+                            if expected_metric_type and expected_metric_type != metric:
+                                log.info('Expected metric type for path {path} is "{expected}" actual is "{actual}"'
+                                         .format(
+                                             expected=expected_metric_type, 
+                                             actual=metric,
+                                             path=preference))
+                                break
+
+                            status = path_type_dict['explicit'].get('segment_list', {}).get(segment, {}).get('status', '')
+                            if expected_path_status and expected_path_status != status:
+                                log.info('Expected path status for path {path} is "{expected}" actual is "{actual}"'
+                                         .format(expected=expected_path_status, 
+                                                actual=status,
+                                                path=preference))
+                                break
+
+                        else:
+                            continue
+                        break
+
                     else:
                         log.info('Path type not defined in api call.')
                         break
 
-                    if metric_type and metric_type not in metric:
-                        log.info('Expected metric type is "{expected}" actual is "{actual}"'
-                                 .format(expected=metric_type,
-                                         actual=metric))
+                if out[policy]['candidate_paths']['preference'][preference].get('constraints'):
+                    constraint_dict = out[policy]['candidate_paths']['preference'][preference]['constraints']
+
+                    if expected_affinity_type and expected_affinity_type not in constraint_dict.get('affinity', {}):
+                        log.info('Expected affinity_type is for path {path} "{expected}". Actual is "{actual}"'
+                                 .format(expected=expected_affinity_type,
+                                         actual=list(constraint_dict.keys()),
+                                         path=preference))
                         break
 
-                    if path_status and path_status not in status:
-                        log.info('Expected path status is "{expected}" actual is "{actual}"'
-                                 .format(expected=path_status,
-                                         actual=status))
+                    if expected_affinities:
+                        for aff_type in constraint_dict.get('affinity', {}):
+                            if not set(expected_affinities).issubset(constraint_dict['affinity'][aff_type]):
+                                log.info('Expected affinities "{expected}" for path {path} are not set'
+                                         .format(expected=expected_affinities,
+                                                path=preference))
+                                break
+
+                        else:
+                            continue
                         break
 
-                    if (path_accumulated_metric and
-                            type(accumulated_metric) is int and
-                            path_accumulated_metric != accumulated_metric):
-                        log.info('Expected path accumulated metric is "{expected}" '
-                                 'actual is "{actual}"'
-                                 .format(expected=path_accumulated_metric,
-                                         actual=accumulated_metric))
-                        break
             else:
                 continue
             break
 
         else:
             return True
+        
         timeout.sleep()
 
     return False

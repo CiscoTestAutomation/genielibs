@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 
 class Restore(object):
 
-    def save_configuration(self, device, method, abstract, default_dir):
+    def save_configuration(self, device, method, abstract, default_dir, copy_to_standby=False):
         if method == 'checkpoint':
             # compose checkpoint name
             self.ckname = self.__class__.__name__ + \
@@ -52,6 +52,15 @@ class Restore(object):
             self.filetransfer.copyconfiguration(source=self.from_url,
                                                 destination=self.to_url,
                                                 device=device)
+            
+            if copy_to_standby:
+                self.stby_url = '{dir}{filename}'.format(dir='stby-{}'
+                    .format(default_dir[device.name]), filename=self.filename)
+
+                # copy config to stby-bootflash:
+                self.filetransfer.copyconfiguration(source=self.from_url,
+                                                    destination=self.stby_url,
+                                                    device=device)
 
             # Verify location:<filename> exists
             created = self.filetransfer.stat(target=self.to_url, device=device)

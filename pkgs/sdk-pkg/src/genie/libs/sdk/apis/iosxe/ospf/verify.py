@@ -1,6 +1,7 @@
 """Common verification functions for OSPF"""
 
 # Python
+import re
 import logging
 from prettytable import PrettyTable
 
@@ -187,6 +188,56 @@ def verify_ospf_neighbor_state(device, state, max_time=15, check_interval=5):
         timeout.sleep()
 
     return False
+
+
+def is_ospf_neighbor_established_on_interface(device, interface, max_time=30, check_interval=10):
+    """ Verify OSPF is established on the interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            max_time (`int`): Maximum wait time
+            check_interval (`int`): Check interval
+
+        Returns:
+            result (`bool`): Verified result
+    """
+    cmd = "show ip ospf neighbor"
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            out = device.parse(cmd)
+        except Exception as e:
+            log.error("Failed to parse '{cmd}': {e}".format(cmd=cmd, e=e))
+            timeout.sleep()
+            continue
+
+        if interface in out.get('interfaces', {}):
+            log.info("OSPF interface {intf} is established".format(intf=interface))
+            return True
+
+        timeout.sleep()
+
+    return False
+
+
+def is_ospf_neighbor_state_changed_log(device, interface):
+    """ Verify ospf interface didn't flap in the log
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+        Returns:
+            result(`str`): verify result
+    """
+    result = []
+    out = device.parse("show logging")
+    p = re.compile(r".*OSPF-5-ADJCHG:.* on {} from [\w]+ to [\w]+.*".format(interface))
+    for line in out["logs"]:
+        if p.match(line):
+            result.append(line)
+    return "\n".join(result)
 
 
 def is_ospf_shutdown(
@@ -381,10 +432,11 @@ def verify_ospf_sid_database_prefixes_advertised(device, advertising_router, all
             ['process_id',
             '(?P<process_id>.*)',
             'sids',
-            '(?P<sids>.*)',
-            'sid',
-            '(?P<sid>.*)'
-            ]
+            '(?P<sid>.*)',
+            'index',
+            '(?P<index>.*)',
+            'prefix',
+            '(.*)']
         )
 
         found = find([out], reqs, filter_=False, all_keys=True)
@@ -396,30 +448,28 @@ def verify_ospf_sid_database_prefixes_advertised(device, advertising_router, all
             unexpected_prefix = False
             for v in key_list:
                 # Get current dictionary from filtered values
+
                 # Current process id
-                c_process_id = v.get('process_id', None)
+                c_process_id = v.get('process_id')
                 # Current SID
-                c_sid = v.get('sid', None)
+                c_sid = v.get('sid')
+                # Current index
+                c_index = v.get('index')
 
                 # sid_dict:
-                #             'sids': {
-                #                 'total_entries': 1,
-                #                 1: {
-                #                     'sid': 1,
-                #                     'codes': 'L',
-                #                     'prefix': '10.66.12.12/32',
-                #                     'adv_rtr_id': '10.66.12.12',
-                #                     'area_id': 10.49.0.0
-                #                 }
-                #             }
-                sid_dict = out['process_id'][c_process_id]\
-                    ['sids'][c_sid]
+                #   {
+                #       'codes': 'L',
+                #       'prefix': '10.66.12.12/32',
+                #       'adv_rtr_id': '10.66.12.12',
+                #       'area_id': 10.49.0.0
+                #   }
+                sid_dict = out['process_id'][c_process_id]['sids'][c_sid]['index'][c_index]
 
-                # Current prefix for SID - Move to next SID values
-                c_prefix = sid_dict.get('prefix', None)
+                # Current prefix for SID
+                c_prefix = sid_dict.get('prefix')
 
-                # Current IP address for SID - Move to next SID values
-                c_advertising_router = sid_dict.get('adv_rtr_id', None)
+                # Current IP address for SID
+                c_advertising_router = sid_dict.get('adv_rtr_id')
 
                 if c_advertising_router and c_advertising_router == advertising_router:
                     for prefix in allowed_prefixes:
@@ -520,12 +570,13 @@ def verify_sid_in_ospf(device, process_id=None, sid=None, code=None, ip_address=
 
         reqs = R(
             ['process_id',
-            '(?P<process_id>.*)' if not process_id else process_id,
+            '(?P<process_id>{})'.format('.*' if not process_id else process_id),
             'sids',
-            '(?P<sids>.*)' if not sid else sid,
-            'sid',
-            '(?P<sid>.*)'
-            ]
+            '(?P<sid>{})'.format('.*' if not sid else sid),
+            'index',
+            '(?P<index>.*)',
+            'prefix',
+            '(.*)']
         )
 
         found = find([out], reqs, filter_=False, all_keys=True)
@@ -543,20 +594,17 @@ def verify_sid_in_ospf(device, process_id=None, sid=None, code=None, ip_address=
                 c_process_id = v.get('process_id', None)
                 # Current SID
                 c_sid = v.get('sid', None)
+                # Current index
+                c_index = v.get('index')
 
                 # sid_dict:
-                #             'sids': {
-                #                 'total_entries': 1,
-                #                 1: {
-                #                     'sid': 1,
-                #                     'codes': 'L',
-                #                     'prefix': '10.66.12.12/32',
-                #                     'adv_rtr_id': '10.66.12.12',
-                #                     'area_id': 10.49.0.0
-                #                 }
-                #             }
-                sid_dict = out['process_id'][c_process_id]\
-                    ['sids'][c_sid]
+                #   {
+                #       'codes': 'L',
+                #       'prefix': '10.66.12.12/32',
+                #       'adv_rtr_id': '10.66.12.12',
+                #       'area_id': 10.49.0.0
+                #   }
+                sid_dict = out['process_id'][c_process_id]['sids'][c_sid]['index'][c_index]
 
                 # Current prefix for SID - Move to next SID values
                 c_prefix = sid_dict.get('prefix', None)
@@ -566,7 +614,6 @@ def verify_sid_in_ospf(device, process_id=None, sid=None, code=None, ip_address=
 
                 # Current code for SID - Move to next SID values
                 c_code = sid_dict.get('codes', None)
-
 
                 # If SID is passed as argument and is not equal to current SID - Move to next SID values
                 if sid and c_sid != sid:
@@ -910,6 +957,7 @@ def is_ospf_tilfa_enabled_in_sr(
     check_interval=10,
     process_id=None,
     output=None,
+    state="enabled"
 ):
     """ Verify if TI-LFA is enabled in SR
 
@@ -928,9 +976,7 @@ def is_ospf_tilfa_enabled_in_sr(
         True/False
     """
 
-    log.info("Checking if TI-LFA is enabled in SR")
-
-    is_enabled = False
+    log.info("Checking if TI-LFA is {} in SR".format(state))
 
     if not output:
         try:
@@ -1024,7 +1070,8 @@ def is_ospf_tilfa_enabled_in_sr(
                         )
                     )
                     return True
-
+        if state=="disabled" :
+            break
         timeout.sleep()
         try:
             output = device.parse(
@@ -1230,22 +1277,7 @@ def verify_sid_in_ospf_pairs(device, pairs, process_id=None, max_time=90, check_
                 set expected_result = False if method should fail
                 set expected_result = True if method should pass (default value)
             output ('str'): Pass output as value
-            pairs = {
-                        'sids':
-                        {
-                            1: {
-                                'sid': 1,
-                                'codes': 'L',
-                                'prefix': '10.66.12.12/32'
-                                'adv_rtr_id': '10.66.12.12',
-                                'area_id': '10.49.0.0',
-                            },
-                            2: {
-                                'sid': 2,
-                                'codes': 'M'
-                            }
-                        }
-                    }
+            pairs = [{'sid': 10, 'prefix':'169.0.0.1/32', 'codes': 'M'}, {...}]
 
 
         Raises:
@@ -1254,10 +1286,6 @@ def verify_sid_in_ospf_pairs(device, pairs, process_id=None, max_time=90, check_
             True/False
 
     """
-    timeout = Timeout(max_time, check_interval)
-    out = None
-
-    verified_dict = {}
     pt = PrettyTable()
 
     pt.field_names = ['SID', 'Codes', 'Prefix', 'Adv Rtr Id', 'Area ID', 'Entry Exist']
@@ -1271,16 +1299,17 @@ def verify_sid_in_ospf_pairs(device, pairs, process_id=None, max_time=90, check_
         'entry_exist': 5
     }
 
+    timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
-        row = None
         try:
             out = device.parse("show ip ospf segment-routing sid-database", output=output)
+        except SchemaEmptyParserError:
+            return False
+        finally:
             # Set output to None for next iteration
             output = None
-        except (SchemaEmptyParserError):
-            return False
 
-        # ex.) Ouput for reference for dictionary out["process_id"]
+        # ex.) Ouput for reference for dictionary out
         # {
         #     'process_id': {
         #         '65109': {
@@ -1288,56 +1317,49 @@ def verify_sid_in_ospf_pairs(device, pairs, process_id=None, max_time=90, check_
         #             'sids': {
         #                 'total_entries': 1,
         #                 1: {
-        #                     'sid': 1,
-        #                     'codes': 'L',
-        #                     'prefix': '10.66.12.12/32',
-        #                     'adv_rtr_id': '10.66.12.12',
-        #                     'area_id': 10.49.0.0
+        #                     'index': {
+        #                         1: {
+        #                             'codes': 'L',
+        #                             'prefix': '10.66.12.12/32',
+        #                             'adv_rtr_id': '10.66.12.12',
+        #                             'area_id': '10.49.0.0'
+        #                         }
+        #                     }
         #                 }
         #             }
         #         }
         #     }
         # }
 
-        for p_id in out['process_id'].keys():
-            if process_id and p_id != process_id:
+        verified_entries = []
+        for pid in out.get('process_id', {}):
+            if process_id and pid != process_id:
                 continue
-            sids_dict = (out.get('process_id', None).
-                            get(p_id, None).
-                            get('sids', None)
-                        )
-            if sids_dict:
-                # ex.) Ouput for reference for dictionary pairs
-                # pairs = {
-                #         'sids':
-                #         {
-                #             1: {
-                #                 'sid': 1,
-                #                 'codes': 'L',
-                #                 'prefix': '10.66.12.12/32'
-                #                 'adv_rtr_id': '10.66.12.12',
-                #                 'area_id': '10.49.0.0',
-                #             },
-                #             2: {
-                #                 'sid': 2,
-                #                 'codes': 'M'
-                #             }
-                #         }
-                #     }
-                for sid, pairs_dict in pairs.get('sids', {}).items():
-                    sid_dict = sids_dict.get(sid, {})
 
-                    # sid_dict will be True if record found with matching SID
-                    if sid_dict:
-                        value_dict = verified_dict.setdefault('sids', {}). \
-                                    setdefault(sid, {})
+            sids_dict = out['process_id'].get(pid, {}).get('sids', {})
+            if sids_dict:
+
+                # ex.) Ouput for reference for pairs
+                # pairs = [{'sid': 10, 'prefix':'169.0.0.1/32', 'codes': 'M'}, {...}]
+                for pairs_dict in pairs:
+                    sid_to_verify = pairs_dict.get('sid')
+
+                    if sids_dict.get(sid_to_verify):
                         result = True
-                        # Will update verified_dict if key/value found else will set to None
-                        for key, value in pairs_dict.items():
-                            c_value = sid_dict.get(key, 'N/A')
-                            value_dict.update({key : c_value})
-                            if c_value == 'N/A':
-                                result = False
+                        for entry in sids_dict[sid_to_verify].get('index', {}):
+                            temp_dict = {}
+                            for k, v in pairs_dict.items():
+                                # Sid is already verified at this point. Just add and move to next item
+                                if k == 'sid':
+                                    temp_dict.update({k: sid_to_verify})
+                                    continue
+
+                                c_value = sids_dict[sid_to_verify]['index'][entry].get(k, 'N/A')
+                                temp_dict.update({k: c_value})
+                                if c_value == 'N/A':
+                                    result = False
+
+                            verified_entries.append(temp_dict)
                     else:
                         result = False
 
@@ -1345,21 +1367,22 @@ def verify_sid_in_ospf_pairs(device, pairs, process_id=None, max_time=90, check_
                     row = ['N/A'] * len(pt.field_names)
                     for key_name, key_index in fields_index.items():
                         # Add all values if result found else add values which we were expecting
-                        row[key_index] = sid_dict.get(key_name, 'N/A') if result else pairs_dict.get(key_name, 'N/A')
+                        row[key_index] = pairs_dict.get(key_name, 'N/A')
                     # Update result field of current row
-                    row[fields_index['sid']] = sid
                     row[fields_index['entry_exist']] = 'True' if result else 'False'
                     pt.add_row(row)
 
         # By default verbose=True will print the PrettyTable. verbose=False will avoid printing PrettyTable.
         if verbose:
             log.info(pt)
-        pt.clear_rows()
-        if expected_result and verified_dict == pairs:
+        if expected_result and verified_entries == pairs:
             return True
-        if not expected_result and verified_dict != pairs:
+        if not expected_result and verified_entries != pairs:
             return False
+
+        pt.clear_rows()
         timeout.sleep()
+
     return False
 
 

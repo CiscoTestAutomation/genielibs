@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 class Restore(object):
 
 
-    def save_configuration(self, device, method, abstract, default_dir):
+    def save_configuration(self, device, method, abstract, default_dir, copy_to_standby=False):
         ''' Save current configuration to a checkpoint file '''
 
         if method == 'checkpoint' or method == 'config_replace':

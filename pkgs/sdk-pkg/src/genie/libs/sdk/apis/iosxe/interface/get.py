@@ -36,6 +36,50 @@ from genie.libs.sdk.apis.iosxe.running_config.get import (
 log = logging.getLogger(__name__)
 
 
+def get_inserted_interface_by_media_type(device, media_type):
+    """ Get newly inserted interface by media type
+
+        Args:
+            device (`obj`): Device object
+            media_type (`str`): media type
+
+        Returns:
+            interface (`str`): interface name
+    """
+    p = re.compile(r'TRANSCEIVER-6-INSERTED:.*transceiver +module '
+                   r'+inserted +in +(?P<intf>\S+)')
+    out = device.api.get_logging_logs()
+    interfaces = []
+
+    for line in out:
+        m = p.search(line)
+        if m:
+            interfaces.append(m.groupdict()['intf'])
+
+    if not interfaces:
+        log.error("Failed to detect any newly inserted interface")
+        return None
+
+    for intf in interfaces:
+        cmd = "show interfaces {intf}".format(intf=intf)
+        try:
+            intf_dict = device.parse(cmd)
+        except Exception as e:
+            log.error("Failed to parse '{cmd}': {e}".format(cmd=cmd, e=e))
+            continue
+
+        media = intf_dict.get(intf, {}).get('media_type', '')
+        if media == media_type:
+            log.info("Found newly inserted interface {intf} with media type "
+                     "{type}".format(intf=intf, type=media_type))
+            return intf
+    else:
+        log.error("Failed to find an interface with media type {type} in "
+                  "these interfaces {intf}".format(type=media_type,
+                  intf=list(interfaces)))
+        return None
+
+
 def get_neighbor_interface_and_device(device, interface_alias):
     """ Get neighbor interface and device from topology
 
@@ -62,6 +106,47 @@ def get_neighbor_interface_and_device(device, interface_alias):
             )
         )
         return neighbor_interface.name, neighbor_interface.device
+    else:
+        return None, None
+
+
+def get_neighbor_interface_and_device_by_link(device, link_name):
+    """ Get neighbor interface and device by link
+
+        Args:
+            device (`obj`): Device object
+            link_name (`str`): link name
+
+        Returns:
+            Tuple: (str: neighbor interface, obj: neighbor device)
+
+        Raises:
+            None
+    """
+    target_link = None
+    for link in device.links:
+        if link.name == link_name:
+            target_link = link
+
+    if not target_link:
+        log.error("Failed to get link {name}".format(name=link_name))
+        return None, None
+
+    interface_list = target_link.find_interfaces()
+
+    if interface_list:
+        for interface in interface_list:
+            if interface.device == device:
+                dev_interface = interface.name
+            else:
+                peer_interface = interface.name
+                peer_device = interface.device
+
+        log.info("Found link {link} is connected to interface {intf} on {dev} "
+                 "and interface {peer_intf} on {peer}".format(
+                    link=link_name, intf=dev_interface, dev=device.name,
+                    peer_intf=peer_interface, peer=peer_device.name))
+        return peer_interface, peer_device
     else:
         return None, None
 
@@ -719,13 +804,14 @@ def get_interface_address_mask_running_config(device, interface, address_family=
             return ip_address, mask
 
 
-def get_interface_packet_output_rate(device, interface, seconds=60):
-    """ Get rate of output packet in interface seconds apart
+def get_interface_packet_output_rate(device, interface, seconds=60, field='out_pkts'):
+    """ Get rate from out_pkts by taking average across the defined seconds
 
         Args:
             device ('obj'): Device object
             interface ('str'): Interface name
             seconds ('int'): Seconds to wait between show commands
+            field ('str'): Used for get_interface_packet_input_rate
 
         Returns:
             Traffic rate
@@ -769,7 +855,7 @@ def get_interface_packet_output_rate(device, interface, seconds=60):
         counter_before = get_interface_packet_counter(
             device=device,
             interface=interface,
-            counter_field="out_pkts",
+            counter_field=field,
             output=parsed_output_before,
         )
         if counter_before is None:
@@ -778,26 +864,54 @@ def get_interface_packet_output_rate(device, interface, seconds=60):
         counter_after = get_interface_packet_counter(
             device=device,
             interface=interface,
-            counter_field="out_pkts",
+            counter_field=field,
             output=parsed_output_after,
         )
         if counter_after is None:
             return
 
-        output_rate = round((counter_after - counter_before) / delta_time, 2)
+        rate = round((counter_after - counter_before) / delta_time, 2)
 
     except SchemaEmptyParserError as e:
         return
     except ValueError as e:
         return
 
-    log.info(
-        "Packet output rate for interface {intf} is {count}".format(
-            intf=interface, count=output_rate
+    if 'out_pkts' in field:
+        log.info(
+            "Packet output rate for interface {intf} is {count}".format(
+                intf=interface, count=rate
+            )
         )
-    )
+    elif 'in_pkts' in field:
+        log.info(
+            "Packet input rate for interface {intf} is {count}".format(
+                intf=interface, count=rate
+            )
+        )
 
-    return output_rate
+    return rate
+
+
+def get_interface_packet_input_rate(device, interface, seconds=60):
+    """ Get rate from in_pkts by taking average across the defined seconds
+
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            seconds ('int'): Seconds to wait between show commands
+
+        Returns:
+            Traffic rate
+
+            if any error return None
+            - to separate rate 0.0 and None value
+
+        Raises:
+            None
+    """
+    return get_interface_packet_output_rate(
+        device=device, interface=interface, seconds=seconds, field='in_pkts')
 
 
 def get_interface_switchport_access_vlan(device, interface):

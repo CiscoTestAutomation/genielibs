@@ -1589,7 +1589,7 @@ class BgpOutput(object):
                                                'route_distinguisher': '100:100'},
                                            'vpnv6 unicast RD 100:100': {
                                                'default_vrf': 'VRF1',
-                                               'prefixes': {'2001:11:12001:db8:1::11/128': {
+                                               'prefixes': {'2001:db8:1::11/128': {
                                                    'available_path': '1',
                                                    'best_path': '1',
                                                    'index': {1: {'gateway': '0.0.0.0',
@@ -1704,7 +1704,7 @@ class BgpOutput(object):
                                                               'table_version': '2'}}},
                                                                       'ipv6 unicast': {
                                                                           'prefixes': {
-                                                                              '20010.4.1.2001:db8:1::1/128': {
+                                                                              '2001:db8:1::1/128': {
                                                                                   'available_path': '1',
                                                                                   'best_path': '1',
                                                                                   'index': {
@@ -3011,7 +3011,7 @@ class BgpOutput(object):
         Route Distinguisher: 100:200
         *>i2001:db8:aaaa:1::/113       ::ffff:10.36.3.3
                                                     4444        100          0 i
-        *>i2001:db8:2001:db8:aaaa:1::8000/113   ::ffff:10.36.3.3
+        *>i2001:db8:aaaa:1::8000/113   ::ffff:10.36.3.3
                                                     4444        100          0 i
 
         Route Distinguisher: 0xbb00010000000000
@@ -3460,7 +3460,7 @@ class BgpOutput(object):
                                     '10.64.4.4'},
                             'vpnv6 unicast RD 100:100': {
                                 'prefixes': {
-                                    '2001:11:12001:db8:1::11/128': {
+                                    '2001:db8:1::11/128': {
                                         'index': {
                                             1: {
                                                 'gateway':
@@ -3562,7 +3562,7 @@ class BgpOutput(object):
                                                  'default)',
                                         'table_version': '2'}}},
                             'ipv6 unicast': {'prefixes': {
-                                '20010.4.1.2001:db8:1::1/128': {
+                                '2001:db8:1::1/128': {
                                     'index': {
                                         1: {
                                             'gateway': '0.0.0.0',
@@ -4692,7 +4692,7 @@ class BgpOutput(object):
                                                                     'origin_codes': 'i',
                                                                     'status_codes': '*>',
                                                                     'weight': 0}}},
-                                                            '2001:db8:2001:db8:aaaa:1::8000/113': {
+                                                            '2001:db8:aaaa:1::8000/113': {
                                                                 'index': {
                                                                     1: {'localprf': 100,
                                                                         'next_hop':

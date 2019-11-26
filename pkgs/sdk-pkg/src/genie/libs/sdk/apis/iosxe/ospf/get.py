@@ -856,3 +856,37 @@ def get_ospf_interface_affinity_bits(device, interface):
     else:
         log.error("Failed to get affinity bits on {intf}".format(intf=interface))
         return None
+
+
+def get_ospf_process_id_on_interface(device, interface):
+    """ Get ospf interface process id
+
+        Args:
+            device ('obj'): device object
+            interface ('str'): interface name
+
+        Returns:
+            ospf_id ('str'): ospf process id
+    """
+    log.info("Getting ospf interface {intf} process id from device {dev}"
+        .format(intf=interface, dev=device.name))
+
+    cmd = 'show ip ospf interface {intf}'.format(intf=interface)
+    try:
+        out = device.parse(cmd)
+    except Exception as e:
+        log.error("Failed to parse '{cmd}': {e}".format(cmd=cmd, e=e))
+        return None
+
+    reqs = R(['vrf', '(?P<vrf>.*)', 'address_family',
+              '(?P<af>.*)', 'instance', '(?P<instance>.*)',
+              'areas', '(?P<area>.*)', 'interfaces', interface,
+              'name', '(?P<name>.*)'])
+
+    found = find([out], reqs, filter_=False, all_keys=True)
+
+    if found:
+        keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={}, source=found, all_keys=True)
+        return keys[0]['instance']
+    else:
+        return None

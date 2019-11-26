@@ -9,7 +9,6 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # PyATS
 from ats.utils.fileutils import FileUtils
-from ats.utils.fileutils import FileUtils
 from pyats.aetest.steps import Steps
 
 # Unicon
@@ -33,7 +32,7 @@ from genie.libs.sdk.apis.utils import reconnect_device
 log = logging.getLogger(__name__)
 
 
-def prepare_issu(device, image, path, address, protocol="tftp", disks=None):
+def prepare_issu(device, image, path, address, protocol="tftp", disks=None, timeout_seconds=600):
     """ Prepare image and check device before starting issu process
         Args:
             device ('obj'): Device object
@@ -42,12 +41,12 @@ def prepare_issu(device, image, path, address, protocol="tftp", disks=None):
             protocol ('str'): Protocol to be used on copying image to device
             address ('str'): Address of server from where image will be copied.
             disks ('list'): List of disks where image will be copied
+            timeout_seconds ('int'): Maximum duration to wait for file copy
         Raises:
             Exception: Failed preparing ISSU image
         Returns:
             None
     """
-
     if disks is None:
         disks = ["bootflash:", "stby-bootflash:"]
 
@@ -60,13 +59,15 @@ def prepare_issu(device, image, path, address, protocol="tftp", disks=None):
                 protocol=protocol,
                 address=address,
                 image=image,
+                timeout_seconds=timeout_seconds
             )
         except Exception as e:
             raise Exception(e)
 
 
 def copy_issu_image_to_disk(
-    device, disk, path, address, image, protocol="tftp"
+    device, disk, path, address, image, protocol="tftp", 
+    timeout_seconds=600, wait_time_after_copy=0,
 ):
     """ Copy image from a server to disk
         Args:
@@ -76,21 +77,25 @@ def copy_issu_image_to_disk(
             path ('str'): Path on server
             protocol ('str'): Transfer protocol
             image ('str'): Image name
+            timeout_seconds ('int'): Maximum duration to wait for file copy
+            wait_time_after_copy ('int'): Wait time after file copy
         Raises:
             Exception: Failed copying ISSU image to disk
         Returns:
             None
     """
 
-    from_url = "{protocol}://{address}//{path}/{image}".format(
+    from_url = "{protocol}://{address}/{path}/{image}".format(
         protocol=protocol, address=address, path=path, image=image
     )
 
     filetransfer = FileUtils.from_device(device)
 
     filetransfer.copyfile(
-        source=from_url, destination=disk, device=device, timeout_seconds="600"
+        source=from_url, destination=disk, device=device, timeout_seconds=timeout_seconds
     )
+
+    time.sleep(wait_time_after_copy)
 
     output = device.execute(
         "dir {disk}{image}".format(disk=disk, image=basename(image))
@@ -103,12 +108,13 @@ def copy_issu_image_to_disk(
         )
 
 
-def perform_issu(device, image, disk, steps=Steps()):
+def perform_issu(device, image, disk, timeout=1200, steps=Steps()):
     """ Execute ISSU on device
         Args:
             device ('obj'): Device object
             image ('str'): Image name on disk
             disk ('str'): Disk where is located image
+            timeout ('int'): Timeout in second for each section
         Raise:
             None
         Returns:
@@ -126,7 +132,8 @@ def perform_issu(device, image, disk, steps=Steps()):
         standby_slot = "R{}".format(slot_number)
         try:
             issu_loadversion(
-                device=device, standby_slot=slot_number, disk=disk, image=image
+                device=device, standby_slot=slot_number,
+                disk=disk, image=image, timeout=timeout
             )
         except Exception:
             step.failed("Unable to execute 'issu loadversion'")
@@ -153,7 +160,7 @@ def perform_issu(device, image, disk, steps=Steps()):
 
         # Run version
         try:
-            issu_runversion(device=device)
+            issu_runversion(device=device, timeout=timeout)
         except (Exception, ConnectionError) as e:
             step.failed(e)
 
@@ -168,7 +175,7 @@ def perform_issu(device, image, disk, steps=Steps()):
 
         # Accept version
         try:
-            issu_acceptversion(device=device)
+            issu_acceptversion(device=device, timeout=timeout)
         except Exception as e:
             step.failed(e)
 
@@ -201,7 +208,7 @@ def perform_issu(device, image, disk, steps=Steps()):
 
         # Commit version
         try:
-            issu_commitversion(device=device)
+            issu_commitversion(device=device, timeout=timeout)
         except Exception as e:
             step.failed(e)
 
@@ -214,7 +221,7 @@ def perform_issu(device, image, disk, steps=Steps()):
 
         standby_slot = "R{}".format(slot_number)
         try:
-            reload_issu_slot(device=device, slot=standby_slot)
+            reload_issu_slot(device=device, slot=standby_slot, timeout=timeout)
         except Exception as e:
             step.failed(e)
 
@@ -269,7 +276,7 @@ def issu_runversion(device, timeout=300):
 
     log.info("Reconnecting device")
     try:
-        reconnect_device(device=device)
+        reconnect_device(device=device, max_time=timeout)
     except Exception as e:
         log.error("Failed to reconnect to device {dev}")
         raise ConnectionError(
@@ -432,7 +439,7 @@ def downgrade_issu_image_on_router(
 
     log.info("Reconnecting device")
     try:
-        reconnect_device(device=device)
+        reconnect_device(device=device, max_time=timeout)
     except Exception as e:
         raise ConnectionError(
             "Failed to connect to device {dev}".format(dev=device.name)
