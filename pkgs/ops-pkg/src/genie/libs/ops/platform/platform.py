@@ -1,3 +1,4 @@
+import re
 # Genie
 from genie.ops.base import Base
 

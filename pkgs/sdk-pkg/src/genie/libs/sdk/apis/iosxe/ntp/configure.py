@@ -9,7 +9,7 @@ from unicon.core.errors import SubCommandFailure
 log = logging.getLogger(__name__)
 
 
-def remove_ntp_system_peer(device, system_peer):
+def remove_ntp_system_peer(device, system_peer, vrf=None):
     """ Remove ntp system peer config
 
         Args:
@@ -20,8 +20,23 @@ def remove_ntp_system_peer(device, system_peer):
         Raises:
             SubCommandFailure
     """
+    remove_config = ''
+    log.info("Getting ntp server infomation")
+    out = device.execute('show running-config | include ntp server')
+    for line in out.splitlines():
+        line = line.strip()
+        if vrf and vrf != 'default':
+            if system_peer in line and vrf in line:
+                remove_config = line
+                break
+        else:
+            if system_peer in line:
+                remove_config = line
+                break
+
+    log.info("Removing ntp server: {}".format(remove_config))
     try:
-        device.configure("no ntp server {}".format(system_peer))
+        device.configure("no {}".format(remove_config))
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Failed in removing ntp system "
@@ -29,7 +44,7 @@ def remove_ntp_system_peer(device, system_peer):
             "Error: {e}".format(
                 system_peer=system_peer, device=device.name, e=str(e)
             )
-        ) from e
+        )
 
 
 def remove_ntp_server(device, servers):

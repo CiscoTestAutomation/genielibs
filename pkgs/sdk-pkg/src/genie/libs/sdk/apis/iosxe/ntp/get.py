@@ -56,7 +56,7 @@ def get_ntp_source_interface_ip(device):
     return ip, interface
 
 
-def get_ntp_outgoing_interface(device, system_peer):
+def get_ntp_outgoing_interface(device, system_peer, vrf=None):
     """ Get the interface which is used to communicate with NTP system peer
 
         Args:
@@ -65,12 +65,16 @@ def get_ntp_outgoing_interface(device, system_peer):
         Returns:
             interface (`str`): Interface name
     """
+    if vrf:
+        cmd = "show ip cef vrf {vrf} {ip}".format(vrf=vrf, ip=system_peer)
+    else:
+        cmd = "show ip cef {ip}".format(ip=system_peer)
+
     try:
-        out = device.parse("show ip cef {}".format(system_peer))
-    except SchemaEmptyParserError as e:
+        out = device.parse(cmd)
+    except Exception as e:
         log.error(
-            "Command 'show ip cef {}' "
-            "did not return any results".format(system_peer)
+            "Failed to parse cmd {cmd}: {e}".format(cmd=cmd, e=e)
         )
         return None
 
@@ -139,8 +143,7 @@ def get_ntp_md5_peer(device, vrf="default", mode="client"):
             sub_dict
             and sub_dict["isconfigured"] == True
             and sub_dict["authenticated"] == True
-            and sub_dict["sane"] == True
-            and sub_dict["valid"] == True
+            and sub_dict["unsynced"] == False
         ):
             return peer
 
@@ -182,6 +185,28 @@ def get_ntp_system_peer(device, peer_list, max_time=90, check_interval=15):
 
         timeout.sleep()
 
+    return None
+
+
+def get_ntp_system_peer_vrf(device, system_peer):
+    """ Get a ntp system peer's vrf name
+
+        Args:
+            device (`obj`): Device object
+            system_peer (`str`): System peer ip
+        Returns:
+            vrf (`str`): vrf name
+    """
+    p = re.compile(r'vrf\s+(?P<vrf>\S+)')
+    out = device.execute('show running-config | include ntp server')
+    for line in out.splitlines():
+        line = line.strip()
+        if system_peer in line:
+            # try to get vrf
+            m = p.search(line)
+            if m:
+                vrf = m.groupdict()['vrf']
+                return vrf
     return None
 
 

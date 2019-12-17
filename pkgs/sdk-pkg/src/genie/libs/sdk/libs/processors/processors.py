@@ -22,6 +22,7 @@ from genie.libs import sdk
 from genie.abstract import Lookup
 from genie.harness.utils import connect_device
 from genie.harness.exceptions import GenieTgnError
+from genie.harness.libs.prepostprocessor.processors import report
 from genie.utils.profile import pickle_traffic, unpickle_traffic, unpickle_stream_data
 import re
 import sys 
@@ -34,40 +35,6 @@ import pdb
 log = logging.getLogger(__name__)
 
 name_mapping = {}
-
-def report(func):
-    def wrapper(section, *args, **kwargs):
-        start_reporter(section, func)
-        try:
-            result = func(section, *args, **kwargs)
-        finally:
-            func.result = wrapper.result
-            stop_reporter(section, func)
-        return result
-    return wrapper
-
-def start_reporter(section, func, name=None):
-    if not issubclass(type(section), Testcase):
-        # If section, dont start
-        return
-    name = name if name else func.__name__
-    if name in name_mapping:
-        name = name_mapping[name]
-    func.uid = TestableId(name, parent=section)
-    func.logfile = managed_handlers.tasklog.logfile
-    func.source = AttrDict()
-    func.source.name = __file__
-    func.source.location = func.__code__.co_firstlineno
-    func.description = func.__doc__
-    func.result = Passed
-    reporter.start_section(func)
-
-def stop_reporter(section, func):
-    section.result += func.result
-    if not issubclass(type(section), Testcase):
-        # If section, dont stop
-        return
-    reporter.stop_section(func)
 
 def _get_connection_class(section):
 
@@ -84,7 +51,7 @@ def _get_connection_class(section):
 # processor: send_arp
 # ==============================================================================
 
-#@report
+@report
 def send_arp(section, arp_wait_time=30):
 
     '''Trigger Processor:
@@ -138,7 +105,7 @@ def send_arp(section, arp_wait_time=30):
 # processor: send_ns
 # ==============================================================================
 
-#@report
+@report
 def send_ns(section, ns_wait_time=30):
 
     '''Trigger Processor:
@@ -192,7 +159,7 @@ def send_ns(section, ns_wait_time=30):
 # processor: apply_traffic
 # ==============================================================================
 
-#@report
+@report
 def apply_traffic(section, apply_wait_time=30):
 
     '''Trigger Processor:
@@ -246,7 +213,7 @@ def apply_traffic(section, apply_wait_time=30):
 # processor: create_genie_statistics_view
 # ==============================================================================
 
-#@report
+@report
 def create_genie_statistics_view(section, view_create_interval=30, view_create_iteration=5, disable_tracking=False, disable_port_pair=False):
 
     '''Trigger Processor:

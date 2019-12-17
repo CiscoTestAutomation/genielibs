@@ -7,7 +7,7 @@ import logging
 import inspect
 import argparse
 import importlib
-IGNORE_DIR = ['.git', '__pycache__', 'template', 'tests']
+IGNORE_DIR = ['.git', '__pycache__', 'template', 'tests', 'utils']
 IGNORE_FILE = ['__init__.py', 'base.py', 'common.py']
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)

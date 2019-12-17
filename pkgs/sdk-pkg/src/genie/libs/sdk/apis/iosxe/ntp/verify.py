@@ -7,9 +7,12 @@ import time
 from datetime import datetime
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
-# Genie
+# pyats
 from pyats.async_ import pcall
+
+# Genie
 from genie.utils.timeout import Timeout
+from genie.libs.sdk.apis.utils import time_to_int
 
 log = logging.getLogger(__name__)
 
@@ -191,7 +194,9 @@ def verify_ntp_time(device, target, max_time=90, check_interval=15):
         p = re.compile(r"\d+:\d+:\d+")
         for key in t1:
             if "time" == key:
-                result = p.findall(t1[key]) == p.findall(t2[key])
+                a = time_to_int(p.search(t1[key]).group())
+                b = time_to_int(p.search(t2[key]).group())
+                result = abs(a - b) <= 1
             else:
                 result = t1[key] == t2[key]
             if not result:

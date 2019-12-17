@@ -839,12 +839,16 @@ class RoutingOutput(object):
                     'ipv4': {
                         'routes': {
                             '10.23.90.0/24': {
-                                'ip': '10.23.90.0',
-                                'metric': '0',
+                                'active': True,
+                                'metric': 0,
                                 'next_hop': {
-                                    'metric': '0',
-                                    'outgoing_interface': 'GigabitEthernet0/0/0/1.90',
+                                    'outgoing_interface': {
+                                        'GigabitEthernet0/0/0/1.90': {
+                                            'outgoing_interface': 'GigabitEthernet0/0/0/1.90',
+                                        },
+                                    },
                                 },
+                                'route': '10.23.90.0/24',
                             },
                         },
                     },

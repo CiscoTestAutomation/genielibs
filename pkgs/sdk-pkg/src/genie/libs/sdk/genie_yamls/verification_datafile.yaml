@@ -901,9 +901,9 @@ Verify_ConfigurationSystemNtpSet:
   context: cli
   source:
     class: genie.harness.base.Template
-Verify_ControllersFiaDiagshellL2show:
+Verify_ControllersFiaDiagshellL2showLocation:
   cmd:
-    class: show_controllers.ShowControllersFiaDiagshellL2show
+    class: show_controllers.ShowControllersFiaDiagshellL2showLocation
     pkg: genie.libs.parser
   context: cli
   source:
@@ -1680,14 +1680,14 @@ Verify_IpProtocols:
     class: genie.harness.base.Template
 Verify_IpRoute_protocol_bgp:
   cmd:
-    class: show_ip_route.ShowIpRoute
+    class: show_routing.ShowIpRoute
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_IpRoute_protocol_ospf:
   cmd:
-    class: show_ip_route.ShowIpRoute
+    class: show_routing.ShowIpRoute
     pkg: genie.libs.parser
   context: cli
   source:
@@ -1939,14 +1939,14 @@ Verify_Ipv6RouteUpdated:
     class: genie.harness.base.Template
 Verify_Ipv6Route_protocol_bgp:
   cmd:
-    class: show_ip_route.ShowIpv6Route
+    class: show_routing.ShowIpv6Route
     pkg: genie.libs.parser
   context: cli
   source:
     class: genie.harness.base.Template
 Verify_Ipv6Route_protocol_ospf:
   cmd:
-    class: show_ip_route.ShowIpv6Route
+    class: show_routing.ShowIpv6Route
     pkg: genie.libs.parser
   context: cli
   source:
@@ -2035,9 +2035,9 @@ Verify_L2routeEvpnMac:
   context: cli
   source:
     class: genie.harness.base.Template
-Verify_L2routeEvpnMacIp:
+Verify_L2routeEvpnMacIpAll:
   cmd:
-    class: show_l2route.ShowL2routeEvpnMacIp
+    class: show_l2route.ShowL2routeEvpnMacIpAll
     pkg: genie.libs.parser
   context: cli
   source:

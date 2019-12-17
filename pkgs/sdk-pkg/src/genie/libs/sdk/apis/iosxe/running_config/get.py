@@ -120,8 +120,6 @@ def get_running_config(device, keyword=None):
             keyword ('str') : Configuration to be extracted from device
         Returns:
             List containing configuration
-        Raises:
-            Exceptin
     """
 
     if keyword:
@@ -131,8 +129,22 @@ def get_running_config(device, keyword=None):
     else:
         output = device.execute("show running-config")
 
-    if not output:
-        raise Exception("Failed to get running configuration on device")
+    return output.splitlines()
+
+
+def get_running_config_section(device, keyword):
+    """ Return list with configuration section starting with passed keyword
+
+        Args:
+            device ('obj')  : Device object to extract configuration
+            keyword ('str') : Configuration to be extracted from device
+        Returns:
+            Return list of configuration section starting with the passed keyword
+    """
+
+    output = device.execute(
+        "show running-config | sec ^{keyword}".format(keyword=keyword)
+    )
 
     return output.splitlines()
 

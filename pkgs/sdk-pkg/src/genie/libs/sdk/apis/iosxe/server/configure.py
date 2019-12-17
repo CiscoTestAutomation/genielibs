@@ -49,15 +49,16 @@ def configure_tacacs_server(device, server_config):
     config = []
     for sc in server_config:
         if "host" in sc:
-            config.append("tacacs-server host {}\n".format(sc["host"]))
+            config.append("tacacs server {}\n".format(sc["host"]))
+            config.append("address ipv4 {}\n".format(sc["host"]))
         if "timeout" in sc:
-            config.append("tacacs-server timeout {}\n".format(sc["timeout"]))
+            config.append("timeout {}\n".format(sc["timeout"]))
         if "key_type" in sc and "key" in sc:
             config.append(
-                "tacacs-server key {} {}\n".format(sc["key_type"], sc["key"])
+                "key {} {}\n".format(sc["key_type"], sc["key"])
             )
-        if "server" in sc:
-            config.append("tacacs server {}".format(sc["server"]))
+
+        config.append("exit\n")
 
         try:
             device.configure("".join(config))

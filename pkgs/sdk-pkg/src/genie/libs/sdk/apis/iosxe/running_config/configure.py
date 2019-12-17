@@ -9,6 +9,7 @@ from ats.easypy import runtime
 # Running-Config
 from genie.libs.sdk.apis.iosxe.running_config.get import (
     get_running_config,
+    get_running_config_section
 )
 
 # unicon
@@ -122,6 +123,37 @@ def remove_running_config(device, remove_config):
 
     try:
         device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to remove {config} configuration on device "
+            "{device}".format(device=device.name, config=config_list)
+        ) from e
+
+
+def remove_tacacs_server(device, remove_config=None, keyword='tacacs'):
+    """ Remove tacacs server configuration from device
+
+        Args:
+            device ('obj')        : Device object to modify configuration
+            remove_config ('list') : Configuration to be removed from device
+            keyword ('str') : keyword the configuration should start with 
+
+        Returns:
+            None
+    """
+    config_list = []
+    if not remove_config:
+        remove_config = get_running_config_section(device=device, keyword=keyword)
+
+    for line in remove_config:
+        line = line.strip()
+        if line.startswith(keyword):
+            config_list.append(line)
+
+    unconfig_list = list(map(lambda conf: "no " + conf, config_list))
+
+    try:
+        device.configure(unconfig_list)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Failed to remove {config} configuration on device "

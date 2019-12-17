@@ -7,7 +7,8 @@ import logging
 from enum import Enum
 from copy import deepcopy
 from ipaddress import _BaseAddress
-from collections import defaultdict, Iterable
+from collections import defaultdict
+from collections.abc import Iterable
 
 # import genie
 from genie.utils.diff import Diff

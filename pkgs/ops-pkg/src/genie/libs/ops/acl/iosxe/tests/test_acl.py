@@ -14,14 +14,14 @@ from genie.libs.ops.acl.iosxe.tests.acl_output import AclOutput
 from genie.libs.parser.iosxe.show_acl import ShowAccessLists
 
 
-class test_acl(unittest.TestCase):
+class TestAcl(unittest.TestCase):
 
     def setUp(self):
         self.device = Device(name='aDevice')
         self.device.os = 'iosxe'
-        self.device.custom['abstraction'] = {'order':['os']}
-        self.device.mapping={}
-        self.device.mapping['cli']='cli'
+        self.device.custom['abstraction'] = {'order': ['os']}
+        self.device.mapping = {}
+        self.device.mapping['cli'] = 'cli'
         # Give the device as a connection type
         # This is done in order to call the parser on the output provided
         self.device.connectionmgr.connections['cli'] = self.device

@@ -46,7 +46,7 @@ log = logging.getLogger(__name__)
 # ==============================================================================
 
 
-#@report
+@report
 def verify_state(
     section,
     iteration=5,

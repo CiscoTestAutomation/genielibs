@@ -144,7 +144,7 @@ Verify_BgpOpenconfigYang_yang:
 Verify_BgpVrfDbVrfAll:
   devices: ['uut']
   exclude: []
-Verify_ControllersFiaDiagshellL2show:
+Verify_ControllersFiaDiagshellL2showLocation:
   devices: ['uut']
   exclude: []
 Verify_Dir:
@@ -178,8 +178,6 @@ Verify_InstallActiveSummary:
   exclude: []
 Verify_InterfaceBrief:
   devices: ['uut']
-Verify_InterfaceSwitchport:
-  devices: ['uut']
 Verify_InterfacesAccounting:
   devices: ['uut']
   exclude: []
@@ -206,10 +204,7 @@ Verify_Ipv6VrfAllInterface:
   iteration:
     attempt: 9
     interval: 10
-Verify_L2routeEvpnMac:
-  devices: ['uut']
-  exclude: []
-Verify_L2routeEvpnMacIp:
+Verify_L2routeEvpnMacIpAll:
   devices: ['uut']
   exclude: []
 Verify_L2routeTopology:

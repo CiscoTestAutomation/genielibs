@@ -32,12 +32,14 @@ from genie.libs.sdk.apis.utils import reconnect_device
 log = logging.getLogger(__name__)
 
 
-def prepare_issu(device, image, path, address, protocol="tftp", disks=None, timeout_seconds=600):
+def prepare_issu(device, image, path, address, overwrite=False,
+                 protocol="tftp", disks=None, timeout_seconds=600):
     """ Prepare image and check device before starting issu process
         Args:
             device ('obj'): Device object
             image ('str'): Image name
             path ('str'): Path on dsetr
+            overwrite ('bool'): Flag to overwrite existing file
             protocol ('str'): Protocol to be used on copying image to device
             address ('str'): Address of server from where image will be copied.
             disks ('list'): List of disks where image will be copied
@@ -59,16 +61,16 @@ def prepare_issu(device, image, path, address, protocol="tftp", disks=None, time
                 protocol=protocol,
                 address=address,
                 image=image,
-                timeout_seconds=timeout_seconds
+                timeout_seconds=timeout_seconds,
+                overwrite=overwrite,
             )
         except Exception as e:
             raise Exception(e)
 
 
-def copy_issu_image_to_disk(
-    device, disk, path, address, image, protocol="tftp", 
-    timeout_seconds=600, wait_time_after_copy=0,
-):
+def copy_issu_image_to_disk(device, disk, path, address, image,
+                            protocol="tftp", timeout_seconds=600, 
+                            wait_time_after_copy=0, overwrite=False):
     """ Copy image from a server to disk
         Args:
             device ('obj'): Device object
@@ -79,6 +81,7 @@ def copy_issu_image_to_disk(
             image ('str'): Image name
             timeout_seconds ('int'): Maximum duration to wait for file copy
             wait_time_after_copy ('int'): Wait time after file copy
+            overwrite ('bool'): Flag to overwrite existing file
         Raises:
             Exception: Failed copying ISSU image to disk
         Returns:
@@ -92,7 +95,8 @@ def copy_issu_image_to_disk(
     filetransfer = FileUtils.from_device(device)
 
     filetransfer.copyfile(
-        source=from_url, destination=disk, device=device, timeout_seconds=timeout_seconds
+        source=from_url, destination=disk, device=device,
+        timeout_seconds=timeout_seconds, overwrite=overwrite
     )
 
     time.sleep(wait_time_after_copy)
