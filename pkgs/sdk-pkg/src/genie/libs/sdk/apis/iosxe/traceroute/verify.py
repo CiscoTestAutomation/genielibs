@@ -2,7 +2,7 @@
 import logging
 
 # pyATS
-from ats.utils.objects import find, R
+from pyats.utils.objects import find, R
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
@@ -83,7 +83,7 @@ def verify_traceroute(device, addr=None, vrf=None, proto=None, ingress=None, sou
                     expected_output_label_list = ['16052','16062','16063','39']
             expected_hop_list ('list'): Expected hop list
                 ex.) 
-                    expected_hop_list = ['27.86.198.29', '106.187.14.129', '106.187.14.34', '192.168.1.1']
+                    expected_hop_list = ['10.19.198.29', '10.169.14.129', '10.169.14.34', '192.168.1.1']
         Returns:
             True/False
         Raises:

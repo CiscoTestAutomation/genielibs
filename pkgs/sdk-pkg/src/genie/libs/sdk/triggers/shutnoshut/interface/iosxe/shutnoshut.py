@@ -1,7 +1,7 @@
 '''Implementation for interface shutnoshut triggers'''
 
-# import ats
-from ats.utils.objects import Not, NotExists
+# import pyats
+from pyats.utils.objects import Not, NotExists
 
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping

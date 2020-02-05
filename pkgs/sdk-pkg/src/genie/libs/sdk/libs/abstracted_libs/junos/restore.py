@@ -6,10 +6,10 @@ import random
 import logging
 
 # ATS
-from ats import aetest
+from pyats import aetest
 
 # Filetransferutils
-from ats.utils.fileutils import FileUtils
+from pyats.utils.fileutils import FileUtils
 
 # Logger
 log = logging.getLogger(__name__)

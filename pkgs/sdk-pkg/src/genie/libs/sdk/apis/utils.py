@@ -13,6 +13,7 @@ from netaddr import IPAddress
 # pyATS
 from pyats.easypy import runtime
 from pyats.utils.fileutils import FileUtils
+from pyats.utils.secret_strings import to_plaintext
 
 # Genie
 from genie.utils.config import Config
@@ -759,3 +760,62 @@ def bits_to_netmask(bits):
           str( (0x00ff0000 & mask) >> 16)   + '.' +
           str( (0x0000ff00 & mask) >> 8)    + '.' +
           str( (0x000000ff & mask)))
+
+def get_username_password(device, username=None, password=None, creds=None):
+    """ Gets the username and password to use to log into the device console.
+    """
+    if username is None or password is None:
+        if hasattr(device, 'credentials') and device.credentials:
+            if creds is not None:
+                cred = creds[0] if isinstance(creds, list) else creds
+            else:
+                cred='default'
+            username = device.credentials.get(cred, {}).get("username", "")
+            password = to_plaintext(
+                device.credentials.get(cred, {}).get("password", ""))
+        else:
+            username = device.tacacs.get("username", "")
+            password = device.passwords.get("line", "")
+
+    if not username or not password:
+        raise Exception("No username or password was provided.")
+
+    return username, password
+
+def compared_with_running_config(device, config):
+    """ Show difference between given config and current config
+        Args:
+            config ('dict'): Config to compare with
+        Raise:
+            None
+        Returns:
+            Diff
+    """
+    current = device.api.get_running_config_dict()
+    diff = Diff(current, config)
+    
+    diff.findDiff()
+
+    return diff 
+
+def diff_configuration(device, config1, config2):
+    """ Show difference between two configurations
+        Args:
+            config1 ('str'): Configuration one
+            config2 ('str): Configuration two
+        Raise:
+            None
+        Returns:
+            Diff
+    """
+    configObject1 = Config(config1)
+    configObject2 = Config(config2)
+    configObject1.tree()
+    configObject2.tree()
+
+    diff = Diff(configObject1.config, configObject2.config)
+
+    diff.findDiff()
+
+    return diff
+

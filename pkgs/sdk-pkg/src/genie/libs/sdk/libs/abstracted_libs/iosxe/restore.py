@@ -5,10 +5,10 @@ import logging
 import collections
 from unicon.eal.dialogs import Statement, Dialog
 
-from ats import aetest
+from pyats import aetest
 
 # Filetransferutils
-from ats.utils.fileutils import FileUtils
+from pyats.utils.fileutils import FileUtils
 
 # Metaparser
 from genie.metaparser.util.exceptions import SchemaEmptyParserError

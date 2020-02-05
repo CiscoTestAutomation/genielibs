@@ -2,7 +2,7 @@
 import unittest
 
 # Ats
-from ats.topology import Device
+from pyats.topology import Device
 from unittest.mock import Mock
 
 from genie.libs.ops.vxlan.nxos.vxlan import Vxlan

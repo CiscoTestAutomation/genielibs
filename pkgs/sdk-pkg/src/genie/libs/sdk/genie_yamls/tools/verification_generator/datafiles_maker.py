@@ -6,7 +6,7 @@ import logging
 import inspect
 import argparse
 import importlib
-from ats.log.utils import banner
+from pyats.log.utils import banner
 from collections import OrderedDict
 from pathlib import Path
 

@@ -3,11 +3,11 @@ import re
 import logging
 import time
 log = logging.getLogger()
-from ats import aetest
+from pyats import aetest
 from pprint import pprint as pp
 from genie.harness.base import Trigger
 import pdb
-from ats.utils.objects import Not, NotExists
+from pyats.utils.objects import Not, NotExists
 from genie.libs.sdk.triggers.template.unconfigconfig import \
                        TriggerUnconfigConfig as UnconfigConfigTemplate
 
@@ -23,8 +23,8 @@ from genie.libs.sdk.triggers.unconfigconfig.unconfigconfig import TriggerUnconfi
 from genie.libs.sdk.triggers.unconfigconfig.interface.unconfigconfig import \
     TriggerUnconfigConfigEthernetInterface as UncfgCfgInterface
 
-# import ats
-from ats.utils.objects import Not, NotExists
+# import pyats
+from pyats.utils.objects import Not, NotExists
 
 # Which key to exclude for Interface Ops comparison
 interface_exclude = ['maker', 'last_change','in_rate','in_rate_pkts',

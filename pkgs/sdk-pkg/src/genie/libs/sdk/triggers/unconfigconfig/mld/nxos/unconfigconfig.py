@@ -4,7 +4,7 @@
 from functools import partial
 
 # ats
-from ats.utils.objects import Not, NotExists
+from pyats.utils.objects import Not, NotExists
 
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping

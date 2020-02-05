@@ -3,7 +3,7 @@
 # import python
 import time
 
-from ats.datastructures.logic import Not
+from pyats.datastructures.logic import Not
 
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping

@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import Mock
 
 # pyats
-from ats.topology import Device
+from pyats.topology import Device
 
 # genie.libs
 from genie.libs.ops.nd.nxos.nd import Nd

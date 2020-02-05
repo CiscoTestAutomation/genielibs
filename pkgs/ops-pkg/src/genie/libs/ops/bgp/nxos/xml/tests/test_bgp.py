@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import Mock
 
 # ATS
-from ats.topology import Device
+from pyats.topology import Device
 
 # Genie XML Ops for BGP
 from genie.libs.ops.bgp.nxos.xml.bgp import Bgp

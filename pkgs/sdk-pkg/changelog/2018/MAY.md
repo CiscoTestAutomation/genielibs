@@ -1,6 +1,6 @@
 # May 8th
 
-* Normalized all the ats.tcl imports in the package.
+* Normalized all the pyats.tcl imports in the package.
 
 * New clear triggers added.
 	* TriggerClearIPv6NeighborVrfAll

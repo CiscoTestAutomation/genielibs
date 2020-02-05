@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 
-from ats.utils.yaml import Loader
+from pyats.utils.yaml import Loader
 
 from .markup import TopologyMarkupProcessor
 

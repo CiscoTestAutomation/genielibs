@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 import logging
 
-from ats import aetest
+from pyats import aetest
 
 from genie.utils.diff import Diff
 from genie.utils.timeout import TempResult

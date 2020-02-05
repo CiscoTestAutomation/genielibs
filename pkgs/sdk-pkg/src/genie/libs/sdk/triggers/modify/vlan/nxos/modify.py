@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.modify.modify import TriggerModify
-from ats import aetest
+from pyats import aetest
 
 # Which key to exclude for VXLAN Ops comparison
 vlan_exclude = ['maker', 'uptime']

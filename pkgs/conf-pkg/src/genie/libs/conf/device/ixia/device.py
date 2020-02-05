@@ -11,8 +11,8 @@ from enum import Enum
 import logging
 
 try:
-    from ats.tcl import tclstr
-    import ats.tcl
+    from pyats.tcl import tclstr
+    import pyats.tcl
 except Exception:
     pass
 

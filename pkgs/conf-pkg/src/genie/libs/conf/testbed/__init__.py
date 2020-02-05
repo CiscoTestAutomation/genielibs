@@ -10,11 +10,11 @@ from copy import copy
 # import pcall
 import importlib
 try:
-    pcall = importlib.import_module('ats.async').pcall
+    pcall = importlib.import_module('pyats.async').pcall
 except ImportError:
-    from ats.async_ import pcall
+    from pyats.async_ import pcall
 # # import pcall
-# from ats.async import pcall
+# from pyats.async import pcall
 
 from genie.conf import Genie
 import genie.conf.base.testbed

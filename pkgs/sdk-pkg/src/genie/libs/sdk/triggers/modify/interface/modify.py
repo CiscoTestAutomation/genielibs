@@ -8,7 +8,7 @@ from genie.libs.conf.base import IPv4Address, IPv6Address
 
 # import python
 from functools import partial
-from ats.utils.objects import Not
+from pyats.utils.objects import Not
 
 # Which key to exclude for Interface Ops comparison
 interface_exclude = ['maker', 'last_change','in_rate','in_rate_pkts',

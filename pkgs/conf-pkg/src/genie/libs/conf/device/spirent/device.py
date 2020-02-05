@@ -18,8 +18,8 @@ import time
 import types
 
 try:
-    from ats.tcl import tclstr
-    import ats.tcl
+    from pyats.tcl import tclstr
+    import pyats.tcl
     str_type = tclstr
 except Exception:
     str_type = str
@@ -43,11 +43,11 @@ def try_cast_number(value):
         # Already a type recognized by Tk
         return value
     try:
-        return ats.tcl.cast_int(value)
+        return pyats.tcl.cast_int(value)
     except (TypeError, ValueError):
         pass
     try:
-        return ats.tcl.cast_double(value)
+        return pyats.tcl.cast_double(value)
     except (TypeError, ValueError):
         pass
     return tclstr(value)

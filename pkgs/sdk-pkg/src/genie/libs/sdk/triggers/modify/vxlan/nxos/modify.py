@@ -11,7 +11,7 @@ from genie.libs.sdk.libs.utils.triggeractions import Configure
 
 from functools import partial
 from genie.libs.conf.base import IPv4Address
-from ats import aetest
+from pyats import aetest
 
 # Which key to exclude for VXLAN Ops comparison
 vxlan_exclude = ['maker', 'uptime','up_time']

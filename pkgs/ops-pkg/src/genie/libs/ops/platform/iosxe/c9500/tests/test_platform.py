@@ -2,7 +2,7 @@
 import unittest
 
 # Ats
-from ats.topology import Device
+from pyats.topology import Device
 
 # Genie Xbu_shared
 from genie.libs.ops.platform.iosxe.c9500.platform import Platform

@@ -10,7 +10,7 @@ from time import strptime
 from datetime import datetime
 
 # pyATS
-from ats.easypy import runtime
+from pyats.easypy import runtime
 
 # Genie
 from genie.utils.config import Config

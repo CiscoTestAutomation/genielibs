@@ -6,8 +6,8 @@ import traceback
 import logging
 from copy import deepcopy
 
-# import ats
-from ats import aetest
+# import pyats
+from pyats import aetest
 
 # import genie.libs
 from genie.libs.sdk.triggers.template.checkcommands import \

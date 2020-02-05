@@ -2,7 +2,7 @@
 import unittest
 
 # ATS
-from ats.topology import Device
+from pyats.topology import Device
 
 # Genie
 from genie.libs.ops.route_policy.ios.route_policy import RoutePolicy

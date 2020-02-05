@@ -4,10 +4,10 @@
 import unittest
 from unittest.mock import Mock
 
-from ats.datastructures import WeakList
+from pyats.datastructures import WeakList
 
 # And import what's needed
-from genie.conf.tests import TestCase
+from genie.tests.conf import TestCase
 from genie.conf import Genie
 from genie.conf.base import Testbed, Device, Link, Interface
 from genie.conf.base.attributes import SubAttributesDict

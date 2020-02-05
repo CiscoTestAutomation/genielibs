@@ -6,7 +6,7 @@ from functools import partial
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.unconfigconfig.unconfigconfig import TriggerUnconfigConfig
 from collections import OrderedDict
-from ats.utils.objects import NotExists
+from pyats.utils.objects import NotExists
 from genie.libs.sdk.libs.utils.triggeractions import verify_ops_or_logic
 
 

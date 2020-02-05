@@ -5,7 +5,7 @@ import time
 import logging
 
 # ATS
-from ats import aetest
+from pyats import aetest
 
 # Genie Libs Triggers
 from genie.libs.sdk.triggers.template.ha import TriggerSwitchover as\

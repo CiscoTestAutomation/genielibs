@@ -9,11 +9,11 @@ import time
 
 # ATS
 try:
-    from ats import tcl
+    from pyats import tcl
 except Exception:
     pass
-from ats.log.utils import banner
-from ats.connections import BaseConnection
+from pyats.log.utils import banner
+from pyats.connections import BaseConnection
 
 # Genie Exceptions
 from genie.harness.exceptions import GenieTgnError

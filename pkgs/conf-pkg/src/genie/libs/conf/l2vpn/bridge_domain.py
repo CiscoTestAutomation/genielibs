@@ -8,7 +8,7 @@ import collections
 import functools
 import weakref
 
-from ats.datastructures import WeakList
+from pyats.datastructures import WeakList
 
 from genie.decorator import managedattribute
 import genie.conf.base
@@ -303,7 +303,7 @@ class BridgeDomain(DeviceFeature):
             else:
                 # Links under Genie Interface object is deprecated
                 # Placed the below workaround to bypass the Unittest
-                from ats.datastructures import WeakList
+                from pyats.datastructures import WeakList
                 segment_links = set(WeakList()) - set([self.link])
                 # Priority to L2 virtual links...
                 if not link_interfaces:

@@ -1,10 +1,10 @@
-from ats.utils import objects
+from pyats.utils import objects
 try:
-    from ats.utils.yaml.markup import Processor, REFERENCE_PATTERN
+    from pyats.utils.yaml.markup import Processor, REFERENCE_PATTERN
 except Exception:
-    from ats.utils.yaml.markup import Processor, PATTERN as REFERENCE_PATTERN
+    from pyats.utils.yaml.markup import Processor, PATTERN as REFERENCE_PATTERN
 
-from ats.utils.yaml.exceptions import MarkupError
+from pyats.utils.yaml.exceptions import MarkupError
 
 class TopologyMarkupProcessor(Processor):
 

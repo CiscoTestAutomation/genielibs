@@ -23,9 +23,9 @@ from genie.utils.summary import Summary
 # abstract
 from genie.abstract import Lookup
 
-# import ats
-from ats.log.utils import banner
-from ats.utils.objects import find, R, Operator
+# import pyats
+from pyats.log.utils import banner
+from pyats.utils.objects import find, R, Operator
 
 # Genie Libs
 from genie.libs.conf.base.neighbor import Neighbor

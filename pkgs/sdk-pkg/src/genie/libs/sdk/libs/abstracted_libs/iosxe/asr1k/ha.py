@@ -22,8 +22,8 @@ from genie.utils.timeout import Timeout
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # ATS
-from ats.utils.objects import R, find
-from ats.utils.fileutils import FileUtils
+from pyats.utils.objects import R, find
+from pyats.utils.fileutils import FileUtils
 
 # module logger
 logger = logging.getLogger(__name__)

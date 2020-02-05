@@ -3,10 +3,10 @@ import re
 import time
 import logging
 
-from ats import aetest
+from pyats import aetest
 
 # Filetransferutils
-from ats.utils.fileutils import FileUtils
+from pyats.utils.fileutils import FileUtils
 
 # Metaparser
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
@@ -117,17 +117,18 @@ class Restore(object):
                 else:
                     log.info('Config replace failed: sleeping {} seconds before'
                              ' retrying.'. format(interval))
-                    # Execute 'show config-replace log exec'
-                    output = device.execute('show config-replace log exec')
+                    # Execute 'show config-replace log exec|verify'
+                    output = device.execute(['show config-replace log exec', 'show config-replace log verify'])
                     time.sleep(interval)
 
-            # Execute 'show config-replace log exec'
-            output = device.execute('show config-replace log exec')
+            # Execute 'show config-replace log exec' and 'show config-replace log verify'
+            output = device.execute(['show config-replace log exec', 'show config-replace log verify'])
 
             # Check if reload is required after executing 'configure replace'
-            if 'before switch reload' in output:
-                raise GenieConfigReplaceWarning('Warning: reload needed after '
-                                                'configure replace')
+            for out in output.values():
+                if 'before switch reload' in out:
+                    raise GenieConfigReplaceWarning('Warning: reload needed after '
+                                                    'configure replace')
 
             # Compare restored configuration to details in file
             if compare:

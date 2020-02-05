@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import Mock
 import inspect
 
-from genie.conf.tests import TestCase
+from genie.tests.conf import TestCase
 from genie.libs.conf.utils import *
 from genie.libs.conf.topology_mapper.cli import *
 

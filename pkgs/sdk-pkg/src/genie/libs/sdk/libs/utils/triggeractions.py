@@ -5,8 +5,8 @@
 import logging
 import time
 
-# import ats
-from ats.utils.objects import find, R
+# import pyats
+from pyats.utils.objects import find, R
 
 log = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class CompareUptime(object):
               Mandatory:
                 ops (`obj`) : Learnt ops object.
                 threshold_time (`int`) : Uptime vallue want to compare.
-                r_obj (`list`) : List of ats.utils.objects.R objects which
+                r_obj (`list`) : List of pyats.utils.objects.R objects which
                                  contains the keys structure of desired
                                  information for find function.
               Optional:
@@ -225,7 +225,7 @@ class CompareCounters(object):
               Mandatory:
                 ops (`obj`) : Learnt ops object.
                 threshold_counter (`int`) : Counter vallue want to compare.
-                r_obj (`list`) : List of ats.utils.objects.R objects which
+                r_obj (`list`) : List of pyats.utils.objects.R objects which
                                  contains the keys structure of desired
                                  information for find function.
               Optional:

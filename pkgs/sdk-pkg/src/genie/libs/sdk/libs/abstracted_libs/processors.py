@@ -7,17 +7,17 @@ import copy
 import logging
 
 # Ats
-from ats.log.utils import banner
-from ats.utils.objects import find, R, NotExists
+from pyats.log.utils import banner
+from pyats.utils.objects import find, R, NotExists
 
 # import pcall
 import importlib
 try:
-    pcall = importlib.import_module('ats.async').pcall
+    pcall = importlib.import_module('pyats.async').pcall
 except ImportError:
-    from ats.async_ import pcall
+    from pyats.async_ import pcall
 # # import pcall
-# from ats.async import pcall
+# from pyats.async import pcall
 
 # Abstract
 from genie.abstract import Lookup

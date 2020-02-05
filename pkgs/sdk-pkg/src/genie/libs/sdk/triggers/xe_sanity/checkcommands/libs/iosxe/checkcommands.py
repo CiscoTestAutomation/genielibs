@@ -3,8 +3,8 @@
 import time
 import logging
 
-# import ats
-from ats.utils.objects import find, R
+# import pyats
+from pyats.utils.objects import find, R
 
 # genie.libs
 from genie.libs.sdk.libs.utils.normalize import GroupKeys

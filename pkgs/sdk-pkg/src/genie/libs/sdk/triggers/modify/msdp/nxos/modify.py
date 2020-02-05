@@ -4,14 +4,14 @@
 from copy import deepcopy 
 
 # pyats
-from ats import aetest
+from pyats import aetest
 
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.modify.modify import TriggerModify
 
 # pyats
-from ats.utils.objects import Not, NotExists
+from pyats.utils.objects import Not, NotExists
 
 # Which key to exclude for Msdp Ops comparison
 msdp_exclude = ['maker', 'elapsed_time', 'discontinuity_time',

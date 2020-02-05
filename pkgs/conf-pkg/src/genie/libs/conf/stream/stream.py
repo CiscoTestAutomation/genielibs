@@ -16,7 +16,7 @@ import re
 logger = logging.getLogger(__name__)
 
 try:
-    from ats.tcl import tclstr
+    from pyats.tcl import tclstr
     item_cast = tclstr
 except Exception:
     item_cast = None

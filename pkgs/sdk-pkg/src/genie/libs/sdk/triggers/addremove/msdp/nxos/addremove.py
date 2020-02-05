@@ -5,9 +5,9 @@ import logging
 from copy import deepcopy
 from time import sleep
 
-# import ats
-from ats import aetest
-from ats.utils.objects import find, R, NotExists ,Not
+# import pyats
+from pyats import aetest
+from pyats.utils.objects import find, R, NotExists ,Not
 
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping

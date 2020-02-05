@@ -5,7 +5,7 @@ from genie.utils.timeout import Timeout
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # PyATS
-from ats.utils.objects import R, find
+from pyats.utils.objects import R, find
 
 # PLATFORM
 from genie.libs.sdk.apis.iosxe.platform.get import get_diffs_platform

@@ -6,7 +6,7 @@ import logging
 
 # pyATS
 from genie.utils.timeout import Timeout
-from ats.utils.objects import find, R
+from pyats.utils.objects import find, R
 
 # Genie
 from genie.utils.timeout import Timeout
@@ -682,6 +682,7 @@ def verify_segment_routing_traffic_eng_policies(device, policy_name=None, expect
                                                 expected_oper_status=None, expected_metric_type=None,
                                                 expected_path_accumulated_metric=None, expected_path_status=None,
                                                 expected_affinity_type=None, expected_affinities=None,
+                                                expected_endpoint_ip=None,
                                                 max_time=30, check_interval=10):
     """ Verifies configured traffic_eng policies have expected configurations
 
@@ -696,6 +697,7 @@ def verify_segment_routing_traffic_eng_policies(device, policy_name=None, expect
             expected_affinity_type ('str'): Expected affinity type
             expected_affinities ('list'): Expected affinities
             expected_preference ('int'): Expected preference path 
+            expected_endpoint_ip ('str'): Expected Endpoint IP
             max_time ('int'): Maximum amount of time to keep checking
             check_interval ('int'): How often to check
 
@@ -711,7 +713,8 @@ def verify_segment_routing_traffic_eng_policies(device, policy_name=None, expect
             not expected_path_accumulated_metric and
             not expected_path_status and
             not expected_affinity_type and
-            not expected_affinities):
+            not expected_affinities and
+            not expected_endpoint_ip):
         log.info('Must provide at-least one optional argument to verify')
         return False
 
@@ -729,13 +732,17 @@ def verify_segment_routing_traffic_eng_policies(device, policy_name=None, expect
             timeout.sleep()
             continue
         for policy in out:
+            if expected_endpoint_ip:
+                endpoint_ip = out[policy].get('end_point', None)
+                if endpoint_ip != expected_endpoint_ip:
+                    # Check other policy
+                    continue
             admin = out[policy].get('status', {}).get('admin', '')
             if expected_admin_status and expected_admin_status != admin:
                 log.info('Expected admin status is "{admin_status}" actual is "{admin}"'
                          .format(admin_status=expected_admin_status,
                                  admin=admin))
-                break
-
+                break            
             operational = out[policy].get('status', {}).get('operational', {}).get('state', '')
             if expected_oper_status and expected_oper_status != operational:
                 log.info('Expected operational status is "{operational_status}" actual is "{operational}"'

@@ -3,7 +3,7 @@ import logging
 import re
 
 # PyATS
-from ats.utils.objects import R, find
+from pyats.utils.objects import R, find
 
 # Genie
 from genie.utils.diff import Diff

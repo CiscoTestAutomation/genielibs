@@ -377,6 +377,9 @@ class Interface(SuperInterface):
                                       self.ret_dict[protocol]['tag']
                                 self.info[intf][key][ip]['origin'] = protocol
 
+                            # Delete ret_dict
+                            del self.ret_dict
+
             # delete the routing attribute which is only used 
             # for getting route_tag and origin
             for key in ['routing_v4', 'routing_v6']:

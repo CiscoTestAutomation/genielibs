@@ -1,8 +1,8 @@
 '''CLI utilities'''
 
 try:
-    import ats.tcl
-    from ats.tcl import tclstr
+    import pyats.tcl
+    from pyats.tcl import tclstr
 except Exception:
     pass
 
@@ -134,7 +134,7 @@ def config_cli_to_tree(cli, *, os=None, strip=False, sort=False, keylist=False,
     tcl_imported = True
 
     try:
-        from ats.tcl.internal import DictionaryCompare
+        from pyats.tcl.internal import DictionaryCompare
     except ImportError:
         tcl_imported = False
         pass
@@ -188,29 +188,29 @@ def config_cli_to_tree(cli, *, os=None, strip=False, sort=False, keylist=False,
         if sort:
 
             def _clean_cli(clie):
-                clie = ats.tcl.cast_list(clie)
+                clie = pyats.tcl.cast_list(clie)
                 if len(clie) == 2:
                     return (clie[0], tuple(sorted(
-                        (_clean_cli(e) for e in ats.tcl.cast_list(clie[1])),
+                        (_clean_cli(e) for e in pyats.tcl.cast_list(clie[1])),
                         key=functools.cmp_to_key(_DictionaryCompare_index0))))
                 else:
                     return (clie[0], None)
 
             tree = tuple(sorted(
-                (_clean_cli(e) for e in ats.tcl.cast_list(cli)),
+                (_clean_cli(e) for e in pyats.tcl.cast_list(cli)),
                 key=functools.cmp_to_key(_DictionaryCompare_index0)))
         else:
 
             def _clean_cli(clie):
-                clie = ats.tcl.cast_list(clie)
+                clie = pyats.tcl.cast_list(clie)
                 if len(clie) == 2:
                     return (clie[0], tuple(
-                        (_clean_cli(e) for e in ats.tcl.cast_list(clie[1]))))
+                        (_clean_cli(e) for e in pyats.tcl.cast_list(clie[1]))))
                 else:
                     return (clie[0], None)
 
             tree = tuple(
-                (_clean_cli(e) for e in ats.tcl.cast_list(cli)))
+                (_clean_cli(e) for e in pyats.tcl.cast_list(cli)))
 
         return tree
 

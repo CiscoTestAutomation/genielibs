@@ -8,8 +8,8 @@ from operator import attrgetter
 from collections import OrderedDict, defaultdict
 
 from genie.utils.diff import Diff
-from ats.utils.objects import find, R, Operator, NotExists, Not
-from ats.aetest.utils import format_filter_exception
+from pyats.utils.objects import find, R, Operator, NotExists, Not
+from pyats.aetest.utils import format_filter_exception
 
 from genie.conf.base import Base as ConfBase
 from genie.ops.base import Base as OpsBase

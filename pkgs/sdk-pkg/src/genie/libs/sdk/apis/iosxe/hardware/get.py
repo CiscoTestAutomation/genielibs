@@ -13,7 +13,7 @@ from genie.utils.timeout import Timeout
 from unicon.core.errors import SubCommandFailure
 
 # pyATS
-from ats.utils.objects import find, R
+from pyats.utils.objects import find, R
 
 
 log = logging.getLogger(__name__)

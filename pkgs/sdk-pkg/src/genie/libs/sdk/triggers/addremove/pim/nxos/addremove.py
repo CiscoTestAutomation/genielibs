@@ -5,7 +5,7 @@ from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.addremove.addremove import TriggerAddRemove
 
 # pyats
-from ats.utils.objects import NotExists
+from pyats.utils.objects import NotExists
 
 # Which key to exclude for Pim Ops comparison
 pim_exclude = ['maker',]

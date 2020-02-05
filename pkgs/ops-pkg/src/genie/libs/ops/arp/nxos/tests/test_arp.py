@@ -2,7 +2,7 @@
 import unittest
 
 # ATS
-from ats.topology import Device
+from pyats.topology import Device
 
 # Genie
 from genie.libs.ops.arp.nxos.arp import Arp

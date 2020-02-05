@@ -1,0 +1,8 @@
+devices:
+  R1_xe:
+    mapping:
+      cli: cli
+      #yang: netconf
+  R3_nx:
+    mapping:
+      cli: cli

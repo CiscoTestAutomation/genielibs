@@ -8,9 +8,9 @@ from json import dumps
 from genie.libs import sdk
 
 # ats
-from ats import aetest
-from ats.log.utils import banner
-from ats.datastructures import AttrDict
+from pyats import aetest
+from pyats.log.utils import banner
+from pyats.datastructures import AttrDict
 
 # abstract
 from genie.abstract import Lookup
@@ -18,11 +18,11 @@ from genie.abstract import Lookup
 # import pcall
 import importlib
 try:
-    pcall = importlib.import_module('ats.async').pcall
+    pcall = importlib.import_module('pyats.async').pcall
 except ImportError:
-    from ats.async_ import pcall
+    from pyats.async_ import pcall
 # # import pcall
-# from ats.async import pcall
+# from pyats.async import pcall
 
 # unicon
 from unicon.eal.dialogs import Statement, Dialog

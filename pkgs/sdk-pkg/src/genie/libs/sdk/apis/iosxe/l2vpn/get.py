@@ -7,7 +7,7 @@ import re
 import time
 
 # pyATS
-from ats.easypy import runtime
+from pyats.easypy import runtime
 from genie.utils.config import Config
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.parser.utils.common import Common

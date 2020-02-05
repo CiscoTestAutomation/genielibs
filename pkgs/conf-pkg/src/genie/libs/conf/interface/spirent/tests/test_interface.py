@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import Mock
 import itertools
 
-from genie.conf.tests import TestCase
+from genie.tests.conf import TestCase
 from genie.conf import Genie
 from genie.conf.base import Testbed, Device, Link, Interface
 from genie.libs.conf.interface import \

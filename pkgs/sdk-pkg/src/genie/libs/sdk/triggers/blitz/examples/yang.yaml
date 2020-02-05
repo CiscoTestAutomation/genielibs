@@ -1,0 +1,90 @@
+testbed:
+ custom:
+   variables:
+       interface: ethernet2/1
+devices:
+  R1_xe:
+    alias: uut
+    connections:
+      netconf:
+        ip: 172.16.1.91
+        port: 830
+        class: yang.connector.Netconf
+      cli:
+        ip: 172.25.192.90
+        port: 17012
+        protocol: telnet
+      ssh:
+        ip: 172.16.1.91
+        protocol: ssh
+    credentials:
+      default:
+        password: Cisc0123
+        username: admin
+      enable:
+        password: Cisc0123
+    custom:
+      abstraction:
+        order:
+        - os
+        - platform
+    os: iosxe
+    platform: iosxe
+    type: CSR1000v
+
+  R3_nx:
+    connections:
+      cli:
+        ip: 172.25.192.90
+        port: 17018
+        protocol: telnet
+      ssh:
+        ip: 172.16.1.93
+        protocol: ssh
+      telnet:
+        ip: 172.16.1.93
+        protocol: telnet
+    credentials:
+      default:
+        password: Cisc0123
+        username: admin
+      enable:
+        password: Cisc0123
+    custom:
+      abstraction:
+        order:
+        - os
+        - platform
+    os: nxos
+    platform: n9kv
+    type: NX-OSv 9000
+  R2_xr:
+    alias: helper
+    connections:
+      cli:
+        ip: 172.25.192.90
+        port: 17014
+        protocol: telnet
+      ssh:
+        ip: 172.16.1.92
+        protocol: ssh
+      telnet:
+        ip: 172.16.1.92
+        protocol: telnet
+      vty:
+        ip: 172.16.1.92
+        protocol: telnet
+    credentials:
+      default:
+        password: Cisc0123
+        username: admin
+      enable:
+        password: Cisc0123
+    custom:
+      abstraction:
+        order:
+        - os
+        - platform
+    os: iosxr
+    platform: iosxrv9k
+    type: IOS XRv 9000

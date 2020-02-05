@@ -11,8 +11,8 @@ from ipaddress import IPv4Network, IPv4Address
 from unicon.core.errors import SubCommandFailure
 
 # pyATS
-from ats.easypy import runtime
-from ats.utils.objects import find, R
+from pyats.easypy import runtime
+from pyats.utils.objects import find, R
 from pyats.datastructures.logic import Not
 
 # Genie

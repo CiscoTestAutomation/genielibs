@@ -3,11 +3,11 @@ import re
 import logging
 import time
 log = logging.getLogger()
-from ats import aetest
+from pyats import aetest
 from pprint import pprint as pp
 from genie.harness.base import Trigger
 import pdb
-from ats.utils.objects import Not, NotExists
+from pyats.utils.objects import Not, NotExists
 from genie.libs.sdk.triggers.template.unconfigconfig import \
                        TriggerUnconfigConfig as UnconfigConfigTemplate
 

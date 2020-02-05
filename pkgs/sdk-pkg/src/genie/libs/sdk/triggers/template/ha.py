@@ -1,6 +1,6 @@
 '''HA triggers template'''
 
-from ats import aetest
+from pyats import aetest
 from genie.harness.base import Trigger
 
 class TriggerSwitchover(Trigger):

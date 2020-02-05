@@ -15,8 +15,8 @@ import time
 import types
 import gc
 
-import ats.topology
-from ats.easypy import runtime
+import pyats.topology
+from pyats.easypy import runtime
 
 from genie.utils.cisco_collections import OrderedSet
 
@@ -706,7 +706,7 @@ class Resolver(object):
         return tuple(l_explain)
 
 
-class Constraints(ats.topology.Testbed):
+class Constraints(pyats.topology.Testbed):
 
     subsets = None
 
@@ -718,7 +718,7 @@ class Constraints(ats.topology.Testbed):
     def device_names(self):
         '''OrderedSet of device names (R#).'''
         try:
-            from ats.tcl.internal import DictionaryCompare
+            from pyats.tcl.internal import DictionaryCompare
             sRs = [topo_dev.device_name
                    for topo_dev in self.devices.values()]
             sRs = OrderedSet(sorted(sRs, key=functools.cmp_to_key(DictionaryCompare)))
@@ -733,7 +733,7 @@ class Constraints(ats.topology.Testbed):
     def link_names(self):
         '''OrderedSet of link names (L#).'''
         try:
-            from ats.tcl.internal import DictionaryCompare
+            from pyats.tcl.internal import DictionaryCompare
             topo_devices = list(self.devices.values())
             topo_links = set()
             for topo_dev in topo_devices:
@@ -751,7 +751,7 @@ class Constraints(ats.topology.Testbed):
     def interface_names(self):
         '''OrderedSet of Interface names (R#I#) in dictionnary order.'''
         try:
-            from ats.tcl.internal import DictionaryCompare
+            from pyats.tcl.internal import DictionaryCompare
             sRIs = []
             for topo_dev in self.devices.values():
                 sRIs.extend(topo_dev.interface_names)
@@ -864,7 +864,7 @@ class TopologyMapper(object):
         # self.assign(sR, xoo_dev)
         # xoo_emul_link = xoo.Link.Find('-from-router', xoo_dev.name, '-linktype', 'emulated')
         # xoo_interfaces = xoo_emul_link.interfaces
-        # xoo_interfaces2 = ats.tcl.tk.call('::enaTbGetLinkParam', tclstr(xoo_emul_link), '-interfaces')
+        # xoo_interfaces2 = pyats.tcl.tk.call('::enaTbGetLinkParam', tclstr(xoo_emul_link), '-interfaces')
         # from xscale.tcl import cast_identity
         # xoo_emul_intf = xoo.Interface.Find('-router', xoo_dev.name, '-iftype', 'physical', '-free-list', xoo_emul_link.interfaces)
         # xoo_peer_intf = next((intf for intf in xoo_emul_link.interfaces if intf is not xoo_emul_intf))
@@ -1842,9 +1842,9 @@ class TopologyMapper(object):
         self.assignments = None
         self.resolved_subset = None
 
-        if ats.easypy.runtime.testbed:
+        if pyats.easypy.runtime.testbed:
             # Reset testbed from scratch
-            Genie.init(testbed=ats.easypy.runtime.testbed)
+            Genie.init(testbed=pyats.easypy.runtime.testbed)
         elif Genie.testbed:
             # Reset object states
             for xos_device in Genie.testbed.devices:

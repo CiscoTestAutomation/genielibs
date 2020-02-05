@@ -2,7 +2,7 @@
 
 import unittest
 from unittest.mock import Mock
-from genie.conf.tests import TestCase
+from genie.tests.conf import TestCase
 
 import re
 

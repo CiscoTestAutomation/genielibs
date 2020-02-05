@@ -165,7 +165,7 @@ def verify_rib_fib_lfib_consistency(device, route, none_pattern='',
         route_dict1 = {}
         # eg: {"GigabitEthernet2": {
         #         "nexthop": "10.0.0.5",
-        #         "from": "2.2.2.2",
+        #         "from": "10.16.2.2",
         #         "age": "2w0d",
         #         "interface": "GigabitEthernet2",
         #         "prefer_non_rib_labels": true,

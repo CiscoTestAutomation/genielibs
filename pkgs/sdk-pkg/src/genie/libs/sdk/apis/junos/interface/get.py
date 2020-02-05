@@ -36,7 +36,7 @@ def get_interface_address_mask_running_config(device, interface, address_family)
         # address 192.168.0.1/32
         p1 = re.compile(r'address +(?P<ip>[\d\.]+)/(?P<mask>\d+);')
     elif address_family in ['ipv6', 'inet6']:
-        # address 2001:2001:2001::b/128
+        # address 2001:db8:1005:4401::b/128
         p1 = re.compile(r'address +(?P<ip>[\w\:]+)/(?P<mask>\d+);')
     else:
         log.info('Must provide one of the following address families: "ipv4", "ipv6", "inet", "inet6"')

@@ -7,7 +7,7 @@ import logging
 log = logging.getLogger(__name__)
 
 # ATS
-from ats import aetest
+from pyats import aetest
 
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping, Different

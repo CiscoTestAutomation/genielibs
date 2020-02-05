@@ -5,8 +5,8 @@ import logging
 from functools import partial
 
 # import ATS
-from ats.log.utils import banner
-from ats.utils.objects import find, R
+from pyats.log.utils import banner
+from pyats.utils.objects import find, R
 
 # import genie.libs
 from genie.libs.sdk.libs.utils.mapping import Mapping

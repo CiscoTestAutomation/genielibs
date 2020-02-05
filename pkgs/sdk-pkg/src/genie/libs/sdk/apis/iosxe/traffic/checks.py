@@ -148,7 +148,8 @@ def check_traffic_transmitted_rate(
 
 
 def check_traffic_expected_rate(
-    testbed, traffic_stream, expected_rate, tolerance
+    testbed, traffic_stream, expected_rate, tolerance,
+    traffic_gen='IXIA'
 ):
     """Check the expected rate
 
@@ -157,6 +158,7 @@ def check_traffic_expected_rate(
             traffic_stream (`str`): Traffic stream name
             expected_rate (`str`): Traffic expected received rate
             tolerance (`str`): Traffic loss tolerance percentage
+            traffic_gen (`str`): Traffic generating device
 
         Returns:
             None
@@ -165,77 +167,169 @@ def check_traffic_expected_rate(
             Exception: Traffic drops found
     """
     try:
-        ixia = testbed.devices["IXIA"]
+        ixia = testbed.devices[traffic_gen]
     except KeyError:
-        raise KeyError("Could not find IXIA device on testbed")
+        raise KeyError("Could not find {} device on testbed".format(traffic_gen))
 
     # Print IXIA traffic streams when doing a traffic check/retrieve call
-    ixia.get_traffic_item_statistics_table(["Rx Rate (Mbps)"])
+    table = ixia.get_traffic_item_statistics_table(["Rx Rate (Mbps)"])
 
-    # Retrieve the expected rate
-    retrieved_rate = float(
-        ixia.get_traffic_items_statistics_data(
-            traffic_stream=traffic_stream, traffic_data_field="Rx Rate (Mbps)"
-        )
-    )
+    # needed for logic in next block
+    setattr(table, 'border', False)
+    setattr(table, 'header', False)
 
-    if ">" in expected_rate:
-        expected_rate, expected_rate_unit, original_rate, tolerance_margin = get_traffic_rates(
-            expected_rate.split(">")[1], tolerance
-        )
+    # gets the row that 'traffic_stream' is on
+    row = [x.strip() for x in table.get_string(fields=['Traffic Item']).splitlines()].index(traffic_stream)
+    # gets the 'Rx Rate (Mbps)' value at the above row
+    retrieved_rate = float(table.get_string(fields=['Rx Rate (Mbps)'], start=row, end=row+1))
 
-        if retrieved_rate > original_rate - tolerance_margin:
-            log.info(
-                "Expected rate for traffic stream '{}' is '{}' (tolerance {}%) and got '{}' {}".format(
-                    traffic_stream,
-                    original_rate,
-                    tolerance,
-                    retrieved_rate,
-                    expected_rate_unit,
+    # Since retrieved_rate is always going to be Mbps
+    retrieved_rate_in_bytes = retrieved_rate * 1000000
+
+    if ">" in expected_rate or "<" in expected_rate:
+        # Split and check below 4 conditions
+        # >0.6M, <0.8M
+        # <0.8M, >0.6M
+        # <0.8M
+        # >0.6M
+        left_expected_rate = None
+        right_expected_rate = None
+        expected_rate_list = expected_rate.split(',')
+        left_expected_rate = expected_rate_list[0]
+        if len(expected_rate_list) == 2:
+            right_expected_rate = expected_rate_list[1]
+        if left_expected_rate:
+            # Check left part of split
+            # >0.6M
+            # Check if left value contains '>' or '<'
+            left_is_greater = '>' in left_expected_rate
+            left_rate_filtered = (left_expected_rate.split('>')[1].
+                strip() if left_is_greater else left_expected_rate.split('<')[1].strip())
+            left_rate_in_bytes, left_original_rate_unit, left_original_rate, _ = get_traffic_rates(
+                    left_rate_filtered, tolerance,
                 )
-            )
-        else:
-            raise Exception(
-                "Expected rate for traffic stream '{}' is '{}' (tolerance {}%,"
-                " greater than {}) and got '{}' {}".format(
-                    traffic_stream,
-                    original_rate,
-                    tolerance,
-                    original_rate - tolerance_margin,
-                    retrieved_rate,
-                    expected_rate_unit,
-                )
-            )
+            rate_provided = '{}{}{}'.format('>' if left_is_greater else '<', left_original_rate, 
+                                left_original_rate_unit)
+            rate_converted = '{}{}Mbps'.format('>' if left_is_greater else '<', 
+                                left_rate_in_bytes / 1000000)
+
+            left_tolerance_in_bytes = left_rate_in_bytes * (tolerance / 100)
+            left_rate_tolerance_diff = (left_rate_in_bytes - left_tolerance_in_bytes) if left_is_greater else (left_rate_in_bytes + left_tolerance_in_bytes)
+            rate_expected = left_original_rate
+            # Check right part of split if exist
+            # <0.8M
+            if right_expected_rate:
+                # Check if right value contains '>' or '<'
+                right_is_greater = '>' in right_expected_rate
+                right_rate_filtered = (right_expected_rate.split('>')[1].
+                    strip() if right_is_greater else right_expected_rate.split('<')[1].strip())
+                right_rate_in_bytes, right_original_rate_unit, right_original_rate, _ = get_traffic_rates(
+                        right_rate_filtered, tolerance,
+                    )
+                if right_original_rate > rate_expected:
+                    rate_expected = right_original_rate
+                rate_provided = '{}, {}{}{}'.format(rate_provided, '>' if right_is_greater else '<', 
+                                    right_original_rate, right_original_rate_unit)
+                rate_converted = '{}, {}{}Mbps'.format(rate_converted, '>' if right_is_greater else '<', 
+                                right_rate_in_bytes / 1000000)
+                
+                right_tolerance_in_bytes = right_rate_in_bytes * (tolerance / 100)
+                right_rate_tolerance_diff = (right_rate_in_bytes - right_tolerance_in_bytes)  if right_is_greater else (right_rate_in_bytes + right_tolerance_in_bytes)
+            
+            log.info('Rate provided in datafile is {rate_provided}. '
+                    'Converted to Mbps it is {rate_converted}'
+                    .format(rate_provided=rate_provided, rate_converted=rate_converted))
+            
+            log_message = "Expected rate for traffic stream '{stream}' is '{expected} Mbps' " \
+                                "(tolerance {tolerance}%,".format(
+                                    stream=traffic_stream,
+                                    expected=rate_expected,
+                                    tolerance=tolerance)
+
+            # Merge proper log message
+            # Log message from the Left side of expected rate
+            if right_expected_rate:
+                if left_is_greater:
+                    log_message = "{log_message} {gt} Mbps<>{lt} Mbps".format(
+                        log_message=log_message,
+                        gt=left_rate_tolerance_diff / 1000000,
+                        lt=right_rate_tolerance_diff / 1000000)
+                else:
+                    log_message = "{log_message} {gt} Mbps<>{lt} Mbps".format(
+                        log_message=log_message,
+                        gt=right_rate_tolerance_diff / 1000000,
+                        lt=left_rate_tolerance_diff / 1000000)
+            else:
+                if left_is_greater:
+                    log_message = "{log_message} {expected_after_tolerance} Mbps{condition}".format(
+                        log_message=log_message,
+                        expected_after_tolerance=left_rate_tolerance_diff / 1000000,
+                        condition='<')
+                else:
+                    log_message = "{log_message} {condition}{expected_after_tolerance} Mbps".format(
+                        log_message=log_message,
+                        expected_after_tolerance=left_rate_tolerance_diff / 1000000,
+                        condition='>')
+            # # Log message from the Right side of expected rate
+            # Join left and right in last
+            log_message = "{log_message}) and got '{actual} Mbps'".format(
+                log_message=log_message,actual=retrieved_rate)
+
+            # Failure check
+            rate_check = True
+            if (left_is_greater and (retrieved_rate_in_bytes < left_rate_tolerance_diff)):
+                rate_check = False
+            if (not left_is_greater and (retrieved_rate_in_bytes > left_rate_tolerance_diff)):
+                rate_check = False
+            if right_expected_rate:
+                if (right_is_greater and (retrieved_rate_in_bytes < right_rate_tolerance_diff)):
+                    rate_check = False
+                if (not right_is_greater and (retrieved_rate_in_bytes > right_rate_tolerance_diff)):
+                    rate_check = False
+            if not rate_check:
+                raise Exception(log_message)
+            log.info(log_message)
+
     else:
-        expected_rate, expected_rate_unit, original_rate, tolerance_margin = get_traffic_rates(
-            expected_rate, tolerance
-        )
+        rate_in_bytes, original_rate_unit, original_rate, _ = get_traffic_rates(
+            expected_rate, tolerance)
+
+        log.info('Rate provided in datafile is {original_rate}{original_rate_unit}. '
+                 'Converted to Mbps it is {converted}Mbps'
+                 .format(original_rate=original_rate,
+                         original_rate_unit=original_rate_unit,
+                         converted=rate_in_bytes / 1000000))
+
+        tolerance_in_bytes = rate_in_bytes * (tolerance / 100)
 
         if (
-            retrieved_rate < original_rate + tolerance_margin
-            and retrieved_rate > original_rate - tolerance_margin
+            retrieved_rate_in_bytes < rate_in_bytes + tolerance_in_bytes
+            and retrieved_rate_in_bytes > rate_in_bytes - tolerance_in_bytes
         ):
+
             log.info(
-                "Expected rate for traffic stream '{}' is '{}' (tolerance {}%)"
-                " and got '{}' {}".format(
-                    traffic_stream,
-                    original_rate,
-                    tolerance,
-                    retrieved_rate,
-                    expected_rate_unit,
+                "Expected rate for traffic stream '{stream}' is '{expected} Mbps' "
+                "(tolerance {tolerance}%, {gt} Mbps<>{lt} Mbps) and got '{actual} Mbps'"
+                    .format(
+                    stream=traffic_stream,
+                    expected=rate_in_bytes / 1000000,
+                    tolerance=tolerance,
+                    gt=(rate_in_bytes - tolerance_in_bytes) / 1000000,
+                    lt=(rate_in_bytes + tolerance_in_bytes) / 1000000,
+                    actual=retrieved_rate,
                 )
             )
         else:
             raise Exception(
-                "Expected rate for traffic stream '{}' is '{}' (tolerance {}%,"
-                " {}<>{}) and got '{}' {}".format(
-                    traffic_stream,
-                    original_rate,
-                    tolerance,
-                    original_rate - tolerance_margin,
-                    original_rate + tolerance_margin,
-                    retrieved_rate,
-                    expected_rate_unit,
+                "Expected rate for traffic stream '{stream}' is '{expected} Mbps' "
+                "(tolerance {tolerance}%, {gt} Mbps<>{lt} Mbps) and got '{actual} Mbps'"
+                    .format(
+                    stream=traffic_stream,
+                    expected=rate_in_bytes / 1000000,
+                    tolerance=tolerance,
+                    gt=(rate_in_bytes - tolerance_in_bytes) / 1000000,
+                    lt=(rate_in_bytes + tolerance_in_bytes) / 1000000,
+                    actual=retrieved_rate,
                 )
             )
 

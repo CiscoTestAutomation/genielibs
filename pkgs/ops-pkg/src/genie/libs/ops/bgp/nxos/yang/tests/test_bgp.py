@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import Mock
 
 # ATS
-from ats.topology import Device
+from pyats.topology import Device
 
 # Genie YANG Ops for BGP
 from genie.libs.ops.bgp.nxos.yang.bgp import Bgp

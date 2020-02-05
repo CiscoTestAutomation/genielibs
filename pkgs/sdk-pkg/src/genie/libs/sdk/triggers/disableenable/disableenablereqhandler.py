@@ -5,9 +5,9 @@
 import time
 import logging
 
-# import ats
-from ats import aetest
-from ats.utils.objects import find, R
+# import pyats
+from pyats import aetest
+from pyats.utils.objects import find, R
 
 # Genie Libs
 from genie.libs.sdk.triggers.template.disableenable import \

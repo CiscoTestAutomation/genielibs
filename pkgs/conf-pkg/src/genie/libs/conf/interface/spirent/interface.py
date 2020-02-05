@@ -23,7 +23,7 @@ from enum import Enum
 from netaddr import mac_cisco, EUI
 from ipaddress import IPv4Interface, IPv6Interface
 try:
-    from ats.tcl import tclstr
+    from pyats.tcl import tclstr
 except Exception:
     pass
 

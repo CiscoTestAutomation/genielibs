@@ -6,8 +6,8 @@ import time
 import logging
 
 # ATS
-from ats.log.utils import banner
-from ats.results import Passed, Failed, Skipped, Passx
+from pyats.log.utils import banner
+from pyats.results import Passed, Failed, Skipped, Passx
 
 # Genie
 from genie.harness.libs.prepostprocessor.processors import report

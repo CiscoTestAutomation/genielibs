@@ -2,12 +2,12 @@
 import re
 import functools
 
-from ats.topology import Device as ATSDevice
+from pyats.topology import Device as ATSDevice
 
 from genie.utils.cisco_collections import OrderedSet
 
 try:
-    from ats.tcl.internal import DictionaryCompare
+    from pyats.tcl.internal import DictionaryCompare
 except Exception:
     pass
 

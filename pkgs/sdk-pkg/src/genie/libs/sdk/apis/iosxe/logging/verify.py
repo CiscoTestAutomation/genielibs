@@ -121,7 +121,7 @@ def is_logging_static_route_down_logged(*args, **kwargs):
 
     # Jan 24 18:13:10.814 EST: IP-ST(default):  10.4.1.1/32 [1], GigabitEthernet2 Path = 4 6, no change, not active state
     # *Jan 24 18:13:10.814 EST: IP-ST(default):  10.4.1.1/32 [1], GigabitEthernet3 Path = 4 6, no change, not active state
-    # Oct 24 09:48:52.617: IP-ST(default):  1.1.1.1/32 [1], GigabitEthernet0/2/1 Path = 1 8, no change, not active state
+    # Oct 24 09:48:52.617: IP-ST(default):  10.4.1.1/32 [1], GigabitEthernet0/2/1 Path = 1 8, no change, not active state
     return is_logging_string_matching_regex_logged(
         regex=r"^\*?(?P<timestamp>\w+ +\d+ +\S+)( +\w+)?: +IP-ST.*not +active +state$",
         *args,

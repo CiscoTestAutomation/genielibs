@@ -12,7 +12,7 @@ from enum import Enum
 from genie.libs import parser
 from genie.abstract import Lookup
 # ats
-from ats.datastructures import WeakList
+from pyats.datastructures import WeakList
 
 # genie
 from genie.utils.cisco_collections import typedset

@@ -18,10 +18,10 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.parser.iosxe.show_platform import ShowRedundancy, \
                                                   ShowVersion, \
                                                   ShowPlatform
-# import ats
-from ats import aetest
-from ats.log.utils import banner
-from ats.utils.objects import find, R
+# import pyats
+from pyats import aetest
+from pyats.log.utils import banner
+from pyats.utils.objects import find, R
 
 # import genie.libs
 from genie.libs import sdk

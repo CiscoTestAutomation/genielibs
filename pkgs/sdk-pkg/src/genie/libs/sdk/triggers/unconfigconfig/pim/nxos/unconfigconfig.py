@@ -1,7 +1,7 @@
 '''NXOS Implementation for Pim unconfigconfig triggers'''
 
 # ats
-from ats.utils.objects import NotExists
+from pyats.utils.objects import NotExists
 
 
 # Genie Libs

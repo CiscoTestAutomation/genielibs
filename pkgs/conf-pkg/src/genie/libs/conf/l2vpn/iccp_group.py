@@ -3,7 +3,7 @@ __all__ = (
         'IccpGroup',
         )
 
-from ats.datastructures import WeakList
+from pyats.datastructures import WeakList
 
 from genie.utils.cisco_collections import typedset
 

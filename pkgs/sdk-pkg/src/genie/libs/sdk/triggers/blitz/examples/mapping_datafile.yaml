@@ -1,0 +1,8 @@
+devices:
+  uut:
+    mapping:
+      cli: ssh
+      yang: netconf
+  helper:
+    mapping:
+      cli: ssh

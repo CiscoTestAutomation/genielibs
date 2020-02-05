@@ -12,7 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 try:
-    from ats.tcl import tclstr, TclCommand
+    from pyats.tcl import tclstr, TclCommand
 except Exception:
     pass
 

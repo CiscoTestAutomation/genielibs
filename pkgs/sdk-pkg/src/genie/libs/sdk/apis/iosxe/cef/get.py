@@ -207,7 +207,7 @@ def get_cef_internal_repair_next_hop_ip_address(device, prefix, vrf=None, addres
             if not tag_adj_dict:
                 # {'label': ['[11111|1622222073]-(local:26)'], 'frr': {
                 #     'primary': {'info': '0xaaaaaaaaa', 'primary': {'tag_adj': {
-                #         'GigabitEthernet0/1/6': {'addr': '111.111.111.111',
+                #         'GigabitEthernet0/1/6': {'addr': '10.69.111.111',
                 #                                  'addr_info': 'AAAAAAAAAA'}}},
                 #                                  'repair': {
                 #         'tag_midchain': {

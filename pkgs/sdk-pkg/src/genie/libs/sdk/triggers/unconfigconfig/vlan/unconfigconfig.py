@@ -1,7 +1,7 @@
 '''Implementation for vlan unconfigconfig triggers'''
 
-# import ats
-from ats import aetest
+# import pyats
+from pyats import aetest
 
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping

@@ -3,8 +3,8 @@
 # import python
 import logging
 
-# import ats
-from ats import aetest
+# import pyats
+from pyats import aetest
 
 # Genie
 from genie.harness.base import Trigger

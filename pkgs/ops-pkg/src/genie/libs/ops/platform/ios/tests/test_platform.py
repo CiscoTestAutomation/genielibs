@@ -2,7 +2,7 @@
 import unittest
 from unittest.mock import Mock
 # Ats
-from ats.topology import Device
+from pyats.topology import Device
 
 # Genie Xbu_shared
 from genie.libs.ops.platform.ios.platform import Platform

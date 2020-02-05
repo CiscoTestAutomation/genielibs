@@ -3,15 +3,15 @@
 # import python
 import logging
 
-# import ats
-from ats import aetest
+# import pyats
+from pyats import aetest
 
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.shutnoshut.shutnoshut import \
                        TriggerShutNoShut as CommonShutNoShut
 
-from ats.utils.objects import NotExists
+from pyats.utils.objects import NotExists
 
 log = logging.getLogger(__name__)
 

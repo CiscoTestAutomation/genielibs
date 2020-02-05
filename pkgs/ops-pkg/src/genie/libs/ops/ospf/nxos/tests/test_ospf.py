@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import Mock
 
 # ATS
-from ats.topology import Device
+from pyats.topology import Device
 
 # Genie
 from genie.libs.ops.ospf.nxos.ospf import Ospf

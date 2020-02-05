@@ -2,7 +2,7 @@
 import unittest
 
 # ATS
-from ats.topology import Device
+from pyats.topology import Device
 from unittest.mock import Mock
 # Genie
 from genie.libs.ops.arp.iosxe.arp import Arp

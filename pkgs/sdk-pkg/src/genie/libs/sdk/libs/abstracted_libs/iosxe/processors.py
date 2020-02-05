@@ -1,7 +1,7 @@
 # Ats
 import logging
-from ats.log.utils import banner
-from ats.utils.objects import find, R,NotExists
+from pyats.log.utils import banner
+from pyats.utils.objects import find, R,NotExists
 
 # genie.libs
 from genie.libs import ops

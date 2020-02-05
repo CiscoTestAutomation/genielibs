@@ -8,7 +8,7 @@ from enum import Enum
 import functools
 import weakref
 
-from ats.datastructures import WeakList
+from pyats.datastructures import WeakList
 
 from genie.utils.cisco_collections import typedset
 
@@ -300,7 +300,7 @@ class Xconnect(DeviceFeature):
         if isinstance(segment, Interface):
             # Links under Genie Interface object is deprecated
             # Placed the below workaround to bypass the Unittest
-            from ats.datastructures import WeakList
+            from pyats.datastructures import WeakList
             segment_links = set(WeakList()) - set([self])
             # Priority to L2 virtual links...
             if not link_interfaces:

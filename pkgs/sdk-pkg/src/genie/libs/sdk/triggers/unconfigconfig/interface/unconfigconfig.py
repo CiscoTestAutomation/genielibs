@@ -4,9 +4,9 @@
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.unconfigconfig.unconfigconfig import TriggerUnconfigConfig
 
-# import ats
-from ats import aetest
-from ats.utils.objects import Not, NotExists
+# import pyats
+from pyats import aetest
+from pyats.utils.objects import Not, NotExists
 
 # Which key to exclude for Interface Ops comparison
 interface_exclude = ['maker', 'last_change','in_rate','in_rate_pkts',

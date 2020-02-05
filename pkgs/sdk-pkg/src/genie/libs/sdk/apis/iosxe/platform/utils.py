@@ -22,37 +22,24 @@ from unicon.core.errors import (
 log = logging.getLogger(__name__)
 
 
-def write_erase_reload_device(
+def write_erase_reload_device_without_reconfig(
     device,
     via_console,
-    via_mgmt,
-    vrf,
     reload_timeout,
-    static_route,
-    static_route_netmask,
-    priv,
-    static_route_nexthop,
-    vty_start,
-    vty_end,
-    mgmt_interface,
-    mgmt_netmask,
-    config_sleep,
-    post_reconnect_time,
-    reload_hostname='Router',
     username=None,
-    password=None
+    password=None,
+    reload_creds=None,
+    reload_hostname='Router',
 ):
-    """Execute 'write erase' on device
+    """Execute 'write erase' on device and reload without reconfiguring.
 
         Args:
             device(`obj`): Device object
+            via_console(`str`): Via to use to reach the device console.
             reload_timeout(`int`): Maximum time to wait for reload to complete
-            static_route_ip (`str`): IP address for static route configuration
-            config_sleep (`int`): Time to wait after applying mgmt IP configuration
-
-        Returns:
-            None
+            reload_creds(`str or list`): Creds to apply if reloading device asks
     """
+
 
     # Set 'write erase' dialog
     wr_dialog = Dialog(
@@ -88,20 +75,15 @@ def write_erase_reload_device(
     # Collect device base information before reload
     os = device.os
     hostname = device.name
-    if username is None or password is None:
-        if hasattr(device, 'credentials') and device.credentials:
-            username = device.credentials.get("default", {}).get("username", "")
-            password = device.credentials.get("default", {}).get("password", "")
-        else:
-            username = device.tacacs.get("username", "")
-            password = device.passwords.get("line", "")
 
-    if not username or not password:
-        raise Exception("No username or password was provided.")
-        
+    username, password =  device.api.get_username_password(
+        device = device,
+        username = username,
+        password = password,
+        creds = reload_creds)
+
     ip = str(device.connections[via_console]["ip"])
     port = str(device.connections[via_console]["port"])
-    mgmt_ip = str(device.connections[via_mgmt]["ip"])
 
     # Set 'reload' dialog
     r_dialog = Dialog(
@@ -136,7 +118,10 @@ def write_erase_reload_device(
     # Execute 'reload' command
     log.info("\n\nExecuting 'reload' on device '{}'".format(device.name))
     try:
-        device.reload(prompt_recovery=True, dialog=r_dialog)
+        device.reload(
+            prompt_recovery=True, dialog=r_dialog, reload_creds=reload_creds,
+            timeout = reload_timeout)
+        device.disconnect()
     except SubCommandFailure:
         # Disconnect and destroy the connection
         log.info(
@@ -168,8 +153,7 @@ def write_erase_reload_device(
         "\n\nReconnecting to device '{}' after reload...".format(hostname)
     )
     new_device = Connection(
-        username=username,
-        password=password,
+        credentials=dict(default=dict(username=username, password=password)),
         os=os,
         hostname=reload_hostname,
         start=["telnet {ip} {port}".format(ip=ip, port=port)],
@@ -198,19 +182,89 @@ def write_erase_reload_device(
             "and reload'".format(hostname)
         )
 
-    # Wait before reconnecting to configure hostname
+
+def write_erase_reload_device(
+    device,
+    via_console,
+    reload_timeout,
+    static_route,
+    static_route_netmask,
+    static_route_nexthop,
+    priv,
+    vty_start,
+    vty_end,
+    mgmt_interface,
+    mgmt_netmask,
+    config_sleep,
+    vrf,
+    via_mgmt,
+    post_reconnect_time,
+    username=None,
+    password=None,
+    reload_creds=None,
+    reload_hostname='Router',
+):
+    """Execute 'write erase' on device, reload and apply basic configuration.
+
+        Args:
+            device(`obj`): Device object
+            via_console(`str`): Via to use to reach the device console.
+            reload_timeout(`int`): Maximum time to wait for reload to complete
+            reload_creds(`str or list`): Creds to apply if reloading device asks
+            static_route_ip (`str`): IP address for static route configuration
+            config_sleep (`int`): Time to wait after applying mgmt IP configuration
+            vrf (`str`): VRF to use for management IP operations
+            via_mgmt(`str`): Via to use to reach the device mgt IP.
+            post_reconnect_time(`int`): Maximum time to wait after reload before configuring
+
+
+        Returns:
+            None
+    """
+
+    device.write_erase_reload_device_without_reconfig(
+        device = device,
+        via_console = via_console,
+        vrf = vrf,
+        reload_timeout = reload_timeout,
+        username = username,
+        password = password,
+        reload_creds = reload_creds,
+        reload_hostname = reload_hostname,
+    )
+    os = device.os
+    hostname = device.name
+    ip = str(device.connections[via_console]["ip"])
+    port = str(device.connections[via_console]["port"])
+
+    username, password =  device.api.get_username_password(
+        device = device,
+        username = username,
+        password = password,
+        creds = reload_creds)
+
+    # Wait before reconnecting
     log.info(
-        "\n\nWaiting '{}' seconds before configuring hostname on device...".format(
+        "\n\nWaiting '{}' seconds after reload ...".format(
             post_reconnect_time
         )
     )
     time.sleep(post_reconnect_time)
+
+    new_device = Connection(
+        credentials=dict(default=dict(username=username, password=password)),
+        os=os,
+        hostname=reload_hostname,
+        start=["telnet {ip} {port}".format(ip=ip, port=port)],
+        prompt_recovery=True,
+    )
 
     # Configure hostname
     log.info("\n\nConfigure hostname on device '{}'".format(hostname))
     try:
         new_device.connect()
         new_device.configure("hostname {}".format(hostname))
+        new_device.disconnect()
     except StateMachineError:
         new_device.disconnect()
         log.info(
@@ -220,10 +274,11 @@ def write_erase_reload_device(
         raise Exception(
             "Error while trying to configure hostname on device '{}'".format(
                 hostname
-            ) 
+            )
         ) from e
 
     # Configure mgmt IP configuration
+    mgmt_ip = str(device.connections[via_mgmt]["ip"])
     log.info(
         "\n\nConfigure mgmt IP configuration on device '{}'".format(hostname)
     )

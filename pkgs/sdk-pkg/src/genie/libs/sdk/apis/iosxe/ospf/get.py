@@ -6,8 +6,8 @@ import logging
 import re
 
 # pyATS
-from ats.easypy import runtime
-from ats.utils.objects import find, R
+from pyats.easypy import runtime
+from pyats.utils.objects import find, R
 
 # Genie
 from genie.utils.config import Config

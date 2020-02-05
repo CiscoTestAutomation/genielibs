@@ -1,149 +1,136 @@
-import time
 import logging
-from ats import aetest
-from ats.utils.objects import find, R
-from genie.utils.loadattr import str_to_list
+import copy
+from pyats import aetest
+from pyats.log.utils import banner
+from pyats.aetest.loop import loopable, get_iterations
 from genie.harness.base import Trigger
+
+from genie.harness.discovery import copy_func
+from pyats.aetest.base import Source
+from pyats.aetest.parameters import ParameterDict
+
+from .actions import actions
+from .actions import device_parallel
+from .actions import action_parallel
+
 
 log = logging.getLogger()
 
 
 class Blitz(Trigger):
     '''Apply some configuration, validate some keys and remove configuration'''
+    def __iter__(self, *args, **kwargs):
 
-    def check_parsed_key(self, key, output, step):
-        keys = str_to_list(key)
-        with step.start("Verify that '{k}' is in the "
-                        "output".format(k=key)) as step:
-            reqs = R(list(keys))
-            found = find([output], reqs, filter_=False,
-                         all_keys=True)
-            if not found:
-                step.failed("Could not find '{k}'"
-                            .format(k=key))
+        for section in self._discover():
+            if loopable(section):
+                for iteration in get_iterations(section):
+                    new_section = section.__testcls__(section,
+                                                      uid=iteration.uid,
+                                                      parameters=iteration.parameters,
+                                                      parent=self)
+                    yield new_section
             else:
-                log.info("Found {f}".format(f=found))
+                new_section = section.__testcls__(section, parent=self)
+                yield new_section
 
-    def check_output(self, key, output, step, style):
-        msg = "Verify that '{k}' is {style}d the "\
-              "output".format(k=key, style=style)
-        with step.start(msg) as step:
-            key = str(key)
-            if style == 'include':
-                if key not in output:
-                    step.failed("Could not find '{k}'"
-                                .format(k=key))
-                else:
-                    log.info("Found {k}".format(k=key))
-            elif style == 'exclude':
-                if key in output:
-                    step.failed("Could find '{k}'"
-                                .format(k=key))
-                else:
-                    log.info("Not Found {k}".format(k=key))
-            else:
-                raise Exception("{s} not supported")
+    def _discover(self):
+        # filter decorated aetest methods from helper methods
+        aetest_methods = {}
+        for item in dir(self):
+            if hasattr(getattr(self, item), '__testcls__'):
+                aetest_methods.update({item: getattr(self, item)})
 
-    def _configure(self, data, testbed):
+        used_uids = []
+        sections = []
+        for component in self.parameters.get('test_sections', {}):
+            for action, data in component.items():
+
+                # Attempt to find existing method with same name as action
+                method = aetest_methods.get(action)
+                if not method:
+                    # The function doesn't exist
+                    # Generate the test automatically
+                    if 'setup' in data:
+                        # Load the setup one
+                        method = setup_section
+                    elif 'cleanup' in data:
+                        # Load the cleanup one
+                        method = cleanup_section
+                    else:
+                        # Default is test
+                        method = test_section
+
+                func = copy_func(method)
+                func.uid = action
+                iteration = 1
+                while func.uid in used_uids:
+                    func.uid = '{}.{}'.format(func.uid, iteration)
+                    iteration += 1
+
+                func.parameters = ParameterDict()
+                func.parameters['data'] = data
+                func.source = Source(self, method.__class__)
+
+                new_method = func.__get__(self, func.__testcls__)
+
+                sections.append(new_method)
+                used_uids.append(new_method.uid)
+        return sections
+
+    def dispatcher(self, steps, testbed, data):
         if not data:
-            log.info('Nothing to configure')
+            log.info('Nothing to execute, ending section')
             return
 
-        if 'devices' not in data:
-            log.info('No devices to apply configuration on')
-            return
+        for action_item in data:
+            if action_item == 'parallel':
+                action_parallel(self, steps, testbed, data['parallel'])
+                continue
+            for action, kwargs in action_item.items():
 
-        for dev, config in data['devices'].items():
-            device = testbed.devices[dev]
+                # See if action exists in actions
+                if not kwargs:
+                    raise Exception('No data was provided for {a}'.format(a=action))
+                if action not in actions:
+                    raise Exception("'{a} is not a valid "
+                                    "action".format(a=action))
 
-            # if config is a dict, then try apply config with api
-            if isinstance(config, dict):
-                for c in config:
-                    function = config[c].get('api')
-                    if not function:
-                        self.error('No API function is found, the config must be a string or a dict contatining the key "api"')
+                step_msg = "Starting action {a}".format(a=action)
+                if 'device' in kwargs:
+                    device = testbed.devices.get(kwargs['device'])
+                    if not device:
+                        raise Exception("Could not find the device '{d}' "
+                                        "which was provided in the "
+                                        "action".format(d=device))
+                    step_msg += ' on device {d}'.format(d=device.name)
 
-                    args = config[c].get('arguments')
-                    if 'device' in args:
-                        arg_device = testbed.devices[args['device']]
-                        args['device'] = arg_device
-                    getattr(device.api, function)(**args)
+                    # Provide device object
+                    kwargs['device'] = device
 
-            # if not a dict then apply config directly
-            else:
-                device.configure(config)
+                continue_ = kwargs.pop('continue', True)
+                with steps.start(step_msg, continue_=continue_) as step:
 
-        if 'sleep' in data:
-            log.info('Sleeping for {s} seconds to stabilize '
-                     'new configuration'.format(s=data['sleep']))
-            time.sleep(data['sleep'])
+                    if 'banner' in kwargs:
+                        log.info(banner(kwargs['banner']))
+                        del kwargs['banner']
 
-    def _validate(self, data, testbed, steps):
-        if not data:
-            log.info('Nothing to validate')
-            return
+                    # The actions were not added as a bounded method
+                    # so providing the self
+                    kwargs['self'] = self
+                    # Updating steps to be newly created step
+                    kwargs['steps'] = step
 
-        if 'devices' not in data:
-            log.info('No devices to data configuration on')
-            return
+                    # Call the action with all the arguments
+                    actions[action](**kwargs)
 
-        for dev, command in data['devices'].items():
-            device = testbed.devices[dev]
-            for i, data in sorted(command.items()):
-                command = data.get('command')
-                function = data.get('api')
-                # if command is given, validate with parser
-                if command:
-                    with steps.start("Verify the output of '{c}'".format(c=command),
-                                     continue_=True) as step:
-                        if 'parsed' in data:
-                            output = device.parse(command)
-                            for key in data['parsed']:
-                                self.check_parsed_key(key, output, step)
-                        if 'include' in data:
-                            output = device.execute(command)
-                            for key in data['include']:
-                                self.check_output(key, output, step, 'include')
-                        if 'exclude' in data:
-                            output = device.execute(command)
-                            for key in data['exclude']:
-                                self.check_output(key, output, step, 'exclude')
+@aetest.setup
+def setup_section(self, steps, testbed, data=None):
+    return self.dispatcher(steps, testbed, data)
 
-                # if no command given, validate with api function
-                elif function:
-                    with steps.start(function) as step:
-                        try:
-                            args = data.get('arguments')
-                            if 'device' in args:
-                                arg_device = testbed.devices[args['device']]
-                                args['device'] = arg_device
-                            result = getattr(device.api, function)(**args)
-                        except Exception as e:
-                            step.failed('Verification "{}" failed : {}'.format(function, str(e)))
-                        else:
-                            if result:
-                                step.passed()
-                            else:
-                                step.failed('Failed to {}'.format(function))
-                else:
-                    self.error('No command or API found for verification # {}.'.format(i))
+@aetest.test
+def test_section(self, steps, testbed, data=None):
+    return self.dispatcher(steps, testbed, data)
 
-    @aetest.setup
-    def apply_configuration(self, testbed, configure=None):
-        '''Apply configuration on the devices'''
-        return self._configure(configure, testbed)
-
-    @aetest.test
-    def validate_configuration(self, steps, testbed, validate_configure=None):
-        '''Validate configuration on the devices'''
-        return self._validate(validate_configure, testbed, steps)
-
-    @aetest.test
-    def remove_configuration(self, testbed, unconfigure=None):
-        '''remove configuration on the devices'''
-        return self._configure(unconfigure, testbed)
-
-    @aetest.test
-    def validate_unconfiguration(self, steps, testbed, validate_unconfigure=None):
-        '''Validate unconfiguration on the devices'''
-        return self._validate(validate_unconfigure, testbed, steps)
+@aetest.cleanup
+def cleanup_section(self, steps, testbed, data=None):
+    return self.dispatcher(steps, testbed,  data)

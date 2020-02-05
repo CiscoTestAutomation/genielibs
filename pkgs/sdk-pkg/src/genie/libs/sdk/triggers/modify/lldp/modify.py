@@ -6,9 +6,9 @@ import logging
 from collections import OrderedDict
 
 # import ATS
-from ats import aetest
-from ats.datastructures.logic import Not
-from ats.utils.objects import find, R
+from pyats import aetest
+from pyats.datastructures.logic import Not
+from pyats.utils.objects import find, R
 
 # import genie.libs
 from genie.libs.sdk.libs.utils.mapping import Mapping

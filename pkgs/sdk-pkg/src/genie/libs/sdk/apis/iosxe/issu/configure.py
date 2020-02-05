@@ -8,7 +8,7 @@ from genie.harness.utils import connect_device
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # PyATS
-from ats.utils.fileutils import FileUtils
+from pyats.utils.fileutils import FileUtils
 from pyats.aetest.steps import Steps
 
 # Unicon

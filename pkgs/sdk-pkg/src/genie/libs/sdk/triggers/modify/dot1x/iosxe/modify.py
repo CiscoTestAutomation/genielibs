@@ -1,7 +1,7 @@
 '''IOSXE Implementation for Dot1x modify triggers'''
 
 # import ATS
-from ats import aetest
+from pyats import aetest
 
 # import genie.libs
 from genie.libs import conf

@@ -1,7 +1,7 @@
 ''' triggerDisableEnable template'''
 
-# import ats
-from ats import aetest
+# import pyats
+from pyats import aetest
 
 # import genie infra
 from genie.harness.base import Trigger

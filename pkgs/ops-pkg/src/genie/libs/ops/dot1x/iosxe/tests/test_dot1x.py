@@ -4,7 +4,7 @@ from copy import deepcopy
 from unittest.mock import Mock
 
 # ATS
-from ats.topology import Device
+from pyats.topology import Device
 
 # Genie
 from genie.libs.ops.dot1x.iosxe.dot1x import Dot1X

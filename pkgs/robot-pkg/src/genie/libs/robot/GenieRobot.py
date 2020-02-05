@@ -13,10 +13,10 @@ from robot.libraries.BuiltIn import BuiltIn, RobotNotRunningError
 
 from genie.abstract import Lookup
 
-from ats.utils.objects import find, R
-from ats.aetest import executer, reporter
-from ats.datastructures.logic import Or
-from ats.results import (Passed, Failed, Aborted, Errored,
+from pyats.utils.objects import find, R
+from pyats.aetest import executer, reporter
+from pyats.datastructures.logic import Or
+from pyats.results import (Passed, Failed, Aborted, Errored,
                          Skipped, Blocked, Passx)
 
 from genie.conf import Genie
@@ -47,16 +47,15 @@ class GenieRobot(object):
 
         # Need to create a testscript
         try:
-            # If pyATS, then call their use_testbed api, then convert
-            self._pyats_testscript = self.builtin.get_library_instance(
-                                    'ats.robot.pyATSRobot').testscript
+            self._pyats_testscript = self.builtin.get_library_instance('pyats.robot.'
+                                                                       'pyATSRobot').testscript
         except RuntimeError:
-            self._pyats_testscript = None
-            # No pyATS
-            pass
-        except RobotNotRunningError:
-           # For building doc
-           return
+            try:
+                self._pyats_testscript = self.builtin.get_library_instance('ats.robot.'
+                                                                           'pyATSRobot').testscript
+            except RuntimeError:
+                # no pyATS
+                pass
         finally:
             self._genie_testscript = TestScript(Testscript)
 
@@ -71,20 +70,27 @@ class GenieRobot(object):
     def genie_testbed(self, testbed):
         '''Create the genie testbed'''
         try:
-            # If pyATS, then call their use_testbed api, then convert
-            self.builtin.get_library_instance('ats.robot.pyATSRobot').\
-                         use_testbed(testbed)
-            testbed = self.builtin.get_library_instance('ats.robot.'\
-                                                        'pyATSRobot').testbed
+            self.builtin.get_library_instance('pyats.robot.pyATSRobot')
+            ats_pyats = 'pyats.robot.pyATSRobot'
         except RuntimeError:
+            self.builtin.get_library_instance('ats.robot.pyATSRobot')
+            ats_pyats = 'ats.robot.pyATSRobot'
+        except RuntimeError:
+            # No pyATS
+            pass
+        
+        try:
+            # If pyATS, then call their use_testbed api, then convert
+            self.builtin.get_library_instance(ats_pyats).use_testbed(testbed)
+            testbed = self.builtin.get_library_instance(ats_pyats).testbed
+        except RuntimeError as e:
             # No pyATS
             self.testbed = loader.load(testbed)
         else:
             # Has pyATS, so converted and then save locally and also for pyATS
             self.testbed = Genie.init(testbed)
-            self.builtin.get_library_instance('ats.robot.'\
-                                              'pyATSRobot').testbed =\
-                                              self.testbed
+            self.builtin.get_library_instance(ats_pyats).testbed = self.testbed
+
         self.testscript.parameters['testbed'] = self.testbed
 
         # Load Genie Datafiles (Trigger, Verification and PTS)
@@ -216,6 +222,8 @@ class GenieRobot(object):
                device_handle.custom['abstraction']['order'].append('context')
                device_handle.custom['abstraction']['context'] = context
                added_context = True
+
+
 
         try:
             cls = load_attribute(package, attr_name, device=device_handle)

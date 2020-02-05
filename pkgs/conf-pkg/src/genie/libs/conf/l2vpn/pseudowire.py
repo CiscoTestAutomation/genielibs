@@ -15,7 +15,7 @@ import weakref
 import ipaddress
 from enum import Enum
 
-from ats.datastructures import WeakList
+from pyats.datastructures import WeakList
 
 from genie.decorator import managedattribute
 from genie.conf.base import Base, Device, Interface, DeviceFeature

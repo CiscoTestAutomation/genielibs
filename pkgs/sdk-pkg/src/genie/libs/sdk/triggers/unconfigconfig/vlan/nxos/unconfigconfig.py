@@ -3,7 +3,7 @@
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.unconfigconfig.unconfigconfig import TriggerUnconfigConfig
-from ats.utils.objects import NotExists
+from pyats.utils.objects import NotExists
 
 # Which key to exclude for Vlan Ops comparison
 vlan_exclude = ['maker']

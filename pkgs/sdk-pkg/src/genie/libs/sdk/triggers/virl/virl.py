@@ -3,8 +3,8 @@
 import logging
 import time
 
-# ats import
-from ats import aetest
+# pyats import
+from pyats import aetest
 
 # Genie
 from genie.utils.timeout import Timeout

@@ -1,0 +1,112 @@
+extends: data.yaml
+
+Testcase1: 
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.blitz.blitz.Blitz
+
+    test_actions: 
+        # Section name
+        # can be any name
+      - apply_configuration:
+          devices:
+            # List of device
+            - uut:
+              # Configure action, which accepts command as an argument, and
+              # banner can be passed to any action
+              - configure:
+                  banner: A message
+                  command: |
+                    router bgp 65000
+      - validate_configuration:
+          devices:
+            - uut:
+              - parse:
+                  command: show version
+                  output:
+                      # Verify that the os is iosxe
+                     - "[version][os][IOS-XE]"
+              - execute:
+                  command: show run | inc cdp
+                  include:
+                      # Verify cdp run is within the show run output
+                    - 'cdp enable'
+                  exclude:
+                      # Verify cdp run is not within the show run output
+                    - 'cdp run'
+      - validate_unconfiguration:
+          devices:
+            - uut:
+              - parse:
+                  command: show version
+                  output:
+                     - "[version][os][IOS-XE]"
+
+      - api_test:
+          devices:
+            - uut:
+              # Execute one of the api
+              - api:
+                  continue: True
+                  function: get_interface_mtu_size
+                  arguments:
+                    interface: GigabitEthernet1
+              # Then execute just a show command
+              - execute:
+                  command: show version
+            # Run on a different device
+            - helper:
+              - api:
+                  continue: True
+                  function: get_interface_mtu_size
+                  arguments:
+                    interface: GigabitEthernet1
+                    
+              - execute:
+                  continue: True
+                  command: show version
+            # Run on the original device
+            - uut:
+              - api:
+                  function: get_interface_mtu_size
+                  arguments:
+                    interface: GigabitEthernet1
+              - execute:
+                  command: show version
+              - sleep:
+                  sleep_time: 5
+
+      - validate_yang_unconfiguration:
+          devices:
+            - uut:
+              - yang:
+                  operation: edit-config
+                  protocol: '%{data.protocol}'
+                  alias: yang
+                  datastore: ''
+                  banner: YANG MESSAGE
+                  content: '%{data.content.1}'
+              - execute:
+                  command: show run | inc cdp
+                  include:
+                    - 'cdp holdtime 132'
+                  exclude:
+                    - 'blabla run'
+
+native_cdp_oper_spec_00009_cdp_neighbor_detail_hello_message_state:
+  devices: ['uut']
+  source:
+    pkg: genie.libs.sdk
+    class: triggers.blitz.blitz.Blitz
+  test_actions:
+      - validate_yang_unconfiguration:
+          devices:
+            - uut:
+              - yang:
+                  operation: get
+                  protocol: '%{data.protocol}'
+                  alias: yang
+                  datastore: ''
+                  banner: YANG MESSAGE
+                  content: '%{data.content.2}'
+                  returns: '%{data.returns.1}'

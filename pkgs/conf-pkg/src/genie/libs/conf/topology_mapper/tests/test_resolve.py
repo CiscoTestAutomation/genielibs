@@ -2,8 +2,8 @@
 
 # BASIC LOGGER SETUP {{{
 import logging
-import ats.log
-logging.root.addHandler(ats.log.managed_handlers.screen)
+import pyats.log
+logging.root.addHandler(pyats.log.managed_handlers.screen)
 # }}}
 #logging.root.setLevel(logging.DEBUG)
 import types
@@ -11,8 +11,8 @@ import unittest
 import functools
 import os
 
-from ats.datastructures.logic import And, Not, Or
-import ats.topology
+from pyats.datastructures.logic import And, Not, Or
+import pyats.topology
 import genie.conf
 import genie.conf.base
 
@@ -66,18 +66,18 @@ class TestResolve(unittest.TestCase):
 
     def test_genie_testbed_1(self):
 
-        pyats_testbed = ats.topology.loader.load(os.path.join(
+        pyats_testbed = pyats.topology.loader.load(os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
             'pyats_topology1.yaml'))
 
         for pyats_device in pyats_testbed.devices.values():
-            self.assertIsInstance(pyats_device, ats.topology.Device)
+            self.assertIsInstance(pyats_device, pyats.topology.Device)
 
             for pyats_intf in pyats_device.interfaces.values():
-                self.assertIsInstance(pyats_intf, ats.topology.Interface)
+                self.assertIsInstance(pyats_intf, pyats.topology.Interface)
 
         for pyats_link in list(pyats_testbed.links):
-            self.assertIsInstance(pyats_link, ats.topology.Link)
+            self.assertIsInstance(pyats_link, pyats.topology.Link)
 
         genie_testbed = genie.conf.Genie.init(pyats_testbed)
 
@@ -92,7 +92,7 @@ class TestResolve(unittest.TestCase):
 
     def test_genie_testbed_2(self):
 
-        pyats_testbed = ats.topology.loader.load(os.path.join(
+        pyats_testbed = pyats.topology.loader.load(os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
             'pyats_topology1.yaml'))
 

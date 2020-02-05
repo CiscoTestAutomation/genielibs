@@ -1,7 +1,7 @@
 
 import re
 
-from ats.topology import Interface as ATSInterface
+from pyats.topology import Interface as ATSInterface
 
 
 class Interface(ATSInterface):

@@ -8,8 +8,8 @@ import time
 from prettytable import PrettyTable
 
 # pyATS
-from ats.easypy import runtime
-from ats.utils.objects import find, R
+from pyats.easypy import runtime
+from pyats.utils.objects import find, R
 
 # Genie
 from genie.libs.sdk.libs.utils.normalize import GroupKeys

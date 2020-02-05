@@ -1,0 +1,114 @@
+# Name of the testcase
+TestBgpShutdown:
+    # Location of the blitz trigger
+    source:
+      pkg: genie.libs.sdk
+      class: triggers.blitz.blitz.Blitz
+
+    # Field containing all the Testcase sections
+    test_sections:
+
+      # Section name - Can be any name, it will show as the first section of
+      # the testcase
+      - apply_configuration:
+          # List of device
+          devices:
+              # Execute the below actions on this device
+              - R3_nx:
+                  # Configure action, which accepts command as an argument
+                  - configure:
+                      command: |
+                        router bgp 65000
+                        shutdown
+
+      # Second section name
+      - verify_configuration:
+          # List of device
+          devices:
+              - R3_nx:
+                  # Action #1
+                  # Send show command to the device and verify if part 
+                  # of a string is in the output or not
+                  - execute:
+                      command: show bgp process vrf all
+                      include:
+                          # Verify Shutdown is within the show run output
+                        - 'Shutdown'
+                      exclude:
+                          # Verify Running is not within the show run output
+                        - 'Running'
+
+                  # Action #2
+                  # Send show command and use our available parsers to make sure
+                  # the bgp protocol state is shutdown
+                  - parse:
+                      # All action supports banner field to add to the log
+                      banner: Verify bgp process is shutdown
+                      command: show bgp process vrf all
+                      output:
+                          - "[bgp_protocol_state][shutdown]"
+
+      - Revert_configuration:
+          devices:
+              # List of device
+              - R3_nx:
+                  # Configure action, which accepts command as an argument
+                  - configure:
+                      banner: Un-Shutting down bgp 65000
+                      command: |
+                        router bgp 65000
+                        no shutdown
+
+      - verify_revert:
+          devices:
+              # List of device
+              - R3_nx:
+                  # Send show command and verify if part of a string is in the output or not
+                  - execute:
+                      command: show bgp process vrf all
+                      include:
+                          # Verify Running is within the show run output
+                          - 'Running'
+                      exclude:
+                          # Verify Shutdown is not within the show run output
+                          - 'Shutdown'
+                  # Send show command and use our available parsers to make sure
+                  # it is the bgp protocol state which is running
+                  - parse:
+                      command: show bgp process vrf all
+                      output:
+                          - "[bgp_protocol_state][running]"
+
+
+TestCdpHoldTime_yang:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.blitz.blitz.Blitz
+    test_sections:
+
+        - modify_cdp_holdtime_yang:
+            devices:
+                - R1_xe:
+                    - yang:
+                        operation: edit-config
+                        protocol: 'netconf'
+                        alias: yang
+                        datastore: ''
+                        banner: YANG MESSAGE
+                        content:
+                            type: xpath
+                            namespace:
+                              ios: http://cisco.com/ns/yang/Cisco-IOS-XE-native
+                              ios-cdp: http://cisco.com/ns/yang/Cisco-IOS-XE-cdp
+                            nodes:
+                              - edit-op: create
+                                value: '132'
+                                xpath: /ios:native/ios:cdp/ios-cdp:holdtime
+
+        - verify_cdp_holding_cli:
+            devices:
+                - R1_xe:
+                    - execute:
+                        command: show run | inc cdp
+                        include:
+                          - 'cdp holdtime 132'

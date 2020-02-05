@@ -3,9 +3,9 @@
 import unittest
 from unittest.mock import Mock
 
-from ats.topology import Device as AtsDevice
-from ats.topology import Interface as AtsInterface
-from genie.conf.tests import TestCase
+from pyats.topology import Device as AtsDevice
+from pyats.topology import Interface as AtsInterface
+from genie.tests.conf import TestCase
 from genie.conf import Genie
 from genie.conf.base import Testbed, Device, Link, Interface
 from genie.conf.base.interface import\

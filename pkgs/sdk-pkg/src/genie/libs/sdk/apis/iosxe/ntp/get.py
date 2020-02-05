@@ -5,7 +5,7 @@ import logging
 import re
 
 # pyATS
-from ats.utils.objects import find, R
+from pyats.utils.objects import find, R
 from genie.libs.sdk.libs.utils.normalize import GroupKeys
 from genie.utils.timeout import Timeout
 from genie.metaparser.util.exceptions import SchemaEmptyParserError

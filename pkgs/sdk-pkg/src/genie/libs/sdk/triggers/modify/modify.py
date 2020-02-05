@@ -3,7 +3,7 @@
 import time
 import logging
 
-from ats import aetest
+from pyats import aetest
 
 from genie.libs.sdk.triggers.template.modify import \
                        TriggerModify as ModifyTemplate

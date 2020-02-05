@@ -3,8 +3,8 @@
 import logging
 import time
 
-# ats import
-from ats import aetest
+# pyats import
+from pyats import aetest
 
 # Genie Libs import
 from genie.libs.sdk.triggers.template.sleep import TriggerSleep

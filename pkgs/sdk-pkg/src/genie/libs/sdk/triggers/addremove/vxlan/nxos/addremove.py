@@ -6,12 +6,12 @@ log = logging.getLogger(__name__)
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.addremove.addremove import TriggerAddRemove
-from ats import aetest
+from pyats import aetest
 from collections import OrderedDict
 from functools import partial
 
 # ATS
-from ats.utils.objects import NotExists, Not
+from pyats.utils.objects import NotExists, Not
 
 vxlan_exclude =['maker','up_time']
 interface_exclude = ['maker', 'last_change','in_rate','in_rate_pkts',

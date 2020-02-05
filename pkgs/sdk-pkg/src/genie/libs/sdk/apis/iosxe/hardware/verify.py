@@ -10,7 +10,7 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.utils.timeout import Timeout
 
 # Ats
-from ats.utils.objects import find, R
+from pyats.utils.objects import find, R
 
 # HARDWARE
 from genie.libs.sdk.apis.iosxe.hardware.get import (

@@ -1659,3 +1659,56 @@ def verify_bgp_neighbor_exist(device, neighbor, address_family, vrf='',
         timeout.sleep()
 
     return False
+
+def verify_extended_community_color(device, address_family, rd, route,
+                                    expected_color=None, max_time=90,
+                                    check_interval=10):
+    """ Verify color exists in 'show ip bgp {address_family} rd {rd} {route}'
+
+        Args:
+            device ('obj'): device to use
+            address_family ('str'): address family
+            rd ('str'): Route distinguisher
+            route ('str'): Route to check
+            expected_color ('str'): Color value
+            max_time ('int'): maximum time to wait
+            check_interval ('int'): how often to check
+
+        Returns:
+            result ('bool'): verified result
+    """
+    reqs = R(
+        [
+            'instance',
+            'default',
+            'vrf',
+            'default',
+            'address_family',
+            address_family,
+            'prefixes',
+            route,
+            'index',
+            '(?P<index>.*)',
+            'ext_community',
+            '(.*Color: *{}.*)'.format(expected_color if expected_color else '')
+        ]
+    )
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        out = get_ip_bgp_route(device=device, route=route,
+                               address_family=address_family, rd=rd)
+        if not out:
+            log.info('Could not get information about ip bgp route')
+            timeout.sleep()
+            continue
+        
+        found = find([out], reqs, filter_=False, all_keys=True)
+        if not found and not expected_color:
+            return True
+        elif found and expected_color:
+            return True
+
+        timeout.sleep()
+
+    return False

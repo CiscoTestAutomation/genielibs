@@ -3,7 +3,7 @@ import logging
 from os.path import getsize
 
 # ATS
-from ats.utils.objects import R, find
+from pyats.utils.objects import R, find
 
 # Genie
 from genie.utils.timeout import Timeout

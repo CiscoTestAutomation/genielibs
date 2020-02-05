@@ -1,0 +1,56 @@
+data:
+  protocol: netconf
+  content:
+    1:
+      type: xpath
+      namespace: '%{data.namespace.1}'
+      nodes:
+        - edit-op: create
+          value: '132'
+          xpath: '%{data.xpath.1}'
+    2:
+      type: xpath
+      xpath: /cdp-ios-xe-oper:cdp-neighbor-details/cdp-ios-xe-oper:cdp-neighbor-detail[cdp-ios-xe-oper:device-id="1"]/cdp-ios-xe-oper:hello-message
+      namespace: '%{data.namespace.2}'
+      nodes:
+        - xpath: '%{data.xpath.2}'
+  
+  namespace:
+    1:
+      ios: http://cisco.com/ns/yang/Cisco-IOS-XE-native
+      ios-cdp: http://cisco.com/ns/yang/Cisco-IOS-XE-cdp
+    2:
+      cdp-ios-xe-oper: http://cisco.com/ns/yang/Cisco-IOS-XE-cdp-oper
+  
+  xpath:
+    1: /ios:native/ios:cdp/ios-cdp:holdtime
+    2: /cdp-ios-xe-oper:cdp-neighbor-details/cdp-ios-xe-oper:cdp-neighbor-detail[cdp-ios-xe-oper:device-id="1"]/cdp-ios-xe-oper:hello-message
+  
+  returns:
+    1:
+      type: opfields
+      content:
+      - id: 1
+        name: oui
+        op: ==
+        selected: true
+        value: genericstring
+        xpath: /cdp-neighbor-details/cdp-neighbor-detail/hello-message/oui
+      - id: 2
+        name: protocol-id
+        op: ==
+        selected: true
+        value: genericstring
+        xpath: /cdp-neighbor-details/cdp-neighbor-detail/hello-message/protocol-id
+      - id: 3
+        name: payload-value
+        op: ==
+        selected: true
+        value: genericstring
+        xpath: /cdp-neighbor-details/cdp-neighbor-detail/hello-message/payload-value
+      - id: 4
+        name: payload-len
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /cdp-neighbor-details/cdp-neighbor-detail/hello-message/payload-len

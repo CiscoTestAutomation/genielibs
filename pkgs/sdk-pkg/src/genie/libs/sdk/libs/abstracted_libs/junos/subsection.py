@@ -4,7 +4,7 @@ import re
 import logging
 
 # pyats
-from ats import aetest
+from pyats import aetest
 
 log = logging.getLogger(__name__)
 

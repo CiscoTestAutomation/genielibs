@@ -2,7 +2,7 @@
 import re
 import functools
 
-from ats.topology import Link as ATSLink
+from pyats.topology import Link as ATSLink
 
 from genie.utils.cisco_collections import OrderedSet
 
@@ -34,7 +34,7 @@ class Link(ATSLink):
         super().connect_interface(interface)
 
         try:
-            from ats.tcl.internal import DictionaryCompare
+            from pyats.tcl.internal import DictionaryCompare
             self.interfaces = type(self.interfaces)(
                 sorted(self.interfaces, key=functools.cmp_to_key(
                     lambda intf1, intf2: DictionaryCompare(

@@ -2,7 +2,7 @@
 import unittest
 
 # ATS
-from ats.topology import Device
+from pyats.topology import Device
 
 # Genie
 from genie.ops.base import Base

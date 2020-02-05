@@ -4,7 +4,7 @@
 import logging
 
 # pyATS
-from ats.easypy import runtime
+from pyats.easypy import runtime
 
 # Genie
 from genie.metaparser.util.exceptions import SchemaEmptyParserError

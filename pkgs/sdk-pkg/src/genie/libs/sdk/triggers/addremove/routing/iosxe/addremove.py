@@ -9,8 +9,8 @@ from genie.libs.sdk.triggers.addremove.addremove import TriggerAddRemove
 from genie.libs.sdk.libs.abstracted_libs.processors import traceroute_loopback
 
 # ATS
-from ats import aetest
-from ats.utils.objects import NotExists
+from pyats import aetest
+from pyats.utils.objects import NotExists
 
 # Which key to exclude for BGP Ops comparison
 routing_exclude = ['maker', 'attributes']

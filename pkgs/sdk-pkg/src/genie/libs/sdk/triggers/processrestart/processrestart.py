@@ -3,7 +3,7 @@
 import time
 import logging
 
-from ats import aetest
+from pyats import aetest
 
 from genie.utils.diff import Diff
 from genie.libs.sdk.triggers.template.processrestart import \

@@ -3,7 +3,7 @@
 # import python
 import time
 
-from ats import aetest
+from pyats import aetest
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.disableenable.disableenable import \

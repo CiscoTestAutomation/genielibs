@@ -2,7 +2,7 @@
 
 import logging
 # pyATS
-from ats.utils.objects import find, R
+from pyats.utils.objects import find, R
 
 # Genie
 from genie.metaparser.util.exceptions import SchemaEmptyParserError

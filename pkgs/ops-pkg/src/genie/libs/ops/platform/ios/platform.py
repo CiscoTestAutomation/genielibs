@@ -1,6 +1,6 @@
 # super class
 from genie.libs.ops.platform.platform import Platform as SuperPlatform
-from genie.libs.ops.utils.common import convert_os_name
+from genie.libs.ops.utils.common import convert_to_lower
 # Genie Parsers
 
 class Platform(SuperPlatform):
@@ -33,7 +33,7 @@ class Platform(SuperPlatform):
         self.add_leaf(cmd='show version',
                       src='[version][os]',
                       dest='[os]',
-                      action=convert_os_name)
+                      action=convert_to_lower)
 
         # === Dir ===
         # dir

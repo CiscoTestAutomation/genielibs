@@ -8,7 +8,7 @@ from genie.decorator import managedattribute
 from genie.conf.base import DeviceFeature, LinkFeature, InterfaceFeature
 import genie.conf.base.attributes
 from genie.conf.base.attributes import SubAttributes, SubAttributesDict, AttributesHelper
-from ats.datastructures import WeakList
+from pyats.datastructures import WeakList
 from genie.libs.conf.address_family import AddressFamily
 from genie.libs.conf.vrf import VrfSubAttributes
 

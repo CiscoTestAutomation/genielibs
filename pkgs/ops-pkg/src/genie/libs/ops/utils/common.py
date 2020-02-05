@@ -1,7 +1,19 @@
 import re
 
 
-def convert_os_name(item):
+def get_enable(item):
+    return True
+
+
+def to_list(item):
+    return [item]
+
+
+def to_int(item):
+    return int(item)
+
+
+def convert_to_lower(item):
     return item.lower()
 
 

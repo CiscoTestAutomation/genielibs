@@ -5,7 +5,7 @@ import unittest
 import itertools
 
 # Genie package
-from genie.conf.tests import TestCase
+from genie.tests.conf import TestCase
 from genie.conf import Genie
 from genie.conf.base import Testbed, Device, Link, Interface
 

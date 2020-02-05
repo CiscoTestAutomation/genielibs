@@ -4,9 +4,9 @@
 import time
 import logging
 
-# ats import
-from ats import aetest
-from ats.utils.objects import R
+# pyats import
+from pyats import aetest
+from pyats.utils.objects import R
 
 # Genie Libs import
 from genie.libs.sdk.triggers.template.clear import TriggerClear

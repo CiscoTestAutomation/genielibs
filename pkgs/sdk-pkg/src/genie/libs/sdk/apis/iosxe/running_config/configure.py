@@ -4,7 +4,7 @@
 import logging
 
 # pyATS
-from ats.easypy import runtime
+from pyats.easypy import runtime
 
 # Running-Config
 from genie.libs.sdk.apis.iosxe.running_config.get import (

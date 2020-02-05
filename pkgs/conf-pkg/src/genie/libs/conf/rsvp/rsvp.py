@@ -11,7 +11,7 @@ from genie.decorator import managedattribute
 from genie.conf.base import DeviceFeature, LinkFeature
 import genie.conf.base.attributes
 from genie.conf.base.attributes import SubAttributes, SubAttributesDict, AttributesHelper
-from ats.datastructures import WeakList
+from pyats.datastructures import WeakList
 from genie.libs.conf.base import IPv4Neighbor, IPv4Address
 from genie.libs.conf.base.neighbor import IPv4NeighborSubAttributes
 from genie.libs.conf.address_family import AddressFamily

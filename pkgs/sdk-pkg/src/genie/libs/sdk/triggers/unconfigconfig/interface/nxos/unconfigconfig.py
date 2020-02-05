@@ -8,7 +8,7 @@ from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.unconfigconfig.unconfigconfig import TriggerUnconfigConfig
 from genie.libs.sdk.libs.utils.triggeractions import verify_ops_or_logic
 # ATS
-from ats.utils.objects import NotExists, Not
+from pyats.utils.objects import NotExists, Not
 
 interface_exclude = ['maker', 'last_change','in_rate','in_rate_pkts',
                      'out_rate', 'out_rate_pkts', 'in_octets',

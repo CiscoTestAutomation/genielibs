@@ -1,6 +1,6 @@
 import time
 import logging
-from ats import aetest
+from pyats import aetest
 from genie.harness.base import Trigger
 from pprint import pprint as pp
 from genie.harness.base import Trigger

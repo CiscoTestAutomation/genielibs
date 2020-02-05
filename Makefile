@@ -48,14 +48,15 @@ CYTHON_CMD	  = compileAll
 
 # Development pkg requirements
 RELATED_PKGS = genie.libs.conf genie.libs.ops genie.libs.robot genie.libs.sdk
-DEPENDENCIES  = restview psutil Sphinx wheel asynctest
+RELATED_PKGS += genie.libs.filetransferutils
+DEPENDENCIES = restview psutil Sphinx wheel asynctest
 DEPENDENCIES += setproctitle  sphinx-rtd-theme 
 DEPENDENCIES += pip-tools Cython requests
 
 # Internal variables.
 # (note - build examples & templates last because it will fail uploading to pypi
 #  due to duplicates, and we'll for now accept that error)
-PYPI_PKGS      = conf ops robot sdk
+PYPI_PKGS      = conf ops robot sdk filetransferutils
 
 ALL_PKGS       = $(PYPI_PKGS)
 
@@ -91,6 +92,7 @@ help:
 	@echo " ops                  build genie.libs.ops package"
 	@echo " sdk                  build genie.libs.sdk package"
 	@echo " robot                build genie.libs.robot package"
+	@echo " filetransferutils    build genie.libs.filetransferutils package"
 	@echo ""
 	@echo "     --- distributions to production environment ---"
 	@echo ""
@@ -234,9 +236,11 @@ check:
 	@echo ""
 
 json:
-	python ./pkgs/sdk-pkg/api_generator/apis.py -datafile pkgs/sdk-pkg/api_generator/github/api_datafile.yaml -save_location pkgs/sdk-pkg/api_generator/output/github_apis.json
-	python ./pkgs/sdk-pkg/api_generator/apis.py -datafile pkgs/sdk-pkg/api_generator/bitbucket/api_datafile.yaml -save_location pkgs/sdk-pkg/api_generator/output/bitbucket_apis.json
-	@cp pkgs/sdk-pkg/api_generator/output/github_apis.json pkgs/sdk-pkg/src/genie/libs/sdk/apis/apis.json
-	python ./pkgs/ops-pkg/ops_generator/ops.py -datafile pkgs/ops-pkg/ops_generator/bitbucket/ops_datafile.yaml -save_location pkgs/ops-pkg/ops_generator/output/bitbucket_ops.json
-	python ./pkgs/ops-pkg/ops_generator/ops.py -datafile pkgs/ops-pkg/ops_generator/github/ops_datafile.yaml -save_location pkgs/ops-pkg/ops_generator/output/github_ops.json
-	@cp pkgs/ops-pkg/ops_generator/output/github_ops.json pkgs/ops-pkg/src/genie/libs/ops/ops.json
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Generating libs json file"
+	@echo ""
+	@python -c "from genie.json.make_json import make_genielibs; make_genielibs()"
+	@echo ""
+	@echo "Done."
+	@echo ""

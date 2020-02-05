@@ -8,8 +8,8 @@ from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.addremove.addremove import TriggerAddRemove
 
 # ATS
-from ats import aetest
-from ats.utils.objects import NotExists, Not
+from pyats import aetest
+from pyats.utils.objects import NotExists, Not
 
 # Which key to exclude for ACL Ops comparison
 acl_exclude = ['maker', 'attributes']

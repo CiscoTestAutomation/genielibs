@@ -6,8 +6,8 @@ import argparse
 import logging
 
 # ATS
-from ats import aetest
-from ats.utils.objects import R
+from pyats import aetest
+from pyats.utils.objects import R
 
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping

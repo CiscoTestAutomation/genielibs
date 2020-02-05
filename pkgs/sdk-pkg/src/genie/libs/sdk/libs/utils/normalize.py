@@ -17,8 +17,8 @@ from genie.conf.base.base import ConfigurableBase
 
 from genie.libs.conf.base.neighbor import Neighbor
 
-# import ats
-from ats.utils.objects import find, R, Operator
+# import pyats
+from pyats.utils.objects import find, R, Operator
 
 log = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ class GroupKeys():
               Mandatory:
               (At least one of source and source_func should be defined.
                Build the dict from source if both of them are defined.)
-                source (`list`) : Function ats.utils.objects.find output.
+                source (`list`) : Function pyats.utils.objects.find output.
                 headers (`list`) : Keys from the find output, use this as
                                    headers in the table.
                 reqs (`list`) : List of requirements.
@@ -58,12 +58,12 @@ class GroupKeys():
                                     '192.168.4.1', 'session_state']),
                                     ('Established', ['instance', 'default',
                                      'vrf', 'default', 'neighbor',
-                                     '200:1::1:1', 'session_state'])],
+                                     '2001:db8:4:1::1:1', 'session_state'])],
                                headers = ['neighbor', 'vrf', 'instance'])
 
                 >>> {'vrf': ['default', 'default'],
                      'instance': ['default', 'default'],
-                     'neighbor': ['192.168.4.1', '200:1::1:1']}
+                     'neighbor': ['192.168.4.1', '2001:db8:4:1::1:1']}
 
         '''
 

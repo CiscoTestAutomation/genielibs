@@ -5,8 +5,8 @@ import logging
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.unconfigconfig.unconfigconfig import TriggerUnconfigConfig
-from ats.utils.objects import Not,NotExists
-from ats import aetest
+from pyats.utils.objects import Not,NotExists
+from pyats import aetest
 from collections import OrderedDict
 
 # Which key to exclude for Vxlan Ops comparison

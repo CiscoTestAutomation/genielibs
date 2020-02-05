@@ -1,4 +1,4 @@
-from ats.utils.fileutils import FileUtils
+from pyats.utils.fileutils import FileUtils
 
 def show_tech(device, features, vrf='management'):
     if not hasattr(device, 'filetransfer_attributes'):

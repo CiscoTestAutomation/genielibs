@@ -7,13 +7,13 @@ import time
 import logging
 
 # ATS
-from ats.aetest import Testcase
-from ats.aetest import reporter
-from ats.log.utils import banner
-from ats.log import managed_handlers
-from ats.results import TestResult, Passed, Failed, Skipped, Passx, Aborted, Errored
-from ats.aetest.base import TestableId
-from ats.datastructures import AttrDict
+from pyats.aetest import Testcase
+from pyats.aetest import reporter
+from pyats.log.utils import banner
+from pyats.log import managed_handlers
+from pyats.results import TestResult, Passed, Failed, Skipped, Passx, Aborted, Errored
+from pyats.aetest.base import TestableId
+from pyats.datastructures import AttrDict
 from unicon.eal.dialogs import Statement, Dialog
 from unicon.core.errors import SubCommandFailure
 

@@ -1277,7 +1277,7 @@ def verify_sid_in_ospf_pairs(device, pairs, process_id=None, max_time=90, check_
                 set expected_result = False if method should fail
                 set expected_result = True if method should pass (default value)
             output ('str'): Pass output as value
-            pairs = [{'sid': 10, 'prefix':'169.0.0.1/32', 'codes': 'M'}, {...}]
+            pairs = [{'sid': 10, 'prefix':'172.16.1.1/32', 'codes': 'M'}, {...}]
 
 
         Raises:
@@ -1340,7 +1340,7 @@ def verify_sid_in_ospf_pairs(device, pairs, process_id=None, max_time=90, check_
             if sids_dict:
 
                 # ex.) Ouput for reference for pairs
-                # pairs = [{'sid': 10, 'prefix':'169.0.0.1/32', 'codes': 'M'}, {...}]
+                # pairs = [{'sid': 10, 'prefix':'172.16.1.1/32', 'codes': 'M'}, {...}]
                 for pairs_dict in pairs:
                     sid_to_verify = pairs_dict.get('sid')
 
@@ -1487,17 +1487,21 @@ def verify_ospf_database_contains_sid_neighbor_address_pairs(device, router_id, 
                            ["areas"][area]["database"]["lsa_types"][10]["lsas"][lsa]["ospfv2"]
                            ["body"]["opaque"])  # Last 3 keys are mandatory in schema
 
-            for link in lsa_dict.get("extended_link_tlvs", {}):
-                link_id = lsa_dict["extended_link_tlvs"][link]["link_id"]  # link_id is a mandatory key
 
-                # Check provided pairs to see if link_id exists.
-                # If it does get corresponding adj-sid.
-                adj_sid_from_pair = pairs.get(link_id)
-                if adj_sid_from_pair:
-                    for index in lsa_dict["extended_link_tlvs"][link].get("sub_tlvs", {}):
-                        if ("Adj SID" in lsa_dict["extended_link_tlvs"][link]["sub_tlvs"][index]["type"] and
-                                adj_sid_from_pair in str(lsa_dict["extended_link_tlvs"][link]["sub_tlvs"][index].get("label", ""))):
-                            verified_dict.update({link_id: adj_sid_from_pair})
+            for link in lsa_dict.get("extended_link_tlvs", {}):
+                sid, remote_address = None, None
+                for index in lsa_dict["extended_link_tlvs"][link].get("sub_tlvs", {}):
+                    index_dict = lsa_dict["extended_link_tlvs"][link]["sub_tlvs"][index]
+                    if index_dict["type"] == "Adj SID":
+                        sid = str(index_dict.get("label"))
+                    elif index_dict["type"] == "Remote Intf Addr":
+                        remote_address = index_dict.get('remote_interface_address')
+
+                if (sid and
+                        remote_address and
+                        remote_address in pairs and
+                        pairs[remote_address] == sid):
+                    verified_dict.update({remote_address: sid})
 
         if contains and pairs == verified_dict:
             return True

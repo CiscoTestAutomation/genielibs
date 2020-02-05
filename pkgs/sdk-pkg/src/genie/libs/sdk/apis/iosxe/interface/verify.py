@@ -8,7 +8,7 @@ import logging
 from unicon.core.errors import SubCommandFailure
 
 # Genie
-from ats.utils.objects import find, R
+from pyats.utils.objects import find, R
 from genie.utils.timeout import Timeout
 from genie.libs.parser.utils.common import Common
 from genie.libs.sdk.libs.utils.normalize import GroupKeys
