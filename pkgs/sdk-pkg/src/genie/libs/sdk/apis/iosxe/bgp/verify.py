@@ -1712,3 +1712,131 @@ def verify_extended_community_color(device, address_family, rd, route,
         timeout.sleep()
 
     return False
+
+def verify_bgp_each_path(
+    device,
+    vrf,
+    route,
+    expected_endpoint_ip=None,
+    expected_metric=None,
+    max_time=30,
+    address_family=None,
+    check_interval=10,
+):
+    """ Verify each endpoint is same 'show ip bgp vrf {vrf} {route}'
+
+        Args:
+            device ('obj'): device to use
+            address_family ('str'): address family
+            vrf ('str'): VRF name
+            route ('str'): Route to check
+            expected_endpoint_ip ('str', None): Expected endpoint ip
+            expected_metric ('str'): Expected metric ip
+            max_time ('int'): maximum time to wait
+            check_interval ('int'): check interval
+
+        Returns:
+            result ('bool'): verified result
+    """
+    timeout = Timeout(max_time=max_time, interval=check_interval)
+    while timeout.iterate():
+        neighbor_output = get_ip_bgp_route(
+                device=device,
+                vrf=vrf,
+                route=route,
+                address_family=address_family,
+            )
+        result = True
+        if neighbor_output:
+            reqs = R(['instance','default','vrf','(?P<vrf>.*)',
+                    'address_family', '(?P<address_family>.*)' ,'prefixes',
+                    '(?P<route>{}.*)'.format(route),'index','(?P<index>.*)', '(?P<route_dict>.*)'])
+            found = find([neighbor_output], reqs, filter_=False)
+            if found:
+                key_list = GroupKeys.group_keys(
+                    reqs=reqs.args, ret_num={}, source=found
+                )
+                for v in key_list:
+                    v = v.get('route_dict', {})
+                    endpoint_ip = v.get('next_hop', None)
+                    if expected_endpoint_ip:
+                        end_point_check = endpoint_ip == expected_endpoint_ip
+                        if not end_point_check:
+                            log.info('Expected endpoint is "{expected_endpoint_ip}" actual is "{endpoint_ip}"'
+                            .format(expected_endpoint_ip=expected_endpoint_ip,
+                                    endpoint_ip=endpoint_ip))
+                            result = False
+                            continue
+                    metric = v.get('metric', None)
+                    if expected_metric:
+                        metric_check = metric == expected_metric
+                        if not metric_check:
+                            log.info('Expected metric is "{expected_metric}" actual is "{metric}"'
+                            .format(expected_metric=expected_metric,
+                                    metric=metric))
+                            result = False
+                            continue
+        else:
+            result = False
+        
+        if result:
+            return True
+        timeout.sleep()
+        
+    return result
+
+def verify_ip_bgp_route(device, route, max_time=90, check_interval=10, 
+    expected_state_pfxrcd=None):
+    """ Verify state/pfxrcd exists in 'show ip bgp summary'
+
+        Args:
+            device ('obj'): device to use
+            route ('str'): Route to check
+            max_time ('int'): maximum time to wait
+            check_interval ('int'): how often to check
+            expected_state_pfxrcd ('str'): Expected State/Pfxrcd
+
+        Returns:
+            result ('bool'): verified result
+    """
+    
+    reqs = R(
+        [
+            'vrf',
+            'default',
+            'neighbor',
+            route,
+            'address_family',
+            '(?P<address_family>.*)',
+            '(?P<val>.*)'
+        ]
+    )
+
+    timeout = Timeout(max_time, check_interval)
+    result = True
+    while timeout.iterate():
+        out = device.api.get_ip_bgp_summary(device=device)
+        if not out:
+            log.info('Could not get information about show ip bgp summary')
+            result = False
+            timeout.sleep()
+            continue        
+        found = find([out], reqs, filter_=False, all_keys=True)
+        if found and expected_state_pfxrcd:
+            key_list = GroupKeys.group_keys(
+                    reqs=reqs.args, ret_num={}, source=found
+                )
+            for v in key_list:
+                state_pfxrcd = v.get('val', {}).get('state_pfxrcd', None)
+                result = state_pfxrcd == expected_state_pfxrcd
+                if not result:
+                    log.info('Expected state/pfxrcd is "{expected_state_pfxrcd}" '
+                        'actual is "{state_pfxrcd}"'.format(
+                            expected_state_pfxrcd=expected_state_pfxrcd,
+                            state_pfxrcd=state_pfxrcd
+                        ))
+        
+        if result:
+            return True
+        timeout.sleep()
+    return False

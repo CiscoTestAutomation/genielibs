@@ -75,7 +75,8 @@ class Restore(object):
             return self.to_url
 
     def restore_configuration(self, device, method, abstract, iteration=10,
-                              interval=60, compare=False, compare_exclude=[], reload_timeout=1200):
+                              interval=60, compare=False, compare_exclude=[], reload_timeout=1200,
+                              delete_after_restore=True):
         if method == 'checkpoint':
             # Enable the feature
             for i in range(1,iteration):
@@ -94,13 +95,14 @@ class Restore(object):
             else:
                 raise Exception('Unable to rollback config')
 
-            # Delete the checkpoint
-            self.create_delete_checkpoint(device=device, name=self.ckname,
-                                          abstract=abstract, action='delete')
+            if delete_after_restore:
+                # Delete the checkpoint
+                self.create_delete_checkpoint(device=device, name=self.ckname,
+                                              abstract=abstract, action='delete')
 
-            # Check if checkpoint is successfully deleted
-            self.check_checkpoint_status(device=device, name=self.ckname,
-                                         expect='delete', abstract=abstract)
+                # Check if checkpoint is successfully deleted
+                self.check_checkpoint_status(device=device, name=self.ckname,
+                                             expect='delete', abstract=abstract)
         elif method == 'local':
             # reover the deivce with whole running-config
             device.configure(self.run_config)
@@ -187,20 +189,21 @@ class Restore(object):
                              "file '{f}' passed for device {d}".\
                              format(f=self.to_url, d=device.name))
 
-            # Delete location:<filename>
-            self.filetransfer = FileUtils.from_device(device)
-            self.filename = self.to_url
-            self.filetransfer.deletefile(target=self.to_url, device=device)
+            if delete_after_restore:
+                # Delete location:<filename>
+                self.filetransfer = FileUtils.from_device(device)
+                self.filename = self.to_url
+                self.filetransfer.deletefile(target=self.to_url, device=device)
 
-            # Verify location:<filename> deleted
-            dir_output = self.filetransfer.dir(target=self.to_url,device=device)
-            for file in dir_output:
-                if self.filename in file:
-                    break
-            else:
-                log.info("Successfully deleted '{}'".format(self.to_url))
-                return
-            raise Exception("Unable to delete '{}'".format(self.to_url))
+                # Verify location:<filename> deleted
+                dir_output = self.filetransfer.dir(target=self.to_url,device=device)
+                for file in dir_output:
+                    if self.filename in file:
+                        break
+                else:
+                    log.info("Successfully deleted '{}'".format(self.to_url))
+                    return
+                raise Exception("Unable to delete '{}'".format(self.to_url))
         else:
             # modify the device via callable function
             # using Conf object

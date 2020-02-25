@@ -63,6 +63,22 @@ class VlanOutput(object):
         {
             'vlans': {
                 '1': {
+                    'interfaces': ['GigabitEthernet1/0/1',
+                                   'GigabitEthernet1/0/2',
+                                   'GigabitEthernet1/0/3',
+                                   'GigabitEthernet1/0/5',
+                                   'GigabitEthernet1/0/6',
+                                   'GigabitEthernet1/0/12',
+                                   'GigabitEthernet1/0/13',
+                                   'GigabitEthernet1/0/14',
+                                   'GigabitEthernet1/0/15',
+                                   'GigabitEthernet1/0/16',
+                                   'GigabitEthernet1/0/17',
+                                   'GigabitEthernet1/0/18',
+                                   'GigabitEthernet1/0/19',
+                                   'GigabitEthernet1/0/20',
+                                   'GigabitEthernet1/0/21',
+                                   'GigabitEthernet1/0/22'],
                     'vlan_id': '1',
                     'name': 'default',
                     'state': 'active',

@@ -82,10 +82,18 @@ def get_default_dir(device):
     return default_dir
 
 def configure_replace(device, file_location, timeout=60):
+    try:
+        # check if file exist
+        device.execute.error_pattern.append('.*Path does not exist.*')
+        device.execute("dir {}".format(file_location))
+    except Exception:
+        raise Exception("File {} does not exist".format(file_location))
+
     dialog = Dialog([
         Statement(pattern=r'\[no\]',
-                  action='sendline(y)',
-                  loop_continue=True,
-                  continue_timer=False)])
+                action='sendline(y)',
+                loop_continue=True,
+                continue_timer=False)])
     device.configure("load {}\ncommit replace".format(file_location),
-                     timeout=timeout, reply=dialog)
+                    timeout=timeout, reply=dialog)
+    

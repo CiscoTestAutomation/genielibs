@@ -11,6 +11,7 @@ from pyats.utils.objects import find, R
 # Genie
 from genie.utils.timeout import Timeout
 from genie.libs.sdk.libs.utils.normalize import GroupKeys
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # BGP
 from genie.libs.sdk.apis.iosxe.bgp.get import (
@@ -679,4 +680,107 @@ def is_routing_repair_path_in_route_database(
         timeout.sleep()
 
     log.info("Could not find any information about repair path")
+    return False
+
+def verify_route_known_via(device, route, known_via, max_time=90, check_interval=10):
+    """ Verify route known via
+
+        Args:
+            device ('obj'): Device object
+            route ('str'): Route address
+            known_via ('str'): Known via value
+            max_time ('int'): Max time in seconds checking output
+            check_interval ('int'): Interval in seconds of each checking 
+        Return:
+            True/False
+        Raises:
+            None
+    """
+    reqs = R(
+        [
+            'entry',
+            '(.*)',
+            'known_via',
+            '(.*{}.*)'.format(known_via),
+        ]
+    )
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        out = None
+        try:
+            out = device.parse('show ip route {}'.format(route))
+        except SchemaEmptyParserError:
+            out = None
+        if not out:
+            log.info('Could not get information about show ip route {}'.format(route))
+            timeout.sleep()
+            continue        
+        found = find([out], reqs, filter_=False, all_keys=True)
+        if found:
+            return True
+        timeout.sleep()
+    return False
+
+def verify_cef_labels(device, route, expected_first_label, expected_last_label=None, max_time=90, 
+    check_interval=10):
+    """ Verify first and last label on route
+
+        Args:
+            device ('obj'): Device object
+            route ('str'): Route address
+            expected_first_label ('str'): Expected first label
+            expected_last_label ('str'): Expected last label
+            max_time ('int'): Max time in seconds checking output
+            check_interval ('int'): Interval in seconds of each checking 
+        Return:
+            True/False
+        Raises:
+            None
+    """
+    reqs = R(
+        [
+            'vrf',
+            '(.*)',
+            'address_family',
+            '(.*)',
+            'prefix',
+            '(.*{}.*)'.format(route),
+            'nexthop',
+            '(.*)',
+            'outgoing_interface',
+            '(.*)',
+            '(?P<val>.*)'
+        ]
+    )
+    timeout = Timeout(max_time, check_interval)
+    
+    while timeout.iterate():
+        result = True
+        out = None
+        try:
+            out = device.parse('show ip cef {}'.format(route))
+        except SchemaEmptyParserError:
+            out = None
+        if not out:
+            result = False
+            log.info('Could not get information about show ip cef {}'.format(route))
+            timeout.sleep()
+            continue        
+        found = find([out], reqs, filter_=False, all_keys=True)
+        if found:
+            keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={}, 
+                                        source=found)
+            for item in keys:
+                first_label = item.get('val',{}).get('outgoing_label', None)
+                if first_label and str(expected_first_label) not in str(first_label):
+                    result = False
+                if expected_last_label:
+                    sid = item.get('val',{}).get('sid', None)
+                    if str(expected_last_label) != str(sid):
+                        result = False
+            
+            if result:
+                return True
+        timeout.sleep()
     return False

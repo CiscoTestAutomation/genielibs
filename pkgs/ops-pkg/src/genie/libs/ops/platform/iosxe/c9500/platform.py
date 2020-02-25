@@ -246,7 +246,7 @@ class Platform(SuperPlatform):
         #   in_progress
         #   last_operation
         for src_key in ['issu_in_progress', 'last_operation']:
-            dest_key = src_key if src_key is not 'issu_in_progress' else 'in_progress'
+            dest_key = src_key if src_key != 'issu_in_progress' else 'in_progress'
             self.add_leaf(cmd=ShowIssuStateDetail,
                       src='[slot][(?P<slot>.*)][{key}]'.format(key=src_key),
                       dest='[slot][(?P<slot>.*)][issu][{key}]'.format(key=dest_key))

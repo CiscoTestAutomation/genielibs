@@ -19,7 +19,7 @@ class Vlan(SuperVlan):
         # mode N/A
         # vn_segment_id N/A
 
-        req_key =['vlan_id','name','state','shutdown']
+        req_key =['vlan_id','name','state','shutdown','interfaces']
         for key in req_key:
             self.add_leaf(cmd='show vlan',
                           src=src_vlan + '[{}]'.format(key),

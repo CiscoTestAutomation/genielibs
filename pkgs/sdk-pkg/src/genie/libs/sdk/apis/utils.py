@@ -1,11 +1,13 @@
 """Utility type functions that do not fit into another category"""
 
 # Python
+import os
 import logging
 import re
 import jinja2
 import shlex, subprocess
 import time
+import random
 from time import strptime
 from datetime import datetime
 from netaddr import IPAddress
@@ -19,6 +21,7 @@ from pyats.utils.secret_strings import to_plaintext
 from genie.utils.config import Config
 from genie.utils.diff import Diff
 from genie.utils.timeout import Timeout
+from genie.conf.base import Device
 from genie.harness._commons_internal import _error_patterns
 
 # unicon
@@ -226,7 +229,7 @@ def compare_config_dicts(a, b, exclude=None):
         Args:
             a (`dict`): Configuration dict
             b (`dict`): Configuration dict
-            exclude (`list`): List of item to ignore. Supports Regex. 
+            exclude (`list`): List of item to ignore. Supports Regex.
                               Regex must begins with ( )
         Returns:
             out (`str`): differences
@@ -330,7 +333,7 @@ def has_configuration(configuration_dict, configuration):
     """ Verifies if configuration is present
         Args:
             configuration_dict ('dict'): Dictionary containing configuration
-            configuration ('str'): Configuration to be verified        
+            configuration ('str'): Configuration to be verified
         Returns:
             True if configuration is found
     """
@@ -347,7 +350,7 @@ def has_configuration(configuration_dict, configuration):
 def int_to_mask(mask_int):
     """ Convert int to mask
         Args:
-            mask_int ('int'): prefix length is convert to mask      
+            mask_int ('int'): prefix length is convert to mask
         Returns:
             mask value
     """
@@ -362,14 +365,15 @@ def int_to_mask(mask_int):
 def mask_to_int(mask):
     """ Convert mask to int
         Args:
-            mask ('str'):  mask to int     
+            mask ('str'):  mask to int
         Returns:
             int value
     """
     return sum(bin(int(x)).count("1") for x in mask.split("."))
 
 
-def copy_to_server(testbed, protocol, server, local_path, remote_path):
+def copy_to_server(testbed, protocol, server, local_path, remote_path,
+                   timeout=300, fu_session=None, quiet=False):
     """ Copy file from directory to server
 
         Args:
@@ -378,40 +382,33 @@ def copy_to_server(testbed, protocol, server, local_path, remote_path):
             server ('str'): Server name in testbed yaml or server ip address
             local_path ('str'): File to copy, including path
             remote_path ('str'): Where to save the file, including file name
-
+            timeout('int'): timeout value in seconds, default 300
+            fu_session ('obj'): existing FileUtils object to reuse
+            quiet ('bool'): quiet mode -- does not print copy progress
         Returns:
             None
 
         Raises:
             Exception
     """
-    try:
-        # Check if server argument is an IP address
-        IPAddress(server)
-    except Exception:
-        try:
-            # Check if server argument is a server defined in testbed yaml
-            server = testbed.servers[server]["address"]
-        except Exception:
-            raise Exception(">  For 'server' argument either provide an ip address\n"
-                            ">    OR\n"
-                            ">  configure the following in your testbed yaml and provide <protocol>:\n"
-                            ">  --------------------------------\n"
-                            ">  testbed:\n"
-                            ">    servers:\n"
-                            ">      <protocol>:\n"
-                            ">        address: <address>\n"
-                            ">  --------------------------------")
 
-    # Building remote address
-    remote = "{p}://{s}:/{f}".format(p=protocol, s=server, f=remote_path)
+    if fu_session:
+        _copy_to_server(protocol, server, local_path, remote_path,
+                        timeout=timeout, fu_session=fu_session, quiet=quiet)
+
+    else:
+        with FileUtils(testbed=testbed) as fu:
+            _copy_to_server(protocol, server, local_path, remote_path,
+                            timeout=timeout, fu_session=fu, quiet=quiet)
+
+def _copy_to_server(protocol, server, local_path, remote_path, timeout=300, fu_session=None, quiet=False):
+    remote = "{p}://{s}/{f}".format(p=protocol, s=server, f=remote_path)
 
     log.info("Copying {local_path} to {remote_path}"
              .format(local_path=local_path,
                      remote_path=remote))
 
-    with FileUtils(testbed=testbed) as futils:
-        futils.copyfile(source=local_path, destination=remote)
+    fu_session.copyfile(source=local_path, destination=remote, timeout_seconds=timeout, quiet=quiet)
 
 
 def copy_file_from_tftp_ftp(testbed, filename, pro):
@@ -517,6 +514,7 @@ def load_jinja(
 def get_time_source_from_output(output):
     """ Parse out 'Time Source' value from output
         Time source output example : 'Time source is NTP, 23:59:38.461 EST Thu Jun 27 2019'
+                                     'Time source is NTP, *12:33:45.355 EST Fri Feb 7 2020'
 
         Args:
             output ('str'): Text output from command
@@ -526,10 +524,10 @@ def get_time_source_from_output(output):
     """
 
     r1 = re.compile(
-        r"Time\ssource\sis\sNTP\,\s\.*(?P<hour>\d+)\:(?P<minute>\d+)\:"
-        "(?P<seconds>\d+)\.(?P<milliseconds>\d+)\s(?P<time_zone>"
-        "\S+)\s(?P<day_of_week>\S+)\s(?P<month>\S+)\s(?P<day>\d+)"
-        "\s(?P<year>\d+)"
+        r"Time\ssource\sis\sNTP\,\s\.*\*?(?P<hour>\d+)\:(?P<minute>\d+)\:"
+        r"(?P<seconds>\d+)\.(?P<milliseconds>\d+)\s(?P<time_zone>"
+        r"\S+)\s(?P<day_of_week>\S+)\s(?P<month>\S+)\s(?P<day>\d+)"
+        r"\s(?P<year>\d+)"
     )
 
     for line in output.splitlines():
@@ -554,7 +552,7 @@ def get_time_source_from_output(output):
 
 
 def get_delta_time_from_outputs(output_before, output_after):
-    """ Get delta time from Time source of two outputs 
+    """ Get delta time from Time source of two outputs
         Time source example: 'Time source is NTP, 23:59:38.461 EST Thu Jun 27 2019'
 
         Args:
@@ -680,21 +678,22 @@ def destroy_connection(device):
     log.info("Connection destroyed")
 
 
-def configure_device(device, config):
+def configure_device(device, config, config_timeout=150):
     """shut interface
 
         Args:
             device (`obj`): Device object
             config (`str`): Configuration to apply
+            config_timeout ('int'): Timeout value in sec, Default Value is 150 sec
     """
     try:
-        device.configure(config)
+        device.configure(config, timeout=config_timeout)
     except Exception as e:
         raise Exception("{}".format(e))
     return
 
 
-def reconnect_device(device, max_time=300, interval=30, sleep_disconnect=30):
+def reconnect_device(device, max_time=300, interval=30, sleep_disconnect=30, via=None):
     """ Reconnect device
         Args:
             device ('obj'): Device object
@@ -713,7 +712,10 @@ def reconnect_device(device, max_time=300, interval=30, sleep_disconnect=30):
 
     while timeout.iterate():
         try:
-            device.connect()
+            if via:
+                device.connect(via=via)
+            else:
+                device.connect()
             _error_patterns(device=device)
         except Exception as e:
             log.info("Device {dev} is not connected".format(dev=device.name))
@@ -761,6 +763,266 @@ def bits_to_netmask(bits):
           str( (0x0000ff00 & mask) >> 8)    + '.' +
           str( (0x000000ff & mask)))
 
+def copy_to_device(device, remote_path, local_path, server, protocol, vrf=None,
+    timeout=300, compact=False, use_kstack=False, **kwargs):
+    """
+    Copy file from linux server to device
+        Args:
+            device ('Device'): Device object
+            remote_path ('str'): remote file path on the server
+            local_path ('str'): local file path to copy to on the device
+            server ('str'): hostname or address of the server
+            protocol('str'): file transfer protocol to be used
+            vrf ('str'): vrf to use (optional)
+            timeout('int'): timeout value in seconds, default 300
+            compact('bool'): compress image option for n9k, defaults False
+            use_kstack('bool'): Use faster version of copy, defaults False
+                                Not supported with a file transfer protocol
+                                prompting for a username and password
+        Returns:
+            None
+    """
+    fu = FileUtils.from_device(device)
+
+    # build the source address
+    source = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
+    try:
+        if vrf:
+            fu.copyfile(source=source, destination=local_path, device=device,
+                        vrf=vrf, timeout_seconds=timeout, compact=compact,
+                        use_kstack=use_kstack, **kwargs)
+        else:
+            fu.copyfile(source=source, destination=local_path, device=device,
+                        timeout_seconds=timeout, compact=compact,
+                        use_kstack=use_kstack, **kwargs)
+    except Exception as e:
+        if compact or use_kstack:
+            log.info("Failed to copy with compact/use-kstack option, "
+                     "retrying again without compact/use-kstack")
+            fu.copyfile(source=source, destination=local_path, device=device,
+                        vrf=vrf, timeout_seconds=timeout, **kwargs)
+        else:
+            raise
+
+def copy_from_device(device, remote_path, local_path, server, protocol, vrf=None, timeout=300, **kwargs):
+    """
+    Copy file from device to linux server (Works for sftp and ftp)
+        Args:
+            device ('Device'): Device object
+            remote_path ('str'): remote file path to copy to on the server
+            local_path ('str'): local file path to copy from the device
+            server ('str'): hostname or address of the server
+            protocol('str'): file transfer protocol to be used
+            vrf ('str'): vrf to use (optional)
+            timeout('int'): timeout value in seconds, default 300
+        Returns:
+            None
+    """
+
+    fu = FileUtils.from_device(device)
+
+    # build the source address
+    destination = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
+    if vrf:
+        fu.copyfile(source=local_path, destination=destination, device=device, vrf=vrf, timeout_seconds=timeout, **kwargs)
+    else:
+        fu.copyfile(source=local_path, destination=destination, device=device, timeout_seconds=timeout, **kwargs)
+
+
+def get_file_size_from_server(device, server, path, protocol, timeout=300,
+                              fu_session=None):
+    """ Get file size from the server
+    Args:
+        device ('Obj'): Device object
+        server ('str'): server address or hostname
+        path ('str'): file path on server to check
+        protocol ('srt'): protocol used to check file size
+        timeout ('int'): check size timeout in seconds
+        fu_session ('obj'): existing FileUtils object to reuse
+    Returns:
+         integer representation of file size in bytes
+    """
+    if fu_session:
+        return _get_file_size_from_server(server, path, protocol, timeout=timeout,
+                                          fu_session=fu_session)
+    else:
+        with FileUtils(testbed=device.testbed) as fu:
+            return _get_file_size_from_server(server, path, protocol, timeout=timeout,
+                                              fu_session=fu)
+
+def _get_file_size_from_server(server, path, protocol, timeout=300,
+                               fu_session=None):
+    """ Get file size from the server (works for sftp and ftp)
+        Args:
+            server ('str'): server address or hostname
+            path ('str'): file path on server to check
+            protocol ('srt'): protocol used to check file size
+            timeout ('int'): check size timeout in seconds
+            fu_session ('obj'): existing FileUtils object to reuse
+        Returns:
+             integer representation of file size in bytes
+        """
+    url = '{p}://{s}/{f}'.format(p=protocol, s=server, f=path)
+
+    # get file size, and if failed, raise an exception
+    try:
+        return fu_session.stat(target=url, timeout_seconds=timeout).st_size
+    except NotImplementedError as e:
+        log.warning(
+            'The protocol {} does not support file listing, unable to get file '
+            'size.'.format(
+                protocol))
+        raise e from None
+    except Exception as e:
+        raise Exception("Failed to get file size : {}".format(str(e)))
+
+def modify_filename(device, file, directory, protocol, server=None,
+                    append_hostname=False, check_image_length=False,
+                    limit=63, unique_file_name=False):
+    """ Truncation is done such that protocol:/directory/image should not
+        exceed the limited characters.
+        This for older devices, where it does not allow netboot from rommon,
+        if image length is more than provided limit (63 characters by default).
+        Returns truncated image name, if protocol:/directory/image length
+        exceeds limit, else image return without any change
+        Args:
+            device
+            file ('str'): the file to be processed
+            directory ('str'): the directory where the image will be copied
+            protocol ('str'): the protocol used in the url
+            server ('str'): server address used in calculation, if not provided then it
+                            will take the longest server address from the testbed
+            append_hostname ('bool'): option to append hostname to the end of the file
+            check_image_length ('bool'): option to check the name length exceeds the limit
+            limit ('int'): character limit of the url, default 63
+            unique_file_name（'bool'): append a six digit random number to the end of
+                                        file name to make it unique
+        Raises:
+            ValueError
+        Returns:
+            truncated image name
+            """
+    if not server:
+        server = device.api.get_longest_server_address()
+
+    new_name = file
+    image_name, image_ext = os.path.splitext(file)
+    if check_image_length:
+        log.info('Checking if file length exceeds the limit of {}'.format(limit))
+        url = ''.join([protocol, ':/', server, '//', directory])
+
+        if not url.endswith('/'):
+            url = url + '/'
+        if len(url) > limit:
+            raise ValueError('The length of the directory URL already exceeds'
+                             ' {} characters.'.format(limit))
+
+        length = len(url) + len(file)
+
+        # counts hostname in length if provided
+        if append_hostname:
+            length += len(device.name)+1
+
+        # counts random number in length.  6 digits + underscore = 7
+        if unique_file_name:
+            length += 7
+
+        # truncate image
+        if length > limit:
+            # always negative number
+            diff = limit - length
+            image_name = image_name[:diff]
+        new_name = ''.join([image_name, image_ext])
+
+    if append_hostname:
+        image_name, image_ext = os.path.splitext(new_name)
+        new_name = ''.join([image_name, '_', device.name, image_ext])
+
+    if unique_file_name:
+        image_name, image_ext = os.path.splitext(new_name)
+        rand_num = random.randint(100000, 999999)
+        new_name = ''.join([image_name, '_', str(rand_num), image_ext])
+
+    if new_name != file:
+        log.info('File name changed to {}'.format(new_name))
+
+    return new_name
+
+def get_longest_server_address(device):
+    """
+    get the longest server address from the devices's testbed
+    Args:
+        device ('obj'): Device object
+    Returns:
+        the longest address in the testbed
+    """
+    addresses = []
+    for server in device.testbed.servers.values():
+        addr = server.get('address','')
+        if isinstance(addr, list):
+            addresses.extend(addr)
+        else:
+            addresses.append(addr)
+
+    return max(addresses, key=len)
+
+def delete_file_on_server(testbed, server, path, protocol='sftp', timeout=300, fu_session=None):
+    """ delete the file from server
+    Args:
+        testbed ('obj'): testbed object containing the server info
+        server ('str"): server address or hostname
+        path ('str'): file path on server
+        protocol ('str'): protocol used for deletion, defaults to sftp
+        timeout ('int'):  connection timeout
+    Returns:
+        None
+    """
+    if fu_session:
+        return _delete_file_on_server(server, path, protocol=protocol, timeout=timeout,
+                               fu_session=fu_session)
+    else:
+        with FileUtils(testbed=testbed) as fu:
+            return _delete_file_on_server(server, path, protocol=protocol,
+                                          timeout=timeout,
+                                          fu_session=fu)
+
+def _delete_file_on_server(server, path, protocol='sftp', timeout=300, fu_session=None):
+
+        url = '{p}://{s}/{f}'.format(p=protocol, s=server, f=path)
+
+        try:
+            return fu_session.deletefile(target=url, timeout_seconds=timeout)
+        except Exception as e:
+            raise Exception("Failed to delete file : {}".format(str(e)))
+
+
+def convert_server_to_linux_device(device, server):
+    """
+    Args
+        converts a server block to a device object
+        device ('obj'): Device object
+        server ('str'): server hostname
+
+    Returns:
+        A Device object that can be connected
+    """
+    with FileUtils(testbed=device.testbed) as fu:
+        server_block = fu.get_server_block(server)
+        hostname = fu.get_hostname(server)
+
+    device_obj = Device(name=server,
+                        os='linux',
+                        credentials=server_block.credentials,
+                        connections={'linux': {
+                            'ip': hostname,
+                            'protocol': 'ssh'}},
+                        custom={'abstraction':{
+                            'order':['os']}},
+                        type='linux',
+                        testbed=device.testbed)
+
+    return device_obj
+
 def get_username_password(device, username=None, password=None, creds=None):
     """ Gets the username and password to use to log into the device console.
     """
@@ -802,7 +1064,7 @@ def diff_configuration(device, config1, config2):
     """ Show difference between two configurations
         Args:
             config1 ('str'): Configuration one
-            config2 ('str): Configuration two
+            config2 ('str'): Configuration two
         Raise:
             None
         Returns:
@@ -819,3 +1081,45 @@ def diff_configuration(device, config1, config2):
 
     return diff
 
+def dynamic_diff_parameterized_running_config(device, base_config, mapping, running_config=None):
+    """ Parameterize device interface from the configuration and return the parameterized configuration
+        with respect to the mapping.
+        Args:
+            base_config ('str'): Content of the base config
+            mapping ('dict'): Interface to variable mapping
+            ex.) {'Ethernet2/1-48': '{{ int_1 }}', 'Ethernet5': '{{ int_2 }}'}
+            running_config ('str'): The running config. If set to None, running config will be retrieved
+                from currently connected device
+        Raise:
+            None
+        Returns:
+            Templated Config ('str'): The config that is parameterized
+    """
+    if running_config is None:
+        running_config = device.execute('show running-config')
+    
+    output = diff_configuration(device, base_config, running_config).diff_string('+')
+
+    for interface, variable in mapping.items():
+        output = output.replace(' {} '.format(interface), ' {} '.format(variable))
+        output = output.replace(' {}\n'.format(interface), ' {}\n'.format(variable))
+
+    return output
+
+def dynamic_diff_create_running_config(device, mapping, template, base_config): 
+    """ Creates a merged running config from template dynamic diff with
+        variables replaced by mapping and merged with base config
+        Args:
+            mapping ('dict'): Variable to interface mapping
+            ex.) {'{{ int_1 }}': 'Ethernet2/1-48', '{{ int_2 }}': 'Ethernet5'}
+            template ('str'): Content of the dynamic diff template
+            base_config ('str'): Content of the base config
+        Raise:
+            None
+        Returns:
+            Config ('str'): The merged running config from template
+    """
+    for variable, value in mapping.items():
+        template = template.replace(variable, value)
+
+    return '{}{}'.format(template, base_config)

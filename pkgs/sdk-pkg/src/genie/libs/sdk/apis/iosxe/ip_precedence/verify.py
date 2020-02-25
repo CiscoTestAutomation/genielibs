@@ -21,6 +21,7 @@ def verify_ip_precedence_ip_precedence(packets, exclude_src_ip=None):
     """
     try:
         from scapy.all import load_contrib
+        from scapy.contrib.mpls import MPLS
     except ImportError:
         raise ImportError('scapy is not installed, please install it by running: '
                           'pip install scapy') from None

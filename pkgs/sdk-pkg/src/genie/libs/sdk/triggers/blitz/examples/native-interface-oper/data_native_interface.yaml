@@ -1,0 +1,2538 @@
+data:
+  variables:
+    interface: '2'
+    interface2: GigabitEthernet3
+    interface_name_1: 'GigabitEthernet2'
+    interface_name_2: GigabitEthernet3
+    intftype: ianaift:ethernetCsmacd
+    inttype: GigabitEthernet
+  configure: {}
+  execute: {}
+  yang:
+    connection: yang
+    protocol: netconf
+    datastore: ''
+    content:
+      1:
+        rpc: "\n<rpc xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" message-id=\"101\">\n    <commit/>\n</rpc>\n"
+      2:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.2 }'
+      3:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - value: qos-inbound
+          xpath: '%{ data.yang.xpath.3 }'
+      4:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - value: genericstring
+          xpath: '%{ data.yang.xpath.4 }'
+      5:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.5 }'
+      6:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - value: '15'
+          xpath: '%{ data.yang.xpath.6 }'
+      7:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.7 }'
+      8:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.8 }'
+      9:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.9 }'
+      10:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - value: qos-match-src-port
+          xpath: '%{ data.yang.xpath.10 }'
+      11:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - value: '15'
+          xpath: '%{ data.yang.xpath.11 }'
+      12:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.12 }'
+      13:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - value: '15'
+          xpath: '%{ data.yang.xpath.13 }'
+      14:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.14 }'
+      15:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - value: '15'
+          xpath: '%{ data.yang.xpath.15 }'
+      16:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.16 }'
+      17:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - value: '15'
+          xpath: '%{ data.yang.xpath.17 }'
+      18:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.18 }'
+      19:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - value: '15'
+          xpath: '%{ data.yang.xpath.19 }'
+      20:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.20 }'
+      21:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - value: '15'
+          xpath: '%{ data.yang.xpath.21 }'
+      22:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.22 }'
+      23:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - value: '15'
+          xpath: '%{ data.yang.xpath.23 }'
+      24:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.24 }'
+      25:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.25 }'
+      26:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.26 }'
+      27:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.27 }'
+      28:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.28 }'
+      29:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.29 }'
+      30:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.30 }'
+      31:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.31 }'
+      32:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.32 }'
+      33:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.33 }'
+      34:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.34 }'
+      35:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.35 }'
+      36:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.36 }'
+      37:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.37 }'
+      38:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.38 }'
+      39:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.39 }'
+      40:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.40 }'
+      41:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.41 }'
+      42:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.42 }'
+      43:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - value: '15'
+          xpath: '%{ data.yang.xpath.43 }'
+      44:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.44 }'
+      45:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.45 }'
+      46:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - value: '15'
+          xpath: '%{ data.yang.xpath.46 }'
+      47:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - value: '15'
+          xpath: '%{ data.yang.xpath.47 }'
+      48:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - value: '15'
+          xpath: '%{ data.yang.xpath.48 }'
+      49:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - value: '15'
+          xpath: '%{ data.yang.xpath.49 }'
+      50:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - value: '15'
+          xpath: '%{ data.yang.xpath.50 }'
+      51:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.51 }'
+      52:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.52 }'
+      53:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - value: genericstring
+          xpath: '%{ data.yang.xpath.53 }'
+      54:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.54 }'
+      55:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.55 }'
+      56:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.56 }'
+      57:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.57 }'
+      58:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.58 }'
+      59:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.59 }'
+      60:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.60 }'
+      61:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.61 }'
+      62:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - xpath: '%{ data.yang.xpath.62 }'
+    returns:
+      1:
+      - id: 0
+        name: name
+        op: ==
+        selected: true
+        value: "%{ data.variables.interface_name_1 }"
+        xpath: /interfaces/interface/name
+      - id: 1
+        name: interface-type
+        op: ==
+        selected: true
+        value: iana-iftype-dtm
+        xpath: /interfaces/interface/interface-type
+      - id: 2
+        name: admin-status
+        op: ==
+        selected: true
+        value: if-state-down
+        xpath: /interfaces/interface/admin-status
+      - id: 3
+        name: oper-status
+        op: ==
+        selected: true
+        value: if-oper-state-unknown
+        xpath: /interfaces/interface/oper-status
+      - id: 4
+        name: last-change
+        op: ==
+        selected: true
+        value: '2020-02-06T01:28:37.050455'
+        xpath: /interfaces/interface/last-change
+      - id: 5
+        name: if-index
+        op: ==
+        selected: true
+        value: '-1'
+        xpath: /interfaces/interface/if-index
+      - id: 6
+        name: phys-address
+        op: ==
+        selected: true
+        value: d1:c9:bC:A4:43:BD
+        xpath: /interfaces/interface/phys-address
+      - id: 7
+        name: higher-layer-if
+        op: ==
+        selected: true
+        value: genericstring
+        xpath: /interfaces/interface/higher-layer-if
+      - id: 8
+        name: lower-layer-if
+        op: ==
+        selected: true
+        value: genericstring
+        xpath: /interfaces/interface/lower-layer-if
+      - id: 9
+        name: speed
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/speed
+      - id: 10
+        name: vrf
+        op: ==
+        selected: true
+        value: genericstring
+        xpath: /interfaces/interface/vrf
+      - id: 11
+        name: ipv4
+        op: ==
+        selected: true
+        value: 10.1.1.1
+        xpath: /interfaces/interface/ipv4
+      - id: 12
+        name: ipv4-subnet-mask
+        op: ==
+        selected: true
+        value: 10.1.1.1
+        xpath: /interfaces/interface/ipv4-subnet-mask
+      - id: 13
+        name: description
+        op: ==
+        selected: true
+        value: genericstring
+        xpath: /interfaces/interface/description
+      - id: 14
+        name: mtu
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/mtu
+      - id: 15
+        name: input-security-acl
+        op: ==
+        selected: true
+        value: genericstring
+        xpath: /interfaces/interface/input-security-acl
+      - id: 16
+        name: output-security-acl
+        op: ==
+        selected: true
+        value: genericstring
+        xpath: /interfaces/interface/output-security-acl
+      - id: 17
+        name: bia-address
+        op: ==
+        selected: true
+        value: d1:c9:bC:A4:43:BD
+        xpath: /interfaces/interface/bia-address
+      - id: 18
+        name: ipv6-addrs
+        op: ==
+        selected: true
+        value: 10.1.1.1
+        xpath: /interfaces/interface/ipv6-addrs
+      - id: 19
+        name: ipv4-tcp-adjust-mss
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ipv4-tcp-adjust-mss
+      - id: 20
+        name: ipv6-tcp-adjust-mss
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ipv6-tcp-adjust-mss
+      - id: 21
+        name: intf-class-unspecified
+        op: ==
+        selected: true
+        value: 'true'
+        xpath: /interfaces/interface/intf-class-unspecified
+      2:
+      - id: 1
+        name: discontinuity-time
+        op: ==
+        selected: false
+        value: '2020-02-06T01:28:37.053377'
+        xpath: /interfaces/interface/statistics/discontinuity-time
+      - id: 2
+        name: in-octets
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/statistics/in-octets
+      - id: 3
+        name: in-unicast-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/statistics/in-unicast-pkts
+      - id: 4
+        name: in-broadcast-pkts
+        op: ==
+        selected: true
+        value: '0'
+        xpath: /interfaces/interface/statistics/in-broadcast-pkts
+      - id: 5
+        name: in-multicast-pkts
+        op: ==
+        selected: true
+        value: '0'
+        xpath: /interfaces/interface/statistics/in-multicast-pkts
+      - id: 6
+        name: in-discards
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/statistics/in-discards
+      - id: 7
+        name: in-errors
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/statistics/in-errors
+      - id: 8
+        name: in-unknown-protos
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/statistics/in-unknown-protos
+      - id: 9
+        name: out-octets
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/statistics/out-octets
+      - id: 10
+        name: out-unicast-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/statistics/out-unicast-pkts
+      - id: 11
+        name: out-broadcast-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/statistics/out-broadcast-pkts
+      - id: 12
+        name: out-multicast-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/statistics/out-multicast-pkts
+      - id: 13
+        name: out-discards
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/statistics/out-discards
+      - id: 14
+        name: out-errors
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/statistics/out-errors
+      - id: 15
+        name: rx-pps
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/statistics/rx-pps
+      - id: 16
+        name: rx-kbps
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/statistics/rx-kbps
+      - id: 17
+        name: tx-pps
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/statistics/tx-pps
+      - id: 18
+        name: tx-kbps
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/statistics/tx-kbps
+      - id: 19
+        name: num-flaps
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/statistics/num-flaps
+      - id: 20
+        name: in-crc-errors
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/statistics/in-crc-errors
+      3:
+      - id: 0
+        name: direction
+        op: ==
+        selected: true
+        value: qos-inbound
+        xpath: /interfaces/interface/diffserv-info/direction
+      - id: 1
+        name: policy-name
+        op: ==
+        selected: true
+        value: genericstring
+        xpath: /interfaces/interface/diffserv-info/policy-name
+      4:
+      - id: 0
+        name: classifier-entry-name
+        op: ==
+        selected: true
+        value: genericstring
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/classifier-entry-name
+      - id: 1
+        name: parent-path
+        op: ==
+        selected: true
+        value: genericstring
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/parent-path
+      5:
+      - id: 1
+        name: classified-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/classifier-entry-stats/classified-pkts
+      - id: 2
+        name: classified-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/classifier-entry-stats/classified-bytes
+      - id: 3
+        name: classified-rate
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/classifier-entry-stats/classified-rate
+      6:
+      - id: 0
+        name: meter-id
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/meter-stats/meter-id
+      - id: 1
+        name: meter-succeed-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/meter-stats/meter-succeed-pkts
+      - id: 2
+        name: meter-succeed-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/meter-stats/meter-succeed-bytes
+      - id: 3
+        name: meter-failed-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/meter-stats/meter-failed-pkts
+      - id: 4
+        name: meter-failed-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/meter-stats/meter-failed-bytes
+      7:
+      - id: 1
+        name: output-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/output-pkts
+      - id: 2
+        name: output-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/output-bytes
+      - id: 3
+        name: queue-size-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/queue-size-pkts
+      - id: 4
+        name: queue-size-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/queue-size-bytes
+      - id: 5
+        name: drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/drop-pkts
+      - id: 6
+        name: drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/drop-bytes
+      8:
+      - id: 1
+        name: early-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/wred-stats/early-drop-pkts
+      - id: 2
+        name: early-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/wred-stats/early-drop-bytes
+      - id: 3
+        name: mean-queue-depth
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/wred-stats/mean-queue-depth
+      - id: 4
+        name: transmitted-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/wred-stats/transmitted-pkts
+      - id: 5
+        name: transmitted-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/wred-stats/transmitted-bytes
+      - id: 6
+        name: tail-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/wred-stats/tail-drop-pkts
+      - id: 7
+        name: tail-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/wred-stats/tail-drop-bytes
+      - id: 8
+        name: drop-pkts-flow
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/wred-stats/drop-pkts-flow
+      - id: 9
+        name: drop-pkts-no-buffer
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/wred-stats/drop-pkts-no-buffer
+      - id: 10
+        name: queue-peak-size-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/wred-stats/queue-peak-size-pkts
+      - id: 11
+        name: queue-peak-size-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/wred-stats/queue-peak-size-bytes
+      - id: 12
+        name: bandwidth-exceed-drops
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/wred-stats/bandwidth-exceed-drops
+      9:
+      - id: 1
+        name: num-admitted-flows
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/cac-stats/num-admitted-flows
+      - id: 2
+        name: num-non-admitted-flows
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/queuing-stats/cac-stats/num-non-admitted-flows
+      10:
+      - id: 0
+        name: match-type
+        op: ==
+        selected: true
+        value: qos-match-src-port
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/match-type
+      11:
+      - id: 0
+        name: cos-min
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/cos-counters/cos-min
+      - id: 1
+        name: cos-max
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/cos-counters/cos-max
+      - id: 2
+        name: wred-tx-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/cos-counters/wred-tx-pkts
+      - id: 3
+        name: wred-tx-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/cos-counters/wred-tx-bytes
+      - id: 4
+        name: wred-tail-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/cos-counters/wred-tail-drop-pkts
+      - id: 5
+        name: wred-tail-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/cos-counters/wred-tail-drop-bytes
+      - id: 6
+        name: wred-early-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/cos-counters/wred-early-drop-pkts
+      - id: 7
+        name: wred-early-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/cos-counters/wred-early-drop-bytes
+      12:
+      - id: 1
+        name: wred-tx-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/cos-default/wred-tx-pkts
+      - id: 2
+        name: wred-tx-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/cos-default/wred-tx-bytes
+      - id: 3
+        name: wred-tail-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/cos-default/wred-tail-drop-pkts
+      - id: 4
+        name: wred-tail-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/cos-default/wred-tail-drop-bytes
+      - id: 5
+        name: wred-early-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/cos-default/wred-early-drop-pkts
+      - id: 6
+        name: wred-early-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/cos-default/wred-early-drop-bytes
+      13:
+      - id: 0
+        name: dscp-min
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dscp-counters/dscp-min
+      - id: 1
+        name: dscp-max
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dscp-counters/dscp-max
+      - id: 2
+        name: wred-tx-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dscp-counters/wred-tx-pkts
+      - id: 3
+        name: wred-tx-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dscp-counters/wred-tx-bytes
+      - id: 4
+        name: wred-tail-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dscp-counters/wred-tail-drop-pkts
+      - id: 5
+        name: wred-tail-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dscp-counters/wred-tail-drop-bytes
+      - id: 6
+        name: wred-early-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dscp-counters/wred-early-drop-pkts
+      - id: 7
+        name: wred-early-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dscp-counters/wred-early-drop-bytes
+      14:
+      - id: 1
+        name: wred-tx-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dscp-default/wred-tx-pkts
+      - id: 2
+        name: wred-tx-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dscp-default/wred-tx-bytes
+      - id: 3
+        name: wred-tail-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dscp-default/wred-tail-drop-pkts
+      - id: 4
+        name: wred-tail-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dscp-default/wred-tail-drop-bytes
+      - id: 5
+        name: wred-early-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dscp-default/wred-early-drop-pkts
+      - id: 6
+        name: wred-early-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dscp-default/wred-early-drop-bytes
+      15:
+      - id: 0
+        name: disc-class-min
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/discard-class-counters/disc-class-min
+      - id: 1
+        name: disc-class-max
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/discard-class-counters/disc-class-max
+      - id: 2
+        name: wred-tx-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/discard-class-counters/wred-tx-pkts
+      - id: 3
+        name: wred-tx-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/discard-class-counters/wred-tx-bytes
+      - id: 4
+        name: wred-tail-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/discard-class-counters/wred-tail-drop-pkts
+      - id: 5
+        name: wred-tail-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/discard-class-counters/wred-tail-drop-bytes
+      - id: 6
+        name: wred-early-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/discard-class-counters/wred-early-drop-pkts
+      - id: 7
+        name: wred-early-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/discard-class-counters/wred-early-drop-bytes
+      16:
+      - id: 1
+        name: wred-tx-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/disc-class-default/wred-tx-pkts
+      - id: 2
+        name: wred-tx-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/disc-class-default/wred-tx-bytes
+      - id: 3
+        name: wred-tail-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/disc-class-default/wred-tail-drop-pkts
+      - id: 4
+        name: wred-tail-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/disc-class-default/wred-tail-drop-bytes
+      - id: 5
+        name: wred-early-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/disc-class-default/wred-early-drop-pkts
+      - id: 6
+        name: wred-early-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/disc-class-default/wred-early-drop-bytes
+      17:
+      - id: 0
+        name: prec-min
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/precedence-counters/prec-min
+      - id: 1
+        name: prec-max
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/precedence-counters/prec-max
+      - id: 2
+        name: wred-tx-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/precedence-counters/wred-tx-pkts
+      - id: 3
+        name: wred-tx-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/precedence-counters/wred-tx-bytes
+      - id: 4
+        name: wred-tail-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/precedence-counters/wred-tail-drop-pkts
+      - id: 5
+        name: wred-tail-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/precedence-counters/wred-tail-drop-bytes
+      - id: 6
+        name: wred-early-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/precedence-counters/wred-early-drop-pkts
+      - id: 7
+        name: wred-early-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/precedence-counters/wred-early-drop-bytes
+      18:
+      - id: 1
+        name: wred-tx-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/prec-default/wred-tx-pkts
+      - id: 2
+        name: wred-tx-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/prec-default/wred-tx-bytes
+      - id: 3
+        name: wred-tail-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/prec-default/wred-tail-drop-pkts
+      - id: 4
+        name: wred-tail-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/prec-default/wred-tail-drop-bytes
+      - id: 5
+        name: wred-early-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/prec-default/wred-early-drop-pkts
+      - id: 6
+        name: wred-early-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/prec-default/wred-early-drop-bytes
+      19:
+      - id: 0
+        name: exp-min
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/mpls-exp-counters/exp-min
+      - id: 1
+        name: exp-max
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/mpls-exp-counters/exp-max
+      - id: 2
+        name: wred-tx-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/mpls-exp-counters/wred-tx-pkts
+      - id: 3
+        name: wred-tx-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/mpls-exp-counters/wred-tx-bytes
+      - id: 4
+        name: wred-tail-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/mpls-exp-counters/wred-tail-drop-pkts
+      - id: 5
+        name: wred-tail-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/mpls-exp-counters/wred-tail-drop-bytes
+      - id: 6
+        name: wred-early-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/mpls-exp-counters/wred-early-drop-pkts
+      - id: 7
+        name: wred-early-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/mpls-exp-counters/wred-early-drop-bytes
+      20:
+      - id: 1
+        name: wred-tx-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/mpls-exp-default/wred-tx-pkts
+      - id: 2
+        name: wred-tx-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/mpls-exp-default/wred-tx-bytes
+      - id: 3
+        name: wred-tail-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/mpls-exp-default/wred-tail-drop-pkts
+      - id: 4
+        name: wred-tail-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/mpls-exp-default/wred-tail-drop-bytes
+      - id: 5
+        name: wred-early-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/mpls-exp-default/wred-early-drop-pkts
+      - id: 6
+        name: wred-early-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/mpls-exp-default/wred-early-drop-bytes
+      21:
+      - id: 0
+        name: dei-min
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dei-counters/dei-min
+      - id: 1
+        name: dei-max
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dei-counters/dei-max
+      - id: 2
+        name: wred-tx-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dei-counters/wred-tx-pkts
+      - id: 3
+        name: wred-tx-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dei-counters/wred-tx-bytes
+      - id: 4
+        name: wred-tail-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dei-counters/wred-tail-drop-pkts
+      - id: 5
+        name: wred-tail-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dei-counters/wred-tail-drop-bytes
+      - id: 6
+        name: wred-early-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dei-counters/wred-early-drop-pkts
+      - id: 7
+        name: wred-early-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dei-counters/wred-early-drop-bytes
+      22:
+      - id: 1
+        name: wred-tx-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dei-counts-default/wred-tx-pkts
+      - id: 2
+        name: wred-tx-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dei-counts-default/wred-tx-bytes
+      - id: 3
+        name: wred-tail-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dei-counts-default/wred-tail-drop-pkts
+      - id: 4
+        name: wred-tail-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dei-counts-default/wred-tail-drop-bytes
+      - id: 5
+        name: wred-early-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dei-counts-default/wred-early-drop-pkts
+      - id: 6
+        name: wred-early-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/dei-counts-default/wred-early-drop-bytes
+      23:
+      - id: 0
+        name: clp-val
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/clp-counters/clp-val
+      - id: 1
+        name: wred-tx-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/clp-counters/wred-tx-pkts
+      - id: 2
+        name: wred-tx-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/clp-counters/wred-tx-bytes
+      - id: 3
+        name: wred-tail-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/clp-counters/wred-tail-drop-pkts
+      - id: 4
+        name: wred-tail-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/clp-counters/wred-tail-drop-bytes
+      - id: 5
+        name: wred-early-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/clp-counters/wred-early-drop-pkts
+      - id: 6
+        name: wred-early-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/clp-counters/wred-early-drop-bytes
+      24:
+      - id: 1
+        name: wred-tx-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/clp-default/wred-tx-pkts
+      - id: 2
+        name: wred-tx-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/clp-default/wred-tx-bytes
+      - id: 3
+        name: wred-tail-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/clp-default/wred-tail-drop-pkts
+      - id: 4
+        name: wred-tail-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/clp-default/wred-tail-drop-bytes
+      - id: 5
+        name: wred-early-drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/clp-default/wred-early-drop-pkts
+      - id: 6
+        name: wred-early-drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/subclass-list/clp-default/wred-early-drop-bytes
+      25:
+      - id: 1
+        name: dscp
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-dscp-stats-val/dscp
+      - id: 2
+        name: marked-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-dscp-stats-val/marked-pkts
+      26:
+      - id: 1
+        name: dscp-val
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-dscp-tunnel-stats-val/dscp-val
+      - id: 2
+        name: marked-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-dscp-tunnel-stats-val/marked-pkts
+      27:
+      - id: 1
+        name: cos-val
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-cos-stats-val/cos-val
+      - id: 2
+        name: marked-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-cos-stats-val/marked-pkts
+      28:
+      - id: 1
+        name: cos-inner-val
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-cos-inner-stats-val/cos-inner-val
+      - id: 2
+        name: marked-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-cos-inner-stats-val/marked-pkts
+      29:
+      - id: 1
+        name: disc-class-val
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-discard-class-stats-val/disc-class-val
+      - id: 2
+        name: marked-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-discard-class-stats-val/marked-pkts
+      30:
+      - id: 1
+        name: qos-grp-val
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-qos-grp-stats-val/qos-grp-val
+      - id: 2
+        name: marked-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-qos-grp-stats-val/marked-pkts
+      31:
+      - id: 1
+        name: prec-val
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-prec-stats-val/prec-val
+      - id: 2
+        name: marked-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-prec-stats-val/marked-pkts
+      32:
+      - id: 1
+        name: prec-val
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-prec-tunnel-stats-val/prec-val
+      - id: 2
+        name: marked-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-prec-tunnel-stats-val/marked-pkts
+      33:
+      - id: 1
+        name: mpls-exp-imp-val
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-mpls-exp-imp-stats-val/mpls-exp-imp-val
+      - id: 2
+        name: marked-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-mpls-exp-imp-stats-val/marked-pkts
+      34:
+      - id: 1
+        name: mpls-exp-top-val
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-mpls-exp-top-stats-val/mpls-exp-top-val
+      - id: 2
+        name: marked-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-mpls-exp-top-stats-val/marked-pkts
+      35:
+      - id: 1
+        name: fr-de
+        op: ==
+        selected: true
+        value: 'true'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-fr-de-stats-val/fr-de
+      - id: 2
+        name: marked-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-fr-de-stats-val/marked-pkts
+      36:
+      - id: 1
+        name: fecn-becn-val
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-fr-fecn-becn-stats-val/fecn-becn-val
+      - id: 2
+        name: marked-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-fr-fecn-becn-stats-val/marked-pkts
+      37:
+      - id: 1
+        name: atm-clp-val
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-atm-clp-stats-val/atm-clp-val
+      - id: 2
+        name: marked-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-atm-clp-stats-val/marked-pkts
+      38:
+      - id: 1
+        name: vlan-inner-val
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-vlan-inner-stats-val/vlan-inner-val
+      - id: 2
+        name: marked-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-vlan-inner-stats-val/marked-pkts
+      39:
+      - id: 1
+        name: dei-imp-value
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-dei-stats-val/dei-imp-value
+      - id: 2
+        name: marked-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-dei-stats-val/marked-pkts
+      40:
+      - id: 1
+        name: dei-imp-value
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-dei-imp-stats-val/dei-imp-value
+      - id: 2
+        name: marked-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-dei-imp-stats-val/marked-pkts
+      41:
+      - id: 1
+        name: srp-priority-value
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-srp-priority-stats-val/srp-priority-value
+      - id: 2
+        name: marked-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-srp-priority-stats-val/marked-pkts
+      42:
+      - id: 1
+        name: wlan-user-priority-value
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-wlan-user-priority-stats-val/wlan-user-priority-value
+      - id: 2
+        name: marked-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/diffserv-target-classifier-stats/marking-stats/marking-wlan-user-priority-stats-val/marked-pkts
+      43:
+      - id: 0
+        name: priority-level
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/priority-level
+      44:
+      - id: 1
+        name: output-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/agg-priority-stats/output-pkts
+      - id: 2
+        name: output-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/agg-priority-stats/output-bytes
+      - id: 3
+        name: queue-size-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/agg-priority-stats/queue-size-pkts
+      - id: 4
+        name: queue-size-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/agg-priority-stats/queue-size-bytes
+      - id: 5
+        name: drop-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/agg-priority-stats/drop-pkts
+      - id: 6
+        name: drop-bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/agg-priority-stats/drop-bytes
+      - id: 7
+        name: drop-pkts-flow
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/agg-priority-stats/drop-pkts-flow
+      - id: 8
+        name: drop-pkts-no-buffer
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/agg-priority-stats/drop-pkts-no-buffer
+      45:
+      - id: 1
+        name: bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-default-thresh/bytes
+      - id: 2
+        name: thresh-size-metric
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-default-thresh/thresh-size-metric
+      - id: 3
+        name: unit-val
+        op: ==
+        selected: true
+        value: thresh-units-packets
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-default-thresh/unit-val
+      - id: 4
+        name: threshold-interval
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-default-thresh/threshold-interval
+      - id: 5
+        name: thresh-interval-metric
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-default-thresh/thresh-interval-metric
+      - id: 6
+        name: interval-unit-val
+        op: ==
+        selected: true
+        value: thresh-units-packets
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-default-thresh/interval-unit-val
+      46:
+      - id: 0
+        name: cos-min
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-cos-thresh-list/cos-min
+      - id: 1
+        name: cos-max
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-cos-thresh-list/cos-max
+      - id: 2
+        name: bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-cos-thresh-list/bytes
+      - id: 3
+        name: thresh-size-metric
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-cos-thresh-list/thresh-size-metric
+      - id: 4
+        name: unit-val
+        op: ==
+        selected: true
+        value: thresh-units-packets
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-cos-thresh-list/unit-val
+      - id: 5
+        name: threshold-interval
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-cos-thresh-list/threshold-interval
+      - id: 6
+        name: thresh-interval-metric
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-cos-thresh-list/thresh-interval-metric
+      - id: 7
+        name: interval-unit-val
+        op: ==
+        selected: true
+        value: thresh-units-packets
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-cos-thresh-list/interval-unit-val
+      47:
+      - id: 0
+        name: disc-class-min
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-disc-class-thresh-list/disc-class-min
+      - id: 1
+        name: disc-class-max
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-disc-class-thresh-list/disc-class-max
+      - id: 2
+        name: bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-disc-class-thresh-list/bytes
+      - id: 3
+        name: thresh-size-metric
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-disc-class-thresh-list/thresh-size-metric
+      - id: 4
+        name: unit-val
+        op: ==
+        selected: true
+        value: thresh-units-packets
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-disc-class-thresh-list/unit-val
+      - id: 5
+        name: threshold-interval
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-disc-class-thresh-list/threshold-interval
+      - id: 6
+        name: thresh-interval-metric
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-disc-class-thresh-list/thresh-interval-metric
+      - id: 7
+        name: interval-unit-val
+        op: ==
+        selected: true
+        value: thresh-units-packets
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-disc-class-thresh-list/interval-unit-val
+      48:
+      - id: 0
+        name: qos-group-min
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-qos-grp-thresh-list/qos-group-min
+      - id: 1
+        name: qos-group-max
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-qos-grp-thresh-list/qos-group-max
+      - id: 2
+        name: bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-qos-grp-thresh-list/bytes
+      - id: 3
+        name: thresh-size-metric
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-qos-grp-thresh-list/thresh-size-metric
+      - id: 4
+        name: unit-val
+        op: ==
+        selected: true
+        value: thresh-units-packets
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-qos-grp-thresh-list/unit-val
+      - id: 5
+        name: threshold-interval
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-qos-grp-thresh-list/threshold-interval
+      - id: 6
+        name: thresh-interval-metric
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-qos-grp-thresh-list/thresh-interval-metric
+      - id: 7
+        name: interval-unit-val
+        op: ==
+        selected: true
+        value: thresh-units-packets
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-qos-grp-thresh-list/interval-unit-val
+      49:
+      - id: 0
+        name: exp-min
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-mpls-exp-thresh-list/exp-min
+      - id: 1
+        name: exp-max
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-mpls-exp-thresh-list/exp-max
+      - id: 2
+        name: bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-mpls-exp-thresh-list/bytes
+      - id: 3
+        name: thresh-size-metric
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-mpls-exp-thresh-list/thresh-size-metric
+      - id: 4
+        name: unit-val
+        op: ==
+        selected: true
+        value: thresh-units-packets
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-mpls-exp-thresh-list/unit-val
+      - id: 5
+        name: threshold-interval
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-mpls-exp-thresh-list/threshold-interval
+      - id: 6
+        name: thresh-interval-metric
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-mpls-exp-thresh-list/thresh-interval-metric
+      - id: 7
+        name: interval-unit-val
+        op: ==
+        selected: true
+        value: thresh-units-packets
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-mpls-exp-thresh-list/interval-unit-val
+      50:
+      - id: 0
+        name: dscp-min
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-dscp-thresh-list/dscp-min
+      - id: 1
+        name: dscp-max
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-dscp-thresh-list/dscp-max
+      - id: 2
+        name: bytes
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-dscp-thresh-list/bytes
+      - id: 3
+        name: thresh-size-metric
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-dscp-thresh-list/thresh-size-metric
+      - id: 4
+        name: unit-val
+        op: ==
+        selected: true
+        value: thresh-units-packets
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-dscp-thresh-list/unit-val
+      - id: 5
+        name: threshold-interval
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-dscp-thresh-list/threshold-interval
+      - id: 6
+        name: thresh-interval-metric
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-dscp-thresh-list/thresh-interval-metric
+      - id: 7
+        name: interval-unit-val
+        op: ==
+        selected: true
+        value: thresh-units-packets
+        xpath: /interfaces/interface/diffserv-info/priority-oper-list/qlimit-dscp-thresh-list/interval-unit-val
+      51:
+      - id: 1
+        name: in-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v4-protocol-stats/in-pkts
+      - id: 2
+        name: in-octets
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v4-protocol-stats/in-octets
+      - id: 3
+        name: in-error-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v4-protocol-stats/in-error-pkts
+      - id: 4
+        name: in-forwarded-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v4-protocol-stats/in-forwarded-pkts
+      - id: 5
+        name: in-forwarded-octets
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v4-protocol-stats/in-forwarded-octets
+      - id: 6
+        name: in-discarded-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v4-protocol-stats/in-discarded-pkts
+      - id: 7
+        name: out-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v4-protocol-stats/out-pkts
+      - id: 8
+        name: out-octets
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v4-protocol-stats/out-octets
+      - id: 9
+        name: out-error-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v4-protocol-stats/out-error-pkts
+      - id: 10
+        name: out-forwarded-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v4-protocol-stats/out-forwarded-pkts
+      - id: 11
+        name: out-forwarded-octets
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v4-protocol-stats/out-forwarded-octets
+      - id: 12
+        name: out-discarded-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v4-protocol-stats/out-discarded-pkts
+      52:
+      - id: 1
+        name: in-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v6-protocol-stats/in-pkts
+      - id: 2
+        name: in-octets
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v6-protocol-stats/in-octets
+      - id: 3
+        name: in-error-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v6-protocol-stats/in-error-pkts
+      - id: 4
+        name: in-forwarded-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v6-protocol-stats/in-forwarded-pkts
+      - id: 5
+        name: in-forwarded-octets
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v6-protocol-stats/in-forwarded-octets
+      - id: 6
+        name: in-discarded-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v6-protocol-stats/in-discarded-pkts
+      - id: 7
+        name: out-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v6-protocol-stats/out-pkts
+      - id: 8
+        name: out-octets
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v6-protocol-stats/out-octets
+      - id: 9
+        name: out-error-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v6-protocol-stats/out-error-pkts
+      - id: 10
+        name: out-forwarded-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v6-protocol-stats/out-forwarded-pkts
+      - id: 11
+        name: out-forwarded-octets
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v6-protocol-stats/out-forwarded-octets
+      - id: 12
+        name: out-discarded-pkts
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/v6-protocol-stats/out-discarded-pkts
+      53:
+      - id: 0
+        name: aggregate-id
+        op: ==
+        selected: true
+        value: genericstring
+        xpath: /interfaces/interface/lag-aggregate-state/aggregate-id
+      - id: 1
+        name: lag-type
+        op: ==
+        selected: true
+        value: lag-active
+        xpath: /interfaces/interface/lag-aggregate-state/lag-type
+      - id: 2
+        name: min-links
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/lag-aggregate-state/min-links
+      - id: 3
+        name: lag-speed
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/lag-aggregate-state/lag-speed
+      - id: 4
+        name: members
+        op: ==
+        selected: true
+        value: genericstring
+        xpath: /interfaces/interface/lag-aggregate-state/members
+      54:
+      - id: 1
+        name: negotiated-duplex-mode
+        op: ==
+        selected: true
+        value: auto-duplex
+        xpath: /interfaces/interface/ether-state/negotiated-duplex-mode
+      - id: 2
+        name: negotiated-port-speed
+        op: ==
+        selected: true
+        value: speed-50gb
+        xpath: /interfaces/interface/ether-state/negotiated-port-speed
+      - id: 3
+        name: auto-negotiate
+        op: ==
+        selected: true
+        value: 'true'
+        xpath: /interfaces/interface/ether-state/auto-negotiate
+      - id: 4
+        name: enable-flow-control
+        op: ==
+        selected: true
+        value: 'true'
+        xpath: /interfaces/interface/ether-state/enable-flow-control
+      - id: 5
+        name: media-type
+        op: ==
+        selected: true
+        value: ether-media-type-sfpp-10g-cwdm-14-70
+        xpath: /interfaces/interface/ether-state/media-type
+      55:
+      - id: 1
+        name: in-mac-control-frames
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/in-mac-control-frames
+      - id: 2
+        name: in-mac-pause-frames
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/in-mac-pause-frames
+      - id: 3
+        name: in-oversize-frames
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/in-oversize-frames
+      - id: 4
+        name: in-jabber-frames
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/in-jabber-frames
+      - id: 5
+        name: in-fragment-frames
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/in-fragment-frames
+      - id: 6
+        name: in-8021q-frames
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/in-8021q-frames
+      - id: 7
+        name: out-mac-control-frames
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/out-mac-control-frames
+      - id: 8
+        name: out-mac-pause-frames
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/out-mac-pause-frames
+      - id: 9
+        name: out-8021q-frames
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/out-8021q-frames
+      - id: 10
+        name: dot3-counters-supported
+        op: ==
+        selected: true
+        value: empty
+        xpath: /interfaces/interface/ether-stats/dot3-counters-supported
+      56:
+      - id: 1
+        name: dot3-stats-version
+        op: ==
+        selected: true
+        value: not-supported
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-stats-version
+      57:
+      - id: 1
+        name: dot3-alignment-errors
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-alignment-errors
+      - id: 2
+        name: dot3-fcs-errors
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-fcs-errors
+      - id: 3
+        name: dot3-single-collision-frames
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-single-collision-frames
+      - id: 4
+        name: dot3-multiple-collision-frames
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-multiple-collision-frames
+      - id: 5
+        name: dot3-sqe-test-errors
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-sqe-test-errors
+      - id: 6
+        name: dot3-deferred-transmissions
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-deferred-transmissions
+      - id: 7
+        name: dot3-late-collisions
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-late-collisions
+      - id: 8
+        name: dot3-excessive-collisions
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-excessive-collisions
+      - id: 9
+        name: dot3-internal-mac-transmit-errors
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-internal-mac-transmit-errors
+      - id: 10
+        name: dot3-carrier-sense-errors
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-carrier-sense-errors
+      - id: 11
+        name: dot3-frame-too-longs
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-frame-too-longs
+      - id: 12
+        name: dot3-internal-mac-receive-errors
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-internal-mac-receive-errors
+      - id: 13
+        name: dot3-symbol-errors
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-symbol-errors
+      - id: 14
+        name: dot3-duplex-status
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-duplex-status
+      - id: 15
+        name: dot3-hc-alignment-errors
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-hc-alignment-errors
+      - id: 16
+        name: dot3-hc-inpause-frames
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-hc-inpause-frames
+      - id: 17
+        name: dot3-hc-outpause-frames
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-hc-outpause-frames
+      - id: 18
+        name: dot3-hc-fcs-errors
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-hc-fcs-errors
+      - id: 19
+        name: dot3-hc-frame-too-longs
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-hc-frame-too-longs
+      - id: 20
+        name: dot3-hc-internal-mac-transmit-errors
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-hc-internal-mac-transmit-errors
+      - id: 21
+        name: dot3-hc-internal-mac-receive-errors
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-hc-internal-mac-receive-errors
+      - id: 22
+        name: dot3-hc-symbol-errors
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/ether-stats/dot3-counters/dot3-error-counters-v2/dot3-hc-symbol-errors
+      58:
+      - id: 1
+        name: crc-type
+        op: ==
+        selected: true
+        value: serial-crc32
+        xpath: /interfaces/interface/serial-state/crc-type
+      - id: 2
+        name: loopback
+        op: ==
+        selected: true
+        value: t1e1-payload-ansi-fdl-remote-loopback
+        xpath: /interfaces/interface/serial-state/loopback
+      - id: 3
+        name: keeplive
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/serial-state/keeplive
+      - id: 4
+        name: timeslot
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/serial-state/timeslot
+      - id: 5
+        name: subrate
+        op: ==
+        selected: true
+        value: dsx1-subrate-56kbps
+        xpath: /interfaces/interface/serial-state/subrate
+      59:
+      - id: 1
+        name: in-abort-clock-error
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/serial-stats/in-abort-clock-error
+      60:
+      - id: 1
+        name: carrier-delay
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/syncserial-state/carrier-delay
+      - id: 2
+        name: dtr-pulse-time
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/syncserial-state/dtr-pulse-time
+      - id: 3
+        name: restart-delay
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/syncserial-state/restart-delay
+      - id: 4
+        name: cable-type
+        op: ==
+        selected: true
+        value: genericstring
+        xpath: /interfaces/interface/syncserial-state/cable-type
+      - id: 5
+        name: loopback
+        op: ==
+        selected: true
+        value: 'true'
+        xpath: /interfaces/interface/syncserial-state/loopback
+      - id: 6
+        name: nrzi-encoding
+        op: ==
+        selected: true
+        value: 'true'
+        xpath: /interfaces/interface/syncserial-state/nrzi-encoding
+      - id: 7
+        name: idle-character
+        op: ==
+        selected: true
+        value: "%{ data.variables.interface_name_1 }"
+        xpath: /interfaces/interface/syncserial-state/idle-character
+      - id: 8
+        name: rts-signal
+        op: ==
+        selected: true
+        value: down
+        xpath: /interfaces/interface/syncserial-state/rts-signal
+      - id: 9
+        name: cts-signal
+        op: ==
+        selected: true
+        value: down
+        xpath: /interfaces/interface/syncserial-state/cts-signal
+      - id: 10
+        name: dtr-signal
+        op: ==
+        selected: true
+        value: down
+        xpath: /interfaces/interface/syncserial-state/dtr-signal
+      - id: 11
+        name: dcd-signal
+        op: ==
+        selected: true
+        value: down
+        xpath: /interfaces/interface/syncserial-state/dcd-signal
+      - id: 12
+        name: dsr-signal
+        op: ==
+        selected: true
+        value: down
+        xpath: /interfaces/interface/syncserial-state/dsr-signal
+      61:
+      - id: 1
+        name: dce-terminal-timing-enable
+        op: ==
+        selected: true
+        value: 'true'
+        xpath: /interfaces/interface/syncserial-state/dce-mode-state/dce-terminal-timing-enable
+      - id: 2
+        name: ignore-dtr
+        op: ==
+        selected: true
+        value: 'true'
+        xpath: /interfaces/interface/syncserial-state/dce-mode-state/ignore-dtr
+      - id: 3
+        name: serial-clock-rate
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/syncserial-state/dce-mode-state/serial-clock-rate
+      62:
+      - id: 1
+        name: tx-invert-clk
+        op: ==
+        selected: true
+        value: 'true'
+        xpath: /interfaces/interface/syncserial-state/dte-mode-state/tx-invert-clk
+      - id: 2
+        name: ignore-dcd
+        op: ==
+        selected: true
+        value: 'true'
+        xpath: /interfaces/interface/syncserial-state/dte-mode-state/ignore-dcd
+      - id: 3
+        name: rx-clockrate
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/syncserial-state/dte-mode-state/rx-clockrate
+      - id: 4
+        name: rx-clock-threshold
+        op: ==
+        selected: true
+        value: '15'
+        xpath: /interfaces/interface/syncserial-state/dte-mode-state/rx-clock-threshold
+    namespace:
+      1:
+        interfaces-ios-xe-oper: http://cisco.com/ns/yang/Cisco-IOS-XE-interfaces-oper
+    xpath:
+      1: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface
+      2: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:statistics
+      3: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info
+      4: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats
+      5: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:classifier-entry-stats
+      6: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:meter-stats
+      7: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:queuing-stats
+      8: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:queuing-stats/interfaces-ios-xe-oper:wred-stats
+      9: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:queuing-stats/interfaces-ios-xe-oper:cac-stats
+      10: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:subclass-list
+      11: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:subclass-list[interfaces-ios-xe-oper:match-type="qos-match-src-port"]/interfaces-ios-xe-oper:cos-counters
+      12: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:subclass-list[interfaces-ios-xe-oper:match-type="qos-match-src-port"]/interfaces-ios-xe-oper:cos-default
+      13: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:subclass-list[interfaces-ios-xe-oper:match-type="qos-match-src-port"]/interfaces-ios-xe-oper:dscp-counters
+      14: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:subclass-list[interfaces-ios-xe-oper:match-type="qos-match-src-port"]/interfaces-ios-xe-oper:dscp-default
+      15: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:subclass-list[interfaces-ios-xe-oper:match-type="qos-match-src-port"]/interfaces-ios-xe-oper:discard-class-counters
+      16: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:subclass-list[interfaces-ios-xe-oper:match-type="qos-match-src-port"]/interfaces-ios-xe-oper:disc-class-default
+      17: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:subclass-list[interfaces-ios-xe-oper:match-type="qos-match-src-port"]/interfaces-ios-xe-oper:precedence-counters
+      18: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:subclass-list[interfaces-ios-xe-oper:match-type="qos-match-src-port"]/interfaces-ios-xe-oper:prec-default
+      19: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:subclass-list[interfaces-ios-xe-oper:match-type="qos-match-src-port"]/interfaces-ios-xe-oper:mpls-exp-counters
+      20: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:subclass-list[interfaces-ios-xe-oper:match-type="qos-match-src-port"]/interfaces-ios-xe-oper:mpls-exp-default
+      21: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:subclass-list[interfaces-ios-xe-oper:match-type="qos-match-src-port"]/interfaces-ios-xe-oper:dei-counters
+      22: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:subclass-list[interfaces-ios-xe-oper:match-type="qos-match-src-port"]/interfaces-ios-xe-oper:dei-counts-default
+      23: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:subclass-list[interfaces-ios-xe-oper:match-type="qos-match-src-port"]/interfaces-ios-xe-oper:clp-counters
+      24: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:subclass-list[interfaces-ios-xe-oper:match-type="qos-match-src-port"]/interfaces-ios-xe-oper:clp-default
+      25: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:marking-stats/interfaces-ios-xe-oper:marking-dscp-stats-val
+      26: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:marking-stats/interfaces-ios-xe-oper:marking-dscp-tunnel-stats-val
+      27: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:marking-stats/interfaces-ios-xe-oper:marking-cos-stats-val
+      28: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:marking-stats/interfaces-ios-xe-oper:marking-cos-inner-stats-val
+      29: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:marking-stats/interfaces-ios-xe-oper:marking-discard-class-stats-val
+      30: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:marking-stats/interfaces-ios-xe-oper:marking-qos-grp-stats-val
+      31: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:marking-stats/interfaces-ios-xe-oper:marking-prec-stats-val
+      32: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:marking-stats/interfaces-ios-xe-oper:marking-prec-tunnel-stats-val
+      33: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:marking-stats/interfaces-ios-xe-oper:marking-mpls-exp-imp-stats-val
+      34: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:marking-stats/interfaces-ios-xe-oper:marking-mpls-exp-top-stats-val
+      35: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:marking-stats/interfaces-ios-xe-oper:marking-fr-de-stats-val
+      36: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:marking-stats/interfaces-ios-xe-oper:marking-fr-fecn-becn-stats-val
+      37: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:marking-stats/interfaces-ios-xe-oper:marking-atm-clp-stats-val
+      38: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:marking-stats/interfaces-ios-xe-oper:marking-vlan-inner-stats-val
+      39: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:marking-stats/interfaces-ios-xe-oper:marking-dei-stats-val
+      40: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:marking-stats/interfaces-ios-xe-oper:marking-dei-imp-stats-val
+      41: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:marking-stats/interfaces-ios-xe-oper:marking-srp-priority-stats-val
+      42: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:diffserv-target-classifier-stats[interfaces-ios-xe-oper:classifier-entry-name="genericstring"][interfaces-ios-xe-oper:parent-path="genericstring"]/interfaces-ios-xe-oper:marking-stats/interfaces-ios-xe-oper:marking-wlan-user-priority-stats-val
+      43: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:priority-oper-list
+      44: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:priority-oper-list[interfaces-ios-xe-oper:priority-level="15"]/interfaces-ios-xe-oper:agg-priority-stats
+      45: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:priority-oper-list[interfaces-ios-xe-oper:priority-level="15"]/interfaces-ios-xe-oper:qlimit-default-thresh
+      46: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:priority-oper-list[interfaces-ios-xe-oper:priority-level="15"]/interfaces-ios-xe-oper:qlimit-cos-thresh-list
+      47: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:priority-oper-list[interfaces-ios-xe-oper:priority-level="15"]/interfaces-ios-xe-oper:qlimit-disc-class-thresh-list
+      48: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:priority-oper-list[interfaces-ios-xe-oper:priority-level="15"]/interfaces-ios-xe-oper:qlimit-qos-grp-thresh-list
+      49: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:priority-oper-list[interfaces-ios-xe-oper:priority-level="15"]/interfaces-ios-xe-oper:qlimit-mpls-exp-thresh-list
+      50: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:diffserv-info[interfaces-ios-xe-oper:direction="qos-inbound"][interfaces-ios-xe-oper:policy-name="genericstring"]/interfaces-ios-xe-oper:priority-oper-list[interfaces-ios-xe-oper:priority-level="15"]/interfaces-ios-xe-oper:qlimit-dscp-thresh-list
+      51: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:v4-protocol-stats
+      52: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:v6-protocol-stats
+      53: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:lag-aggregate-state
+      54: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:ether-state
+      55: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:ether-stats
+      56: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:ether-stats/interfaces-ios-xe-oper:dot3-counters
+      57: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:ether-stats/interfaces-ios-xe-oper:dot3-counters/interfaces-ios-xe-oper:dot3-error-counters-v2
+      58: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:serial-state
+      59: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:serial-stats
+      60: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:syncserial-state
+      61: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:syncserial-state/interfaces-ios-xe-oper:dce-mode-state
+      62: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[interfaces-ios-xe-oper:name="%{ data.variables.interface_name_1 }"]/interfaces-ios-xe-oper:syncserial-state/interfaces-ios-xe-oper:dte-mode-state

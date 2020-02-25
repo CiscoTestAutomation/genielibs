@@ -49,6 +49,9 @@ class GenieRobot(object):
         try:
             self._pyats_testscript = self.builtin.get_library_instance('pyats.robot.'
                                                                        'pyATSRobot').testscript
+        except RobotNotRunningError:
+            # during libdoc generation
+            pass
         except RuntimeError:
             try:
                 self._pyats_testscript = self.builtin.get_library_instance('ats.robot.'

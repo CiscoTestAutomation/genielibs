@@ -136,7 +136,7 @@ devnet: all
 	@echo ""
 
 install_build_deps:
-	@echo "nothing to do"
+	@pip install --upgrade pip setuptools wheel
 
 uninstall_build_deps:
 	@echo "nothing to do"
@@ -244,3 +244,4 @@ json:
 	@echo ""
 	@echo "Done."
 	@echo ""
+

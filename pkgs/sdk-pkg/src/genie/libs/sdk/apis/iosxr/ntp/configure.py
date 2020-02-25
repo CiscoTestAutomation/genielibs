@@ -141,14 +141,13 @@ def configure_ntp_server(device, ntp_config, auth_key=None, unconfig=False):
     for num, ip in enumerate(ntp_config):
         if unconfig:
             cmd = "no ntp server {ip}".format(ip=ip)
-            if auth_key:
-                cmd += " key {auth_key}".format(auth_key=auth_key[num])
-                config.append(cmd)
         else:
-            if auth_key:
-                cmd = "ntp server {ip}".format(ip=ip)
-                cmd += " key {auth_key}".format(auth_key=auth_key[num])
-            config.append(cmd)
+            cmd = "ntp server {ip}".format(ip=ip)
+
+        if auth_key:
+            cmd += " key {auth_key}".format(auth_key=auth_key[num])
+
+        config.append(cmd)
 
     try:
         device.configure("\n".join(config))

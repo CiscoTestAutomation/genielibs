@@ -2,9 +2,8 @@ import logging
 import traceback
 from time import sleep
 from copy import deepcopy
-from jinja2 import Template
 
-from ats.log.utils import banner
+from pyats.log.utils import banner
 from .rpcbuilder import YSNetconfRPCBuilder
 from .rpcverify import RpcVerify
 
@@ -13,26 +12,12 @@ log = logging.getLogger(__name__)
 try:
     from ncclient.operations import RaiseMode
 except Exception:
-    log.error('Make sure you have ncclient installed in your virtual env')
+    log.error(
+        banner('Make sure you have ncclient installed in your virtual env')
+    )
 
 
-def insert_variables(text, variables):
-    if not text or not variables:
-        # no op
-        return text
-    tplt_standard = Template(text)
-    # standard identifiers for template
-    new_text = tplt_standard.render(variables)
-    # replay generator uses special identifiers in template
-    tplt_special = Template(new_text,
-                            variable_start_string='_-',
-                            variable_end_string='-_')
-
-    return tplt_special.render(variables)
-
-
-lock_retry_errors = ['lock-denied', 'resource-denied',
-                         'in-use', 'operation-failed']
+lock_retry_errors = ['lock-denied', 'resource-denied', 'in-use']
 
 
 def try_lock(uut, target, timer=30, sleeptime=1):
@@ -60,14 +45,16 @@ def try_lock(uut, target, timer=30, sleeptime=1):
         if ret.error.tag in lock_retry_errors:
             retry = True
         if not retry:
-            log.error('ERROR - CANNOT ACQUIRE LOCK - {0}'.format(
-                ret.error.tag))
+            log.error(banner('ERROR - CANNOT ACQUIRE LOCK - {0}'.format(
+                ret.error.tag)))
             break
         elif counter < timer:
             log.debug("RETRYING LOCK - {0}".format(counter))
             sleep(sleeptime)
         else:
-            log.error('ERROR - LOCKING FAILED. RETRY TIMER EXCEEDED!!!')
+            log.error(
+                banner('ERROR - LOCKING FAILED. RETRY TIMER EXCEEDED!!!')
+            )
     return False
 
 
@@ -133,18 +120,20 @@ def netconf_send(uut, rpcs, ds_state, lock=True, lock_retry=40, timeout=30):
 
             elif nc_op == 'rpc':
                 target = 'running'
-                if 'edit-config' in rpcs and lock:
-                    if 'candidate/>' in rpcs:
+                rpc = kwargs.get('rpc')
+                if 'edit-config' in rpc and lock:
+                    if 'candidate/>' in rpc:
                         target = 'candidate'
                     target_locked = try_lock(uut, target, timer=lock_retry)
 
                 # raw return
-                reply = uut.request(rpcs)
+                reply = uut.request(rpc)
 
                 if target_locked:
                     uut.unlock(target)
                     target_locked = False
-                return reply
+                result.append((nc_op, reply))
+                continue
 
             if ret.ok:
                 result.append((nc_op, str(ret)))
@@ -246,7 +235,7 @@ def gen_ncclient_rpc(rpc_data, prefix_type="minimal"):
     )
     # XML so all the values must be string or bytes type
     nodes = []
-    for node in rpc_data['nodes']:
+    for node in rpc_data.get('nodes', []):
         if 'value' in node:
             node['value'] = str(node['value'])
         nodes.append(node)
@@ -337,11 +326,12 @@ def get_datastore_state(target, device):
 def run_netconf(operation, device, steps, datastore, rpc_data, returns):
     """Form NETCONF message and send to testbed."""
     log.debug('NETCONF MESSAGE')
-
     try:
         device.raise_mode = RaiseMode.NONE
     except NameError:
-        log.error('Make sure you have ncclient installed in your virtual env')
+        log.error(
+            banner('Make sure you have ncclient installed in your virtual env')
+        )
         return
 
     rpc_verify = RpcVerify(
@@ -353,30 +343,60 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns):
         log.error('NETCONF message data not present')
         return False
 
-    ds = datastore
+    if not datastore:
+        log.warning('"datastore" variables not set so choosing:\n'
+                    'datastore:\n  type: running\n  lock: True\n  retry: 10\n')
+        datastore = {}
+
+    ds = datastore.get('type', '')
+    lock = datastore.get('lock', True)
+    retry = datastore.get('retry', 10)
+
     actual_ds, ds_state = get_datastore_state(ds, rpc_verify)
     if not ds:
-        log.debug('USING DEVICE DATASTORE: {0}'.format(actual_ds))
+        log.info('USING DEVICE DATASTORE: {0}'.format(actual_ds))
         ds = actual_ds
     else:
-        log.debug('USING TEST DATASTORE: {0}'.format(ds))
+        log.info('USING TEST DATASTORE: {0}'.format(ds))
 
     rpc_data['datastore'] = ds
     rpc_data['operation'] = operation
-    # TODO: add custom rpc support?
-    prt_op, kwargs = gen_ncclient_rpc(rpc_data)
 
-    result = netconf_send(device, [(prt_op, kwargs)], ds_state)
+    if operation == 'rpc':
+        # Custom RPC represented in raw string form
+        result = netconf_send(
+            device,
+            [('rpc', {'rpc': rpc_data['rpc']})],
+            ds_state,
+            lock=lock,
+            lock_retry=retry
+        )
+    else:
+        prt_op, kwargs = gen_ncclient_rpc(rpc_data)
+        result = netconf_send(
+            device,
+            [(prt_op, kwargs)],
+            ds_state,
+            lock=lock,
+            lock_retry=retry
+        )
 
     # rpc-reply should show up in NETCONF log
     if not result:
         log.error(banner('NETCONF rpc-reply NOT RECIEVED'))
         return False
 
-    errors = [(op, res) for op, res in result if '<rpc-error>' in res]
+    errors = []
+    for op, res in result:
+        if '<rpc-error>' in res:
+            errors.append(res)
+        elif op == 'traceback':
+            errors.append(res)
 
     if errors:
-        log.error(banner('NETCONF MESSAGE ERRORED'))
+        log.error(
+            banner('NETCONF MESSAGE ERRORED\n{0}'.format('\n'.join(errors)))
+        )
         return False
 
     if rpc_data['operation'] == 'edit-config':
@@ -384,17 +404,21 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns):
         rpc_clone = deepcopy(rpc_data)
         rpc_clone['operation'] = 'get-config'
         rpc_clone['datastore'] = 'running'
-        remove_nodes = []
+
         for node in rpc_clone.get('nodes'):
             node.pop('value', '')
             node.pop('edit-op', '')
         prt_op, kwargs = gen_ncclient_rpc(rpc_clone)
-        resp_xml = netconf_send(device, [(prt_op, kwargs)], ds_state)
+        resp_xml = netconf_send(
+            device,
+            [(prt_op, kwargs)],
+            ds_state,
+            lock=False
+        )
         resp_elements = rpc_verify.process_rpc_reply(resp_xml)
         return rpc_verify.verify_rpc_data_reply(resp_elements, rpc_data)
     elif rpc_data['operation'] in ['get', 'get-config']:
-        opfields = True
-        if not opfields:
+        if not returns:
             log.error(banner('No NETCONF data to compare rpc-reply to.'))
             return False
         # should be just one result
@@ -402,13 +426,20 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns):
             op, resp_xml = result[0]
             resp_elements = rpc_verify.process_rpc_reply(resp_xml)
             return rpc_verify.process_operational_state(
-                resp_elements, opfields
+                resp_elements, returns
             )
         else:
-            log.error('NO XML RESPONSE')
+            log.error(banner('NO XML RESPONSE'))
             return False
     elif rpc_data['operation'] == 'edit-data':
         # TODO: get-data return may not be relevent depending on datastore
         log.debug('Use "get-data" yang action to verify this "edit-data".')
 
     return True
+
+
+def run_gnmi(operation, device, steps, datastore, rpc_data, returns):
+    """Form gNMI message and send to testbed."""
+    result = True
+    log.warning('gNMI protocol not implemented!')
+    return result

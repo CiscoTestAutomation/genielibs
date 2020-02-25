@@ -50,7 +50,8 @@ class Restore(object):
                                       format(method))
 
     def restore_configuration(self, device, method, abstract, iteration=10,
-                              interval=60, compare=False, compare_exclude=[], reload_timeout=None):
+                              interval=60, compare=False, compare_exclude=[], reload_timeout=None,
+                              delete_after_restore=True):
         ''' Restore configuration from a checkpoint file using load replace'''
 
         if method == 'checkpoint' or method == 'config_replace':
@@ -117,8 +118,9 @@ class Restore(object):
                               "configuration and load override file:'{f}' for "
                               "device {d}:".format(f=self.to_url, d=device.name))
                     log.error(exclude_item)
-                    # Delete files
-                    self.filetransfer.deletefile(target=self.to_url, device=device)
+                    if delete_after_restore:
+                        # Delete files
+                        self.filetransfer.deletefile(target=self.to_url, device=device)
                     # Raise exception
                     raise Exception("Comparison between current running "
                                     "configuration and load override file '{f}' "
@@ -129,17 +131,18 @@ class Restore(object):
                              " and load override file '{f}' passed for device {d}".\
                              format(f=self.to_url, d=device.name))
 
-            # Delete the checkpoint file
-            self.filetransfer.deletefile(target=self.to_url, device=device)
+            if delete_after_restore:
+                # Delete the checkpoint file
+                self.filetransfer.deletefile(target=self.to_url, device=device)
 
-            # Verify checkpoint file deleted
-            if self.to_url not in self.filetransfer.dir(target=self.to_url,
-                                                        device=device):
-                log.info("Successfully deleted checkpoint/file '{}'".\
-                         format(self.to_url))
-            else:
-                raise Exception("Unable to delete checkpoint/file '{}'".\
-                                format(self.to_url))
+                # Verify checkpoint file deleted
+                if self.to_url not in self.filetransfer.dir(target=self.to_url,
+                                                            device=device):
+                    log.info("Successfully deleted checkpoint/file '{}'".\
+                             format(self.to_url))
+                else:
+                    raise Exception("Unable to delete checkpoint/file '{}'".\
+                                    format(self.to_url))
         else:
             raise NotImplementedError("restore configuration using method '{}'".\
                                       format(method))

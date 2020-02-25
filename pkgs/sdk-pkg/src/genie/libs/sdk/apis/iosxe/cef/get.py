@@ -1,6 +1,7 @@
 # Python
 import logging
 import re
+from ipaddress import ip_address, ip_network
 
 # Genie
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
@@ -135,7 +136,11 @@ def get_cef_internal_repair_next_hop_ip_address(device, prefix, vrf=None, addres
     """
 
     try:
-        output = device.parse("show ip cef {prefix} internal".format(prefix=prefix))
+        if vrf:
+            output = device.parse(
+                "show ip cef vrf {vrf} {prefix} internal".format(vrf=vrf, prefix=prefix))
+        else:
+            output = device.parse("show ip cef {prefix} internal".format(prefix=prefix))
     except SchemaEmptyParserError as e:
         log.info(
             "Could not find any repair next hop information for prefix {prefix}".format(
@@ -155,7 +160,7 @@ def get_cef_internal_repair_next_hop_ip_address(device, prefix, vrf=None, addres
         .get("prefix", {})
     )
     for prefix_address in prefixes_dict:
-        if prefix in prefix_address:
+        if ip_address(prefix) in ip_network(prefix_address):
 
             output_chain_dict = prefixes_dict[prefix_address].get('output_chain',{})
             # {'frr': {
@@ -230,6 +235,141 @@ def get_cef_internal_repair_next_hop_ip_address(device, prefix, vrf=None, addres
 
     log.info(
         "Could not find any repair next hop information for prefix {prefix}".format(
+            prefix=prefix
+        )
+    )
+    return None
+
+def get_cef_internal_primary_next_hop_ip_address(device, prefix, vrf=None, address_family=None):
+    """ Get internal next hop ip address from Express Forwarding
+        Args:
+            device ('obj'): Device object
+            prefix ('str'): Prefix address
+            vrf ('str'): VRF name
+            address_family ('str'): Address family
+        Returns:
+            String: Next hop Ip address
+        Raises:
+            None
+    """
+
+    try:
+        if vrf:
+            output = device.parse("show ip cef vrf {vrf} {prefix} internal".format(vrf=vrf, prefix=prefix))
+        else:
+            output = device.parse("show ip cef {prefix} internal".format(prefix=prefix))
+    except SchemaEmptyParserError as e:
+        log.info(
+            "Could not find any primary next hop information for prefix {prefix}".format(
+                prefix=prefix
+            )
+        )
+        return None
+
+    vrf = vrf if vrf else "default"
+    address_family = address_family if address_family else "ipv4"
+
+    prefixes_dict = (
+        output["vrf"]
+        .get(vrf, {})
+        .get("address_family", {})
+        .get(address_family, {})
+        .get("prefix", {})
+    )
+    for prefix_address in prefixes_dict:
+        if ip_address(prefix) in ip_network(prefix_address):
+
+            output_chain_dict = prefixes_dict[prefix_address].get('output_chain',{})
+            # {'frr': {
+            #         'primary': {
+            #             'info': '0x80007F2B146ED518',
+            #             'primary': {
+            #                 'tag_adj': {
+            #                     'GigabitEthernet0/1/6': {
+            #                         'addr': '10.19.198.25',
+            #                         'addr_info': '7F2B21B245A8',
+            #                     },},},
+            #             'repair': {
+            #                 'tag_adj': {
+            #                     'GigabitEthernet0/1/7': {
+            #                         'addr': '10.19.198.29',
+            #                         'addr_info': '7F2B21B24148',
+            #                     },},},},},
+            #     'label': ['[63300|68544](elc)-(local:25)'],}
+            tag_adj_dict = output_chain_dict.get('frr', {}).get('primary', {}).get(
+                'primary', {}).get('tag_adj', {})
+
+            if not tag_adj_dict:
+                # {'label': ['262', 'implicit-null'],
+                #     'tag_midchain': {
+                #         'Tunnel65537': {
+                #             'frr': {
+                #                 'primary': {
+                #                     'info': '0x80007F4F894B79F0',
+                #                     'primary': {
+                #                         'tag_adj': {
+                #                             'GigabitEthernet0/1/6': {
+                #                                 'addr': '10.169.196.213',
+                #                                 'addr_info': '7F4F881C1898',
+                #                             },},},
+                #                     'repair': {
+                #                         'label': ['16061'],
+                #                         'tag_adj': {
+                #                             'GigabitEthernet0/1/7': {
+                #                                 'addr': '10.169.196.217',
+                #                                 'addr_info': '7F4F881C1CF8',
+                #                             },},},},},
+                #             'label': ['[16073|16073]', '[90|90]', '[95|95]', '[90|90]'],
+                #             'tag_midchain_info': '7F4F881C0718',
+                #         },},}
+                for intf in output_chain_dict.get('tag_midchain', {}):
+                    tag_adj_dict = output_chain_dict['tag_midchain'][intf].get('frr', {}).get(
+                        'primary', {}).get('primary', {}).get('tag_adj', {})
+
+            if not tag_adj_dict:
+                # {'label': ['[11111|1622222073]-(local:26)'], 'frr': {
+                #     'primary': {'info': '0xaaaaaaaaa', 'primary': {'tag_adj': {
+                #         'GigabitEthernet0/1/6': {'addr': '10.69.111.111',
+                #                                  'addr_info': 'AAAAAAAAAA'}}},
+                #                                  'repair': {
+                #         'tag_midchain': {
+                #             'MPLS-SR-Tunnel1': {'tag_midchain_info': 'AAAAAAAAAA',
+                #                                 'label': ['98'], 'tag_adj': {
+                #                     'GigabitEthernet0/1/7': {'addr': '111.1111.111.111',
+                #                                              'addr_info':
+                #                                              'AAAAAAAAAA'}}}}}}}}
+                for intf in output_chain_dict.get('frr', {}).get('primary', {}).get(
+                        'primary', {}).get('tag_midchain', {}):
+                    tag_adj_dict = output_chain_dict.get('frr', {}).get('primary', {}).get(
+                        'primary', {}).get('tag_midchain', {})[intf].get('tag_adj', {})
+
+            if not tag_adj_dict:
+                # 'output_chain': {
+                #     'label': ['362', 'implicit-null'],
+                #     'tag_midchain': {
+                #         'Tunnel65536': {
+                #             'label': ['16063', '16051'],
+                #             'tag_midchain_info': '7F9C9D301840',
+                #         },
+                #     },
+                #     'tag_adj': {
+                #             'GigabitEthernet0/1/7': {
+                #                 'addr': '10.19.198.29',
+                #                 'addr_info': '7F9C9D304A90',
+                #             },
+                #         },
+                # },
+                tag_adj_dict = output_chain_dict.get('tag_adj', {})
+
+            for intf in tag_adj_dict:
+                address = tag_adj_dict[intf].get('addr')
+                if address:
+                    log.info(
+                        "Found primary next hop address {address}".format(address=address))
+                    return address
+
+    log.info(
+        "Could not find any primary next hop information for prefix {prefix}".format(
             prefix=prefix
         )
     )

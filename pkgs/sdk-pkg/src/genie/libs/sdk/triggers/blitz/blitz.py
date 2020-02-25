@@ -10,9 +10,11 @@ from pyats.aetest.base import Source
 from pyats.aetest.parameters import ParameterDict
 
 from .actions import actions
-from .actions import device_parallel
 from .actions import action_parallel
 
+from .markup import get_variable
+from .markup import save_variable
+from .markup import filter_variable
 
 log = logging.getLogger()
 
@@ -44,7 +46,6 @@ class Blitz(Trigger):
         sections = []
         for component in self.parameters.get('test_sections', {}):
             for action, data in component.items():
-
                 # Attempt to find existing method with same name as action
                 method = aetest_methods.get(action)
                 if not method:
@@ -78,16 +79,18 @@ class Blitz(Trigger):
         return sections
 
     def dispatcher(self, steps, testbed, data):
+
+        ret_dict = {}
         if not data:
             log.info('Nothing to execute, ending section')
             return
-
+        
         for action_item in data:
-            if action_item == 'parallel':
-                action_parallel(self, steps, testbed, data['parallel'])
+            if 'parallel' in action_item:
+                action_parallel(self, steps, testbed, action_item['parallel'])
                 continue
             for action, kwargs in action_item.items():
-
+                
                 # See if action exists in actions
                 if not kwargs:
                     raise Exception('No data was provided for {a}'.format(a=action))
@@ -95,13 +98,15 @@ class Blitz(Trigger):
                     raise Exception("'{a} is not a valid "
                                     "action".format(a=action))
 
+
                 step_msg = "Starting action {a}".format(a=action)
                 if 'device' in kwargs:
-                    device = testbed.devices.get(kwargs['device'])
-                    if not device:
+                    try:
+                        device = testbed.devices[kwargs['device']]
+                    except KeyError:
                         raise Exception("Could not find the device '{d}' "
                                         "which was provided in the "
-                                        "action".format(d=device))
+                                        "action".format(d=kwargs['device']))
                     step_msg += ' on device {d}'.format(d=device.name)
 
                     # Provide device object
@@ -117,11 +122,28 @@ class Blitz(Trigger):
                     # The actions were not added as a bounded method
                     # so providing the self
                     kwargs['self'] = self
+                    save = kwargs.pop('save', None)
+                    save_variable_name = save.pop('variable_name') if save else None
+                    # Checking to replace variables and get those arguments
+                    kwargs = get_variable(**kwargs)
                     # Updating steps to be newly created step
                     kwargs['steps'] = step
-
                     # Call the action with all the arguments
-                    actions[action](**kwargs)
+                    output = actions[action](**kwargs)
+                    action_output = output[0]
+                    step_result = output[1]
+
+                    # Filtering the action output and saving the output
+                    output = filter_variable(self, action_output, save)
+                    # Saving the variable
+                    saved_var = save_variable(self, output,save_variable_name)
+
+                    if 'device' not in kwargs:
+                        ret_dict.update({'action': action , 'saved_var': saved_var, 'step_result':step_result, 'device': 'script'})
+                    else:
+                        ret_dict.update({'action': action , 'saved_var': saved_var, 'step_result':step_result, 'device': device.name})
+
+        return ret_dict
 
 @aetest.setup
 def setup_section(self, steps, testbed, data=None):
@@ -130,7 +152,7 @@ def setup_section(self, steps, testbed, data=None):
 @aetest.test
 def test_section(self, steps, testbed, data=None):
     return self.dispatcher(steps, testbed, data)
-
+    
 @aetest.cleanup
 def cleanup_section(self, steps, testbed, data=None):
     return self.dispatcher(steps, testbed,  data)

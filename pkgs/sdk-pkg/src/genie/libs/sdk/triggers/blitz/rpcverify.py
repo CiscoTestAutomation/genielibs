@@ -1,14 +1,9 @@
 #! /usr/bin/env python
 import re
-import traceback
 import logging
+from pyats.log.utils import banner
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
-
-try:
-    import lxml.etree as et
-except Exception:
-    log.error('Make sure you have lxml installed in your virtual env')
 
 
 class RpcVerify():
@@ -64,9 +59,16 @@ class RpcVerify():
           capabilities (list): List of NETCONF capabilities from device
                                (default, empty list)
         """
+        try:
+            import lxml.etree as et
+            self.et = et
+        except ImportError as e:
+            log.error(
+                banner('Make sure you have lxml installed in your virtual env')
+            )
+            raise(e)
         self.rpc_reply = rpc_reply
         self.rpc_verify = rpc_verify
-        self.log = log
         self.capabilities = capabilities
 
     @property
@@ -102,7 +104,7 @@ class RpcVerify():
                 self._with_defaults = cap[cap.find('=') + 1:].split(
                     '&also-supported='
                 )
-                self.log.info('WITH DEFAULTS SUPPORTED:{0}'.format(
+                log.info('WITH DEFAULTS SUPPORTED:{0}'.format(
                     self._with_defaults
                 ))
             elif ':candidate:' in cap:
@@ -132,11 +134,11 @@ class RpcVerify():
         result = {}
         expect_val = reply_val = None
 
-        if et.iselement(expect) and expect.text and expect.text.strip():
+        if self.et.iselement(expect) and expect.text and expect.text.strip():
             expect_val = expect.text.strip()
             result['expect_val'] = expect_val
 
-        if et.iselement(reply) and reply.text and reply.text.strip():
+        if self.et.iselement(reply) and reply.text and reply.text.strip():
             reply_val = reply.text.strip()
             result['reply_val'] = reply_val
 
@@ -239,13 +241,14 @@ class RpcVerify():
                         result = False
 
         if should_be_missing:
-            self.log.error(
+            log.error(
                 "{0} Following tags should be missing:\n\n{1}"
                 .format('OPERATIONAL-VERIFY FAILED:', should_be_missing)
             )
 
         return (result, expected, response)
 
+    @classmethod
     def check_opfield(self, value, field):
         """Reply value is logically evaluated according to user expectations.
 
@@ -281,7 +284,7 @@ class RpcVerify():
                 try:
                     value = float(value)
                 except ValueError:
-                    self.log.error(
+                    log.error(
                         'OPERATION VALUE {0}: {1} invalid for range {2}{3}'
                         .format(field['name'],
                                 value,
@@ -307,7 +310,7 @@ class RpcVerify():
                     r1 = float(r1)
                     r2 = float(r2)
                 except TypeError:
-                    self.log.error(
+                    log.error(
                         'OPERATION VALUE {0}: invalid range {1}{2}'
                         .format(field['name'],
                                 field['value'],
@@ -316,12 +319,12 @@ class RpcVerify():
                     return False
 
                 if value >= r1 and value <= r2:
-                    self.log.info(
+                    log.info(
                         'OPERATION VALUE {0}: {1} in range {2} SUCCESS'
                         .format(field['name'], value, field['value'])
                     )
                 else:
-                    self.log.error(
+                    log.error(
                         'OPERATION VALUE {0}: {1} out of range {2}{3}'
                         .format(field['name'],
                                 value,
@@ -335,7 +338,7 @@ class RpcVerify():
                     # the eval_text will show the issue
                     eval_text = '"' + value + '" ' + field['op']
                     eval_text += ' "' + field['value'] + '"'
-                    self.log.error(
+                    log.error(
                         'OPERATION VALUE {0}: {1} FAILED'.format(
                             field['name'], eval_text
                         )
@@ -354,21 +357,20 @@ class RpcVerify():
                         eval_text = '"' + value + '" ' + field['op']
                         eval_text += ' "' + field['value'] + '"'
                 if eval(eval_text):
-                    self.log.info(
+                    log.info(
                         'OPERATION VALUE {0}: {1} SUCCESS'.format(
                             field['name'], eval_text
                         )
                     )
                 else:
-                    self.log.error(
+                    log.error(
                         'OPERATION VALUE {0}: {1} FAILED'.format(
                             field['name'], eval_text
                         )
                     )
                     return False
         except Exception as e:
-            self.log.error(traceback.format_exc())
-            self.log.error(
+            log.error(
                 'OPERATION VALUE {0}: {1} {2} FAILED\n{3}'.format(
                     field['name'], value, eval_text, str(e)
                 )
@@ -389,7 +391,12 @@ class RpcVerify():
         result = True
 
         if not opfields:
-            self.log.error("OPERATIONAL STATE FAILED: No opfields")
+            log.error(banner("OPERATIONAL STATE FAILED: No opfields"))
+            return False
+        if not response:
+            log.error(
+                banner("OPERATIONAL STATE FAILED: No valid rpc-reply")
+            )
             return False
 
         for reply, reply_xpath in response:
@@ -400,7 +407,7 @@ class RpcVerify():
                     opfields.remove(field)
                     continue
                 if 'xpath' in field and field['xpath'] == reply_xpath and \
-                        et.QName(reply).localname == field['name']:
+                        self.et.QName(reply).localname == field['name']:
                     if not self.check_opfield(value, field):
                         result = False
                     opfields.remove(field)
@@ -415,7 +422,7 @@ class RpcVerify():
                 msg += opfield.get('xpath', '') + ' value: '
                 msg += opfield.get('value', '')
                 msg += '\n'
-            self.log.error(msg)
+            log.error(msg)
             result = False
 
         return result
@@ -456,7 +463,7 @@ class RpcVerify():
             for ns in reply.nsmap.values():
                 if ns != self.NETCONF_NAMESPACE and ns not in ns_set:
                     missing_ns_msg += 'Tag:{0} Namespace:{1}\n'.format(
-                        et.QName(expect.tag).localname, ns
+                        self.et.QName(expect.tag).localname, ns
                     )
                     result = False
 
@@ -475,7 +482,7 @@ class RpcVerify():
                         opfields.remove(field)
                         continue
                     if 'xpath' in field and reply_xpath == field['xpath'] and \
-                            et.QName(reply).localname == field['name']:
+                            self.et.QName(reply).localname == field['name']:
                         if not self.check_opfield(value_state['reply_val'],
                                                   field):
                             result = False
@@ -494,7 +501,7 @@ class RpcVerify():
 
             elif 'match' not in value_state:
                 wrong_values += 'Tag:{0} Value:{1} Expected:{2}\n'.format(
-                    et.QName(expect.tag).localname,
+                    self.et.QName(expect.tag).localname,
                     value_state.get('reply_val', 'None'),
                     value_state.get('expect_val', 'None')
                 )
@@ -503,19 +510,19 @@ class RpcVerify():
 
         if not result:
             if missing_tags:
-                self.log.error("{0} Following tags are missing:\n{1}".format(
+                log.error("{0} Following tags are missing:\n{1}".format(
                         'OPERATIONAL-VERIFY FAILED',
                         missing_tags
                     )
                 )
             if missing_ns_msg:
-                self.log.error("{0} Missing namespaces:\n{1}".format(
+                log.error("{0} Missing namespaces:\n{1}".format(
                         'OPERATIONAL-VERIFY FAILED',
                         missing_ns_msg
                     )
                 )
             if wrong_values:
-                self.log.error("{0} Wrong values:\n{1}".format(
+                log.error("{0} Wrong values:\n{1}".format(
                         'OPERATIONAL-VERIFY FAILED',
                         wrong_values
                     )
@@ -523,7 +530,7 @@ class RpcVerify():
         if len(response) and 'explicit' in self.with_defaults:
             result = False
             extra_tags = [el.tag for el, xpath in response]
-            self.log.error(
+            log.error(
                 "{0} Following tags are not expected in response:\n{1}".format(
                     'OPERATIONAL-VERIFY FAILED',
                     '\n'.join(extra_tags)
@@ -540,13 +547,13 @@ class RpcVerify():
         nodes = []
         if 'explicit' in self.with_defaults:
             # RFC 6243 - Only tags set by client sould be in reply
-            self.log.info('WITH DEFAULTS - EXPLICIT MODE')
+            log.info('WITH DEFAULTS - EXPLICIT MODE')
         elif 'report-all' in self.with_defaults:
             # RFC 6243 - if value is default it should match
-            self.log.info('WITH DEFAULTS - REPORT-ALL MODE')
+            log.info('WITH DEFAULTS - REPORT-ALL MODE')
         else:
             # RFC 6243 not supported
-            self.log.info('WITH DEFAULTS - NOT SUPPORTED')
+            log.info('WITH DEFAULTS - NOT SUPPORTED')
 
         for node in rpc_data.get('nodes', []):
             edit_op = node.get('edit-op')
@@ -583,7 +590,7 @@ class RpcVerify():
                  'op': '=='}
             )
         if not response and not nodes and edit_op in ['delete', 'remove']:
-            self.log.info('NO DATA RETURNED')
+            log.info('NO DATA RETURNED')
             return True
         return self.process_operational_state(response, nodes)
 
@@ -599,24 +606,25 @@ class RpcVerify():
         resp_xml = self._get_resp_xml(resp)
 
         if not resp_xml:
-            self.log.error(
-                "OPERATIONAL-VERIFY FAILED: No response to verify."
+            log.error(
+                banner("OPERATIONAL-VERIFY FAILED: No response to verify.")
             )
             return False
 
         try:
-            resp = et.fromstring(resp_xml.encode('utf-8'))
-        except et.XMLSyntaxError as e:
-            self.log.error('OPERATIONAL-VERIFY FAILED: Response XML:\n{0}'
-                           .format(str(e)))
-            log.error(traceback.format_exc())
+            resp = self.et.fromstring(resp_xml.encode('utf-8'))
+        except self.et.XMLSyntaxError as e:
+            log.error(
+                banner('OPERATIONAL-VERIFY FAILED: Response XML:\n{0}'
+                    .format(str(e)))
+            )
             return False
 
         # if first element of reply is not 'rpc-reply' this is a bad response
-        if et.QName(resp).localname != 'rpc-reply':
-            self.log.error(
-                "{0} Response missing rpc-reply:\nTag: {1}"
-                .format('OPERATIONAL-VERIFY FAILED:', resp[0])
+        if self.et.QName(resp).localname != 'rpc-reply':
+            log.error(
+                banner("{0} Response missing rpc-reply:\nTag: {1}"
+                .format('OPERATIONAL-VERIFY FAILED:', resp[0]))
             )
             return False
 
@@ -624,17 +632,17 @@ class RpcVerify():
         response = []
         xpath = []
         for el in resp.iter():
-            if et.QName(el).localname == 'rpc-reply':
+            if self.et.QName(el).localname == 'rpc-reply':
                 # Don't evaluate rpc-reply tag
                 continue
-            if not response and et.QName(el).localname == 'data':
+            if not response and self.et.QName(el).localname == 'data':
                 # Don't evaluate rpc-reply/data tag
                 continue
             parent = el.getparent()
-            xpath.append('/' + et.QName(el).localname)
+            xpath.append('/' + self.et.QName(el).localname)
             while True:
                 if parent is not None:
-                    xpath.append('/' + et.QName(parent).localname)
+                    xpath.append('/' + self.et.QName(parent).localname)
                     parent = parent.getparent()
                 else:
                     break
@@ -678,17 +686,17 @@ class RpcVerify():
         result = True
 
         if not opfields:
-            self.log.info('EXPECTED XML:\n{0}'.format(expect_xml))
+            log.info('EXPECTED XML:\n{0}'.format(expect_xml))
 
         if not opfields and not expect_xml:
-            self.log.error(
-                "OPERATIONAL-VERIFY FAILED: No XML for verification."
+            log.error(
+                banner("OPERATIONAL-VERIFY FAILED: No XML for verification.")
             )
             return False
 
         if not resp_xml:
-            self.log.error(
-                "OPERATIONAL-VERIFY FAILED: No response to verify."
+            log.error(
+                banner("OPERATIONAL-VERIFY FAILED: No response to verify.")
             )
             return False
 
@@ -702,11 +710,12 @@ class RpcVerify():
             oper_expected += line + "\n"
 
         try:
-            expect = et.fromstring(oper_expected)
-        except et.XMLSyntaxError as e:
-            self.log.error('OPERATIONAL-VERIFY FAILED: Expected XML:\n{0}'
-                           .format(str(e)))
-            log.error(traceback.format_exc())
+            expect = self.et.fromstring(oper_expected)
+        except self.et.XMLSyntaxError as e:
+            log.error(
+                banner('OPERATIONAL-VERIFY FAILED: Expected XML:\n{0}'
+                    .format(str(e)))
+            )
             return False
 
         response = self.process_rpc_reply(resp_xml)
@@ -718,17 +727,17 @@ class RpcVerify():
         xpath = []
         # Associate xpaths with expected tags
         for el in expect.iter():
-            if et.QName(el).localname == 'rpc-reply':
+            if self.et.QName(el).localname == 'rpc-reply':
                 # Don't evaluate rpc-reply tag
                 continue
-            if not expected and et.QName(el).localname == 'data':
+            if not expected and self.et.QName(el).localname == 'data':
                 # Don't evaluate rpc-reply/data tag
                 continue
-            xpath.append('/' + et.QName(el).localname)
+            xpath.append('/' + self.et.QName(el).localname)
             parent = el.getparent()
             while True:
                 if parent is not None:
-                    xpath.append('/' + et.QName(parent).localname)
+                    xpath.append('/' + self.et.QName(parent).localname)
                     parent = parent.getparent()
                 else:
                     break
@@ -759,20 +768,26 @@ class RpcVerify():
 
         if expected or opfields:
             if not response:
-                self.log.error(
-                    "OPERATIONAL-VERIFY FAILED: rpc-reply has no data."
+                log.error(
+                    banner("OPERATIONAL-VERIFY FAILED: rpc-reply has no data.")
                 )
                 return False
 
         if not expected and not opfields and not response:
-            self.log.error(
-                "OPERATIONAL-VERIFY SUCCESSFUL: Expected no data in rpc-reply."
+            log.error(
+                banner(
+                    "OPERATIONAL-VERIFY SUCCESSFUL: {0}.".format(
+                        'Expected no data in rpc-reply'
+                    )
+                )
             )
             return True
 
         if not expected and not opfields and response:
-            self.log.error(
-                "OPERATIONAL-VERIFY FAILED: Expected no data in rpc-reply."
+            log.error(
+                banner(
+                    "OPERATIONAL-VERIFY FAILED: Expected no data in rpc-reply."
+                )
             )
             return False
 
@@ -782,7 +797,7 @@ class RpcVerify():
             result = self.verify_reply(response, expected, opfields)
 
         if result:
-            self.log.info('OPERATIONAL-VERIFY SUCCESSFUL')
+            log.info('OPERATIONAL-VERIFY SUCCESSFUL')
         return result
 
 

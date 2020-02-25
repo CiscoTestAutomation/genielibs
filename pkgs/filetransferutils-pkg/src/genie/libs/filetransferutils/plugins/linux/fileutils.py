@@ -9,6 +9,7 @@ class FileUtils(FileUtilsDeviceBase):
         used_server = self.get_server(source, destination)
         username, _ = self.get_auth(used_server)
         ssh_protocol = {'scp', 'sftp'}
+        quiet = kwargs.get('quiet', False)
 
         # if protocol is scp or sftp
         # sftp only support download
@@ -22,9 +23,14 @@ class FileUtils(FileUtilsDeviceBase):
 
                 # still use scp if user provided sftp because sftp is interactive
                 # will change this if one day we can support sftp on linux
-                cmd = 'scp {s} {d}'.format(protocol=protocol,
-                                                  s=source.replace('{}://'.format(protocol), '').replace('//', ':/'),
-                                                  d=destination.replace('{}://'.format(protocol), '').replace('//', ':/'))
+                # if quiet is true it will hide the copy progress
+                cmd = 'scp {q}{s} {d}'.format(q='-q ' if quiet else '',
+                                              protocol=protocol,
+                                              s=source.replace('{}://'.format(protocol),
+                                                               '').replace('//', ':/'),
+                                              d=destination.replace(
+                                                  '{}://'.format(protocol),
+                                                  '').replace('//', ':/'))
                 break
 
         else:

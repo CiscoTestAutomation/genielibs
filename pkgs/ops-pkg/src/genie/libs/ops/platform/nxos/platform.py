@@ -237,10 +237,11 @@ class Platform(SuperPlatform):
                     else:
                         serial = None
                     
-        
                     if 'module' in self.__dict__:
                         for key in self.module['lc']:
                             for mod_name in self.module['lc'][key]:
+                                if 'serial_number' not in self.module['lc'][key][mod_name]:
+                                    continue
                                 if self.module['lc'][key][mod_name]['serial_number'] == serial:
                                     linecard_status = self.module['lc'][key][mod_name]['status']
                                     self.slot['lc'][item].update({'state':linecard_status})
@@ -251,6 +252,8 @@ class Platform(SuperPlatform):
 
                     if 'xbar' in self.__dict__:
                         for key in self.xbar:
+                            if 'serial_number' not in self.xbar[key]:
+                                continue
                             if self.xbar[key]['serial_number'] == serial:
                                 linecard_status = self.xbar[key]['status']
                                 self.slot.setdefault('oc',{}).setdefault(item,{}).update({'state':linecard_status})
@@ -263,11 +266,15 @@ class Platform(SuperPlatform):
                     if 'module' in self.__dict__:
                         for key in self.module['lc']:
                             for mod_name in self.module['lc'][key]:
+                                if 'serial_number' not in self.module['lc'][key][mod_name]:
+                                    continue
                                 if self.module['lc'][key][mod_name]['serial_number'] == serial:
                                     linecard_status = self.module['lc'][key][mod_name]['status']
                                     self.slot['oc'][item].update({'state':linecard_status})
                     if 'xbar' in self.__dict__:
                         for key in self.xbar:
+                            if 'serial_number' not in self.xbar[key]:
+                                continue
                             if self.xbar[key]['serial_number'] == serial:
                                 linecard_status = self.xbar[key]['status']
                                 self.slot['oc'][item].update({'state':linecard_status})                                

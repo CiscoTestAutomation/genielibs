@@ -185,7 +185,6 @@ def stack_ha_redundancy_state(device, timeout, platform_pts=None):
                 pass_flag = False
                 raise AssertionError('Redundancy status does not reach to "SSO"',
                     from_exception=e)
-                continue
             break
 
 def process_check(device):

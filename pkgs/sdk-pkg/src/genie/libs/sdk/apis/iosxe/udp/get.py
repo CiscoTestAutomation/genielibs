@@ -26,6 +26,7 @@ def analyze_udp_in_mpls_packets(
     """
     try:
         from scapy.all import load_contrib, UDP
+        from scapy.contrib.mpls import MPLS
     except ImportError:
         raise ImportError('scapy is not installed, please install it by running: '
                           'pip install scapy') from None

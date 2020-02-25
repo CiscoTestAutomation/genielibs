@@ -4,7 +4,7 @@ import re
 import logging
 from collections import OrderedDict
 from html import unescape
-from ats.log.utils import banner
+from pyats.log.utils import banner
 log = logging.getLogger(__name__)
 
 try:

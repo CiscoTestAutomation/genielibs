@@ -303,7 +303,7 @@ def configure_replace(self, testbed, steps, devices, timeout=60):
                 log.error('Missing file_location for device {}'.format(name))
                 continue
             lookup = Lookup.from_device(device)
-            lookup.sdk.libs.abstracted_libs.subsection.configure_replace(device, file_location, timeout=timeout)
+            lookup.sdk.libs.abstracted_libs.subsection.configure_replace(device, file_location, timeout=dev.get('timeout', timeout))
         except Exception as e:
             self.failed("Failed to replace config : {}".format(str(e)))
         log.info("Configure replace is done for device {}".format(name))

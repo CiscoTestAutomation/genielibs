@@ -426,7 +426,7 @@ def get_bgp_neighbors_advertised_routes(
         return {}
 
 
-def get_ip_bgp_route(device, address_family, route, vrf="", rd=""):
+def get_ip_bgp_route(device, address_family, route, vrf="", rd="", best_path=False):
     """Execute 'show ip bgp {address_family} vrf {vrf} {route}' and retrieve routes
 
         Args:
@@ -434,6 +434,7 @@ def get_ip_bgp_route(device, address_family, route, vrf="", rd=""):
             address_family ('str'): address family
             route ('str'): neighbor address to find routes
             vrf ('str'): vrf name
+            best_path (`bool`): only best path returned
         Returns:
             routes Dictionary
     """
@@ -457,12 +458,84 @@ def get_ip_bgp_route(device, address_family, route, vrf="", rd=""):
 
     try:
         routes = device.parse(cmd)
-    except SchemaEmptyParserError as e:
+    except SchemaEmptyParserError:
         log.info("Command has not returned any results")
         return {}
 
+    if best_path:
+        best_routes = {}
+        for instance in routes['instance']:
+            for vrf in routes['instance'][instance]['vrf']:
+                for af in routes['instance'][instance]['vrf'][vrf]\
+                    ['address_family']:
+                    for prefix in routes['instance'][instance]['vrf'][vrf]\
+                        ['address_family'][af]['prefixes']:
+                        for idx in routes['instance'][instance]['vrf'][vrf]\
+                            ['address_family'][af]['prefixes'][prefix]['index']:
+                            if '>' in routes['instance'][instance]['vrf'][vrf]\
+                                ['address_family'][af]['prefixes'][prefix]\
+                                ['index'][idx]['status_codes']:
+                                best_routes.setdefault('instance', {}).\
+                                    setdefault(instance, {}).\
+                                    setdefault('vrf', {}).\
+                                    setdefault(vrf, {}).\
+                                    setdefault('address_family', {}).\
+                                    setdefault(af, {}).\
+                                    setdefault('prefixes', {}).\
+                                    setdefault(prefix, {}).\
+                                    setdefault('index', {}).\
+                                    setdefault(idx, {})
+                                best_routes['instance'][instance]['vrf'][vrf]\
+                                    ['address_family'][af]['prefixes'][prefix]\
+                                    ['index'][idx].\
+                                    update(routes['instance'][instance]['vrf']\
+                                    [vrf]['address_family'][af]['prefixes']\
+                                    [prefix]['index'][idx])
+        return best_routes
+
     return routes
 
+def get_ip_bgp_route_nexthop_color(device, address_family, route, vrf="", rd="", best_path=False):
+    """Execute 'show ip bgp {address_family} vrf {vrf} {route}' and retrieve routes
+       return list of nexthop and color community
+
+        Args:
+            device ('obj'): Device object
+            address_family ('str'): address family
+            route ('str'): neighbor address to find routes
+            vrf ('str'): vrf name
+            best_path (`bool`): only best path returned
+        Returns:
+            list of nexthop and color community
+            ex.) [['192.168.1.1', '100'], ['192.168.2.2', '200']]
+    """
+
+    routes = get_ip_bgp_route(device, address_family, route, vrf, rd, best_path)
+
+    if routes:
+        ret_list = []
+        for instance in routes.get('instance', {}):
+            for vrf in routes['instance'].get(instance, {}).get('vrf', {}):
+                for af in routes['instance'][instance]['vrf'].get(vrf, {})\
+                    ['address_family']:
+                    for prefix in routes['instance'][instance]['vrf'][vrf]\
+                        .get('address_family', {}).get(af, {})\
+                        .get('prefixes', {}):
+                        for idx in routes['instance'][instance]['vrf'][vrf]\
+                            ['address_family'][af]['prefixes'].get(prefix, {})\
+                            .get('index', {}):
+                            keys = routes['instance'][instance]['vrf'][vrf]\
+                                ['address_family'][af]['prefixes'][prefix]\
+                                ['index'].get(idx, {})
+                            
+                            ext_comm = keys.get('ext_community', '').split()
+                            for comm in ext_comm:
+                                if 'Color:' in comm:
+                                    _, color = comm.split(':')
+                                    ret_list.append([keys['next_hop'], color])
+        return ret_list
+    else:
+        return []
 
 def get_routing_routes(device, address_family, vrf, route):
     """ Get advertised neighbors from route
@@ -1625,3 +1698,74 @@ def get_bgp_advertised_route_count(device, neighbor_address, route):
                                 "address_family"
                             ][af]["advertised"][route].get("index", {})
                         )
+
+
+def get_bgp_neighbors_from_running_config(device, address_family, vrf=None):
+    """ Returns a list of configured bgp neighbors from running-config
+
+        args:
+            device ('obj'): Device to use
+            address_family ('str'): Address family bgp neighbors are under
+            vrf ('str'): Vrf bgp neighbors are under
+
+        raises:
+            N/A
+
+        returns:
+            List
+    """
+    out = device.api.get_show_run_bgp_dict()
+    if not out:
+        return []
+
+    if vrf:
+        return out.get(address_family, {}).get(vrf, {}).get('neighbors', [])
+    else:
+        return out.get(address_family, {}).get('neighbors', [])
+
+def get_bgp_mpls_labels(device, route):
+    """ Returns BGP mpls labels
+
+        args:
+            device ('obj'): Device to use
+            route ('str'): Route to check mpls label
+
+        raises:
+            N/A
+
+        returns:
+            str
+    """
+
+    reqs = R(
+        [
+            'instance',
+            '(?P<instance>.*)',
+            'vrf',
+            '(?P<vrf>.*)',
+            'address_family',
+            '(?P<a_f>.*)',
+            'prefixes',
+            route,
+            'index',
+            '(?P<index>.*)',
+            'mpls_labels',
+            '(?P<mpls_labels>.*)'
+        ]
+    )
+
+    out = None
+    try:
+        out = device.parse('show ip bgp {}'.format(route))
+    except SchemaEmptyParserError:
+        out = None
+    if not out:
+        log.info('Could not get information about show ip bgp {}'.format(route))
+        return None   
+    found = find([out], reqs, filter_=False)
+    if found:
+        keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={}, 
+                                        source=found)
+        return keys.pop()['mpls_labels']
+    return None
+    

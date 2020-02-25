@@ -48,18 +48,24 @@ def get_mpls_outgoing_label(device, label):
         return None
 
 
-def get_mpls_label_stack(device, label):
+def get_mpls_label_stack(device, label=None, prefix=None):
     """ Get mpls Label Stack
         using 'show mpls forwarding-table labels {label} detail'
 
         Args:
             device ('obj'): Device object
             label ('str'): Local label
+            prefix ('str'): Prefix value
         Returns:
             stack ('list'): Label stack
     """
     stack = []
-    cmd = 'show mpls forwarding-table labels {label} detail'.format(label=label)
+    if label:
+        cmd = 'show mpls forwarding-table labels {label} detail'.format(label=label)
+    elif prefix:
+        cmd = 'show mpls forwarding-table {prefix} detail'.format(prefix=prefix)
+    else:
+        cmd = 'show mpls forwarding-table detail'
     try:
         out = device.parse(cmd)
     except Exception as e:

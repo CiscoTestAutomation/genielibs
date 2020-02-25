@@ -165,7 +165,6 @@ class Ntp(SuperNtp):
 							else:
 								# Not the last iteration and the peer address is not yet found
 								continue
-								self.set_defaults(peer, vrf)
 						else:
 							# peer was found under one of the vrfs
 							found = True

@@ -264,11 +264,12 @@ def get_routing_repair_path_information(device, route):
     log.info("Could not find any information about repair path")
     return None, None
 
-def get_routing_mpls_label(device, prefix, output=None):
+def get_routing_mpls_label(device, prefix, vrf='', output=None):
     ''' Get registered MPLS label to prefix 
         Args:
             device ('obj'): Device object
             prefix ('str'): Prefix address
+            vrf (`vrf`): VRF name
             output ('dict'): Optional. Parsed output of command 'show ip route {prefix}'
         Returns:
             int: registered MPLS label
@@ -281,13 +282,16 @@ def get_routing_mpls_label(device, prefix, output=None):
 
     if not output:
         try:
-            output = device.parse('show ip route {prefix}'.format(prefix=prefix))
+            if vrf:
+                output = device.parse('show ip route vrf {vrf} {prefix}'.format(vrf=vrf,prefix=prefix))
+            else:
+                output = device.parse('show ip route {prefix}'.format(prefix=prefix))
         except SchemaEmptyParserError:
             log.info('Could not find any MPLS label to prefix '
                      'address {prefix}'.format(prefix=prefix))
 
     for entry in output['entry']:
-        if prefix in entry:
+        for prefix in entry:
             for path in output['entry'][entry].get('paths', {}):
                 label = output['entry'][entry]['paths'][path].get('mpls_label', None)
                 if label:

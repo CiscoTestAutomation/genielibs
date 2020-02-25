@@ -270,7 +270,6 @@ def verify_interface_state_up(
             result(`bool`): True if is up else False
     """
     timeout = Timeout(max_time, check_interval)
-
     while timeout.iterate():
         out = device.parse("show interfaces {}".format(interface))
         oper_status = out[interface]["oper_status"]

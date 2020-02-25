@@ -311,12 +311,13 @@ def get_interface_qlimit_bytes(device, interface):
         return
 
 
-def get_interface_ip_address(device, interface):
+def get_interface_ip_address(device, interface, address_family=None):
     """ Get interface ip_address from device
 
         Args:
             interface('str'): Interface to get address
             device ('obj'): Device object
+            address_family ('str'): Used only for junos api
 
         Returns:
             None

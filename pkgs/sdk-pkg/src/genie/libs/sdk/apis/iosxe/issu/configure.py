@@ -7,7 +7,7 @@ from os.path import basename
 from genie.harness.utils import connect_device
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
-# PyATS
+# pyATS
 from pyats.utils.fileutils import FileUtils
 from pyats.aetest.steps import Steps
 
@@ -112,7 +112,7 @@ def copy_issu_image_to_disk(device, disk, path, address, image,
         )
 
 
-def perform_issu(device, image, disk, timeout=1200, steps=Steps()):
+def perform_issu(device, image, disk, timeout=1200, reconnect_via=None, steps=Steps()):
     """ Execute ISSU on device
         Args:
             device ('obj'): Device object
@@ -164,7 +164,7 @@ def perform_issu(device, image, disk, timeout=1200, steps=Steps()):
 
         # Run version
         try:
-            issu_runversion(device=device, timeout=timeout)
+            issu_runversion(device=device, timeout=timeout, reconnect_via=reconnect_via)
         except (Exception, ConnectionError) as e:
             step.failed(e)
 
@@ -260,7 +260,7 @@ def issu_loadversion(device, standby_slot, disk, image, timeout=1200):
         raise Exception("Unable to execute 'issu loadversion'")
 
 
-def issu_runversion(device, timeout=300):
+def issu_runversion(device, timeout=300, reconnect_via=None):
     """ Execute issu runversion on device
         Args:
             device ('obj'): Device object
@@ -276,11 +276,11 @@ def issu_runversion(device, timeout=300):
     except SubCommandFailure:
         # Timeout Unicon SubCommandFailure expected
         # Wait a bit as the device is booting with the ISSU upgrade image
-        time.sleep(timeout)
+        pass
 
     log.info("Reconnecting device")
     try:
-        reconnect_device(device=device, max_time=timeout)
+        reconnect_device(device=device, max_time=timeout, via=reconnect_via)
     except Exception as e:
         log.error("Failed to reconnect to device {dev}")
         raise ConnectionError(

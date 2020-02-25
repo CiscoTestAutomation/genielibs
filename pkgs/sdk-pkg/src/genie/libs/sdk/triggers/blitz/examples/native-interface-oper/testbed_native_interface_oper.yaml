@@ -1,0 +1,30 @@
+testbed:
+    name: yangtest
+    custom:
+        variables: {} # Add device related varibles here.
+
+devices:
+    # WARNING: device name must match configured hostname
+    CSR1K-6:
+        type: csr
+        os: iosxe
+        alias: uut
+        connections:
+            cli:
+                class: unicon.Unicon
+                protocol: ssh
+                ip: 172.27.248.6
+                port: 22
+                username: admin
+                password: DMIdmi1
+            yang:
+                class: yang.connector.Netconf
+                protocol: netconf
+                host: 172.27.248.6
+                port: 830
+                user: admin
+                password: DMIdmi1
+                # set all these to False if you have SSH key issues
+                hostkey_verify: False
+                look_for_keys: True
+                allow_agent: True         

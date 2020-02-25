@@ -1,0 +1,6 @@
+devices:
+    # WARNING: device name must match configured hostname
+    CSR1K-6:
+        mapping:
+            cli: cli
+            yang: yang

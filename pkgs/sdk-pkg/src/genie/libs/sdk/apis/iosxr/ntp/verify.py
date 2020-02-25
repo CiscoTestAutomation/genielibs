@@ -20,9 +20,9 @@ def verify_smallest_stratum_ntp_system_peer(device, max_time=90, check_interval=
         Args:
             device (`obj`): Device object
             max_time (int): Maximum wait time for the trigger,
-                            in second. Default: 90
+                            in seconds. Default: 90
             check_interval (int): Wait time between iterations when looping is needed,
-                            in second. Default: 15
+                            in seconds. Default: 15
         Returns:
             result (`bool`): Verified result
             sys_peer (`str`): System peer ip
@@ -77,9 +77,9 @@ def is_ntp_clock_synchronized(
             device (`obj`): Device object
             ip_address_peer (`str`): peer ip address
             max_time (int): Maximum wait time for the trigger,
-                            in second. Default: 60
+                            in seconds. Default: 60
             check_interval (int): Wait time between iterations when looping is needed,
-                            in second. Default: 5
+                            in seconds. Default: 5
         Returns:
             result (`bool`): Verified result
     """
@@ -151,9 +151,9 @@ def verify_ntp_time(device, target, max_time=90, check_interval=15):
             device (`obj`): Device object
             target (`obj`): Device object
             max_time (int): Maximum wait time for the trigger,
-                            in second. Default: 90
+                            in seconds. Default: 90
             check_interval (int): Wait time between iterations when looping is needed,
-                            in second. Default: 15
+                            in seconds. Default: 15
         Returns:
             result (`bool`): Verified result
     """
@@ -199,9 +199,9 @@ def verify_ntp_association_with_server(
             peer_mode (`str`): peer mode type
             max_stratum (`int`): maximum stratum value
             max_time (int): Maximum wait time for the trigger,
-                            in second. Default: 15
+                            in seconds. Default: 15
             check_interval (int): Wait time between iterations when looping is needed,
-                            in second. Default: 5
+                            in seconds. Default: 5
         Returns:
             True
             False
@@ -244,30 +244,44 @@ def verify_ntp_association_with_server(
     return result
 
 
-def verify_synced_ntp_server(device, ip_address):
+def verify_synced_ntp_server(device, ip_address, max_time=1200,
+        check_interval=30):
     """ Verify synched NTP server
 
         Args:
             device (`obj`): Device object
-            ip_address (`str`): Server peer IP address
+            ip_address (`list`): list of Server peer IP address
+            max_time (int): Maximum wait time for the trigger,
+                            in seconds. Default: 1200
+            check_interval (int): Wait time between iterations when looping is needed,
+                            in seconds. Default: 30
         Returns:
             peer_dict (`dict`): Peer dictionary
     """
 
-    out = device.parse("show ntp associations")
-
-    for ip in ip_address:
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
         try:
-            if (
-                out.get("peer").get(ip).get("local_mode").get("client").get("mode")
-                != "synchronized"
-            ):
-                log.warning("IP {} is not yet synchronized".format(ip))
-                return False
-        except Exception as e:
-            log.error("{}".format(e))
+            out = device.parse("show ntp associations")
+        except SchemaEmptyParserError:
+            log.error('No NTP server found')
+            return False
+        for ip in ip_address:
+            try:
+                if (
+                    out.get("peer").get(ip).get("local_mode").get("client").get("mode")
+                    == "synchronized"
+                ):
+                    log.info("IP {} is synchronized".format(ip))
+                    # will sync with only one NTP server. so, check only one
+                    return True
+                else:
+                    log.warning("IP {} is not yet synchronized".format(ip))
+            except Exception as e:
+                log.error("{}".format(e))
+        timeout.sleep()
 
-    return True
+    return False
 
 
 def verify_no_ntp_association_configuration(device):

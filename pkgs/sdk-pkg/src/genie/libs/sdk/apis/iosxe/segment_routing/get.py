@@ -19,7 +19,8 @@ from genie.libs.sdk.apis.iosxe.running_config.get import (
 log = logging.getLogger(__name__)
 
 
-def get_segment_routing_policy_active_path_hop_labels(device, policy, policy_dict=None):
+def get_segment_routing_policy_active_path_hop_labels(device, policy,
+        policy_dict=None, ignore_first_label=False):
     """ Find a segement-routing policy in expected state
 
         Args:
@@ -28,6 +29,7 @@ def get_segment_routing_policy_active_path_hop_labels(device, policy, policy_dic
             policy_dict ('dict'): Policy dict from parser output
                 IOSXE Parser - ShowSegmentRoutingTrafficEngPolicy
                 cmd - show segment-routing traffic-eng policy all
+            ignore_first_label (`bool`): flag to ignore first label
         Returns:
             labels ('list'): Hop labels
     """
@@ -43,7 +45,7 @@ def get_segment_routing_policy_active_path_hop_labels(device, policy, policy_dic
         out = policy_dict
 
     # Check explicit path
-    reqs = R([policy,'candidate_paths',
+    reqs = R(['(.*{}.*)'.format(policy),'candidate_paths',
               'preference','(?P<preference>.*)',
               'path_type','explicit',
               '(?P<category>.*)','(?P<name>.*)',
@@ -57,7 +59,7 @@ def get_segment_routing_policy_active_path_hop_labels(device, policy, policy_dic
             if item['status'] == 'active':
                 path_index = item['preference']
 
-                reqs2 = R([policy,'candidate_paths',
+                reqs2 = R(['(.*{}.*)'.format(policy),'candidate_paths',
                           'preference',path_index,
                           'path_type','explicit',
                           '(?P<category>.*)','(?P<name>.*)',
@@ -67,12 +69,14 @@ def get_segment_routing_policy_active_path_hop_labels(device, policy, policy_dic
                     hop = hops[0][0]
                     for value in hop.values():
                         sid = value.get('sid', '')
-                        labels.append(sid)
+                        labels.append(str(sid))
 
+                    if ignore_first_label and len(labels):
+                        labels.pop(0)
                     return labels
 
     # Check dynamic path if no active path in explicit path
-    reqs = R([policy,'candidate_paths',
+    reqs = R(['(.*{}.*)'.format(policy),'candidate_paths',
               'preference','(?P<preference>.*)',
               'path_type','dynamic',
               'status','(?P<status>.*)'])
@@ -85,7 +89,7 @@ def get_segment_routing_policy_active_path_hop_labels(device, policy, policy_dic
             if item['status'] == 'active':
                 path_index = item['preference']
 
-                reqs2 = R([policy,'candidate_paths',
+                reqs2 = R(['(.*{}.*)'.format(policy),'candidate_paths',
                           'preference',path_index,
                           'path_type','dynamic',
                           'hops','(?P<hops>.*)'])
@@ -94,18 +98,23 @@ def get_segment_routing_policy_active_path_hop_labels(device, policy, policy_dic
                     hop = hops[0][0]
                     for value in hop.values():
                         sid = value.get('sid', '')
-                        labels.append(sid)
+                        labels.append(str(sid))
 
+    if ignore_first_label and len(labels):
+        labels.pop(0)
     return labels
 
 
-def get_segment_routing_policy_in_state(device, expected_admin='up', expected_oper='up'):
+def get_segment_routing_policy_in_state(device, expected_admin='up', expected_oper='up',\
+        expected_color='', expected_endpoint=''):
     """ Find a segement-routing policy in expected state
 
         Args:
             device ('obj'): Device object
             expected_admin ('str'): Expected admin state
             expected_oper ('str'): Expected operational state
+            expected_color (`str`): Expected color
+            expected_endpoint (`str`): Expected end-point address
         Returns:
             policy ('str'): Policy name
     """
@@ -120,9 +129,13 @@ def get_segment_routing_policy_in_state(device, expected_admin='up', expected_op
         admin = out.get(policy, {}).get('status', {}).get('admin', '')
         oper = out.get(policy, {}).get('status', {}).\
                    get('operational', {}).get('state', '')
+        color = str(out.get(policy, {}).get('color', ''))
+        endpoint = out.get(policy, {}).get('end_point', '')
 
         if (admin.lower() == expected_admin.lower() and 
-            oper.lower() == expected_oper.lower()):
+            oper.lower() == expected_oper.lower() and 
+            color == expected_color and 
+            endpoint == expected_endpoint):
             return policy
     else:
         log.info("Failed to find a policy with admin state {admin} "
@@ -245,3 +258,46 @@ def get_segment_routing_accumulated_path_metric(device, preference, policy_name=
                     return accumulated_metric
     return None
 
+def get_segment_routing_labels_from_bgp(device, route, vrf, best_path=False):
+    """ Gets segement-routing labels from bgp table
+
+        Args:
+            device (`obj`): device to use
+            route (`str`): route to check
+            vrf (`vrf`): VRF name
+            best_path (`bool`): only best path returned
+
+        Returns:
+            ('list'): list of segment routing labels
+
+        Raises:
+            N/A
+    """
+
+    # search destination's endpoint and color by 
+    #               show ip bgp vpnv4 vrf <vrf> <destination address>
+
+    endpoint_color_list = device.api.get_ip_bgp_route_nexthop_color(
+        address_family='vpnv4', route=route, vrf=vrf, best_path=True)
+    
+    # get policy names based on endpoint and color
+    policy_list = []
+    label_list = []
+    if endpoint_color_list:
+        log.info('Found endpoint and color: {}'.format(
+            endpoint_color_list))
+        for endpoint, color in endpoint_color_list:
+            policy = device.api.get_segment_routing_policy_in_state(
+                expected_admin='up', expected_oper='up',
+                expected_color=color, expected_endpoint=endpoint)
+            # don't have redundant policy
+            if policy not in policy_list:
+                policy_list.append(policy)
+    if policy_list:
+        log.info('Policy Found: {}'.format(policy_list))
+        for policy in policy_list:
+            label_list = device.api.\
+                get_segment_routing_policy_active_path_hop_labels(
+                    policy=policy, ignore_first_label=True)
+
+    return label_list
