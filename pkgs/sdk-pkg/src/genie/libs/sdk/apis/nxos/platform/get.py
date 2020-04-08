@@ -46,9 +46,10 @@ def get_running_image(device):
         kickstart = out.get('platform').get('software').get('kickstart_image_file', None)
         system = out.get('platform').get('software').get('system_image_file')
         if kickstart:
-            return [kickstart.split('/')[-1], system.split('/')[-1]]
+            return [kickstart.replace('///', '/'), system.replace('///', '/')]
         else:
-            return [system.split('/')[-1]]
+            return [system.replace('///', '/')]
+
     except SchemaEmptyParserError as e:
         log.error("Command 'show version' did not return any results")
     return None

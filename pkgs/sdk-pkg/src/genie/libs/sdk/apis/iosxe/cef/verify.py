@@ -6,7 +6,8 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.sdk.libs.utils.normalize import GroupKeys
 
 # pyATS
-from ats.utils.objects import find, R
+from pyats.utils.objects import find, R
+
 
 # CEF
 from genie.libs.sdk.apis.iosxe.cef.get import get_cef_repair_path_of_route

@@ -1,4 +1,4 @@
-extends: '%ENV{VIRTUAL_ENV}/genie_yamls/trigger_datafile.yaml'
+extends: "%ENV{VIRTUAL_ENV}/genie_yamls/trigger_datafile.yaml"
 
 #===============================================================================
 #                                PROCESSORS
@@ -19,1539 +19,1536 @@ global_processors:
 #===============================================================================
 
 TriggerSleep:
-    groups: ['sleep']
-    sleep_time: 5
-    message_time: 1
-    count: 1
-    devices: ['uut']
+  groups: ["sleep"]
+  sleep_time: 5
+  message_time: 1
+  count: 1
+  devices: ["uut"]
 
 TriggerProfileSystem:
-    groups: ['profile']
-    timeout:
-       max_time: 300
-       interval: 15
-    features: ['platform', 'interface']
-    devices: ['uut']
-    # golden_file: <golden pts file to compare with, if not provided, no comparison>
-    # location: <Location to save the learnt features pts at, default runtime directory>
+  groups: ["profile"]
+  timeout:
+    max_time: 300
+    interval: 15
+  features: ["platform", "interface"]
+  devices: ["uut"]
+  # golden_file: <golden pts file to compare with, if not provided, no comparison>
+  # location: <Location to save the learnt features pts at, default runtime directory>
 
 #===============================================================================
 #                                CLEAR
 #===============================================================================
 
 TriggerClearMsdpPeer:
-    groups: ['clear', 'msdp', 'L3']
-    timeout:
-       max_time: 300
-       interval: 15
-    devices: ['uut']
+  groups: ["clear", "msdp", "L3"]
+  timeout:
+    max_time: 300
+    interval: 15
+  devices: ["uut"]
 
 TriggerClearMsdpStatistics:
-    groups: ['clear', 'msdp', 'L3']
-    timeout:
-       max_time: 300
-       interval: 15
-    devices: ['uut']
+  groups: ["clear", "msdp", "L3"]
+  timeout:
+    max_time: 300
+    interval: 15
+  devices: ["uut"]
 
 TriggerClearMsdpPolicyStatisticsSaPolicyIn:
-    groups: ['clear', 'msdp', 'L3']
-    timeout:
-       max_time: 300
-       interval: 15
-    devices: ['uut']
+  groups: ["clear", "msdp", "L3"]
+  timeout:
+    max_time: 300
+    interval: 15
+  devices: ["uut"]
 
 TriggerClearMsdpPolicyStatisticsSaPolicyOut:
-    groups: ['clear', 'msdp', 'L3']
-    timeout:
-       max_time: 300
-       interval: 15
-    devices: ['uut']
+  groups: ["clear", "msdp", "L3"]
+  timeout:
+    max_time: 300
+    interval: 15
+  devices: ["uut"]
 
 TriggerClearMsdpSaCache:
-    groups: ['clear', 'msdp', 'L3']
-    timeout:
-       max_time: 300
-       interval: 15
-    devices: ['uut']
+  groups: ["clear", "msdp", "L3"]
+  timeout:
+    max_time: 300
+    interval: 15
+  devices: ["uut"]
 
 TriggerClearMsdpRoute:
-    groups: ['clear', 'msdp', 'L3']
-    timeout:
-       max_time: 120
-       interval: 15
-    devices: ['uut']
+  groups: ["clear", "msdp", "L3"]
+  timeout:
+    max_time: 120
+    interval: 15
+  devices: ["uut"]
 
 TriggerClearBgpAll:
-    groups: ['clear', 'bgp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["clear", "bgp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearIpBgpSoft:
-    groups: ['clear', 'bgp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["clear", "bgp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearBgpNeighbor:
-    groups: ['clear', 'bgp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["clear", "bgp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearBgpNeighborIpv4:
-    groups: ['clear', 'bgp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["clear", "bgp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearBgpNeighborIpv6:
-    groups: ['clear', 'bgp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["clear", "bgp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearBgpNeighborSoft:
-    groups: ['clear', 'bgp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["clear", "bgp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearBgpNeighborSoftIpv4:
-    groups: ['clear', 'bgp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["clear", "bgp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearBgpNeighborSoftIpv6:
-    groups: ['clear', 'bgp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["clear", "bgp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearIpRouteCheckBgp:
-    groups: ['clear', 'bgp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["clear", "bgp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearCountersInterfaceAll:
-    groups: ['clear', 'interface', 'L3']
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["clear", "interface", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearIpRouteVrfAll:
-    groups: ['clear', 'routing', 'L3']
-    method: 'checkpoint'
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "routing", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearIpv6RouteVrfAll:
-    groups: ['clear', 'routing', 'L3']
-    method: 'checkpoint'
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "routing", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearBgpVpnv4UnicastVrfAll:
-    groups: ['clear', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearBgpVpnv6UnicastVrfAll:
-    groups: ['clear', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearIpBgpVrfAll:
-    groups: ['clear', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearIpOspfNeighborVrfAll:
-    groups: ['clear', 'ospf', 'L3']
-    method: 'checkpoint'
-    timeout:
-       max_time: 180
-       interval: 10
-    timeout_recovery:
-      max_time: 600
-      interval: 15
-    devices: ['uut']
+  groups: ["clear", "ospf", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  timeout_recovery:
+    max_time: 600
+    interval: 15
+  devices: ["uut"]
 
 TriggerRestartBgp:
-    groups: ['clear', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerRestartOspf:
-    groups: ['clear', 'ospf', 'L3']
-    method: 'checkpoint'
-    timeout:
-       max_time: 180
-       interval: 10
-    timeout_recovery:
-      max_time: 600
-      interval: 15
-    devices: ['uut']
+  groups: ["clear", "ospf", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  timeout_recovery:
+    max_time: 600
+    interval: 15
+  devices: ["uut"]
 
 TriggerClearIpRoute:
-    groups: ['clear', 'routing', 'L3']
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "routing", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearIpv6Route:
-    groups: ['clear', 'routing', 'L3']
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "routing", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearIpRouting:
-    groups: ['clear', 'routing', 'L3']
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "routing", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearRouting:
-    groups: ['clear', 'routing', 'L3']
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "routing", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearIpMroute:
-    groups: ['clear', 'routing', 'L3']
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "routing", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearIpv6Mroute:
-    groups: ['clear', 'routing', 'L3']
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "routing", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearIpMrouteVrfAll:
-    groups: ['clear', 'routing', 'L3']
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "routing", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearIpv6MrouteVrfAll:
-    groups: ['clear', 'routing', 'L3']
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "routing", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearIpv6Routing:
-    groups: ['clear', 'routing', 'L3']
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "routing", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearRoutingUnicast:
-    groups: ['clear', 'routing', 'L3']
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "routing", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearIpRoutingUnicast:
-    groups: ['clear', 'routing', 'L3']
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "routing", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearIpv6RoutingUnicast:
-    groups: ['clear', 'routing', 'L3']
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "routing", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearIpRoutingMulticast:
-    groups: ['clear', 'routing', 'L3']
-    timeout:
-       max_time: 280
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "routing", "L3"]
+  timeout:
+    max_time: 280
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearRoutingMulticast:
-    groups: ['clear', 'routing', 'L3']
-    timeout:
-       max_time: 280
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "routing", "L3"]
+  timeout:
+    max_time: 280
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearV4RouteMulticast:
-    groups: ['clear', 'routing', 'L3']
-    timeout:
-       max_time: 280
-       interval: 10
-    devices: ['uut']
+  groups: ["clear", "routing", "L3"]
+  timeout:
+    max_time: 280
+    interval: 10
+  devices: ["uut"]
 
 TriggerClearV6RouteMulticast:
-    groups: ['clear', 'routing', 'L3']
-    timeout:
-       max_time: 280
-       interval: 10
-    devices: ['uut']
-
+  groups: ["clear", "routing", "L3"]
+  timeout:
+    max_time: 280
+    interval: 10
+  devices: ["uut"]
 
 #===============================================================================
 #                                DISABLE-ENABLE
 #===============================================================================
 
 TriggerDisableEnableBgp:
-    groups: ['disable-enable', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["disable-enable", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerDisableEnableBgpWithCR:
-    groups: ['disable-enable', 'bgp', 'L3']
-    method: 'config_replace'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["disable-enable", "bgp", "L3"]
+  method: "config_replace"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerDisableEnableHsrp:
-    groups: ['disable-enable', 'hsrp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 1800
-      interval: 10
-    devices: ['uut']
+  groups: ["disable-enable", "hsrp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 1800
+    interval: 10
+  devices: ["uut"]
 
 TriggerDisableEnablePim:
-    groups: ['disable-enable', 'mcast', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["disable-enable", "mcast", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerDisableEnablePim6:
-    groups: ['disable-enable', 'mcast', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["disable-enable", "mcast", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerDisableEnableVlanInterface:
-    groups: ['disable-enable', 'Vlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["disable-enable", "Vlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerDisableEnableVnSegmentVlan:
-    groups: ['disable-enable', 'Vlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
-
+  groups: ["disable-enable", "Vlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 #===============================================================================
 #                                 MODIFY
 #===============================================================================
 TriggerModifyEvpnMsiteBgwDelayRestoreTime:
-    groups: ['modify', 'vxlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["modify", "vxlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerModifyNveVniMcastGroup:
-    groups: ['modify', 'vxlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 10
-    timeout_recovery:
-        max_time: 400
-        interval: 20
-    devices: ['uut']
+  groups: ["modify", "vxlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 10
+  timeout_recovery:
+    max_time: 400
+    interval: 20
+  devices: ["uut"]
 
 TriggerModifyBgpNeighborAsn:
-    groups: ['modify', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["modify", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerModifyBgpNeighborCluster:
-    groups: ['modify', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["modify", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerModifyHsrpIpv4StateActiveToStandby:
-    groups: ['modify', 'hsrp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["modify", "hsrp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerModifyHsrpIpv6StateActiveToStandby:
-    groups: ['modify', 'hsrp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["modify", "hsrp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerModifyBgpNeighborRoutemapIn:
-    groups: ['modify', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["modify", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerModifyBgpNeighborRoutemapOut:
-    groups: ['modify', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["modify", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerModifySwitchportModeTrunkToAccess:
-    groups: ['modify', 'interface', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 400
-      interval: 15
-    devices: ['uut']
+  groups: ["modify", "interface", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 400
+    interval: 15
+  devices: ["uut"]
 
 TriggerModifyVlanMtu:
-    groups: ['modify', 'Vlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["modify", "Vlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerModifyEthernetMtu:
-    groups: ['modify', 'interface', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["modify", "interface", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerModifyLoopbackInterfaceIp:
-    groups: ['modify', 'interface', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["modify", "interface", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerModifySviInterfaceIp:
-    groups: ['modify', 'interface', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
-       
+  groups: ["modify", "interface", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
+
 TriggerModifyLoopbackInterfaceIpv6:
-    groups: ['modify', 'interface', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["modify", "interface", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerModifyBgpKeepaliveHoldtime:
-    groups: ['modify', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["modify", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerModifyBgpKeepAliveInterval:
-    groups: ['modify', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["modify", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerModifyBgpGracefulRestartRestartTime:
-    groups: ['modify', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["modify", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerModifyBgpGracefulRestartStalePathTime:
-    groups: ['modify', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["modify", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerModifyBgpNeighborKeepAliveInterval:
-    groups: ['modify', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["modify", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerModifyBgpNeighborEbgpMultihop:
-    groups: ['modify', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["modify", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerModifyBgpNeighborUpdateSource:
-    groups: ['modify', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["modify", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerModifyBgpNeighborMaximumPrefix:
-    groups: ['modify', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["modify", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerModifyBgpNeighborPassword:
-    groups: ['modify', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["modify", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerModifyNveMultisiteBgwInterface:
-    groups: ['modify', 'L3']
-    method: 'checkpoint'
-    timeout:
-       max_time: 180
-       interval: 10
-    timeout_recovery:
-      max_time: 300
-      interval: 20
-    devices: ['uut']
+  groups: ["modify", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  timeout_recovery:
+    max_time: 300
+    interval: 20
+  devices: ["uut"]
 
 TriggerModifyVlanVnsegment:
-    groups: ['modify', 'vlan', 'vxlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["modify", "vlan", "vxlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerModifyBgpVpnRd:
-    groups: ['modify', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 30
-    devices: ['uut']
-      
+  groups: ["modify", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 30
+  devices: ["uut"]
+
 TriggerModifyMsdpOriginatorId:
-    groups: ['modify', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 30
-    devices: ['uut']
-      
+  groups: ["modify", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 30
+  devices: ["uut"]
+
 TriggerModifyMsdpSaFilterIn:
-    groups: ['modify', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 30
-    devices: ['uut']
-      
+  groups: ["modify", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 30
+  devices: ["uut"]
+
 TriggerModifyMsdpSaFilterOut:
-    groups: ['modify', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 30
-    devices: ['uut']
-      
+  groups: ["modify", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 30
+  devices: ["uut"]
+
 TriggerModifyMsdpSaLimit:
-    groups: ['modify', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 30
-    devices: ['uut']
-      
+  groups: ["modify", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 30
+  devices: ["uut"]
+
 TriggerModifyMsdpMeshGroup:
-    groups: ['modify', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 30
-    devices: ['uut']
-      
+  groups: ["modify", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 30
+  devices: ["uut"]
+
 TriggerModifyMsdpKeepaliveHoldtime:
-    groups: ['modify', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 30
-    devices: ['uut']
-      
+  groups: ["modify", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 30
+  devices: ["uut"]
+
 TriggerModifyMsdpReconnectInterval:
-    groups: ['modify', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 30
-    devices: ['uut']
-      
+  groups: ["modify", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 30
+  devices: ["uut"]
+
 TriggerModifyMsdpDescription:
-    groups: ['modify', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 30
-    devices: ['uut']
-      
+  groups: ["modify", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 30
+  devices: ["uut"]
+
 TriggerModifyMsdpPeerConnectedSource:
-    groups: ['modify', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 30
-    devices: ['uut']
-      
+  groups: ["modify", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 30
+  devices: ["uut"]
+
 TriggerModifyMsdpPeerAs:
-    groups: ['modify', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 30
-    devices: ['uut']
-      
+  groups: ["modify", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 30
+  devices: ["uut"]
+
 TriggerModifyPimNeighborFilter:
-    groups: ['modify', 'pim', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 30
-    devices: ['uut']
-      
+  groups: ["modify", "pim", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 30
+  devices: ["uut"]
+
 TriggerModifyIgmpVersion:
-    groups: ['modify', 'igmp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 30
-    devices: ['uut']
-      
+  groups: ["modify", "igmp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 30
+  devices: ["uut"]
+
 TriggerModifyMldVersion:
-    groups: ['modify', 'mld', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 30
-    devices: ['uut']
+  groups: ["modify", "mld", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 30
+  devices: ["uut"]
 
 #===============================================================================
 #                                UNCONFIG-CONFIG
 #===============================================================================
 TriggerUnconfigConfigBgpAddressFamilyIpv4Mvpn:
-    groups: ['unconfig-config', 'l3']
-    method: 'checkpoint'
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "l3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborAddressFamilyIpv4Mvpn:
-    groups: ['unconfig-config', 'l3']
-    method: 'checkpoint'
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "l3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigRouteTargetMvpn:
-    groups: ['unconfig-config', 'l3']
-    method: 'checkpoint'
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "l3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigRouteTargetEvpn:
-    groups: ['unconfig-config', 'l3']
-    method: 'checkpoint'
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "l3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigAdvertiseEvpnMulticast:
-    groups: ['unconfig-config', 'l3']
-    method: 'checkpoint'
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "l3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpAfL2vpnEvpnRewriteEvpnRtAsn:
-    groups: ['unconfig-config', 'vxlan']
-    method: 'checkpoint'
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "vxlan"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigEvpnMsiteBgw:
-    groups: ['unconfig-config', 'vxlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 20
-    timeout_recovery:
-      max_time: 300
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "vxlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 20
+  timeout_recovery:
+    max_time: 300
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigNveVniMultisiteIngressReplication:
-    groups: ['unconfig-config', 'vxlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "vxlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigVlan:
-    groups: ['unconfig-config', 'vlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "vlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgp:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpWithCR:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'config_replace'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "config_replace"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighbor:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborWithCR:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'config_replace'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "config_replace"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpFastExternalFallover:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigEthernetInterface:
-    groups: ['unconfig-config', 'interface', 'L2']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 5
-    devices: ['uut']
+  groups: ["unconfig-config", "interface", "L2"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 5
+  devices: ["uut"]
 
 TriggerUnconfigConfigEthernetInterfaceSub:
-    groups: ['unconfig-config', 'interface', 'L2']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["unconfig-config", "interface", "L2"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerUnconfigConfigVlanInterface:
-    groups: ['unconfig-config', 'interface', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 400
-      interval: 15
-    devices: ['uut']
+  groups: ["unconfig-config", "interface", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 400
+    interval: 15
+  devices: ["uut"]
 
 TriggerUnconfigConfigLoopbackInterface:
-    groups: ['unconfig-config', 'interface', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "interface", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborDefaultOriginate:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborNextHopSelf:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborTransportConnectionModePassive:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborPassword:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborBfd:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpGracefulRestart:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpKeepaliveHoldtime:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborSoftReconfiguration:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborSendCommunity:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborSendCommunityExtended:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborRouteReflectorClient:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborIpv4:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 240
-      interval: 30
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 240
+    interval: 30
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborIpv4WithCR:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'config_replace'
-    timeout:
-      max_time: 240
-      interval: 30
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "config_replace"
+  timeout:
+    max_time: 240
+    interval: 30
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborIpv6:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 240
-      interval: 30
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 240
+    interval: 30
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpRouterId:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborAsOverride:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborVrf:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 240
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 240
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborVrfWithCR:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'config_replace'
-    timeout:
-      max_time: 240
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "config_replace"
+  timeout:
+    max_time: 240
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborIbgp:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 240
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 240
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborIbgpWithCR:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'config_replace'
-    timeout:
-      max_time: 240
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "config_replace"
+  timeout:
+    max_time: 240
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigPhysicalTrunkInterface:
-    groups: ['unconfig-config', 'interface', 'L2']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']    
+  groups: ["unconfig-config", "interface", "L2"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigVirtualTrunkInterface:
-    groups: ['unconfig-config', 'interface', 'L2']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "interface", "L2"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpNeighborEbgp:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigBgpVpnRd:
-    groups: ['unconfig-config', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 450
-      interval: 20
-    devices: ['uut']
-        
+  groups: ["unconfig-config", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 450
+    interval: 20
+  devices: ["uut"]
+
 TriggerUnconfigConfigBgpL2vpnCapability:
-    groups: ['unconfig-config', 'bgp', 'vxlan']
-    method: 'checkpoint'
-    timeout:
-      max_time: 60
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "bgp", "vxlan"]
+  method: "checkpoint"
+  timeout:
+    max_time: 60
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigVxlanNveOverlayInterface:
-    groups: ['unconfig-config', 'interface', 'vxlan']
-    method: 'checkpoint'
-    timeout:
-      max_time: 360
-      interval: 20
-    timeout_recovery:
-      max_time: 800
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "interface", "vxlan"]
+  method: "checkpoint"
+  timeout:
+    max_time: 360
+    interval: 20
+  timeout_recovery:
+    max_time: 800
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigEvpn:
-    groups: ['unconfig-config', 'vxlan']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 20
-    timeout_recovery:
-      max_time: 500
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "vxlan"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 20
+  timeout_recovery:
+    max_time: 500
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigEvpnVni:
-    groups: ['unconfig-config', 'vxlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "vxlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigNvOverlayEvpn:
-    groups: ['unconfig-config', 'vxlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 400
-      interval: 20
-    timeout_recovery:
-      max_time: 1000
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "vxlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 400
+    interval: 20
+  timeout_recovery:
+    max_time: 1000
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigEvpnMsiteBgwDelayRestoreTime:
-    groups: ['unconfig-config', 'vxlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "vxlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigEvpnMsiteDciTracking:
-    groups: ['unconfig-config', 'vxlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 20
-    timeout_recovery:
-      max_time: 600
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "vxlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 20
+  timeout_recovery:
+    max_time: 600
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigEvpnMsiteFabricTracking:
-    groups: ['unconfig-config', 'vxlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 400
-      interval: 20
-    timeout_recovery:
-      max_time: 600
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "vxlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 400
+    interval: 20
+  timeout_recovery:
+    max_time: 600
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigNveVniAssociateVrf:
-    groups: ['unconfig-config', 'vxlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "vxlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigNveSourceInterfaceLoopback:
-    groups: ['unconfig-config', 'vxlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 500
-      interval: 20
-    timeout_recovery:
-      max_time: 400
-      interval: 15
-    devices: ['uut']
+  groups: ["unconfig-config", "vxlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 500
+    interval: 20
+  timeout_recovery:
+    max_time: 400
+    interval: 15
+  devices: ["uut"]
 
 # Removed from vxlan trigger list due to it makes changes on config
 TriggerUnconfigConfigNveAdvertiseVirtualRmac:
-    groups: ['unconfig-config']
-    method: 'checkpoint'
-    timeout:
-      max_time: 360
-      interval: 20
-    timeout_recovery:
-      max_time: 750
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config"]
+  method: "checkpoint"
+  timeout:
+    max_time: 360
+    interval: 20
+  timeout_recovery:
+    max_time: 750
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigNveVniMcastGroup:
-    groups: ['unconfig-config', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 20
-    timeout_recovery:
-      max_time: 300
-      interval: 20
-    devices: ['uut']
-        
+  groups: ["unconfig-config", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 20
+  timeout_recovery:
+    max_time: 300
+    interval: 20
+  devices: ["uut"]
+
 TriggerUnconfigConfigBsrRpInterface:
-    groups: ['unconfig-config', 'interface', 'pim', 'multicast']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
-        
+  groups: ["unconfig-config", "interface", "pim", "multicast"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
+
 TriggerUnconfigConfigBsrRpVrfInterface:
-    groups: ['unconfig-config', 'interface', 'pim', 'multicast']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
-        
+  groups: ["unconfig-config", "interface", "pim", "multicast"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
+
 TriggerUnconfigConfigStaticRpInterface:
-    groups: ['unconfig-config', 'interface', 'pim', 'multicast']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
-        
+  groups: ["unconfig-config", "interface", "pim", "multicast"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
+
 TriggerUnconfigConfigStaticRpVrfInterface:
-    groups: ['unconfig-config', 'interface', 'pim', 'multicast']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
-        
+  groups: ["unconfig-config", "interface", "pim", "multicast"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
+
 TriggerUnconfigConfigPimNbrInterface:
-    groups: ['unconfig-config', 'interface', 'pim', 'multicast']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
-        
+  groups: ["unconfig-config", "interface", "pim", "multicast"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
+
 TriggerUnconfigConfigPimNbrVrfInterface:
-    groups: ['unconfig-config', 'interface', 'pim', 'multicast']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "interface", "pim", "multicast"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigAutoRpInterface:
-    groups: ['unconfig-config', 'pim', 'multicast', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
-        
+  groups: ["unconfig-config", "pim", "multicast", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
+
 TriggerUnconfigConfigAutoRpVrfInterface:
-    groups: ['unconfig-config', 'pim', 'multicast', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "pim", "multicast", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigVlanVnsegment:
-    groups: ['unconfig-config', 'vlan', 'vxlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 20
-    timeout_recovery:
-      max_time: 300
-      interval: 20
-    devices: ['uut']
+  groups: ["unconfig-config", "vlan", "vxlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 20
+  timeout_recovery:
+    max_time: 300
+    interval: 20
+  devices: ["uut"]
 
 TriggerUnconfigConfigMsdpPeer:
-    groups: ['unconfig-config', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigMsdpSaFilterIn:
-    groups: ['unconfig-config', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 10
-    devices: ['uut']
-        
+  groups: ["unconfig-config", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 10
+  devices: ["uut"]
+
 TriggerUnconfigConfigMsdpSaFilterOut:
-    groups: ['unconfig-config', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigMsdpSaLimit:
-    groups: ['unconfig-config', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigMsdpDescription:
-    groups: ['unconfig-config', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigMsdpMeshGroup:
-    groups: ['unconfig-config', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigMsdpKeepaliveHoldtime:
-    groups: ['unconfig-config', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigMsdpReconnectInterval:
-    groups: ['unconfig-config', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigMsdpOriginatorId:
-    groups: ['unconfig-config', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigPimNeighborFilter:
-    groups: ['unconfig-config', 'pim', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "pim", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigIgmpEnable:
-    groups: ['unconfig-config', 'igmp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "igmp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigMldEnable:
-    groups: ['unconfig-config', 'mld', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 10
-    devices: ['uut']
-
+  groups: ["unconfig-config", "mld", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigIgmpVersion:
-    groups: ['unconfig-config', 'igmp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "igmp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigMldVersion:
-    groups: ['unconfig-config', 'mld', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 10
-    devices: ['uut']
-      
-TriggerUnconfigConfigIgmpJoinGroup:
-    groups: ['unconfig-config', 'igmp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "mld", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 10
+  devices: ["uut"]
 
-TriggerUnconfigConfigMldJoinGroup :
-    groups: ['unconfig-config', 'mld', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 10
-    devices: ['uut']
-      
+TriggerUnconfigConfigIgmpJoinGroup:
+  groups: ["unconfig-config", "igmp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 10
+  devices: ["uut"]
+
+TriggerUnconfigConfigMldJoinGroup:
+  groups: ["unconfig-config", "mld", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 10
+  devices: ["uut"]
+
 TriggerUnconfigConfigIgmpStaticGroup:
-    groups: ['unconfig-config', 'igmp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "igmp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigMldStaticGroup:
-    groups: ['unconfig-config', 'mld', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 10
-    devices: ['uut']
+  groups: ["unconfig-config", "mld", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 10
+  devices: ["uut"]
 
 #===============================================================================
 #                                SHUT-NOSHUT
 #===============================================================================
 
 TriggerShutNoShutBgp:
-    groups: ['shut-noshut', 'bgp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["shut-noshut", "bgp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerShutNoShutBgpNeighbors:
-    groups: ['shut-noshut', 'bgp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["shut-noshut", "bgp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerShutNoShutVlan:
-    groups: ['shut-noshut', 'Vlan', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["shut-noshut", "Vlan", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerShutNoShutEthernetInterface:
-    groups: ['shut-noshut', 'interface', 'L3']
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["shut-noshut", "interface", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerShutNoShutPortChannelInterface:
-    groups: ['shut-noshut', 'interface', 'L3']
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["shut-noshut", "interface", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerShutNoShutLoopbackInterface:
-    groups: ['shut-noshut', 'interface', 'L3']
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["shut-noshut", "interface", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerShutNoShutBgpLoopbackInterface:
-    groups: ['shut-noshut', 'bgp', 'L3']
-    timeout:
-       max_time: 180
-       interval: 10
-    devices: ['uut']
+  groups: ["shut-noshut", "bgp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerShutNoShutHsrpIpv4VlanInterface:
-    groups: ['shut-noshut', 'Vlan', 'L3']
-    timeout:
-      max_time: 1800
-      interval: 15
-    devices: ['uut']
+  groups: ["shut-noshut", "Vlan", "L3"]
+  timeout:
+    max_time: 1800
+    interval: 15
+  devices: ["uut"]
 
 TriggerShutNoShutHsrpIpv6VlanInterface:
-    groups: ['shut-noshut', 'Vlan', 'L3']
-    timeout:
-      max_time: 1800
-      interval: 15
-    devices: ['uut']
+  groups: ["shut-noshut", "Vlan", "L3"]
+  timeout:
+    max_time: 1800
+    interval: 15
+  devices: ["uut"]
 
 TriggerShutNoShutTrunkInterface:
-    groups: ['shut-noshut', 'interface', 'L2']
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["shut-noshut", "interface", "L2"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerShutNoShutVlanInterface:
-    groups: ['shut-noshut', 'interface', 'L3']
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
-        
+  groups: ["shut-noshut", "interface", "L3"]
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
+
 TriggerShutNoShutNveOverlayInterface:
-    groups: ['shut-noshut', 'interface', 'vxlan']
-    timeout:
-      max_time: 300
-      interval: 10
-    timeout_recovery:
-      max_time: 500
-      interval: 20
-    devices: ['uut']
-        
+  groups: ["shut-noshut", "interface", "vxlan"]
+  timeout:
+    max_time: 300
+    interval: 10
+  timeout_recovery:
+    max_time: 500
+    interval: 20
+  devices: ["uut"]
+
 TriggerShutNoShutAutoRpInterface:
-    groups: ['shut-noshut', 'interface', 'pim', 'multicast']
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["shut-noshut", "interface", "pim", "multicast"]
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerShutNoShutBsrRpInterface:
-    groups: ['shut-noshut', 'interface', 'pim', 'multicast']
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
-        
+  groups: ["shut-noshut", "interface", "pim", "multicast"]
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
+
 TriggerShutNoShutAutoRpVrfInterface:
-    groups: ['shut-noshut', 'interface', 'pim', 'multicast']
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["shut-noshut", "interface", "pim", "multicast"]
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerShutNoShutBsrRpVrfInterface:
-    groups: ['shut-noshut', 'interface', 'pim', 'multicast']
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
-        
+  groups: ["shut-noshut", "interface", "pim", "multicast"]
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
+
 TriggerShutNoShutStaticRpInterface:
-    groups: ['shut-noshut', 'interface', 'pim', 'multicast']
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
-        
+  groups: ["shut-noshut", "interface", "pim", "multicast"]
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
+
 TriggerShutNoShutStaticRpVrfInterface:
-    groups: ['shut-noshut', 'interface', 'pim', 'multicast']
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
-        
+  groups: ["shut-noshut", "interface", "pim", "multicast"]
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
+
 TriggerShutNoShutPimNbrInterface:
-    groups: ['shut-noshut', 'interface', 'pim', 'multicast']
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
-        
+  groups: ["shut-noshut", "interface", "pim", "multicast"]
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
+
 TriggerShutNoShutPimNbrVrfInterface:
-    groups: ['shut-noshut', 'interface', 'pim', 'multicast']
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["shut-noshut", "interface", "pim", "multicast"]
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerShutNoShutMsdp:
-    groups: ['shut-noshut', 'msdp']
-    timeout:
-      max_time: 300
-      interval: 10
-    devices: ['uut']
+  groups: ["shut-noshut", "msdp"]
+  timeout:
+    max_time: 300
+    interval: 10
+  devices: ["uut"]
 
 #===============================================================================
 #                                ADD-REMOVE
@@ -1559,1236 +1556,1244 @@ TriggerShutNoShutMsdp:
 
 # Cannot be added to vxlan trigger list because it will affect other multisite triggers
 TriggerAddRemoveNveMultisiteBgwInterface:
-    groups: ['add-remove', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
+  groups: ["add-remove", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
 
 TriggerAddRemoveBgpAfL2vpnEvpnRewriteEvpnRtAsn:
-   groups: ['add-remove']
-   method: 'checkpoint'
-   timeout:
-      max_time: 180
-      interval: 10
-   devices: ['uut']
+  groups: ["add-remove"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveNveVniMcastGroup:
-    groups: ['add-remove', 'vxlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "vxlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerDisableEnableNveOverlay:
-   groups: ['disable-enable']
-   method: 'checkpoint'
-   timeout:
-     max_time: 180
-     interval: 10
-   timeout_recovery:
-     max_time: 400
-     interval: 20
-   devices: ['uut']
+  groups: ["disable-enable"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  timeout_recovery:
+    max_time: 400
+    interval: 20
+  devices: ["uut"]
 
 TriggerDisableEnableVnSegmentVlanWithNvOverlay:
-    groups: ['disable-enable', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 360
-      interval: 10
-    timeout_recovery:
-      max_time: 800
-      interval: 30
-    devices: ['uut']
+  groups: ["disable-enable", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 360
+    interval: 10
+  timeout_recovery:
+    max_time: 800
+    interval: 30
+  devices: ["uut"]
 
 TriggerDisableEnableNgmvpn:
-    groups: ['disable-enable', 'trm']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    timeout_recovery:
-      max_time: 180
-      interval: 30
-    devices: ['uut']
+  groups: ["disable-enable", "trm"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  timeout_recovery:
+    max_time: 180
+    interval: 30
+  devices: ["uut"]
 
 TriggerModifyNveSourceInterfaceLoopback:
-    groups: ['modify', 'vxlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 400
-      interval: 10
-    timeout_recovery:
-      max_time: 600
-      interval: 20
-    devices: ['uut']
+  groups: ["modify", "vxlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 400
+    interval: 10
+  timeout_recovery:
+    max_time: 600
+    interval: 20
+  devices: ["uut"]
 
 TriggerShutNoShutNveLoopbackInterface:
-    groups: ['shut-noshut', 'vxlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 360
-      interval: 10
-    timeout_recovery:
-      max_time: 1200
-      interval: 20
-    devices: ['uut']
+  groups: ["shut-noshut", "vxlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 360
+    interval: 10
+  timeout_recovery:
+    max_time: 1200
+    interval: 20
+  devices: ["uut"]
 
 TriggerModifyEvpnRd:
-    groups: ['modify', 'vxlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["modify", "vxlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerUnconfigConfigNveMultisiteBgwInterface:
-   groups: ['add-remove']
-   method: 'checkpoint'
-   timeout:
-     max_time: 180
-     interval: 10
-   devices: ['uut']
+  groups: ["add-remove"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveNveVniMultisiteIngressReplication:
-    groups: ['add-remove', 'vxlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "vxlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveEvpnMsiteBgwDelayRestoreTime:
-    groups: ['add-remove', 'vxlan', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 360
-      interval: 20
-    timeout_recovery:
-      max_time: 1000
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "vxlan", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 360
+    interval: 20
+  timeout_recovery:
+    max_time: 1000
+    interval: 20
+  devices: ["uut"]
 
 # Removed from vxlan trigger list due to it makes changes on config
 TriggerAddRemoveNveAdvertiseVirtualRmac:
-    groups: ['add-remove']
-    method: 'checkpoint'
-    timeout:
-      max_time: 360
-      interval: 10
-    timeout_recovery:
-      max_time: 500
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove"]
+  method: "checkpoint"
+  timeout:
+    max_time: 360
+    interval: 10
+  timeout_recovery:
+    max_time: 500
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNeighborRoutemap:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNeighborRoutemapPrefixlist:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNeighborRoutemapWeight:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNeighborUpdateSource:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNeighborDescription:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNeighborDisableConnectedCheck:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNeighborBfd:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNeighborMaximumPrefix:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNeighborNextHopSelf:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNeighborDefaultOriginate:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNeighborPassword:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNeighborTransportConnectionModePassive:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNeighborCapabilitySuppress4ByteAs:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
-TriggerAddRemoveBgpNetworkIPv4:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
 TriggerAddRemoveBgpNetworkIPv6:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNeighborSendCommunity:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNeighborSendCommunityExtended:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNeighborSoftReconfiguration:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNeighborRemovePrivateAs:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpAggregateAddressIpv4:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpAggregateAddressIpv6:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNetworkIPv4:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpKeepaliveHoldtime:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpMaximumPathsEbgp:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 10
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 10
+  devices: ["uut"]
 
 TriggerAddRemoveBgpRedistributeConnected:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveBgpRedistributeStatic:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveBgpRedistributeOspf:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNeighborRouteReflectorClient:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveBgpNeighborAsOverride:
-    groups: ['add-remove', 'bgp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "bgp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveMsdpPeer:
-    groups: ['add-remove', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveMsdpOriginatorId:
-    groups: ['add-remove', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoteMsdpSaFilterIn:
-    groups: ['add-remove', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveMsdpSaFilterOut:
-    groups: ['add-remove', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveMsdpSaLimit:
-    groups: ['add-remove', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveMsdpMeshGroup:
-    groups: ['add-remove', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveMsdpKeepaliveHoldtime:
-    groups: ['add-remove', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveMsdpReconnectInterval:
-    groups: ['add-remove', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 300
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 300
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveMsdpDescription:
-    groups: ['add-remove', 'msdp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "msdp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemovePimNeighborFilter:
-    groups: ['add-remove', 'pim', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "pim", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveIgmpEnable:
-    groups: ['add-remove', 'igmp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "igmp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveIgmpVersion:
-    groups: ['add-remove', 'igmp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "igmp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveIgmpJoinGroup:
-    groups: ['add-remove', 'igmp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "igmp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveIgmpStaticGroup:
-    groups: ['add-remove', 'igmp', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "igmp", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveMldEnable:
-    groups: ['add-remove', 'mld', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "mld", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveMldVersion:
-    groups: ['add-remove', 'mld', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "mld", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveMldJoinGroup:
-    groups: ['add-remove', 'mld', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "mld", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveMldStaticGroup:
-    groups: ['add-remove', 'mld', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 120
-      interval: 20
-    devices: ['uut']
+  groups: ["add-remove", "mld", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 120
+    interval: 20
+  devices: ["uut"]
 
 TriggerAddRemoveRouteTargetMvpn:
-    groups: ['add-remove', 'trm']
-    method: 'checkpoint'
-    timeout:
-      max_time: 400
-      interval: 15
-    devices: ['uut']
+  groups: ["add-remove", "trm"]
+  method: "checkpoint"
+  timeout:
+    max_time: 400
+    interval: 15
+  devices: ["uut"]
 
 TriggerAddRemoveRouteTargetEvpn:
-    groups: ['add-remove', 'L3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["add-remove", "L3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerAddRemoveAdvertiseEvpnMulticast:
-    groups: ['add-remove', 'l3']
-    method: 'checkpoint'
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["add-remove", "l3"]
+  method: "checkpoint"
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 #===============================================================================
 #                                RESTART
 #===============================================================================
 
 TriggerProcessCliRestartBgp:
-    groups: ['restart', 'bgp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "bgp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartBgp:
-    groups: ['restart', 'bgp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "bgp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartBgp:
-    groups: ['restart', 'bgp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "bgp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCliRestartOspf:
-    groups: ['restart', 'ospf', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "ospf", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartOspf:
-    groups: ['restart', 'ospf', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "ospf", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartOspf:
-    groups: ['restart', 'ospf', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "ospf", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCliRestartOspfv3:
-    groups: ['restart', 'ospfv3', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "ospfv3", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartOspfv3:
-    groups: ['restart', 'ospfv3', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "ospfv3", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartOspfv3:
-    groups: ['restart', 'ospfv3', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "ospfv3", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCliRestartEigrp:
-    groups: ['restart', 'eigrp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "eigrp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartEigrp:
-    groups: ['restart', 'eigrp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "eigrp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartEigrp:
-    groups: ['restart', 'eigrp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "eigrp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCliRestartIsis:
-    groups: ['restart', 'isis', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "isis", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartIsis:
-    groups: ['restart', 'isis', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "isis", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartIsis:
-    groups: ['restart', 'isis', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "isis", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCliRestartRip:
-    groups: ['restart', 'rip', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "rip", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartRip:
-    groups: ['restart', 'rip', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "rip", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartRip:
-    groups: ['restart', 'rip', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "rip", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCliRestartMsdp:
-    groups: ['restart', 'msdp', 'L3']
-    timeout:
-      max_time: 240
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "msdp", "L3"]
+  timeout:
+    max_time: 240
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartMsdp:
-    groups: ['restart', 'msdp', 'L3']
-    timeout:
-      max_time: 240
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "msdp", "L3"]
+  timeout:
+    max_time: 240
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartMsdp:
-    groups: ['restart', 'msdp', 'L3']
-    timeout:
-      max_time: 240
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "msdp", "L3"]
+  timeout:
+    max_time: 240
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCliRestartPim:
-    groups: ['restart', 'pim', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "pim", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartPim:
-    groups: ['restart', 'pim', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "pim", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartPim:
-    groups: ['restart', 'pim', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "pim", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCliRestartPim6:
-    groups: ['restart', 'pim6', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "pim6", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartPim6:
-    groups: ['restart', 'pim6', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "pim6", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartPim6:
-    groups: ['restart', 'pim6', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "pim6", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCliRestartIgmp:
-    groups: ['restart', 'igmp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "igmp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartIgmp:
-    groups: ['restart', 'igmp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "igmp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartIgmp:
-    groups: ['restart', 'igmp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "igmp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
-# process Rsvp not exists on N9K 
+# process Rsvp not exists on N9K
 TriggerProcessCliRestartRsvp:
-    groups: ['restart', 'rsvp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "rsvp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartRsvp:
-    groups: ['restart', 'rsvp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "rsvp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartRsvp:
-    groups: ['restart', 'rsvp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "rsvp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 # the processes only can be restart from shell
 TriggerProcessCrashRestartSysmgr:
-    groups: ['restart', 'sysmgr', 'L3']
-    timeout:
-      max_time: 900
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "sysmgr", "L3"]
+  timeout:
+    max_time: 900
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartSysmgr:
-    groups: ['restart', 'sysmgr', 'L3']
-    timeout:
-      max_time: 900
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "sysmgr", "L3"]
+  timeout:
+    max_time: 900
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartMrib:
-    groups: ['restart', 'mrib', 'L3']
-    timeout:
-      max_time: 900
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "mrib", "L3"]
+  timeout:
+    max_time: 900
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartMrib:
-    groups: ['restart', 'mrib', 'L3']
-    timeout:
-      max_time: 900
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "mrib", "L3"]
+  timeout:
+    max_time: 900
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartSyslogd:
-    groups: ['restart', 'syslogd', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "syslogd", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartSyslogd:
-    groups: ['restart', 'syslogd', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "syslogd", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartFeatureMgr:
-    groups: ['restart', 'feature_mgr', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "feature_mgr", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartFeatureMgr:
-    groups: ['restart', 'feature_mgr', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
-        
+  groups: ["restart", "feature_mgr", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
+
 TriggerProcessKillRestartVdcMgr:
-    groups: ['restart', 'vdc_mgr', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "vdc_mgr", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartVdcMgr:
-    groups: ['restart', 'vdc_mgr', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
-        
+  groups: ["restart", "vdc_mgr", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
+
 TriggerProcessKillRestartLacp:
-    groups: ['restart', 'lacp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "lacp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartLacp:
-    groups: ['restart', 'lacp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
-        
+  groups: ["restart", "lacp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
+
 TriggerProcessKillRestartCfs:
-    groups: ['restart', 'cfg', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "cfg", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartCfs:
-    groups: ['restart', 'cfg', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "cfg", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartAclmgr:
-    groups: ['restart', 'aclmgr', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "aclmgr", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartAclmgr:
-    groups: ['restart', 'aclmgr', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
-   
-# process Monitorc not exists on N9K     
+  groups: ["restart", "aclmgr", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
+
+# process Monitorc not exists on N9K
 TriggerProcessKillRestartMonitorc:
-    groups: ['restart', 'monitorc', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "monitorc", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartMonitorc:
-    groups: ['restart', 'monitorc', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
-        
+  groups: ["restart", "monitorc", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
+
 TriggerProcessKillRestartTunnel:
-    groups: ['restart', 'tunnel', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "tunnel", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartTunnel:
-    groups: ['restart', 'tunnel', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
-        
+  groups: ["restart", "tunnel", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
+
 TriggerProcessKillRestartEltm:
-    groups: ['restart', 'eltm', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "eltm", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartEltm:
-    groups: ['restart', 'eltm', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
-        
+  groups: ["restart", "eltm", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
+
 TriggerProcessKillRestartVlanMgr:
-    groups: ['restart', 'vlan_mgr', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "vlan_mgr", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartVlanMgr:
-    groups: ['restart', 'vlan_mgr', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
-        
+  groups: ["restart", "vlan_mgr", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
+
 # process Plugin not exists on N9K
 TriggerProcessKillRestartPlugin:
-    groups: ['restart', 'plugin', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "plugin", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartPlugin:
-    groups: ['restart', 'plugin', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "plugin", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartFsDaemon:
-    groups: ['restart', 'fs-daemon', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "fs-daemon", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartFsDaemon:
-    groups: ['restart', 'fs-daemon', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "fs-daemon", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartConfCheck:
-    groups: ['restart', 'conf_check', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "conf_check", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartConfCheck:
-    groups: ['restart', 'conf_check', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "conf_check", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartGlbp:
-    groups: ['restart', 'glbp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "glbp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartGlbp:
-    groups: ['restart', 'glbp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "glbp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartBfd:
-    groups: ['restart', 'bfd', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "bfd", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartBfd:
-    groups: ['restart', 'bfd', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "bfd", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartL2rib:
-    groups: ['restart', 'l2rib', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "l2rib", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartNgmvpn:
-    groups: ['restart', 'trm']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "trm"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartNgmvpn:
-    groups: ['restart', 'trm']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "trm"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartL2rib:
-    groups: ['restart', 'l2rib', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "l2rib", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartNetstack:
-    groups: ['restart', 'netstack', 'L3']
-    timeout:
-      max_time: 900
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "netstack", "L3"]
+  timeout:
+    max_time: 900
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartNetstack:
-    groups: ['restart', 'netstack', 'L3']
-    timeout:
-      max_time: 900
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "netstack", "L3"]
+  timeout:
+    max_time: 900
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartNve:
-    groups: ['restart', 'nve', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "nve", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartNve:
-    groups: ['restart', 'nve', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "nve", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartStp:
-    groups: ['restart', 'stp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "stp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartStp:
-    groups: ['restart', 'stp', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "stp", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartUrib:
-    groups: ['restart', 'urib', 'L3']
-    timeout:
-      max_time: 900
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "urib", "L3"]
+  timeout:
+    max_time: 900
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartUrib:
-    groups: ['restart', 'urib', 'L3']
-    timeout:
-      max_time: 900
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "urib", "L3"]
+  timeout:
+    max_time: 900
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessCrashRestartVpc:
-    groups: ['restart', 'vpc', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "vpc", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 TriggerProcessKillRestartVpc:
-    groups: ['restart', 'vpc', 'L3']
-    timeout:
-      max_time: 180
-      interval: 15
-    devices: ['uut']
+  groups: ["restart", "vpc", "L3"]
+  timeout:
+    max_time: 180
+    interval: 15
+  devices: ["uut"]
 
 #===============================================================================
 #                               SWITCHOVER
 #===============================================================================
 
 TriggerSwitchover:
-    groups: ['ha', 'switchover', 'L3']
-    update_verifications: ['Verify_Module',
-                           'Verify_Boot',
-                           'Verify_Dir',
-                           'Verify_InstallActive',
-                           'Verify_Inventory',
-                           'Verify_RedundancyStatus',
-                           'Verify_SystemRedundancyStatus',
-                           'Verify_VdcCurrent',
-                           'Verify_VdcDetail',
-                           'Verify_VdcMembershipStatus',
-                           'Verify_Version']
-    update_pts_features: ['platform']
-    timeout:
-      max_time: 900
-      interval: 60
-    devices: ['uut']
+  groups: ["ha", "switchover", "L3"]
+  update_verifications:
+    [
+      "Verify_Module",
+      "Verify_Boot",
+      "Verify_Dir",
+      "Verify_InstallActive",
+      "Verify_Inventory",
+      "Verify_RedundancyStatus",
+      "Verify_SystemRedundancyStatus",
+      "Verify_VdcCurrent",
+      "Verify_VdcDetail",
+      "Verify_VdcMembershipStatus",
+      "Verify_Version",
+    ]
+  update_pts_features: ["platform"]
+  timeout:
+    max_time: 900
+    interval: 60
+  devices: ["uut"]
 
 #===============================================================================
 #                               RELOAD
 #===============================================================================
 
 TriggerReload:
-    groups: ['ha', 'reload', 'L3']
-    update_verifications: ['Verify_Module',
-                           'Verify_Boot',
-                           'Verify_Dir',
-                           'Verify_InstallActive',
-                           'Verify_Inventory',
-                           'Verify_RedundancyStatus',
-                           'Verify_SystemRedundancyStatus',
-                           'Verify_VdcCurrent',
-                           'Verify_VdcDetail',
-                           'Verify_VdcMembershipStatus',
-                           'Verify_Version']
-    update_pts_features: ['platform']
-    timeout:
-      max_time: 900
-      interval: 60
-    devices: ['uut']
+  groups: ["ha", "reload", "L3"]
+  update_verifications:
+    [
+      "Verify_Module",
+      "Verify_Boot",
+      "Verify_Dir",
+      "Verify_InstallActive",
+      "Verify_Inventory",
+      "Verify_RedundancyStatus",
+      "Verify_SystemRedundancyStatus",
+      "Verify_VdcCurrent",
+      "Verify_VdcDetail",
+      "Verify_VdcMembershipStatus",
+      "Verify_Version",
+    ]
+  update_pts_features: ["platform"]
+  timeout:
+    max_time: 900
+    interval: 60
+  devices: ["uut"]
 
 TriggerReloadFabricModule:
-    groups: ['ha', 'reload', 'L3']
-    fabricRole: oc
-    lcRole: oc
-    timeout:
-      max_time: 600
-      interval: 60
-    devices: ['uut']
-    
+  groups: ["ha", "reload", "L3"]
+  fabricRole: oc
+  lcRole: oc
+  timeout:
+    max_time: 600
+    interval: 60
+  devices: ["uut"]
+
 TriggerReloadActiveSystemController:
-    groups: ['ha', 'reload', 'L3']
-    update_verifications: ['Verify_Module',
-                           'Verify_Boot',
-                           'Verify_Dir',
-                           'Verify_InstallActive',
-                           'Verify_Inventory',
-                           'Verify_RedundancyStatus',
-                           'Verify_SystemRedundancyStatus',
-                           'Verify_VdcCurrent',
-                           'Verify_VdcDetail',
-                           'Verify_VdcMembershipStatus',
-                           'Verify_Version']
-    update_pts_features: ['platform']
-    lcRole: oc
-    timeout:
-      max_time: 600
-      interval: 60
-    devices: ['uut']
+  groups: ["ha", "reload", "L3"]
+  update_verifications:
+    [
+      "Verify_Module",
+      "Verify_Boot",
+      "Verify_Dir",
+      "Verify_InstallActive",
+      "Verify_Inventory",
+      "Verify_RedundancyStatus",
+      "Verify_SystemRedundancyStatus",
+      "Verify_VdcCurrent",
+      "Verify_VdcDetail",
+      "Verify_VdcMembershipStatus",
+      "Verify_Version",
+    ]
+  update_pts_features: ["platform"]
+  lcRole: oc
+  timeout:
+    max_time: 600
+    interval: 60
+  devices: ["uut"]
 
 TriggerReloadStandbySystemController:
-    groups: ['ha', 'reload', 'L3']
-    lcRole: oc
-    update_verifications: ['Verify_Module',
-                           'Verify_Boot',
-                           'Verify_Dir',
-                           'Verify_InstallActive',
-                           'Verify_Inventory',
-                           'Verify_RedundancyStatus',
-                           'Verify_SystemRedundancyStatus',
-                           'Verify_VdcCurrent',
-                           'Verify_VdcDetail',
-                           'Verify_VdcMembershipStatus',
-                           'Verify_Version']
-    update_pts_features: ['platform']
-    timeout:
-      max_time: 600
-      interval: 60
-    devices: ['uut']
+  groups: ["ha", "reload", "L3"]
+  lcRole: oc
+  update_verifications:
+    [
+      "Verify_Module",
+      "Verify_Boot",
+      "Verify_Dir",
+      "Verify_InstallActive",
+      "Verify_Inventory",
+      "Verify_RedundancyStatus",
+      "Verify_SystemRedundancyStatus",
+      "Verify_VdcCurrent",
+      "Verify_VdcDetail",
+      "Verify_VdcMembershipStatus",
+      "Verify_Version",
+    ]
+  update_pts_features: ["platform"]
+  timeout:
+    max_time: 600
+    interval: 60
+  devices: ["uut"]
 
 TriggerReloadEthernetModule:
-    groups: ['ha', 'reload', 'L3']
-    lcRole: lc
-    timeout:
-      max_time: 700
-      interval: 60
-    verifications:
-      Verify_Interface:
-        devices: ['uut']
-        iteration:
-          attempt: 6
-          interval: 5
-    devices: ['uut']
+  groups: ["ha", "reload", "L3"]
+  lcRole: lc
+  timeout:
+    max_time: 700
+    interval: 60
+  verifications:
+    Verify_Interface:
+      devices: ["uut"]
+      iteration:
+        attempt: 6
+        interval: 5
+  devices: ["uut"]
 
 TriggerReloadActiveRP:
-    groups: ['ha', 'reload', 'L3']
-    update_verifications: ['Verify_Module',
-                           'Verify_Boot',
-                           'Verify_Dir',
-                           'Verify_InstallActive',
-                           'Verify_Inventory',
-                           'Verify_RedundancyStatus',
-                           'Verify_SystemRedundancyStatus',
-                           'Verify_VdcCurrent',
-                           'Verify_VdcDetail',
-                           'Verify_VdcMembershipStatus',
-                           'Verify_Version']
-    update_pts_features: ['platform']
-    lcRole: active
-    timeout:
-      max_time: 900
-      interval: 60
-    devices: ['uut']
+  groups: ["ha", "reload", "L3"]
+  update_verifications:
+    [
+      "Verify_Module",
+      "Verify_Boot",
+      "Verify_Dir",
+      "Verify_InstallActive",
+      "Verify_Inventory",
+      "Verify_RedundancyStatus",
+      "Verify_SystemRedundancyStatus",
+      "Verify_VdcCurrent",
+      "Verify_VdcDetail",
+      "Verify_VdcMembershipStatus",
+      "Verify_Version",
+    ]
+  update_pts_features: ["platform"]
+  lcRole: active
+  timeout:
+    max_time: 900
+    interval: 60
+  devices: ["uut"]
 
 TriggerReloadStandbyRP:
-    groups: ['ha', 'reload', 'L3']
-    timeout:
-      max_time: 900
-      interval: 60
-    devices: ['uut']
+  groups: ["ha", "reload", "L3"]
+  timeout:
+    max_time: 900
+    interval: 60
+  devices: ["uut"]

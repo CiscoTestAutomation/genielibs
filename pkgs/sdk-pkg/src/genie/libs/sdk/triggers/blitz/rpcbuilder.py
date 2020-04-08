@@ -519,8 +519,15 @@ https://tools.ietf.org/html/rfc6020#section-9.13
                         # minimal, see if it matches without namespace.
                         actual_match = False
                         try:
+                            if value is None:
+                                log.warning(
+                                    'Value not set; Xpath valid?\n{0}'.format(
+                                        str(xpath)
+                                    )
+                                )
+                                value = ''
                             if (
-                                ':' in value and
+                                value and ':' in value and
                                 self.prefix_namespaces == 'minimal' and
                                 self._qname(value).namespace == ns and
                                 child.text == self._qname(value).localname
@@ -535,7 +542,7 @@ https://tools.ietf.org/html/rfc6020#section-9.13
                                 "List key value mismatch in RPC request! "
                                 'Value from XPath: "%s", requested value "%s"'
                                 "\nWill use XPath value and ignore request",
-                                child.text, value)
+                                str(child.text), str(value))
                     # TODO: does nc:operation even apply to key nodes?
                     if edit_op:
                         self.add_netconf_attr(child, 'operation', edit_op)

@@ -1,0 +1,16 @@
+devices:
+    # WARNING: device name must match configured hostname
+    # CSR1K-6:
+    #     mapping:
+    #         cli: cli
+    #         yang: yang
+    # ddmi-9500-2:
+    #     mapping:
+    #         cli: cli
+    #         netconf: yang1
+    #         gnmi: yang2
+    nbg-leaf3:
+        mapping:
+            cli: cli
+            netconf: yang1
+            gnmi: yang2

@@ -217,7 +217,9 @@ def is_mpls_ldp_neighbor_in_state(
     return False
 
 
-def verify_mpls_forwarding_table_has_prefix_in_subnet_range(device, subnet, max_time=30, check_interval=10):
+
+def verify_mpls_forwarding_table_has_prefix_in_subnet_range(device, subnet, max_time=120, check_interval=30):
+
     """ Verifies local label for entries with a prefix inside subnet
 
         Args:
@@ -250,34 +252,28 @@ def verify_mpls_forwarding_table_has_prefix_in_subnet_range(device, subnet, max_
             timeout.sleep()
             continue
 
-        reqs = R(['vrf',
-                  '(.*)',
-                  'local_label',
-                  '(?P<local_label>.*)',
-                  'outgoing_label_or_vc',
-                  '(.*)',
-                  'prefix_or_tunnel_id',
-                  '(?P<prefix>.*)',
-                  'outgoing_interface',
-                  '(.*)', ])
 
-        found = find([out], reqs, filter_=False, all_keys=True)
-        if found:
-            keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={}, source=found, all_keys=True)
+        for vrf in out.get('vrf'):
+            for local_label in out['vrf'][vrf].get('local_label'):
+                for out_label in out['vrf'][vrf]['local_label'][local_label].get('outgoing_label_or_vc'):
+                    for prefix in out['vrf'][vrf]['local_label'][local_label]['outgoing_label_or_vc'][out_label].get('prefix_or_tunnel_id'):
+                        try:
+                            pfx = IPNetwork(prefix)
+                        except Exception:
+                            continue
 
-            for key in keys:
-                try:
-                    prefix = IPNetwork(key['prefix'])
-                except Exception:
-                    continue
+                        if pfx in subnet:
+                            return True
 
-                if prefix in subnet:
-                    return True
+        timeout.sleep()
+
 
     return False
 
 
-def verify_mpls_forwarding_table_local_label_for_subnet(device, subnet, min_range, max_range, in_range=True, max_time=60, check_interval=15):
+
+def verify_mpls_forwarding_table_local_label_for_subnet(device, subnet, min_range, max_range, in_range=True, max_time=120, check_interval=30):
+
     """ Verifies local label for entries with a prefix inside subnet
 
         Args:
@@ -316,50 +312,39 @@ def verify_mpls_forwarding_table_local_label_for_subnet(device, subnet, min_rang
             timeout.sleep()
             continue
 
-        reqs = R(['vrf',
-                  '(.*)',
-                  'local_label',
-                  '(?P<local_label>.*)',
-                  'outgoing_label_or_vc',
-                  '(.*)',
-                  'prefix_or_tunnel_id',
-                  '(?P<prefix>.*)',
-                  'outgoing_interface',
-                  '(.*)'])
+        for vrf in out.get('vrf'):
+            for local_label in out['vrf'][vrf].get('local_label'):
+                for out_label in out['vrf'][vrf]['local_label'][local_label].get('outgoing_label_or_vc'):
+                    for prefix in out['vrf'][vrf]['local_label'][local_label]['outgoing_label_or_vc'][out_label].get('prefix_or_tunnel_id'):
+                        try:
+                            pfx = IPNetwork(prefix)
+                        except Exception:
+                            continue
 
-        found = find([out], reqs, filter_=False, all_keys=True)
-        if found:
-            keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={}, source=found, all_keys=True)
+                        if pfx in subnet:
+                            if in_range and min_range <= local_label <= max_range:
+                                continue
+                            elif in_range and not min_range <= local_label <= max_range:
+                                log.info('Entry with prefix {prefix} has label {label} which is outside '
+                                        'given range {range}. Expected to be inside.'
+                                        .format(prefix=prefix,
+                                                label=local_label,
+                                                range='{}-{}'.format(min_range, max_range)))
+                                result = False
+                            elif not in_range and min_range <= local_label <= max_range:
+                                log.info('Entry with prefix {prefix] has label {label} which is inside '
+                                        'given range {range}. Expected to be outside.'
+                                        .format(prefix=prefix,
+                                                label=local_label,
+                                                range='{}-{}'.format(min_range, max_range)))
+                                result = False
+                            elif not in_range and not min_range <= local_label <= max_range:
+                                continue
 
-            for key in keys:
-                try:
-                    prefix = IPNetwork(key['prefix'])
-                except Exception:
-                    continue
-
-                if prefix in subnet:
-                    if in_range and min_range <= key['local_label'] <= max_range:
-                        continue
-                    elif in_range and not min_range <= key['local_label'] <= max_range:
-                        log.info('Entry with prefix {prefix} has label {label} which is outside '
-                                 'given range {range}. Expected to be inside.'
-                                 .format(prefix=prefix,
-                                         label=key['local_label'],
-                                         range='{}-{}'.format(min_range, max_range)))
-                        result = False
-                    elif not in_range and min_range <= key['local_label'] <= max_range:
-                        log.info('Entry with prefix {prefix] has label {label} which is inside '
-                                 'given range {range}. Expected to be outside.'
-                                 .format(prefix=prefix,
-                                         label=key['local_label'],
-                                         range='{}-{}'.format(min_range, max_range)))
-                        result = False
-                    elif not in_range and not min_range <= key['local_label'] <= max_range:
-                        continue
-
-            if result:
-                return True
+        if result:
+            return True
 
         timeout.sleep()
 
     return False
+

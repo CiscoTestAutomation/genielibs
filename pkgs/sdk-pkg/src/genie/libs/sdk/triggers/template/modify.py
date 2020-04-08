@@ -3,10 +3,6 @@
 from pyats import aetest
 from genie.harness.base import Trigger
 
-# Genie Libs
-from genie.libs.sdk.libs.abstracted_libs import sleep_processor
-
-@aetest.processors(pre=[sleep_processor])
 class TriggerModify(Trigger):
     ''' Template for all TriggerModify triggers
 

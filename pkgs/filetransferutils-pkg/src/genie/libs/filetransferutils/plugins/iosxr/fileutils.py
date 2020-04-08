@@ -10,6 +10,9 @@ except ImportError:
     # For apidoc building only
     from unittest.mock import Mock; Dir=Mock()
 
+# Unicon
+from unicon.core.errors import SubCommandFailure
+
 
 class FileUtils(FileUtilsDeviceBase):
 
@@ -455,3 +458,20 @@ class FileUtils(FileUtilsDeviceBase):
         super().copyconfiguration(source=source, destination=destination,
             timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,
             *args, **kwargs)
+
+    def send_cli_to_device(self, cli, used_server=None, invalid=None,
+      timeout_seconds=300, **kwargs):
+
+        output = super().send_cli_to_device(cli=cli, used_server=used_server,
+            invalid=invalid, timeout_seconds=timeout_seconds, **kwargs)
+
+        # Only check if cli sent to device was not delete
+        if 'delete' not in cli:
+            # Check for successful copy pattern
+            if 'bytes copied' in output or 'lines built' in output or 'OK' in output:
+                return output
+            else:
+                raise SubCommandFailure('File was not successfully copied')
+        else:
+            return output
+

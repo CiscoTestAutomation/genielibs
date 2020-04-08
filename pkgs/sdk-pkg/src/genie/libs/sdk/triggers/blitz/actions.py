@@ -1,212 +1,222 @@
 import re
 import time
 import logging
-import copy
-import operator
-from pyats.utils.objects import find, R
-from pyats.async_ import pcall
-from pyats.aetest.steps import Steps
-from genie.utils.timeout import Timeout
-from genie.utils.loadattr import str_to_list
+
 from genie.libs import sdk
 from genie.harness.standalone import run_genie_sdk
 
-from .markup import get_variable
-from .markup import save_variable
+from pyats.async_ import pcall
+from pyats.log.utils import banner
+from pyats.aetest.steps import Steps
 from pyats.results import TestResult, Passed, Failed, Skipped, Passx, Aborted, Errored
-from unicon.eal.dialogs import Statement, Dialog
 
-from .yangexec import run_netconf, run_gnmi
+from .markup import save_variable
+from .yangexec import run_netconf, run_gnmi, notify_wait
+from .actions_helper import configure_handler, api_handler, learn_handler, parse_handler, execute_handler
+
 
 log = logging.getLogger()
 
-def configure(self, device, steps, command, reply=None):
-    with steps.start("Configuring '{device}' ".format(device=device.name), continue_=True) as step:
-        try :
-            if reply:
-                output = device.configure(command, reply=_prompt_handler(reply))    
-            
-            output = device.configure(command)
-        except Exception as e:
-            output = None
-            step.failed('Configure failed ==> {}'.format(str(e)))
 
-    return output, steps.__result__
+def configure(self, device, steps, command, reply=None, continue_=True):
+
+    # default output set to none in case of an exception
+    output = None
+    with steps.start("Configuring '{device}'".\
+                    format(device=device.name), continue_=continue_) as step:
+
+        output = configure_handler(self, step, device, command, reply)
+
+    notify_wait(steps, device)
+
+    return output
 
 def parse(self, device, steps, command, include=None,
-          exclude=None,  max_time=None, check_interval=None, *args, **kwargs):
+          exclude=None,  max_time=None, check_interval=None, continue_=True, *args, **kwargs):
 
-    return _find_key_actions(self, device, steps, command, include, exclude,
-                             max_time, check_interval, 'parse')
+    # action parse
+    output = {}
+    with steps.start("Parsing '{c}' on '{d}'".\
+                    format(c=command, d=device.name), continue_=continue_) as step:
+
+        output = parse_handler(self, step, device, command, include, exclude,
+                              max_time, check_interval, continue_)
+
+    notify_wait(steps, device)
+
+    return output
 
 def execute(self, device, steps, command, include=None, exclude=None,
-            max_time=None, check_interval=None, reply=None):
+            max_time=None, check_interval=None, reply=None, continue_=True):
 
-    return _find_key_actions(self, device, steps, command, include, exclude,
-                             max_time, check_interval, 'execute', reply)    
+    # action execute
+    with steps.start("Executing '{c}' on '{d}'".\
+                    format(c=command, d=device.name), continue_=continue_) as step:
 
-def sleep(self, steps, sleep_time, *args, **kwargs):
-    with steps.start('Sleeping for {s} seconds'.format(s=sleep_time), continue_=True):
-        time.sleep(float(sleep_time))
+        output = execute_handler(self, step, device, command, include, exclude,
+                                max_time, check_interval, continue_, reply=reply)
 
-    return None, steps.__result__
+    notify_wait(steps, device)
 
-def api(self, device, steps, function, arguments, output=None):
-    with steps.start("Executing API function ==> {} on {}".format(function, device), continue_=True) as step:
-        try:
-            if 'device' in arguments:
-                arg_device = device.testbed.devices[arguments['device']]
-                arguments['device'] = arg_device
-            result = getattr(device, function)(**arguments) if device.os == 'ixianative'\
-                 else getattr(device.api, function)(**arguments)
-        except Exception as e:
-            result = None
-            if not function in dir(device.api):
-                step.failed(str(e))
-            else:
-                step.failed("Verification of the input '{}' failed : {}".format(function,str(e)))
-        else:
-            if result:
-                kwargs = {'result': result, 'step': step}
-                if output:
-                    kwargs.update({'value': output.get('value')})
-                    kwargs.update({'operation': output.get('operation', '==')})
+    return output
 
-                _check_value_result (**kwargs)
-            else:
-                step.passed('The API ==> {} completed its job'.format(function))  
+def api(self, device, steps, function, arguments=None, include=None,
+        exclude=None, max_time=None, check_interval=None, continue_=True):
 
-    return result, steps.__result__
-       
+    # action api
+    output = None
+    with steps.start("Calling API '{f}' on '{d}'".\
+                    format(f=function, d=device.name), continue_=continue_) as step:
+
+        output = api_handler(self, step, device, function, include, exclude,
+                            max_time, check_interval, continue_, function, arguments=arguments)
+
+    notify_wait(steps, device)
+
+    return output
+
+def learn(self, device, steps, feature, include=None, exclude=None,
+          max_time=None, check_interval=None, continue_=True):
+
+    # action learn
+    with steps.start("Learning '{f}' on '{d}'".\
+                    format(f=feature, d=device.name), continue_=continue_) as step:
+
+        output = learn_handler(self, step, device, feature, include, exclude, 
+                              max_time, check_interval, continue_=continue_)
+
+    return output
+
+def sleep(self, steps, sleep_time, continue_=True, *args, **kwargs):
+    log.info('Sleeping for {s} seconds'.format(s=sleep_time))
+    time.sleep(float(sleep_time))
+    
 def yang(self, device, steps, protocol, datastore, content, operation,
-         connection=None, returns=None, *args, **kwargs):
-    with steps.start('yang action', continue_=True) as step:
-        if connection:
-            device = getattr(device, connection)
-            # Verify that we are connected
-            # TODO
-            # I think all our connection implementation (unicon, rest, yang)
-            # should have a which does an action on the device, example show
-            # clock for cli, to verify.  Right now, we dont havet his, we have
-            # connected but we all know its of no use.
+         continue_=True, connection=None, returns=None, *args, **kwargs):
+    if connection:
+        device = getattr(device, connection)
+        # Verify that we are connected
+        # TODO
+        # I think all our connection implementation (unicon, rest, yang)
+        # should have an isconnected which does an action on the device, example show
+        # clock for cli, to verify.  Right now, we dont havet his, we have
+        # connected but we all know its of no use.
+    if returns is None:
+        returns = {}
+    if protocol == 'netconf':
+        result = run_netconf(operation=operation, device=device, steps=steps,
+                             datastore=datastore, rpc_data=content,
+                             returns=returns)
+    elif protocol == 'gnmi':
+        result = run_gnmi(operation=operation, device=device, steps=steps,
+                          datastore=datastore, rpc_data=content,
+                          returns=returns)
+    if not result:
+        steps.failed('Yang action has failed')
+    
+    if operation != 'subscribe':
+        notify_wait(steps, device)
 
-        if returns is None:
-            returns = {}
-        if protocol == 'netconf':
-            result = run_netconf(operation=operation, device=device, steps=steps,
-                                 datastore=datastore, rpc_data=content,
-                                 returns=returns)
-        elif protocol == 'gnmi':
-            result = run_gnmi(operation=operation, device=device, steps=steps,
-                              datastore=datastore, rpc_data=content,
-                              returns=returns)
-            if not result:
-                step.failed('Yang action has failed')
+    return result
 
-    return result, steps.__result__
+def configure_replace(self, device, steps, config, continue_=True, iteration=2, interval=30):
+    restore = sdk.libs.abstracted_libs.restore.Restore(device=device)
 
-def learn(self, device, steps, feature, ops, include=None, exclude=None,
-          max_time=None, check_interval=None):
+    # lib.to_url is normally saved via restore.save_configuration()
+    # but since we only want the os abstraction and we are providing
+    # a config - Just set the to_url equal to the config path provided
+    restore.lib.to_url = config
 
-    return _find_key_actions(self, device=device, steps=steps, command=feature,
-                             include=include, exclude=exclude, max_time=max_time,
-                             check_interval=check_interval, action='learn' , ops=ops)
+    restore.restore_configuration(
+        device=device,
+        abstract=None,
+        method='config_replace',
+        iteration=iteration,
+        interval=interval,
+        delete_after_restore=False,
+    )
 
-def configure_replace(self, device, steps, config, iteration=2, interval=30):
-    with steps.start('restore action', continue_=True):
-        restore = sdk.libs.abstracted_libs.restore.Restore(device=device)
+def save_config_snapshot(self, device, steps, continue_=True):
+    # setup restore object for device
+    if not hasattr(self, 'restore'):
+        self.restore = {}
+    if device not in self.restore:
+        self.restore[device] = sdk.libs.abstracted_libs.restore.Restore(device=device)
 
-        # lib.to_url is normally saved via restore.save_configuration()
-        # but since we only want the os abstraction and we are providing
-        # a config - Just set the to_url equal to the config path provided
-        restore.lib.to_url = config
+    # Get default directory
+    save_dir = getattr(self.parent, 'default_file_system')
+    if not save_dir:
+        self.parent.default_file_system = {}
 
-        restore.restore_configuration(
+    # learn default directory
+    if device.name not in save_dir:
+        self.parent.default_file_system.update({
+            device.name: self.restore[device].abstract.sdk.libs.abstracted_libs.\
+                subsection.get_default_dir(device=device)})
+
+    self.restore[device].save_configuration(
+        device=device,
+        abstract=None,
+        method='config_replace',
+        default_dir=self.parent.default_file_system
+    )
+
+    # To keep track of snapshots (whether they are deleted or not)
+    self.restore[device].snapshot_deleted = False
+
+def restore_config_snapshot(self, device, steps, continue_=True, delete_snapshot=True):
+
+    if not hasattr(self, 'restore') or device not in self.restore:
+        steps.errored("Must use action 'save_config_snapshot' first.\n\n")
+
+    # If the snapshot file was deleted - error
+    if self.restore[device].snapshot_deleted:
+        steps.errored("If you want to restore with the same snapshot "
+                      "multiple times then you must pass 'delete_snapshot=False' "
+                      "to previous uses of this action. Otherwise the "
+                      "snapshot will be deleted on the first usage.")
+
+    try:
+        self.restore[device].restore_configuration(
             device=device,
             abstract=None,
             method='config_replace',
-            iteration=iteration,
-            interval=interval,
-            delete_after_restore=False,
-        )
-
-    return None, steps.__result__
-
-def save_config_snapshot(self, device, steps):
-    with steps.start('save_config action', continue_=True):
-        # setup restore object for device
-        if not hasattr(self, 'restore'):
-            self.restore = {}
-        if device not in self.restore:
-            self.restore[device] = sdk.libs.abstracted_libs.restore.Restore(device=device)
-
-        # Get default directory
-        save_dir = getattr(self.parent, 'default_file_system')
-        if not save_dir:
-            self.parent.default_file_system = {}
-
-        # learn default directory
-        if device.name not in save_dir:
-            self.parent.default_file_system.update({
-                device.name: self.restore[device].abstract.sdk.libs.abstracted_libs.\
-                    subsection.get_default_dir(device=device)})
-
-        self.restore[device].save_configuration(
-            device=device,
-            abstract=None,
-            method='config_replace',
-            default_dir=self.parent.default_file_system
-        )
-
-        # To keep track of snapshots (whether they are deleted or not)
-        self.restore[device].snapshot_deleted = False
-
-    return None, steps.__result__
-
-def restore_config_snapshot(self, device, steps, delete_snapshot=True):
-    with steps.start('restore_config action', continue_=True):
-        if not hasattr(self, 'restore') or device not in self.restore:
-            steps.errored("Must use action 'save_config_snapshot' first.\n\n")
-
-        # If the snapshot file was deleted - error
-        if self.restore[device].snapshot_deleted:
-            steps.errored("If you want to restore with the same snapshot "
-                          "multiple times then you must pass 'delete_snapshot=False' "
-                          "to previous uses of this action. Otherwise the "
-                          "snapshot will be deleted on the first usage.")
-
-        try:
-            self.restore[device].restore_configuration(
-                device=device,
-                abstract=None,
-                method='config_replace',
-                delete_after_restore=delete_snapshot
+            delete_after_restore=delete_snapshot
             )
-        except Exception as e:
-            steps.failed(str(e))
+    except Exception as e:
+        steps.failed(str(e))
 
-        # To keep track of snapshots (whether they are deleted or not)
-        if delete_snapshot:
-            self.restore[device].snapshot_deleted = True
+    # To keep track of snapshots (whether they are deleted or not)
+    if delete_snapshot:
+        self.restore[device].snapshot_deleted = True
 
-    return None, steps.__result__
+def bash_console(self, device, steps, commands, continue_=True, **kwargs):
 
-def genie_sdk(self, steps, **kwargs):
-    with steps.start('run_genie_sdk action', continue_=True):
-        sdks = list(kwargs.keys())
-        run_genie_sdk(self, steps, sdks, parameters=kwargs)
+    ret_dict = {}
+    with device.bash_console(**kwargs) as bash:
+        for command in commands:
+            output = bash.execute(command, **kwargs)
+            ret_dict.update({command:output})
+    
+    return ret_dict
 
-    return None, steps.__result__
+def genie_sdk(self, steps, continue_=True, **kwargs):
+    sdks = list(kwargs.keys())
+    run_genie_sdk(self, steps, sdks, parameters=kwargs)
 
-def print(self, steps, *args, **kwargs):
-    with steps.start('Print action', continue_=True):
-        if 'steps' in kwargs:
-            kwargs.pop('steps')
+def print(self, steps, continue_=True, *args, **kwargs):
 
-        for key, value in kwargs.items():
-            log.info('The value of {k}: {v}'.format(k=key,v=value))
+    if 'steps' in kwargs:
+        kwargs.pop('steps')
+    
+    for key, value in kwargs.items():
+        if value.get('type') == 'banner':
 
-    return None, steps.__result__
+            print_value = 'printing message: {k}\n{v}'.format(k=key,v=banner(value['value']))
+        else:
+            print_value = 'The value of {k}: {v}'.format(k=key,v=value['value'])
+
+        log.info(print_value)
 
 actions = {'configure': configure,
            'parse': parse,
@@ -220,75 +230,10 @@ actions = {'configure': configure,
            'configure_replace': configure_replace,
            'save_config_snapshot': save_config_snapshot,
            'restore_config_snapshot': restore_config_snapshot,
-           'run_genie_sdk': genie_sdk}
+           'run_genie_sdk': genie_sdk,
+           'bash_console': bash_console}
 
-def _check_value_result(result, step, value=None, operation=None, style=None):
-    # Checking the inclusion or exclusion and verifies result values
-    # With regards to different operations for actions ('api','parse', 'learn')
-    if result and not value:
-        step.passed("Found ==> '{}' as the output".format(result))
-
-    try :
-        dict_of_ops = {'==': operator.eq, '>=':operator.ge,
-        '>': operator.gt, '<=':operator.le, '<':operator.le,
-        '!=':operator.ne}
-        result = float(result)
-        value = float(value)
-    except:
-        # If not a float/int, the only valid operations are == and !=
-        if type(result) == type(value):
-            dict_of_ops =  {'==': operator.eq, '!=':operator.ne}
-            if isinstance(result, str) and isinstance(value, str):
-                # If string allow to check if the return value contains any specific term
-                dict_of_ops.update({'contains': operator.contains})
-        else:
-            step.errored('{} and {} are not of the same type'.format(result, value))
-
-    if not operation in dict_of_ops.keys():
-        step.errored('The operation should be from the following list ==> {}.'.format(dict_of_ops))
-
-    if dict_of_ops[operation](result, value):
-        msg = "The keyword ==> {} was not found in output".format(value) if style == 'excluded'\
-            else "The included value ==> ({}) and expected value ==> ({}) are functioning as expected"\
-                .format(result, value)
-
-        step.passed(msg)
-    msg = "The keyword ==> {} was found in output".format(value) if style == 'excluded'\
-        else "The expected result is not met. The value is ==> ({}). The expected value ==> ({}). The operation is ({})"\
-            .format(result, value, operation)
-
-    step.failed(msg)
-
-
-def _execute_validation(result, step, style, key):
-    # Validating execute results
-    if style == "included" and result:
-        step.passed("Found '{k}' in the output".format(k=key))
-    elif style =='excluded' and not result:
-        step.passed("Did not find '{k}' in the output".format(k=key))
-    elif style == "included" and not result:
-        log.info("Could not find ==> '{k}' in the output".format(k=key))
-    else:
-        log.info("Found ==> '{k}' in the output".format(k=key))
-
-def _get_timeout_from_ratios(device, max_time, check_interval):
-
-    max_time_ratio = device.custom.get('max_time_ratio', None)
-    if max_time and max_time_ratio:
-        try:
-            max_time = int(max_time * float(max_time_ratio))
-        except ValueError:
-            log.error('The max_time_ratio ({m}) value is not of type float'.format(m=max_time_ratio))
-
-    check_interval_ratio = device.custom.get('check_interval_ratio', None)
-    if check_interval and check_interval_ratio:
-        try:
-            check_interval = int(check_interval * float(check_interval_ratio))
-        except ValueError:
-            log.error('The check_interval_ratio ({c}) value is not of type float'.format(c=check_interval_ratio))
-    return max_time, check_interval
-
-def action_parallel(self, steps, testbed, data):
+def action_parallel(self, steps, testbed, section, data):
     # When called run all the actions
     # below the keyword parallel concurently
     pcall_payloads = []
@@ -298,97 +243,35 @@ def action_parallel(self, steps, testbed, data):
             for action, action_kwargs in action_item.items():
                 # for future use - Enhancement needed in pyATS
                 # with steps.start("Implementing action '{a}' in parallel".format(a=actions)) as step:
+                # on parallel it is not possible to set continue to False and benefit from that feature
                 step = Steps()
-                kwargs = {'steps': step, 'testbed': testbed, 'data': [{action:action_kwargs}]}
+                kwargs = {'steps': step, 'testbed': testbed, 'section': section, 'data': [{action:action_kwargs}]}
                 pcall_payloads.append(kwargs)
         pcall_returns = pcall(self.dispatcher, ikwargs=pcall_payloads)
+
         # Each action return is a dictionary containing the action name, possible saved_variable
         # Action results, and device name that action is being implemented on
         # These value would be lost when the child processor that executes the action end the process.
-        # It is being implemented this way in order to add these values to the main processor.  
+        # It is being implemented this way in order to add these values to the main processor.
         for each_return in pcall_returns:
 
-            if each_return.get('saved_var'):
-                saved_var_data = each_return['saved_var'][0]
-                saved_var_name = each_return['saved_var'][1]
-                save_variable(self, saved_var_data, saved_var_name)
+            if each_return.get('saved_vars'):
+                for saved_var_name, saved_var_data in each_return.get('saved_vars').items():
 
-            with steps.start('Executed {} on {} in parallel'.format(each_return['action'], each_return['device']),continue_=True) as report_step:
-                 getattr(report_step, str(each_return['step_result']))()
+                    if each_return.get('filters'):
+                        log.info('Applied filter: {} to the action {} output'.format(each_return['filters'], action))
 
-def _prompt_handler(reply):
-    dialog_list = []
-    for statement in reply:
-        dialog_list.append(Statement(**statement))
-    
-    return Dialog(dialog_list)
-
-def _find_key_actions(self, device, steps, command,  include, 
-            exclude, max_time, check_interval, action, reply=None, ops=None):
-
-    # Inclusion, exclusion process.
-    keys = []
-    if include:
-        for item in include:
-            keys.append((item, 'included'))
-    if exclude:
-        for item in exclude:
-            keys.append((item, 'excluded'))
-
-    max_time, check_interval = _get_timeout_from_ratios(
-        device=device, max_time=max_time, check_interval=check_interval)
-
-    with steps.start("Executing '{c}' on '{device}'"
-                     .format(c=command, device=device.name)) as step:
+                    save_variable(self, saved_var_data, saved_var_name)
         
+            if each_return['device']:
+                msg = 'Executed action {action} on {device} in parallel'.format(
+                    action=each_return['action'], device=each_return['device'])
+            else:
+                msg = 'Executed action {action} in parallel'.format(
+                    action=each_return['action'])
+ 
+            with steps.start(msg, continue_=True, description=each_return['description']) as report_step:
 
-        output =  getattr(device, action)(command, reply= _prompt_handler(reply)) if reply else \
-            getattr(device, action)(command)
-
-        if action == 'learn':
-            output = getattr(output, ops) if hasattr(output, ops) else {}
-
-        for key, style in keys:
-            pattern = re.compile(str(key)) if action == 'execute' else \
-                R(list(str_to_list(key['key']+'[(.*)]')))
-
-            with step.start("Verify that '{key}' is {style} in the output"
-                            .format(key= key if action == 'execute' else key['key'] , style=style), continue_=True) as substep:
-
-                # for each key to verify, start with the previous output
-                send_cmd = False
-                timeout = Timeout(max_time, check_interval)
-                while True:
-                    if send_cmd:
-                        output = getattr(device, action)(command)
-                    else:
-                        log.info("Using previous output to verify")
-
-                    # set flag to send command on next iteration in case we are polling
-                    send_cmd = True
-                    if action == 'execute':
-                        found = pattern.search(output)
-                        _execute_validation(found, substep, style, key)
-                    else:
-                        try:
-                            found = find([output], pattern, filter_=False, all_keys=True)[0][0]
-                        except Exception as e:
-                            substep.errored('The keywords are not inputed appropriately {}'\
-                                .format(str(e)))
-                        else:
-                            value = key.get('value')
-                            operation = key.get('operation', '==') if style == 'included' \
-                                else '!='
-
-                        _check_value_result(found, substep, value, operation, style)
-
-                    timeout.sleep()
-                    if not timeout.iterate():
-                        break
-
-                # failing logic
-                if style == "included":
-                    substep.failed("Could not find '{k}' in the output".format(k=key))
-                elif style == "excluded":
-                    substep.failed("Found '{k}' in the output".format(k=key))
-    return output, steps.__result__
+                log.info('Check above for detailed action report')
+                getattr(report_step, str(each_return['step_result']))()
+    

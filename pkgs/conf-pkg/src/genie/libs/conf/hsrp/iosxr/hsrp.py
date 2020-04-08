@@ -160,7 +160,7 @@ class Hsrp(ABC):
                                 configurations.append_line('address learn')                            
 
                             if attributes.value('address_family').name \
-                             is 'ipv4':
+                             == 'ipv4':
                                 # interface <interface_name>
                                 #   address-family <address_family>
                                 #       hsrp <group_number>
@@ -177,7 +177,7 @@ class Hsrp(ABC):
                                     'secondary'))
 
                             if attributes.value('address_family').name \
-                             is 'ipv6':
+                             == 'ipv6':
                                 # interface <interface_name>
                                 #   address-family <address_family>
                                 #       hsrp <group_number>

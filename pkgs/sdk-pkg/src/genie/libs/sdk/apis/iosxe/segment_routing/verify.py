@@ -331,7 +331,7 @@ def verify_sid_in_segment_routing(device, address_family="ipv4", local=False):
                 address_family
             ][
                 "ipv4_prefix_sid"
-                if address_family is "ipv4"
+                if address_family == "ipv4"
                 else "ipv6_prefix_sid"
             ].keys()
         )

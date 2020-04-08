@@ -18,6 +18,8 @@ from genie.libs.conf.vrf import Vrf
 
 class test_interface(TestCase):
 
+    maxDiff = None
+
     def test_TunnelTeInterface(self):
         Genie.testbed = Testbed()
         dev1 = Device(name='PE1', os='iosxe')
@@ -339,6 +341,7 @@ class test_interface(TestCase):
         cfg = intf1.build_config(apply=False)
         self.assertMultiLineEqual(str(cfg), '\n'.join([
             'interface GigabitEthernet0/0/1',
+            ' encapsulation dot1q 20 second-dot1q 30',
             ' vrf forwarding test downstream vrf_downstream_test',
             ' description test desc',
             ' bandwidth 768',
@@ -347,7 +350,6 @@ class test_interface(TestCase):
             ' snmp trap link-status',
             ' logging event link-status',
             ' load-interval 30',
-            ' encapsulation dot1q 20 second-dot1q 30',
             ' ipv6 enable',
             ' ipv6 address autoconfig default',
             ' ip unnumbered GigabitEthernet0/0/2.20',

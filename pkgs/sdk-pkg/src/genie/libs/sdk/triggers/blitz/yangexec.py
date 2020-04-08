@@ -1,5 +1,4 @@
 import logging
-import traceback
 from time import sleep
 from copy import deepcopy
 
@@ -12,9 +11,7 @@ log = logging.getLogger(__name__)
 try:
     from ncclient.operations import RaiseMode
 except Exception:
-    log.error(
-        banner('Make sure you have ncclient installed in your virtual env')
-    )
+    log.error('Make sure you have ncclient installed in your virtual env')
 
 
 lock_retry_errors = ['lock-denied', 'resource-denied', 'in-use']
@@ -49,7 +46,7 @@ def try_lock(uut, target, timer=30, sleeptime=1):
                 ret.error.tag)))
             break
         elif counter < timer:
-            log.debug("RETRYING LOCK - {0}".format(counter))
+            log.info("RETRYING LOCK - {0}".format(counter))
             sleep(sleeptime)
         else:
             log.error(
@@ -79,7 +76,6 @@ def netconf_send(uut, rpcs, ds_state, lock=True, lock_retry=40, timeout=30):
                     kwargs.get('target', 'running'),
                     []
                 )
-
                 if lock and 'lock_ok' in target_state:
                     target_locked = try_lock(
                         uut, kwargs['target'],
@@ -149,22 +145,20 @@ def netconf_send(uut, rpcs, ds_state, lock=True, lock_retry=40, timeout=30):
                 if hasattr(ret, 'xml') and ret.xml is not None:
                     result.append((nc_op, ret.xml))
         except Exception as exe:
+            msg = str(exe)
             e = ''
             if target_locked:
                 try:
                     uut.unlock(target=kwargs['target'])
                 except Exception as e:
-                    pass
+                    msg += '\n' + str(e)
                 target_locked = False
             if running_locked:
                 try:
                     uut.unlock(target='running')
                 except Exception as e:
-                    pass
+                    msg += '\n' + str(e)
                 running_locked = False
-            # log.error(traceback.format_exc())
-            msg = str(exe)
-            msg += '\n' + str(e)
             result.append(('traceback', msg))
             continue
 
@@ -237,7 +231,7 @@ def gen_ncclient_rpc(rpc_data, prefix_type="minimal"):
     nodes = []
     for node in rpc_data.get('nodes', []):
         if 'value' in node:
-            node['value'] = str(node['value'])
+            node['value'] = str(node.get('value', ''))
         nodes.append(node)
 
     rpcbuilder.get_payload(nodes, container)
@@ -323,16 +317,85 @@ def get_datastore_state(target, device):
         target = 'running'
     return target, target_state
 
+
+def in_capabilities(caps, returns={}):
+    """Find capabilities in expected returns."""
+    result = True
+    if returns:
+        includes = returns.get('includes', [])
+        excludes = returns.get('excludes', [])
+        if includes and isinstance(includes, (bytes, str)):
+            includes = [includes]
+        if excludes and isinstance(excludes, (bytes, str)):
+            excludes = [excludes]
+        include_caps = _included_excluded(caps, includes)
+        exclude_caps = _included_excluded(caps, excludes)
+
+        if not include_caps or excludes and exclude_caps:
+            result = False
+    return result
+
+
+def _included_excluded(caps, returns=[]):
+    result = True
+    for item in returns:
+        if item not in caps:
+            if isinstance(caps, list):
+                log.warning("{0} not in capabilities".format(
+                    item
+                ))
+                result = False
+                continue
+            log.warning("{0} not in capabilities {1}".format(
+                item, caps.keys()
+            ))
+            result = False
+        elif isinstance(caps, list):
+            log.info("{0} in capabilities".format(
+                item
+            ))
+            continue
+        elif isinstance(returns[item], (bytes, str)):
+            if returns[item] != caps[item]:
+                log.warning("{0} != {1} in capabilities".format(
+                    item, returns[item]
+                ))
+                result = False
+            else:
+                log.info("{0} == {1} in capabilities".format(
+                    item, returns[item]
+                ))
+        elif isinstance(returns[item], list):
+            for value in returns[item]:
+                if value in caps[item]:
+                    log.info("{0}: {1} in capabilities".format(
+                        item, value
+                    ))
+                else:
+                    log.warning("{0}: {1} not in capabilities".format(
+                        item, value
+                    ))
+                    result = False
+    return result
+
+
 def run_netconf(operation, device, steps, datastore, rpc_data, returns):
     """Form NETCONF message and send to testbed."""
     log.debug('NETCONF MESSAGE')
     try:
         device.raise_mode = RaiseMode.NONE
     except NameError:
-        log.error(
-            banner('Make sure you have ncclient installed in your virtual env')
-        )
+        log.error('Make sure you have ncclient installed in your virtual env')
         return
+
+    if operation == 'capabilities':
+        if not returns:
+            log.error(banner('No NETCONF data to compare capability.'))
+            return False
+        return in_capabilities(
+            list(device.server_capabilities),
+            returns
+        )
 
     rpc_verify = RpcVerify(
         log=log,
@@ -434,12 +497,73 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns):
     elif rpc_data['operation'] == 'edit-data':
         # TODO: get-data return may not be relevent depending on datastore
         log.debug('Use "get-data" yang action to verify this "edit-data".')
+    elif rpc_data['operation'] == 'subscribe':
+        log.info(banner('Subscribed to {0}'.format('TODO: device name')))
 
     return True
 
 
-def run_gnmi(operation, device, steps, datastore, rpc_data, returns):
+def run_gnmi(operation, device, steps,
+             datastore, rpc_data, returns, **kwargs):
     """Form gNMI message and send to testbed."""
+    log.debug('gNMI MESSAGE')
     result = True
-    log.warning('gNMI protocol not implemented!')
+    rpc_verify = RpcVerify(log=log, capabilities=[])
+
+    if operation == 'edit-config':
+        result = device.set(rpc_data)
+    elif operation == 'get':
+        if not returns:
+            log.error(banner('No gNMI data to compare to GET'))
+            return False
+        response = device.get(rpc_data)
+        if not response:
+            return False
+        for resp in response:
+            update = resp.get('update')
+            if not update:
+                result = False
+                continue
+            if not rpc_verify.process_operational_state(update, returns):
+                result = False
+        return result
+    elif operation == 'get-config':
+        response = device.get_config(rpc_data)
+        deletes = False
+        updates = False
+        result = True
+        for resp in response:
+            if 'update' in resp:
+                updates = True
+                if not rpc_verify.process_operational_state(
+                        resp['update'], returns):
+                    result = False
+            if 'delete' in resp:
+                deletes = True
+        if not updates and deletes:
+            log.info('All configs were deleted')
+            return True
+        return result
+    elif operation == 'subscribe':
+        format = kwargs.get('format', {})
+        rpc_data['format'] = format
+        if format.get('request_mode', 'STREAM') == 'ONCE':
+            response = device.subscribe(rpc_data)
+        else:
+            rpc_data['returns'] = returns
+            rpc_data['verifier'] = rpc_verify.process_operational_state
+            return device.subscribe(rpc_data)
+    elif operation == 'capabilities':
+        if not returns:
+            log.error(banner('No gNMI data to compare to GET'))
+            return False
+        resp = device.capabilities()
+        result = in_capabilities(resp, returns)
+    else:
+        log.warning(banner('OPERATION: {0} not allowed'.format(operation)))
     return result
+
+
+def notify_wait(steps, device):
+    if hasattr(device, 'notify_wait'):
+        return device.notify_wait(steps)

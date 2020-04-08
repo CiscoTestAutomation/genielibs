@@ -166,6 +166,29 @@ class Interface(genie.libs.conf.interface.Interface):
 
     def _build_config_interface_submode(self, configurations, attributes, unconfig):
 
+        # encapsulation <encapsulation> <first_dot1q>
+        # encapsulation <encapsulation> <first_dot1q> native
+        # encapsulation <encapsulation> <first_dot1q> second-dot1q <second_dot1q>
+        if attributes.value('encapsulation') and \
+           attributes.value('first_dot1q'):
+            if attributes.value('second_dot1q'):
+                configurations.append_line(
+                    attributes.format('encapsulation {encapsulation.value} {first_dot1q}'
+                                      ' second-dot1q {second_dot1q}'),
+                    unconfig_cmd='no encapsulation {}'
+                                 .format(attributes.value('encapsulation').value))
+            elif attributes.value('native_vlan_dot1q'):
+                configurations.append_line(
+                    attributes.format('encapsulation {encapsulation.value} {first_dot1q}'
+                                      ' native'),
+                    unconfig_cmd='no encapsulation {}'
+                                 .format(attributes.value('encapsulation').value))
+            else:
+                configurations.append_line(
+                    attributes.format('encapsulation {encapsulation.value} {first_dot1q}'),
+                    unconfig_cmd='no encapsulation {}'
+                                 .format(attributes.value('encapsulation').value))
+
         # iosxe: interface {name} / vrf forwarding someword
         if attributes.value('vrf_downstream'):
             configurations.append_line(
@@ -237,29 +260,6 @@ class Interface(genie.libs.conf.interface.Interface):
         if attributes.value('load_interval'):
             configurations.append_line(
                 attributes.format('load-interval {load_interval}'))
-
-        # encapsulation <encapsulation> <first_dot1q>
-        # encapsulation <encapsulation> <first_dot1q> native
-        # encapsulation <encapsulation> <first_dot1q> second-dot1q <second_dot1q>
-        if attributes.value('encapsulation') and \
-           attributes.value('first_dot1q'):
-            if attributes.value('second_dot1q'):
-                configurations.append_line(
-                    attributes.format('encapsulation {encapsulation.value} {first_dot1q}'
-                                      ' second-dot1q {second_dot1q}'),
-                    unconfig_cmd='no encapsulation {}'
-                                 .format(attributes.value('encapsulation').value))
-            elif attributes.value('native_vlan_dot1q'):
-                configurations.append_line(
-                    attributes.format('encapsulation {encapsulation.value} {first_dot1q}'
-                                      ' native'),
-                    unconfig_cmd='no encapsulation {}'
-                                 .format(attributes.value('encapsulation').value))
-            else:
-                configurations.append_line(
-                    attributes.format('encapsulation {encapsulation.value} {first_dot1q}'),
-                    unconfig_cmd='no encapsulation {}'
-                                 .format(attributes.value('encapsulation').value))
 
         # ipv6 enable
         if attributes.value('ipv6_enabled'):

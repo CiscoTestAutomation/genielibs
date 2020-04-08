@@ -307,9 +307,9 @@ class Lisp(ABC):
                             attributes = AttributesHelper(self, attributes)
                             configurations = CliConfigBuilder(unconfig=unconfig)
 
-                            if self.ls_interface_type is 'ipv4':
+                            if self.ls_interface_type == 'ipv4':
                                 intf_type = 'IPv4-interface'
-                            elif self.ls_interface_type is 'ipv6':
+                            elif self.ls_interface_type == 'ipv6':
                                 intf_type = 'IPv6-interface'
 
                             cfg_str = '{type} {interface}'.format(type=intf_type, interface=kwargs['ls_interface'])

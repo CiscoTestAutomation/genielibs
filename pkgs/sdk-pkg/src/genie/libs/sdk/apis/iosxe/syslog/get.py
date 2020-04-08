@@ -41,7 +41,7 @@ def get_syslog_maximum_ospf_down_time(device, logs, server):
     # Extract time stamp from message
     ospf_up_time = get_syslog_message_time(message=ospf_up_message)
 
-    return (ospf_down_time - ospf_up_time).total_seconds()
+    return abs((ospf_down_time - ospf_up_time).total_seconds())
 
 
 def get_syslog_message_time(
@@ -330,4 +330,4 @@ def get_syslog_maximum_bgp_down_time(device, logs, server):
     # Extract time stamp from message
     bgp_up_time = get_syslog_message_time(message=bgp_up_message)
 
-    return (bgp_down_time - bgp_up_time).total_seconds()
+    return abs((bgp_down_time - bgp_up_time).total_seconds())

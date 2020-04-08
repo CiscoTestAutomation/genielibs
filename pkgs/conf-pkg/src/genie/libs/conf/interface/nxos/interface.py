@@ -886,7 +886,7 @@ class SubInterface(VirtualInterface, genie.libs.conf.interface.SubInterface):
         else:
             first_dot1q = None
 
-        if encapsulation and encapsulation is 'dot1q':
+        if encapsulation and encapsulation == 'dot1q':
             if first_dot1q:
                 cmd = 'encapsulation {} {}'.format(encapsulation, first_dot1q)
                 uncmd = 'no encapsulation {}'.format(encapsulation)

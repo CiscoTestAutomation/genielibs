@@ -3,7 +3,13 @@ import logging
 import re
 from ipaddress import ip_address, ip_network
 
+
+# pyATS
+from pyats.utils.objects import find, R
+
 # Genie
+from genie.utils.timeout import Timeout
+
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 log = logging.getLogger(__name__)
@@ -122,6 +128,7 @@ def get_cef_next_hop_ip_address(device, prefix, vrf=None, address_family=None):
     )
     return None
 
+
 def get_cef_internal_repair_next_hop_ip_address(device, prefix, vrf=None, address_family=None):
     """ Get internal next hop ip address from Express Forwarding
         Args:
@@ -239,6 +246,7 @@ def get_cef_internal_repair_next_hop_ip_address(device, prefix, vrf=None, addres
         )
     )
     return None
+
 
 def get_cef_internal_primary_next_hop_ip_address(device, prefix, vrf=None, address_family=None):
     """ Get internal next hop ip address from Express Forwarding
@@ -487,3 +495,129 @@ def get_cef_registred_label_to_prefix(
         log.info("Found label {label}".format(label=label))
 
     return label
+
+
+
+def get_cef_internal_primary_interface(device, prefix, vrf=None, max_time=60, check_interval=15):
+    """ Get cef internal output primary interface
+
+        Args:
+            device (`obj`): Device object
+            vrf (`str`): VRF to check
+            prefix (`str`): Prefix to check
+            max_time (`int`): Maximum time to keep checking
+            check_interval (`int`): How long to wait between checks
+
+        Raises:
+            N/A
+
+        Returns:
+            interface name/None
+    """
+    if vrf:
+        cmd = 'show ip cef vrf {vrf} {prefix} internal'.format(vrf=vrf, prefix=prefix)
+    else:
+        cmd = 'show ip cef vrf {prefix} internal'.format(prefix=prefix)
+
+    vrf = vrf if vrf else "default"
+
+    reqs = R(
+        [
+            "vrf",
+            "(?P<vrf>{vrf})".format(vrf=vrf),
+            "address_family",
+            "(?P<address_family>.*)",
+            "prefix",
+            "(?P<prefix>.*)",
+            "output_chain",
+            "tag_midchain",
+            "(?P<tag_midchain>.*)",
+            "frr",
+            "primary",
+            "primary",
+            "tag_adj",
+            "(?P<interface>.*)",
+        ]
+    )
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse(cmd)
+        except SchemaEmptyParserError:
+            log.info("Parser output is empty")
+            timeout.sleep()
+            continue
+
+        found = find([out], reqs, filter_=False, all_keys=True)
+        if found:
+            for interface in found[0][0]:
+                return interface
+
+        timeout.sleep()
+
+    log.error("Failed to get primary interface")
+    return None
+
+
+def get_cef_internal_repair_interface(device, prefix, vrf=None, max_time=60, check_interval=15):
+    """ Get cef internal output repair interface
+
+        Args:
+            device (`obj`): Device object
+            vrf (`str`): VRF to check
+            prefix (`str`): Prefix to check
+            max_time (`int`): Maximum time to keep checking
+            check_interval (`int`): How long to wait between checks
+
+        Raises:
+            N/A
+
+        Returns:
+            interface name/None
+    """
+    if vrf:
+        cmd = 'show ip cef vrf {vrf} {prefix} internal'.format(vrf=vrf, prefix=prefix)
+    else:
+        cmd = 'show ip cef vrf {prefix} internal'.format(prefix=prefix)
+
+    vrf = vrf if vrf else "default"
+
+    reqs = R(
+        [
+            "vrf",
+            "(?P<vrf>{vrf})".format(vrf=vrf),
+            "address_family",
+            "(?P<address_family>.*)",
+            "prefix",
+            "(?P<prefix>.*)",
+            "output_chain",
+            "tag_midchain",
+            "(?P<tag_midchain>.*)",
+            "frr",
+            "primary",
+            "repair",
+            "tag_adj",
+            "(?P<interface>.*)",
+        ]
+    )
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse(cmd)
+        except SchemaEmptyParserError:
+            log.info("Parser output is empty")
+            timeout.sleep()
+            continue
+
+        found = find([out], reqs, filter_=False, all_keys=True)
+        if found:
+            for interface in found[0][0]:
+                return interface
+
+        timeout.sleep()
+
+    log.error("Failed to get repair interface")
+    return None
+

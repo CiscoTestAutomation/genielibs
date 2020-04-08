@@ -600,7 +600,7 @@ class Interface(genie.libs.conf.interface.Interface):
             encapsulation = attributes.value('encapsulation').name
             first_dot1q = attributes.value('first_dot1q')
             second_dot1q = attributes.value('second_dot1q')
-            if (encapsulation is 'dot1q') and (isinstance(self, SubInterface)):
+            if (encapsulation == 'dot1q') and (isinstance(self, SubInterface)):
                 if first_dot1q and second_dot1q:
                     cmd = 'encapsulation {} {} second-dot1q {}'\
                         .format(encapsulation, first_dot1q, second_dot1q)
@@ -894,10 +894,10 @@ class Interface(genie.libs.conf.interface.Interface):
         # medium : interface {name} / ipv4 point-to-point
         medium = attributes.value('medium')
         if medium:
-            if medium.name is 'p2p':
+            if medium.name == 'p2p':
                 configurations.append_line('ipv4 point-to-point', 
                     unconfig_cmd='no ipv4 point-to-point')
-            elif medium.name is 'broadcast':
+            elif medium.name == 'broadcast':
                 configurations.append_line('no ipv4 point-to-point', 
                     unconfig_cmd='ipv4 point-to-point')
 

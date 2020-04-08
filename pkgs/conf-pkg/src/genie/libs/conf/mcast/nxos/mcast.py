@@ -92,16 +92,16 @@ class Mcast(ABC):
                     # ======
                     if attributes.value('enabled'):
                         if unconfig is False:
-                            if self.af_name is 'ipv4':
+                            if self.af_name == 'ipv4':
                                 configurations.append_line(
                                     attributes.format('feature pim'))
-                            elif self.af_name is 'ipv6':
+                            elif self.af_name == 'ipv6':
                                 configurations.append_line(
                                     attributes.format('feature pim6'))
                         elif unconfig is True:
-                            if self.af_name is 'ipv4':
+                            if self.af_name == 'ipv4':
                                 configurations.append_line('no feature pim', raw=True)
-                            elif self.af_name is 'ipv6':
+                            elif self.af_name == 'ipv6':
                                 configurations.append_line('no feature pim6', raw=True)
 
                     # =========

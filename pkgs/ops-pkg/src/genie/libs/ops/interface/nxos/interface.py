@@ -69,7 +69,7 @@ class Interface(SuperInterface):
 
 
         req_keys = ['access_vlan', 'trunk_vlans', 'switchport_mode',
-                    'switchport_enable']
+                    'switchport_enable', 'native_vlan']
         if vrf:
             for intf in self.info:
                 for key in req_keys:

@@ -160,7 +160,9 @@ def stop_packet_capture(device, capture_name):
         ) from e
 
 
-def export_packet_capture(device, testbed, filename, capture_name):
+def export_packet_capture(device, testbed, filename, capture_name, protocol='tftp',
+                          path='', username='', password=''):
+
     """Export the packet capture to a pcap file
 
         Args:
@@ -168,6 +170,11 @@ def export_packet_capture(device, testbed, filename, capture_name):
             testbed (`obj`): Testbed object
             filename (`str`): Filename to save
             capture_name (`str`): Packet capture name
+            protocol (`str`): Protocal name
+            path (`str`): Path to export
+            username (`str`): user name
+            password (`str`): password
+
 
         Returns:
             pcap_file_name or None
@@ -176,26 +183,33 @@ def export_packet_capture(device, testbed, filename, capture_name):
             pyATS Results
     """
 
-    if "tftp" in testbed.servers and "server" in testbed.servers["tftp"]:
-        execution_server = testbed.servers["tftp"]["server"]
+    if protocol in testbed.servers and "server" in testbed.servers[protocol]:
+        execution_server = testbed.servers[protocol]["server"]
     else:
-        raise Exception("Tftp server is missing from the testbed yaml file")
+        raise Exception("{pro} server is missing from the testbed yaml file".format(pro=protocol))
 
     pcap_file_name = filename.replace(".", "_") + ".pcap"
-    log.info("Export the capture to {p}".format(p=pcap_file_name))
 
-    try:
-        out = device.execute(
-            "monitor capture {capture_name} export tftp://{server}/"
-            "{pcap_file_name}".format(
-                capture_name=capture_name,
+    credetial = ''
+    if username and password:
+        credetial = '{}:{}@'.format(username, password)
+
+    export_to = '{pro}://{credetial}{server}/{path}/{pcap_file_name}'.format(
+                pro=protocol, path=path,
+                credetial=credetial,
                 server=execution_server,
-                pcap_file_name=pcap_file_name,
-            ),
-            error_pattern=["Failed to Export"],
-        )
+                pcap_file_name=pcap_file_name)
+
+    cmd = "monitor capture {capture_name} export {export_to}".format(
+            capture_name=capture_name, export_to=export_to)
+
+    log.info("Export the capture to {p}".format(p=pcap_file_name))
+    try:
+        out = device.execute(cmd, error_pattern=["Failed to Export"])
     except SubCommandFailure:
         log.error("Invalid command: Failed to Export packet capture")
+        return None
+
     except Exception as e:
         log.error("Failed to export pcap file: {e}".format(e=e))
         return None

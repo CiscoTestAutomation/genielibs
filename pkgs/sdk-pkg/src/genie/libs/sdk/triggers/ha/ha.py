@@ -306,16 +306,24 @@ class TriggerReloadLc(TriggerReload):
         self.ha = abstract.sdk.libs.abstracted_libs.ha.HA(device=uut)
 
         # get the LC number
-        for lc in self.mapping.keys:
-            for key, value in lc.items():
+        for mapping_keys in self.mapping.keys:
+
+            if 'lc' not in mapping_keys:
+                raise Exception('LC is not found in {}'.format(mapping_keys))
+            else:
+                lc_value = mapping_keys['lc']
+
+            for key, value in mapping_keys.items():
                 if lcRole and lcRole not in key:
                     continue
                 try:
-                    self.ha.reloadLc(timeout=self.timeout, steps=steps, lc=value)
+                    self.ha.reloadLc(timeout=self.timeout, steps=steps, lc=lc_value)
+                    break
                 except Exception as e:
                     self.failed('Failed to reload LC {}'
                                  .format(value), from_exception=e,
                                 goto=['next_tc'])
+
 
     @aetest.test
     def verify_reload(self, uut, abstract, steps):

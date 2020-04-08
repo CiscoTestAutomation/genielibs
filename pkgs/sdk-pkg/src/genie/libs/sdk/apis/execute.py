@@ -16,96 +16,133 @@ from unicon.eal.dialogs import Statement, Dialog
 log = logging.getLogger()
 
 
-def execute_clear_line(device):
-
-    ''' Clear the busy lines on the device switch
+def execute_clear_line(device, alias='cli'):
+    ''' Executes 'clear line <port>' to clear busy console port on device
         Args:
             device ('obj'): Device object
+            alias ('str'): Alias used for console port connection
+                           Default: 'cli'
         Returns:
             None
     '''
 
-    # Find its terminal server information
-    lines = getattr(device, 'peripherals', {}).get('terminal_server', {})
-    if not lines:
-        raise Exception("No terminal server provided in the testbed file "
-                        "for device '{d}' - could not clear the "
-                        "line".format(d=device.name))
+
+    # Init
     connected = set()
-    for device_name, line in lines.items():
-        dev = device.testbed.devices[device_name]
-        if dev not in connected:
-            dev.connect()
-            connected.add(dev)
-        if not isinstance(line, list):
-            line = [line]
-        for l in line:
+
+    # Find device's terminal server information
+    terminal_server = getattr(device, 'peripherals', {}).get('terminal_server', {})
+    if not terminal_server:
+        raise Exception("Terminal server information is not provided in the "
+                        "testbed YAML file for device '{}'\nUnable to clear "
+                        "the console port line".format(device.name))
+
+    for server, ports in terminal_server.items():
+        # Fix ports type if incorrect from user
+        if not isinstance(ports, list):
+            ports = [ports]
+
+        # Connect to terminal server
+        term_serv_dev = device.testbed.devices[server]
+        if term_serv_dev not in connected:
+            term_serv_dev.connect(init_exec_commands=[], init_config_commands=[])
+            connected.add(term_serv_dev)
+
+        # Execute clear line on port
+        for port in ports:
             try:
-                dev.api.execute_clear_line(l)
+                term_serv_dev.execute("clear line {}".format(port))
             except Exception as e:
-                log.error("Failed to clear line '{l}'".format(l=l))
+                log.error("Failed to clear line '{}'\n{}".format(port, str(e)))
                 raise
+            else:
+                log.info("Executed 'clear line {}' on terminal server '{}'".\
+                         format(port, term_serv_dev.name))
 
-    for dev in connected:
-        dev.disconnect()
+    # Disconnect from terminal server
+    log.info("Disconnecting from terminal server...")
+    for item in connected:
+        item.disconnect()
 
-    log.info('Disconnecting from {d} as line was cleared '
-             'successfully'.format(d=device.name))
-    device.disconnect()
+    # Disconnect from actual device now that line has been successfully cleared
+    log.info("Disconnecting from {} as line was cleared successfully".\
+             format(device.name))
+    device.disconnect(alias=alias)
 
 
-def _execute_power_cycler(device, state):
-
-    ''' Trigger the power cycler action on/off
+def execute_power_cycle_device(device, delay=30):
+    '''Powercycle a device
         Args:
             device ('obj'): Device object
-            state ('str'): Power cycler state on/off
-        Returns:
-            None
     '''
 
-    # Find its terminal server information
+    # Destroy device object
+    device.destroy_all()
+
+    # Find device's power cycler information
     pc_dict = getattr(device, 'peripherals', {}).get('power_cycler', {})
+
     if not pc_dict:
-        raise Exception("No powercycler provided in the testbed file "
-                        "for device '{d}' - could not powercycler {s} the"
-                        "device".format(d=device.name, s=state))
+        raise Exception("Powercycler information is not provided in the "
+                        "testbed YAML file for device '{}'\nUnable to "
+                        "powercycle device".format(device.name))
+    else:
+        pc = PowerCycler(**pc_dict)
 
     if not pc_dict.get('outlets'):
-        raise Exception("'outlets' has not been provided for "
-                        "device '{d}' under powercycler".format(d=device.name))
-
-    pc = PowerCycler(**pc_dict)
-    if state == 'on':
-        pc.on(*pc_dict['outlets'])
-    elif state == 'off':
-        pc.off(*pc_dict['outlets'])
+        raise Exception("Powercycler 'outlets' have not been provided for "
+                        "device '{}'".format(device.name))
     else:
-        raise Exception("State '{s}' does not exists".format(s=state))
+        pc_outlets = pc_dict['outlets']
+
+    # Init powercycler
+    pc = PowerCycler(**pc_dict)
+
+    # Turn powercycler off
+    try:
+        device.api.change_power_cycler_state(powercycler=pc, state='off',
+                                             outlets=pc_outlets)
+    except Exception as e:
+        raise Exception("Failed to powercycle device off\n{}".format(str(e)))
+    else:
+        log.info("Powercycled device '{}' to 'off' state".format(device.name))
+
+    # Wait specified amount of time before turning powercycler back on
+    log.info("Waiting '{}' seconds before powercycling device on".format(delay))
+    time.sleep(delay)
+
+    # Turn powercycler on
+    try:
+        device.api.change_power_cycler_state(powercycler=pc, state='on',
+                                             outlets=pc_outlets)
+    except Exception as e:
+        raise Exception("Failed to powercycle device on\n{}".format(str(e)))
+    else:
+        log.info("Powercycled device '{}' to 'on' state".format(device.name))
 
 
-def execute_power_cycler_on(device):
-
+def change_power_cycler_state(device, powercycler, state, outlets):
     ''' Turn on the power cycler
         Args:
             device ('obj'): Device object
+            powercycler ('obj'): Powercycler object
+            state ('str'): Power cycler state on/off
+            outlets ('str'): Power cycler outlets
         Returns:
             None
     '''
 
-    return _execute_power_cycler(device, 'on')
+    # Verify valid state given
+    try:
+        assert state in ['on', 'off']
+    except AssertionError:
+        raise Exception("Invalid state provided for powercycler\n"
+                        "Acceptable states are 'on' or 'off'")
 
-
-def execute_power_cycler_off(device):
-
-    ''' Turn off the power cycler
-        Args:
-            device ('obj'): Device object
-        Returns:
-            None
-    '''
-
-    return _execute_power_cycler(device, 'off')
+    if state == 'on':
+        powercycler.on(*outlets)
+    elif state == 'off':
+        powercycler.off(*outlets)
 
 
 def free_up_disk_space(device, destination, required_size, skip_deletion,

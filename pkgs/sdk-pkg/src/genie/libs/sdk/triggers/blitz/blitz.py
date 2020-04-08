@@ -1,20 +1,18 @@
 import logging
-import copy
+from copy import deepcopy
+
+from genie.harness.base import Trigger
+from genie.harness.discovery import copy_func
+
 from pyats import aetest
 from pyats.log.utils import banner
-from pyats.aetest.loop import loopable, get_iterations
-from genie.harness.base import Trigger
-
-from genie.harness.discovery import copy_func
 from pyats.aetest.base import Source
 from pyats.aetest.parameters import ParameterDict
+from pyats.aetest.loop import loopable, get_iterations
 
 from .actions import actions
 from .actions import action_parallel
-
-from .markup import get_variable
-from .markup import save_variable
-from .markup import filter_variable
+from .markup import get_variable, filter_variable, save_variable
 
 log = logging.getLogger()
 
@@ -69,7 +67,7 @@ class Blitz(Trigger):
                     iteration += 1
 
                 func.parameters = ParameterDict()
-                func.parameters['data'] = data
+                func.parameters['data'] = deepcopy(data)
                 func.source = Source(self, method.__class__)
 
                 new_method = func.__get__(self, func.__testcls__)
@@ -78,26 +76,26 @@ class Blitz(Trigger):
                 used_uids.append(new_method.uid)
         return sections
 
-    def dispatcher(self, steps, testbed, data):
-
-        ret_dict = {}
+    def dispatcher(self, steps, testbed, section, data):
+        ret_dict = {} 
         if not data:
             log.info('Nothing to execute, ending section')
             return
         
         for action_item in data:
             if 'parallel' in action_item:
-                action_parallel(self, steps, testbed, action_item['parallel'])
+
+                action_parallel(self, steps, testbed, section, action_item['parallel'])
                 continue
-            for action, kwargs in action_item.items():
                 
-                # See if action exists in actions
+            for action, kwargs in action_item.items():
                 if not kwargs:
                     raise Exception('No data was provided for {a}'.format(a=action))
-                if action not in actions:
-                    raise Exception("'{a} is not a valid "
-                                    "action".format(a=action))
 
+                # adding the section description
+                if 'description' in action:
+                    section.description = kwargs
+                    continue
 
                 step_msg = "Starting action {a}".format(a=action)
                 if 'device' in kwargs:
@@ -107,52 +105,92 @@ class Blitz(Trigger):
                         raise Exception("Could not find the device '{d}' "
                                         "which was provided in the "
                                         "action".format(d=kwargs['device']))
-                    step_msg += ' on device {d}'.format(d=device.name)
+                    step_msg += " on device '{d}'".format(d=device.name)
 
                     # Provide device object
                     kwargs['device'] = device
+                    # adding the device name to return dictionary
+                    ret_dict['device'] = device.name
+                else:
+                    # in cases that no device is defined
+                    ret_dict['device'] = None
 
+                # adding the step description
+                description = kwargs.pop('description', '')
+                # check if user wants the testcase to stop after a failure or to continue
                 continue_ = kwargs.pop('continue', True)
-                with steps.start(step_msg, continue_=continue_) as step:
+                ret_dict['continue_'] = continue_
+                with steps.start(step_msg, continue_=continue_, description=description) as step:
 
                     if 'banner' in kwargs:
                         log.info(banner(kwargs['banner']))
                         del kwargs['banner']
 
+                    # By default the testcase would continue after a failure
+                    # if user sets continue to false though it would stop
+                    kwargs['continue_'] = continue_
+
                     # The actions were not added as a bounded method
                     # so providing the self
                     kwargs['self'] = self
-                    save = kwargs.pop('save', None)
-                    save_variable_name = save.pop('variable_name') if save else None
+                    save = kwargs.pop('save', [])
+
                     # Checking to replace variables and get those arguments
                     kwargs = get_variable(**kwargs)
+
                     # Updating steps to be newly created step
                     kwargs['steps'] = step
-                    # Call the action with all the arguments
-                    output = actions[action](**kwargs)
-                    action_output = output[0]
-                    step_result = output[1]
 
-                    # Filtering the action output and saving the output
-                    output = filter_variable(self, action_output, save)
-                    # Saving the variable
-                    saved_var = save_variable(self, output,save_variable_name)
+                    if action in actions:
+                        # Call the action with all the arguments
 
-                    if 'device' not in kwargs:
-                        ret_dict.update({'action': action , 'saved_var': saved_var, 'step_result':step_result, 'device': 'script'})
+                        action_output = actions[action](**kwargs)
                     else:
-                        ret_dict.update({'action': action , 'saved_var': saved_var, 'step_result':step_result, 'device': device.name})
+                        # Call custom action
+                        _self = kwargs.pop('self')
+
+                        try:
+                            action_output = getattr(self, action)(**kwargs)
+                        except AttributeError:
+                            raise Exception("'{action}' is not a valid action "
+                                            "or custom action"
+                                            .format(action=action))
+
+                        kwargs['self'] = _self
+
+                    # saving actions and outputs and their results in vars
+                    # storing all the necessary return values in a dict to be saved later in reporting parallel actions
+                    ret_dict.update({'action': action,
+                                     'description': description,
+                                     'step_result': step.result,
+                                     'saved_vars': {}})
+
+                    # filtering and saving process, ablity of saving multiple vars
+                    for item in save:
+                        # Filtering the action output and saving the output
+                        # Saving the variable in self.parameters
+                        save_variable_name = item.get('variable_name')
+                        filters = item.get('filter')
+                        output = filter_variable(self, action_output, filters=filters)
+
+                        if filters:
+                            log.info('Applied filter: {} to the action {} output'.format(filters, action))
+                            ret_dict.update({'filters': filters})
+
+                        save_variable(self, output, save_variable_name)
+
+                        # updating the return dictionary with the saved value
+                        ret_dict['saved_vars'].update({save_variable_name:output})
 
         return ret_dict
-
 @aetest.setup
-def setup_section(self, steps, testbed, data=None):
-    return self.dispatcher(steps, testbed, data)
+def setup_section(self, steps, testbed, section=None, data=None):
+    return self.dispatcher(steps, testbed, section, data)
 
 @aetest.test
-def test_section(self, steps, testbed, data=None):
-    return self.dispatcher(steps, testbed, data)
-    
+def test_section(self, steps, testbed, section=None, data=None):
+    return self.dispatcher(steps, testbed, section, data)
+
 @aetest.cleanup
-def cleanup_section(self, steps, testbed, data=None):
-    return self.dispatcher(steps, testbed,  data)
+def cleanup_section(self, steps, testbed, section=None, data=None):
+    return self.dispatcher(steps, testbed, section, data)

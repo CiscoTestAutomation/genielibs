@@ -21,7 +21,8 @@ logger = logging.getLogger(__name__)
 
 # Error patterns to be caught when executing cli on device
 FAIL_MSG = ['failed to copy', 'Unable to find', 'Error opening', 'Error', 'operation failed',
-            'Compaction is not supported', 'Copy failed', 'No route to host', 'Connection timed out', 'not found', 'No space']
+            'Compaction is not supported', 'Copy failed', 'No route to host', 'Connection timed out', 'not found', 'No space',
+            'not a remote file']
 
 class FileUtils(FileUtilsBase):
 

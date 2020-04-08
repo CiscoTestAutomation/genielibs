@@ -62,6 +62,9 @@ class TriggerSwitchover(CommonSwitchover):
 
     """
 
+    # Add more keys to exclude
+    platform_exclude = platform_exclude + ['main_mem']
+
     # Mapping of Information between Ops and Conf
     # Also permit to dictates which key to verify
     mapping = Mapping(requirements={'ops.platform.platform.Platform':{

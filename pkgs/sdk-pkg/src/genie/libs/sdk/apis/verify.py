@@ -1,25 +1,29 @@
-# python
+'''Common verify functions'''
+
+# Python
 import os
 import time
 import logging
 
 # pyATS
-from ats.log.utils import banner
 from pyats.utils.fileutils import FileUtils
 
+# Logger
 log = logging.getLogger()
 
 
 def verify_connectivity(device):
 
-    log.info(banner("Verifying device connectivity"))
+    log.info("Verifying device connectivity")
     try:
         device.execute("show clock")
     except Exception:
         # Nope!
+        log.warning("Device is not connected")
         return False
     else:
         # All good!
+        log.debug("Device is connected")
         return True
 
 
@@ -320,16 +324,13 @@ def verify_current_image(device, images):
                         "length as the image(s) to be verified '{}'".format(
                         running_images, images))
 
-    for runimage in running_images:
-        if runimage not in images:
-            raise Exception("Running image '{}' not found in the list of the "
-                            "expected images '{}'".format(images, runimage))
-        else:
-            log.info("Image '{}' is loaded successfully onto device {}".\
-                     format(runimage, device.name))
-
-    log.info("All required images are loaded successfully")
-
+    if set(images) == set(running_images):
+        log.info("Successfully loaded the following images on device '{}':".\
+                 format(device.name))
+        for i in running_images: log.info(i)
+    else:
+        raise Exception("Running images '{}' do not match list of the "
+                        "expected images '{}'".format(running_images, images))
     return
 
 

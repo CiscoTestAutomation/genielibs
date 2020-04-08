@@ -1,14 +1,14 @@
 Verify_AdminDiagChassis:
-  devices: ['uut']
+  devices: ["uut"]
 Verify_BgpInstanceAfGroupConfiguration:
-  devices: ['uut']
+  devices: ["uut"]
 Verify_BgpInstanceAllAll_vrf_type_all:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   parameters:
     vrf_type: all
 Verify_BgpInstanceAllAll_vrf_type_vrf_af_type_ipv4_unicast:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   iteration:
     attempt: 9
@@ -17,7 +17,7 @@ Verify_BgpInstanceAllAll_vrf_type_vrf_af_type_ipv4_unicast:
     af_type: ipv4 unicast
     vrf_type: vrf
 Verify_BgpInstanceAllAll_vrf_type_vrf_af_type_ipv6_unicast:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   iteration:
     attempt: 9
@@ -26,23 +26,23 @@ Verify_BgpInstanceAllAll_vrf_type_vrf_af_type_ipv6_unicast:
     af_type: ipv6 unicast
     vrf_type: vrf
 Verify_BgpInstanceNeighborsDetail_vrf_type_all:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   groups:
-  - bgp
+    - bgp
   iteration:
     attempt: 6
     interval: 15
   parameters:
     vrf_type: all
 Verify_BgpInstanceNeighborsDetail_vrf_type_vrf_af_type_ipv4_unicast:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   parameters:
     af_type: ipv4 unicast
     vrf_type: vrf
 Verify_BgpInstanceNeighborsDetail_vrf_type_vrf_af_type_ipv6_unicast:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   parameters:
     af_type: ipv6 unicast
@@ -62,7 +62,7 @@ Verify_BgpInstanceNeighborsDetail_yang_vrf_type_vrf_af_type_ipv6_unicast:
     af_type: ipv6 unicast
     vrf_type: vrf
 Verify_BgpInstanceProcessDetail_vrf_type_all:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   iteration:
     attempt: 30
@@ -70,7 +70,7 @@ Verify_BgpInstanceProcessDetail_vrf_type_all:
   parameters:
     vrf_type: all
 Verify_BgpInstanceProcessDetail_vrf_type_vrf_af_type_ipv4_unicast:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   iteration:
     attempt: 30
@@ -79,7 +79,7 @@ Verify_BgpInstanceProcessDetail_vrf_type_vrf_af_type_ipv4_unicast:
     af_type: ipv4 unicast
     vrf_type: vrf
 Verify_BgpInstanceProcessDetail_vrf_type_vrf_af_type_ipv6_unicast:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   iteration:
     attempt: 30
@@ -102,19 +102,19 @@ Verify_BgpInstanceProcessDetail_yang_vrf_type_vrf_af_type_ipv6_unicast:
     af_type: ipv6 unicast
     vrf_type: vrf
 Verify_BgpInstanceSessionGroupConfiguration:
-  devices: ['uut']
+  devices: ["uut"]
 Verify_BgpInstanceSummary_vrf_type_all:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   groups:
-  - bgp
+    - bgp
   iteration:
     attempt: 6
     interval: 15
   parameters:
     vrf_type: all
 Verify_BgpInstanceSummary_vrf_type_vrf_af_type_ipv4_unicast:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   iteration:
     attempt: 4
@@ -123,7 +123,7 @@ Verify_BgpInstanceSummary_vrf_type_vrf_af_type_ipv4_unicast:
     af_type: ipv4 unicast
     vrf_type: vrf
 Verify_BgpInstanceSummary_vrf_type_vrf_af_type_ipv6_unicast:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   iteration:
     attempt: 4
@@ -132,134 +132,134 @@ Verify_BgpInstanceSummary_vrf_type_vrf_af_type_ipv6_unicast:
     af_type: ipv6 unicast
     vrf_type: vrf
 Verify_BgpInstances:
-  devices: ['uut']
+  devices: ["uut"]
 Verify_BgpL2vpnEvpn:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_BgpL2vpnEvpnAdvertised:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_BgpOpenconfigYang_yang:
   exclude: []
 Verify_BgpVrfDbVrfAll:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_ControllersFiaDiagshellL2showLocation:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_Dir:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_EthernetCfmMeps:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_EthernetTags:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_EthernetTags_yang:
   exclude: []
 Verify_EthernetTrunkDetail:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_EvpnEviMac:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_EvpnInternalLabelDetail:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_HsrpDetail:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_HsrpSummary:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_InstallActiveSummary:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_InterfaceBrief:
-  devices: ['uut']
+  devices: ["uut"]
 Verify_InterfacesAccounting:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_InterfacesDetail:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   groups:
-  - bgp
+    - bgp
   iteration:
     attempt: 4
     interval: 5
 Verify_Inventory:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_IpInterfaceBrief:
-  devices: ['uut']
+  devices: ["uut"]
 Verify_IpInterfaceBriefPipeVlan:
-  devices: ['uut']
+  devices: ["uut"]
 Verify_Ipv4VrfAllInterface:
-  devices: ['uut']
+  devices: ["uut"]
 Verify_Ipv6VrfAllInterface:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   iteration:
     attempt: 9
     interval: 10
 Verify_L2routeEvpnMacIpAll:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_L2routeTopology:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_L2vpnMacLearning:
-  devices: ['uut']
+  devices: ["uut"]
 Verify_MribVrfRoute_vrf_all:
-  devices: ['uut']
+  devices: ["uut"]
   parameters:
     vrf: all
 Verify_MribVrfRoute_vrf_default:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_OspfMplsTrafficEngLink:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_OspfVrfAllInclusive:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_OspfVrfAllInclusiveDatabaseExternal:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_OspfVrfAllInclusiveDatabaseNetwork:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_OspfVrfAllInclusiveDatabaseOpaqueArea:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_OspfVrfAllInclusiveDatabaseRouter:
-  devices: ['uut']
+  devices: ["uut"]
   exclude:
-  - age
-  - checksum
-  - seq_num
+    - age
+    - checksum
+    - seq_num
 Verify_OspfVrfAllInclusiveDatabaseSummary:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_OspfVrfAllInclusiveInterface:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_OspfVrfAllInclusiveNeighborDetail:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_OspfVrfAllInclusiveShamLinks:
-  devices: ['uut']
+  devices: ["uut"]
 Verify_OspfVrfAllInclusiveVirtualLinks:
-  devices: ['uut']
+  devices: ["uut"]
 Verify_PimVrfInterfaceDetail_vrf_default_af_ipv4:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   parameters:
     af: ipv4
 Verify_PimVrfInterfaceDetail_vrf_default_af_ipv6:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   iteration:
     attempt: 6
@@ -267,90 +267,90 @@ Verify_PimVrfInterfaceDetail_vrf_default_af_ipv6:
   parameters:
     af: ipv6
 Verify_PimVrfMstatic_vrf_default_af_ipv4:
-  devices: ['uut']
+  devices: ["uut"]
   parameters:
     af: ipv4
 Verify_PimVrfMstatic_vrf_default_af_ipv6:
-  devices: ['uut']
+  devices: ["uut"]
   parameters:
     af: ipv6
 Verify_PimVrfRpfSummary_vrf_default_af_ipv4:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   parameters:
     af: ipv4
 Verify_PimVrfRpfSummary_vrf_default_af_ipv6:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   parameters:
     af: ipv6
 Verify_PlacementProgramAll:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_Platform:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_PlatformVm:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_ProtocolsAfiAllAll:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_Redundancy:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   iteration:
     attempt: 6
     interval: 5
 Verify_RedundancySummary:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   iteration:
     attempt: 10
     interval: 10
 Verify_RouteIpv4:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_RouteIpv6:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_RplRoutePolicy:
-  devices: ['uut']
+  devices: ["uut"]
 Verify_SdrDetail:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_StaticTopologyDetail_vrf_all_af_ipv4:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   parameters:
     af: ipv4
     vrf: all
 Verify_StaticTopologyDetail_vrf_all_af_ipv6:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   parameters:
     af: ipv6
     vrf: all
 Verify_StaticTopologyDetail_vrf_default:
-  devices: ['uut']
+  devices: ["uut"]
   exclude:
-  - install_date
-  - configure_date
+    - install_date
+    - configure_date
 Verify_StaticTopologyDetail_vrf_default_af_ipv4:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   parameters:
     af: ipv4
 Verify_StaticTopologyDetail_vrf_default_af_ipv6:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
   parameters:
     af: ipv6
 Verify_Version:
-  devices: ['uut']
+  devices: ["uut"]
   exclude: []
 Verify_VlanInterface:
-  devices: ['uut']
+  devices: ["uut"]
 Verify_VrfAllDetail:
-  devices: ['uut']
-extends: '%ENV{VIRTUAL_ENV}/genie_yamls/verification_datafile.yaml'
+  devices: ["uut"]
+extends: "%ENV{VIRTUAL_ENV}/genie_yamls/verification_datafile.yaml"

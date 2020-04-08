@@ -8,6 +8,8 @@ import jinja2
 import shlex, subprocess
 import time
 import random
+import copy
+
 from time import strptime
 from datetime import datetime
 from netaddr import IPAddress
@@ -23,6 +25,8 @@ from genie.utils.diff import Diff
 from genie.utils.timeout import Timeout
 from genie.conf.base import Device
 from genie.harness._commons_internal import _error_patterns
+from genie.utils import Dq
+from genie.libs.sdk.libs.utils.normalize import merge_dict
 
 # unicon
 from unicon.eal.dialogs import Dialog, Statement
@@ -30,7 +34,6 @@ from unicon.core.errors import ConnectionError
 from unicon.plugins.generic.statements import default_statement_list
 
 log = logging.getLogger(__name__)
-
 
 def _cli(device, cmd, timeout, prompt):
     """ Send command to device and get the output
@@ -167,7 +170,7 @@ def time_to_int(time):
     # support patterns like ['00:00:00', '2d10h', '1w2d']
     p = re.compile(
         r"^(?P<time>(\d+):(\d+):(\d+))?(?P<dh>(\d+)d(\d+)h)?"
-        "(?P<wd>(\d+)w(\d)+d)?$"
+        r"(?P<wd>(\d+)w(\d)+d)?$"
     )
     m = p.match(time)
     if m:
@@ -244,47 +247,48 @@ def compare_config_dicts(a, b, exclude=None):
     return str(diff)
 
 
-def copy_pcap_file(testbed, filename):
+def copy_pcap_file(testbed, filename, command=None):
     """Copy pcap filename to runtime directory for analysis
 
         Args:
             testbed (`obj`): Testbed object
             filename (`str`): Pcap filename
-
+            command ('str'): cli command to copy file from remote 
+                             server to local server
         Returns:
             None
 
         Raises:
             pyATS Results
     """
-
-    if "port" in testbed.servers["scp"]["custom"]:
-        command = (
-            "sshpass -p {password} scp -P {port} {user}@{add}:"
-            "/{serv_loc}/{file} {loc}/{file}".format(
-                password=testbed.servers["scp"]["password"],
-                port=testbed.servers["scp"]["custom"]["port"],
-                user=testbed.servers["scp"]["username"],
-                add=testbed.servers["scp"]["address"],
-                serv_loc=testbed.servers["scp"]["custom"]["loc"],
-                file=filename,
-                loc=runtime.directory,
+    if not command:
+        if "port" in testbed.servers["scp"]["custom"]:
+            command = (
+                "sshpass -p {password} scp -P {port} {user}@{add}:"
+                "/{serv_loc}/{file} {loc}/{file}".format(
+                    password=testbed.servers["scp"]["password"],
+                    port=testbed.servers["scp"]["custom"]["port"],
+                    user=testbed.servers["scp"]["username"],
+                    add=testbed.servers["scp"]["address"],
+                    serv_loc=testbed.servers["scp"]["custom"]["loc"],
+                    file=filename,
+                    loc=runtime.directory,
+                )
             )
-        )
-    else:
-        # In case of VIRL testbed where is no specific port
-        # to connect to the server from
-        command = (
-            "sshpass -p {password} scp {user}@{add}:"
-            "/{serv_loc}/{file} {loc}/{file}".format(
-                password=testbed.servers["scp"]["password"],
-                user=testbed.servers["scp"]["username"],
-                add=testbed.servers["scp"]["address"],
-                serv_loc=testbed.servers["scp"]["custom"]["loc"],
-                file=filename,
-                loc=runtime.directory,
+        else:
+            # In case of VIRL testbed where is no specific port
+            # to connect to the server from
+            command = (
+                "sshpass -p {password} scp {user}@{add}:"
+                "/{serv_loc}/{file} {loc}/{file}".format(
+                    password=testbed.servers["scp"]["password"],
+                    user=testbed.servers["scp"]["username"],
+                    add=testbed.servers["scp"]["address"],
+                    serv_loc=testbed.servers["scp"]["custom"]["loc"],
+                    file=filename,
+                    loc=runtime.directory,
+                )
             )
-        )
 
     log.info(
         "Copy pcap file '{file}' to '{loc}' for packet analysis".format(
@@ -294,7 +298,7 @@ def copy_pcap_file(testbed, filename):
 
     args = shlex.split(command)
     try:
-        p = subprocess.check_output(args)
+        subprocess.check_output(args)
     except Exception as e:
         log.error(e)
         raise Exception(
@@ -449,7 +453,7 @@ def copy_file_from_tftp_ftp(testbed, filename, pro):
 
     args = shlex.split(command)
     try:
-        p = subprocess.check_output(args)
+        subprocess.check_output(args)
     except Exception as e:
         log.error(e)
         raise Exception(
@@ -988,12 +992,12 @@ def delete_file_on_server(testbed, server, path, protocol='sftp', timeout=300, f
 
 def _delete_file_on_server(server, path, protocol='sftp', timeout=300, fu_session=None):
 
-        url = '{p}://{s}/{f}'.format(p=protocol, s=server, f=path)
+    url = '{p}://{s}/{f}'.format(p=protocol, s=server, f=path)
 
-        try:
-            return fu_session.deletefile(target=url, timeout_seconds=timeout)
-        except Exception as e:
-            raise Exception("Failed to delete file : {}".format(str(e)))
+    try:
+        return fu_session.deletefile(target=url, timeout_seconds=timeout)
+    except Exception as e:
+        raise Exception("Failed to delete file : {}".format(str(e)))
 
 
 def convert_server_to_linux_device(device, server):
@@ -1030,6 +1034,10 @@ def get_username_password(device, username=None, password=None, creds=None):
         if hasattr(device, 'credentials') and device.credentials:
             if creds is not None:
                 cred = creds[0] if isinstance(creds, list) else creds
+            # only 1 credential, but not 'default'
+            elif len(device.credentials) == 1:
+                for name in device.credentials:
+                    cred = name
             else:
                 cred='default'
             username = device.credentials.get(cred, {}).get("username", "")
@@ -1055,10 +1063,10 @@ def compared_with_running_config(device, config):
     """
     current = device.api.get_running_config_dict()
     diff = Diff(current, config)
-    
+
     diff.findDiff()
 
-    return diff 
+    return diff
 
 def diff_configuration(device, config1, config2):
     """ Show difference between two configurations
@@ -1097,16 +1105,26 @@ def dynamic_diff_parameterized_running_config(device, base_config, mapping, runn
     """
     if running_config is None:
         running_config = device.execute('show running-config')
-    
-    output = diff_configuration(device, base_config, running_config).diff_string('+')
 
+    output = diff_configuration(device, base_config, running_config).diff_string('+')
+    converted_map = {}
+
+    # Make sure each mapping is not in short form
     for interface, variable in mapping.items():
+        full_info = device.execute('show interface {}'.format(interface)).split(' ')
+        if len(full_info) > 0:
+            # Assume full interface name is first word of output
+            converted_map.setdefault(full_info[0], variable)
+        else:
+            raise Exception("Invalid interface short form")
+
+    for interface, variable in converted_map.items():
         output = output.replace(' {} '.format(interface), ' {} '.format(variable))
         output = output.replace(' {}\n'.format(interface), ' {}\n'.format(variable))
 
     return output
 
-def dynamic_diff_create_running_config(device, mapping, template, base_config): 
+def dynamic_diff_create_running_config(device, mapping, template, base_config):
     """ Creates a merged running config from template dynamic diff with
         variables replaced by mapping and merged with base config
         Args:
@@ -1123,3 +1141,308 @@ def dynamic_diff_create_running_config(device, mapping, template, base_config):
         template = template.replace(variable, value)
 
     return '{}{}'.format(template, base_config)
+
+
+def save_info_to_file(filename, parameters, header=[], separator=','):
+    """ save information to a file in runtime directory
+        Args:
+            filename ('str'): Log file name
+            parameters ('list'): Parameters list
+            header ('list'): Header list
+            separator ('str'): Separator for the parameters
+            
+            example for traffic loss:
+                parameters = ['TC1', 'PE1-PE2-1000pps', '0.0', 'PASSED']
+                header = ['uid', 'flows', 'outage', 'result']
+                save_info_to_file('logs.txt', parameters, header=header)
+
+                - in logs.txt
+                uid,flows,outage,result
+                TC1,PE1-PE2-1000pps,0.0,PASSED
+
+        Returns:
+            None
+    """
+    log_file = runtime.directory + "/" + filename
+    hasFile = os.path.isfile(log_file)
+
+    params = [str(p) for p in parameters]
+    with open(log_file, 'a+') as f:
+        if not hasFile and header:
+            f.write(separator.join(header) + '\n')
+        f.write(separator.join(params) + '\n')
+
+
+def string_to_number(word):
+    """ Converts from number(string) to number(integer)
+        Args:
+            word (`str`): number (string)
+        Raise:
+            Exception
+        Returns:
+            ret_num ('int|float'): number (integer|float)
+
+        Example:
+
+        >>> dev.api.string_to_number('1')
+        1
+
+        >>> dev.api.string_to_number('1.1')
+        1.1
+
+    """
+    try:
+        ret_num = int(word)
+    except Exception:
+        try:
+            ret_num = float(word)
+        except Exception:
+            raise Exception(
+                "'{word}' could not be converted to number.".format(word=word))
+
+    return ret_num
+
+
+def number_to_string(number):
+    """ Converts from number(integer|float) to number(string)
+        Args:
+            number (`int|float`): number (integer|float)
+        Raise:
+            Exception
+        Returns:
+            ret_str ('str'): number (string)
+
+        Example:
+
+        >>> dev.api.number_to_string(1)
+        '1'
+
+        >>> dev.api.number_to_string(1.1)
+        '1.1'
+
+        >>> dev.api.number_to_string('1')
+        '1'
+
+        >>> dev.api.number_to_string('1.1')
+        '1.1'
+
+    """
+    # if string, try to convert to number(string)
+    if isinstance(number, str):
+        try:
+            if '.' in number:
+                number = float(number)
+            else:
+                number = int(number)
+        except Exception:
+            try:
+                number = float(number)
+            except Exception:
+                raise Exception(
+                    "'{number}' could not be converted to string from number.".
+                    format(number=number))
+
+    if isinstance(number, int) or isinstance(number, float):
+        try:
+            ret_str = str(number)
+        except Exception:
+            raise Exception(
+                "'{number}' could not be converted to string from number.".
+                format(number=number))
+    else:
+        raise Exception(
+            "'{number}' could not be converted to string from number.".format(
+                number=number))
+
+    return ret_str
+
+
+def get_list_items(name, index, index_end='', to_num=False, to_str=False):
+    """ Get one or any of list items
+        Args:
+            name (`list`): list data
+            index (`int`): number of index for list to get
+            index_end (`int`): end number of index for list to get
+            to_num (`bool`): flag to change value from str to number
+            to_str (`bool`): flag to change value from number to str
+        Raise:
+            Exception
+        Returns:
+            ret_item (`any`): one or any of list items
+
+        Example:
+
+        >>> dev.api.get_list_items([1,2,3], 0)
+        1
+
+        >>> dev.api.get_list_items([[1,4],2,3], 0)
+        [1, 4]
+
+        >>> dev.api.get_list_items([[1,4],2,3], 1, to_str=True)
+        '2'
+
+        >>> dev.api.get_list_items([[1,4],2,'3'], 2, to_str=True)
+        '3'
+
+        >>> dev.api.get_list_items([[1,4], 2, '3'], 2, to_num=True)
+        3
+
+        >>> dev.api.get_list_items([[1,4], 2, '3'], 1, 2)
+        [2, '3']
+
+    """
+
+    if isinstance(name, list):
+        try:
+            if index_end:
+                ret_item = name[index:index_end+1]
+            else:
+                ret_item = name[index]
+        except:
+            raise Exception(
+                "Could not get the item from {name}".format(name=name))
+        if to_num:
+            ret_item = string_to_number(ret_item)
+        elif to_str:
+            ret_item = number_to_string(ret_item)
+    else:
+        raise Exception("{name} was not list.".format(name=name))
+
+    return ret_item
+
+
+def get_dict_items(name,
+                   keys,
+                   contains='',
+                   to_num=False,
+                   to_str=False,
+                   headers=False,
+                   regex=False):
+    """ Get one or any of dict items
+        Args:
+            name (`dict`): dict data
+            key (`str|int|list`): key in dict. one or any
+            contains (`str`): filter with Dq by this keyword
+            regex (`bool`): if use regex for contains
+            to_num (`bool`): flag to change value from str to number
+            to_str (`bool`): flag to change value from number to str
+            headers (`bool`): if return contains headers, or not
+        Raise:
+            Exception
+        Returns:
+            ret_item (`any`): list of one or of dict key/value items
+
+        Example:
+
+            bgp = {
+                'id': '65000',
+                'shutdown': False,
+                'address_family': {
+                    'ipv4': {
+                        'total_neighbor': 3,
+                        'neighbors': {
+                            '10.1.1.1': {
+                                'status': 'up',
+                                'routes': 10,
+                            },
+                            '10.2.2.2': {
+                                'status': 'down',
+                                'routes': '20',
+                            },
+                            '10.3.3.3': {
+                                'status': 'up',
+                                'routes': 30
+                            }
+                        }
+                    }
+                }
+            }
+
+            Some examples with above structure data.
+
+            >>> dev.api.get_dict_items(bgp, 'neighbors')
+            [['10.1.1.1'], ['10.2.2.2'], ['10.3.3.3']]
+
+            >>> dev.api.get_dict_items(bgp, ['id', 'shutdown'])
+            [['65000', False]]
+
+            >>> dev.api.get_dict_items(bgp, ['neighbors', 'routes', 'status'])
+            [['10.1.1.1', 10, 'up'], ['10.2.2.2', '20', 'down'], ['10.3.3.3', 30, 'up']]
+
+            >>> dev.api.get_dict_items(bgp, ['neighbors', 'routes', 'status'], 'ipv4')
+            [['10.1.1.1', 10, 'up'], ['10.2.2.2', '20', 'down'], ['10.3.3.3', 30, 'up']]
+
+            >>> dev.api.get_dict_items(bgp, ['neighbors', 'routes', 'status'], '10.1.1.1')
+            [['10.1.1.1', 10, 'up']]
+
+            >>> dev.api.get_dict_items(bgp, ['neighbors', 'routes', 'status'], ['10.1.1.1', '10.2.2.2])
+            [['10.1.1.1', 10, 'up'], ['10.2.2.2', '20', 'down']]
+
+            >>> dev.api.get_dict_items(bgp, 'routes', ['10.1.1.1', '10.2.2.2'])
+            [[10], ['20']]
+
+            >>> dev.api.get_dict_items(bgp, 'routes', ['10.1.1.1', '10.2.2.2'], to_str=True)
+            [['10'], ['20']]
+
+            >>> dev.api.get_dict_items(bgp, 'routes', ['10.1.1.1', '10.2.2.2'], to_num=True)
+            [[10], [20]]
+
+            >>> dev.api.get_dict_items(bgp, ['neighbors', 'routes', 'status'], ['10.1.1.1', '10.2.2.2])
+            [['10.1.1.1', 10, 'up'], ['10.2.2.2', '20', 'down']]
+
+            (Speceial case) if only one item in list, it will return value without list.
+            >>> dev.api.get_dict_items(bgp, 'routes', '10.1.1.1')
+            10
+
+    """
+
+    ret_item = []
+
+    if isinstance(name, dict):
+        if contains:
+            if isinstance(contains, list):
+                name2 = {}
+                for item in contains:
+                    name2 = merge_dict(
+                        name2,
+                        Dq(name).contains(item, regex=regex).reconstruct())
+                name = name2
+            else:
+                name = Dq(name).contains(contains, regex=regex).reconstruct()
+        if isinstance(keys, list):
+            ret_item.append(keys)
+            value_lists = []
+            for key in keys:
+                value_list = []
+                dq_list = Dq(name).get_values(key)
+                if len(keys) != len(dq_list):
+                    dq_list = sorted(set(dq_list), key=dq_list.index)
+                for value in dq_list:
+                    value_list.append(value)
+                value_lists.append(value_list)
+            for i in range(len(value_list)):
+                item_row = []
+                for item_column in value_lists:
+                    item_row.append(item_column[i])
+                ret_item.append(item_row)
+        else:
+            ret_item.append([keys])
+            # get values by Dq
+            dq_list = Dq(name).get_values(keys)
+            dq_list = sorted(set(dq_list), key=dq_list.index)
+            for value in dq_list:
+                if to_num:
+                    ret_item.append([string_to_number(value)])
+                elif to_str:
+                    ret_item.append([number_to_string(value)])
+                else:
+                    ret_item.append([value])
+    else:
+        raise Exception("{name} was not dict.".format(name=name))
+
+    if headers is False:
+        ret_item.pop(0)
+    # special case. if only one item, return just one without list for ease of use
+    if len(ret_item) == 1 and len(ret_item[0]) == 1:
+        ret_item = ret_item[0][0]
+    return ret_item

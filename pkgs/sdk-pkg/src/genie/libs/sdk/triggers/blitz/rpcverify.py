@@ -6,6 +6,58 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
+class EvalDatatype:
+    """Evaluate opfields that contain "datatype" definition."""
+
+    def __init__(self, value, field):
+        """Usage: EvalDatatype(opfield).evalute()"""
+        self.value = value
+        self.field = field
+
+    @property
+    def field(self):
+        return self._field
+
+    @field.setter
+    def field(self, field):
+        self._field = field
+        datatype = field.get('datatype', '')
+        self.datatype = datatype
+        if datatype.startswith('int') or datatype.startswith('uint'):
+            self.fval = int(field.get('value'))
+        elif datatype in ['decimal64', 'float']:
+            self.fval = float(field.get('value'))
+        elif datatype == 'empty':
+            self.fval = ''
+        else:
+            self.fval = field.get('value')
+        self.op = field.get('op')
+        self.fname = field.get('name', 'unknown field')
+
+    def evaluate(self):
+        if not self.datatype:
+            log.error('Datatype not defined for value check of {0}'.format(
+                self.fname
+            ))
+            return False
+        if self.datatype == 'pattern':
+            self.value = re.findall(self.fval, self.value)
+            if self.value:
+                self.fval = self.value
+        if self.op == '==':
+            return self.value == self.fval
+        elif self.op == '!=':
+            return self.value != self.fval
+        elif self.op == '<':
+            return self.value < self.fval
+        elif self.op == '>':
+            return self.value > self.fval
+        elif self.op == '<=':
+            return self.value <= self.fval
+        elif self.op == '>=':
+            return self.value >= self.fval
+
+
 class RpcVerify():
     """Verification of NETCONF rpc and rpc-reply messages.
 
@@ -63,9 +115,7 @@ class RpcVerify():
             import lxml.etree as et
             self.et = et
         except ImportError as e:
-            log.error(
-                banner('Make sure you have lxml installed in your virtual env')
-            )
+            log.error('Make sure you have lxml installed in your virtual env')
             raise(e)
         self.rpc_reply = rpc_reply
         self.rpc_verify = rpc_verify
@@ -279,14 +329,17 @@ class RpcVerify():
             # set this to operation in case we get an exception
             eval_text = field['op']
 
+            datatype = field.get('datatype', None)
+
             if field['op'] == 'range':
                 r1 = r2 = None
                 try:
-                    value = float(value)
+                    if not datatype:
+                        value = float(value)
                 except ValueError:
                     log.error(
                         'OPERATION VALUE {0}: {1} invalid for range {2}{3}'
-                        .format(field['name'],
+                        .format(field['xpath'],
                                 value,
                                 field['value'],
                                 ' FAILED')
@@ -307,12 +360,23 @@ class RpcVerify():
                     r2 = rng[1]
 
                 try:
-                    r1 = float(r1)
-                    r2 = float(r2)
+                    if datatype:
+                        if datatype.startswith('int') or \
+                                datatype.startswith('uint'):
+                            r1 = int(r1)
+                            r2 = int(r2)
+                        elif datatype in ['decimal64', 'float']:
+                            r1 = float(r1)
+                            r2 = float(r2)
+                        else:
+                            raise TypeError
+                    else:
+                        r1 = float(r1)
+                        r2 = float(r2)
                 except TypeError:
                     log.error(
                         'OPERATION VALUE {0}: invalid range {1}{2}'
-                        .format(field['name'],
+                        .format(field['xpath'],
                                 field['value'],
                                 ' FAILED')
                     )
@@ -321,58 +385,79 @@ class RpcVerify():
                 if value >= r1 and value <= r2:
                     log.info(
                         'OPERATION VALUE {0}: {1} in range {2} SUCCESS'
-                        .format(field['name'], value, field['value'])
+                        .format(field['xpath'], value, field['value'])
                     )
                 else:
                     log.error(
                         'OPERATION VALUE {0}: {1} out of range {2}{3}'
-                        .format(field['name'],
+                        .format(field['xpath'],
                                 value,
                                 field['value'],
                                 ' FAILED')
                     )
                     return False
             else:
-                if (value.isnumeric() and not field['value'].isnumeric()) or \
-                        (field['value'].isnumeric() and not value.isnumeric()):
-                    # the eval_text will show the issue
-                    eval_text = '"' + value + '" ' + field['op']
-                    eval_text += ' "' + field['value'] + '"'
-                    log.error(
-                        'OPERATION VALUE {0}: {1} FAILED'.format(
-                            field['name'], eval_text
-                        )
-                    )
-                    return False
-                if value.isnumeric():
-                    eval_text = value + ' ' + field['op'] + ' '
-                    eval_text += field['value']
-                else:
-                    try:
-                        # See if we are dealing with floats
-                        v1 = float(value)
-                        v2 = float(field['value'])
-                        eval_text = str(v1) + ' ' + field['op'] + ' ' + str(v2)
-                    except (TypeError, ValueError):
+                if not datatype:
+                    fval = field.get('value')
+                    if (value.isnumeric() and not fval.isnumeric()) or \
+                            (fval.isnumeric() and not value.isnumeric()):
+                        # the eval_text will show the issue
                         eval_text = '"' + value + '" ' + field['op']
-                        eval_text += ' "' + field['value'] + '"'
-                if eval(eval_text):
-                    log.info(
-                        'OPERATION VALUE {0}: {1} SUCCESS'.format(
-                            field['name'], eval_text
+                        eval_text += ' "' + fval + '"'
+                        log.error(
+                            'OPERATION VALUE {0}: {1} FAILED'.format(
+                                field['xpath'], eval_text
+                            )
                         )
-                    )
+                        return False
+                    if value.isnumeric():
+                        eval_text = value + ' ' + field['op'] + ' '
+                        eval_text += fval
+                    else:
+                        try:
+                            # See if we are dealing with floats
+                            v1 = float(value)
+                            v2 = float(fval)
+                            eval_text = str(v1) + ' ' + field['op'] + ' '
+                            eval_text += str(v2)
+                        except (TypeError, ValueError):
+                            eval_text = '"' + value + '" ' + field['op']
+                            eval_text += ' "' + fval + '"'
+                    if eval(eval_text):
+                        log.info(
+                            'OPERATION VALUE {0}: {1} SUCCESS'.format(
+                                field['xpath'], eval_text
+                            )
+                        )
+                    else:
+                        log.error(
+                            'OPERATION VALUE {0}: {1} FAILED'.format(
+                                field['xpath'], eval_text
+                            )
+                        )
+                        return False
                 else:
-                    log.error(
-                        'OPERATION VALUE {0}: {1} FAILED'.format(
-                            field['name'], eval_text
+                    log_msg = 'OPERATION VALUE {0}: {1} {2} {3} {4}'
+                    if EvalDatatype(value, field).evaluate():
+                        log.info(log_msg.format(
+                                field['xpath'], str(value),
+                                field['op'], field['value'],
+                                'SUCCESS'
+                            )
                         )
-                    )
-                    return False
+                    else:
+                        log.error(log_msg.format(
+                                field['xpath'], str(value),
+                                field['op'], field['value'],
+                                'FAILED'
+                            )
+                        )
+                        return False
+
         except Exception as e:
             log.error(
                 'OPERATION VALUE {0}: {1} {2} FAILED\n{3}'.format(
-                    field['name'], value, eval_text, str(e)
+                    field['xpath'], value, eval_text, str(e)
                 )
             )
             return False
@@ -380,10 +465,12 @@ class RpcVerify():
         return True
 
     def process_operational_state(self, response, opfields):
-        """Test operational state response.
+        """Test NETCONF or GNMI operational state response.
 
         Args:
-          response (list): List of tuples containing lxml.Elements with xpath.
+          response (list): List of tuples containing
+                           NETCONF - lxml.Element, xpath.
+                           GNMI - value, xpath
           opfields (list): List of dict representing opfields.
         Returns:
           bool: True if successful.
@@ -400,14 +487,21 @@ class RpcVerify():
             return False
 
         for reply, reply_xpath in response:
-            value_state = self._process_values(reply, '')
-            value = value_state.get('reply_val', 'empty')
+            if self.et.iselement(reply):
+                # NETCONF response
+                value_state = self._process_values(reply, '')
+                value = value_state.get('reply_val', 'empty')
+                name = self.et.QName(reply).localname
+            else:
+                # GNMI response
+                value = reply
+                name = reply_xpath[reply_xpath.rfind('/') + 1:]
             for field in opfields:
                 if field.get('selected', True) is False:
                     opfields.remove(field)
                     continue
                 if 'xpath' in field and field['xpath'] == reply_xpath and \
-                        self.et.QName(reply).localname == field['name']:
+                        name == field['name']:
                     if not self.check_opfield(value, field):
                         result = False
                     opfields.remove(field)

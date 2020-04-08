@@ -61,4 +61,7 @@
     * Fixed API get_time_source_from_output to support more various output
 * Blitz
     * Updated action_parallel to save the result of the actions implemented in parallel in the main processor
+* Utils
+    * dynamic_diff_parameterized_running_config now supports interface short form as mapping input
+
 

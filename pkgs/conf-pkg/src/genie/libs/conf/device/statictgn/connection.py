@@ -311,7 +311,7 @@ class GenieTgn(BaseConnection):
                           format(max_outage_ms))
 
         # Process result
-        if result is not '1':
+        if result != '1':
             raise GenieTgnError("Traffic failure observed on device '{}'".\
                                 format(self.device.name))
 
@@ -330,7 +330,7 @@ class GenieTgn(BaseConnection):
                           format(timeout=timeout, delay=delay_check_traffic))
 
         # Process result
-        if result is not '1':
+        if result != '1':
             raise GenieTgnError("Traffic failure observed on device '{}'".\
                                 format(self.device.name))
 

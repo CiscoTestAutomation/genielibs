@@ -1,0 +1,101 @@
+testbed:
+    name: yangtest
+    custom:
+        datastore:
+            type: ''
+            lock: True
+            retry: 10
+
+devices:
+    # WARNING: device name must match configured hostname
+    CSR1K-6:
+        type: csr
+        os: iosxe
+        alias: uut1
+        connections:
+            cli:
+                class: unicon.Unicon
+                protocol: ssh
+                ip: 172.27.248.6
+                port: 22
+                username: admin
+                password: DMIdmi1
+            yang:
+                class: yang.connector.Netconf
+                protocol: netconf
+                host: 172.27.248.6
+                port: 830
+                user: admin
+                password: DMIdmi1
+                # set all these to False if you have SSH key issues
+                hostkey_verify: False
+                look_for_keys: True
+                allow_agent: True
+    ddmi-9500-2:
+        type: iosxe
+        os: iosxe
+        alias: uut2
+        connections:
+            cli:
+                class: unicon.Unicon
+                protocol: ssh
+                ip: 172.27.255.22
+                port: 22
+                username: admin
+                password: DMIdmi1!
+            yang1:
+                class: yang.connector.Netconf
+                protocol: netconf
+                host: 172.27.255.22
+                port: 830
+                user: admin
+                password: DMIdmi1!
+                # set all these to False if you have SSH key issues
+                hostkey_verify: False
+                look_for_keys: True
+                allow_agent: True
+            yang2:
+                class: yang.connector.Gnmi
+                protocol: gnmi
+                host: 172.27.255.22
+                port: 50051
+                username: admin
+                password: DMIdmi1!
+                root_certificate: '/Users/miott/certs/iosxe/ddmi-9500-2/rootCA.pem'
+                private_key: '/Users/miott/certs/iosxe/ddmi-9500-2/client.key'
+                certificate_chain: '/Users/miott/certs/iosxe/ddmi-9500-2/client.crt'
+                ssl_name_override: xe9k.cisco.com
+    nbg-leaf3:
+        type: n9k
+        os: nxos
+        alias: uut
+        connections:
+            cli:
+                class: unicon.Unicon
+                protocol: ssh
+                ip: 172.23.167.122
+                port: 22
+                username: admin
+                password: C!sco123
+            yang1:
+                class: yang.connector.Netconf
+                protocol: netconf
+                host: 172.23.167.122
+                port: 830
+                user: admin
+                password: C!sco123
+                # set all these to False if you have SSH key issues
+                hostkey_verify: False
+                look_for_keys: True
+                allow_agent: True
+            yang2:
+                class: yang.connector.Gnmi
+                protocol: gnmi
+                host: 172.23.167.122
+                port: 50051
+                username: admin
+                password: C!sco123
+                root_certificate: '/Users/miott/certs/nxos/nbg-leaf3/server-cert-chain.pem'
+                private_key: ''
+                certificate_chain: ''
+                ssl_name_override: ems.cisco.com

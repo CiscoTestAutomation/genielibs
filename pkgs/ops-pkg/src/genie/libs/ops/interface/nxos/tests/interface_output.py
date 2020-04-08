@@ -1056,6 +1056,7 @@ class InterfaceOutput(object):
     }
     InterfaceOpsOutput_custom_info = {
         'Ethernet2/1': {'access_vlan': 1,
+                        'native_vlan': 1,
                         'auto_negotiate': False,
                         'bandwidth': 768,
                         'counters': {'in_broadcast_pkts': 0,
@@ -1227,6 +1228,7 @@ class InterfaceOutput(object):
         'Ethernet2/18': {'vrf': 'default'},
         'Ethernet2/19': {'vrf': 'default'},
         'Ethernet2/2': {'access_vlan': 1,
+                     'native_vlan': 1,
                      'auto_negotiate': False,
                      'bandwidth': 1000000,
                      'counters': {'in_broadcast_pkts': 0,
@@ -1281,6 +1283,7 @@ class InterfaceOutput(object):
         'Ethernet2/28': {'vrf': 'default'},
         'Ethernet2/29': {'vrf': 'default'},
         'Ethernet2/3': {'access_vlan': 100,
+                         'native_vlan': 1,
                      'switchport_mode': 'access',
                      'switchport_enable': True,
                      'trunk_vlans': '1-4094'},
