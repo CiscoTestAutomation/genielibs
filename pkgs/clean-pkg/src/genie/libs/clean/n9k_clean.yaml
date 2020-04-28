@@ -1,0 +1,79 @@
+devices:
+    N95_1:
+        device_recovery:
+            break_count: 10
+            console_activity_pattern: "\\.\\.\\.\\."
+            timeout: 1200
+            recovery_password: Cisc0123
+            golden_image:
+                system: bootflash:/ISSUCleanGolden.system.gbin
+        connect:
+        copy_to_device:
+            protocol: scp
+            origin:
+                hostname: ssr-sjc-vmftp-2
+                files:
+                - /auto/tftp-ssr/n9k_ISSUCleanGolden.system.gbin
+            destination: bootflash:/
+            vrf: management
+            use_kstack: True
+
+        change_boot_variable:
+            images:
+                system: bootflash:/n9k_ISSUCleanGolden.system.gbin
+            copy_vdc_all: False
+
+        change_boot_variable__1:
+            images:
+                system: bootflash:/ISSUCleanGolden.system.gbin
+            copy_vdc_all: False
+
+        write_erase:
+
+        apply_configuration:
+            config: bootflash:/ISSUCleanGolden.cfg
+
+        reload:
+            credentials: clean_reload_creds
+
+        verify_running_image:
+            images:
+                - n9k_ISSUCleanGolden.system.gbin
+
+        verify_running_image__1:
+            images:
+                - ISSUCleanGolden.system.gbin
+
+        configure:
+            configuration: |
+                interface ethernet2/1
+                no shutdown
+            sleep: 5
+
+        configure__2:
+            configuration: |
+                interface ethernet2/4
+                no shutdown
+            sleep: 5
+
+        copy_file_on_device:
+            copy_file: bootflash:/ISSUCleanGolden.cfg
+
+        delete_file_from_device:
+            delete_file: bootflash:/ISSUCleanGolden.cfg_backup
+
+        order:
+            - 'connect'
+            # - 'write_erase'
+            # - 'apply_configuration'
+            # - 'change_boot_variable__1'
+            # - 'reload'
+            # - 'verify_running_image__1'
+            # - 'copy_to_device'
+            # - 'copy_file_on_device'
+            # - 'write_erase'
+            # - 'delete_file_from_device'
+            # - 'apply_configuration'
+            # - 'change_boot_variable'
+            # - 'reload'
+            # - 'verify_running_image'

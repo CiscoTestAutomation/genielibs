@@ -3,6 +3,7 @@ import os
 import logging
 
 # Genie
+from genie.utils import Dq
 from genie.utils.timeout import Timeout
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
@@ -170,3 +171,42 @@ def verify_config_register(device, config_register, next_reload=False,
         log.error("Configuration register value '{}' is incorrect".\
                   format(value))
         return False
+
+
+def verify_module_status(device, timeout=180, interval=30):
+    ''' Check status of slot using 'show platform'
+        Args:
+            device ('obj'): Device object
+            timeout ('int'): Max timeout to re-check slot status
+            interval ('int'): Max interval to re-check slot status
+    '''
+
+    timeout = Timeout(max_time=timeout, interval=interval)
+    while timeout.iterate():
+        # Reset
+        failed_slots = []
+        try:
+            output = device.parse("show platform")
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # Check state for all slots
+        failed_slots = Dq(output).contains('state').\
+                            not_contains_key_value('state',
+                                                   '.*ok.*|standby|ha-standby',
+                                                   value_regex=True).\
+                            get_values('slot')
+        if not failed_slots:
+            log.info("All modules on '{}' are in stable state".\
+                     format(device.name))
+            break
+        else:
+            log.warning("The following modules are not in stable state {}".\
+                        format(failed_slots))
+            log.warning("Sleeping {} seconds before rechecking".format(interval))
+            timeout.sleep()
+            continue
+    else:
+        raise Exception("Modules on '{}' are not in stable state".\
+                        format(device.name))

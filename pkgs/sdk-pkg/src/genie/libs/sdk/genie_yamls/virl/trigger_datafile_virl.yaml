@@ -1,4 +1,4 @@
-extends: "%ENV{VIRTUAL_ENV}/genie_yamls/trigger_datafile.yaml"
+extends: "%CALLABLE{genie.libs.sdk.genie_yamls.datafile(trigger)}"
 
 #===============================================================================
 #                                VIRL

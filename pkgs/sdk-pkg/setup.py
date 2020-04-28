@@ -49,42 +49,8 @@ version = find_version('src', 'genie', 'libs', 'sdk', '__init__.py')
 
 install_requires = []
 
-class DevelopCommand(setupdevelop):
-    def run(self, *args, **kwargs):
-        super().run(*args, **kwargs)
-
-        src = os.path.abspath('src/genie/libs/sdk/genie_yamls')
-        dst = os.path.join(sys.prefix, 'genie_yamls')
-
-        if self.uninstall is None:
-            # If directory/symlink already exists, then error out
-            if os.path.exists(dst):
-                print("'{dst}' already exists, removing it".format(dst=dst))
-                os.unlink(dst)
-
-            print('Creating symbolic link at from {src} to {dst}'.format(src=src, dst=dst))
-            os.symlink(src, dst)
-        else:
-            if os.path.lexists(dst):
-                print('Removing symbolic link {dst}'.format(dst=dst))
-                os.unlink(dst)
-
-def find_yamls(paths):
-    '''finds all genie_yamls'''
-    files = []
-
-    for (dirpath, dirnames, filenames) in os.walk(os.path.join(paths)):
-        files.append((dirpath, [os.path.join(dirpath, f) for f in filenames]))
-
-    return files
-
 # launch setup
 setup(
-
-    # update commands list with default options
-    # and apply user's options on top
-    cmdclass={'develop':DevelopCommand},
-
     name = 'genie.libs.sdk',
     version = version,
 
@@ -113,6 +79,7 @@ setup(
     'License :: OSI Approved :: Apache Software License',
     'Operating System :: MacOS',
     'Operating System :: POSIX :: Linux',
+    'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.5',
@@ -169,7 +136,7 @@ setup(
     # format:
     #   [('target', ['list', 'of', 'files'])]
     # where target is sys.prefix/<target>
-    data_files = find_yamls('genie_yamls'),
+    data_files = [],
 
     # non zip-safe (never tested it)
     zip_safe = False,

@@ -7,9 +7,10 @@ import logging
 from pyats.utils.objects import R, find
 
 # Genie
+from genie.utils import Dq
 from genie.utils.diff import Diff
 from genie.utils.timeout import Timeout
-from genie.metaparser.util.exceptions import SchemaEmptyParserError
+from genie.metaparser.util.exceptions import SchemaEmptyParserError, SchemaMissingKeyError
 
 # Logger
 log = logging.getLogger(__name__)
@@ -145,9 +146,12 @@ def get_file_size(device, file, output=None):
         log.error("Failed to parse the directory listing due to: {}".\
                   format(str(e)))
         return None
+
+    size = Dq(dir_output).contains(filename).get_values('size')
+    if size:
+        return int(size[0])
     else:
-        return int(dir_output.get('dir').get(directory).get('files').\
-                   get(filename).get('size'))
+        log.error("File '{}' is not found on device".format(file))
 
 
 def get_running_image(device):
@@ -161,9 +165,13 @@ def get_running_image(device):
     try:
         # Execute 'show version'
         output = device.parse("show version")
-        return output.get('version').get('system_image')
+        return output.get('version', {}).get('system_image')
     except SchemaEmptyParserError as e:
-        log.error("Command 'show version' did not return any results")
+        log.error("Command 'show version' did not return any results: {e}".format(e=e))
+    except SchemaMissingKeyError as e:
+        log.error("Missing key while parsing 'show version': {e}".format(e=e))
+    except Exception as e:
+        log.error("Failed to parse 'show version': {e}".format(e=e))
     return None
 
 
@@ -187,8 +195,12 @@ def get_available_space(device, directory='', output=None):
         log.error("Failed to parse the directory listing due to: {}".\
                   format(str(e)))
         return None
+
+    bytes_free = Dq(dir_output).get_values(key='bytes_free')
+    if bytes_free:
+        return int(bytes_free[0])
     else:
-        return int(dir_output.get('dir').get(directory).get('bytes_free'))
+        log.error("Failed to get available space for {}".format(directory))
 
 
 def get_total_space(device, directory='', output=None):
@@ -234,10 +246,10 @@ def get_boot_variables(device, output=None):
         if boot_variables:
             for item in boot_variables.split(';'):
                 if ',' in item:
-                    image, num = item.split(',')
-                    boot_images.append(image)
-                else:
-                    boot_images.append(item)
+                    item, num = item.split(',')
+                if " " in item:
+                    item, discard = item.split(" ")
+                boot_images.append(item)
 
     return boot_images
 

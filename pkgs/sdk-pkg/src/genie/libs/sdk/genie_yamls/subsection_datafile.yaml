@@ -38,6 +38,9 @@ cleanup:
 
       stop_traffic:
         method: genie.harness.commons.stop_traffic
+
+      delete_plugin:
+        method: genie.harness.commons.delete_plugin
   
     order: ['verify_configuration_snapshot', 'stop_traffic']
 

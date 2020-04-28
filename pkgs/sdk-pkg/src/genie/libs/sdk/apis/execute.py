@@ -1,10 +1,12 @@
 '''Common execute functions'''
 
 # Python
+import os
 import time
 import logging
 
 # Genie
+from genie.utils import Dq
 from genie.utils.timeout import Timeout
 from genie.libs.sdk.powercycler import powercyclers
 from genie.libs.sdk.powercycler.base import PowerCycler
@@ -169,7 +171,7 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
     '''
 
     # Check correct arguments provided
-    if not (min_free_space_percent or required_size):
+    if (min_free_space_percent is None and required_size is None):
         raise ValueError("Either 'required_size' or 'min_free_space_percent' "
                          "must be provided to perform disk space verification")
 
@@ -229,16 +231,22 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
     else:
         log.info("Deleting unprotected files to free up some space")
         log.info("Sending 'show version' to learn the current running images")
-        protected_files.extend(device.api.get_running_image())
+
+        image = device.api.get_running_image()
+        if isinstance(image, list):
+            protected_files.extend([os.path.basename(i) for i in image])
+        else:
+            protected_files.extend([os.path.basename(image)])
 
         # convert to set for O(1) lookup
         protected_files = set(protected_files)
         parsed_dir_out = device.parse('dir {}'.format(destination), output=dir_out)
+        dq = Dq(parsed_dir_out)
         # turn parsed dir output to a list of files for sorting
         # Large files are given priority when deleting
         file_list = []
-        for file in parsed_dir_out.get('files', []):
-            file_list.append((file, int(parsed_dir_out['files'][file]['size'])))
+        for file in dq.get_values('files'):
+            file_list.append((file, int(dq.contains(file).get_values('size')[0])))
         file_list.sort(key=lambda x: x[1], reverse=True)
 
         # append files to delete list until the deleted file sizes reaches the target,
@@ -335,10 +343,15 @@ def execute_copy_to_running_config(device, file, copy_config_timeout=60):
     log.info("Copying {} to running-config on '{}'".format(file, device.name))
 
     try:
-        device.copy(source=file, dest='running-config',
-                    timeout=copy_config_timeout)
+        output = device.copy(source=file, dest='running-config',
+                             timeout=copy_config_timeout)
     except Exception as e:
-        raise Exception("Cannot save {} to running-config\n{}".format(file, str(e)))
+        raise Exception("Failed to apply config file {} to running-config\n{}".\
+                        format(file, str(e)))
+    else:
+        if '0 bytes copied' in output:
+            raise Exception("Config file {} not applied to running-config".\
+                            format(file))
 
 
 def execute_copy_run_to_start(device, command_timeout=300, max_time=120,
@@ -363,13 +376,18 @@ def execute_copy_run_to_start(device, command_timeout=300, max_time=120,
         action='sendline()',
         loop_continue=True,
         continue_timer=False)
+    proceed = Statement(
+        pattern=r'.*proceed anyway?.*',
+        action='sendline(y)',
+        loop_continue=True,
+        continue_timer=False)
 
     # Begin timeout
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
         try:
             output = device.execute(cmd, timeout=command_timeout,
-                                    reply=Dialog([startup]))
+                                    reply=Dialog([startup, proceed]))
         except Exception as e:
             raise Exception("Cannot save running-config to startup-config {}".\
                             format(str(e)))

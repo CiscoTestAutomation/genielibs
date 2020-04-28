@@ -47,16 +47,16 @@ PYLINT_CMD	  = pylintAll
 CYTHON_CMD	  = compileAll
 
 # Development pkg requirements
-RELATED_PKGS = genie.libs.conf genie.libs.ops genie.libs.robot genie.libs.sdk
+RELATED_PKGS = genie.libs.clean genie.libs.conf genie.libs.ops genie.libs.robot genie.libs.sdk
 RELATED_PKGS += genie.libs.filetransferutils
-DEPENDENCIES = restview psutil Sphinx wheel asynctest
+DEPENDENCIES = restview psutil Sphinx wheel asynctest pysnmp
 DEPENDENCIES += setproctitle  sphinx-rtd-theme 
 DEPENDENCIES += pip-tools Cython requests
 
 # Internal variables.
 # (note - build examples & templates last because it will fail uploading to pypi
 #  due to duplicates, and we'll for now accept that error)
-PYPI_PKGS      = conf ops robot sdk filetransferutils
+PYPI_PKGS      = clean-pkg conf-pkg ops-pkg robot-pkg sdk-pkg filetransferutils-pkg
 
 ALL_PKGS       = $(PYPI_PKGS)
 
@@ -78,9 +78,9 @@ help:
 	@echo " devnet                Build DevNet package."
 	@echo " install_build_deps    install pyats-distutils"
 	@echo " uninstall_build_deps  remove pyats-distutils"
-	@echo "compile		 		  Compile all python modules to c"
-	@echo "coverage_all			  Run code coverage on all test files"
-	@echo "pylint_all			  Run python linter on all python modules"
+	@echo " compile               Compile all python modules to c"
+	@echo " coverage_all          Run code coverage on all test files"
+	@echo " pylint_all            Run python linter on all python modules"
 	@echo ""
 	@echo "     --- build all targets ---"
 	@echo ""
@@ -88,6 +88,7 @@ help:
 	@echo ""
 	@echo "     --- build specific targets ---"
 	@echo ""
+	@echo " clean_pkg            build genie.libs.clean package"
 	@echo " conf                 build genie.libs.conf package"
 	@echo " ops                  build genie.libs.ops package"
 	@echo " sdk                  build genie.libs.sdk package"
@@ -149,7 +150,7 @@ clean:
 	@echo "--------------------------------------------------------------------"
 	@echo "Removing make directory: $(BUILD_DIR)"
 	@rm -rf $(BUILD_DIR)
-	@$(foreach dir,$(ALL_PKGS),(cd pkgs/$(dir)-pkg && python setup.py clean) &&) :
+	@$(foreach dir,$(ALL_PKGS),(cd pkgs/$(dir) && python setup.py clean) &&) :
 	@echo "Removing *.pyc *.c and __pycache__/ files"
 	@find . -type f -name "*.pyc" | xargs rm -vrf
 	@find . -type f -name "*.c" | xargs rm -vrf
@@ -167,7 +168,7 @@ develop:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
 	@echo "Setting up development environment"
-	@$(foreach dir,$(ALL_PKGS),(cd pkgs/$(dir)-pkg && python setup.py develop --no-deps -q) &&) :
+	@$(foreach dir,$(ALL_PKGS),(cd pkgs/$(dir) && python setup.py develop --no-deps -q) &&) :
 	@echo ""
 	@echo "Done."
 	@echo ""
@@ -176,7 +177,7 @@ undevelop:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
 	@echo "Removing development environment"
-	@$(foreach dir,$(ALL_PKGS),(cd pkgs/$(dir)-pkg && python setup.py develop -q --no-deps --uninstall) &&) :
+	@$(foreach dir,$(ALL_PKGS),(cd pkgs/$(dir) && python setup.py develop -q --no-deps --uninstall) &&) :
 	@echo ""
 	@echo "Done."
 	@echo ""
@@ -208,7 +209,7 @@ $(ALL_PKGS):
 	@echo "Building pyATS distributable: $@"
 	@echo ""
 
-	cd pkgs/$@-pkg/; $(BUILD_CMD)
+	cd pkgs/$@/; $(BUILD_CMD)
 
 	@echo "Completed building: $@"
 	@echo ""
@@ -230,7 +231,7 @@ check:
 	@echo "Checking setup.py consistency..."
 	@echo ""
 
-	@$(foreach dir,$(ALL_PKGS),(cd pkgs/$(dir)-pkg && python setup.py check) &&) :
+	@$(foreach dir,$(ALL_PKGS),(cd pkgs/$(dir) && python setup.py check) &&) :
 
 	@echo "Done"
 	@echo ""

@@ -24,20 +24,34 @@ from genie.libs.parser.iosxe.show_bgp import ShowBgpAllSummary, ShowBgpAllCluste
 
 outputs = {}
 
-outputs['show bgp vpnv4 unicast all neighbors 10.16.2.2 advertised-routes'] = BgpOutput.nbr1_ipv4_advertised_routes
-outputs['show bgp vpnv4 unicast all neighbors 10.16.2.2 routes'] = BgpOutput.nbr1_ipv4_routes
-outputs['show bgp vpnv4 unicast all neighbors 10.16.2.2 received-routes'] = BgpOutput.nbr1_ipv4_received_routes
+outputs['show bgp all summary'] = BgpOutput.show_bgp_all_summary
+outputs['show vrf detail | inc \(VRF'] = BgpOutput.show_vrf_detail
+outputs['show bgp all cluster-ids'] = BgpOutput.show_bgp_all_cluster_ids
 
-outputs['show bgp all neighbors 10.16.2.2 policy'] = BgpOutput.nbr1_bgp_policy
-outputs['show bgp all neighbors 10.36.3.3 policy'] = BgpOutput.nbr2_bgp_policy
-outputs['show bgp all neighbors | i BGP neighbor'] = BgpOutput.nbr1_bgp_all_neighbors
-outputs['show bgp all neighbors 10.16.2.2 advertised-routes'] = BgpOutput.nbr1_advertised_routes
-outputs['show bgp all neighbors 10.16.2.2 routes'] = BgpOutput.nbr1_routes
-outputs['show bgp all neighbors 10.16.2.2 received-routes'] = BgpOutput.nbr1_received_routes
-outputs['show bgp all neighbors | i BGP neighbor'] = BgpOutput.bgp_all_neighbors
-outputs['show bgp all neighbors 10.36.3.3 advertised-routes'] = BgpOutput.nbr2_advertised_routes
-outputs['show bgp all neighbors 10.36.3.3 routes'] = BgpOutput.nbr2_routes
-outputs['show bgp all neighbors 10.36.3.3 received-routes'] = BgpOutput.nbr2_received_routes
+outputs['show bgp all neighbors'] = BgpOutput.show_bgp_all_neighbors
+outputs['show bgp all neighbors 2.2.2.2 policy'] = BgpOutput.show_neighbor_policy_1
+outputs['show bgp all neighbors 2001:2:2:2::2 policy'] = BgpOutput.show_neighbor_policy_2
+outputs['show bgp all neighbors 2001:3:3:3::3 policy'] = BgpOutput.show_neighbor_policy_3
+outputs['show bgp all neighbors 3.3.3.3 policy'] = BgpOutput.show_neighbor_policy_4
+
+outputs['show bgp all'] = BgpOutput.show_bgp_all
+outputs['show bgp all detail'] = BgpOutput.show_bgp_all_detail
+
+outputs['show bgp all neighbors 2.2.2.2'] = BgpOutput.show_bgp_all_neighbor_1
+outputs['show bgp all neighbors 2001:2:2:2::2'] = BgpOutput.show_bgp_all_neighbor_2
+outputs['show bgp all neighbors 2001:3:3:3::3'] = BgpOutput.show_bgp_all_neighbor_3
+outputs['show bgp all neighbors 3.3.3.3'] = BgpOutput.show_bgp_all_neighbor_4
+
+outputs['show bgp vpnv4 unicast all neighbors 2.2.2.2'] = BgpOutput.custom_output_1
+outputs['show bgp vpnv4 unicast all'] = BgpOutput.custom_output_2
+outputs['show bgp vpnv4 unicast all neighbors 2.2.2.2 advertised-routes'] = BgpOutput.custom_output_3
+outputs['show bgp all neighbors | i BGP neighbor'] = BgpOutput.custom_output_4
+outputs['show bgp vpnv4 unicast all neighbors 2.2.2.2 routes'] = BgpOutput.custom_output_5
+outputs['show bgp vpnv4 unicast all neighbors 2.2.2.2 received-routes'] = ''
+
+outputs['show ip bgp template peer-session'] = ''
+outputs['show ip bgp template peer-policy'] = ''
+outputs['show ip bgp all dampening parameters'] = ''
 
 
 def mapper(key):
@@ -60,24 +74,6 @@ class test_bgp(unittest.TestCase):
         self.maxDiff = None
         bgp = Bgp(device=self.device)
 
-        # Get outputs
-        bgp.maker.outputs[ShowBgpAllSummary] = \
-            {"{'address_family':'','vrf':''}":BgpOutput.ShowBgpAllSummary}
-        bgp.maker.outputs[ShowBgpAllClusterIds] = \
-            {'':BgpOutput.ShowBgpAllClusterIds}
-        bgp.maker.outputs[ShowIpBgpTemplatePeerPolicy] = \
-            {'':BgpOutput.ShowIpBgpTemplatePeerPolicy}
-        bgp.maker.outputs[ShowBgpAllNeighbors] = \
-            {"{'address_family':'','neighbor':''}":BgpOutput.ShowBgpAllNeighbors}
-        bgp.maker.outputs[ShowIpBgpAllDampeningParameters] = \
-            {'':BgpOutput.ShowIpBgpAllDampeningParameters}
-        bgp.maker.outputs[ShowIpBgpTemplatePeerSession] = \
-            {'':BgpOutput.ShowIpBgpTemplatePeerSession}
-        bgp.maker.outputs[ShowBgpAllDetail] = \
-            {"{'address_family':'','vrf':''}":BgpOutput.ShowBgpAllDetail}
-        bgp.maker.outputs[ShowBgpAll] = \
-            {"{'address_family':''}":BgpOutput.ShowBgpAll}
-
         # Return outputs above as inputs to parser when called
         self.device.execute = Mock()
         self.device.execute.side_effect = mapper
@@ -86,74 +82,50 @@ class test_bgp(unittest.TestCase):
         bgp.learn()
 
         # Verify Ops was created successfully
-        self.assertEqual(bgp.info, BgpOutput.BgpOpsOutput_info)
-        self.assertDictEqual(bgp.table, BgpOutput.BgpOpsOutput_table)
-        self.assertDictEqual(bgp.routes_per_peer, BgpOutput.BgpOpsOutput_routesperpeer)
+        self.assertEqual(bgp.info, BgpOutput.bgp_info)
+        self.assertDictEqual(bgp.table, BgpOutput.bgp_table)
+        self.assertDictEqual(bgp.routes_per_peer, BgpOutput.bgp_routes_per_peer)
 
     def test_custom_output(self):
         self.maxDiff = None
         bgp = Bgp(device=self.device)
-        outputs[
-            'show bgp all neighbors | i BGP neighbor'] = BgpOutput.nbr1_bgp_all_neighbors
-        # Get outputs
-        bgp.maker.outputs[ShowBgpAllSummary] = \
-            {"{'address_family':'vpnv4 unicast','vrf':'VRF1'}":BgpOutput.ShowBgpAllSummary_custom}
-        bgp.maker.outputs[ShowBgpAllClusterIds] = \
-            {'':BgpOutput.ShowBgpAllClusterIds}
-        bgp.maker.outputs[ShowIpBgpTemplatePeerPolicy] = \
-            {'':BgpOutput.ShowIpBgpTemplatePeerPolicy}
-        bgp.maker.outputs[ShowBgpAllNeighbors] = \
-            {"{'address_family':'vpnv4 unicast','neighbor':'10.16.2.2'}":BgpOutput.ShowBgpAllNeighbors_nbr1}
-        bgp.maker.outputs[ShowIpBgpAllDampeningParameters] = \
-            {'':BgpOutput.ShowIpBgpAllDampeningParameters}
-        bgp.maker.outputs[ShowIpBgpTemplatePeerSession] = \
-            {'':BgpOutput.ShowIpBgpTemplatePeerSession}
-        bgp.maker.outputs[ShowBgpAllDetail] = \
-            {"{'address_family':'vpnv4 unicast','vrf':'VRF1'}":BgpOutput.ShowBgpAllDetail_custom}
-        bgp.maker.outputs[ShowBgpAll] = \
-            {"{'address_family':'vpnv4 unicast'}":BgpOutput.ShowBgpAll_custom}
 
         # Return outputs above as inputs to parser when called
         self.device.execute = Mock()
         self.device.execute.side_effect = mapper
 
         # Learn the feature
-        bgp.learn(address_family='vpnv4 unicast RD 300:1', vrf='VRF1', neighbor='10.16.2.2')
-        outputs[
-            'show bgp all neighbors | i BGP neighbor'] = BgpOutput.bgp_all_neighbors
+        bgp.learn(address_family='vpnv4 unicast', vrf='default', neighbor='2.2.2.2')
+
         # Verify Ops was created successfully
-        self.assertDictEqual(bgp.info, BgpOutput.BgpOpsOutput_info_custom)
-        self.assertDictEqual(bgp.table, BgpOutput.BgpOpsOutput_table_custom)
-        self.assertDictEqual(bgp.routes_per_peer, BgpOutput.BgpOpsOutput_routesperpeer_custom)
+        self.assertDictEqual(bgp.info, BgpOutput.bgp_info_custom)
+        self.assertDictEqual(bgp.routes_per_peer, BgpOutput.bgp_routes_per_peer_custom)
+        with self.assertRaises(AttributeError):
+            bgp.table
 
     def test_empty_output(self):
         self.maxDiff = None
         bgp = Bgp(device=self.device)
         # Get outputs
-        bgp.maker.outputs[ShowBgpAllSummary] = \
-            {"{'address_family':'','vrf':''}":''}
-        bgp.maker.outputs[ShowBgpAllClusterIds] = \
-            {'':''}
-        bgp.maker.outputs[ShowIpBgpTemplatePeerPolicy] = \
-            {'':''}
-        bgp.maker.outputs[ShowBgpAllNeighbors] = \
-            {"{'address_family':'','neighbor':''}":''}
-        bgp.maker.outputs[ShowIpBgpAllDampeningParameters] = \
-            {'':''}
-        bgp.maker.outputs[ShowIpBgpTemplatePeerSession] = \
-            {'':''}
-        bgp.maker.outputs[ShowBgpAllDetail] = \
-            {"{'address_family':'','vrf':''}":''}
-        bgp.maker.outputs[ShowBgpAll] = \
-            {"{'address_family':''}":''}
+        outputs['show bgp all summary'] = ''
+        outputs['show bgp all'] = ''
+        outputs['show bgp all detail'] = ''
+        outputs['show bgp all neighbors'] = ''
+
         self.device.execute = Mock()
         self.device.execute.side_effect = mapper
         # Learn the feature
         bgp.learn()
 
+        # put back output
+        outputs['show bgp all summary'] = BgpOutput.show_bgp_all_summary
+        outputs['show bgp all'] = BgpOutput.show_bgp_all
+        outputs['show bgp all detail'] = BgpOutput.show_bgp_all_detail
+        outputs['show bgp all neighbors'] = BgpOutput.show_bgp_all_neighbors
+
         # Check no attribute not found
         # info - bgp_id
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(KeyError):
             bgp_id = (bgp.info['instance']['default']['bgp_id'])
         # table - bgp_table_version
         with self.assertRaises(AttributeError):
@@ -169,24 +141,6 @@ class test_bgp(unittest.TestCase):
         self.maxDiff = None
         bgp = Bgp(device=self.device)
 
-        # Get outputs
-        bgp.maker.outputs[ShowBgpAllSummary] = \
-            {"{'address_family':'','vrf':''}":BgpOutput.ShowBgpAllSummary}
-        bgp.maker.outputs[ShowBgpAllClusterIds] = \
-            {'':BgpOutput.ShowBgpAllClusterIds}
-        bgp.maker.outputs[ShowIpBgpTemplatePeerPolicy] = \
-            {'':BgpOutput.ShowIpBgpTemplatePeerPolicy}
-        bgp.maker.outputs[ShowBgpAllNeighbors] = \
-            {"{'address_family':'','neighbor':''}":BgpOutput.ShowBgpAllNeighbors}
-        bgp.maker.outputs[ShowIpBgpAllDampeningParameters] = \
-            {'':BgpOutput.ShowIpBgpAllDampeningParameters}
-        bgp.maker.outputs[ShowIpBgpTemplatePeerSession] = \
-            {'':BgpOutput.ShowIpBgpTemplatePeerSession}
-        bgp.maker.outputs[ShowBgpAllDetail] = \
-            {"{'address_family':'','vrf':''}":BgpOutput.ShowBgpAllDetail}
-        bgp.maker.outputs[ShowBgpAll] = \
-            {"{'address_family':''}":BgpOutput.ShowBgpAll}
-
         # Return outputs above as inputs to parser when called
         self.device.execute = Mock()
         self.device.execute.side_effect = mapper
@@ -196,60 +150,15 @@ class test_bgp(unittest.TestCase):
 
         # Check specific attribute values
         # info - bgp_id
-        self.assertEqual(bgp.info['instance']['default']['bgp_id'], 100)
+        self.assertEqual(bgp.info['instance']['default']['bgp_id'], 65000)
         # table - bgp_table_version
-        self.assertEqual(bgp.table['instance']['default']['vrf']['evpn1']\
-                ['address_family']['vpnv4 unicast RD 65535:1']\
-                ['bgp_table_version'], 5)
-        # routes_per_peer - localprf
+        self.assertEqual(bgp.table['instance']['default']['vrf']['VRF1']\
+                ['address_family']['vpnv4 unicast RD 65000:1']\
+                ['bgp_table_version'], 4)
+        # routes_per_peer - remote_as
         self.assertEqual(bgp.routes_per_peer['instance']['default']['vrf']\
-                ['default']['neighbor']['10.16.2.2']['address_family']\
-                ['ipv4 unicast']['advertised']['10.1.1.0/24']['index'][1]\
-                ['localprf'], 100)
+                ['VRF1']['neighbor']['2.2.2.2']['remote_as'], 65000)
 
-    def test_incomplete_output(self):
-        self.maxDiff = None
-        bgp = Bgp(device=self.device)
-
-        # Get outputs
-        bgp.maker.outputs[ShowBgpAllSummary] = \
-            {"{'address_family':'','vrf':''}":BgpOutput.ShowBgpAllSummary}
-        bgp.maker.outputs[ShowBgpAllClusterIds] = \
-            {'':BgpOutput.ShowBgpAllClusterIds}
-        bgp.maker.outputs[ShowIpBgpTemplatePeerPolicy] = \
-            {'':BgpOutput.ShowIpBgpTemplatePeerPolicy}
-        bgp.maker.outputs[ShowBgpAllNeighbors] = \
-            {"{'address_family':'','neighbor':''}":BgpOutput.ShowBgpAllNeighbors}
-        bgp.maker.outputs[ShowIpBgpAllDampeningParameters] = \
-            {'':BgpOutput.ShowIpBgpAllDampeningParameters}
-        bgp.maker.outputs[ShowIpBgpTemplatePeerSession] = \
-            {'':BgpOutput.ShowIpBgpTemplatePeerSession}
-        bgp.maker.outputs[ShowBgpAllDetail] = \
-            {"{'address_family':'','vrf':''}":BgpOutput.ShowBgpAllDetail}
-        bgp.maker.outputs[ShowBgpAll] = \
-            {"{'address_family':''}":BgpOutput.ShowBgpAll}
-
-        # Outputs from side_effect set to empty
-        bgp.maker.outputs[ShowBgpAllNeighborsPolicy] = {'':''}
-        bgp.maker.outputs[ShowBgpAllNeighborsAdvertisedRoutes] = {'':''}
-        bgp.maker.outputs[ShowBgpAllNeighborsRoutes] = {'':''}
-        bgp.maker.outputs[ShowBgpAllNeighborsReceivedRoutes] = {'':''}
-
-        # Return outputs above as inputs to parser when called
-        self.device.execute = Mock()
-        self.device.execute.side_effect = ['', '', '', '', '', '', '', '', '',\
-                                           '', '', '', '', '', '', '', '', '',\
-                                           '', '', '', '', '', '', '', '', '',\
-                                           '', '', '', '', '', '', '', '', '',\
-                                           '', '', '', '']
-
-        # Learn the feature
-        bgp.learn()
-
-        # Check attribute values of output provided is found
-        
-        # bgp.info - bgp_id
-        self.assertEqual(bgp.info['instance']['default']['bgp_id'], 100)
 
 if __name__ == '__main__':
     unittest.main()

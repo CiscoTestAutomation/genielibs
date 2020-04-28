@@ -985,3 +985,22 @@ def get_interface_port_channel_members(device, interface):
         return out[interface]["port_channel"]["port_channel_member_intfs"]
     except KeyError:
         return
+
+def get_interface_information(device, interface_list):
+    """Get interface information from device for a list of interfaces
+
+        Args:
+            List['string']: Interfaces to query information on
+            device ('obj'): Device object
+        Returns:
+            List containing Dictionaries for sucesses
+    """
+    results = {}    
+    for interface in interface_list:
+        try:
+            data = device.parse('show interfaces ' + interface)
+        except Exception as e:
+            log.error('Failed to parse command due to: {}'.format(e))
+            data = None
+        results[interface] = data
+    return results    

@@ -7,6 +7,7 @@ import re
 import time
 
 # Genie
+from genie.utils import Dq
 from genie.utils.timeout import Timeout
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
@@ -199,3 +200,46 @@ def verify_files_copied_on_standby(device, max_time=300, check_interval=20):
         raise Exception("Auto-Copy on standby is not yet completed")
 
     return
+
+def verify_module_status(device, timeout=180, interval=30):
+    ''' Check status of slot using 'show module'
+        Args:
+            device ('obj'): Device object
+            timeout ('int'): Max timeout to re-check module status
+            interval ('int'): Max interval to re-check module status
+    '''
+
+    timeout = Timeout(max_time=timeout, interval=interval)
+    while timeout.iterate():
+        # Reset
+        failed_slots = []
+        try:
+            output = device.parse("show module")
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # Check state for all slots
+        failed_slots = Dq(output).contains('status').\
+                            not_contains_key_value('status',
+                                                   '.*ok.*|active|standby|ha-standby',
+                                                   value_regex=True).\
+                            get_values('lc')
+        failed_slots.extend(Dq(output).contains('status').\
+                            not_contains_key_value('status',
+                                                   '.*ok.*|active|standby|ha-standby',
+                                                   value_regex=True).\
+                            get_values('rp'))
+        if not failed_slots:
+            log.info("All modules on '{}' are in stable state".\
+                     format(device.name))
+            break
+        else:
+            log.warning("The following modules are not in stable state {}".\
+                        format(failed_slots))
+            log.warning("Sleeping {} seconds before rechecking".format(interval))
+            timeout.sleep()
+            continue
+    else:
+        raise Exception("Modules on '{}' are not in stable state".\
+                        format(device.name))

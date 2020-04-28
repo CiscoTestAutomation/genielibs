@@ -56,25 +56,12 @@ class HA(HA_nxos):
         self.device.execute('copy {dp} bootflash:debug_plugin.tmp'.format(\
                                                               dp=debug_plugin))
 
-    def _delete_debug_plugin(self, debug_plugin):
-        dialog = Dialog([
-            Statement(pattern=r'.*Do you want to delete.*',
-                      action='sendline(y)',
-                      loop_continue=True,
-                      continue_timer=False)])
-        self.device.execute('delete {dp}'.format(dp=debug_plugin), reply=dialog)
-
     def load_debug_plugin(self, debug_plugin):
         try:
             self._copy_temp_debug_plugin(debug_plugin)
         except:
             raise Exception("Couldn't copy debug plugin to \
             'bootflash:debug_plugin.tmp'")
-
-        try:
-            self._delete_debug_plugin(debug_plugin)
-        except:
-            raise Exception("Couldn't delete the debug plugin from 'bootflash'")
 
         self.device.state_machine.get_state('enable').add_state_pattern(
             [r'^(.*)Linux\(debug\)#\s?$'])

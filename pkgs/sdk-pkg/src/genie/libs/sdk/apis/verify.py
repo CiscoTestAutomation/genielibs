@@ -176,7 +176,6 @@ def _verify_file_exists_on_server(device, protocol, file, server=None,size=None,
                                                          timeout=timeout,
                                                          fu_session=fu_session)
 
-
     log.info(
         "Expected size: {} bytes, Actual size : {} bytes".format(
             size if size > -1 else 'Unknown',
@@ -312,6 +311,10 @@ def verify_current_image(device, images):
 
     # Get current running image
     running_images = device.api.get_running_image()
+
+    # Check if images is None
+    if running_images is None:
+        raise Exception("Failed to get running images.")
 
     # Check type
     if not isinstance(running_images, list):

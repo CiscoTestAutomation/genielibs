@@ -3,10 +3,17 @@
 # Python
 import logging
 
+# Genie
+from genie.harness.utils import connect_device
+from genie.utils.timeout import Timeout
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
+
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
+from unicon.core.errors import StateMachineError
 
 # Logger
+
 log = logging.getLogger(__name__)
 
 
@@ -80,12 +87,20 @@ def execute_write_erase(device, timeout=300):
         loop_continue=True,
         continue_timer=False)
 
+    # Add permisson denied to error pattern
+    origin = list(device.execute.error_pattern)
+    error_pattern = ['.*[Pp]ermission denied.*']
+    error_pattern.extend(origin)
+
     try:
         output = device.execute("write erase", reply=Dialog([write_erase]),
-                                timeout=timeout)
+                                timeout=timeout, error_pattern=error_pattern)
     except Exception as err:
         log.error("Failed to write erase: {err}".format(err=err))
         raise Exception(err)
+    finally:
+        # restore original error pattern
+        device.execute.error_pattern = origin
 
     if "[OK]" in output:
         log.info("Successfully executed 'write erase'")
@@ -112,3 +127,115 @@ def execute_write_memory(device, timeout=300):
         log.info("Successfully executed 'write memory'")
     else:
         raise Exception("Failed to execute 'write memory'")
+
+def execute_install_package(device, image_dir, image, save_system_config=True,
+                            timeout=660, _install=True):
+    """ Installs package
+        Args:
+            device ("obj"): Device object
+            image_dir ("str"): Directory image is located in
+            image ("str"): Image name
+            save_system_config ("bool"): If config changed do we save it?
+            timeout ("int"): maximum time for install
+
+            _install ("bool"): True to install, False to uninstall.
+                Not meant to be changed manually.
+
+        Raises:
+            Exception
+
+        Returns:
+            True if install succeeded else False
+    """
+    dialog = Dialog([
+        Statement(pattern=r".*Press Quit\(q\) to exit, you may save "
+                          r"configuration and re-enter the command\. "
+                          r"\[y\/n\/q\]",
+                  action='sendline(y)' if save_system_config else 'sendline(n)',
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r".*This operation may require a reload of the "
+                          r"system\. Do you want to proceed\? \[y\/n\]",
+                  action='sendline(y)',
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r"^.*RETURN to get started",
+                  action='sendline()',
+                  loop_continue=False,
+                  continue_timer=False)
+    ])
+
+    if _install:
+        cmd = """install add file {dir}{image}
+        install activate file {dir}{image}""".format(
+            dir=image_dir, image=image
+        )
+    else:
+        cmd = "install deactivate file {dir}{image}".format(
+            dir=image_dir, image=image
+        )
+
+    try:
+        device.execute(cmd, reply=dialog, timeout=timeout)
+    except StateMachineError:
+        # this will be raised after 'Return to get started' is seen
+        device.destroy()
+        timeout = Timeout(90, 30)
+        while timeout.iterate():
+            try:
+                connect_device(device)
+            except Exception:
+                timeout.sleep()
+                continue
+            break
+        else:
+            raise Exception("Couldnt reconnect to the device")
+
+    if _install:
+        cmd = "install commit"
+    else:
+        cmd = """install commit
+        install remove file {dir}{image}""".format(
+            dir=image_dir, image=image
+        )
+
+    device.execute(cmd)
+
+    try:
+        out = device.parse("show install summary")
+    except SchemaEmptyParserError:
+        out = {}
+
+    for location in out.get("location"):
+        for pkg in out['location'][location]['pkg_state']:
+            pkg = out['location'][location]['pkg_state'][pkg]
+            if (_install and
+                    image in pkg['filename_version'] and
+                    'C' == pkg['state']):
+                # the image should exist; it was just installed
+                return True
+            elif (not _install and
+                    image in pkg['filename_version']):
+                # the image should not exist; it was just uninstalled.
+                return False
+
+    return False if _install else True
+
+def execute_uninstall_package(device, image_dir, image, save_system_config=True,
+                              timeout=660):
+    """ Uninstalls package
+        Args:
+            device ("obj"): Device object
+            image_dir ("str"): Directory image is located in
+            image ("str"): Image name
+            save_system_config ("bool"): If config changed do we save it?
+            timeout ("int"): maximum time for install
+
+        Raises:
+            Exception
+
+        Returns:
+            True if install succeeded else False
+    """
+    return execute_install_package(
+        device, image_dir, image, save_system_config, timeout, _install=False)

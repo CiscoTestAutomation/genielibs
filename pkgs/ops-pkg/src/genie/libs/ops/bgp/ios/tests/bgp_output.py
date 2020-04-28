@@ -1,4917 +1,2890 @@
 ''' 
-BGP Genie Ops Object Outputs for IOS
+BGP Genie Ops Object Outputs for IOS.
 '''
 
 
 class BgpOutput(object):
 
-    ShowBgpAllSummary = {
-        'bgp_id': 100,
-        'vrf':
-            {'default':
-                {'neighbor': {'10.4.6.6': {'address_family': {'vpnv4 unicast': {'activity_paths': '120/30',
-                                                                                    'activity_prefixes': '85/25',
-                                                                                    'as': 300,
-                                                                                    'attribute_entries': '6/4',
-                                                                                    'bgp_table_version': 1,
-                                                                                    'cache_entries': {'filter-list': {'memory_usage': 0,
-                                                                                                                      'total_entries': 0},
-                                                                                                      'route-map': {'memory_usage': 0,
-                                                                                                                    'total_entries': 0}},
-                                                                                    'community_entries': {'memory_usage': 96,
-                                                                                                          'total_entries': 4},
-                                                                                    'entries': {'AS-PATH': {'memory_usage': 120,
-                                                                                                            'total_entries': 3},
-                                                                                                'rrinfo': {'memory_usage': 48,
-                                                                                                           'total_entries': 2}},
-                                                                                    'input_queue': 0,
-                                                                                    'local_as': 100,
-                                                                                    'msg_rcvd': 68,
-                                                                                    'msg_sent': 75,
-                                                                                    'output_queue': 0,
-                                                                                    'path': {'memory_usage': 3600,
-                                                                                             'total_entries': 45},
-                                                                                    'prefixes': {'memory_usage': 4560,
-                                                                                                 'total_entries': 30},
-                                                                                    'route_identifier': '10.64.4.4',
-                                                                                    'routing_table_version': 56,
-                                                                                    'scan_interval': 60,
-                                                                                    'state_pfxrcd': '5',
-                                                                                    'tbl_ver': 1,
-                                                                                    'total_memory': 9384,
-                                                                                    'up_down': '01:03:23',
-                                                                                    'version': 4}}},
-                                  '10.16.2.2': {'address_family': {'vpnv4 unicast': {'activity_paths': '120/30',
-                                                                                   'activity_prefixes': '85/25',
-                                                                                   'as': 100,
-                                                                                   'attribute_entries': '6/4',
-                                                                                   'bgp_table_version': 1,
-                                                                                   'cache_entries': {'filter-list': {'memory_usage': 0,
-                                                                                                                     'total_entries': 0},
-                                                                                                     'route-map': {'memory_usage': 0,
-                                                                                                                   'total_entries': 0}},
-                                                                                   'community_entries': {'memory_usage': 96,
-                                                                                                         'total_entries': 4},
-                                                                                   'entries': {'AS-PATH': {'memory_usage': 120,
-                                                                                                           'total_entries': 3},
-                                                                                               'rrinfo': {'memory_usage': 48,
-                                                                                                          'total_entries': 2}},
-                                                                                   'input_queue': 0,
-                                                                                   'local_as': 100,
-                                                                                   'msg_rcvd': 82,
-                                                                                   'msg_sent': 88,
-                                                                                   'output_queue': 0,
-                                                                                   'path': {'memory_usage': 3600,
-                                                                                            'total_entries': 45},
-                                                                                   'prefixes': {'memory_usage': 4560,
-                                                                                                'total_entries': 30},
-                                                                                   'route_identifier': '10.64.4.4',
-                                                                                   'routing_table_version': 56,
-                                                                                   'scan_interval': 60,
-                                                                                   'state_pfxrcd': '10',
-                                                                                   'tbl_ver': 1,
-                                                                                   'total_memory': 9384,
-                                                                                   'up_down': '01:12:00',
-                                                                                   'version': 4},
-                                                                 'vpnv6 unicast': {'activity_paths': '120/30',
-                                                                                   'activity_prefixes': '85/25',
-                                                                                   'as': 100,
-                                                                                   'attribute_entries': '6/4',
-                                                                                   'bgp_table_version': 1,
-                                                                                   'cache_entries': {'filter-list': {'memory_usage': 0,
-                                                                                                                     'total_entries': 0},
-                                                                                                     'route-map': {'memory_usage': 0,
-                                                                                                                   'total_entries': 0}},
-                                                                                   'community_entries': {'memory_usage': 96,
-                                                                                                         'total_entries': 4},
-                                                                                   'entries': {'AS-PATH': {'memory_usage': 120,
-                                                                                                           'total_entries': 3},
-                                                                                               'rrinfo': {'memory_usage': 48,
-                                                                                                          'total_entries': 2}},
-                                                                                   'input_queue': 0,
-                                                                                   'local_as': 100,
-                                                                                   'msg_rcvd': 82,
-                                                                                   'msg_sent': 88,
-                                                                                   'output_queue': 0,
-                                                                                   'path': {'memory_usage': 4860,
-                                                                                            'total_entries': 45},
-                                                                                   'prefixes': {'memory_usage': 5280,
-                                                                                                'total_entries': 30},
-                                                                                   'route_identifier': '10.64.4.4',
-                                                                                   'routing_table_version': 66,
-                                                                                   'scan_interval': 60,
-                                                                                   'state_pfxrcd': '10',
-                                                                                   'tbl_ver': 1,
-                                                                                   'total_memory': 11364,
-                                                                                   'up_down': '01:12:00',
-                                                                                   'version': 4}}},
-                                  '10.66.6.6': {'address_family': {'vpnv4 unicast': {'activity_paths': '120/30',
-                                                                                    'activity_prefixes': '85/25',
-                                                                                    'as': 400,
-                                                                                    'attribute_entries': '6/4',
-                                                                                    'bgp_table_version': 1,
-                                                                                    'cache_entries': {'filter-list': {'memory_usage': 0,
-                                                                                                                      'total_entries': 0},
-                                                                                                      'route-map': {'memory_usage': 0,
-                                                                                                                    'total_entries': 0}},
-                                                                                    'community_entries': {'memory_usage': 96,
-                                                                                                          'total_entries': 4},
-                                                                                    'entries': {'AS-PATH': {'memory_usage': 120,
-                                                                                                            'total_entries': 3},
-                                                                                                'rrinfo': {'memory_usage': 48,
-                                                                                                           'total_entries': 2}},
-                                                                                    'input_queue': 0,
-                                                                                    'local_as': 100,
-                                                                                    'msg_rcvd': 67,
-                                                                                    'msg_sent': 72,
-                                                                                    'output_queue': 0,
-                                                                                    'path': {'memory_usage': 3600,
-                                                                                             'total_entries': 45},
-                                                                                    'prefixes': {'memory_usage': 4560,
-                                                                                                 'total_entries': 30},
-                                                                                    'route_identifier': '10.64.4.4',
-                                                                                    'routing_table_version': 56,
-                                                                                    'scan_interval': 60,
-                                                                                    'state_pfxrcd': '5',
-                                                                                    'tbl_ver': 1,
-                                                                                    'total_memory': 9384,
-                                                                                    'up_down': '01:03:14',
-                                                                                    'version': 4}}},
-                                  '192.168.111.1': {'address_family': {'ipv4 unicast': {'activity_paths': '66/39',
-                                                                                    'activity_prefixes': '47/20',
-                                                                                    'as': 100,
-                                                                                    'attribute_entries': '1/1',
-                                                                                    'bgp_table_version': 28,
-                                                                                    'cache_entries': {'filter-list': {'memory_usage': 0,
-                                                                                                                      'total_entries': 0},
-                                                                                                      'route-map': {'memory_usage': 0,
-                                                                                                                    'total_entries': 0}},
-                                                                                    'input_queue': 0,
-                                                                                    'local_as': 100,
-                                                                                    'msg_rcvd': 0,
-                                                                                    'msg_sent': 0,
-                                                                                    'output_queue': 0,
-                                                                                    'path': {'memory_usage': 3672,
-                                                                                             'total_entries': 27},
-                                                                                    'prefixes': {'memory_usage': 6696,
-                                                                                                 'total_entries': 27},
-                                                                                    'route_identifier': '192.168.111.1',
-                                                                                    'routing_table_version': 28,
-                                                                                    'scan_interval': 60,
-                                                                                    'state_pfxrcd': 'Idle',
-                                                                                    'tbl_ver': 1,
-                                                                                    'total_memory': 10648,
-                                                                                    'up_down': '01:07:38',
-                                                                                    'version': 4}}},
-                                  '192.168.4.1': {'address_family': {'ipv4 unicast': {'activity_paths': '66/39',
-                                                                                    'activity_prefixes': '47/20',
-                                                                                    'as': 100,
-                                                                                    'attribute_entries': '1/1',
-                                                                                    'bgp_table_version': 28,
-                                                                                    'cache_entries': {'filter-list': {'memory_usage': 0,
-                                                                                                                      'total_entries': 0},
-                                                                                                      'route-map': {'memory_usage': 0,
-                                                                                                                    'total_entries': 0}},
-                                                                                    'input_queue': 0,
-                                                                                    'local_as': 100,
-                                                                                    'msg_rcvd': 0,
-                                                                                    'msg_sent': 0,
-                                                                                    'output_queue': 0,
-                                                                                    'path': {'memory_usage': 3672,
-                                                                                             'total_entries': 27},
-                                                                                    'prefixes': {'memory_usage': 6696,
-                                                                                                 'total_entries': 27},
-                                                                                    'route_identifier': '192.168.111.1',
-                                                                                    'routing_table_version': 28,
-                                                                                    'scan_interval': 60,
-                                                                                    'state_pfxrcd': 'Idle',
-                                                                                    'tbl_ver': 1,
-                                                                                    'total_memory': 10648,
-                                                                                    'up_down': 'never',
-                                                                                    'version': 4}}},
-                                  '192.168.51.1': {'address_family': {'ipv4 unicast': {'activity_paths': '66/39',
-                                                                                    'activity_prefixes': '47/20',
-                                                                                    'as': 100,
-                                                                                    'attribute_entries': '1/1',
-                                                                                    'bgp_table_version': 28,
-                                                                                    'cache_entries': {'filter-list': {'memory_usage': 0,
-                                                                                                                      'total_entries': 0},
-                                                                                                      'route-map': {'memory_usage': 0,
-                                                                                                                    'total_entries': 0}},
-                                                                                    'input_queue': 0,
-                                                                                    'local_as': 100,
-                                                                                    'msg_rcvd': 0,
-                                                                                    'msg_sent': 0,
-                                                                                    'output_queue': 0,
-                                                                                    'path': {'memory_usage': 3672,
-                                                                                             'total_entries': 27},
-                                                                                    'prefixes': {'memory_usage': 6696,
-                                                                                                 'total_entries': 27},
-                                                                                    'route_identifier': '192.168.111.1',
-                                                                                    'routing_table_version': 28,
-                                                                                    'scan_interval': 60,
-                                                                                    'state_pfxrcd': 'Idle',
-                                                                                    'tbl_ver': 1,
-                                                                                    'total_memory': 10648,
-                                                                                    'up_down': '01:07:38',
-                                                                                    'version': 4}}},
-                                  '2001:db8:400::1:1': {'address_family': {'ipv6 unicast': {'as': 100,
-                                                                                    'bgp_table_version': 1,
-                                                                                    'input_queue': 0,
-                                                                                    'local_as': 100,
-                                                                                    'msg_rcvd': 0,
-                                                                                    'msg_sent': 0,
-                                                                                    'output_queue': 0,
-                                                                                    'route_identifier': '192.168.111.1',
-                                                                                    'routing_table_version': 1,
-                                                                                    'state_pfxrcd': 'Idle',
-                                                                                    'tbl_ver': 1,
-                                                                                    'up_down': '01:07:38',
-                                                                                    'version': 4}}},
-                                  '2001:db8:400::4:1': {'address_family': {'ipv6 unicast': {'as': 100,
-                                                                                    'bgp_table_version': 1,
-                                                                                    'input_queue': 0,
-                                                                                    'local_as': 100,
-                                                                                    'msg_rcvd': 0,
-                                                                                    'msg_sent': 0,
-                                                                                    'output_queue': 0,
-                                                                                    'route_identifier': '192.168.111.1',
-                                                                                    'routing_table_version': 1,
-                                                                                    'state_pfxrcd': 'Idle',
-                                                                                    'tbl_ver': 1,
-                                                                                    'up_down': '01:07:38',
-                                                                                    'version': 4}}},
-                                  '2002001:db8:1::14:4': {'address_family': {'ipv6 unicast': {'as': 200,
-                                                                                     'bgp_table_version': 1,
-                                                                                     'input_queue': 0,
-                                                                                     'local_as': 100,
-                                                                                     'msg_rcvd': 0,
-                                                                                     'msg_sent': 0,
-                                                                                     'output_queue': 0,
-                                                                                     'route_identifier': '192.168.111.1',
-                                                                                     'routing_table_version': 1,
-                                                                                     'state_pfxrcd': 'Idle',
-                                                                                     'tbl_ver': 1,
-                                                                                     'up_down': 'never',
-                                                                                     'version': 4}}},
-                                  '2001::26:2': {'address_family': {'ipv6 unicast': {'as': 300,
-                                                                                     'bgp_table_version': 1,
-                                                                                     'input_queue': 0,
-                                                                                     'local_as': 100,
-                                                                                     'msg_rcvd': 0,
-                                                                                     'msg_sent': 0,
-                                                                                     'output_queue': 0,
-                                                                                     'route_identifier': '192.168.111.1',
-                                                                                     'routing_table_version': 1,
-                                                                                     'state_pfxrcd': 'Idle',
-                                                                                     'tbl_ver': 1,
-                                                                                     'up_down': '01:07:38',
-                                                                                     'version': 4}}},
-                                  '2001:DB8:20:4:6::6': {'address_family': {'vpnv6 unicast': {'activity_paths': '120/30',
-                                                                                              'activity_prefixes': '85/25',
-                                                                                              'as': 400,
-                                                                                              'attribute_entries': '6/4',
-                                                                                              'bgp_table_version': 66,
-                                                                                              'cache_entries': {'filter-list': {'memory_usage': 0,
-                                                                                                                                'total_entries': 0},
-                                                                                                                'route-map': {'memory_usage': 0,
-                                                                                                                              'total_entries': 0}},
-                                                                                              'community_entries': {'memory_usage': 96,
-                                                                                                                    'total_entries': 4},
-                                                                                              'entries': {'AS-PATH': {'memory_usage': 120,
-                                                                                                                      'total_entries': 3},
-                                                                                                          'rrinfo': {'memory_usage': 48,
-                                                                                                                     'total_entries': 2}},
-                                                                                              'input_queue': 0,
-                                                                                              'local_as': 100,
-                                                                                              'msg_rcvd': 67,
-                                                                                              'msg_sent': 73,
-                                                                                              'output_queue': 0,
-                                                                                              'path': {'memory_usage': 4860,
-                                                                                                       'total_entries': 45},
-                                                                                              'prefixes': {'memory_usage': 5280,
-                                                                                                           'total_entries': 30},
-                                                                                              'route_identifier': '10.64.4.4',
-                                                                                              'routing_table_version': 66,
-                                                                                              'scan_interval': 60,
-                                                                                              'state_pfxrcd': '5',
-                                                                                              'tbl_ver': 1,
-                                                                                              'total_memory': 11364,
-                                                                                              'up_down': '01:03:11',
-                                                                                              'version': 4}}},
-                                  '2001:DB8:4:6::6': {'address_family': {'vpnv6 unicast': {'activity_paths': '120/30',
-                                                                                           'activity_prefixes': '85/25',
-                                                                                           'as': 300,
-                                                                                           'attribute_entries': '6/4',
-                                                                                           'bgp_table_version': 1,
-                                                                                           'cache_entries': {'filter-list': {'memory_usage': 0,
-                                                                                                                             'total_entries': 0},
-                                                                                                             'route-map': {'memory_usage': 0,
-                                                                                                                           'total_entries': 0}},
-                                                                                           'community_entries': {'memory_usage': 96,
-                                                                                                                 'total_entries': 4},
-                                                                                           'entries': {'AS-PATH': {'memory_usage': 120,
-                                                                                                                   'total_entries': 3},
-                                                                                                       'rrinfo': {'memory_usage': 48,
-                                                                                                                  'total_entries': 2}},
-                                                                                           'input_queue': 0,
-                                                                                           'local_as': 100,
-                                                                                           'msg_rcvd': 67,
-                                                                                           'msg_sent': 75,
-                                                                                           'output_queue': 0,
-                                                                                           'path': {'memory_usage': 4860,
-                                                                                                    'total_entries': 45},
-                                                                                           'prefixes': {'memory_usage': 5280,
-                                                                                                        'total_entries': 30},
-                                                                                           'route_identifier': '10.64.4.4',
-                                                                                           'routing_table_version': 66,
-                                                                                           'scan_interval': 60,
-                                                                                           'state_pfxrcd': '5',
-                                                                                           'tbl_ver': 1,
-                                                                                           'total_memory': 11364,
-                                                                                           'up_down': '01:03:19',
-                                                                                           'version': 4}}},
-                                  '192.168.70.4': {'address_family': {'ipv4 unicast': {'activity_paths': '66/39',
-                                                                                     'activity_prefixes': '47/20',
-                                                                                     'as': 200,
-                                                                                     'attribute_entries': '1/1',
-                                                                                     'bgp_table_version': 28,
-                                                                                     'cache_entries': {'filter-list': {'memory_usage': 0,
-                                                                                                                       'total_entries': 0},
-                                                                                                       'route-map': {'memory_usage': 0,
-                                                                                                                     'total_entries': 0}},
-                                                                                     'input_queue': 0,
-                                                                                     'local_as': 100,
-                                                                                     'msg_rcvd': 0,
-                                                                                     'msg_sent': 0,
-                                                                                     'output_queue': 0,
-                                                                                     'path': {'memory_usage': 3672,
-                                                                                              'total_entries': 27},
-                                                                                     'prefixes': {'memory_usage': 6696,
-                                                                                                  'total_entries': 27},
-                                                                                     'route_identifier': '192.168.111.1',
-                                                                                     'routing_table_version': 28,
-                                                                                     'scan_interval': 60,
-                                                                                     'state_pfxrcd': 'Idle',
-                                                                                     'tbl_ver': 1,
-                                                                                     'total_memory': 10648,
-                                                                                     'up_down': 'never',
-                                                                                     'version': 4}}},
-                                  '192.168.19.2': {'address_family': {'ipv4 unicast': {'activity_paths': '66/39',
-                                                                                     'activity_prefixes': '47/20',
-                                                                                     'as': 300,
-                                                                                     'attribute_entries': '1/1',
-                                                                                     'bgp_table_version': 28,
-                                                                                     'cache_entries': {'filter-list': {'memory_usage': 0,
-                                                                                                                       'total_entries': 0},
-                                                                                                       'route-map': {'memory_usage': 0,
-                                                                                                                     'total_entries': 0}},
-                                                                                     'input_queue': 0,
-                                                                                     'local_as': 100,
-                                                                                     'msg_rcvd': 0,
-                                                                                     'msg_sent': 0,
-                                                                                     'output_queue': 0,
-                                                                                     'path': {'memory_usage': 3672,
-                                                                                              'total_entries': 27},
-                                                                                     'prefixes': {'memory_usage': 6696,
-                                                                                                  'total_entries': 27},
-                                                                                     'route_identifier': '192.168.111.1',
-                                                                                     'routing_table_version': 28,
-                                                                                     'scan_interval': 60,
-                                                                                     'state_pfxrcd': 'Idle',
-                                                                                     'tbl_ver': 1,
-                                                                                     'total_memory': 10648,
-                                                                                     'up_down': '01:07:38',
-                                                                                     'version': 4}}},
-                                  '10.36.3.3': {'address_family': {'vpnv4 unicast': {'activity_paths': '120/30',
-                                                                                   'activity_prefixes': '85/25',
-                                                                                   'as': 100,
-                                                                                   'attribute_entries': '6/4',
-                                                                                   'bgp_table_version': 1,
-                                                                                   'cache_entries': {'filter-list': {'memory_usage': 0,
-                                                                                                                     'total_entries': 0},
-                                                                                                     'route-map': {'memory_usage': 0,
-                                                                                                                   'total_entries': 0}},
-                                                                                   'community_entries': {'memory_usage': 96,
-                                                                                                         'total_entries': 4},
-                                                                                   'entries': {'AS-PATH': {'memory_usage': 120,
-                                                                                                           'total_entries': 3},
-                                                                                               'rrinfo': {'memory_usage': 48,
-                                                                                                          'total_entries': 2}},
-                                                                                   'input_queue': 0,
-                                                                                   'local_as': 100,
-                                                                                   'msg_rcvd': 0,
-                                                                                   'msg_sent': 0,
-                                                                                   'output_queue': 0,
-                                                                                   'path': {'memory_usage': 3600,
-                                                                                            'total_entries': 45},
-                                                                                   'prefixes': {'memory_usage': 4560,
-                                                                                                'total_entries': 30},
-                                                                                   'route_identifier': '192.168.111.1',
-                                                                                   'routing_table_version': 1,
-                                                                                   'scan_interval': 60,
-                                                                                   'state_pfxrcd': 'Idle',
-                                                                                   'tbl_ver': 1,
-                                                                                   'total_memory': 9384,
-                                                                                   'up_down': 'never',
-                                                                                   'version': 4},
-                                                                 'vpnv6 unicast': {'activity_paths': '120/30',
-                                                                                   'activity_prefixes': '85/25',
-                                                                                   'as': 100,
-                                                                                   'attribute_entries': '6/4',
-                                                                                   'bgp_table_version': 1,
-                                                                                   'cache_entries': {'filter-list': {'memory_usage': 0,
-                                                                                                                     'total_entries': 0},
-                                                                                                     'route-map': {'memory_usage': 0,
-                                                                                                                   'total_entries': 0}},
-                                                                                   'community_entries': {'memory_usage': 96,
-                                                                                                         'total_entries': 4},
-                                                                                   'entries': {'AS-PATH': {'memory_usage': 120,
-                                                                                                           'total_entries': 3},
-                                                                                               'rrinfo': {'memory_usage': 48,
-                                                                                                          'total_entries': 2}},
-                                                                                   'input_queue': 0,
-                                                                                   'local_as': 100,
-                                                                                   'msg_rcvd': 0,
-                                                                                   'msg_sent': 0,
-                                                                                   'output_queue': 0,
-                                                                                   'path': {'memory_usage': 4860,
-                                                                                            'total_entries': 45},
-                                                                                   'prefixes': {'memory_usage': 5280,
-                                                                                                'total_entries': 30},
-                                                                                   'route_identifier': '192.168.111.1',
-                                                                                   'routing_table_version': 1,
-                                                                                   'scan_interval': 60,
-                                                                                   'state_pfxrcd': 'Idle',
-                                                                                   'tbl_ver': 1,
-                                                                                   'total_memory': 11364,
-                                                                                   'up_down': 'never',
-                                                                                   'version': 4}}}}}}}
-    ShowBgpAllSummary_custom = {
-        'bgp_id': 100,
-        'vrf':
-            {'VRF1':
-                {'neighbor': {
-                    '10.16.2.2': {
-                        'address_family': {
-                            'vpnv4 unicast': {
-                                'activity_paths': '120/30',
-                                'activity_prefixes': '85/25',
-                                'as': 100,
-                                'attribute_entries': '6/4',
-                                'bgp_table_version': 1,
-                                'cache_entries': {
-                                    'filter-list': {
-                                        'memory_usage': 0,
-                                        'total_entries': 0},
-                                    'route-map': {
-                                        'memory_usage': 0,
-                                        'total_entries': 0}},
-                                'community_entries': {
-                                    'memory_usage': 96,
-                                    'total_entries': 4},
-                                'entries': {'AS-PATH': {
-                                    'memory_usage': 120,
-                                    'total_entries': 3},
-                                    'rrinfo': {
-                                        'memory_usage': 48,
-                                        'total_entries': 2}},
-                                'input_queue': 0,
-                                'local_as': 100,
-                                'msg_rcvd': 82,
-                                'msg_sent': 88,
-                                'output_queue': 0,
-                                'path': {
-                                    'memory_usage': 3600,
-                                    'total_entries': 45},
-                                'prefixes': {
-                                    'memory_usage': 4560,
-                                    'total_entries': 30},
-                                'route_identifier':
-                                    '10.64.4.4',
-                                'routing_table_version': 56,
-                                'scan_interval': 60,
-                                'state_pfxrcd': '10',
-                                'tbl_ver': 1,
-                                'total_memory': 9384,
-                                'up_down': '01:12:00',
-                                'version': 4},
-                        }}},
-
-                }}}
-    ShowBgpAllClusterIds = {
-        'vrf': {
-            'default': {'cluster_id': '10.64.4.4',
-                        'configured_id': '0.0.0.0',
-                        'list_of_cluster_ids': {'192.168.1.1': {
-                            'client_to_client_reflection_configured': 'disabled',
-                            'client_to_client_reflection_used': 'disabled',
-                            'num_neighbors': 2},
-                            '192.168.2.2': {
-                                'client_to_client_reflection_configured':
-                                    'disabled',
-                                'client_to_client_reflection_used': 'disabled',
-                                'num_neighbors': 2}},
-                        'reflection_all_configured': 'enabled',
-                        'reflection_intra_cluster_configured': 'enabled',
-                        'reflection_intra_cluster_used': 'enabled'},
-            'vrf1': {'cluster_id': '10.64.4.4',
-                     'configured_id': '0.0.0.0',
-                     'list_of_cluster_ids': {'192.168.1.1': {
-                         'client_to_client_reflection_configured': 'disabled',
-                         'client_to_client_reflection_used': 'disabled',
-                         'num_neighbors': 2},
-                                             '192.168.2.2': {
-                                                 'client_to_client_reflection_configured': 'disabled',
-                                                 'client_to_client_reflection_used':
-                                                     'disabled',
-                                                 'num_neighbors': 2}},
-                     'reflection_all_configured': 'enabled',
-                     'reflection_intra_cluster_configured': 'enabled',
-                     'reflection_intra_cluster_used': 'enabled'},
-            'vrf2': {'cluster_id': '10.64.4.4',
-                     'configured_id': '0.0.0.0',
-                     'list_of_cluster_ids': {'192.168.1.1': {
-                         'client_to_client_reflection_configured': 'disabled',
-                         'client_to_client_reflection_used': 'disabled',
-                         'num_neighbors': 2},
-                                             '192.168.2.2': {
-                                                 'client_to_client_reflection_configured': 'disabled',
-                                                 'client_to_client_reflection_used':
-                                                     'disabled',
-                                                 'num_neighbors': 2}},
-                     'reflection_all_configured': 'enabled',
-                     'reflection_intra_cluster_configured': 'enabled',
-                     'reflection_intra_cluster_used': 'enabled'}}}
-
-
-    ShowIpBgpTemplatePeerPolicy = {'peer_policy': {'PEER-POLICY': {'allowas_in': True,
-                                 'allowas_in_as_number': 9,
-                                 'as_override': True,
-                                 'default_originate': True,
-                                 'default_originate_route_map': 'test',
-                                 'index': 1,
-                                 'inherited_disable_polices': '0x0',
-                                 'inherited_polices': '0x0',
-                                 'inherited_policies': {'as_override': True,
-                                                        'soo': 'SoO:100:100'},
-                                 'local_disable_policies': '0x0',
-                                 'local_policies': '0x8002069C603',
-                                 'maximum_prefix_max_prefix_no': 5555,
-                                 'maximum_prefix_restart': 300,
-                                 'maximum_prefix_threshold': 70,
-                                 'next_hop_self': True,
-                                 'route_map_name_in': 'test',
-                                 'route_map_name_out': 'test2',
-                                 'route_reflector_client': True,
-                                 'send_community': 'both',
-                                 'soft_reconfiguration': True,
-                                 'soo': 'SoO:100:100'},
-                 'PEER-POLICY2': {'allowas_in': True,
-                                  'allowas_in_as_number': 10,
-                                  'index': 2,
-                                  'inherited_disable_polices': '0x0',
-                                  'inherited_polices': '0x0',
-                                  'local_disable_policies': '0x0',
-                                  'local_policies': '0x200000'}}}
-
-    ShowBgpAllNeighbors = {
-        'list_of_neighbors':['10.16.2.2', '10.36.3.3'],
-        'vrf':
-            {'default':
-                {'neighbor':
-                        {'10.16.2.2':
-                             {'remote_as': 100,
-                              'link': 'internal',
-                              'bgp_version': 4,
-                              'router_id': '10.16.2.2',
-                              'session_state': 'established',
-                              'bgp_negotiated_keepalive_timers':
-                                  {
-                                   'keepalive_interval': 60,
-                                   'hold_time': 180,
-                                   },
-                              'bgp_session_transport':
-                                  {
-                                      'connection':
-                                      {
-                                          'last_reset': 'never',
-                                          'established': 1,
-                                          'dropped': 0,
-                                      },
-                                      'transport':
-                                      {
-                                           'local_host': '10.64.4.4',
-                                           'local_port': '35281',
-                                           'foreign_host': '10.16.2.2',
-                                           'foreign_port': '179',
-                                      },
-                                      'min_time_between_advertisement_runs': 0,
-                                      'address_tracking_status': 'enabled' ,
-                                      'rib_route_ip': '10.16.2.2',
-                                      'tcp_path_mtu_discovery': 'enabled',
-                                      'graceful_restart': 'disabled',
-                                      'connection_state': 'estab',
-                                      'io_status': 1,
-                                      'unread_input_bytes': 0,
-                                      'ecn_connection': 'disabled',
-                                      'minimum_incoming_ttl': 0,
-                                      'outgoing_ttl': 255,
-                                      'connection_tableid': 0,
-                                      'maximum_output_segment_queue_size': 50,
-                                      'enqueued_packets':
-                                          {
-                                              'retransmit_packet': 0,
-                                              'input_packet': 0,
-                                              'mis_ordered_packet': 0,
-                                          },
-
-                                      'iss': 55023811,
-                                      'snduna': 55027115,
-                                      'sndnxt': 55027115,
-                                      'irs': 109992783,
-                                      'rcvnxt':109995158,
-                                      'sndwnd': 16616,
-                                      'snd_scale': 0,
-                                      'maxrcvwnd': 16384,
-                                      'rcvwnd': 16327,
-                                      'rcv_scale':0 ,
-                                      'delrcvwnd': 57,
-                                      'srtt': 1000 ,
-                                      'rtto': 1003,
-                                      'rtv': 3,
-                                      'krtt': 0,
-                                      'min_rtt': 4 ,
-                                      'max_rtt': 1000,
-                                      'ack_hold': 200,
-                                      'uptime': 4239741  ,
-                                      'sent_idletime': 7832 ,
-                                      'receive_idletime': 8032  ,
-                                      'status_flags': 'active open',
-                                      'option_flags': 'nagle, path mtu capable',
-                                      'ip_precedence_value': 6,
-                                      'datagram':
-                                          {
-                                              'datagram_sent':
-                                                  {
-                                                      'value': 166,
-                                                      'retransmit':0 ,
-                                                      'fastretransmit':0 ,
-                                                      'partialack': 0,
-                                                      'second_congestion':0 ,
-                                                      'with_data':87 ,
-                                                      'total_data': 3303,
-                                                  },
-                                              'datagram_received':
-                                                  {
-                                                      'value':164 ,
-                                                      'out_of_order':0,
-                                                      'with_data': 80,
-                                                      'total_data': 2374,
-                                                  },
-
-                                          },
-                                      'packet_fast_path': 0,
-                                      'packet_fast_processed': 0,
-                                      'packet_slow_path':0 ,
-                                      'fast_lock_acquisition_failures':0,
-                                      'lock_slow_path': 0,
-                                      'tcp_semaphore': '0x1286E7EC',
-                                      'tcp_semaphore_status': 'FREE',
-
-                                  },
-                              'bgp_neighbor_counters':
-                                  {'messages':
-                                      {
-                                          'sent':
-                                              {
-                                                  'opens': 1,
-                                                  'updates': 11,
-                                                  'notifications': 0,
-                                                  'keepalives': 75,
-                                                  'route_refresh': 0,
-                                                  'total': 87,
-                                              },
-                                          'received':
-                                              {
-                                                  'opens': 1,
-                                                  'updates': 6,
-                                                  'notifications': 0,
-                                                  'keepalives': 74,
-                                                  'route_refresh': 0,
-                                                  'total': 81,
-                                              },
-                                          'in_queue_depth': 0,
-                                          'out_queue_depth': 0,
-                                      },
-
-                                  },
-                              'bgp_negotiated_capabilities':
-                                  {'route_refresh': 'advertised and received(new)',
-                                   'vpnv4_unicast': 'advertised and received',
-                                   'vpnv6_unicast': 'advertised and received',
-                                   'graceful_restart': 'received',
-                                   'enhanced_refresh': 'advertised',
-                                   'four_octets_asn': 'advertised and received',
-                                   'stateful_switchover': 'NO for session 1',
-                                   'graceful_restart_af_advertised_by_peer':
-                                       'VPNv4 Unicast (was not preserved, VPNv6 Unicast (was not preserved',
-                                   'graceful_remote_restart_timer':120,
-                                   },
-                              'bgp_event_timer':
-                                  {
-                                      'starts':
-                                          {
-                                              'retrans': 86,
-                                              'timewait': 0,
-                                              'ackhold': 80,
-                                              'sendwnd': 0,
-                                              'keepalive': 0,
-                                              'giveup': 0,
-                                              'pmtuager': 1,
-                                              'deadwait': 0,
-                                              'linger': 0,
-                                              'processq': 0,
-                                          },
-                                      'wakeups':
-                                          {
-                                              'retrans': 0,
-                                              'timewait': 0,
-                                              'ackhold': 72,
-                                              'sendwnd': 0,
-                                              'keepalive': 0,
-                                              'giveup': 0,
-                                              'pmtuager': 1,
-                                              'deadwait': 0,
-                                              'linger': 0,
-                                              'processq': 0,
-                                          },
-                                      'next':
-                                          {
-                                              'retrans': '0x0',
-                                              'timewait': '0x0',
-                                              'ackhold': '0x0',
-                                              'sendwnd': '0x0',
-                                              'keepalive': '0x0',
-                                              'giveup': '0x0',
-                                              'pmtuager': '0x0',
-                                              'deadwait': '0x0',
-                                              'linger': '0x0',
-                                              'processq': '0x0',
-                                          },
-
-                                  },
-                              'address_family':
-                                  {'vpnv4 unicast':
-                                      {
-                                          'last_read': '00:00:04',
-                                          'last_write': '00:00:09',
-                                          'session_state': 'established',
-                                          'up_time': '01:10:35',
-                                          'current_time': '0x530449',
-                                      },
-                                  'vpnv6 unicast':
-                                      {
-                                          'last_read': '00:00:07',
-                                          'last_write': '00:00:12',
-                                          'session_state': 'established',
-                                          'up_time': '01:10:38',
-                                          'current_time': '0x530FF5',
-                                      },
-
-                                  },
-                              },
-                        '10.36.3.3':
-                             {'remote_as': 100,
-                              'link': 'internal',
-                              'bgp_version': 4,
-                              'router_id': '10.36.3.3',
-                              'session_state': 'established',
-                              'bgp_negotiated_keepalive_timers':
-                                  {
-                                   'keepalive_interval': 60,
-                                   'hold_time': 180,
-                                   },
-                              'bgp_session_transport':
-                                  {'connection':
-                                      {
-                                          'last_reset': 'never',
-                                          'established': 1,
-                                          'dropped': 0,
-                                      },
-                                      'transport':
-                                          {'local_host': '10.64.4.4',
-                                           'local_port': '56031',
-                                           'foreign_host': '10.36.3.3',
-                                           'foreign_port': '179',
-                                           },
-                                      'min_time_between_advertisement_runs': 0,
-                                      'address_tracking_status': 'enabled',
-                                      'rib_route_ip': '10.36.3.3',
-                                      'tcp_path_mtu_discovery': 'enabled',
-                                      'graceful_restart': 'disabled',
-                                      'connection_state': 'estab',
-                                      'io_status': 1,
-                                      'unread_input_bytes': 0,
-                                      'ecn_connection': 'disabled',
-                                      'minimum_incoming_ttl': 0,
-                                      'outgoing_ttl': 255,
-                                      'connection_tableid': 0,
-                                      'maximum_output_segment_queue_size': 50,
-                                      'enqueued_packets':
-                                          {
-                                              'retransmit_packet': 0,
-                                              'input_packet': 0,
-                                              'mis_ordered_packet': 0,
-                                          },
-                                      'iss': 2116369173,
-                                      'snduna': 2116372477,
-                                      'sndnxt': 2116372477,
-                                      'irs': 4033842748,
-                                      'rcvnxt': 4033845123,
-                                      'sndwnd': 16616,
-                                      'snd_scale':0,
-                                      'maxrcvwnd': 16384,
-                                      'rcvwnd': 16327,
-                                      'rcv_scale': 0,
-                                      'delrcvwnd': 57,
-                                      'srtt': 1000,
-                                      'rtto': 1003,
-                                      'rtv': 3,
-                                      'krtt': 0,
-                                      'min_rtt': 3,
-                                      'max_rtt': 1000,
-                                      'ack_hold': 200,
-                                      'uptime': 4246385,
-                                      'sent_idletime': 8367,
-                                      'receive_idletime': 8567,
-                                      'status_flags': 'active open',
-                                      'option_flags': 'nagle, path mtu capable',
-                                      'ip_precedence_value': 6,
-                                      'datagram':
-                                          {
-                                              'datagram_sent':
-                                                  {
-                                                      'value': 167,
-                                                      'retransmit': 0,
-                                                      'fastretransmit': 0,
-                                                      'partialack': 0,
-                                                      'second_congestion': 0,
-                                                      'with_data': 87,
-                                                      'total_data': 3303,
-                                                  },
-                                              'datagram_received':
-                                                  {
-                                                      'value': 165,
-                                                      'out_of_order': 0,
-                                                      'with_data': 80,
-                                                      'total_data': 2374,
-                                                  },
-
-                                          },
-                                      'packet_fast_path': 0,
-                                      'packet_fast_processed': 0,
-                                      'packet_slow_path': 0,
-                                      'fast_lock_acquisition_failures': 0,
-                                      'lock_slow_path': 0,
-                                      'tcp_semaphore': '0x1286E85C',
-                                      'tcp_semaphore_status': 'FREE',
-                                  },
-                              'bgp_neighbor_counters':
-                                  {'messages':
-                                      {
-                                          'sent':
-                                              {
-                                                  'opens': 1,
-                                                  'updates': 11,
-                                                  'notifications': 0,
-                                                  'keepalives': 75,
-                                                  'route_refresh': 0,
-                                                  'total': 87,
-                                              },
-                                          'received':
-                                              {
-                                                  'opens': 1,
-                                                  'updates': 6,
-                                                  'notifications': 0,
-                                                  'keepalives': 74,
-                                                  'route_refresh': 0,
-                                                  'total': 81,
-                                              },
-                                          'in_queue_depth': 0,
-                                          'out_queue_depth': 0,
-                                      },
-
-                                  },
-                              'bgp_negotiated_capabilities':
-                                  {'route_refresh': 'advertised and received(new)',
-                                   'vpnv4_unicast': 'advertised and received',
-                                   'vpnv6_unicast': 'advertised and received',
-                                   'graceful_restart': 'received',
-                                   'enhanced_refresh': 'advertised',
-                                   'four_octets_asn': 'advertised and received',
-                                   'stateful_switchover': 'NO for session 1',
-                                   'graceful_restart_af_advertised_by_peer':
-                                       'VPNv4 Unicast (was not preserved, VPNv6 Unicast (was not preserved',
-                                   'graceful_remote_restart_timer': 120,
-                                   },
-                              'bgp_event_timer':
-                                  {
-                                      'starts':
-                                          {
-                                              'retrans': 86,
-                                              'timewait': 0,
-                                              'ackhold': 80,
-                                              'sendwnd': 0,
-                                              'keepalive': 0,
-                                              'giveup': 0,
-                                              'pmtuager': 1,
-                                              'deadwait': 0,
-                                              'linger': 0,
-                                              'processq': 0,
-                                          },
-                                      'wakeups':
-                                          {
-                                              'retrans': 0,
-                                              'timewait': 0,
-                                              'ackhold': 73,
-                                              'sendwnd': 0,
-                                              'keepalive': 0,
-                                              'giveup': 0,
-                                              'pmtuager': 1,
-                                              'deadwait': 0,
-                                              'linger': 0,
-                                              'processq': 0,
-                                          },
-                                      'next':
-                                          {
-                                              'retrans': '0x0',
-                                              'timewait': '0x0',
-                                              'ackhold': '0x0',
-                                              'sendwnd': '0x0',
-                                              'keepalive': '0x0',
-                                              'giveup': '0x0',
-                                              'pmtuager': '0x0',
-                                              'deadwait': '0x0',
-                                              'linger': '0x0',
-                                              'processq': '0x0',
-                                          },
-                                  },
-                              'address_family':
-                                  {'vpnv4 unicast':
-                                      {
-                                          'last_read': '00:00:04',
-                                          'last_write': '00:00:43',
-                                          'session_state': 'established',
-                                          'up_time': '01:10:41',
-                                          'current_time': '0x530638',
-                                      },
-                                  'vpnv6 unicast':
-                                      {
-                                          'last_read': '00:00:08',
-                                          'last_write': '00:00:47',
-                                          'session_state': 'established',
-                                          'up_time': '01:10:44',
-                                          'current_time': '0x5313D8',
-                                      },
-                                  },
-                              },
-                        },
-                },
-            },
-    }
-    ShowBgpAllNeighbors_nbr1 = {
-        'list_of_neighbors': ['10.16.2.2'],
-        'vrf':
-            {'default':
-                 {'neighbor':
-                      {'10.36.3.3':
-                           {'remote_as': 100,
-                            'link': 'internal',
-                            'bgp_version': 4,
-                            'router_id': '10.16.2.2',
-                            'session_state': 'established',
-                            'bgp_negotiated_keepalive_timers':
-                                {
-                                    'keepalive_interval': 60,
-                                    'hold_time': 180,
-                                },
-                            'bgp_session_transport':
-                                {
-                                    'connection':
-                                        {
-                                            'last_reset': 'never',
-                                            'established': 1,
-                                            'dropped': 0,
-                                        },
-                                    'transport':
-                                        {
-                                            'local_host': '10.64.4.4',
-                                            'local_port': '35281',
-                                            'foreign_host': '10.16.2.2',
-                                            'foreign_port': '179',
-                                        },
-                                    'min_time_between_advertisement_runs': 0,
-                                    'address_tracking_status': 'enabled',
-                                    'rib_route_ip': '10.16.2.2',
-                                    'tcp_path_mtu_discovery': 'enabled',
-                                    'graceful_restart': 'disabled',
-                                    'connection_state': 'estab',
-                                    'io_status': 1,
-                                    'unread_input_bytes': 0,
-                                    'ecn_connection': 'disabled',
-                                    'minimum_incoming_ttl': 0,
-                                    'outgoing_ttl': 255,
-                                    'connection_tableid': 0,
-                                    'maximum_output_segment_queue_size': 50,
-                                    'enqueued_packets':
-                                        {
-                                            'retransmit_packet': 0,
-                                            'input_packet': 0,
-                                            'mis_ordered_packet': 0,
-                                        },
-
-                                    'iss': 55023811,
-                                    'snduna': 55027115,
-                                    'sndnxt': 55027115,
-                                    'irs': 109992783,
-                                    'rcvnxt': 109995158,
-                                    'sndwnd': 16616,
-                                    'snd_scale': 0,
-                                    'maxrcvwnd': 16384,
-                                    'rcvwnd': 16327,
-                                    'rcv_scale': 0,
-                                    'delrcvwnd': 57,
-                                    'srtt': 1000,
-                                    'rtto': 1003,
-                                    'rtv': 3,
-                                    'krtt': 0,
-                                    'min_rtt': 4,
-                                    'max_rtt': 1000,
-                                    'ack_hold': 200,
-                                    'uptime': 4239741,
-                                    'sent_idletime': 7832,
-                                    'receive_idletime': 8032,
-                                    'status_flags': 'active open',
-                                    'option_flags': 'nagle, path mtu capable',
-                                    'ip_precedence_value': 6,
-                                    'datagram':
-                                        {
-                                            'datagram_sent':
-                                                {
-                                                    'value': 166,
-                                                    'retransmit': 0,
-                                                    'fastretransmit': 0,
-                                                    'partialack': 0,
-                                                    'second_congestion': 0,
-                                                    'with_data': 87,
-                                                    'total_data': 3303,
-                                                },
-                                            'datagram_received':
-                                                {
-                                                    'value': 164,
-                                                    'out_of_order': 0,
-                                                    'with_data': 80,
-                                                    'total_data': 2374,
-                                                },
-
-                                        },
-                                    'packet_fast_path': 0,
-                                    'packet_fast_processed': 0,
-                                    'packet_slow_path': 0,
-                                    'fast_lock_acquisition_failures': 0,
-                                    'lock_slow_path': 0,
-                                    'tcp_semaphore': '0x1286E7EC',
-                                    'tcp_semaphore_status': 'FREE',
-
-                                },
-                            'bgp_neighbor_counters':
-                                {'messages':
-                                    {
-                                        'sent':
-                                            {
-                                                'opens': 1,
-                                                'updates': 11,
-                                                'notifications': 0,
-                                                'keepalives': 75,
-                                                'route_refresh': 0,
-                                                'total': 87,
-                                            },
-                                        'received':
-                                            {
-                                                'opens': 1,
-                                                'updates': 6,
-                                                'notifications': 0,
-                                                'keepalives': 74,
-                                                'route_refresh': 0,
-                                                'total': 81,
-                                            },
-                                        'in_queue_depth': 0,
-                                        'out_queue_depth': 0,
-                                    },
-
-                                },
-                            'bgp_negotiated_capabilities':
-                                {'route_refresh': 'advertised and received(new)',
-                                 'vpnv4_unicast': 'advertised and received',
-                                 'vpnv6_unicast': 'advertised and received',
-                                 'graceful_restart': 'received',
-                                 'enhanced_refresh': 'advertised',
-                                 'four_octets_asn': 'advertised and received',
-                                 'stateful_switchover': 'NO for session 1',
-                                 'graceful_restart_af_advertised_by_peer':
-                                     'VPNv4 Unicast (was not preserved, VPNv6 Unicast ('
-                                     'was not preserved',
-                                 'graceful_remote_restart_timer': 120,
-                                 },
-                            'bgp_event_timer':
-                                {
-                                    'starts':
-                                        {
-                                            'retrans': 86,
-                                            'timewait': 0,
-                                            'ackhold': 80,
-                                            'sendwnd': 0,
-                                            'keepalive': 0,
-                                            'giveup': 0,
-                                            'pmtuager': 1,
-                                            'deadwait': 0,
-                                            'linger': 0,
-                                            'processq': 0,
-                                        },
-                                    'wakeups':
-                                        {
-                                            'retrans': 0,
-                                            'timewait': 0,
-                                            'ackhold': 72,
-                                            'sendwnd': 0,
-                                            'keepalive': 0,
-                                            'giveup': 0,
-                                            'pmtuager': 1,
-                                            'deadwait': 0,
-                                            'linger': 0,
-                                            'processq': 0,
-                                        },
-                                    'next':
-                                        {
-                                            'retrans': '0x0',
-                                            'timewait': '0x0',
-                                            'ackhold': '0x0',
-                                            'sendwnd': '0x0',
-                                            'keepalive': '0x0',
-                                            'giveup': '0x0',
-                                            'pmtuager': '0x0',
-                                            'deadwait': '0x0',
-                                            'linger': '0x0',
-                                            'processq': '0x0',
-                                        },
-
-                                },
-                            'address_family':
-                                {'vpnv4 unicast':
-                                    {
-                                        'last_read': '00:00:04',
-                                        'last_write': '00:00:09',
-                                        'session_state': 'established',
-                                        'up_time': '01:10:35',
-                                        'current_time': '0x530449',
-                                    },
-
-
-                                },
-                            },
-                       },
-                  },
-             'VRF1': {'neighbor':
-                      {'10.16.2.2':
-                           {'remote_as': 100,
-                            'link': 'internal',
-                            'bgp_version': 4,
-                            'router_id': '10.16.2.2',
-                            'session_state': 'established',
-                            'bgp_negotiated_keepalive_timers':
-                                {
-                                    'keepalive_interval': 60,
-                                    'hold_time': 180,
-                                },
-                            'bgp_session_transport':
-                                {
-                                    'connection':
-                                        {
-                                            'last_reset': 'never',
-                                            'established': 1,
-                                            'dropped': 0,
-                                        },
-                                    'transport':
-                                        {
-                                            'local_host': '10.64.4.4',
-                                            'local_port': '35281',
-                                            'foreign_host': '10.16.2.2',
-                                            'foreign_port': '179',
-                                        },
-                                    'min_time_between_advertisement_runs': 0,
-                                    'address_tracking_status': 'enabled',
-                                    'rib_route_ip': '10.16.2.2',
-                                    'tcp_path_mtu_discovery': 'enabled',
-                                    'graceful_restart': 'disabled',
-                                    'connection_state': 'estab',
-                                    'io_status': 1,
-                                    'unread_input_bytes': 0,
-                                    'ecn_connection': 'disabled',
-                                    'minimum_incoming_ttl': 0,
-                                    'outgoing_ttl': 255,
-                                    'connection_tableid': 0,
-                                    'maximum_output_segment_queue_size': 50,
-                                    'enqueued_packets':
-                                        {
-                                            'retransmit_packet': 0,
-                                            'input_packet': 0,
-                                            'mis_ordered_packet': 0,
-                                        },
-
-                                    'iss': 55023811,
-                                    'snduna': 55027115,
-                                    'sndnxt': 55027115,
-                                    'irs': 109992783,
-                                    'rcvnxt': 109995158,
-                                    'sndwnd': 16616,
-                                    'snd_scale': 0,
-                                    'maxrcvwnd': 16384,
-                                    'rcvwnd': 16327,
-                                    'rcv_scale': 0,
-                                    'delrcvwnd': 57,
-                                    'srtt': 1000,
-                                    'rtto': 1003,
-                                    'rtv': 3,
-                                    'krtt': 0,
-                                    'min_rtt': 4,
-                                    'max_rtt': 1000,
-                                    'ack_hold': 200,
-                                    'uptime': 4239741,
-                                    'sent_idletime': 7832,
-                                    'receive_idletime': 8032,
-                                    'status_flags': 'active open',
-                                    'option_flags': 'nagle, path mtu capable',
-                                    'ip_precedence_value': 6,
-                                    'datagram':
-                                        {
-                                            'datagram_sent':
-                                                {
-                                                    'value': 166,
-                                                    'retransmit': 0,
-                                                    'fastretransmit': 0,
-                                                    'partialack': 0,
-                                                    'second_congestion': 0,
-                                                    'with_data': 87,
-                                                    'total_data': 3303,
-                                                },
-                                            'datagram_received':
-                                                {
-                                                    'value': 164,
-                                                    'out_of_order': 0,
-                                                    'with_data': 80,
-                                                    'total_data': 2374,
-                                                },
-
-                                        },
-                                    'packet_fast_path': 0,
-                                    'packet_fast_processed': 0,
-                                    'packet_slow_path': 0,
-                                    'fast_lock_acquisition_failures': 0,
-                                    'lock_slow_path': 0,
-                                    'tcp_semaphore': '0x1286E7EC',
-                                    'tcp_semaphore_status': 'FREE',
-
-                                },
-                            'bgp_neighbor_counters':
-                                {'messages':
-                                    {
-                                        'sent':
-                                            {
-                                                'opens': 1,
-                                                'updates': 11,
-                                                'notifications': 0,
-                                                'keepalives': 75,
-                                                'route_refresh': 0,
-                                                'total': 87,
-                                            },
-                                        'received':
-                                            {
-                                                'opens': 1,
-                                                'updates': 6,
-                                                'notifications': 0,
-                                                'keepalives': 74,
-                                                'route_refresh': 0,
-                                                'total': 81,
-                                            },
-                                        'in_queue_depth': 0,
-                                        'out_queue_depth': 0,
-                                    },
-
-                                },
-                            'bgp_negotiated_capabilities':
-                                {'route_refresh': 'advertised and received(new)',
-                                 'vpnv4_unicast': 'advertised and received',
-                                 'vpnv6_unicast': 'advertised and received',
-                                 'graceful_restart': 'received',
-                                 'enhanced_refresh': 'advertised',
-                                 'four_octets_asn': 'advertised and received',
-                                 'stateful_switchover': 'NO for session 1',
-                                 'graceful_restart_af_advertised_by_peer':
-                                     'VPNv4 Unicast (was not preserved, VPNv6 Unicast ('
-                                     'was not preserved',
-                                 'graceful_remote_restart_timer': 120,
-                                 },
-                            'bgp_event_timer':
-                                {
-                                    'starts':
-                                        {
-                                            'retrans': 86,
-                                            'timewait': 0,
-                                            'ackhold': 80,
-                                            'sendwnd': 0,
-                                            'keepalive': 0,
-                                            'giveup': 0,
-                                            'pmtuager': 1,
-                                            'deadwait': 0,
-                                            'linger': 0,
-                                            'processq': 0,
-                                        },
-                                    'wakeups':
-                                        {
-                                            'retrans': 0,
-                                            'timewait': 0,
-                                            'ackhold': 72,
-                                            'sendwnd': 0,
-                                            'keepalive': 0,
-                                            'giveup': 0,
-                                            'pmtuager': 1,
-                                            'deadwait': 0,
-                                            'linger': 0,
-                                            'processq': 0,
-                                        },
-                                    'next':
-                                        {
-                                            'retrans': '0x0',
-                                            'timewait': '0x0',
-                                            'ackhold': '0x0',
-                                            'sendwnd': '0x0',
-                                            'keepalive': '0x0',
-                                            'giveup': '0x0',
-                                            'pmtuager': '0x0',
-                                            'deadwait': '0x0',
-                                            'linger': '0x0',
-                                            'processq': '0x0',
-                                        },
-
-                                },
-                            'address_family':
-                                {'vpnv4 unicast':
-                                    {
-                                        'last_read': '00:00:04',
-                                        'last_write': '00:00:09',
-                                        'session_state': 'established',
-                                        'up_time': '01:10:35',
-                                        'current_time': '0x530449',
-                                    },
-
-
-                                },
-                            },
-                       },
-                  }
-             },
-    }
-
-    ShowIpBgpAllDampeningParameters = {'vrf': {'VRF1': {'address_family': {'vpnv4 unicast': {'dampening': True,
-                                                       'dampening_decay_time': 2320,
-                                                       'dampening_half_life_time': 900,
-                                                       'dampening_max_suppress_penalty': 12000,
-                                                       'dampening_max_suppress_time': 3600,
-                                                       'dampening_reuse_time': 750,
-                                                       'dampening_suppress_time': 2000}}},
-         'default': {'address_family': {'ipv4 unicast': {'dampening': True,
-                                                         'dampening_decay_time': 4200,
-                                                         'dampening_half_life_time': 2100,
-                                                         'dampening_max_suppress_penalty': 800,
-                                                         'dampening_max_suppress_time': 4200,
-                                                         'dampening_reuse_time': 200,
-                                                         'dampening_suppress_time': 200},
-                                        'ipv6 unicast': {'dampening': True,
-                                                         'dampening_decay_time': 4235,
-                                                         'dampening_half_life_time': 2160,
-                                                         'dampening_max_suppress_penalty': 788,
-                                                         'dampening_max_suppress_time': 4260,
-                                                         'dampening_reuse_time': 201,
-                                                         'dampening_suppress_time': 201},
-                                        'vpnv4 unicast': {'dampening': True,
-                                                          'dampening_decay_time': 2320,
-                                                          'dampening_half_life_time': 900,
-                                                          'dampening_max_suppress_penalty': 12000,
-                                                          'dampening_max_suppress_time': 3600,
-                                                          'dampening_reuse_time': 750,
-                                                          'dampening_suppress_time': 2000}}}}}
-
-    ShowIpBgpTemplatePeerSession = {'peer_session': {'PEER-SESSION': {'description': 'desc1!',
-                                   'disable_connected_check': True,
-                                   'ebgp_multihop_enable': True,
-                                   'ebgp_multihop_max_hop': 254,
-                                   'fall_over_bfd': True,
-                                   'holdtime': 30,
-                                   'index': 1,
-                                   'inherited_polices': '0x0',
-                                   'inherited_session_commands': {'holdtime': 30,
-                                                                  'keepalive_interval': 10},
-                                   'keepalive_interval': 10,
-                                   'local_as_as_no': 255,
-                                   'local_policies': '0x5025FD',
-                                   'password_text': 'is configured',
-                                   'remote_as': 321,
-                                   'shutdown': True,
-                                   'suppress_four_byte_as_capability': True,
-                                   'transport_connection_mode': 'passive',
-                                   'update_source': 'Loopback0'},
-                  'PEER-SESSION2': {'fall_over_bfd': True,
-                                    'index': 2,
-                                    'inherited_polices': '0x0',
-                                    'local_policies': '0x100000'}}}
-
-    ShowBgpAllDetail = {'instance':
-                            {'default':
-                                 {'vrf':
-                                      {'EVPN-BGP-Table':
-                                           {'address_family':
-                                                {'vpnv4 unicast RD 65535:1':
-                                                     {'default_vrf': 'evpn1',
-                                                      'prefixes': {'10.1.1.0/17': {
-                                                          'available_path': '1',
-                                                          'best_path': '1',
-                                                          'index': {
-                                                              1: {'evpn': {'encap': ':8',
-                                                                           'evpn_esi':
-                                                                               '00000000000000000000',
-                                                                           'ext_community': 'RT:65535:1',
-                                                                           'gateway_address': '0.0.0.0',
-                                                                           'label': 30000,
-                                                                           'local_vtep': '10.21.33.33',
-                                                                           'router_mac': 'MAC:001E.7A13.E9BF'},
-                                                                  'gateway': '0.0.0.0',
-                                                                  'localpref': 100,
-                                                                  'metric': 0,
-                                                                  'next_hop': '0.0.0.0',
-                                                                  'next_hop_via': 'vrf '
-                                                                                  'evpn1',
-                                                                  'origin_codes': '?',
-                                                                  'originator':
-                                                                      '10.21.33.33',
-                                                                  'recipient_pathid': 0,
-                                                                  'refresh_epoch': 1,
-                                                                  'route_info': 'Local, '
-                                                                                'imported '
-                                                                                'path '
-                                                                                'from '
-                                                                                'base',
-                                                                  'status_codes': '*>',
-                                                                  'transfer_pathid':
-                                                                      '0x0',
-                                                                  'weight': '32768'}},
-                                                          'paths': '(1 '
-                                                                   'available, '
-                                                                   'best '
-                                                                   '#1, '
-                                                                   'table '
-                                                                   'EVPN-BGP-Table)',
-                                                          'table_version': '4'},
-                                                                   '10.36.3.0/17': {
-                                                                       'available_path': '2',
-                                                                       'best_path': '1',
-                                                                       'index': {1: {
-                                                                           'evpn': {
-                                                                               'encap':
-                                                                                   ':8',
-                                                                               'evpn_esi': '00000000000000000000',
-                                                                               'ext_community': 'RT:65535:1',
-                                                                               'gateway_address': '0.0.0.0',
-                                                                               'label':
-                                                                                   30000,
-                                                                               'local_vtep': '10.21.33.33',
-                                                                               'router_mac': 'MAC:001E.7A13.E9BF'},
-                                                                           'gateway':
-                                                                               '0.0.0.0',
-                                                                           'localpref':
-                                                                               100,
-                                                                           'metric': 0,
-                                                                           'next_hop':
-                                                                               '0.0.0.0',
-                                                                           'next_hop_via': 'vrf '
-                                                                                           'evpn1',
-                                                                           'origin_codes': '?',
-                                                                           'originator': '10.21.33.33',
-                                                                           'recipient_pathid': 0,
-                                                                           'refresh_epoch': 1,
-                                                                           'route_info': 'Local, '
-                                                                                         'imported '
-                                                                                         'path '
-                                                                                         'from '
-                                                                                         'base',
-                                                                           'status_codes': '*>',
-                                                                           'transfer_pathid': '0x0',
-                                                                           'weight':
-                                                                               '32768'},
-                                                                                 2: {
-                                                                                     'evpn': {
-                                                                                         'encap': ':8',
-                                                                                         'evpn_esi': '00000000000000000000',
-                                                                                         'ext_community': 'RT:65535:1',
-                                                                                         'gateway_address': '0.0.0.0',
-                                                                                         'label': 30000,
-                                                                                         'local_vtep': '10.21.33.33',
-                                                                                         'router_mac': 'MAC:001E.7A13.E9BF'},
-                                                                                     'gateway': '10.36.3.254',
-                                                                                     'localpref': 100,
-                                                                                     'metric': 0,
-                                                                                     'next_hop': '10.36.3.254',
-                                                                                     'next_hop_igp_metric': 111,
-                                                                                     'update_groups': 3,
-                                                                                     'paths': '(1 '
-                                                                                              'available, '
-                                                                                              'best '
-                                                                                              '#1, '
-                                                                                              'table '
-                                                                                              'default)',
-                                                                                     'next_hop_via': 'vrf '
-                                                                                                     'evpn1',
-                                                                                     'origin_codes': '?',
-                                                                                     'originator': '10.21.33.22',
-                                                                                     'refresh_epoch': 1,
-                                                                                     'route_info': '65530, '
-                                                                                                   'imported '
-                                                                                                   'path '
-                                                                                                   'from '
-                                                                                                   'base',
-                                                                                     'status_codes': '* '}},
-                                                                       'paths': '(2 '
-                                                                                'available, '
-                                                                                'best '
-                                                                                '#1, '
-                                                                                'table '
-                                                                                'EVPN-BGP-Table)',
-                                                                       'table_version':
-                                                                           '3'}},
-                                                      'route_distinguisher': '65535:1'}}},
-                                       'VRF1': {'address_family': {
-                                           'vpnv4 unicast RD 100:100': {
-                                               'default_vrf': 'VRF1',
-                                               'prefixes': {'10.229.11.11/32': {
-                                                   'available_path': '1',
-                                                   'best_path': '1',
-                                                   'index': {1: {'gateway': '0.0.0.0',
-                                                                 'localpref': 100,
-                                                                 'metric': 0,
-                                                                 'next_hop': '0.0.0.0',
-                                                                 'next_hop_via': 'vrf '
-                                                                                 'VRF1',
-                                                                 'origin_codes': '?',
-                                                                 'originator': '10.1.1.1',
-                                                                 'recipient_pathid': 0,
-                                                                 'refresh_epoch': 1,
-                                                                 'route_info': 'Local',
-                                                                 'status_codes': '*>',
-                                                                 'transfer_pathid': '0x0',
-                                                                 'weight': '32768'}},
-                                                   'paths': '(1 '
-                                                            'available, '
-                                                            'best '
-                                                            '#1, '
-                                                            'table '
-                                                            'VRF1)',
-                                                   'table_version': '2'}},
-                                               'route_distinguisher': '100:100'},
-                                           'vpnv6 unicast RD 100:100': {
-                                               'default_vrf': 'VRF1',
-                                               'prefixes': {'2001:db8:1::11/128': {
-                                                   'available_path': '1',
-                                                   'best_path': '1',
-                                                   'index': {1: {'gateway': '0.0.0.0',
-                                                                 'localpref': 100,
-                                                                 'metric': 0,
-                                                                 'next_hop': '::',
-                                                                 'next_hop_via': 'vrf '
-                                                                                 'VRF1',
-                                                                 'origin_codes': '?',
-                                                                 'originator': '10.1.1.1',
-                                                                 'recipient_pathid': 0,
-                                                                 'refresh_epoch': 1,
-                                                                 'route_info': 'Local',
-                                                                 'status_codes': '*>',
-                                                                 'transfer_pathid': '0x0',
-                                                                 'weight': '32768'}},
-                                                   'paths': '(1 '
-                                                            'available, '
-                                                            'best '
-                                                            '#1, '
-                                                            'table '
-                                                            'VRF1)',
-                                                   'table_version': '2'}},
-                                               'route_distinguisher': '100:100'}}},
-                                       'default': {'address_family': {'ipv4 unicast': {
-                                           'prefixes': {
-                                               '10.4.1.1/32': {'available_path': '1',
-                                                              'best_path': '1',
-                                                              'index': {1: {
-                                                                  'gateway': '0.0.0.0',
-                                                                  'localpref': 100,
-                                                                  'metric': 0,
-                                                                  'next_hop': '0.0.0.0',
-                                                                  'origin_codes': '?',
-                                                                  'originator':
-                                                                      '10.1.1.1',
-                                                                  'recipient_pathid': 0,
-                                                                  'refresh_epoch': 1,
-                                                                  'route_info': 'Local',
-                                                                  'status_codes': '*>',
-                                                                  'transfer_pathid':
-                                                                      '0x0',
-                                                                  'update_group': 3,
-                                                                  'weight': '32768'}},
-                                                              'paths': '(1 '
-                                                                       'available, '
-                                                                       'best '
-                                                                       '#1, '
-                                                                       'table '
-                                                                       'default)',
-                                                              'table_version': '4'},
-                                               '10.1.1.0/24': {'available_path': '2',
-                                                               'best_path': '1',
-                                                               'index': {1: {
-                                                                   'gateway': '0.0.0.0',
-                                                                   'localpref': 100,
-                                                                   'metric': 0,
-                                                                   'next_hop': '0.0.0.0',
-                                                                   'origin_codes': '?',
-                                                                   'originator':
-                                                                       '10.1.1.1',
-                                                                   'recipient_pathid': 0,
-                                                                   'refresh_epoch': 1,
-                                                                   'route_info': 'Local',
-                                                                   'status_codes': '*>',
-                                                                   'transfer_pathid':
-                                                                       '0x0',
-                                                                   'update_group': 3,
-                                                                   'weight': '32768'},
-                                                                         2: {
-                                                                             'gateway':
-                                                                                 '10.1.1.2',
-                                                                             'localpref': 100,
-                                                                             'metric': 0,
-                                                                             'next_hop': '10.1.1.2',
-                                                                             'origin_codes': '?',
-                                                                             'originator': '10.1.1.2',
-                                                                             'refresh_epoch': 1,
-                                                                             'route_info': 'Local',
-                                                                             'status_codes': '* '
-                                                                                             'i',
-                                                                             'update_group': 3}},
-                                                               'paths': '(2 '
-                                                                        'available, '
-                                                                        'best '
-                                                                        '#1, '
-                                                                        'table '
-                                                                        'default)',
-                                                               'table_version': '5'},
-                                               '10.16.2.2/32': {'available_path': '1',
-                                                              'best_path': '1',
-                                                              'index': {1: {
-                                                                  'gateway': '10.1.1.2',
-                                                                  'localpref': 100,
-                                                                  'metric': 0,
-                                                                  'next_hop': '10.1.1.2',
-                                                                  'origin_codes': '?',
-                                                                  'originator':
-                                                                      '10.1.1.2',
-                                                                  'recipient_pathid': 0,
-                                                                  'refresh_epoch': 1,
-                                                                  'route_info': 'Local',
-                                                                  'status_codes': '*>',
-                                                                  'transfer_pathid':
-                                                                      '0x0'}},
-                                                              'paths': '(1 '
-                                                                       'available, '
-                                                                       'best '
-                                                                       '#1, '
-                                                                       'table '
-                                                                       'default)',
-                                                              'table_version': '2'}}},
-                                                                      'ipv6 unicast': {
-                                                                          'prefixes': {
-                                                                              '2001:db8:1::1/128': {
-                                                                                  'available_path': '1',
-                                                                                  'best_path': '1',
-                                                                                  'index': {
-                                                                                      1: {
-                                                                                          'gateway': '0.0.0.0',
-                                                                                          'localpref': 100,
-                                                                                          'metric': 0,
-                                                                                          'next_hop': '::',
-                                                                                          'origin_codes': '?',
-                                                                                          'originator': '10.1.1.1',
-                                                                                          'recipient_pathid': 0,
-                                                                                          'refresh_epoch': 1,
-                                                                                          'route_info': 'Local',
-                                                                                          'status_codes': '*>',
-                                                                                          'transfer_pathid': '0x0',
-                                                                                          'update_group': 1,
-                                                                                          'weight': '32768'}},
-                                                                                  'paths': '(1 '
-                                                                                           'available, '
-                                                                                           'best '
-                                                                                           '#1, '
-                                                                                           'table '
-                                                                                           'default)',
-                                                                                  'table_version': '4'},
-                                                                              '2001:2:2:2::2/128': {
-                                                                                  'available_path': '2',
-                                                                                  'best_path': '1',
-                                                                                  'index': {
-                                                                                      1: {
-                                                                                          'gateway': '2001:DB8:1:1::2',
-                                                                                          'localpref': 100,
-                                                                                          'metric': 0,
-                                                                                          'next_hop': '2001:DB8:1:1::2',
-                                                                                          'origin_codes': '?',
-                                                                                          'originator': '10.1.1.2',
-                                                                                          'recipient_pathid': 0,
-                                                                                          'refresh_epoch': 1,
-                                                                                          'route_info': 'Local',
-                                                                                          'status_codes': '* '
-                                                                                                          'i',
-                                                                                          'transfer_pathid': '0x0'}},
-                                                                                  'paths': '(2 '
-                                                                                           'available, '
-                                                                                           'best '
-                                                                                           '#1, '
-                                                                                           'table '
-                                                                                           'default)',
-                                                                                  'table_version': '2'},
-                                                                              '2001:DB8:1:1::/64': {
-                                                                                  'available_path': '3',
-                                                                                  'best_path': '1',
-                                                                                  'index': {
-                                                                                      1: {
-                                                                                          'gateway': '0.0.0.0',
-                                                                                          'localpref': 100,
-                                                                                          'metric': 0,
-                                                                                          'next_hop': '::',
-                                                                                          'origin_codes': '?',
-                                                                                          'originator': '10.1.1.1',
-                                                                                          'recipient_pathid': 0,
-                                                                                          'refresh_epoch': 1,
-                                                                                          'route_info': 'Local',
-                                                                                          'status_codes': '*>',
-                                                                                          'transfer_pathid': '0x0',
-                                                                                          'update_group': 1,
-                                                                                          'weight': '32768'},
-                                                                                      2: {
-                                                                                          'gateway': '2001:DB8:1:1::2',
-                                                                                          'localpref': 100,
-                                                                                          'metric': 0,
-                                                                                          'next_hop': '2001:DB8:1:1::2',
-                                                                                          'origin_codes': '?',
-                                                                                          'originator': '10.1.1.2',
-                                                                                          'refresh_epoch': 1,
-                                                                                          'route_info': 'Local',
-                                                                                          'status_codes': '* '
-                                                                                                          'i',
-                                                                                          'update_group': 1}},
-                                                                                  'paths': '(3 '
-                                                                                           'available, '
-                                                                                           'best '
-                                                                                           '#1, '
-                                                                                           'table '
-                                                                                           'default)',
-                                                                                  'table_version': '5'}}}}},
-                                       'evpn1': {'address_family': {
-                                           'vpnv4 unicast RD 65535:1': {
-                                               'default_vrf': 'evpn1',
-                                               'prefixes': {
-                                                   '10.1.1.0/24': {'available_path': '1',
-                                                                    'best_path': '1',
-                                                                    'index': {1: {
-                                                                        'gateway':
-                                                                            '0.0.0.0',
-                                                                        'local_vxlan_vtep': {
-                                                                            'bdi':
-                                                                                'BDI200',
-                                                                            'encap': '8',
-                                                                            'local_router_mac': '001E.7A13.E9BF',
-                                                                            'vni':
-                                                                                '30000',
-                                                                            'vrf':
-                                                                                'evpn1',
-                                                                            'vtep_ip':
-                                                                                '10.21.33.33'},
-                                                                        'localpref': 100,
-                                                                        'metric': 0,
-                                                                        'next_hop':
-                                                                            '0.0.0.0',
-                                                                        'next_hop_via':
-                                                                            'vrf '
-                                                                                        'evpn1',
-                                                                        'origin_codes':
-                                                                            '?',
-                                                                        'originator':
-                                                                            '10.21.33.33',
-                                                                        'recipient_pathid': 0,
-                                                                        'refresh_epoch': 1,
-                                                                        'route_info':
-                                                                            'Local',
-                                                                        'status_codes':
-                                                                            '*>',
-                                                                        'transfer_pathid': '0x0',
-                                                                        'update_group': 1,
-                                                                        'weight':
-                                                                            '32768'}},
-                                                                    'paths': '(1 '
-                                                                             'available, '
-                                                                             'best '
-                                                                             '#1, '
-                                                                             'table '
-                                                                             'evpn1)',
-                                                                    'table_version': '5'},
-                                                   '10.36.3.0/24': {'available_path': '2',
-                                                                  'best_path': '2',
-                                                                  'index': {1: {
-                                                                      'gateway':
-                                                                          '10.36.3.254',
-                                                                      'local_vxlan_vtep': {
-                                                                          'bdi': 'BDI200',
-                                                                          'encap': '8',
-                                                                          'local_router_mac': '001E.7A13.E9BF',
-                                                                          'vni': '30000',
-                                                                          'vrf': 'evpn1',
-                                                                          'vtep_ip':
-                                                                              '10.21.33.33'},
-                                                                      'localpref': 100,
-                                                                      'metric': 0,
-                                                                      'next_hop':
-                                                                          '10.36.3.254',
-                                                                      'next_hop_via':
-                                                                          'vrf '
-                                                                                      'evpn1',
-                                                                      'origin_codes': '?',
-                                                                      'originator':
-                                                                          '10.21.33.22',
-                                                                      'refresh_epoch': 1,
-                                                                      'route_info':
-                                                                          '65530',
-                                                                      'status_codes':
-                                                                          '* ',
-                                                                      'update_group': 1},
-                                                                            2: {
-                                                                                'gateway': '0.0.0.0',
-                                                                                'local_vxlan_vtep': {
-                                                                                    'bdi': 'BDI200',
-                                                                                    'encap': '8',
-                                                                                    'local_router_mac': '001E.7A13.E9BF',
-                                                                                    'vni': '30000',
-                                                                                    'vrf': 'evpn1',
-                                                                                    'vtep_ip': '10.21.33.33'},
-                                                                                'localpref': 100,
-                                                                                'metric': 0,
-                                                                                'next_hop': '0.0.0.0',
-                                                                                'next_hop_via': 'vrf '
-                                                                                                'evpn1',
-                                                                                'origin_codes': '?',
-                                                                                'originator': '10.21.33.33',
-                                                                                'recipient_pathid': 0,
-                                                                                'refresh_epoch': 1,
-                                                                                'route_info': 'Local',
-                                                                                'status_codes': '*>',
-                                                                                'transfer_pathid': '0x0',
-                                                                                'update_group': 1,
-                                                                                'weight': '32768'}},
-                                                                  'paths': '(2 '
-                                                                           'available, '
-                                                                           'best '
-                                                                           '#2, '
-                                                                           'table '
-                                                                           'evpn1)',
-                                                                  'table_version': '4'}},
-                                               'route_distinguisher': '65535:1'}}}}}}}
-    ShowBgpAllDetail_custom = {
-        'instance':
-            {'default':
-                {'vrf':
-                    {'VRF1': {
-                        'address_family': {
-                            'vpnv4 unicast RD 300:1': {
-                                'default_vrf': 'VRF1',
-                                'prefixes': {'10.229.11.11/32': {
-                                    'available_path': '1',
-                                    'best_path': '1',
-                                    'index': {1: {
-                                        'gateway': '0.0.0.0',
-                                        'localpref': 100,
-                                        'metric': 0,
-                                        'next_hop': '0.0.0.0',
-                                        'next_hop_via': 'vrf VRF1',
-                                        'origin_codes': '?',
-                                        'originator': '10.1.1.1',
-                                        'recipient_pathid': 0,
-                                        'refresh_epoch': 1,
-                                        'route_info': 'Local',
-                                        'status_codes': '*>',
-                                        'transfer_pathid': '0x0',
-                                        'weight': '32768'}},
-                                    'paths': '(1 available, best #1, table VRF1)',
-                                    'table_version': '2'}},
-                                'route_distinguisher': '300:1'},
-                        }}, }}}}
-
-    ShowBgpAll = {'vrf': {'VRF1': {'address_family': {'vpnv4 unicast RD 300:1': {
-        'bgp_table_version': 56,
-                                                                'default_vrf': 'VRF1',
-                                                                'route_distinguisher':
-                                                                    '300:1',
-                                                                'route_identifier':
-                                                                    '10.64.4.4',
-                                                                'routes': {
-                                                                    '10.1.1.0/24': {
-                                                                        'index': {1: {
-                                                                            'localpref': 100,
-                                                                                                         'metric': 2219,
-                                                                                                         'next_hop': '10.4.1.1',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '200 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '* '
-                                                                                                                         'i',
-                                                                                                         'weight': 0},
-                                                                                                     2: {'localpref': 100,
-                                                                                                         'metric': 2219,
-                                                                                                         'next_hop': '10.4.1.1',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '200 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>i',
-                                                                                                         'weight': 0}}},
-                                                                           '10.1.2.0/24': {'index': {1: {'localpref': 100,
-                                                                                                         'metric': 2219,
-                                                                                                         'next_hop': '10.4.1.1',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '200 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '* '
-                                                                                                                         'i',
-                                                                                                         'weight': 0},
-                                                                                                     2: {'localpref': 100,
-                                                                                                         'metric': 2219,
-                                                                                                         'next_hop': '10.4.1.1',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '200 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>i',
-                                                                                                         'weight': 0}}},
-                                                                           '10.169.1.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.4.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '300 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '10.169.2.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.4.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '300 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '10.169.3.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.4.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '300 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '10.169.4.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.4.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '300 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '10.169.5.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.4.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '300 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '10.9.2.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.66.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '400 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}}},
-                                                                'vrf_route_identifier':
-                                                                    '10.94.44.44'}}},
-         'VRF2': {'address_family': {'vpnv4 unicast RD 400:1': {'bgp_table_version': 56,
-                                                                'default_vrf': 'VRF2',
-                                                                'route_distinguisher':
-                                                                    '400:1',
-                                                                'route_identifier':
-                                                                    '10.64.4.4',
-                                                                'routes': {
-                                                                    '10.9.2.0/24': {
-                                                                        'index': {1: {'metric':
-                                                                                          2219,
-                                                                                                         'next_hop': '10.66.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '400 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '10.9.3.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.66.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '400 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '10.9.4.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.66.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '400 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '10.9.5.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.66.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '400 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '10.9.6.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.66.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '400 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '2001:db8:cdc9:144::/64': {'index': {1: {'localpref': 100,
-                                                                                                              'metric': 2219,
-                                                                                                              'next_hop': '::FFFF:10.4.1.1',
-                                                                                                              'origin_codes': 'e',
-                                                                                                              'path': '400 '
-                                                                                                                      '33299 '
-                                                                                                                      '51178 '
-                                                                                                                      '47751 '
-                                                                                                                      '{27016}',
-                                                                                                              'status_codes': '* '
-                                                                                                                              'i',
-                                                                                                              'weight': 0},
-                                                                                                          2: {'localpref': 100,
-                                                                                                              'metric': 2219,
-                                                                                                              'next_hop': '::FFFF:10.4.1.1',
-                                                                                                              'origin_codes': 'e',
-                                                                                                              'path': '400 '
-                                                                                                                      '33299 '
-                                                                                                                      '51178 '
-                                                                                                                      '47751 '
-                                                                                                                      '{27016}',
-                                                                                                              'status_codes': '*>i',
-                                                                                                              'weight': 0}}},
-                                                                           '2001:db8:cdc9:121::/64': {'index': {1: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '::FFFF:10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '400 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '* '
-                                                                                                                            'i',
-                                                                                                            'weight': 0},
-                                                                                                        2: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '::FFFF:10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '400 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '*>i',
-                                                                                                            'weight': 0}}}},
-                                                                'vrf_route_identifier': '10.94.44.44'}}},
-         'default': {'address_family': {'vpnv4 unicast RD 200:1': {'bgp_table_version': 56,
-                                                                   'default_vrf': 'default',
-                                                                   'route_distinguisher': '200:1',
-                                                                   'route_identifier': '10.64.4.4',
-                                                                   'routes': {'10.1.1.0/24': {'index': {1: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '* '
-                                                                                                                            'i',
-                                                                                                            'weight': 0},
-                                                                                                        2: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '*>i',
-                                                                                                            'weight': 0}}},
-                                                                              '10.1.2.0/24': {'index': {1: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '* '
-                                                                                                                            'i',
-                                                                                                            'weight': 0},
-                                                                                                        2: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '*>i',
-                                                                                                            'weight': 0}}}}},
-                                        'vpnv4 unicast RD 200:2': {'bgp_table_version': 56,
-                                                                   'default_vrf': 'default',
-                                                                   'route_distinguisher': '200:2',
-                                                                   'route_identifier': '10.64.4.4',
-                                                                   'routes': {'10.1.1.0/24': {'index': {1: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '*>i',
-                                                                                                            'weight': 0},
-                                                                                                        2: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '* '
-                                                                                                                            'i',
-                                                                                                            'weight': 0}}},
-                                                                              '10.1.2.0/24': {'index': {1: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '*>i',
-                                                                                                            'weight': 0},
-                                                                                                        2: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '* '
-                                                                                                                            'i',
-                                                                                                            'weight': 0}}},
-                                                                              '10.1.3.0/24': {'index': {1: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '*>i',
-                                                                                                            'weight': 0},
-                                                                                                        2: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '* '
-                                                                                                                            'i',
-                                                                                                            'weight': 0}}}}}}},
-         'evpn1': {'address_family': {'l2vpn e-vpn RD 65535:1': {'bgp_table_version': 4,
-                                                                 'default_vrf': 'evpn1',
-                                                                 'route_distinguisher': '65535:1',
-                                                                 'route_identifier': '10.21.33.33',
-                                                                 'routes': {'[5][65535:1][0][24][10.1.1.0]/17': {'index': {1: {'metric': 0,
-                                                                                                                                'next_hop': '0.0.0.0',
-                                                                                                                                'origin_codes': '?',
-                                                                                                                                'status_codes': '*>',
-                                                                                                                                'weight': 32768}}},
-                                                                            '[5][65535:1][0][24][10.36.3.0]/17': {'index': {1: {'metric': 0,
-                                                                                                                              'next_hop': '0.0.0.0',
-                                                                                                                              'origin_codes': '?',
-                                                                                                                              'status_codes': '*>',
-                                                                                                                              'weight': 32768},
-                                                                                                                          2: {'metric': 0,
-                                                                                                                              'next_hop': '10.36.3.254',
-                                                                                                                              'origin_codes': '?',
-                                                                                                                              'path': '65530',
-                                                                                                                              'status_codes': '*',
-                                                                                                                              'weight': 0}}}}},
-                                      'vpnv4 unicast RD 65535:1': {'af_private_import_to_address_family': 'L2VPN '
-                                                                                                          'E-VPN',
-                                                                   'bgp_table_version': 5,
-                                                                   'default_vrf': 'evpn1',
-                                                                   'pfx_count': 2,
-                                                                   'pfx_limit': 1000,
-                                                                   'route_distinguisher': '65535:1',
-                                                                   'route_identifier': '10.21.33.33',
-                                                                   'routes': {'10.1.1.0/24': {'index': {1: {'metric': 0,
-                                                                                                             'next_hop': '0.0.0.0',
-                                                                                                             'origin_codes': '?',
-                                                                                                             'status_codes': '*>',
-                                                                                                             'weight': 32768}}},
-                                                                              '10.36.3.0/24': {'index': {1: {'metric': 0,
-                                                                                                           'next_hop': '10.36.3.254',
-                                                                                                           'origin_codes': '?',
-                                                                                                           'path': '65530',
-                                                                                                           'status_codes': '*',
-                                                                                                           'weight': 0},
-                                                                                                       2: {'metric': 0,
-                                                                                                           'next_hop': '0.0.0.0',
-                                                                                                           'origin_codes': '?',
-                                                                                                           'status_codes': '*>',
-                                                                                                           'weight': 32768}}}}}}}}}
-    ShowBgpAll_custom = {'vrf': {'VRF1': {'address_family': {'vpnv4 unicast RD 300:1': {'bgp_table_version': 56,
-                                                                'default_vrf': 'VRF1',
-                                                                'route_distinguisher': '300:1',
-                                                                'route_identifier': '10.64.4.4',
-                                                                'routes': {'10.1.1.0/24': {'index': {1: {'localpref': 100,
-                                                                                                         'metric': 2219,
-                                                                                                         'next_hop': '10.4.1.1',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '200 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '* '
-                                                                                                                         'i',
-                                                                                                         'weight': 0},
-                                                                                                     2: {'localpref': 100,
-                                                                                                         'metric': 2219,
-                                                                                                         'next_hop': '10.4.1.1',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '200 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>i',
-                                                                                                         'weight': 0}}},
-                                                                           '10.1.2.0/24': {'index': {1: {'localpref': 100,
-                                                                                                         'metric': 2219,
-                                                                                                         'next_hop': '10.4.1.1',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '200 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '* '
-                                                                                                                         'i',
-                                                                                                         'weight': 0},
-                                                                                                     2: {'localpref': 100,
-                                                                                                         'metric': 2219,
-                                                                                                         'next_hop': '10.4.1.1',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '200 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>i',
-                                                                                                         'weight': 0}}},
-                                                                           '10.169.1.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.4.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '300 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '10.169.2.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.4.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '300 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '10.169.3.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.4.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '300 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '10.169.4.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.4.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '300 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '10.169.5.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.4.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '300 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '10.9.2.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.66.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '400 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}}},
-                                                                'vrf_route_identifier': '10.94.44.44'}}},
-         'VRF2': {'address_family': {'vpnv4 unicast RD 400:1': {'bgp_table_version': 56,
-                                                                'default_vrf': 'VRF2',
-                                                                'route_distinguisher': '400:1',
-                                                                'route_identifier': '10.64.4.4',
-                                                                'routes': {'10.9.2.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.66.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '400 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '10.9.3.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.66.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '400 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '10.9.4.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.66.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '400 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '10.9.5.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.66.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '400 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '10.9.6.0/24': {'index': {1: {'metric': 2219,
-                                                                                                         'next_hop': '10.66.6.6',
-                                                                                                         'origin_codes': 'e',
-                                                                                                         'path': '400 '
-                                                                                                                 '33299 '
-                                                                                                                 '51178 '
-                                                                                                                 '47751 '
-                                                                                                                 '{27016}',
-                                                                                                         'status_codes': '*>',
-                                                                                                         'weight': 0}}},
-                                                                           '2001:db8:cdc9:144::/64': {'index': {1: {'localpref': 100,
-                                                                                                              'metric': 2219,
-                                                                                                              'next_hop': '::FFFF:10.4.1.1',
-                                                                                                              'origin_codes': 'e',
-                                                                                                              'path': '400 '
-                                                                                                                      '33299 '
-                                                                                                                      '51178 '
-                                                                                                                      '47751 '
-                                                                                                                      '{27016}',
-                                                                                                              'status_codes': '* '
-                                                                                                                              'i',
-                                                                                                              'weight': 0},
-                                                                                                          2: {'localpref': 100,
-                                                                                                              'metric': 2219,
-                                                                                                              'next_hop': '::FFFF:10.4.1.1',
-                                                                                                              'origin_codes': 'e',
-                                                                                                              'path': '400 '
-                                                                                                                      '33299 '
-                                                                                                                      '51178 '
-                                                                                                                      '47751 '
-                                                                                                                      '{27016}',
-                                                                                                              'status_codes': '*>i',
-                                                                                                              'weight': 0}}},
-                                                                           '2001:db8:cdc9:121::/64': {'index': {1: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '::FFFF:10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '400 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '* '
-                                                                                                                            'i',
-                                                                                                            'weight': 0},
-                                                                                                        2: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '::FFFF:10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '400 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '*>i',
-                                                                                                            'weight': 0}}}},
-                                                                'vrf_route_identifier': '10.94.44.44'}}},
-         'default': {'address_family': {'vpnv4 unicast RD 200:1': {'bgp_table_version': 56,
-                                                                   'default_vrf': 'default',
-                                                                   'route_distinguisher': '200:1',
-                                                                   'route_identifier': '10.64.4.4',
-                                                                   'routes': {'10.1.1.0/24': {'index': {1: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '* '
-                                                                                                                            'i',
-                                                                                                            'weight': 0},
-                                                                                                        2: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '*>i',
-                                                                                                            'weight': 0}}},
-                                                                              '10.1.2.0/24': {'index': {1: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '* '
-                                                                                                                            'i',
-                                                                                                            'weight': 0},
-                                                                                                        2: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '*>i',
-                                                                                                            'weight': 0}}}}},
-                                        'vpnv4 unicast RD 200:2': {'bgp_table_version': 56,
-                                                                   'default_vrf': 'default',
-                                                                   'route_distinguisher': '200:2',
-                                                                   'route_identifier': '10.64.4.4',
-                                                                   'routes': {'10.1.1.0/24': {'index': {1: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '*>i',
-                                                                                                            'weight': 0},
-                                                                                                        2: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '* '
-                                                                                                                            'i',
-                                                                                                            'weight': 0}}},
-                                                                              '10.1.2.0/24': {'index': {1: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '*>i',
-                                                                                                            'weight': 0},
-                                                                                                        2: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '* '
-                                                                                                                            'i',
-                                                                                                            'weight': 0}}},
-                                                                              '10.1.3.0/24': {'index': {1: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '*>i',
-                                                                                                            'weight': 0},
-                                                                                                        2: {'localpref': 100,
-                                                                                                            'metric': 2219,
-                                                                                                            'next_hop': '10.4.1.1',
-                                                                                                            'origin_codes': 'e',
-                                                                                                            'path': '200 '
-                                                                                                                    '33299 '
-                                                                                                                    '51178 '
-                                                                                                                    '47751 '
-                                                                                                                    '{27016}',
-                                                                                                            'status_codes': '* '
-                                                                                                                            'i',
-                                                                                                            'weight': 0}}}}}}},
-         'evpn1': {'address_family': {
-                                      'vpnv4 unicast RD 65535:1': {'af_private_import_to_address_family': 'L2VPN '
-                                                                                                          'E-VPN',
-                                                                   'bgp_table_version': 5,
-                                                                   'default_vrf': 'evpn1',
-                                                                   'pfx_count': 2,
-                                                                   'pfx_limit': 1000,
-                                                                   'route_distinguisher': '65535:1',
-                                                                   'route_identifier': '10.21.33.33',
-                                                                   'routes': {'10.1.1.0/24': {'index': {1: {'metric': 0,
-                                                                                                             'next_hop': '0.0.0.0',
-                                                                                                             'origin_codes': '?',
-                                                                                                             'status_codes': '*>',
-                                                                                                             'weight': 32768}}},
-                                                                              '10.36.3.0/24': {'index': {1: {'metric': 0,
-                                                                                                           'next_hop': '10.36.3.254',
-                                                                                                           'origin_codes': '?',
-                                                                                                           'path': '65530',
-                                                                                                           'status_codes': '*',
-                                                                                                           'weight': 0},
-                                                                                                       2: {'metric': 0,
-                                                                                                           'next_hop': '0.0.0.0',
-                                                                                                           'origin_codes': '?',
-                                                                                                           'status_codes': '*>',
-                                                                                                           'weight': 32768}}}}}}}}}
-    nbr1_bgp_policy = '''\
-        R4_iosv#show bgp all neighbors 10.16.2.2 policy
-         Neighbor: 10.16.2.2, Address-Family: VPNv4 Unicast (VRF1)
-         Locally configured policies:
-          route-map test in
-          route-map test out
-        '''
-
-    nbr1_bgp_all_neighbors = '''\
-      R4# show bgp all neighbors | i BGP neighbor
-      BGP neighbor is 10.16.2.2, vrf VRF1, remote AS 100, internal link
-        '''
-    nbr1_ipv4_advertised_routes = '''
-    R4# show bgp all neighbors 10.16.2.2 advertised-routes
-
-        For address family: VPNv4 Unicast
-        
-    '''
-    nbr1_advertised_routes = '''\
-        R4# show bgp all neighbors 10.16.2.2 advertised-routes
-
+    show_bgp_all_summary = '''\
+        show bgp all summary
         For address family: IPv4 Unicast
-        BGP table version is 648438, local router ID is 10.94.44.44
-        Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
-        Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
-        Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
+        BGP router identifier 1.1.1.1, local AS number 65000
+        BGP table version is 4, main routing table version 4
+        3 network entries using 744 bytes of memory
+        3 path entries using 408 bytes of memory
+        3/3 BGP path/bestpath attribute entries using 840 bytes of memory
+        2 BGP extended community entries using 500 bytes of memory
+        0 BGP route-map cache entries using 0 bytes of memory
+        0 BGP filter-list cache entries using 0 bytes of memory
+        BGP using 2492 total bytes of memory
+        BGP activity 12/0 prefixes, 12/0 paths, scan interval 60 secs
 
-           Network            Next Hop            Metric     LocPrf     Weight Path
-        *>i10.1.1.0/24        10.4.1.1               2219        100          0 200 33299 51178 47751 {27016} e
-        *>i10.1.2.0/24        10.4.1.1               2219        100          0 200 33299 51178 47751 {27016} e
-        *>i10.1.3.0/24        10.4.1.1               2219        100          0 200 33299 51178 47751 {27016} e
-        *>i10.1.4.0/24        10.4.1.1               2219        100          0 200 33299 51178 47751 {27016} e
-        *>i10.1.5.0/24        10.4.1.1               2219        100          0 200 33299 51178 47751 {27016} e
-        *>e10.9.2.0/24        10.66.6.6               100                     0 400 33299 51178 {47751} e
-        *>e10.9.3.0/24        10.66.6.6               100                     0 400 33299 51178 {47751} e
-        *>e10.9.4.0/24        10.66.6.6               100                     0 400 33299 51178 {47751} e
-        *>e10.9.5.0/24        10.66.6.6               100                     0 400 33299 51178 {47751} e
-        *>e10.9.6.0/24        10.66.6.6               100                     0 400 33299 51178 {47751} e
-
-        For address family: IPv4 Multicast
+        Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+        2.2.2.2         4        65000   27420   30189        4    0    0 2w5d            1
+        3.3.3.3         4        65000   27430   30165        4    0    0 2w5d            1
 
         For address family: IPv6 Unicast
-        BGP table version is 256028, local router ID is 10.94.44.44
-        Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
-        Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
-        Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
+        BGP router identifier 1.1.1.1, local AS number 65000
+        BGP table version is 5, main routing table version 5
+        3 network entries using 816 bytes of memory
+        3 path entries using 456 bytes of memory
+        3/3 BGP path/bestpath attribute entries using 840 bytes of memory
+        2 BGP extended community entries using 500 bytes of memory
+        0 BGP route-map cache entries using 0 bytes of memory
+        0 BGP filter-list cache entries using 0 bytes of memory
+        BGP using 2612 total bytes of memory
+        BGP activity 12/0 prefixes, 12/0 paths, scan interval 60 secs
 
-           Network            Next Hop            Metric     LocPrf     Weight Path
-
-        For address family: IPv6 Multicast
+        Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+        2001:2:2:2::2   4        65000   27420   30190        5    0    0 2w5d            1
+        2001:3:3:3::3   4        65000   27430   30181        5    0    0 2w5d            1
 
         For address family: VPNv4 Unicast
+        BGP router identifier 1.1.1.1, local AS number 65000
+        BGP table version is 4, main routing table version 4
+        3 network entries using 768 bytes of memory
+        3 path entries using 408 bytes of memory
+        3/3 BGP path/bestpath attribute entries using 888 bytes of memory
+        2 BGP extended community entries using 500 bytes of memory
+        0 BGP route-map cache entries using 0 bytes of memory
+        0 BGP filter-list cache entries using 0 bytes of memory
+        BGP using 2564 total bytes of memory
+        BGP activity 12/0 prefixes, 12/0 paths, scan interval 60 secs
+
+        Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+        2.2.2.2         4        65000   27420   30177        4    0    0 2w5d            1
+        3.3.3.3         4        65000   27431   30188        4    0    0 2w5d            1
 
         For address family: VPNv6 Unicast
+        BGP router identifier 1.1.1.1, local AS number 65000
+        BGP table version is 5, main routing table version 5
+        3 network entries using 840 bytes of memory
+        3 path entries using 468 bytes of memory
+        3/3 BGP path/bestpath attribute entries using 888 bytes of memory
+        2 BGP extended community entries using 500 bytes of memory
+        0 BGP route-map cache entries using 0 bytes of memory
+        0 BGP filter-list cache entries using 0 bytes of memory
+        BGP using 2696 total bytes of memory
+        BGP activity 12/0 prefixes, 12/0 paths, scan interval 60 secs
 
-        For address family: IPv4 MDT
-
-        For address family: IPv6 Label Unicast
-
-        For address family: L2VPN VPLS
-
-        For address family: IPv4 MVPN
-
-        For address family: IPv6 MVPN
-
-        For address family: IPv4 Label Unicast
-        '''
-    nbr1_ipv4_routes = '''
-    For address family: VPNv4 Unicast
-        
+        Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+        2001:2:2:2::2   4        65000   27420   30187        5    0    0 2w5d            1
+        2001:3:3:3::3   4        65000   27430   30169        5    0    0 2w5d            1
+        R1_xe#
     '''
-    nbr1_routes = '''\
-        R4# show bgp all neighbors 10.16.2.2 routes 
-
-        For address family: IPv4 Unicast
-        BGP table version is 773961, local router ID is 10.94.44.44
-        Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
-        Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
-        Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
-
-           Network            Next Hop            Metric     LocPrf     Weight Path
-        *>e10.169.1.0/24        10.186.0.2              2219                     0 300 33299 51178 47751 {27016} e
-        *>e10.169.2.0/24        10.186.0.2              2219                     0 300 33299 51178 47751 {27016} e
-        *>e10.169.3.0/24        10.186.0.2              2219                     0 300 33299 51178 47751 {27016} e
-        *>e10.169.4.0/24        10.186.0.2              2219                     0 300 33299 51178 47751 {27016} e
-        *>e10.169.5.0/24        10.186.0.2              2219                     0 300 33299 51178 47751 {27016} e
-
-        For address family: IPv4 Multicast
-
-        For address family: IPv6 Unicast
-        BGP table version is 256033, local router ID is 10.94.44.44
-        Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
-        Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
-        Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
-
-           Network            Next Hop            Metric     LocPrf     Weight Path
-
-        For address family: IPv6 Multicast
-
-        For address family: VPNv4 Unicast
-
-        For address family: VPNv6 Unicast
-
-        For address family: IPv4 MDT
-
-        For address family: IPv6 Label Unicast
-
-        For address family: L2VPN VPLS
-
-        For address family: IPv4 MVPN
-
-        For address family: IPv6 MVPN
-
-        For address family: IPv4 Label Unicast
-            '''
-    nbr1_ipv4_received_routes = '''
-    For address family: VPNv4 Unicast
-        BGP table version is 66, local router ID is 10.64.4.4
-        Status codes: s suppressed, d damped, h history, * valid, > best, i - internal, 
-                      r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter, 
-                      x best-external, a additional-path, c RIB-compressed, 
-        Origin codes: i - IGP, e - EGP, ? - incomplete
-        RPKI validation codes: V valid, I invalid, N Not found
-
-             Network          Next Hop            Metric LocPrf Weight Path
-        Route Distinguisher: 300:1 (default for vrf VRF1) VRF Router ID 10.94.44.44
-         *   10.169.1.0/24      10.186.0.2              2219             0 300 33299 51178 47751 {27016} e
-         *   10.169.2.0/24      10.186.0.2              2219             0 300 33299 51178 47751 {27016} e
-         *   10.169.3.0/24      10.186.0.2              2219             0 300 33299 51178 47751 {27016} e
-         *   10.169.4.0/24      10.186.0.2              2219             0 300 33299 51178 47751 {27016} e
-         *   10.169.5.0/24      10.186.0.2              2219             0 300 33299 51178 47751 {27016} e
-
-        Total number of prefixes 5
+    
+    show_vrf_detail = '''\
+        show vrf detail | inc \(VRF
+        VRF Mgmt-intf (VRF Id = 1); default RD <not set>; default VPNID <not set>
+        VRF VRF1 (VRF Id = 2); default RD 65000:1; default VPNID <not set>
     '''
-    nbr1_received_routes = '''\
-        R4_iosv#show bgp all neighbors 10.16.2.2 received-routes 
-        For address family: VPNv4 Unicast
-        BGP table version is 66, local router ID is 10.64.4.4
-        Status codes: s suppressed, d damped, h history, * valid, > best, i - internal, 
-                      r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter, 
-                      x best-external, a additional-path, c RIB-compressed, 
-        Origin codes: i - IGP, e - EGP, ? - incomplete
-        RPKI validation codes: V valid, I invalid, N Not found
 
-             Network          Next Hop            Metric LocPrf Weight Path
-        Route Distinguisher: 300:1 (default for vrf VRF1) VRF Router ID 10.94.44.44
-         *   10.169.1.0/24      10.186.0.2              2219             0 300 33299 51178 47751 {27016} e
-         *   10.169.2.0/24      10.186.0.2              2219             0 300 33299 51178 47751 {27016} e
-         *   10.169.3.0/24      10.186.0.2              2219             0 300 33299 51178 47751 {27016} e
-         *   10.169.4.0/24      10.186.0.2              2219             0 300 33299 51178 47751 {27016} e
-         *   10.169.5.0/24      10.186.0.2              2219             0 300 33299 51178 47751 {27016} e
+    show_bgp_all_cluster_ids = '''\
+        show bgp all cluster-ids
+        Global cluster-id: 1.1.1.1 (configured: 0.0.0.0)
+        BGP client-to-client reflection:         Configured    Used
+        all (inter-cluster and intra-cluster): ENABLED
+        intra-cluster:                         ENABLED       ENABLED
 
-        Total number of prefixes 5
-        '''
+        List of cluster-ids:
+        Cluster-id     #-neighbors C2C-rfl-CFG C2C-rfl-USE
+    '''
 
-    nbr2_bgp_policy = '''\
-        R4_iosv#show bgp all neighbors 10.36.3.3 policy
-         Neighbor: 10.36.3.3, Address-Family: VPNv4 Unicast (VRF1)
-         Locally configured policies:
-          route-map test in
-          route-map test out
-        '''
-
-    bgp_all_neighbors = '''\
-      R4# show bgp all neighbors | i BGP neighbor
-      BGP neighbor is 10.36.3.3,  remote AS 100, internal link
-      BGP neighbor is 10.16.2.2,  remote AS 100, internal link
-        '''
-
-    nbr2_advertised_routes = '''\
-        R4# show bgp all neighbors 10.36.3.3 advertised-routes
-        For address family: VPNv4 Unicast
-        BGP table version is 56, local router ID is 10.64.4.4
-        Status codes: s suppressed, d damped, h history, * valid, > best, i - internal, 
-                      r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter, 
-                      x best-external, a additional-path, c RIB-compressed, 
-        Origin codes: i - IGP, e - EGP, ? - incomplete
-        RPKI validation codes: V valid, I invalid, N Not found
-
-             Network          Next Hop            Metric LocPrf Weight Path
-        Route Distinguisher: 300:1 (default for vrf VRF1) VRF Router ID 10.94.44.44
-         *>  10.169.1.0/24      10.4.6.6              2219             0 300 33299 51178 47751 {27016} e
-         *>  10.169.2.0/24      10.4.6.6              2219             0 300 33299 51178 47751 {27016} e
-         *>  10.169.3.0/24      10.4.6.6              2219             0 300 33299 51178 47751 {27016} e
-         *>  10.169.4.0/24      10.4.6.6              2219             0 300 33299 51178 47751 {27016} e
-         *>  10.169.5.0/24      10.4.6.6              2219             0 300 33299 51178 47751 {27016} e
-        Route Distinguisher: 400:1 (default for vrf VRF2) VRF Router ID 10.94.44.44
-         *>  10.9.2.0/24      10.66.6.6              2219             0 400 33299 51178 47751 {27016} e
-         *>  10.9.3.0/24      10.66.6.6              2219             0 400 33299 51178 47751 {27016} e
-         *>  10.9.4.0/24      10.66.6.6              2219             0 400 33299 51178 47751 {27016} e
-         *>  10.9.5.0/24      10.66.6.6              2219             0 400 33299 51178 47751 {27016} e
-         *>  10.9.6.0/24      10.66.6.6              2219             0 400 33299 51178 47751 {27016} e
-
-        Total number of prefixes 10 
-
-        For address family: VPNv6 Unicast
-        BGP table version is 66, local router ID is 10.64.4.4
-        Status codes: s suppressed, d damped, h history, * valid, > best, i - internal, 
-                      r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter, 
-                      x best-external, a additional-path, c RIB-compressed, 
-        Origin codes: i - IGP, e - EGP, ? - incomplete
-        RPKI validation codes: V valid, I invalid, N Not found
-
-             Network          Next Hop            Metric LocPrf Weight Path
-        Route Distinguisher: 300:1 (default for vrf VRF1) VRF Router ID 10.94.44.44
-         *>  2001:db8:31b9:121::/64   2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
-         *>  2001:db8:31b9:144::/64 2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
-         *>  2001:db8:31b9:169::/64 2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
-         *>  2001:db8:31b9:190::/64 2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
-         *>  2001:db8:31b9:1b9::/64 2001:DB8:4:6::6       2219             0 300 33299 51178 47751 {27016} e
-        Route Distinguisher: 400:1 (default for vrf VRF2) VRF Router ID 10.94.44.44
-         *>  2001:db8:a69:484::/64   2001:DB8:20:4:6::6
-                                                     2219             0 400 33299 51178 47751 {27016} e
-         *>  2001:db8:a69:4c9::/64 2001:DB8:20:4:6::6
-                                                     2219             0 400 33299 51178 47751 {27016} e
-         *>  2001:db8:a69:510::/64 2001:DB8:20:4:6::6
-                                                     2219             0 400 33299 51178 47751 {27016} e
-         *>  2001:db8:a69:559::/64 2001:DB8:20:4:6::6
-                                                     2219             0 400 33299 51178 47751 {27016} e
-         *>  2001:db8:a69:5a4::/64 2001:DB8:20:4:6::6
-                                                     2219             0 400 33299 51178 47751 {27016} e
-
-        Total number of prefixes 10
-        '''
-
-    nbr2_routes = '''\
-        R4# show bgp all neighbors 10.36.3.3 routes 
-        For address family: VPNv4 Unicast
-        BGP table version is 56, local router ID is 10.64.4.4
-        Status codes: s suppressed, d damped, h history, * valid, > best, i - internal, 
-                      r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter, 
-                      x best-external, a additional-path, c RIB-compressed, 
-        Origin codes: i - IGP, e - EGP, ? - incomplete
-        RPKI validation codes: V valid, I invalid, N Not found
-
-             Network          Next Hop            Metric LocPrf Weight Path
-        Route Distinguisher: 200:1
-         *>i 10.1.1.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i 10.1.2.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i 10.1.3.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i 10.1.4.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i 10.1.5.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-        Route Distinguisher: 200:2
-         *>i 10.1.1.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i 10.1.2.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i 10.1.3.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i 10.1.4.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i 10.1.5.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-        Route Distinguisher: 300:1 (default for vrf VRF1) VRF Router ID 10.94.44.44
-         * i 10.1.1.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i                  10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         * i 10.1.2.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i                  10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         * i 10.1.3.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i                  10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         * i 10.1.4.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i                  10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         * i 10.1.5.0/24      10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-         *>i                  10.36.3.3               2219    100      0 200 33299 51178 47751 {27016} e
-
-        Total number of prefixes 20
-            '''
-
-    nbr2_received_routes = '''\
-        R4_iosv#show bgp all neighbors 10.36.3.3 received-routes
+    show_bgp_all_neighbors = '''\
+        show bgp all neighbors
         For address family: IPv4 Unicast
-        BGP table version is 174, Local Router ID is 10.145.0.6
-        Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
-        Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
-        Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
+        BGP neighbor is 2.2.2.2,  remote AS 65000, internal link
+        BGP version 4, remote router ID 2.2.2.2
+        BGP state = Established, up for 2w5d
+        Last read 00:00:17, last write 00:00:39, hold time is 180, keepalive interval is 60 seconds
+        Neighbor sessions:
+            1 active, is not multisession capable (disabled)
+        Neighbor capabilities:
+            Route refresh: advertised and received(new)
+            Four-octets ASN Capability: advertised and received
+            Address family IPv4 Unicast: advertised and received
+            Enhanced Refresh Capability: advertised
+            Multisession Capability:
+            Stateful switchover support enabled: NO for session 1
+        Message statistics:
+            InQ depth is 0
+            OutQ depth is 0
 
-           Network            Next Hop            Metric     LocPrf     Weight Path
-        * i10.4.1.0/24         10.36.3.3            2222        100          0 1 2 3 65000 23 i
-        * i10.4.2.0/24         10.36.3.3            2222        100          0 1 2 3 65000 23 i
-        *>i10.49.0.0/16         10.36.3.3                        100          0 10 20 30 40 50 60 70 80 90 i
+                                Sent       Rcvd
+            Opens:                  1          1
+            Notifications:          0          0
+            Updates:                2          2
+            Keepalives:         30186      27417
+            Route Refresh:          0          0
+            Total:              30189      27420
+        Do log neighbor state changes (via global configuration)
+        Default minimum time between advertisement runs is 0 seconds
 
+        Address tracking is enabled, the RIB does have a route to 2.2.2.2
+        Route to peer address reachability Up: 1; Down: 0
+            Last notification 2w5d
+        Connections established 1; dropped 0
+        Last reset never
+        Interface associated: (none) (peering address NOT in same link)
+        Transport(tcp) path-mtu-discovery is enabled
+        Graceful-Restart is disabled
+        SSO is disabled
+        Connection state is ESTAB, I/O status: 1, unread input bytes: 0
+        Connection is ECN Disabled, Mininum incoming TTL 0, Outgoing TTL 255
+        Local host: 1.1.1.1, Local port: 179
+        Foreign host: 2.2.2.2, Foreign port: 25026
+        Connection tableid (VRF): 0
+        Maximum output segment queue size: 50
 
-        For address family: IPv4 Multicast
-        BGP table version is 175, Local Router ID is 10.145.0.6
-        Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
-        Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
-        Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
+        Enqueued packets for retransmit: 0, input: 0  mis-ordered: 0 (0 bytes)
 
-           Network            Next Hop            Metric     LocPrf     Weight Path
-        *>i10.9.1.0/24         10.36.3.3                        100          0 2 3 4 i
-        *>i10.9.2.0/24         10.36.3.3                        100          0 2 3 4 i
+        Event Timers (current time is 0x621EDEF8):
+        Timer          Starts    Wakeups            Next
+        Retrans         30188          0             0x0
+        TimeWait            0          0             0x0
+        AckHold         27419      26858             0x0
+        SendWnd             0          0             0x0
+        KeepAlive           0          0             0x0
+        GiveUp              0          0             0x0
+        PmtuAger            0          0             0x0
+        DeadWait            0          0             0x0
+        Linger              0          0             0x0
+        ProcessQ            0          0             0x0
+
+        iss:  402897367  snduna:  403471038  sndnxt:  403471038
+        irs: 3455343999  rcvnxt: 3455865077
+
+        sndwnd:  32236  scale:      0  maxrcvwnd:  16384
+        rcvwnd:  15719  scale:      0  delrcvwnd:    665
+
+        SRTT: 1000 ms, RTTO: 1003 ms, RTV: 3 ms, KRTT: 0 ms
+        minRTT: 1 ms, maxRTT: 1000 ms, ACK hold: 200 ms
+        uptime: 1645068668 ms, Sent idletime: 17155 ms, Receive idletime: 17356 ms
+        Status Flags: passive open, gen tcbs
+        Option Flags: nagle, path mtu capable
+        IP Precedence value : 6
+
+        Datagrams (max data segment is 1240 bytes):
+        Rcvd: 57653 (out of order: 0), with data: 27419, total data bytes: 521077
+        Sent: 57603 (retransmit: 0, fastretransmit: 0, partialack: 0, Second Congestion: 0), with data: 30188, total data bytes: 573670
+
+        Packets received in fast path: 0, fast processed: 0, slow path: 0
+        fast lock acquisition failures: 0, slow path: 0
+        TCP Semaphore      0x7F23C7640538  FREE
+
+        BGP neighbor is 3.3.3.3,  remote AS 65000, internal link
+        BGP version 4, remote router ID 3.3.3.3
+        BGP state = Established, up for 2w5d
+        Last read 00:00:02, last write 00:00:22, hold time is 180, keepalive interval is 60 seconds
+        Neighbor sessions:
+            1 active, is not multisession capable (disabled)
+        Neighbor capabilities:
+            Route refresh: advertised and received(new)
+            Four-octets ASN Capability: advertised and received
+            Address family IPv4 Unicast: advertised and received
+            Graceful Restart Capability: received
+            Remote Restart timer is 120 seconds
+            Address families advertised by peer:
+                IPv4 Unicast (was not preserved
+            Enhanced Refresh Capability: advertised
+            Multisession Capability:
+            Stateful switchover support enabled: NO for session 1
+        Message statistics:
+            InQ depth is 0
+            OutQ depth is 0
+
+                                Sent       Rcvd
+            Opens:                  1          1
+            Notifications:          0          0
+            Updates:                2          2
+            Keepalives:         30162      27427
+            Route Refresh:          0          0
+            Total:              30165      27430
+        Do log neighbor state changes (via global configuration)
+        Default minimum time between advertisement runs is 0 seconds
+
+        Address tracking is enabled, the RIB does have a route to 3.3.3.3
+        Route to peer address reachability Up: 1; Down: 0
+            Last notification 2w5d
+        Connections established 1; dropped 0
+        Last reset never
+        Interface associated: (none) (peering address NOT in same link)
+        Transport(tcp) path-mtu-discovery is enabled
+        Graceful-Restart is disabled
+        SSO is disabled
+        Connection state is ESTAB, I/O status: 1, unread input bytes: 0
+        Connection is ECN Disabled, Mininum incoming TTL 0, Outgoing TTL 255
+        Local host: 1.1.1.1, Local port: 11084
+        Foreign host: 3.3.3.3, Foreign port: 179
+        Connection tableid (VRF): 0
+        Maximum output segment queue size: 50
+
+        Enqueued packets for retransmit: 0, input: 0  mis-ordered: 0 (0 bytes)
+
+        Event Timers (current time is 0x621EDEFB):
+        Timer          Starts    Wakeups            Next
+        Retrans         30165          0             0x0
+        TimeWait            0          0             0x0
+        AckHold         27429      26944             0x0
+        SendWnd             0          0             0x0
+        KeepAlive           0          0             0x0
+        GiveUp              0          0             0x0
+        PmtuAger      1636295    1636294      0x621EE25B
+        DeadWait            0          0             0x0
+        Linger              0          0             0x0
+        ProcessQ            0          0             0x0
+
+        iss: 4151727173  snduna: 4152300388  sndnxt: 4152300388
+        irs: 3770309714  rcvnxt: 3770830970
+
+        sndwnd:  29200  scale:      0  maxrcvwnd:  16384
+        rcvwnd:  15966  scale:      0  delrcvwnd:    418
+
+        SRTT: 1000 ms, RTTO: 1003 ms, RTV: 3 ms, KRTT: 0 ms
+        minRTT: 1 ms, maxRTT: 1000 ms, ACK hold: 200 ms
+        uptime: 1645729685 ms, Sent idletime: 2470 ms, Receive idletime: 2670 ms
+        Status Flags: active open
+        Option Flags: nagle, path mtu capable
+        IP Precedence value : 6
+
+        Datagrams (max data segment is 1460 bytes):
+        Rcvd: 57650 (out of order: 0), with data: 27428, total data bytes: 521255
+        Sent: 57523 (retransmit: 0, fastretransmit: 0, partialack: 0, Second Congestion: 0), with data: 30164, total data bytes: 573214
+
+        Packets received in fast path: 0, fast processed: 0, slow path: 0
+        fast lock acquisition failures: 0, slow path: 0
+        TCP Semaphore      0x7F23C7494520  FREE
 
 
         For address family: IPv6 Unicast
-        BGP table version is 173, Local Router ID is 10.145.0.6
-        Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
-        Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
-        Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
+        BGP neighbor is 2001:2:2:2::2,  remote AS 65000, internal link
+        BGP version 4, remote router ID 2.2.2.2
+        BGP state = Established, up for 2w5d
+        Last read 00:00:17, last write 00:00:00, hold time is 180, keepalive interval is 60 seconds
+        Neighbor sessions:
+            1 active, is not multisession capable (disabled)
+        Neighbor capabilities:
+            Route refresh: advertised and received(new)
+            Four-octets ASN Capability: advertised and received
+            Address family IPv6 Unicast: advertised and received
+            Enhanced Refresh Capability: advertised
+            Multisession Capability:
+            Stateful switchover support enabled: NO for session 1
+        Message statistics:
+            InQ depth is 0
+            OutQ depth is 0
 
-           Network            Next Hop            Metric     LocPrf     Weight Path
+                                Sent       Rcvd
+            Opens:                  1          1
+            Notifications:          0          0
+            Updates:                2          2
+            Keepalives:         30188      27417
+            Route Refresh:          0          0
+            Total:              30191      27420
+        Do log neighbor state changes (via global configuration)
+        Default minimum time between advertisement runs is 0 seconds
 
+        Address tracking is enabled, the RIB does have a route to 2001:2:2:2::2
+        Route to peer address reachability Up: 2; Down: 0
+            Last notification 2w5d
+        Connections established 1; dropped 0
+        Last reset never
+        Interface associated: (none) (peering address NOT in same link)
+        Transport(tcp) path-mtu-discovery is enabled
+        Graceful-Restart is disabled
+        SSO is disabled
+        Connection state is ESTAB, I/O status: 1, unread input bytes: 0
+        Connection is ECN Disabled, Mininum incoming TTL 0, Outgoing TTL 255
+        Local host: 2001:1:1:1::1, Local port: 179
+        Foreign host: 2001:2:2:2::2, Foreign port: 52223
+        Connection tableid (VRF): 0
+        Maximum output segment queue size: 50
 
-        For address family: IPv6 Multicast
-        BGP table version is 6, Local Router ID is 10.145.0.6
-        Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
-        Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
-        Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
+        Enqueued packets for retransmit: 0, input: 0  mis-ordered: 0 (0 bytes)
 
-           Network            Next Hop            Metric     LocPrf     Weight Path
+        Event Timers (current time is 0x621EDEFE):
+        Timer          Starts    Wakeups            Next
+        Retrans         30190          0             0x0
+        TimeWait            0          0             0x0
+        AckHold         27419      26861             0x0
+        SendWnd             0          0             0x0
+        KeepAlive           0          0             0x0
+        GiveUp              0          0             0x0
+        PmtuAger            0          0             0x0
+        DeadWait            0          0             0x0
+        Linger              0          0             0x0
+        ProcessQ            0          0             0x0
+
+        iss:  723831891  snduna:  724405635  sndnxt:  724405635
+        irs: 2052291678  rcvnxt: 2052812792
+
+        sndwnd:  32141  scale:      0  maxrcvwnd:  16384
+        rcvwnd:  15206  scale:      0  delrcvwnd:   1178
+
+        SRTT: 1000 ms, RTTO: 1003 ms, RTV: 3 ms, KRTT: 0 ms
+        minRTT: 1 ms, maxRTT: 1000 ms, ACK hold: 200 ms
+        uptime: 1645067186 ms, Sent idletime: 315 ms, Receive idletime: 106 ms
+        Status Flags: passive open, gen tcbs
+        Option Flags: nagle, path mtu capable
+        IP Precedence value : 6
+
+        Datagrams (max data segment is 1220 bytes):
+        Rcvd: 57654 (out of order: 0), with data: 27419, total data bytes: 521113
+        Sent: 57613 (retransmit: 0, fastretransmit: 0, partialack: 0, Second Congestion: 0), with data: 57613, total data bytes: 2878271
+
+        Packets received in fast path: 0, fast processed: 0, slow path: 0
+        fast lock acquisition failures: 0, slow path: 0
+        TCP Semaphore      0x7F23C76402C8  FREE
+
+        BGP neighbor is 2001:3:3:3::3,  remote AS 65000, internal link
+        BGP version 4, remote router ID 3.3.3.3
+        BGP state = Established, up for 2w5d
+        Last read 00:00:02, last write 00:00:10, hold time is 180, keepalive interval is 60 seconds
+        Neighbor sessions:
+            1 active, is not multisession capable (disabled)
+        Neighbor capabilities:
+            Route refresh: advertised and received(new)
+            Four-octets ASN Capability: advertised and received
+            Address family IPv6 Unicast: advertised and received
+            Graceful Restart Capability: received
+            Remote Restart timer is 120 seconds
+            Address families advertised by peer:
+                IPv6 Unicast (was not preserved
+            Enhanced Refresh Capability: advertised
+            Multisession Capability:
+            Stateful switchover support enabled: NO for session 1
+        Message statistics:
+            InQ depth is 0
+            OutQ depth is 0
+
+                                Sent       Rcvd
+            Opens:                  1          1
+            Notifications:          0          0
+            Updates:                2          2
+            Keepalives:         30178      27427
+            Route Refresh:          0          0
+            Total:              30181      27430
+        Do log neighbor state changes (via global configuration)
+        Default minimum time between advertisement runs is 0 seconds
+
+        Address tracking is enabled, the RIB does have a route to 2001:3:3:3::3
+        Route to peer address reachability Up: 1; Down: 0
+            Last notification 2w5d
+        Connections established 1; dropped 0
+        Last reset never
+        Interface associated: (none) (peering address NOT in same link)
+        Transport(tcp) path-mtu-discovery is enabled
+        Graceful-Restart is disabled
+        SSO is disabled
+        Connection state is ESTAB, I/O status: 1, unread input bytes: 0
+        Connection is ECN Disabled, Mininum incoming TTL 0, Outgoing TTL 255
+        Local host: 2001:1:1:1::1, Local port: 179
+        Foreign host: 2001:3:3:3::3, Foreign port: 47133
+        Connection tableid (VRF): 0
+        Maximum output segment queue size: 50
+
+        Enqueued packets for retransmit: 0, input: 0  mis-ordered: 0 (0 bytes)
+
+        Event Timers (current time is 0x621EDF01):
+        Timer          Starts    Wakeups            Next
+        Retrans         30180          0             0x0
+        TimeWait            0          0             0x0
+        AckHold         27429      26963             0x0
+        SendWnd             0          0             0x0
+        KeepAlive           0          0             0x0
+        GiveUp              0          0             0x0
+        PmtuAger            0          0             0x0
+        DeadWait            0          0             0x0
+        Linger              0          0             0x0
+        ProcessQ            0          0             0x0
+
+        iss: 1399948803  snduna: 1400522357  sndnxt: 1400522357
+        irs: 1512650626  rcvnxt: 1513171918
+
+        sndwnd:  28800  scale:      0  maxrcvwnd:  16384
+        rcvwnd:  16384  scale:      0  delrcvwnd:      0
+
+        SRTT: 1000 ms, RTTO: 1003 ms, RTV: 3 ms, KRTT: 0 ms
+        minRTT: 1 ms, maxRTT: 1000 ms, ACK hold: 200 ms
+        uptime: 1645725071 ms, Sent idletime: 2676 ms, Receive idletime: 2676 ms
+        Status Flags: passive open, gen tcbs
+        Option Flags: nagle, path mtu capable
+        IP Precedence value : 6
+
+        Datagrams (max data segment is 1440 bytes):
+        Rcvd: 57664 (out of order: 0), with data: 27428, total data bytes: 521291
+        Sent: 57560 (retransmit: 0, fastretransmit: 0, partialack: 0, Second Congestion: 0), with data: 57560, total data bytes: 2875961
+
+        Packets received in fast path: 0, fast processed: 0, slow path: 0
+        fast lock acquisition failures: 0, slow path: 0
+        TCP Semaphore      0x7F23C7494380  FREE
 
 
         For address family: VPNv4 Unicast
-        BGP table version is 183, Local Router ID is 10.145.0.6
-        Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
-        Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
-        Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
+        BGP neighbor is 2.2.2.2,  vrf VRF1,  remote AS 65000, internal link
+        BGP version 4, remote router ID 2.2.2.2
+        BGP state = Established, up for 2w5d
+        Last read 00:00:13, last write 00:00:44, hold time is 180, keepalive interval is 60 seconds
+        Neighbor sessions:
+            1 active, is not multisession capable (disabled)
+        Neighbor capabilities:
+            Route refresh: advertised and received(new)
+            Four-octets ASN Capability: advertised and received
+            Address family IPv4 Unicast: advertised and received
+            Enhanced Refresh Capability: advertised
+            Multisession Capability:
+            Stateful switchover support enabled: NO for session 1
+        Message statistics:
+            InQ depth is 0
+            OutQ depth is 0
 
-           Network            Next Hop            Metric     LocPrf     Weight Path
-        Route Distinguisher: 0:0
+                                Sent       Rcvd
+            Opens:                  1          1
+            Notifications:          0          0
+            Updates:                2          2
+            Keepalives:         30174      27417
+            Route Refresh:          0          0
+            Total:              30177      27420
+        Do log neighbor state changes (via global configuration)
+        Default minimum time between advertisement runs is 0 seconds
 
-        Route Distinguisher: 101:100
-        * i10.16.1.0/24         10.36.3.3            4444        100          0 3 10 20 4 5 6 3 10 20 4 5 6 i
-        * i10.16.2.0/24         10.36.3.3            4444        100          0 3 10 20 4 5 6 3 10 20 4 5 6 i
+        Address tracking is enabled, the RIB does have a route to 2.2.2.2
+        Route to peer address reachability Up: 2; Down: 0
+            Last notification 2w5d
+        Connections established 1; dropped 0
+        Last reset never
+        Interface associated: (none) (peering address NOT in same link)
+        Transport(tcp) path-mtu-discovery is enabled
+        Graceful-Restart is disabled
+        SSO is disabled
+        Connection state is ESTAB, I/O status: 1, unread input bytes: 0
+        Connection is ECN Disabled, Mininum incoming TTL 0, Outgoing TTL 255
+        Local host: 1.1.1.1, Local port: 179
+        Foreign host: 2.2.2.2, Foreign port: 50426
+        Connection tableid (VRF): 2
+        Maximum output segment queue size: 50
 
-        Route Distinguisher: 102:100
+        Enqueued packets for retransmit: 0, input: 0  mis-ordered: 0 (0 bytes)
+
+        Event Timers (current time is 0x621EDF03):
+        Timer          Starts    Wakeups            Next
+        Retrans         30180          4             0x0
+        TimeWait            0          0             0x0
+        AckHold         27420      26856             0x0
+        SendWnd             0          0             0x0
+        KeepAlive           0          0             0x0
+        GiveUp              0          0             0x0
+        PmtuAger            0          0             0x0
+        DeadWait            0          0             0x0
+        Linger              0          0             0x0
+        ProcessQ            0          0             0x0
+
+        iss: 3028094276  snduna: 3028667719  sndnxt: 3028667719
+        irs:  568735500  rcvnxt:  569256556
+
+        sndwnd:  32483  scale:      0  maxrcvwnd:  16384
+        rcvwnd:  15738  scale:      0  delrcvwnd:    646
+
+        SRTT: 1000 ms, RTTO: 1003 ms, RTV: 3 ms, KRTT: 0 ms
+        minRTT: 1 ms, maxRTT: 1000 ms, ACK hold: 200 ms
+        uptime: 1645068163 ms, Sent idletime: 13180 ms, Receive idletime: 13380 ms
+        Status Flags: passive open, gen tcbs
+        Option Flags: VRF id set, nagle, path mtu capable
+        IP Precedence value : 6
+
+        Datagrams (max data segment is 1240 bytes):
+        Rcvd: 57669 (out of order: 0), with data: 27420, total data bytes: 521055
+        Sent: 57610 (retransmit: 4, fastretransmit: 0, partialack: 0, Second Congestion: 0), with data: 30176, total data bytes: 573442
+
+        Packets received in fast path: 0, fast processed: 0, slow path: 0
+        fast lock acquisition failures: 0, slow path: 0
+        TCP Semaphore      0x7F23C7640468  FREE
+
+        BGP neighbor is 3.3.3.3,  vrf VRF1,  remote AS 65000, internal link
+        BGP version 4, remote router ID 3.3.3.3
+        BGP state = Established, up for 2w5d
+        Last read 00:00:02, last write 00:00:40, hold time is 180, keepalive interval is 60 seconds
+        Neighbor sessions:
+            1 active, is not multisession capable (disabled)
+        Neighbor capabilities:
+            Route refresh: advertised and received(new)
+            Four-octets ASN Capability: advertised and received
+            Address family IPv4 Unicast: advertised and received
+            Graceful Restart Capability: received
+            Remote Restart timer is 120 seconds
+            Address families advertised by peer:
+                IPv4 Unicast (was not preserved
+            Enhanced Refresh Capability: advertised
+            Multisession Capability:
+            Stateful switchover support enabled: NO for session 1
+        Message statistics:
+            InQ depth is 0
+            OutQ depth is 0
+
+                                Sent       Rcvd
+            Opens:                  1          1
+            Notifications:          0          0
+            Updates:                2          3
+            Keepalives:         30185      27427
+            Route Refresh:          0          0
+            Total:              30188      27431
+        Do log neighbor state changes (via global configuration)
+        Default minimum time between advertisement runs is 0 seconds
+
+        Address tracking is enabled, the RIB does have a route to 3.3.3.3
+        Route to peer address reachability Up: 1; Down: 0
+            Last notification 2w5d
+        Connections established 1; dropped 0
+        Last reset never
+        Interface associated: (none) (peering address NOT in same link)
+        Transport(tcp) path-mtu-discovery is enabled
+        Graceful-Restart is disabled
+        SSO is disabled
+        Connection state is ESTAB, I/O status: 1, unread input bytes: 0
+        Connection is ECN Disabled, Mininum incoming TTL 0, Outgoing TTL 255
+        Local host: 1.1.1.1, Local port: 43893
+        Foreign host: 3.3.3.3, Foreign port: 179
+        Connection tableid (VRF): 2
+        Maximum output segment queue size: 50
+
+        Enqueued packets for retransmit: 0, input: 0  mis-ordered: 0 (0 bytes)
+
+        Event Timers (current time is 0x621EDF06):
+        Timer          Starts    Wakeups            Next
+        Retrans         30188          0             0x0
+        TimeWait            0          0             0x0
+        AckHold         27429      26958             0x0
+        SendWnd             0          0             0x0
+        KeepAlive           0          0             0x0
+        GiveUp              0          0             0x0
+        PmtuAger      1636291    1636290      0x621EE25B
+        DeadWait            0          0             0x0
+        Linger              0          0             0x0
+        ProcessQ            0          0             0x0
+
+        iss: 1210418011  snduna: 1210991663  sndnxt: 1210991663
+        irs: 1252136999  rcvnxt: 1252658304
+
+        sndwnd:  29200  scale:      0  maxrcvwnd:  16384
+        rcvwnd:  15909  scale:      0  delrcvwnd:    475
+
+        SRTT: 1000 ms, RTTO: 1003 ms, RTV: 3 ms, KRTT: 0 ms
+        minRTT: 1 ms, maxRTT: 1000 ms, ACK hold: 200 ms
+        uptime: 1645726624 ms, Sent idletime: 2482 ms, Receive idletime: 2682 ms
+        Status Flags: active open
+        Option Flags: VRF id set, nagle, path mtu capable
+        IP Precedence value : 6
+
+        Datagrams (max data segment is 1460 bytes):
+        Rcvd: 57674 (out of order: 0), with data: 27429, total data bytes: 521304
+        Sent: 57561 (retransmit: 0, fastretransmit: 0, partialack: 0, Second Congestion: 0), with data: 30187, total data bytes: 573651
+
+        Packets received in fast path: 0, fast processed: 0, slow path: 0
+        fast lock acquisition failures: 0, slow path: 0
+        TCP Semaphore      0x7F23C7494450  FREE
 
 
         For address family: VPNv6 Unicast
-        BGP table version is 13, Local Router ID is 10.145.0.6
-        Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
-        Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
-        Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
+        BGP neighbor is 2001:2:2:2::2,  vrf VRF1,  remote AS 65000, internal link
+        BGP version 4, remote router ID 2.2.2.2
+        BGP state = Established, up for 2w5d
+        Last read 00:00:05, last write 00:00:26, hold time is 180, keepalive interval is 60 seconds
+        Neighbor sessions:
+            1 active, is not multisession capable (disabled)
+        Neighbor capabilities:
+            Route refresh: advertised and received(new)
+            Four-octets ASN Capability: advertised and received
+            Address family IPv6 Unicast: advertised and received
+            Enhanced Refresh Capability: advertised
+            Multisession Capability:
+            Stateful switchover support enabled: NO for session 1
+        Message statistics:
+            InQ depth is 0
+            OutQ depth is 0
 
-           Network            Next Hop            Metric     LocPrf     Weight Path
-        Route Distinguisher: 100:200
-        *>i2001:db8:aaaa:1::/113       ::ffff:10.36.3.3
-                                                    4444        100          0 i
-        *>i2001:db8:2001:db8:aaaa:1::8000/113   ::ffff:10.36.3.3
-                                                    4444        100          0 i
+                                Sent       Rcvd
+            Opens:                  1          1
+            Notifications:          0          0
+            Updates:                2          2
+            Keepalives:         30184      27417
+            Route Refresh:          0          0
+            Total:              30187      27420
+        Do log neighbor state changes (via global configuration)
+        Default minimum time between advertisement runs is 0 seconds
 
-        Route Distinguisher: 0xbb00010000000000
+        Address tracking is enabled, the RIB does have a route to 2001:2:2:2::2
+        Route to peer address reachability Up: 1; Down: 0
+            Last notification 2w5d
+        Connections established 1; dropped 0
+        Last reset never
+        Interface associated: (none) (peering address NOT in same link)
+        Transport(tcp) path-mtu-discovery is enabled
+        Graceful-Restart is disabled
+        SSO is disabled
+        Connection state is ESTAB, I/O status: 1, unread input bytes: 0
+        Connection is ECN Disabled, Mininum incoming TTL 0, Outgoing TTL 255
+        Local host: 2001:1:1:1::1, Local port: 32057
+        Foreign host: 2001:2:2:2::2, Foreign port: 179
+        Connection tableid (VRF): 503316482
+        Maximum output segment queue size: 50
+
+        Enqueued packets for retransmit: 0, input: 0  mis-ordered: 0 (0 bytes)
+
+        Event Timers (current time is 0x621EDF09):
+        Timer          Starts    Wakeups            Next
+        Retrans         30190          4             0x0
+        TimeWait            0          0             0x0
+        AckHold         27420      26869             0x0
+        SendWnd             0          0             0x0
+        KeepAlive           0          0             0x0
+        GiveUp              0          0             0x0
+        PmtuAger            1          1             0x0
+        DeadWait            0          0             0x0
+        Linger              0          0             0x0
+        ProcessQ            0          0             0x0
+
+        iss: 3279254845  snduna: 3279828513  sndnxt: 3279828513
+        irs: 2772915965  rcvnxt: 2773437057
+
+        sndwnd:  32217  scale:      0  maxrcvwnd:  16384
+        rcvwnd:  15225  scale:      0  delrcvwnd:   1159
+
+        SRTT: 1000 ms, RTTO: 1003 ms, RTV: 3 ms, KRTT: 0 ms
+        minRTT: 1 ms, maxRTT: 1000 ms, ACK hold: 200 ms
+        uptime: 1645068087 ms, Sent idletime: 5770 ms, Receive idletime: 5970 ms
+        Status Flags: active open
+        Option Flags: VRF id set, nagle, path mtu capable
+        IP Precedence value : 6
+
+        Datagrams (max data segment is 1220 bytes):
+        Rcvd: 57637 (out of order: 0), with data: 27419, total data bytes: 521091
+        Sent: 57604 (retransmit: 4, fastretransmit: 0, partialack: 0, Second Congestion: 0), with data: 57604, total data bytes: 2877835
+
+        Packets received in fast path: 0, fast processed: 0, slow path: 0
+        fast lock acquisition failures: 0, slow path: 0
+        TCP Semaphore      0x7F23C7640398  FREE
+
+        BGP neighbor is 2001:3:3:3::3,  vrf VRF1,  remote AS 65000, internal link
+        BGP version 4, remote router ID 3.3.3.3
+        BGP state = Established, up for 2w5d
+        Last read 00:00:39, last write 00:00:26, hold time is 180, keepalive interval is 60 seconds
+        Neighbor sessions:
+            1 active, is not multisession capable (disabled)
+        Neighbor capabilities:
+            Route refresh: advertised and received(new)
+            Four-octets ASN Capability: advertised and received
+            Address family IPv6 Unicast: advertised and received
+            Graceful Restart Capability: received
+            Remote Restart timer is 120 seconds
+            Address families advertised by peer:
+                IPv6 Unicast (was not preserved
+            Enhanced Refresh Capability: advertised
+            Multisession Capability:
+            Stateful switchover support enabled: NO for session 1
+        Message statistics:
+            InQ depth is 0
+            OutQ depth is 0
+
+                                Sent       Rcvd
+            Opens:                  1          1
+            Notifications:          0          0
+            Updates:                2          3
+            Keepalives:         30166      27426
+            Route Refresh:          0          0
+            Total:              30169      27430
+        Do log neighbor state changes (via global configuration)
+        Default minimum time between advertisement runs is 0 seconds
+
+        Address tracking is enabled, the RIB does have a route to 2001:3:3:3::3
+        Route to peer address reachability Up: 1; Down: 0
+            Last notification 2w5d
+        Connections established 1; dropped 0
+        Last reset never
+        Interface associated: (none) (peering address NOT in same link)
+        Transport(tcp) path-mtu-discovery is enabled
+        Graceful-Restart is disabled
+        SSO is disabled
+        Connection state is ESTAB, I/O status: 1, unread input bytes: 0
+        Connection is ECN Disabled, Mininum incoming TTL 0, Outgoing TTL 255
+        Local host: 2001:1:1:1::1, Local port: 179
+        Foreign host: 2001:3:3:3::3, Foreign port: 20838
+        Connection tableid (VRF): 503316482
+        Maximum output segment queue size: 50
+
+        Enqueued packets for retransmit: 0, input: 0  mis-ordered: 0 (0 bytes)
+
+        Event Timers (current time is 0x621EDF0B):
+        Timer          Starts    Wakeups            Next
+        Retrans         30168          0             0x0
+        TimeWait            0          0             0x0
+        AckHold         27429      26946             0x0
+        SendWnd             0          0             0x0
+        KeepAlive           0          0             0x0
+        GiveUp              0          0             0x0
+        PmtuAger            0          0             0x0
+        DeadWait            0          0             0x0
+        Linger              0          0             0x0
+        ProcessQ            0          0             0x0
+
+        iss: 2912962685  snduna: 2913536011  sndnxt: 2913536011
+        irs: 3025088327  rcvnxt: 3025609679
+
+        sndwnd:  28800  scale:      0  maxrcvwnd:  16384
+        rcvwnd:  16327  scale:      0  delrcvwnd:     57
+
+        SRTT: 1000 ms, RTTO: 1003 ms, RTV: 3 ms, KRTT: 0 ms
+        minRTT: 1 ms, maxRTT: 1000 ms, ACK hold: 200 ms
+        uptime: 1645724603 ms, Sent idletime: 26956 ms, Receive idletime: 26955 ms
+        Status Flags: passive open, gen tcbs
+        Option Flags: VRF id set, nagle, path mtu capable
+        IP Precedence value : 6
+
+        Datagrams (max data segment is 1440 bytes):
+        Rcvd: 57671 (out of order: 0), with data: 27428, total data bytes: 521351
+        Sent: 57550 (retransmit: 0, fastretransmit: 0, partialack: 0, Second Congestion: 0), with data: 57550, total data bytes: 2875333
+
+        Packets received in fast path: 0, fast processed: 0, slow path: 0
+        fast lock acquisition failures: 0, slow path: 0
+        TCP Semaphore      0x7F23C74942B0  FREE
 
 
-        For address family: Link-State
-        BGP table version is 173, Local Router ID is 10.145.0.6
-        Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
-        Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
-        Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup
+        For address family: IPv4 Multicast
 
-           Network            Next Hop            Metric     LocPrf     Weight Path
-        *>i[2]:[77][7,0][10.69.9.9,1,151587081][10.135.1.1,22][10.36.3.3,10.76.1.30]/616
-                              10.36.3.3            4444        100          0 3 10 20 30 40 50 60 70 80 90 i
-        *>i[2]:[77][7,0][10.69.9.9,2,151587081][10.135.1.1,22][10.36.3.3,10.76.1.31]/616
-                              10.36.3.3            4444        100          0 3 10 20 30 40 50 60 70 80 90 i
-        '''
+        For address family: L2VPN E-VPN
 
-    BgpOpsOutput_info = {'instance': {'default': {'bgp_id': 100,
-                          'peer_policy': {'PEER-POLICY': {'allowas_in': True,
-                                                          'as_override': True,
-                                                          'default_originate': True,
-                                                          'default_originate_route_map': 'test',
-                                                          'maximum_prefix_max_prefix_no': 5555,
-                                                          'next_hop_self': True,
-                                                          'route_map_name_in': 'test',
-                                                          'route_map_name_out': 'test2',
-                                                          'route_reflector_client': True,
-                                                          'send_community': 'both',
-                                                          'soft_reconfiguration': True,
-                                                          'soo': 'SoO:100:100'},
-                                          'PEER-POLICY2': {'allowas_in': True}},
-                          'peer_session': {'PEER-SESSION': {'description': 'desc1!',
-                                                            'disable_connected_check': True,
-                                                            'ebgp_multihop_enable': True,
-                                                            'ebgp_multihop_max_hop': 254,
-                                                            'fall_over_bfd': True,
-                                                            'holdtime': 30,
-                                                            'keepalive_interval': 10,
-                                                            'local_as_as_no': 255,
-                                                            'password_text': 'is '
-                                                                             'configured',
-                                                            'remote_as': 321,
-                                                            'shutdown': True,
-                                                            'suppress_four_byte_as_capability': True,
-                                                            'transport_connection_mode': 'passive',
-                                                            'update_source': 'Loopback0'},
-                                           'PEER-SESSION2': {'fall_over_bfd': True}},
-                          'vrf': {'VRF1': {'address_family': {'vpnv4 unicast': {'dampening': True,
-                                                                                'dampening_half_life_time': 900,
-                                                                                'dampening_max_suppress_time': 3600,
-                                                                                'dampening_reuse_time': 750,
-                                                                                'dampening_suppress_time': 2000}},
-                                           'neighbor': {'10.36.3.3': {'address_family': {'vpnv4 unicast': {'route_map_name_in': 'test',
-                                                                                                         'route_map_name_out': 'test'}}},
-                                                        '10.16.2.2': {'address_family': {'vpnv4 unicast': {'route_map_name_in': 'test',
-                                                                                                         'route_map_name_out': 'test'}}}}},
-                                  'default': {'address_family': {'ipv4 unicast': {'dampening': True,
-                                                                                  'dampening_half_life_time': 2100,
-                                                                                  'dampening_max_suppress_time': 4200,
-                                                                                  'dampening_reuse_time': 200,
-                                                                                  'dampening_suppress_time': 200},
-                                                                 'ipv6 unicast': {'dampening': True,
-                                                                                  'dampening_half_life_time': 2160,
-                                                                                  'dampening_max_suppress_time': 4260,
-                                                                                  'dampening_reuse_time': 201,
-                                                                                  'dampening_suppress_time': 201},
-                                                                 'vpnv4 unicast': {'dampening': True,
-                                                                                   'dampening_half_life_time': 900,
-                                                                                   'dampening_max_suppress_time': 3600,
-                                                                                   'dampening_reuse_time': 750,
-                                                                                   'dampening_suppress_time': 2000}},
-                                              'cluster_id': '10.64.4.4',
-                                              'neighbor': {'10.4.6.6': {'address_family': {'vpnv4 unicast': {'bgp_table_version': 1,
-                                                                                                             'path': {'memory_usage': 3600,
-                                                                                                                      'total_entries': 45},
-                                                                                                             'prefixes': {'memory_usage': 4560,
-                                                                                                                          'total_entries': 30},
-                                                                                                             'routing_table_version': 56,
-                                                                                                             'total_memory': 9384}}},
-                                                           '10.16.2.2': {'address_family': {'vpnv4 unicast': {'bgp_table_version': 1,
-                                                                                                            'path': {'memory_usage': 3600,
-                                                                                                                     'total_entries': 45},
-                                                                                                            'prefixes': {'memory_usage': 4560,
-                                                                                                                         'total_entries': 30},
-                                                                                                            'routing_table_version': 56,
-                                                                                                            'total_memory': 9384},
-                                                                                          'vpnv6 unicast': {'bgp_table_version': 1,
-                                                                                                            'path': {'memory_usage': 4860,
-                                                                                                                     'total_entries': 45},
-                                                                                                            'prefixes': {'memory_usage': 5280,
-                                                                                                                         'total_entries': 30},
-                                                                                                            'routing_table_version': 66,
-                                                                                                            'total_memory': 11364}},
-                                                                       'bgp_negotiated_capabilities': {'enhanced_refresh': 'advertised',
-                                                                                                       'four_octets_asn': 'advertised '
-                                                                                                                          'and '
-                                                                                                                          'received',
-                                                                                                       'graceful_restart': 'received',
-                                                                                                       'route_refresh': 'advertised '
-                                                                                                                        'and '
-                                                                                                                        'received(new)',
-                                                                                                       'stateful_switchover': 'NO '
-                                                                                                                              'for '
-                                                                                                                              'session '
-                                                                                                                              '1',
-                                                                                                       'vpnv4_unicast': 'advertised '
-                                                                                                                        'and '
-                                                                                                                        'received',
-                                                                                                       'vpnv6_unicast': 'advertised '
-                                                                                                                        'and '
-                                                                                                                        'received'},
-                                                                       'bgp_negotiated_keepalive_timers': {'hold_time': 180,
-                                                                                                           'keepalive_interval': 60},
-                                                                       'bgp_neighbor_counters': {'messages': {'received': {'keepalives': 74,
-                                                                                                                           'notifications': 0,
-                                                                                                                           'opens': 1,
-                                                                                                                           'updates': 6},
-                                                                                                              'sent': {'keepalives': 75,
-                                                                                                                       'notifications': 0,
-                                                                                                                       'opens': 1,
-                                                                                                                       'updates': 11}}},
-                                                                       'bgp_session_transport': {'connection': {'last_reset': 'never',
-                                                                                                                'state': 'established'},
-                                                                                                 'transport': {'foreign_host': '10.16.2.2',
-                                                                                                               'foreign_port': '179',
-                                                                                                               'local_host': '10.64.4.4',
-                                                                                                               'local_port': '35281'}},
-                                                                       'bgp_version': 4,
-                                                                       'remote_as': 100,
-                                                                       'session_state': 'established'},
-                                                           '10.66.6.6': {'address_family': {'vpnv4 unicast': {'bgp_table_version': 1,
-                                                                                                             'path': {'memory_usage': 3600,
-                                                                                                                      'total_entries': 45},
-                                                                                                             'prefixes': {'memory_usage': 4560,
-                                                                                                                          'total_entries': 30},
-                                                                                                             'routing_table_version': 56,
-                                                                                                             'total_memory': 9384}}},
-                                                           '192.168.111.1': {'address_family': {'ipv4 unicast': {'bgp_table_version': 28,
-                                                                                                             'path': {'memory_usage': 3672,
-                                                                                                                      'total_entries': 27},
-                                                                                                             'prefixes': {'memory_usage': 6696,
-                                                                                                                          'total_entries': 27},
-                                                                                                             'routing_table_version': 28,
-                                                                                                             'total_memory': 10648}}},
-                                                           '192.168.4.1': {'address_family': {'ipv4 unicast': {'bgp_table_version': 28,
-                                                                                                             'path': {'memory_usage': 3672,
-                                                                                                                      'total_entries': 27},
-                                                                                                             'prefixes': {'memory_usage': 6696,
-                                                                                                                          'total_entries': 27},
-                                                                                                             'routing_table_version': 28,
-                                                                                                             'total_memory': 10648}}},
-                                                           '192.168.51.1': {'address_family': {'ipv4 unicast': {'bgp_table_version': 28,
-                                                                                                             'path': {'memory_usage': 3672,
-                                                                                                                      'total_entries': 27},
-                                                                                                             'prefixes': {'memory_usage': 6696,
-                                                                                                                          'total_entries': 27},
-                                                                                                             'routing_table_version': 28,
-                                                                                                             'total_memory': 10648}}},
-                                                           '2001:db8:400::1:1': {'address_family': {'ipv6 unicast': {'bgp_table_version': 1,
-                                                                                                             'routing_table_version': 1}}},
-                                                           '2001:db8:400::4:1': {'address_family': {'ipv6 unicast': {'bgp_table_version': 1,
-                                                                                                             'routing_table_version': 1}}},
-                                                           '2002001:db8:1::14:4': {'address_family': {'ipv6 unicast': {'bgp_table_version': 1,
-                                                                                                              'routing_table_version': 1}}},
-                                                           '2001::26:2': {'address_family': {'ipv6 unicast': {'bgp_table_version': 1,
-                                                                                                              'routing_table_version': 1}}},
-                                                           '2001:DB8:20:4:6::6': {'address_family': {'vpnv6 unicast': {'bgp_table_version': 66,
-                                                                                                                       'path': {'memory_usage': 4860,
-                                                                                                                                'total_entries': 45},
-                                                                                                                       'prefixes': {'memory_usage': 5280,
-                                                                                                                                    'total_entries': 30},
-                                                                                                                       'routing_table_version': 66,
-                                                                                                                       'total_memory': 11364}}},
-                                                           '2001:DB8:4:6::6': {'address_family': {'vpnv6 unicast': {'bgp_table_version': 1,
-                                                                                                                    'path': {'memory_usage': 4860,
-                                                                                                                             'total_entries': 45},
-                                                                                                                    'prefixes': {'memory_usage': 5280,
-                                                                                                                                 'total_entries': 30},
-                                                                                                                    'routing_table_version': 66,
-                                                                                                                    'total_memory': 11364}}},
-                                                           '192.168.70.4': {'address_family': {'ipv4 unicast': {'bgp_table_version': 28,
-                                                                                                              'path': {'memory_usage': 3672,
-                                                                                                                       'total_entries': 27},
-                                                                                                              'prefixes': {'memory_usage': 6696,
-                                                                                                                           'total_entries': 27},
-                                                                                                              'routing_table_version': 28,
-                                                                                                              'total_memory': 10648}}},
-                                                           '192.168.19.2': {'address_family': {'ipv4 unicast': {'bgp_table_version': 28,
-                                                                                                              'path': {'memory_usage': 3672,
-                                                                                                                       'total_entries': 27},
-                                                                                                              'prefixes': {'memory_usage': 6696,
-                                                                                                                           'total_entries': 27},
-                                                                                                              'routing_table_version': 28,
-                                                                                                              'total_memory': 10648}}},
-                                                           '10.36.3.3': {'address_family': {'vpnv4 unicast': {'bgp_table_version': 1,
-                                                                                                            'path': {'memory_usage': 3600,
-                                                                                                                     'total_entries': 45},
-                                                                                                            'prefixes': {'memory_usage': 4560,
-                                                                                                                         'total_entries': 30},
-                                                                                                            'routing_table_version': 1,
-                                                                                                            'total_memory': 9384},
-                                                                                          'vpnv6 unicast': {'bgp_table_version': 1,
-                                                                                                            'path': {'memory_usage': 4860,
-                                                                                                                     'total_entries': 45},
-                                                                                                            'prefixes': {'memory_usage': 5280,
-                                                                                                                         'total_entries': 30},
-                                                                                                            'routing_table_version': 1,
-                                                                                                            'total_memory': 11364}},
-                                                                       'bgp_negotiated_capabilities': {'enhanced_refresh': 'advertised',
-                                                                                                       'four_octets_asn': 'advertised '
-                                                                                                                          'and '
-                                                                                                                          'received',
-                                                                                                       'graceful_restart': 'received',
-                                                                                                       'route_refresh': 'advertised '
-                                                                                                                        'and '
-                                                                                                                        'received(new)',
-                                                                                                       'stateful_switchover': 'NO '
-                                                                                                                              'for '
-                                                                                                                              'session '
-                                                                                                                              '1',
-                                                                                                       'vpnv4_unicast': 'advertised '
-                                                                                                                        'and '
-                                                                                                                        'received',
-                                                                                                       'vpnv6_unicast': 'advertised '
-                                                                                                                        'and '
-                                                                                                                        'received'},
-                                                                       'bgp_negotiated_keepalive_timers': {'hold_time': 180,
-                                                                                                           'keepalive_interval': 60},
-                                                                       'bgp_neighbor_counters': {'messages': {'received': {'keepalives': 74,
-                                                                                                                           'notifications': 0,
-                                                                                                                           'opens': 1,
-                                                                                                                           'updates': 6},
-                                                                                                              'sent': {'keepalives': 75,
-                                                                                                                       'notifications': 0,
-                                                                                                                       'opens': 1,
-                                                                                                                       'updates': 11}}},
-                                                                       'bgp_session_transport': {'connection': {'last_reset': 'never',
-                                                                                                                'state': 'established'},
-                                                                                                 'transport': {'foreign_host': '10.36.3.3',
-                                                                                                               'foreign_port': '179',
-                                                                                                               'local_host': '10.64.4.4',
-                                                                                                               'local_port': '56031'}},
-                                                                       'bgp_version': 4,
-                                                                       'remote_as': 100,
-                                                                       'session_state': 'established'}}},
-                                  'vrf1': {'cluster_id': '10.64.4.4'},
-                                  'vrf2': {'cluster_id': '10.64.4.4'}}}}}
+        For address family: VPNv4 Multicast
 
-    BgpOpsOutput_info_custom = {
+        For address family: MVPNv4 Unicast
+
+        For address family: MVPNv6 Unicast
+
+        For address family: VPNv6 Multicast
+
+        For address family: VPNv4 Flowspec
+
+        For address family: VPNv6 Flowspec
+    '''
+
+    show_neighbor_policy_1 = '''\
+        show bgp all neighbors 2.2.2.2 policy
+        Neighbor: 2.2.2.2, Address-Family: IPv4 Unicast
+        Neighbor: 2.2.2.2, Address-Family: VPNv4 Unicast (VRF1)
+    '''
+
+    show_neighbor_policy_2 = '''\
+        show bgp all neighbors 2001:2:2:2::2 policy
+        Neighbor: 2001:2:2:2::2, Address-Family: IPv6 Unicast
+        Neighbor: 2001:2:2:2::2, Address-Family: VPNv6 Unicast (VRF1)
+    '''
+
+    show_neighbor_policy_3 = '''\
+        show bgp all neighbors 2001:3:3:3::3 policy
+        Neighbor: 2001:3:3:3::3, Address-Family: IPv6 Unicast
+        Neighbor: 2001:3:3:3::3, Address-Family: VPNv6 Unicast (VRF1)
+    '''
+
+    show_neighbor_policy_4 = '''\
+        show bgp all neighbors 3.3.3.3 policy
+        Neighbor: 3.3.3.3, Address-Family: IPv4 Unicast
+        Neighbor: 3.3.3.3, Address-Family: VPNv4 Unicast (VRF1)
+    '''
+
+    show_bgp_all = '''\
+        show bgp all
+        For address family: IPv4 Unicast
+
+        BGP table version is 4, local router ID is 1.1.1.1
+        Status codes: s suppressed, d damped, h history, * valid, > best, i - internal,
+                    r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter,
+                    x best-external, a additional-path, c RIB-compressed,
+                    t secondary path, L long-lived-stale,
+        Origin codes: i - IGP, e - EGP, ? - incomplete
+        RPKI validation codes: V valid, I invalid, N Not found
+
+            Network          Next Hop            Metric LocPrf Weight Path
+        *>   1.1.1.1/32       0.0.0.0                  0         32768 i
+        r>i  2.2.2.2/32       2.2.2.2                  0    100      0 i
+        r>i  3.3.3.3/32       3.3.3.3                       100      0 i
+
+        For address family: IPv6 Unicast
+
+        BGP table version is 5, local router ID is 1.1.1.1
+        Status codes: s suppressed, d damped, h history, * valid, > best, i - internal,
+                    r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter,
+                    x best-external, a additional-path, c RIB-compressed,
+                    t secondary path, L long-lived-stale,
+        Origin codes: i - IGP, e - EGP, ? - incomplete
+        RPKI validation codes: V valid, I invalid, N Not found
+
+            Network          Next Hop            Metric LocPrf Weight Path
+        *>   2001:1:1:1::1/128
+                            ::                       0         32768 i
+        r>i  2001:2:2:2::2/128
+                            2001:2:2:2::2            0    100      0 i
+        r>i  2001:3:3:3::3/128
+                            2001:3:3:3::3                 100      0 i
+
+        For address family: VPNv4 Unicast
+
+        BGP table version is 4, local router ID is 1.1.1.1
+        Status codes: s suppressed, d damped, h history, * valid, > best, i - internal,
+                    r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter,
+                    x best-external, a additional-path, c RIB-compressed,
+                    t secondary path, L long-lived-stale,
+        Origin codes: i - IGP, e - EGP, ? - incomplete
+        RPKI validation codes: V valid, I invalid, N Not found
+
+            Network          Next Hop            Metric LocPrf Weight Path
+        Route Distinguisher: 65000:1 (default for vrf VRF1)
+        *>   1.1.1.1/32       0.0.0.0                  0         32768 i
+        r>i  2.2.2.2/32       2.2.2.2                  0    100      0 i
+        r>i  3.3.3.3/32       3.3.3.3                       100      0 i
+
+        For address family: VPNv6 Unicast
+
+        BGP table version is 5, local router ID is 1.1.1.1
+        Status codes: s suppressed, d damped, h history, * valid, > best, i - internal,
+                    r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter,
+                    x best-external, a additional-path, c RIB-compressed,
+                    t secondary path, L long-lived-stale,
+        Origin codes: i - IGP, e - EGP, ? - incomplete
+        RPKI validation codes: V valid, I invalid, N Not found
+
+            Network          Next Hop            Metric LocPrf Weight Path
+        Route Distinguisher: 65000:1 (default for vrf VRF1)
+        *>   2001:1:1:1::1/128
+                            ::                       0         32768 i
+        r>i  2001:2:2:2::2/128
+                            2001:2:2:2::2            0    100      0 i
+        r>i  2001:3:3:3::3/128
+                            2001:3:3:3::3                 100      0 i
+
+        For address family: IPv4 Multicast
+
+
+        For address family: L2VPN E-VPN
+
+
+        For address family: VPNv4 Multicast
+
+
+        For address family: MVPNv4 Unicast
+
+
+        For address family: MVPNv6 Unicast
+
+
+        For address family: VPNv6 Multicast
+
+
+        For address family: VPNv4 Flowspec
+
+
+        For address family: VPNv6 Flowspec
+    '''
+
+    show_bgp_all_detail = '''\
+        show bgp all detail
+        For address family: IPv4 Unicast
+
+        BGP routing table entry for 1.1.1.1/32, version 2
+        Paths: (1 available, best #1, table default)
+        Advertised to update-groups:
+            1
+        Refresh Epoch 1
+        Local
+            0.0.0.0 from 0.0.0.0 (1.1.1.1)
+            Origin IGP, metric 0, localpref 100, weight 32768, valid, sourced, local, best
+            rx pathid: 0, tx pathid: 0x0
+        BGP routing table entry for 2.2.2.2/32, version 4
+        Paths: (1 available, best #1, table default, RIB-failure(17))
+        Flag: 0x100
+        Not advertised to any peer
+        Refresh Epoch 1
+        Local
+            2.2.2.2 (metric 10752) from 2.2.2.2 (2.2.2.2)
+            Origin IGP, metric 0, localpref 100, valid, internal, best
+            rx pathid: 0, tx pathid: 0x0
+        BGP routing table entry for 3.3.3.3/32, version 3
+        Paths: (1 available, best #1, table default, RIB-failure(17))
+        Not advertised to any peer
+        Refresh Epoch 1
+        Local
+            3.3.3.3 (metric 2570240) from 3.3.3.3 (3.3.3.3)
+            Origin IGP, localpref 100, valid, internal, best
+            rx pathid: 0, tx pathid: 0x0
+
+        For address family: IPv6 Unicast
+
+        BGP routing table entry for 2001:1:1:1::1/128, version 3
+        Paths: (1 available, best #1, table default)
+        Advertised to update-groups:
+            1
+        Refresh Epoch 1
+        Local
+            :: from 0.0.0.0 (1.1.1.1)
+            Origin IGP, metric 0, localpref 100, weight 32768, valid, sourced, local, best
+            rx pathid: 0, tx pathid: 0x0
+        BGP routing table entry for 2001:2:2:2::2/128, version 5
+        Paths: (1 available, best #1, table default, RIB-failure(145))
+        Flag: 0x100
+        Not advertised to any peer
+        Refresh Epoch 1
+        Local
+            2001:2:2:2::2 (metric 10752) from 2001:2:2:2::2 (2.2.2.2)
+            Origin IGP, metric 0, localpref 100, valid, internal, best
+            rx pathid: 0, tx pathid: 0x0
+        BGP routing table entry for 2001:3:3:3::3/128, version 4
+        Paths: (1 available, best #1, table default, RIB-failure(145))
+        Not advertised to any peer
+        Refresh Epoch 1
+        Local
+            2001:3:3:3::3 (metric 2570240) from 2001:3:3:3::3 (3.3.3.3)
+            Origin IGP, localpref 100, valid, internal, best
+            rx pathid: 0, tx pathid: 0x0
+
+        For address family: VPNv4 Unicast
+
+
+        Route Distinguisher: 65000:1 (default for vrf VRF1)
+        BGP routing table entry for 65000:1:1.1.1.1/32, version 2
+        Paths: (1 available, best #1, table VRF1)
+        Advertised to update-groups:
+            1
+        Refresh Epoch 1
+        Local
+            0.0.0.0 (via vrf VRF1) from 0.0.0.0 (1.1.1.1)
+            Origin IGP, metric 0, localpref 100, weight 32768, valid, sourced, local, best
+            Extended Community: Cost:pre-bestpath:128:1280 0x8800:32768:0
+                0x8801:100:32 0x8802:65280:256 0x8803:65281:1514 0x8806:0:16843009
+            rx pathid: 0, tx pathid: 0x0
+        BGP routing table entry for 65000:1:2.2.2.2/32, version 4
+        Paths: (1 available, best #1, table VRF1, RIB-failure(17))
+        Flag: 0x100
+        Not advertised to any peer
+        Refresh Epoch 1
+        Local
+            2.2.2.2 (metric 10752) (via vrf VRF1) from 2.2.2.2 (2.2.2.2)
+            Origin IGP, metric 0, localpref 100, valid, internal, best
+            rx pathid: 0, tx pathid: 0x0
+        BGP routing table entry for 65000:1:3.3.3.3/32, version 3
+        Paths: (1 available, best #1, table VRF1, RIB-failure(17))
+        Not advertised to any peer
+        Refresh Epoch 1
+        Local
+            3.3.3.3 (metric 2570240) (via vrf VRF1) from 3.3.3.3 (3.3.3.3)
+            Origin IGP, localpref 100, valid, internal, best
+            rx pathid: 0, tx pathid: 0x0
+
+        For address family: VPNv6 Unicast
+
+
+        Route Distinguisher: 65000:1 (default for vrf VRF1)
+        BGP routing table entry for [65000:1]2001:1:1:1::1/128, version 3
+        Paths: (1 available, best #1, table VRF1)
+        Advertised to update-groups:
+            1
+        Refresh Epoch 1
+        Local
+            :: (via vrf VRF1) from 0.0.0.0 (1.1.1.1)
+            Origin IGP, metric 0, localpref 100, weight 32768, valid, sourced, local, best
+            Extended Community: Cost:pre-bestpath:128:1280 0x8800:32768:0
+                0x8801:100:32 0x8802:65280:256 0x8803:65281:1514 0x8806:0:16843009
+                0x8807:53266:318767104
+            rx pathid: 0, tx pathid: 0x0
+        BGP routing table entry for [65000:1]2001:2:2:2::2/128, version 5
+        Paths: (1 available, best #1, table VRF1, RIB-failure(145))
+        Flag: 0x100
+        Not advertised to any peer
+        Refresh Epoch 1
+        Local
+            2001:2:2:2::2 (metric 10752) (via vrf VRF1) from 2001:2:2:2::2 (2.2.2.2)
+            Origin IGP, metric 0, localpref 100, valid, internal, best
+            rx pathid: 0, tx pathid: 0x0
+        BGP routing table entry for [65000:1]2001:3:3:3::3/128, version 4
+        Paths: (1 available, best #1, table VRF1, RIB-failure(145))
+        Not advertised to any peer
+        Refresh Epoch 1
+        Local
+            2001:3:3:3::3 (metric 2570240) (via vrf VRF1) from 2001:3:3:3::3 (3.3.3.3)
+            Origin IGP, localpref 100, valid, internal, best
+            rx pathid: 0, tx pathid: 0x0
+
+        For address family: IPv4 Multicast
+
+
+        For address family: L2VPN E-VPN
+
+
+        For address family: VPNv4 Multicast
+
+
+        For address family: MVPNv4 Unicast
+
+
+        For address family: MVPNv6 Unicast
+
+
+        For address family: VPNv6 Multicast
+
+
+        For address family: VPNv4 Flowspec
+
+
+        For address family: VPNv6 Flowspec
+    '''
+
+    show_bgp_all_neighbor_1 = '''\
+        show bgp all neighbors 2.2.2.2
+        For address family: IPv4 Unicast
+        BGP neighbor is 2.2.2.2,  remote AS 65000, internal link
+        BGP version 4, remote router ID 2.2.2.2
+        BGP state = Established, up for 2w5d
+        Last read 00:00:23, last write 00:00:45, hold time is 180, keepalive interval is 60 seconds
+        Neighbor sessions:
+            1 active, is not multisession capable (disabled)
+        Neighbor capabilities:
+            Route refresh: advertised and received(new)
+            Four-octets ASN Capability: advertised and received
+            Address family IPv4 Unicast: advertised and received
+            Enhanced Refresh Capability: advertised
+            Multisession Capability:
+            Stateful switchover support enabled: NO for session 1
+        Message statistics:
+            InQ depth is 0
+            OutQ depth is 0
+
+                                Sent       Rcvd
+            Opens:                  1          1
+            Notifications:          0          0
+            Updates:                2          2
+            Keepalives:         30186      27417
+            Route Refresh:          0          0
+            Total:              30189      27420
+        Do log neighbor state changes (via global configuration)
+        Default minimum time between advertisement runs is 0 seconds
+
+        Address tracking is enabled, the RIB does have a route to 2.2.2.2
+        Route to peer address reachability Up: 1; Down: 0
+            Last notification 2w5d
+        Connections established 1; dropped 0
+        Last reset never
+        Interface associated: (none) (peering address NOT in same link)
+        Transport(tcp) path-mtu-discovery is enabled
+        Graceful-Restart is disabled
+        SSO is disabled
+        Connection state is ESTAB, I/O status: 1, unread input bytes: 0
+        Connection is ECN Disabled, Mininum incoming TTL 0, Outgoing TTL 255
+        Local host: 1.1.1.1, Local port: 179
+        Foreign host: 2.2.2.2, Foreign port: 25026
+        Connection tableid (VRF): 0
+        Maximum output segment queue size: 50
+
+        Enqueued packets for retransmit: 0, input: 0  mis-ordered: 0 (0 bytes)
+
+        Event Timers (current time is 0x621EF638):
+        Timer          Starts    Wakeups            Next
+        Retrans         30188          0             0x0
+        TimeWait            0          0             0x0
+        AckHold         27419      26858             0x0
+        SendWnd             0          0             0x0
+        KeepAlive           0          0             0x0
+        GiveUp              0          0             0x0
+        PmtuAger            0          0             0x0
+        DeadWait            0          0             0x0
+        Linger              0          0             0x0
+        ProcessQ            0          0             0x0
+
+        iss:  402897367  snduna:  403471038  sndnxt:  403471038
+        irs: 3455343999  rcvnxt: 3455865077
+
+        sndwnd:  32236  scale:      0  maxrcvwnd:  16384
+        rcvwnd:  15719  scale:      0  delrcvwnd:    665
+
+        SRTT: 1000 ms, RTTO: 1003 ms, RTV: 3 ms, KRTT: 0 ms
+        minRTT: 1 ms, maxRTT: 1000 ms, ACK hold: 200 ms
+        uptime: 1645074620 ms, Sent idletime: 23107 ms, Receive idletime: 23308 ms
+        Status Flags: passive open, gen tcbs
+        Option Flags: nagle, path mtu capable
+        IP Precedence value : 6
+
+        Datagrams (max data segment is 1240 bytes):
+        Rcvd: 57653 (out of order: 0), with data: 27419, total data bytes: 521077
+        Sent: 57603 (retransmit: 0, fastretransmit: 0, partialack: 0, Second Congestion: 0), with data: 30188, total data bytes: 573670
+
+        Packets received in fast path: 0, fast processed: 0, slow path: 0
+        fast lock acquisition failures: 0, slow path: 0
+        TCP Semaphore      0x7F23C7640538  FREE
+
+        For address family: IPv6 Unicast
+
+        For address family: VPNv4 Unicast
+        BGP neighbor is 2.2.2.2,  vrf VRF1,  remote AS 65000, internal link
+        BGP version 4, remote router ID 2.2.2.2
+        BGP state = Established, up for 2w5d
+        Last read 00:00:19, last write 00:00:50, hold time is 180, keepalive interval is 60 seconds
+        Neighbor sessions:
+            1 active, is not multisession capable (disabled)
+        Neighbor capabilities:
+            Route refresh: advertised and received(new)
+            Four-octets ASN Capability: advertised and received
+            Address family IPv4 Unicast: advertised and received
+            Enhanced Refresh Capability: advertised
+            Multisession Capability:
+            Stateful switchover support enabled: NO for session 1
+        Message statistics:
+            InQ depth is 0
+            OutQ depth is 0
+
+                                Sent       Rcvd
+            Opens:                  1          1
+            Notifications:          0          0
+            Updates:                2          2
+            Keepalives:         30174      27417
+            Route Refresh:          0          0
+            Total:              30177      27420
+        Do log neighbor state changes (via global configuration)
+        Default minimum time between advertisement runs is 0 seconds
+
+        Address tracking is enabled, the RIB does have a route to 2.2.2.2
+        Route to peer address reachability Up: 2; Down: 0
+            Last notification 2w5d
+        Connections established 1; dropped 0
+        Last reset never
+        Interface associated: (none) (peering address NOT in same link)
+        Transport(tcp) path-mtu-discovery is enabled
+        Graceful-Restart is disabled
+        SSO is disabled
+        Connection state is ESTAB, I/O status: 1, unread input bytes: 0
+        Connection is ECN Disabled, Mininum incoming TTL 0, Outgoing TTL 255
+        Local host: 1.1.1.1, Local port: 179
+        Foreign host: 2.2.2.2, Foreign port: 50426
+        Connection tableid (VRF): 2
+        Maximum output segment queue size: 50
+
+        Enqueued packets for retransmit: 0, input: 0  mis-ordered: 0 (0 bytes)
+
+        Event Timers (current time is 0x621EF639):
+        Timer          Starts    Wakeups            Next
+        Retrans         30180          4             0x0
+        TimeWait            0          0             0x0
+        AckHold         27420      26856             0x0
+        SendWnd             0          0             0x0
+        KeepAlive           0          0             0x0
+        GiveUp              0          0             0x0
+        PmtuAger            0          0             0x0
+        DeadWait            0          0             0x0
+        Linger              0          0             0x0
+        ProcessQ            0          0             0x0
+
+        iss: 3028094276  snduna: 3028667719  sndnxt: 3028667719
+        irs:  568735500  rcvnxt:  569256556
+
+        sndwnd:  32483  scale:      0  maxrcvwnd:  16384
+        rcvwnd:  15738  scale:      0  delrcvwnd:    646
+
+        SRTT: 1000 ms, RTTO: 1003 ms, RTV: 3 ms, KRTT: 0 ms
+        minRTT: 1 ms, maxRTT: 1000 ms, ACK hold: 200 ms
+        uptime: 1645074105 ms, Sent idletime: 19122 ms, Receive idletime: 19322 ms
+        Status Flags: passive open, gen tcbs
+        Option Flags: VRF id set, nagle, path mtu capable
+        IP Precedence value : 6
+
+        Datagrams (max data segment is 1240 bytes):
+        Rcvd: 57669 (out of order: 0), with data: 27420, total data bytes: 521055
+        Sent: 57610 (retransmit: 4, fastretransmit: 0, partialack: 0, Second Congestion: 0), with data: 30176, total data bytes: 573442
+
+        Packets received in fast path: 0, fast processed: 0, slow path: 0
+        fast lock acquisition failures: 0, slow path: 0
+        TCP Semaphore      0x7F23C7640468  FREE
+
+
+        For address family: VPNv6 Unicast
+
+        For address family: IPv4 Multicast
+
+        For address family: L2VPN E-VPN
+
+        For address family: VPNv4 Multicast
+
+        For address family: MVPNv4 Unicast
+
+        For address family: MVPNv6 Unicast
+
+        For address family: VPNv6 Multicast
+
+        For address family: VPNv4 Flowspec
+
+        For address family: VPNv6 Flowspec
+    '''
+
+    show_bgp_all_neighbor_2 = '''\
+        show bgp all neighbors 2001:2:2:2::2
+        For address family: IPv4 Unicast
+
+        For address family: IPv6 Unicast
+        BGP neighbor is 2001:2:2:2::2,  remote AS 65000, internal link
+        BGP version 4, remote router ID 2.2.2.2
+        BGP state = Established, up for 2w5d
+        Last read 00:00:24, last write 00:00:07, hold time is 180, keepalive interval is 60 seconds
+        Neighbor sessions:
+            1 active, is not multisession capable (disabled)
+        Neighbor capabilities:
+            Route refresh: advertised and received(new)
+            Four-octets ASN Capability: advertised and received
+            Address family IPv6 Unicast: advertised and received
+            Enhanced Refresh Capability: advertised
+            Multisession Capability:
+            Stateful switchover support enabled: NO for session 1
+        Message statistics:
+            InQ depth is 0
+            OutQ depth is 0
+
+                                Sent       Rcvd
+            Opens:                  1          1
+            Notifications:          0          0
+            Updates:                2          2
+            Keepalives:         30188      27417
+            Route Refresh:          0          0
+            Total:              30191      27420
+        Do log neighbor state changes (via global configuration)
+        Default minimum time between advertisement runs is 0 seconds
+
+        Address tracking is enabled, the RIB does have a route to 2001:2:2:2::2
+        Route to peer address reachability Up: 2; Down: 0
+            Last notification 2w5d
+        Connections established 1; dropped 0
+        Last reset never
+        Interface associated: (none) (peering address NOT in same link)
+        Transport(tcp) path-mtu-discovery is enabled
+        Graceful-Restart is disabled
+        SSO is disabled
+        Connection state is ESTAB, I/O status: 1, unread input bytes: 0
+        Connection is ECN Disabled, Mininum incoming TTL 0, Outgoing TTL 255
+        Local host: 2001:1:1:1::1, Local port: 179
+        Foreign host: 2001:2:2:2::2, Foreign port: 52223
+        Connection tableid (VRF): 0
+        Maximum output segment queue size: 50
+
+        Enqueued packets for retransmit: 0, input: 0  mis-ordered: 0 (0 bytes)
+
+        Event Timers (current time is 0x621EFA31):
+        Timer          Starts    Wakeups            Next
+        Retrans         30190          0             0x0
+        TimeWait            0          0             0x0
+        AckHold         27419      26861             0x0
+        SendWnd             0          0             0x0
+        KeepAlive           0          0             0x0
+        GiveUp              0          0             0x0
+        PmtuAger            0          0             0x0
+        DeadWait            0          0             0x0
+        Linger              0          0             0x0
+        ProcessQ            0          0             0x0
+
+        iss:  723831891  snduna:  724405635  sndnxt:  724405635
+        irs: 2052291678  rcvnxt: 2052812792
+
+        sndwnd:  32141  scale:      0  maxrcvwnd:  16384
+        rcvwnd:  15206  scale:      0  delrcvwnd:   1178
+
+        SRTT: 1000 ms, RTTO: 1003 ms, RTV: 3 ms, KRTT: 0 ms
+        minRTT: 1 ms, maxRTT: 1000 ms, ACK hold: 200 ms
+        uptime: 1645074149 ms, Sent idletime: 7278 ms, Receive idletime: 7069 ms
+        Status Flags: passive open, gen tcbs
+        Option Flags: nagle, path mtu capable
+        IP Precedence value : 6
+
+        Datagrams (max data segment is 1220 bytes):
+        Rcvd: 57654 (out of order: 0), with data: 27419, total data bytes: 521113
+        Sent: 57613 (retransmit: 0, fastretransmit: 0, partialack: 0, Second Congestion: 0), with data: 57613, total data bytes: 2878271
+
+        Packets received in fast path: 0, fast processed: 0, slow path: 0
+        fast lock acquisition failures: 0, slow path: 0
+        TCP Semaphore      0x7F23C76402C8  FREE
+
+        For address family: VPNv4 Unicast
+
+        For address family: VPNv6 Unicast
+        BGP neighbor is 2001:2:2:2::2,  vrf VRF1,  remote AS 65000, internal link
+        BGP version 4, remote router ID 2.2.2.2
+        BGP state = Established, up for 2w5d
+        Last read 00:00:12, last write 00:00:33, hold time is 180, keepalive interval is 60 seconds
+        Neighbor sessions:
+            1 active, is not multisession capable (disabled)
+        Neighbor capabilities:
+            Route refresh: advertised and received(new)
+            Four-octets ASN Capability: advertised and received
+            Address family IPv6 Unicast: advertised and received
+            Enhanced Refresh Capability: advertised
+            Multisession Capability:
+            Stateful switchover support enabled: NO for session 1
+        Message statistics:
+            InQ depth is 0
+            OutQ depth is 0
+
+                                Sent       Rcvd
+            Opens:                  1          1
+            Notifications:          0          0
+            Updates:                2          2
+            Keepalives:         30184      27417
+            Route Refresh:          0          0
+            Total:              30187      27420
+        Do log neighbor state changes (via global configuration)
+        Default minimum time between advertisement runs is 0 seconds
+
+        Address tracking is enabled, the RIB does have a route to 2001:2:2:2::2
+        Route to peer address reachability Up: 1; Down: 0
+            Last notification 2w5d
+        Connections established 1; dropped 0
+        Last reset never
+        Interface associated: (none) (peering address NOT in same link)
+        Transport(tcp) path-mtu-discovery is enabled
+        Graceful-Restart is disabled
+        SSO is disabled
+        Connection state is ESTAB, I/O status: 1, unread input bytes: 0
+        Connection is ECN Disabled, Mininum incoming TTL 0, Outgoing TTL 255
+        Local host: 2001:1:1:1::1, Local port: 32057
+        Foreign host: 2001:2:2:2::2, Foreign port: 179
+        Connection tableid (VRF): 503316482
+        Maximum output segment queue size: 50
+
+        Enqueued packets for retransmit: 0, input: 0  mis-ordered: 0 (0 bytes)
+
+        Event Timers (current time is 0x621EFA34):
+        Timer          Starts    Wakeups            Next
+        Retrans         30190          4             0x0
+        TimeWait            0          0             0x0
+        AckHold         27420      26869             0x0
+        SendWnd             0          0             0x0
+        KeepAlive           0          0             0x0
+        GiveUp              0          0             0x0
+        PmtuAger            1          1             0x0
+        DeadWait            0          0             0x0
+        Linger              0          0             0x0
+        ProcessQ            0          0             0x0
+
+        iss: 3279254845  snduna: 3279828513  sndnxt: 3279828513
+        irs: 2772915965  rcvnxt: 2773437057
+
+        sndwnd:  32217  scale:      0  maxrcvwnd:  16384
+        rcvwnd:  15225  scale:      0  delrcvwnd:   1159
+
+        SRTT: 1000 ms, RTTO: 1003 ms, RTV: 3 ms, KRTT: 0 ms
+        minRTT: 1 ms, maxRTT: 1000 ms, ACK hold: 200 ms
+        uptime: 1645075043 ms, Sent idletime: 12726 ms, Receive idletime: 12926 ms
+        Status Flags: active open
+        Option Flags: VRF id set, nagle, path mtu capable
+        IP Precedence value : 6
+
+        Datagrams (max data segment is 1220 bytes):
+        Rcvd: 57637 (out of order: 0), with data: 27419, total data bytes: 521091
+        Sent: 57604 (retransmit: 4, fastretransmit: 0, partialack: 0, Second Congestion: 0), with data: 57604, total data bytes: 2877835
+
+        Packets received in fast path: 0, fast processed: 0, slow path: 0
+        fast lock acquisition failures: 0, slow path: 0
+        TCP Semaphore      0x7F23C7640398  FREE
+
+
+        For address family: IPv4 Multicast
+
+        For address family: L2VPN E-VPN
+
+        For address family: VPNv4 Multicast
+
+        For address family: MVPNv4 Unicast
+
+        For address family: MVPNv6 Unicast
+
+        For address family: VPNv6 Multicast
+
+        For address family: VPNv4 Flowspec
+
+        For address family: VPNv6 Flowspec
+    '''
+
+    show_bgp_all_neighbor_3 = '''\
+        show bgp all neighbors 2001:3:3:3::3
+        For address family: IPv4 Unicast
+
+        For address family: IPv6 Unicast
+        BGP neighbor is 2001:3:3:3::3,  remote AS 65000, internal link
+        BGP version 4, remote router ID 3.3.3.3
+        BGP state = Established, up for 2w5d
+        Last read 00:00:10, last write 00:00:18, hold time is 180, keepalive interval is 60 seconds
+        Neighbor sessions:
+            1 active, is not multisession capable (disabled)
+        Neighbor capabilities:
+            Route refresh: advertised and received(new)
+            Four-octets ASN Capability: advertised and received
+            Address family IPv6 Unicast: advertised and received
+            Graceful Restart Capability: received
+            Remote Restart timer is 120 seconds
+            Address families advertised by peer:
+                IPv6 Unicast (was not preserved
+            Enhanced Refresh Capability: advertised
+            Multisession Capability:
+            Stateful switchover support enabled: NO for session 1
+        Message statistics:
+            InQ depth is 0
+            OutQ depth is 0
+
+                                Sent       Rcvd
+            Opens:                  1          1
+            Notifications:          0          0
+            Updates:                2          2
+            Keepalives:         30178      27427
+            Route Refresh:          0          0
+            Total:              30181      27430
+        Do log neighbor state changes (via global configuration)
+        Default minimum time between advertisement runs is 0 seconds
+
+        Address tracking is enabled, the RIB does have a route to 2001:3:3:3::3
+        Route to peer address reachability Up: 1; Down: 0
+            Last notification 2w5d
+        Connections established 1; dropped 0
+        Last reset never
+        Interface associated: (none) (peering address NOT in same link)
+        Transport(tcp) path-mtu-discovery is enabled
+        Graceful-Restart is disabled
+        SSO is disabled
+        Connection state is ESTAB, I/O status: 1, unread input bytes: 0
+        Connection is ECN Disabled, Mininum incoming TTL 0, Outgoing TTL 255
+        Local host: 2001:1:1:1::1, Local port: 179
+        Foreign host: 2001:3:3:3::3, Foreign port: 47133
+        Connection tableid (VRF): 0
+        Maximum output segment queue size: 50
+
+        Enqueued packets for retransmit: 0, input: 0  mis-ordered: 0 (0 bytes)
+
+        Event Timers (current time is 0x621EFDE1):
+        Timer          Starts    Wakeups            Next
+        Retrans         30180          0             0x0
+        TimeWait            0          0             0x0
+        AckHold         27429      26963             0x0
+        SendWnd             0          0             0x0
+        KeepAlive           0          0             0x0
+        GiveUp              0          0             0x0
+        PmtuAger            0          0             0x0
+        DeadWait            0          0             0x0
+        Linger              0          0             0x0
+        ProcessQ            0          0             0x0
+
+        iss: 1399948803  snduna: 1400522357  sndnxt: 1400522357
+        irs: 1512650626  rcvnxt: 1513171918
+
+        sndwnd:  28800  scale:      0  maxrcvwnd:  16384
+        rcvwnd:  16384  scale:      0  delrcvwnd:      0
+
+        SRTT: 1000 ms, RTTO: 1003 ms, RTV: 3 ms, KRTT: 0 ms
+        minRTT: 1 ms, maxRTT: 1000 ms, ACK hold: 200 ms
+        uptime: 1645732976 ms, Sent idletime: 10581 ms, Receive idletime: 10581 ms
+        Status Flags: passive open, gen tcbs
+        Option Flags: nagle, path mtu capable
+        IP Precedence value : 6
+
+        Datagrams (max data segment is 1440 bytes):
+        Rcvd: 57664 (out of order: 0), with data: 27428, total data bytes: 521291
+        Sent: 57560 (retransmit: 0, fastretransmit: 0, partialack: 0, Second Congestion: 0), with data: 57560, total data bytes: 2875961
+
+        Packets received in fast path: 0, fast processed: 0, slow path: 0
+        fast lock acquisition failures: 0, slow path: 0
+        TCP Semaphore      0x7F23C7494380  FREE
+
+        For address family: VPNv4 Unicast
+
+        For address family: VPNv6 Unicast
+        BGP neighbor is 2001:3:3:3::3,  vrf VRF1,  remote AS 65000, internal link
+        BGP version 4, remote router ID 3.3.3.3
+        BGP state = Established, up for 2w5d
+        Last read 00:00:47, last write 00:00:34, hold time is 180, keepalive interval is 60 seconds
+        Neighbor sessions:
+            1 active, is not multisession capable (disabled)
+        Neighbor capabilities:
+            Route refresh: advertised and received(new)
+            Four-octets ASN Capability: advertised and received
+            Address family IPv6 Unicast: advertised and received
+            Graceful Restart Capability: received
+            Remote Restart timer is 120 seconds
+            Address families advertised by peer:
+                IPv6 Unicast (was not preserved
+            Enhanced Refresh Capability: advertised
+            Multisession Capability:
+            Stateful switchover support enabled: NO for session 1
+        Message statistics:
+            InQ depth is 0
+            OutQ depth is 0
+
+                                Sent       Rcvd
+            Opens:                  1          1
+            Notifications:          0          0
+            Updates:                2          3
+            Keepalives:         30166      27426
+            Route Refresh:          0          0
+            Total:              30169      27430
+        Do log neighbor state changes (via global configuration)
+        Default minimum time between advertisement runs is 0 seconds
+
+        Address tracking is enabled, the RIB does have a route to 2001:3:3:3::3
+        Route to peer address reachability Up: 1; Down: 0
+            Last notification 2w5d
+        Connections established 1; dropped 0
+        Last reset never
+        Interface associated: (none) (peering address NOT in same link)
+        Transport(tcp) path-mtu-discovery is enabled
+        Graceful-Restart is disabled
+        SSO is disabled
+        Connection state is ESTAB, I/O status: 1, unread input bytes: 0
+        Connection is ECN Disabled, Mininum incoming TTL 0, Outgoing TTL 255
+        Local host: 2001:1:1:1::1, Local port: 179
+        Foreign host: 2001:3:3:3::3, Foreign port: 20838
+        Connection tableid (VRF): 503316482
+        Maximum output segment queue size: 50
+
+        Enqueued packets for retransmit: 0, input: 0  mis-ordered: 0 (0 bytes)
+
+        Event Timers (current time is 0x621EFDE4):
+        Timer          Starts    Wakeups            Next
+        Retrans         30168          0             0x0
+        TimeWait            0          0             0x0
+        AckHold         27429      26946             0x0
+        SendWnd             0          0             0x0
+        KeepAlive           0          0             0x0
+        GiveUp              0          0             0x0
+        PmtuAger            0          0             0x0
+        DeadWait            0          0             0x0
+        Linger              0          0             0x0
+        ProcessQ            0          0             0x0
+
+        iss: 2912962685  snduna: 2913536011  sndnxt: 2913536011
+        irs: 3025088327  rcvnxt: 3025609679
+
+        sndwnd:  28800  scale:      0  maxrcvwnd:  16384
+        rcvwnd:  16327  scale:      0  delrcvwnd:     57
+
+        SRTT: 1000 ms, RTTO: 1003 ms, RTV: 3 ms, KRTT: 0 ms
+        minRTT: 1 ms, maxRTT: 1000 ms, ACK hold: 200 ms
+        uptime: 1645732498 ms, Sent idletime: 34851 ms, Receive idletime: 34850 ms
+        Status Flags: passive open, gen tcbs
+        Option Flags: VRF id set, nagle, path mtu capable
+        IP Precedence value : 6
+
+        Datagrams (max data segment is 1440 bytes):
+        Rcvd: 57671 (out of order: 0), with data: 27428, total data bytes: 521351
+        Sent: 57550 (retransmit: 0, fastretransmit: 0, partialack: 0, Second Congestion: 0), with data: 57550, total data bytes: 2875333
+
+        Packets received in fast path: 0, fast processed: 0, slow path: 0
+        fast lock acquisition failures: 0, slow path: 0
+        TCP Semaphore      0x7F23C74942B0  FREE
+
+
+        For address family: IPv4 Multicast
+
+        For address family: L2VPN E-VPN
+
+        For address family: VPNv4 Multicast
+
+        For address family: MVPNv4 Unicast
+
+        For address family: MVPNv6 Unicast
+
+        For address family: VPNv6 Multicast
+
+        For address family: VPNv4 Flowspec
+
+        For address family: VPNv6 Flowspec
+    '''
+
+    show_bgp_all_neighbor_4 = '''\
+        show bgp all neighbors 3.3.3.3
+        For address family: IPv4 Unicast
+        BGP neighbor is 3.3.3.3,  remote AS 65000, internal link
+        BGP version 4, remote router ID 3.3.3.3
+        BGP state = Established, up for 2w5d
+        Last read 00:00:11, last write 00:00:31, hold time is 180, keepalive interval is 60 seconds
+        Neighbor sessions:
+            1 active, is not multisession capable (disabled)
+        Neighbor capabilities:
+            Route refresh: advertised and received(new)
+            Four-octets ASN Capability: advertised and received
+            Address family IPv4 Unicast: advertised and received
+            Graceful Restart Capability: received
+            Remote Restart timer is 120 seconds
+            Address families advertised by peer:
+                IPv4 Unicast (was not preserved
+            Enhanced Refresh Capability: advertised
+            Multisession Capability:
+            Stateful switchover support enabled: NO for session 1
+        Message statistics:
+            InQ depth is 0
+            OutQ depth is 0
+
+                                Sent       Rcvd
+            Opens:                  1          1
+            Notifications:          0          0
+            Updates:                2          2
+            Keepalives:         30162      27427
+            Route Refresh:          0          0
+            Total:              30165      27430
+        Do log neighbor state changes (via global configuration)
+        Default minimum time between advertisement runs is 0 seconds
+
+        Address tracking is enabled, the RIB does have a route to 3.3.3.3
+        Route to peer address reachability Up: 1; Down: 0
+            Last notification 2w5d
+        Connections established 1; dropped 0
+        Last reset never
+        Interface associated: (none) (peering address NOT in same link)
+        Transport(tcp) path-mtu-discovery is enabled
+        Graceful-Restart is disabled
+        SSO is disabled
+        Connection state is ESTAB, I/O status: 1, unread input bytes: 0
+        Connection is ECN Disabled, Mininum incoming TTL 0, Outgoing TTL 255
+        Local host: 1.1.1.1, Local port: 11084
+        Foreign host: 3.3.3.3, Foreign port: 179
+        Connection tableid (VRF): 0
+        Maximum output segment queue size: 50
+
+        Enqueued packets for retransmit: 0, input: 0  mis-ordered: 0 (0 bytes)
+
+        Event Timers (current time is 0x621F01E6):
+        Timer          Starts    Wakeups            Next
+        Retrans         30165          0             0x0
+        TimeWait            0          0             0x0
+        AckHold         27429      26944             0x0
+        SendWnd             0          0             0x0
+        KeepAlive           0          0             0x0
+        GiveUp              0          0             0x0
+        PmtuAger      1636304    1636303      0x621F05A9
+        DeadWait            0          0             0x0
+        Linger              0          0             0x0
+        ProcessQ            0          0             0x0
+
+        iss: 4151727173  snduna: 4152300388  sndnxt: 4152300388
+        irs: 3770309714  rcvnxt: 3770830970
+
+        sndwnd:  29200  scale:      0  maxrcvwnd:  16384
+        rcvwnd:  15966  scale:      0  delrcvwnd:    418
+
+        SRTT: 1000 ms, RTTO: 1003 ms, RTV: 3 ms, KRTT: 0 ms
+        minRTT: 1 ms, maxRTT: 1000 ms, ACK hold: 200 ms
+        uptime: 1645738624 ms, Sent idletime: 11409 ms, Receive idletime: 11609 ms
+        Status Flags: active open
+        Option Flags: nagle, path mtu capable
+        IP Precedence value : 6
+
+        Datagrams (max data segment is 1460 bytes):
+        Rcvd: 57650 (out of order: 0), with data: 27428, total data bytes: 521255
+        Sent: 57523 (retransmit: 0, fastretransmit: 0, partialack: 0, Second Congestion: 0), with data: 30164, total data bytes: 573214
+
+        Packets received in fast path: 0, fast processed: 0, slow path: 0
+        fast lock acquisition failures: 0, slow path: 0
+        TCP Semaphore      0x7F23C7494520  FREE
+
+        For address family: IPv6 Unicast
+
+        For address family: VPNv4 Unicast
+        BGP neighbor is 3.3.3.3,  vrf VRF1,  remote AS 65000, internal link
+        BGP version 4, remote router ID 3.3.3.3
+        BGP state = Established, up for 2w5d
+        Last read 00:00:11, last write 00:00:49, hold time is 180, keepalive interval is 60 seconds
+        Neighbor sessions:
+            1 active, is not multisession capable (disabled)
+        Neighbor capabilities:
+            Route refresh: advertised and received(new)
+            Four-octets ASN Capability: advertised and received
+            Address family IPv4 Unicast: advertised and received
+            Graceful Restart Capability: received
+            Remote Restart timer is 120 seconds
+            Address families advertised by peer:
+                IPv4 Unicast (was not preserved
+            Enhanced Refresh Capability: advertised
+            Multisession Capability:
+            Stateful switchover support enabled: NO for session 1
+        Message statistics:
+            InQ depth is 0
+            OutQ depth is 0
+
+                                Sent       Rcvd
+            Opens:                  1          1
+            Notifications:          0          0
+            Updates:                2          3
+            Keepalives:         30185      27427
+            Route Refresh:          0          0
+            Total:              30188      27431
+        Do log neighbor state changes (via global configuration)
+        Default minimum time between advertisement runs is 0 seconds
+
+        Address tracking is enabled, the RIB does have a route to 3.3.3.3
+        Route to peer address reachability Up: 1; Down: 0
+            Last notification 2w5d
+        Connections established 1; dropped 0
+        Last reset never
+        Interface associated: (none) (peering address NOT in same link)
+        Transport(tcp) path-mtu-discovery is enabled
+        Graceful-Restart is disabled
+        SSO is disabled
+        Connection state is ESTAB, I/O status: 1, unread input bytes: 0
+        Connection is ECN Disabled, Mininum incoming TTL 0, Outgoing TTL 255
+        Local host: 1.1.1.1, Local port: 43893
+        Foreign host: 3.3.3.3, Foreign port: 179
+        Connection tableid (VRF): 2
+        Maximum output segment queue size: 50
+
+        Enqueued packets for retransmit: 0, input: 0  mis-ordered: 0 (0 bytes)
+
+        Event Timers (current time is 0x621F01E8):
+        Timer          Starts    Wakeups            Next
+        Retrans         30188          0             0x0
+        TimeWait            0          0             0x0
+        AckHold         27429      26958             0x0
+        SendWnd             0          0             0x0
+        KeepAlive           0          0             0x0
+        GiveUp              0          0             0x0
+        PmtuAger      1636300    1636299      0x621F05A9
+        DeadWait            0          0             0x0
+        Linger              0          0             0x0
+        ProcessQ            0          0             0x0
+
+        iss: 1210418011  snduna: 1210991663  sndnxt: 1210991663
+        irs: 1252136999  rcvnxt: 1252658304
+
+        sndwnd:  29200  scale:      0  maxrcvwnd:  16384
+        rcvwnd:  15909  scale:      0  delrcvwnd:    475
+
+        SRTT: 1000 ms, RTTO: 1003 ms, RTV: 3 ms, KRTT: 0 ms
+        minRTT: 1 ms, maxRTT: 1000 ms, ACK hold: 200 ms
+        uptime: 1645735554 ms, Sent idletime: 11412 ms, Receive idletime: 11612 ms
+        Status Flags: active open
+        Option Flags: VRF id set, nagle, path mtu capable
+        IP Precedence value : 6
+
+        Datagrams (max data segment is 1460 bytes):
+        Rcvd: 57674 (out of order: 0), with data: 27429, total data bytes: 521304
+        Sent: 57561 (retransmit: 0, fastretransmit: 0, partialack: 0, Second Congestion: 0), with data: 30187, total data bytes: 573651
+
+        Packets received in fast path: 0, fast processed: 0, slow path: 0
+        fast lock acquisition failures: 0, slow path: 0
+        TCP Semaphore      0x7F23C7494450  FREE
+
+
+        For address family: VPNv6 Unicast
+
+        For address family: IPv4 Multicast
+
+        For address family: L2VPN E-VPN
+
+        For address family: VPNv4 Multicast
+
+        For address family: MVPNv4 Unicast
+
+        For address family: MVPNv6 Unicast
+
+        For address family: VPNv6 Multicast
+
+        For address family: VPNv4 Flowspec
+
+        For address family: VPNv6 Flowspec
+    '''
+
+    custom_output_1 = '''\
+        show bgp vpnv4 unicast all neighbors 2.2.2.2
+        BGP neighbor is 2.2.2.2,  vrf VRF1,  remote AS 65000, internal link
+        BGP version 4, remote router ID 2.2.2.2
+        BGP state = Established, up for 2w5d
+        Last read 00:00:44, last write 00:00:42, hold time is 180, keepalive interval is 60 seconds
+        Neighbor sessions:
+            1 active, is not multisession capable (disabled)
+        Neighbor capabilities:
+            Route refresh: advertised and received(new)
+            Four-octets ASN Capability: advertised and received
+            Address family IPv4 Unicast: advertised and received
+            Enhanced Refresh Capability: advertised
+            Multisession Capability:
+            Stateful switchover support enabled: NO for session 1
+        Message statistics:
+            InQ depth is 0
+            OutQ depth is 0
+
+                                Sent       Rcvd
+            Opens:                  1          1
+            Notifications:          0          0
+            Updates:                2          2
+            Keepalives:         30228      27466
+            Route Refresh:          0          0
+            Total:              30231      27469
+        Do log neighbor state changes (via global configuration)
+        Default minimum time between advertisement runs is 0 seconds
+
+        For address family: VPNv4 Unicast
+        Translates address family IPv4 Unicast for VRF VRF1
+        Session: 2.2.2.2
+        BGP table version 4, neighbor version 4/0
+        Output queue size : 0
+        Index 1, Advertise bit 0
+        1 update-group member
+        Slow-peer detection is disabled
+        Slow-peer split-update-group dynamic is disabled
+                                        Sent       Rcvd
+        Prefix activity:               ----       ----
+            Prefixes Current:               1          1 (Consumes 136 bytes)
+            Prefixes Total:                 2          1
+            Implicit Withdraw:              1          0
+            Explicit Withdraw:              0          0
+            Used as bestpath:             n/a          1
+            Used as multipath:            n/a          0
+            Used as secondary:            n/a          0
+
+                                        Outbound    Inbound
+        Local Policy Denied Prefixes:    --------    -------
+            Bestpath from this peer:              2        n/a
+            Bestpath from iBGP peer:              1        n/a
+            Total:                                3          0
+        Number of NLRIs in the update sent: max 1, min 0
+        Last detected as dynamic slow peer: never
+        Dynamic slow peer recovered: never
+        Refresh Epoch: 1
+        Last Sent Refresh Start-of-rib: never
+        Last Sent Refresh End-of-rib: never
+        Last Received Refresh Start-of-rib: never
+        Last Received Refresh End-of-rib: never
+                                            Sent       Rcvd
+                Refresh activity:              ----       ----
+                Refresh Start-of-RIB          0          0
+                Refresh End-of-RIB            0          0
+
+        Address tracking is enabled, the RIB does have a route to 2.2.2.2
+        Route to peer address reachability Up: 2; Down: 0
+            Last notification 2w5d
+        Connections established 1; dropped 0
+        Last reset never
+        Interface associated: (none) (peering address NOT in same link)
+        Transport(tcp) path-mtu-discovery is enabled
+        Graceful-Restart is disabled
+        SSO is disabled
+        Connection state is ESTAB, I/O status: 1, unread input bytes: 0
+        Connection is ECN Disabled, Mininum incoming TTL 0, Outgoing TTL 255
+        Local host: 1.1.1.1, Local port: 179
+        Foreign host: 2.2.2.2, Foreign port: 50426
+        Connection tableid (VRF): 2
+        Maximum output segment queue size: 50
+
+        Enqueued packets for retransmit: 0, input: 0  mis-ordered: 0 (0 bytes)
+
+        Event Timers (current time is 0x624C3478):
+        Timer          Starts    Wakeups            Next
+        Retrans         30234          4             0x0
+        TimeWait            0          0             0x0
+        AckHold         27469      26904             0x0
+        SendWnd             0          0             0x0
+        KeepAlive           0          0             0x0
+        GiveUp              0          0             0x0
+        PmtuAger            0          0             0x0
+        DeadWait            0          0             0x0
+        Linger              0          0             0x0
+        ProcessQ            0          0             0x0
+
+        iss: 3028094276  snduna: 3028668745  sndnxt: 3028668745
+        irs:  568735500  rcvnxt:  569257487
+
+        sndwnd:  32711  scale:      0  maxrcvwnd:  16384
+        rcvwnd:  16061  scale:      0  delrcvwnd:    323
+
+        SRTT: 1000 ms, RTTO: 1003 ms, RTV: 3 ms, KRTT: 0 ms
+        minRTT: 1 ms, maxRTT: 1000 ms, ACK hold: 200 ms
+        uptime: 1648039160 ms, Sent idletime: 43001 ms, Receive idletime: 42793 ms
+        Status Flags: passive open, gen tcbs
+        Option Flags: VRF id set, nagle, path mtu capable
+        IP Precedence value : 6
+
+        Datagrams (max data segment is 1240 bytes):
+        Rcvd: 57771 (out of order: 0), with data: 27469, total data bytes: 521986
+        Sent: 57713 (retransmit: 4, fastretransmit: 0, partialack: 0, Second Congestion: 0), with data: 30230, total data bytes: 574468
+
+        Packets received in fast path: 0, fast processed: 0, slow path: 0
+        fast lock acquisition failures: 0, slow path: 0
+        TCP Semaphore      0x7F23C7640468  FREE
+    '''
+
+    custom_output_2 = '''\
+        show bgp vpnv4 unicast all
+        BGP table version is 4, local router ID is 1.1.1.1
+        Status codes: s suppressed, d damped, h history, * valid, > best, i - internal,
+                    r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter,
+                    x best-external, a additional-path, c RIB-compressed,
+                    t secondary path, L long-lived-stale,
+        Origin codes: i - IGP, e - EGP, ? - incomplete
+        RPKI validation codes: V valid, I invalid, N Not found
+
+            Network          Next Hop            Metric LocPrf Weight Path
+        Route Distinguisher: 65000:1 (default for vrf VRF1)
+        *>   1.1.1.1/32       0.0.0.0                  0         32768 i
+        r>i  2.2.2.2/32       2.2.2.2                  0    100      0 i
+        r>i  3.3.3.3/32       3.3.3.3                       100      0 i
+    '''
+
+    custom_output_3 = '''\
+        show bgp vpnv4 unicast all neighbors 2.2.2.2 advertised-routes
+        BGP table version is 4, local router ID is 1.1.1.1
+        Status codes: s suppressed, d damped, h history, * valid, > best, i - internal,
+                    r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter,
+                    x best-external, a additional-path, c RIB-compressed,
+                    t secondary path, L long-lived-stale,
+        Origin codes: i - IGP, e - EGP, ? - incomplete
+        RPKI validation codes: V valid, I invalid, N Not found
+
+            Network          Next Hop            Metric LocPrf Weight Path
+        Route Distinguisher: 65000:1 (default for vrf VRF1)
+        *>   1.1.1.1/32       0.0.0.0                  0         32768 i
+
+        Total number of prefixes 1
+    '''
+
+    custom_output_4 = '''\
+        show bgp all neighbors | i BGP neighbor
+        BGP neighbor is 2.2.2.2,  remote AS 65000, internal link
+        BGP neighbor is 3.3.3.3,  remote AS 65000, internal link
+        BGP neighbor is 2001:2:2:2::2,  remote AS 65000, internal link
+        BGP neighbor is 2001:3:3:3::3,  remote AS 65000, internal link
+        BGP neighbor is 2.2.2.2,  vrf VRF1,  remote AS 65000, internal link
+        BGP neighbor is 3.3.3.3,  vrf VRF1,  remote AS 65000, internal link
+        BGP neighbor is 2001:2:2:2::2,  vrf VRF1,  remote AS 65000, internal link
+        BGP neighbor is 2001:3:3:3::3,  vrf VRF1,  remote AS 65000, internal link
+    '''
+
+    custom_output_5 = '''\
+        show bgp vpnv4 unicast all neighbors 2.2.2.2 routes
+        BGP table version is 4, local router ID is 1.1.1.1
+        Status codes: s suppressed, d damped, h history, * valid, > best, i - internal,
+                    r RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter,
+                    x best-external, a additional-path, c RIB-compressed,
+                    t secondary path, L long-lived-stale,
+        Origin codes: i - IGP, e - EGP, ? - incomplete
+        RPKI validation codes: V valid, I invalid, N Not found
+
+            Network          Next Hop            Metric LocPrf Weight Path
+        Route Distinguisher: 65000:1 (default for vrf VRF1)
+        r>i  2.2.2.2/32       2.2.2.2                  0    100      0 i
+
+        Total number of prefixes 1
+    '''
+
+    bgp_info = {
         'instance': {
             'default': {
-                'bgp_id': 100,
-                'peer_policy': {'PEER-POLICY': {
-                    'allowas_in': True,
-                    'as_override': True,
-                    'default_originate': True,
-                    'default_originate_route_map': 'test',
-                    'maximum_prefix_max_prefix_no': 5555,
-                    'next_hop_self': True,
-                    'route_map_name_in': 'test',
-                    'route_map_name_out': 'test2',
-                    'route_reflector_client':
-                        True,
-                    'send_community': 'both',
-                    'soft_reconfiguration': True,
-                    'soo': 'SoO:100:100'},
-                    'PEER-POLICY2': {
-                        'allowas_in': True}},
-                'peer_session': {
-                    'PEER-SESSION': {
-                        'description': 'desc1!',
-                        'disable_connected_check': True,
-                        'ebgp_multihop_enable': True,
-                        'ebgp_multihop_max_hop': 254,
-                        'fall_over_bfd': True,
-                        'holdtime': 30,
-                        'keepalive_interval': 10,
-                        'local_as_as_no': 255,
-                        'password_text': 'is '
-                                         'configured',
-                        'remote_as': 321,
-                        'shutdown': True,
-                        'suppress_four_byte_as_capability': True,
-                        'transport_connection_mode': 'passive',
-                        'update_source':
-                            'Loopback0'},
-                    'PEER-SESSION2': {
-                        'fall_over_bfd': True}},
-                'vrf': {'VRF1': {
-                    'address_family': {
-                        'vpnv4 unicast': {
-                            'dampening': True,
-                            'dampening_half_life_time': 900,
-                            'dampening_max_suppress_time': 3600,
-                            'dampening_reuse_time': 750,
-                            'dampening_suppress_time': 2000}},
-                    'neighbor': {
-                        '10.16.2.2': {
-                            'address_family': {
-                                'vpnv4 unicast': {
-                                    'bgp_table_version': 1,
-                                    'route_map_name_in': 'test',
-                                    'route_map_name_out': 'test',
-                                    'routing_table_version': 56,
-                                    'total_memory': 9384,
-                                    'path': {'memory_usage': 3600,
-                                             'total_entries': 45},
-                                    'prefixes': {'memory_usage': 4560,
-                                                 'total_entries': 30},
-                                }},
+                'bgp_id': 65000,
+                'vrf': {
+                    'VRF1': {
+                        'cluster_id': '1.1.1.1',
+                        'neighbor': {
+                            '2.2.2.2': {
                                 'bgp_negotiated_capabilities': {
                                     'enhanced_refresh': 'advertised',
-                                    'four_octets_asn': 'advertised '
-                                                       'and '
-                                                       'received',
-                                    'graceful_restart': 'received',
-                                    'route_refresh': 'advertised '
-                                                     'and '
-                                                     'received(new)',
-                                    'stateful_switchover': 'NO '
-                                                           'for '
-                                                           'session '
-                                                           '1',
-                                    'vpnv4_unicast': 'advertised '
-                                                     'and '
-                                                     'received',
-                                    'vpnv6_unicast': 'advertised '
-                                                     'and '
-                                                     'received'},
+                                    'four_octets_asn': 'advertised and received',
+                                    'route_refresh': 'advertised and received(new)',
+                                    'stateful_switchover': 'NO for session 1',
+                                },
                                 'bgp_negotiated_keepalive_timers': {
                                     'hold_time': 180,
-                                    'keepalive_interval': 60},
+                                    'keepalive_interval': 60,
+                                },
                                 'bgp_neighbor_counters': {
                                     'messages': {
                                         'received': {
-                                            'keepalives': 74,
+                                            'keepalives': 27417,
                                             'notifications': 0,
                                             'opens': 1,
-                                            'updates': 6},
+                                            'updates': 2,
+                                        },
                                         'sent': {
-                                            'keepalives': 75,
+                                            'keepalives': 30174,
                                             'notifications': 0,
                                             'opens': 1,
-                                            'updates': 11}}},
+                                            'updates': 2,
+                                        },
+                                    },
+                                },
                                 'bgp_session_transport': {
                                     'connection': {
                                         'last_reset': 'never',
-                                        'state': 'established'},
+                                        'state': 'Established',
+                                    },
                                     'transport': {
-                                        'foreign_host': '10.16.2.2',
-                                        'foreign_port': '179',
-                                        'local_host': '10.64.4.4',
-                                        'local_port': '35281'}},
+                                        'foreign_host': '2.2.2.2',
+                                        'foreign_port': '50426',
+                                        'local_host': '1.1.1.1',
+                                        'local_port': '179',
+                                        'mss': 1240,
+                                    },
+                                },
                                 'bgp_version': 4,
-                                'remote_as': 100,
-                                'session_state': 'established'
-                            }}}},
+                                'remote_as': 65000,
+                                'session_state': 'Established',
+                                'shutdown': False,
+                            },
+                            '2001:2:2:2::2': {
+                                'bgp_negotiated_capabilities': {
+                                    'enhanced_refresh': 'advertised',
+                                    'four_octets_asn': 'advertised and received',
+                                    'route_refresh': 'advertised and received(new)',
+                                    'stateful_switchover': 'NO for session 1',
+                                },
+                                'bgp_negotiated_keepalive_timers': {
+                                    'hold_time': 180,
+                                    'keepalive_interval': 60,
+                                },
+                                'bgp_neighbor_counters': {
+                                    'messages': {
+                                        'received': {
+                                            'keepalives': 27417,
+                                            'notifications': 0,
+                                            'opens': 1,
+                                            'updates': 2,
+                                        },
+                                        'sent': {
+                                            'keepalives': 30184,
+                                            'notifications': 0,
+                                            'opens': 1,
+                                            'updates': 2,
+                                        },
+                                    },
+                                },
+                                'bgp_session_transport': {
+                                    'connection': {
+                                        'last_reset': 'never',
+                                        'state': 'Established',
+                                    },
+                                    'transport': {
+                                        'foreign_host': '2001:2:2:2::2',
+                                        'foreign_port': '179',
+                                        'local_host': '2001:1:1:1::1',
+                                        'local_port': '32057',
+                                        'mss': 1220,
+                                    },
+                                },
+                                'bgp_version': 4,
+                                'remote_as': 65000,
+                                'session_state': 'Established',
+                                'shutdown': False,
+                            },
+                            '2001:3:3:3::3': {
+                                'bgp_negotiated_capabilities': {
+                                    'enhanced_refresh': 'advertised',
+                                    'four_octets_asn': 'advertised and received',
+                                    'graceful_restart': 'received',
+                                    'route_refresh': 'advertised and received(new)',
+                                    'stateful_switchover': 'NO for session 1',
+                                },
+                                'bgp_negotiated_keepalive_timers': {
+                                    'hold_time': 180,
+                                    'keepalive_interval': 60,
+                                },
+                                'bgp_neighbor_counters': {
+                                    'messages': {
+                                        'received': {
+                                            'keepalives': 27426,
+                                            'notifications': 0,
+                                            'opens': 1,
+                                            'updates': 3,
+                                        },
+                                        'sent': {
+                                            'keepalives': 30166,
+                                            'notifications': 0,
+                                            'opens': 1,
+                                            'updates': 2,
+                                        },
+                                    },
+                                },
+                                'bgp_session_transport': {
+                                    'connection': {
+                                        'last_reset': 'never',
+                                        'state': 'Established',
+                                    },
+                                    'transport': {
+                                        'foreign_host': '2001:3:3:3::3',
+                                        'foreign_port': '20838',
+                                        'local_host': '2001:1:1:1::1',
+                                        'local_port': '179',
+                                        'mss': 1440,
+                                    },
+                                },
+                                'bgp_version': 4,
+                                'remote_as': 65000,
+                                'session_state': 'Established',
+                                'shutdown': False,
+                            },
+                            '3.3.3.3': {
+                                'bgp_negotiated_capabilities': {
+                                    'enhanced_refresh': 'advertised',
+                                    'four_octets_asn': 'advertised and received',
+                                    'graceful_restart': 'received',
+                                    'route_refresh': 'advertised and received(new)',
+                                    'stateful_switchover': 'NO for session 1',
+                                },
+                                'bgp_negotiated_keepalive_timers': {
+                                    'hold_time': 180,
+                                    'keepalive_interval': 60,
+                                },
+                                'bgp_neighbor_counters': {
+                                    'messages': {
+                                        'received': {
+                                            'keepalives': 27427,
+                                            'notifications': 0,
+                                            'opens': 1,
+                                            'updates': 3,
+                                        },
+                                        'sent': {
+                                            'keepalives': 30185,
+                                            'notifications': 0,
+                                            'opens': 1,
+                                            'updates': 2,
+                                        },
+                                    },
+                                },
+                                'bgp_session_transport': {
+                                    'connection': {
+                                        'last_reset': 'never',
+                                        'state': 'Established',
+                                    },
+                                    'transport': {
+                                        'foreign_host': '3.3.3.3',
+                                        'foreign_port': '179',
+                                        'local_host': '1.1.1.1',
+                                        'local_port': '43893',
+                                        'mss': 1460,
+                                    },
+                                },
+                                'bgp_version': 4,
+                                'remote_as': 65000,
+                                'session_state': 'Established',
+                                'shutdown': False,
+                            },
+                        },
+                    },
+                    'default': {
+                        'cluster_id': '1.1.1.1',
+                        'neighbor': {
+                            '2.2.2.2': {
+                                'address_family': {
+                                    'ipv4 unicast': {
+                                        'bgp_table_version': 4,
+                                        'path': {
+                                            'memory_usage': 408,
+                                            'total_entries': 3,
+                                        },
+                                        'prefixes': {
+                                            'memory_usage': 744,
+                                            'total_entries': 3,
+                                        },
+                                        'routing_table_version': 4,
+                                        'total_memory': 2492,
+                                    },
+                                    'vpnv4 unicast': {
+                                        'bgp_table_version': 4,
+                                        'path': {
+                                            'memory_usage': 408,
+                                            'total_entries': 3,
+                                        },
+                                        'prefixes': {
+                                            'memory_usage': 768,
+                                            'total_entries': 3,
+                                        },
+                                        'routing_table_version': 4,
+                                        'total_memory': 2564,
+                                    },
+                                },
+                                'bgp_negotiated_capabilities': {
+                                    'enhanced_refresh': 'advertised',
+                                    'four_octets_asn': 'advertised and received',
+                                    'route_refresh': 'advertised and received(new)',
+                                    'stateful_switchover': 'NO for session 1',
+                                },
+                                'bgp_negotiated_keepalive_timers': {
+                                    'hold_time': 180,
+                                    'keepalive_interval': 60,
+                                },
+                                'bgp_neighbor_counters': {
+                                    'messages': {
+                                        'received': {
+                                            'keepalives': 27417,
+                                            'notifications': 0,
+                                            'opens': 1,
+                                            'updates': 2,
+                                        },
+                                        'sent': {
+                                            'keepalives': 30186,
+                                            'notifications': 0,
+                                            'opens': 1,
+                                            'updates': 2,
+                                        },
+                                    },
+                                },
+                                'bgp_session_transport': {
+                                    'connection': {
+                                        'last_reset': 'never',
+                                        'state': 'Established',
+                                    },
+                                    'transport': {
+                                        'foreign_host': '2.2.2.2',
+                                        'foreign_port': '25026',
+                                        'local_host': '1.1.1.1',
+                                        'local_port': '179',
+                                        'mss': 1240,
+                                    },
+                                },
+                                'bgp_version': 4,
+                                'remote_as': 65000,
+                                'session_state': 'Established',
+                                'shutdown': False,
+                            },
+                            '2001:2:2:2::2': {
+                                'address_family': {
+                                    'ipv6 unicast': {
+                                        'bgp_table_version': 5,
+                                        'path': {
+                                            'memory_usage': 456,
+                                            'total_entries': 3,
+                                        },
+                                        'prefixes': {
+                                            'memory_usage': 816,
+                                            'total_entries': 3,
+                                        },
+                                        'routing_table_version': 5,
+                                        'total_memory': 2612,
+                                    },
+                                    'vpnv6 unicast': {
+                                        'bgp_table_version': 5,
+                                        'path': {
+                                            'memory_usage': 468,
+                                            'total_entries': 3,
+                                        },
+                                        'prefixes': {
+                                            'memory_usage': 840,
+                                            'total_entries': 3,
+                                        },
+                                        'routing_table_version': 5,
+                                        'total_memory': 2696,
+                                    },
+                                },
+                                'bgp_negotiated_capabilities': {
+                                    'enhanced_refresh': 'advertised',
+                                    'four_octets_asn': 'advertised and received',
+                                    'route_refresh': 'advertised and received(new)',
+                                    'stateful_switchover': 'NO for session 1',
+                                },
+                                'bgp_negotiated_keepalive_timers': {
+                                    'hold_time': 180,
+                                    'keepalive_interval': 60,
+                                },
+                                'bgp_neighbor_counters': {
+                                    'messages': {
+                                        'received': {
+                                            'keepalives': 27417,
+                                            'notifications': 0,
+                                            'opens': 1,
+                                            'updates': 2,
+                                        },
+                                        'sent': {
+                                            'keepalives': 30188,
+                                            'notifications': 0,
+                                            'opens': 1,
+                                            'updates': 2,
+                                        },
+                                    },
+                                },
+                                'bgp_session_transport': {
+                                    'connection': {
+                                        'last_reset': 'never',
+                                        'state': 'Established',
+                                    },
+                                    'transport': {
+                                        'foreign_host': '2001:2:2:2::2',
+                                        'foreign_port': '52223',
+                                        'local_host': '2001:1:1:1::1',
+                                        'local_port': '179',
+                                        'mss': 1220,
+                                    },
+                                },
+                                'bgp_version': 4,
+                                'remote_as': 65000,
+                                'session_state': 'Established',
+                                'shutdown': False,
+                            },
+                            '2001:3:3:3::3': {
+                                'address_family': {
+                                    'ipv6 unicast': {
+                                        'bgp_table_version': 5,
+                                        'path': {
+                                            'memory_usage': 456,
+                                            'total_entries': 3,
+                                        },
+                                        'prefixes': {
+                                            'memory_usage': 816,
+                                            'total_entries': 3,
+                                        },
+                                        'routing_table_version': 5,
+                                        'total_memory': 2612,
+                                    },
+                                    'vpnv6 unicast': {
+                                        'bgp_table_version': 5,
+                                        'path': {
+                                            'memory_usage': 468,
+                                            'total_entries': 3,
+                                        },
+                                        'prefixes': {
+                                            'memory_usage': 840,
+                                            'total_entries': 3,
+                                        },
+                                        'routing_table_version': 5,
+                                        'total_memory': 2696,
+                                    },
+                                },
+                                'bgp_negotiated_capabilities': {
+                                    'enhanced_refresh': 'advertised',
+                                    'four_octets_asn': 'advertised and received',
+                                    'graceful_restart': 'received',
+                                    'route_refresh': 'advertised and received(new)',
+                                    'stateful_switchover': 'NO for session 1',
+                                },
+                                'bgp_negotiated_keepalive_timers': {
+                                    'hold_time': 180,
+                                    'keepalive_interval': 60,
+                                },
+                                'bgp_neighbor_counters': {
+                                    'messages': {
+                                        'received': {
+                                            'keepalives': 27427,
+                                            'notifications': 0,
+                                            'opens': 1,
+                                            'updates': 2,
+                                        },
+                                        'sent': {
+                                            'keepalives': 30178,
+                                            'notifications': 0,
+                                            'opens': 1,
+                                            'updates': 2,
+                                        },
+                                    },
+                                },
+                                'bgp_session_transport': {
+                                    'connection': {
+                                        'last_reset': 'never',
+                                        'state': 'Established',
+                                    },
+                                    'transport': {
+                                        'foreign_host': '2001:3:3:3::3',
+                                        'foreign_port': '47133',
+                                        'local_host': '2001:1:1:1::1',
+                                        'local_port': '179',
+                                        'mss': 1440,
+                                    },
+                                },
+                                'bgp_version': 4,
+                                'remote_as': 65000,
+                                'session_state': 'Established',
+                                'shutdown': False,
+                            },
+                            '3.3.3.3': {
+                                'address_family': {
+                                    'ipv4 unicast': {
+                                        'bgp_table_version': 4,
+                                        'path': {
+                                            'memory_usage': 408,
+                                            'total_entries': 3,
+                                        },
+                                        'prefixes': {
+                                            'memory_usage': 744,
+                                            'total_entries': 3,
+                                        },
+                                        'routing_table_version': 4,
+                                        'total_memory': 2492,
+                                    },
+                                    'vpnv4 unicast': {
+                                        'bgp_table_version': 4,
+                                        'path': {
+                                            'memory_usage': 408,
+                                            'total_entries': 3,
+                                        },
+                                        'prefixes': {
+                                            'memory_usage': 768,
+                                            'total_entries': 3,
+                                        },
+                                        'routing_table_version': 4,
+                                        'total_memory': 2564,
+                                    },
+                                },
+                                'bgp_negotiated_capabilities': {
+                                    'enhanced_refresh': 'advertised',
+                                    'four_octets_asn': 'advertised and received',
+                                    'graceful_restart': 'received',
+                                    'route_refresh': 'advertised and received(new)',
+                                    'stateful_switchover': 'NO for session 1',
+                                },
+                                'bgp_negotiated_keepalive_timers': {
+                                    'hold_time': 180,
+                                    'keepalive_interval': 60,
+                                },
+                                'bgp_neighbor_counters': {
+                                    'messages': {
+                                        'received': {
+                                            'keepalives': 27427,
+                                            'notifications': 0,
+                                            'opens': 1,
+                                            'updates': 2,
+                                        },
+                                        'sent': {
+                                            'keepalives': 30162,
+                                            'notifications': 0,
+                                            'opens': 1,
+                                            'updates': 2,
+                                        },
+                                    },
+                                },
+                                'bgp_session_transport': {
+                                    'connection': {
+                                        'last_reset': 'never',
+                                        'state': 'Established',
+                                    },
+                                    'transport': {
+                                        'foreign_host': '3.3.3.3',
+                                        'foreign_port': '179',
+                                        'local_host': '1.1.1.1',
+                                        'local_port': '11084',
+                                        'mss': 1460,
+                                    },
+                                },
+                                'bgp_version': 4,
+                                'remote_as': 65000,
+                                'session_state': 'Established',
+                                'shutdown': False,
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    }
 
-                }}}
-    BgpOpsOutput_table = {
+    bgp_table = {
         'instance': {
             'default': {
                 'vrf': {
-                    'EVPN-BGP-Table': {
-                        'address_family': {
-                            'vpnv4 unicast RD 65535:1': {
-                                'prefixes': {
-                                    '10.1.1.0/17': {
-                                        'index': {
-                                            1: {
-                                                'ext_community': 'RT:65535:1',
-                                                'gateway': '0.0.0.0',
-                                                'localpref': 100,
-                                                'metric': 0,
-                                                'next_hop': '0.0.0.0',
-                                                'origin_codes': '?',
-                                                'originator': '10.21.33.33',
-                                                'status_codes': '*>',
-                                                'weight': '32768'}},
-                                        'paths': '(1 '
-                                                 'available, '
-                                                 'best '
-                                                 '#1, '
-                                                 'table '
-                                                 'EVPN-BGP-Table)',
-                                        'table_version': '4'},
-                                    '10.36.3.0/17': {
-                                        'index': {
-                                            1: {
-                                                'ext_community': 'RT:65535:1',
-                                                'gateway': '0.0.0.0',
-                                                'localpref': 100,
-                                                'metric': 0,
-                                                'next_hop': '0.0.0.0',
-                                                'origin_codes': '?',
-                                                'originator': '10.21.33.33',
-                                                'status_codes': '*>',
-                                                'weight': '32768'},
-                                            2: {
-                                                'ext_community': 'RT:65535:1',
-                                                'gateway': '10.36.3.254',
-                                                'localpref': 100,
-                                                'metric': 0,
-                                                'next_hop': '10.36.3.254',
-                                                'next_hop_igp_metric': 111,
-                                                'origin_codes': '?',
-                                                'originator': '10.21.33.22',
-                                                'status_codes': '* '}},
-                                        'paths': '(2 '
-                                                 'available, '
-                                                 'best '
-                                                 '#1, '
-                                                 'table '
-                                                 'EVPN-BGP-Table)',
-                                        'table_version': '3'}}}}},
                     'VRF1': {
                         'address_family': {
-                            'vpnv4 unicast RD 100:100': {
-                                'prefixes': {
-                                    '10.229.11.11/32': {
-                                        'index': {1: {
-                                            'gateway':
-                                                '0.0.0.0',
-                                            'localpref': 100,
-                                            'metric': 0,
-                                            'next_hop': '0.0.0.0',
-                                            'origin_codes': '?',
-                                            'originator': '10.1.1.1',
-                                            'status_codes': '*>',
-                                            'weight':
-                                                '32768'}},
-                                        'paths': '(1 '
-                                                 'available, '
-                                                 'best '
-                                                 '#1, '
-                                                 'table '
-                                                 'VRF1)',
-                                        'table_version': '2'}}},
-                            'vpnv4 unicast RD 300:1': {
-                                'bgp_table_version': 56,
+                            'vpnv4 unicast RD 65000:1': {
+                                'bgp_table_version': 4,
                                 'default_vrf': 'VRF1',
-                                'route_distinguisher':
-                                    '300:1',
-                                'route_identifier':
-                                    '10.64.4.4'},
-                            'vpnv6 unicast RD 100:100': {
                                 'prefixes': {
-                                    '2001:db8:1::11/128': {
+                                    '1.1.1.1/32': {
                                         'index': {
                                             1: {
-                                                'gateway':
-                                                    '0.0.0.0',
+                                                'gateway': '0.0.0.0',
+                                                'localpref': 100,
+                                                'metric': 0,
+                                                'next_hop': '0.0.0.0',
+                                                'origin_codes': 'i',
+                                                'originator': '1.1.1.1',
+                                                'status_codes': '*>',
+                                                'update_group': 1,
+                                                'weight': '32768',
+                                            },
+                                        },
+                                        'paths': '1 available, best #1, table VRF1',
+                                        'table_version': '2',
+                                    },
+                                    '2.2.2.2/32': {
+                                        'index': {
+                                            1: {
+                                                'gateway': '2.2.2.2',
+                                                'localpref': 100,
+                                                'metric': 0,
+                                                'next_hop': '2.2.2.2',
+                                                'next_hop_igp_metric': '10752',
+                                                'origin_codes': 'i',
+                                                'originator': '2.2.2.2',
+                                                'status_codes': '*>',
+                                            },
+                                        },
+                                        'paths': '1 available, best #1, table VRF1, RIB-failure(17)',
+                                        'table_version': '4',
+                                    },
+                                    '3.3.3.3/32': {
+                                        'index': {
+                                            1: {
+                                                'gateway': '3.3.3.3',
+                                                'localpref': 100,
+                                                'next_hop': '3.3.3.3',
+                                                'next_hop_igp_metric': '2570240',
+                                                'origin_codes': 'i',
+                                                'originator': '3.3.3.3',
+                                                'status_codes': '*>',
+                                            },
+                                        },
+                                        'paths': '1 available, best #1, table VRF1, RIB-failure(17)',
+                                        'table_version': '3',
+                                    },
+                                },
+                                'route_distinguisher': '65000:1',
+                                'route_identifier': '1.1.1.1',
+                            },
+                            'vpnv6 unicast RD 65000:1': {
+                                'bgp_table_version': 5,
+                                'default_vrf': 'VRF1',
+                                'prefixes': {
+                                    '2001:1:1:1::1/128': {
+                                        'index': {
+                                            1: {
+                                                'gateway': '0.0.0.0',
                                                 'localpref': 100,
                                                 'metric': 0,
                                                 'next_hop': '::',
-                                                'origin_codes': '?',
-                                                'originator': '10.1.1.1',
+                                                'origin_codes': 'i',
+                                                'originator': '1.1.1.1',
                                                 'status_codes': '*>',
-                                                'weight':
-                                                    '32768'}},
-                                        'table_version': '2',
-                                        'paths': '(1 '
-                                                 'available, '
-                                                 'best '
-                                                 '#1, '
-                                                 'table '
-                                                 'VRF1)',
-                                    }}}}},
-                    'VRF2': {'address_family': {
-                        'vpnv4 unicast RD 400:1': {
-                            'bgp_table_version': 56,
-                            'default_vrf': 'VRF2',
-                            'route_distinguisher':
-                                '400:1',
-                            'route_identifier':
-                                '10.64.4.4'}}},
+                                                'update_group': 1,
+                                                'weight': '32768',
+                                            },
+                                        },
+                                        'paths': '1 available, best #1, table VRF1',
+                                        'table_version': '3',
+                                    },
+                                    '2001:2:2:2::2/128': {
+                                        'index': {
+                                            1: {
+                                                'gateway': '2001:2:2:2::2',
+                                                'localpref': 100,
+                                                'metric': 0,
+                                                'next_hop': '2001:2:2:2::2',
+                                                'next_hop_igp_metric': '10752',
+                                                'origin_codes': 'i',
+                                                'originator': '2.2.2.2',
+                                                'status_codes': '*>',
+                                            },
+                                        },
+                                        'paths': '1 available, best #1, table VRF1, RIB-failure(145)',
+                                        'table_version': '5',
+                                    },
+                                    '2001:3:3:3::3/128': {
+                                        'index': {
+                                            1: {
+                                                'gateway': '2001:3:3:3::3',
+                                                'localpref': 100,
+                                                'next_hop': '2001:3:3:3::3',
+                                                'next_hop_igp_metric': '2570240',
+                                                'origin_codes': 'i',
+                                                'originator': '3.3.3.3',
+                                                'status_codes': '*>',
+                                            },
+                                        },
+                                        'paths': '1 available, best #1, table VRF1, RIB-failure(145)',
+                                        'table_version': '4',
+                                    },
+                                },
+                                'route_distinguisher': '65000:1',
+                                'route_identifier': '1.1.1.1',
+                            },
+                        },
+                    },
                     'default': {
                         'address_family': {
                             'ipv4 unicast': {
                                 'prefixes': {
-                                    '10.4.1.1/32': {
+                                    '1.1.1.1/32': {
                                         'index': {
                                             1: {
                                                 'gateway': '0.0.0.0',
                                                 'localpref': 100,
                                                 'metric': 0,
                                                 'next_hop': '0.0.0.0',
-                                                'origin_codes': '?',
-                                                'originator':
-                                                    '10.1.1.1',
+                                                'origin_codes': 'i',
+                                                'originator': '1.1.1.1',
                                                 'status_codes': '*>',
-                                                'update_group': 3,
-                                                'weight': '32768'}},
-                                        'paths': '(1 '
-                                                 'available, '
-                                                 'best '
-                                                 '#1, '
-                                                 'table '
-                                                 'default)',
-                                        'table_version': '4'},
-                                    '10.1.1.0/24': {
+                                                'update_group': 1,
+                                                'weight': '32768',
+                                            },
+                                        },
+                                        'paths': '1 available, best #1, table default',
+                                        'table_version': '2',
+                                    },
+                                    '2.2.2.2/32': {
                                         'index': {
                                             1: {
-                                                'gateway': '0.0.0.0',
+                                                'gateway': '2.2.2.2',
                                                 'localpref': 100,
                                                 'metric': 0,
-                                                'next_hop': '0.0.0.0',
-                                                'origin_codes': '?',
-                                                'originator':
-                                                    '10.1.1.1',
+                                                'next_hop': '2.2.2.2',
+                                                'next_hop_igp_metric': '10752',
+                                                'origin_codes': 'i',
+                                                'originator': '2.2.2.2',
                                                 'status_codes': '*>',
-                                                'update_group': 3,
-                                                'weight': '32768'},
-                                            2: {'gateway': '10.1.1.2',
-                                                'localpref': 100,
-                                                'metric': 0,
-                                                'next_hop': '10.1.1.2',
-                                                'origin_codes': '?',
-                                                'originator':
-                                                    '10.1.1.2',
-                                                'status_codes': '* '
-                                                                'i',
-                                                'update_group': 3}},
-                                        'paths': '(2 '
-                                                 'available, '
-                                                 'best '
-                                                 '#1, '
-                                                 'table '
-                                                 'default)',
-                                        'table_version': '5'},
-                                    '10.16.2.2/32': {
+                                            },
+                                        },
+                                        'paths': '1 available, best #1, table default, RIB-failure(17)',
+                                        'table_version': '4',
+                                    },
+                                    '3.3.3.3/32': {
                                         'index': {
                                             1: {
-                                                'gateway': '10.1.1.2',
+                                                'gateway': '3.3.3.3',
                                                 'localpref': 100,
-                                                'metric': 0,
-                                                'next_hop': '10.1.1.2',
-                                                'origin_codes': '?',
-                                                'originator':
-                                                    '10.1.1.2',
-                                                'status_codes': '*>'}},
-                                        'paths': '(1 '
-                                                 'available, '
-                                                 'best '
-                                                 '#1, '
-                                                 'table '
-                                                 'default)',
-                                        'table_version': '2'}}},
-                            'ipv6 unicast': {'prefixes': {
-                                '2001:db8:1::1/128': {
-                                    'index': {
-                                        1: {
-                                            'gateway': '0.0.0.0',
-                                            'localpref': 100,
-                                            'metric': 0,
-                                            'next_hop': '::',
-                                            'origin_codes': '?',
-                                            'originator': '10.1.1.1',
-                                            'status_codes': '*>',
-                                            'update_group': 1,
-                                            'weight': '32768'}},
-                                    'paths': '(1 '
-                                             'available, '
-                                             'best '
-                                             '#1, '
-                                             'table '
-                                             'default)',
-                                    'table_version': '4'},
-                                '2001:2:2:2::2/128': {
-                                    'index': {
-                                        1: {
-                                            'gateway': '2001:DB8:1:1::2',
-                                            'localpref': 100,
-                                            'metric': 0,
-                                            'next_hop':
-                                                '2001:DB8:1:1::2',
-                                            'origin_codes': '?',
-                                            'originator': '10.1.1.2',
-                                            'status_codes': '* i'}},
-                                    'paths': '(2 '
-                                             'available, '
-                                             'best '
-                                             '#1, '
-                                             'table '
-                                             'default)',
-                                    'table_version': '2'},
-                                '2001:DB8:1:1::/64': {
-                                    'index': {
-                                        1: {
-                                            'gateway': '0.0.0.0',
-                                            'localpref': 100,
-                                            'metric': 0,
-                                            'next_hop': '::',
-                                            'origin_codes': '?',
-                                            'originator': '10.1.1.1',
-                                            'status_codes': '*>',
-                                            'update_group': 1,
-                                            'weight': '32768'},
-                                        2: {
-                                            'gateway': '2001:DB8:1:1::2',
-                                            'localpref': 100,
-                                            'metric': 0,
-                                            'next_hop':
-                                                '2001:DB8:1:1::2',
-                                            'origin_codes': '?',
-                                            'originator': '10.1.1.2',
-                                            'status_codes': '* '
-                                                            'i',
-                                            'update_group': 1}},
-                                    'paths': '(3 '
-                                             'available, '
-                                             'best '
-                                             '#1, '
-                                             'table '
-                                             'default)',
-                                    'table_version': '5'}}},
-                            'vpnv4 unicast RD 200:1': {
-                                'bgp_table_version': 56,
-                                'default_vrf':
-                                    'default',
-                                'route_distinguisher': '200:1',
-                                'route_identifier':
-                                    '10.64.4.4'},
-                            'vpnv4 unicast RD 200:2': {
-                                'bgp_table_version': 56,
-                                'default_vrf':
-                                    'default',
-                                'route_distinguisher': '200:2',
-                                'route_identifier':
-                                    '10.64.4.4'}}},
-                    'evpn1': {
-                        'address_family': {
-                            'l2vpn e-vpn RD 65535:1': {
-                                'bgp_table_version': 4,
-                                'default_vrf': 'evpn1',
-                                'route_distinguisher':
-                                    '65535:1',
-                                'route_identifier':
-                                    '10.21.33.33'},
-                            'vpnv4 unicast RD 65535:1': {
-                                'bgp_table_version': 5,
-                                'default_vrf': 'evpn1',
+                                                'next_hop': '3.3.3.3',
+                                                'next_hop_igp_metric': '2570240',
+                                                'origin_codes': 'i',
+                                                'originator': '3.3.3.3',
+                                                'status_codes': '*>',
+                                            },
+                                        },
+                                        'paths': '1 available, best #1, table default, RIB-failure(17)',
+                                        'table_version': '3',
+                                    },
+                                },
+                            },
+                            'ipv6 unicast': {
                                 'prefixes': {
-                                    '10.1.1.0/24': {
+                                    '2001:1:1:1::1/128': {
                                         'index': {
                                             1: {
-                                                'gateway':
-                                                    '0.0.0.0',
+                                                'gateway': '0.0.0.0',
                                                 'localpref': 100,
                                                 'metric': 0,
-                                                'next_hop':
-                                                    '0.0.0.0',
-                                                'origin_codes': '?',
-                                                'originator':
-                                                    '10.21.33.33',
+                                                'next_hop': '::',
+                                                'origin_codes': 'i',
+                                                'originator': '1.1.1.1',
                                                 'status_codes': '*>',
                                                 'update_group': 1,
-                                                'weight':
-                                                    '32768'}},
-                                        'paths': '(1 '
-                                                 'available, '
-                                                 'best '
-                                                 '#1, '
-                                                 'table '
-                                                 'evpn1)',
-                                        'table_version': '5'},
-                                    '10.36.3.0/24': {
-                                        'index': {1: {
-                                            'gateway':
-                                                '10.36.3.254',
-                                            'localpref': 100,
-                                            'metric': 0,
-                                            'next_hop':
-                                                '10.36.3.254',
-                                            'origin_codes': '?',
-                                            'originator':
-                                                '10.21.33.22',
-                                            'status_codes': '* ',
-                                            'update_group': 1},
-                                            2: {
-                                                'gateway':
-                                                    '0.0.0.0',
+                                                'weight': '32768',
+                                            },
+                                        },
+                                        'paths': '1 available, best #1, table default',
+                                        'table_version': '3',
+                                    },
+                                    '2001:2:2:2::2/128': {
+                                        'index': {
+                                            1: {
+                                                'gateway': '2001:2:2:2::2',
                                                 'localpref': 100,
                                                 'metric': 0,
-                                                'next_hop':
-                                                    '0.0.0.0',
-                                                'origin_codes': '?',
-                                                'originator':
-                                                    '10.21.33.33',
+                                                'next_hop': '2001:2:2:2::2',
+                                                'next_hop_igp_metric': '10752',
+                                                'origin_codes': 'i',
+                                                'originator': '2.2.2.2',
                                                 'status_codes': '*>',
-                                                'update_group': 1,
-                                                'weight':
-                                                    '32768'}},
-                                        'paths': '(2 '
-                                                 'available, '
-                                                 'best '
-                                                 '#2, '
-                                                 'table '
-                                                 'evpn1)',
-                                        'table_version': '4'}},
-                                'route_distinguisher': '65535:1',
-                                'route_identifier':
-                                    '10.21.33.33'}}}}}}}
-    BgpOpsOutput_table_custom = {
+                                            },
+                                        },
+                                        'paths': '1 available, best #1, table default, RIB-failure(145)',
+                                        'table_version': '5',
+                                    },
+                                    '2001:3:3:3::3/128': {
+                                        'index': {
+                                            1: {
+                                                'gateway': '2001:3:3:3::3',
+                                                'localpref': 100,
+                                                'next_hop': '2001:3:3:3::3',
+                                                'next_hop_igp_metric': '2570240',
+                                                'origin_codes': 'i',
+                                                'originator': '3.3.3.3',
+                                                'status_codes': '*>',
+                                            },
+                                        },
+                                        'paths': '1 available, best #1, table default, RIB-failure(145)',
+                                        'table_version': '4',
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    }
+
+    bgp_routes_per_peer = {
         'instance': {
             'default': {
                 'vrf': {
                     'VRF1': {
-                        'address_family': {
-                            'vpnv4 unicast RD 300:1': {
-                                'bgp_table_version': 56,
-                                'default_vrf': 'VRF1',
-                                'route_distinguisher': '300:1',
-                                'route_identifier': '10.64.4.4',
-                                'prefixes': {
-                                    '10.229.11.11/32': {
-                                        'index': {1: {
-                                            'gateway': '0.0.0.0',
-                                            'localpref': 100,
-                                            'metric': 0,
-                                            'next_hop': '0.0.0.0',
-                                            'origin_codes': '?',
-                                            'originator': '10.1.1.1',
-                                            'status_codes': '*>',
-                                            'weight':
-                                                '32768'}},
-                                        'table_version': '2',
-                                        'paths': '(1 available, best #1, table VRF1)'}}},
-                        }},
-                }}}}
+                        'neighbor': {
+                            '2.2.2.2': {
+                                'remote_as': 65000,
+                            },
+                            '2001:2:2:2::2': {
+                                'remote_as': 65000,
+                            },
+                            '2001:3:3:3::3': {
+                                'remote_as': 65000,
+                            },
+                            '3.3.3.3': {
+                                'remote_as': 65000,
+                            },
+                        },
+                    },
+                    'default': {
+                        'neighbor': {
+                            '2.2.2.2': {
+                                'address_family': {
+                                    'ipv4 unicast': {
+                                        'input_queue': 0,
+                                        'msg_rcvd': 27420,
+                                        'msg_sent': 30189,
+                                        'output_queue': 0,
+                                        'state_pfxrcd': '1',
+                                        'tbl_ver': 4,
+                                        'up_down': '2w5d',
+                                    },
+                                    'vpnv4 unicast': {
+                                        'input_queue': 0,
+                                        'msg_rcvd': 27420,
+                                        'msg_sent': 30177,
+                                        'output_queue': 0,
+                                        'state_pfxrcd': '1',
+                                        'tbl_ver': 4,
+                                        'up_down': '2w5d',
+                                    },
+                                },
+                                'remote_as': 65000,
+                            },
+                            '2001:2:2:2::2': {
+                                'address_family': {
+                                    'ipv6 unicast': {
+                                        'input_queue': 0,
+                                        'msg_rcvd': 27420,
+                                        'msg_sent': 30190,
+                                        'output_queue': 0,
+                                        'state_pfxrcd': '1',
+                                        'tbl_ver': 5,
+                                        'up_down': '2w5d',
+                                    },
+                                    'vpnv6 unicast': {
+                                        'input_queue': 0,
+                                        'msg_rcvd': 27420,
+                                        'msg_sent': 30187,
+                                        'output_queue': 0,
+                                        'state_pfxrcd': '1',
+                                        'tbl_ver': 5,
+                                        'up_down': '2w5d',
+                                    },
+                                },
+                                'remote_as': 65000,
+                            },
+                            '2001:3:3:3::3': {
+                                'address_family': {
+                                    'ipv6 unicast': {
+                                        'input_queue': 0,
+                                        'msg_rcvd': 27430,
+                                        'msg_sent': 30181,
+                                        'output_queue': 0,
+                                        'state_pfxrcd': '1',
+                                        'tbl_ver': 5,
+                                        'up_down': '2w5d',
+                                    },
+                                    'vpnv6 unicast': {
+                                        'input_queue': 0,
+                                        'msg_rcvd': 27430,
+                                        'msg_sent': 30169,
+                                        'output_queue': 0,
+                                        'state_pfxrcd': '1',
+                                        'tbl_ver': 5,
+                                        'up_down': '2w5d',
+                                    },
+                                },
+                                'remote_as': 65000,
+                            },
+                            '3.3.3.3': {
+                                'address_family': {
+                                    'ipv4 unicast': {
+                                        'input_queue': 0,
+                                        'msg_rcvd': 27430,
+                                        'msg_sent': 30165,
+                                        'output_queue': 0,
+                                        'state_pfxrcd': '1',
+                                        'tbl_ver': 4,
+                                        'up_down': '2w5d',
+                                    },
+                                    'vpnv4 unicast': {
+                                        'input_queue': 0,
+                                        'msg_rcvd': 27431,
+                                        'msg_sent': 30188,
+                                        'output_queue': 0,
+                                        'state_pfxrcd': '1',
+                                        'tbl_ver': 4,
+                                        'up_down': '2w5d',
+                                    },
+                                },
+                                'remote_as': 65000,
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    }
 
-    BgpOpsOutput_routesperpeer = {'instance': {'default': {'vrf': {'default': {
-        'neighbor': {'10.4.6.6': {'address_family': {'vpnv4 unicast': {'input_queue': 0,
-                                                                       'msg_rcvd': 68,
-                                                                       'msg_sent': 75,
-                                                                       'output_queue': 0,
-                                                                       'state_pfxrcd':
-                                                                           '5',
-                                                                       'tbl_ver': 1,
-                                                                       'up_down':
-                                                                           '01:03:23'}}},
-                     '10.16.2.2': {
-                         'address_family': {'ipv4 '
-                                            'unicast': {'advertised': {
-                             '10.1.1.0/24': {'index': {1:
-                                                           {'localprf': 100,
-                                                            'metric': 2219,
-                                                            'next_hop': '10.4.1.1',
-                                                            'origin_codes': 'e',
-                                                            'path': '200 '
-                                                                    '33299 '
-                                                                    '51178 '
-                                                                    '47751 '
-                                                                    '{27016}',
-                                                            'status_codes': '*>',
-                                                            'weight': 0}}},
-                             '10.1.2.0/24': {'index': {1: {'localprf': 100,
-                                                           'metric': 2219,
-                                                           'next_hop': '10.4.1.1',
-                                                           'origin_codes': 'e',
-                                                           'path': '200 '
-                                                                   '33299 '
-                                                                   '51178 '
-                                                                   '47751 '
-                                                                   '{27016}',
-                                                           'status_codes': '*>',
-                                                           'weight': 0}}},
-                             '10.1.3.0/24': {'index': {1: {'localprf': 100,
-                                                           'metric': 2219,
-                                                           'next_hop': '10.4.1.1',
-                                                           'origin_codes': 'e',
-                                                           'path': '200 '
-                                                                   '33299 '
-                                                                   '51178 '
-                                                                   '47751 '
-                                                                   '{27016}',
-                                                           'status_codes': '*>',
-                                                           'weight': 0}}},
-                             '10.1.4.0/24': {'index': {1: {'localprf': 100,
-                                                           'metric': 2219,
-                                                           'next_hop': '10.4.1.1',
-                                                           'origin_codes': 'e',
-                                                           'path': '200 '
-                                                                   '33299 '
-                                                                   '51178 '
-                                                                   '47751 '
-                                                                   '{27016}',
-                                                           'status_codes': '*>',
-                                                           'weight': 0}}},
-                             '10.1.5.0/24': {'index': {1: {'localprf': 100,
-                                                           'metric': 2219,
-                                                           'next_hop': '10.4.1.1',
-                                                           'origin_codes': 'e',
-                                                           'path': '200 '
-                                                                   '33299 '
-                                                                   '51178 '
-                                                                   '47751 '
-                                                                   '{27016}',
-                                                           'status_codes': '*>',
-                                                           'weight': 0}}},
-                             '10.9.2.0/24': {'index': {1: {'metric': 100,
-                                                           'next_hop': '10.66.6.6',
-                                                           'origin_codes': 'e',
-                                                           'path': '400 '
-                                                                   '33299 '
-                                                                   '51178 '
-                                                                   '{47751}',
-                                                           'status_codes': '*>',
-                                                           'weight': 0}}},
-                             '10.9.3.0/24': {'index': {1: {'metric': 100,
-                                                           'next_hop': '10.66.6.6',
-                                                           'origin_codes': 'e',
-                                                           'path': '400 '
-                                                                   '33299 '
-                                                                   '51178 '
-                                                                   '{47751}',
-                                                           'status_codes': '*>',
-                                                           'weight': 0}}},
-                             '10.9.4.0/24': {'index': {1: {'metric': 100,
-                                                           'next_hop': '10.66.6.6',
-                                                           'origin_codes': 'e',
-                                                           'path': '400 '
-                                                                   '33299 '
-                                                                   '51178 '
-                                                                   '{47751}',
-                                                           'status_codes': '*>',
-                                                           'weight': 0}}},
-                             '10.9.5.0/24': {'index': {1: {'metric': 100,
-                                                           'next_hop': '10.66.6.6',
-                                                           'origin_codes': 'e',
-                                                           'path': '400 '
-                                                                   '33299 '
-                                                                   '51178 '
-                                                                   '{47751}',
-                                                           'status_codes': '*>',
-                                                           'weight': 0}}},
-                             '10.9.6.0/24': {'index': {1: {'metric': 100,
-                                                           'next_hop': '10.66.6.6',
-                                                           'origin_codes': 'e',
-                                                           'path': '400 '
-                                                                   '33299 '
-                                                                   '51178 '
-                                                                   '{47751}',
-                                                           'status_codes': '*>',
-                                                           'weight': 0}}}},
-                             'routes': {'10.169.1.0/24': {'index': {1: {'metric': 2219,
-                                                                      'next_hop':
-                                                                          '10.186.0.2',
-                                                                      'origin_codes': 'e',
-                                                                      'path': '300 '
-                                                                              '33299 '
-                                                                              '51178 '
-                                                                              '47751 '
-                                                                              '{27016}',
-                                                                      'status_codes':
-                                                                          '*>',
-                                                                      'weight': 0}}},
-                                        '10.169.2.0/24': {'index': {1: {'metric': 2219,
-                                                                      'next_hop':
-                                                                          '10.186.0.2',
-                                                                      'origin_codes': 'e',
-                                                                      'path': '300 '
-                                                                              '33299 '
-                                                                              '51178 '
-                                                                              '47751 '
-                                                                              '{27016}',
-                                                                      'status_codes':
-                                                                          '*>',
-                                                                      'weight': 0}}},
-                                        '10.169.3.0/24': {'index': {1: {'metric': 2219,
-                                                                      'next_hop':
-                                                                          '10.186.0.2',
-                                                                      'origin_codes': 'e',
-                                                                      'path': '300 '
-                                                                              '33299 '
-                                                                              '51178 '
-                                                                              '47751 '
-                                                                              '{27016}',
-                                                                      'status_codes':
-                                                                          '*>',
-                                                                      'weight': 0}}},
-                                        '10.169.4.0/24': {'index': {1: {'metric': 2219,
-                                                                      'next_hop':
-                                                                          '10.186.0.2',
-                                                                      'origin_codes': 'e',
-                                                                      'path': '300 '
-                                                                              '33299 '
-                                                                              '51178 '
-                                                                              '47751 '
-                                                                              '{27016}',
-                                                                      'status_codes':
-                                                                          '*>',
-                                                                      'weight': 0}}},
-                                        '10.169.5.0/24': {'index': {1: {'metric': 2219,
-                                                                      'next_hop':
-                                                                          '10.186.0.2',
-                                                                      'origin_codes': 'e',
-                                                                      'path': '300 '
-                                                                              '33299 '
-                                                                              '51178 '
-                                                                              '47751 '
-                                                                              '{27016}',
-                                                                      'status_codes':
-                                                                          '*>',
-                                                                      'weight': 0}}}}},
-                             'ipv6 unicast': {'advertised': {},
-                                              'routes': {}},
-                             'vpnv4 unicast': {'input_queue': 0,
-                                               'msg_rcvd': 82,
-                                               'msg_sent': 88,
-                                               'output_queue': 0,
-                                               'received_routes': {},
-                                               'state_pfxrcd': '10',
-                                               'tbl_ver': 1,
-                                               'up_down': '01:12:00'},
-                             'vpnv4 unicast RD 300:1': {'received_routes': {
-                                 '10.169.1.0/24': {'index': {1: {'metric': 2219,
-                                                               'next_hop': '10.186.0.2',
-                                                               'origin_codes': 'e',
-                                                               'path': '300 '
-                                                                       '33299 '
-                                                                       '51178 '
-                                                                       '47751 '
-                                                                       '{27016}',
-                                                               'status_codes': '*',
-                                                               'weight': 0}}},
-                                 '10.169.2.0/24': {'index': {1: {'metric': 2219,
-                                                               'next_hop': '10.186.0.2',
-                                                               'origin_codes': 'e',
-                                                               'path': '300 '
-                                                                       '33299 '
-                                                                       '51178 '
-                                                                       '47751 '
-                                                                       '{27016}',
-                                                               'status_codes': '*',
-                                                               'weight': 0}}},
-                                 '10.169.3.0/24': {'index': {1: {'metric': 2219,
-                                                               'next_hop': '10.186.0.2',
-                                                               'origin_codes': 'e',
-                                                               'path': '300 '
-                                                                       '33299 '
-                                                                       '51178 '
-                                                                       '47751 '
-                                                                       '{27016}',
-                                                               'status_codes': '*',
-                                                               'weight': 0}}},
-                                 '10.169.4.0/24': {'index': {1: {'metric': 2219,
-                                                               'next_hop': '10.186.0.2',
-                                                               'origin_codes': 'e',
-                                                               'path': '300 '
-                                                                       '33299 '
-                                                                       '51178 '
-                                                                       '47751 '
-                                                                       '{27016}',
-                                                               'status_codes': '*',
-                                                               'weight': 0}}},
-                                 '10.169.5.0/24': {'index': {1: {'metric': 2219,
-                                                               'next_hop': '10.186.0.2',
-                                                               'origin_codes': 'e',
-                                                               'path': '300 '
-                                                                       '33299 '
-                                                                       '51178 '
-                                                                       '47751 '
-                                                                       '{27016}',
-                                                               'status_codes': '*',
-                                                               'weight': 0}}}}},
-                             'vpnv6 unicast': {'input_queue': 0,
-                                               'msg_rcvd': 82,
-                                               'msg_sent': 88,
-                                               'output_queue': 0,
-                                               'state_pfxrcd': '10',
-                                               'tbl_ver': 1,
-                                               'up_down': '01:12:00'}},
-                         'remote_as': 100},
-                     '10.66.6.6': {'address_family': {'vpnv4 unicast': {'input_queue': 0,
-                                                                       'msg_rcvd': 67,
-                                                                       'msg_sent': 72,
-                                                                       'output_queue': 0,
-                                                                       'state_pfxrcd':
-                                                                           '5',
-                                                                       'tbl_ver': 1,
-                                                                       'up_down':
-                                                                           '01:03:14'}}},
-                     '192.168.111.1': {'address_family': {'ipv4 unicast': {'input_queue': 0,
-                                                                       'msg_rcvd': 0,
-                                                                       'msg_sent': 0,
-                                                                       'output_queue': 0,
-                                                                       'state_pfxrcd':
-                                                                           'Idle',
-                                                                       'tbl_ver': 1,
-                                                                       'up_down':
-                                                                           '01:07:38'}}},
-                     '192.168.4.1': {'address_family': {'ipv4 unicast': {'input_queue': 0,
-                                                                       'msg_rcvd': 0,
-                                                                       'msg_sent': 0,
-                                                                       'output_queue': 0,
-                                                                       'state_pfxrcd':
-                                                                           'Idle',
-                                                                       'tbl_ver': 1,
-                                                                       'up_down':
-                                                                           'never'}}},
-                     '192.168.51.1': {'address_family': {'ipv4 unicast': {'input_queue': 0,
-                                                                       'msg_rcvd': 0,
-                                                                       'msg_sent': 0,
-                                                                       'output_queue': 0,
-                                                                       'state_pfxrcd':
-                                                                           'Idle',
-                                                                       'tbl_ver': 1,
-                                                                       'up_down':
-                                                                           '01:07:38'}}},
-                     '2001:db8:400::1:1': {'address_family': {'ipv6 unicast': {'input_queue': 0,
-                                                                       'msg_rcvd': 0,
-                                                                       'msg_sent': 0,
-                                                                       'output_queue': 0,
-                                                                       'state_pfxrcd':
-                                                                           'Idle',
-                                                                       'tbl_ver': 1,
-                                                                       'up_down':
-                                                                           '01:07:38'}}},
-                     '2001:db8:400::4:1': {'address_family': {'ipv6 unicast': {'input_queue': 0,
-                                                                       'msg_rcvd': 0,
-                                                                       'msg_sent': 0,
-                                                                       'output_queue': 0,
-                                                                       'state_pfxrcd':
-                                                                           'Idle',
-                                                                       'tbl_ver': 1,
-                                                                       'up_down':
-                                                                           '01:07:38'}}},
-                     '2002001:db8:1::14:4': {'address_family': {'ipv6 unicast': {'input_queue': 0,
-                                                                        'msg_rcvd': 0,
-                                                                        'msg_sent': 0,
-                                                                        'output_queue': 0,
-                                                                        'state_pfxrcd':
-                                                                            'Idle',
-                                                                        'tbl_ver': 1,
-                                                                        'up_down':
-                                                                            'never'}}},
-                     '2001::26:2': {'address_family': {'ipv6 unicast': {'input_queue': 0,
-                                                                        'msg_rcvd': 0,
-                                                                        'msg_sent': 0,
-                                                                        'output_queue': 0,
-                                                                        'state_pfxrcd':
-                                                                            'Idle',
-                                                                        'tbl_ver': 1,
-                                                                        'up_down':
-                                                                            '01:07:38'}}},
-                     '2001:DB8:20:4:6::6': {
-                         'address_family': {'vpnv6 unicast': {'input_queue': 0,
-                                                              'msg_rcvd': 67,
-                                                              'msg_sent': 73,
-                                                              'output_queue': 0,
-                                                              'state_pfxrcd': '5',
-                                                              'tbl_ver': 1,
-                                                              'up_down': '01:03:11'}}},
-                     '2001:DB8:4:6::6': {
-                         'address_family': {'vpnv6 unicast': {'input_queue': 0,
-                                                              'msg_rcvd': 67,
-                                                              'msg_sent': 75,
-                                                              'output_queue': 0,
-                                                              'state_pfxrcd': '5',
-                                                              'tbl_ver': 1,
-                                                              'up_down': '01:03:19'}}},
-                     '192.168.70.4': {'address_family': {'ipv4 unicast': {'input_queue': 0,
-                                                                        'msg_rcvd': 0,
-                                                                        'msg_sent': 0,
-                                                                        'output_queue': 0,
-                                                                        'state_pfxrcd':
-                                                                            'Idle',
-                                                                        'tbl_ver': 1,
-                                                                        'up_down':
-                                                                            'never'}}},
-                     '192.168.19.2': {'address_family': {'ipv4 unicast': {'input_queue': 0,
-                                                                        'msg_rcvd': 0,
-                                                                        'msg_sent': 0,
-                                                                        'output_queue': 0,
-                                                                        'state_pfxrcd':
-                                                                            'Idle',
-                                                                        'tbl_ver': 1,
-                                                                        'up_down':
-                                                                            '01:07:38'}}},
-                     '10.36.3.3': {'address_family': {'ipv4 multicast': {
-                         'received_routes': {'10.9.1.0/24': {'index': {1: {'localprf': 100,
-                                                                          'next_hop':
-                                                                              '10.36.3.3',
-                                                                          'origin_codes': 'i',
-                                                                          'path': '2 '
-                                                                                  '3 '
-                                                                                  '4',
-                                                                          'status_codes': '*>',
-                                                                          'weight': 0}}},
-                                             '10.9.2.0/24': {'index': {1: {'localprf': 100,
-                                                                          'next_hop':
-                                                                              '10.36.3.3',
-                                                                          'origin_codes': 'i',
-                                                                          'path': '2 '
-                                                                                  '3 '
-                                                                                  '4',
-                                                                          'status_codes': '*>',
-                                                                          'weight':
-                                                                              0}}}}},
-                                                    'ipv4 unicast': {'received_routes': {
-                                                        '10.4.1.0/24': {
-                                                            'index': {1: {'localprf': 100,
-                                                                          'metric': 2222,
-                                                                          'next_hop':
-                                                                              '10.36.3.3',
-                                                                          'origin_codes': 'i',
-                                                                          'path': '1 '
-                                                                                  '2 '
-                                                                                  '3 '
-                                                                                  '65000 '
-                                                                                  '23',
-                                                                          'status_codes': '*',
-                                                                          'weight': 0}}},
-                                                        '10.4.2.0/24': {
-                                                            'index': {1: {'localprf': 100,
-                                                                          'metric': 2222,
-                                                                          'next_hop':
-                                                                              '10.36.3.3',
-                                                                          'origin_codes': 'i',
-                                                                          'path': '1 '
-                                                                                  '2 '
-                                                                                  '3 '
-                                                                                  '65000 '
-                                                                                  '23',
-                                                                          'status_codes': '*',
-                                                                          'weight': 0}}},
-                                                        '10.49.0.0/16': {
-                                                            'index': {1: {'localprf': 100,
-                                                                          'next_hop':
-                                                                              '10.36.3.3',
-                                                                          'origin_codes': 'i',
-                                                                          'path': '10 '
-                                                                                  '20 '
-                                                                                  '30 '
-                                                                                  '40 '
-                                                                                  '50 '
-                                                                                  '60 '
-                                                                                  '70 '
-                                                                                  '80 '
-                                                                                  '90',
-                                                                          'status_codes': '*>',
-                                                                          'weight':
-                                                                              0}}}}},
-                                                    'ipv6 multicast': {
-                                                        'received_routes': {}},
-                                                    'ipv6 unicast': {
-                                                        'received_routes': {}},
-                                                    'link-state': {'received_routes': {
-                                                        '[2]:[77][7,0][10.69.9.9,1,'
-                                                        '151587081][10.135.1.1,'
-                                                        '22][10.36.3.3,10.76.1.30]/616': {
-                                                            'index': {1: {'localprf': 100,
-                                                                          'metric': 4444,
-                                                                          'next_hop':
-                                                                              '10.36.3.3',
-                                                                          'origin_codes': 'i',
-                                                                          'path': '3 '
-                                                                                  '10 '
-                                                                                  '20 '
-                                                                                  '30 '
-                                                                                  '40 '
-                                                                                  '50 '
-                                                                                  '60 '
-                                                                                  '70 '
-                                                                                  '80 '
-                                                                                  '90',
-                                                                          'status_codes': '*>',
-                                                                          'weight': 0}}},
-                                                        '[2]:[77][7,0][10.69.9.9,2,'
-                                                        '151587081][10.135.1.1,'
-                                                        '22][10.36.3.3,10.76.1.31]/616': {
-                                                            'index': {1: {'localprf': 100,
-                                                                          'metric': 4444,
-                                                                          'next_hop':
-                                                                              '10.36.3.3',
-                                                                          'origin_codes': 'i',
-                                                                          'path': '3 '
-                                                                                  '10 '
-                                                                                  '20 '
-                                                                                  '30 '
-                                                                                  '40 '
-                                                                                  '50 '
-                                                                                  '60 '
-                                                                                  '70 '
-                                                                                  '80 '
-                                                                                  '90',
-                                                                          'status_codes': '*>',
-                                                                          'weight':
-                                                                              0}}}}},
-                                                    'vpnv4 unicast': {'advertised': {},
-                                                                      'input_queue': 0,
-                                                                      'msg_rcvd': 0,
-                                                                      'msg_sent': 0,
-                                                                      'output_queue': 0,
-                                                                      'received_routes': {},
-                                                                      'routes': {},
-                                                                      'state_pfxrcd':
-                                                                          'Idle',
-                                                                      'tbl_ver': 1,
-                                                                      'up_down': 'never'},
-                                                    'vpnv4 unicast RD 0:0': {
-                                                        'received_routes': {}},
-                                                    'vpnv4 unicast RD 101:100': {
-                                                        'received_routes': {
-                                                            '10.16.1.0/24': {'index': {
-                                                                1: {'localprf': 100,
-                                                                    'metric': 4444,
-                                                                    'next_hop': '10.36.3.3',
-                                                                    'origin_codes': 'i',
-                                                                    'path': '3 '
-                                                                            '10 '
-                                                                            '20 '
-                                                                            '4 '
-                                                                            '5 '
-                                                                            '6 '
-                                                                            '3 '
-                                                                            '10 '
-                                                                            '20 '
-                                                                            '4 '
-                                                                            '5 '
-                                                                            '6',
-                                                                    'status_codes': '*',
-                                                                    'weight': 0}}},
-                                                            '10.16.2.0/24': {'index': {
-                                                                1: {'localprf': 100,
-                                                                    'metric': 4444,
-                                                                    'next_hop': '10.36.3.3',
-                                                                    'origin_codes': 'i',
-                                                                    'path': '3 '
-                                                                            '10 '
-                                                                            '20 '
-                                                                            '4 '
-                                                                            '5 '
-                                                                            '6 '
-                                                                            '3 '
-                                                                            '10 '
-                                                                            '20 '
-                                                                            '4 '
-                                                                            '5 '
-                                                                            '6',
-                                                                    'status_codes': '*',
-                                                                    'weight': 0}}}}},
-                                                    'vpnv4 unicast RD 102:100': {
-                                                        'received_routes': {}},
-                                                    'vpnv4 unicast RD 200:1': {'routes': {
-                                                        '10.1.1.0/24': {
-                                                            'index': {1: {'localprf': 100,
-                                                                          'metric': 2219,
-                                                                          'next_hop':
-                                                                              '10.36.3.3',
-                                                                          'origin_codes': 'e',
-                                                                          'path': '200 '
-                                                                                  '33299 '
-                                                                                  '51178 '
-                                                                                  '47751 '
-                                                                                  '{27016}',
-                                                                          'status_codes': '*>',
-                                                                          'weight': 0}}},
-                                                        '10.1.2.0/24': {
-                                                            'index': {1: {'localprf': 100,
-                                                                          'metric': 2219,
-                                                                          'next_hop':
-                                                                              '10.36.3.3',
-                                                                          'origin_codes': 'e',
-                                                                          'path': '200 '
-                                                                                  '33299 '
-                                                                                  '51178 '
-                                                                                  '47751 '
-                                                                                  '{27016}',
-                                                                          'status_codes': '*>',
-                                                                          'weight': 0}}},
-                                                        '10.1.3.0/24': {
-                                                            'index': {1: {'localprf': 100,
-                                                                          'metric': 2219,
-                                                                          'next_hop':
-                                                                              '10.36.3.3',
-                                                                          'origin_codes': 'e',
-                                                                          'path': '200 '
-                                                                                  '33299 '
-                                                                                  '51178 '
-                                                                                  '47751 '
-                                                                                  '{27016}',
-                                                                          'status_codes': '*>',
-                                                                          'weight': 0}}},
-                                                        '10.1.4.0/24': {
-                                                            'index': {1: {'localprf': 100,
-                                                                          'metric': 2219,
-                                                                          'next_hop':
-                                                                              '10.36.3.3',
-                                                                          'origin_codes': 'e',
-                                                                          'path': '200 '
-                                                                                  '33299 '
-                                                                                  '51178 '
-                                                                                  '47751 '
-                                                                                  '{27016}',
-                                                                          'status_codes': '*>',
-                                                                          'weight': 0}}},
-                                                        '10.1.5.0/24': {
-                                                            'index': {1: {'localprf': 100,
-                                                                          'metric': 2219,
-                                                                          'next_hop':
-                                                                              '10.36.3.3',
-                                                                          'origin_codes': 'e',
-                                                                          'path': '200 '
-                                                                                  '33299 '
-                                                                                  '51178 '
-                                                                                  '47751 '
-                                                                                  '{27016}',
-                                                                          'status_codes': '*>',
-                                                                          'weight':
-                                                                              0}}}}},
-                                                    'vpnv4 unicast RD 200:2': {'routes': {
-                                                        '10.1.1.0/24': {
-                                                            'index': {1: {'localprf': 100,
-                                                                          'metric': 2219,
-                                                                          'next_hop':
-                                                                              '10.36.3.3',
-                                                                          'origin_codes': 'e',
-                                                                          'path': '200 '
-                                                                                  '33299 '
-                                                                                  '51178 '
-                                                                                  '47751 '
-                                                                                  '{27016}',
-                                                                          'status_codes': '*>',
-                                                                          'weight': 0}}},
-                                                        '10.1.2.0/24': {
-                                                            'index': {1: {'localprf': 100,
-                                                                          'metric': 2219,
-                                                                          'next_hop':
-                                                                              '10.36.3.3',
-                                                                          'origin_codes': 'e',
-                                                                          'path': '200 '
-                                                                                  '33299 '
-                                                                                  '51178 '
-                                                                                  '47751 '
-                                                                                  '{27016}',
-                                                                          'status_codes': '*>',
-                                                                          'weight': 0}}},
-                                                        '10.1.3.0/24': {
-                                                            'index': {1: {'localprf': 100,
-                                                                          'metric': 2219,
-                                                                          'next_hop':
-                                                                              '10.36.3.3',
-                                                                          'origin_codes': 'e',
-                                                                          'path': '200 '
-                                                                                  '33299 '
-                                                                                  '51178 '
-                                                                                  '47751 '
-                                                                                  '{27016}',
-                                                                          'status_codes': '*>',
-                                                                          'weight': 0}}},
-                                                        '10.1.4.0/24': {
-                                                            'index': {1: {'localprf': 100,
-                                                                          'metric': 2219,
-                                                                          'next_hop':
-                                                                              '10.36.3.3',
-                                                                          'origin_codes': 'e',
-                                                                          'path': '200 '
-                                                                                  '33299 '
-                                                                                  '51178 '
-                                                                                  '47751 '
-                                                                                  '{27016}',
-                                                                          'status_codes': '*>',
-                                                                          'weight': 0}}},
-                                                        '10.1.5.0/24': {
-                                                            'index': {1: {'localprf': 100,
-                                                                          'metric': 2219,
-                                                                          'next_hop':
-                                                                              '10.36.3.3',
-                                                                          'origin_codes': 'e',
-                                                                          'path': '200 '
-                                                                                  '33299 '
-                                                                                  '51178 '
-                                                                                  '47751 '
-                                                                                  '{27016}',
-                                                                          'status_codes': '*>',
-                                                                          'weight':
-                                                                              0}}}}},
-                                                    'vpnv4 unicast RD 300:1': {
-                                                        'advertised': {'10.169.1.0/24': {
-                                                            'index': {1: {'metric': 2219,
-                                                                          'next_hop':
-                                                                              '10.4.6.6',
-                                                                          'origin_codes': 'e',
-                                                                          'path': '300 '
-                                                                                  '33299 '
-                                                                                  '51178 '
-                                                                                  '47751 '
-                                                                                  '{27016}',
-                                                                          'status_codes': '*>',
-                                                                          'weight': 0}}},
-                                                                       '10.169.2.0/24': {
-                                                                           'index': {1: {
-                                                                               'metric': 2219,
-                                                                               'next_hop': '10.4.6.6',
-                                                                               'origin_codes': 'e',
-                                                                               'path':
-                                                                                   '300 '
-                                                                                       '33299 '
-                                                                                       '51178 '
-                                                                                       '47751 '
-                                                                                       '{27016}',
-                                                                               'status_codes': '*>',
-                                                                               'weight': 0}}},
-                                                                       '10.169.3.0/24': {
-                                                                           'index': {1: {
-                                                                               'metric': 2219,
-                                                                               'next_hop': '10.4.6.6',
-                                                                               'origin_codes': 'e',
-                                                                               'path':
-                                                                                   '300 '
-                                                                                       '33299 '
-                                                                                       '51178 '
-                                                                                       '47751 '
-                                                                                       '{27016}',
-                                                                               'status_codes': '*>',
-                                                                               'weight': 0}}},
-                                                                       '10.169.4.0/24': {
-                                                                           'index': {1: {
-                                                                               'metric': 2219,
-                                                                               'next_hop': '10.4.6.6',
-                                                                               'origin_codes': 'e',
-                                                                               'path':
-                                                                                   '300 '
-                                                                                       '33299 '
-                                                                                       '51178 '
-                                                                                       '47751 '
-                                                                                       '{27016}',
-                                                                               'status_codes': '*>',
-                                                                               'weight': 0}}},
-                                                                       '10.169.5.0/24': {
-                                                                           'index': {1: {
-                                                                               'metric': 2219,
-                                                                               'next_hop': '10.4.6.6',
-                                                                               'origin_codes': 'e',
-                                                                               'path':
-                                                                                   '300 '
-                                                                                       '33299 '
-                                                                                       '51178 '
-                                                                                       '47751 '
-                                                                                       '{27016}',
-                                                                               'status_codes': '*>',
-                                                                               'weight': 0}}}},
-                                                        'default_vrf': 'VRF1',
-                                                        'route_distinguisher': '300:1',
-                                                        'routes': {'10.1.1.0/24': {
-                                                            'index': {1: {'localprf': 100,
-                                                                          'metric': 2219,
-                                                                          'next_hop':
-                                                                              '10.36.3.3',
-                                                                          'origin_codes': 'e',
-                                                                          'path': '200 '
-                                                                                  '33299 '
-                                                                                  '51178 '
-                                                                                  '47751 '
-                                                                                  '{27016}',
-                                                                          'status_codes': '*',
-                                                                          'weight': 0},
-                                                                      2: {'localprf': 100,
-                                                                          'metric': 2219,
-                                                                          'next_hop':
-                                                                              '10.36.3.3',
-                                                                          'origin_codes': 'e',
-                                                                          'path': '200 '
-                                                                                  '33299 '
-                                                                                  '51178 '
-                                                                                  '47751 '
-                                                                                  '{27016}',
-                                                                          'status_codes': '*',
-                                                                          'weight': 0}}},
-                                                                   '10.1.2.0/24': {
-                                                                       'index': {1: {
-                                                                           'localprf':
-                                                                               100,
-                                                                           'metric': 2219,
-                                                                           'next_hop':
-                                                                               '10.36.3.3',
-                                                                           'origin_codes': 'e',
-                                                                           'path': '200 '
-                                                                                   '33299 '
-                                                                                   '51178 '
-                                                                                   '47751 '
-                                                                                   '{27016}',
-                                                                           'status_codes': '*',
-                                                                           'weight': 0},
-                                                                                 2: {
-                                                                                     'localprf': 100,
-                                                                                     'metric': 2219,
-                                                                                     'next_hop': '10.36.3.3',
-                                                                                     'origin_codes': 'e',
-                                                                                     'path': '200 '
-                                                                                             '33299 '
-                                                                                             '51178 '
-                                                                                             '47751 '
-                                                                                             '{27016}',
-                                                                                     'status_codes': '*',
-                                                                                     'weight': 0}}},
-                                                                   '10.1.3.0/24': {
-                                                                       'index': {1: {
-                                                                           'localprf':
-                                                                               100,
-                                                                           'metric': 2219,
-                                                                           'next_hop':
-                                                                               '10.36.3.3',
-                                                                           'origin_codes': 'e',
-                                                                           'path': '200 '
-                                                                                   '33299 '
-                                                                                   '51178 '
-                                                                                   '47751 '
-                                                                                   '{27016}',
-                                                                           'status_codes': '*',
-                                                                           'weight': 0},
-                                                                                 2: {
-                                                                                     'localprf': 100,
-                                                                                     'metric': 2219,
-                                                                                     'next_hop': '10.36.3.3',
-                                                                                     'origin_codes': 'e',
-                                                                                     'path': '200 '
-                                                                                             '33299 '
-                                                                                             '51178 '
-                                                                                             '47751 '
-                                                                                             '{27016}',
-                                                                                     'status_codes': '*',
-                                                                                     'weight': 0}}},
-                                                                   '10.1.4.0/24': {
-                                                                       'index': {1: {
-                                                                           'localprf':
-                                                                               100,
-                                                                           'metric': 2219,
-                                                                           'next_hop':
-                                                                               '10.36.3.3',
-                                                                           'origin_codes': 'e',
-                                                                           'path': '200 '
-                                                                                   '33299 '
-                                                                                   '51178 '
-                                                                                   '47751 '
-                                                                                   '{27016}',
-                                                                           'status_codes': '*',
-                                                                           'weight': 0},
-                                                                                 2: {
-                                                                                     'localprf': 100,
-                                                                                     'metric': 2219,
-                                                                                     'next_hop': '10.36.3.3',
-                                                                                     'origin_codes': 'e',
-                                                                                     'path': '200 '
-                                                                                             '33299 '
-                                                                                             '51178 '
-                                                                                             '47751 '
-                                                                                             '{27016}',
-                                                                                     'status_codes': '*',
-                                                                                     'weight': 0}}},
-                                                                   '10.1.5.0/24': {
-                                                                       'index': {1: {
-                                                                           'localprf':
-                                                                               100,
-                                                                           'metric': 2219,
-                                                                           'next_hop':
-                                                                               '10.36.3.3',
-                                                                           'origin_codes': 'e',
-                                                                           'path': '200 '
-                                                                                   '33299 '
-                                                                                   '51178 '
-                                                                                   '47751 '
-                                                                                   '{27016}',
-                                                                           'status_codes': '*',
-                                                                           'weight': 0},
-                                                                                 2: {
-                                                                                     'localprf': 100,
-                                                                                     'metric': 2219,
-                                                                                     'next_hop': '10.36.3.3',
-                                                                                     'origin_codes': 'e',
-                                                                                     'path': '200 '
-                                                                                             '33299 '
-                                                                                             '51178 '
-                                                                                             '47751 '
-                                                                                             '{27016}',
-                                                                                     'status_codes': '*',
-                                                                                     'weight': 0}}}}},
-                                                    'vpnv4 unicast RD 400:1':
-                                                        {'advertised':
-                                                             {'10.9.2.0/24':
-                                                                  {'index':
-                                                                       {1:
-                                                                            {
-                                                                                'metric': 2219,
-                                                                                'next_hop': '10.66.6.6',
-                                                                                'origin_codes': 'e',
-                                                                                'path':
-                                                                                    '400 '
-                                                                                        '33299 '
-                                                                                        '51178 '
-                                                                                        '47751 '
-                                                                                        '{27016}',
-                                                                                'status_codes': '*>',
-                                                                                'weight': 0}}},
-                                                              '10.9.3.0/24':
-                                                                  {'index':
-                                                                       {1:
-                                                                            {
-                                                                                'metric': 2219,
-                                                                                'next_hop': '10.66.6.6',
-                                                                                'origin_codes': 'e',
-                                                                                'path':
-                                                                                    '400 '
-                                                                                        '33299 '
-                                                                                        '51178 '
-                                                                                        '47751 '
-                                                                                        '{27016}',
-                                                                                'status_codes': '*>',
-                                                                                'weight': 0}}},
-                                                              '10.9.4.0/24':
-                                                                  {'index':
-                                                                       {1:
-                                                                            {
-                                                                                'metric': 2219,
-                                                                                'next_hop': '10.66.6.6',
-                                                                                'origin_codes': 'e',
-                                                                                'path':
-                                                                                    '400 '
-                                                                                        '33299 '
-                                                                                        '51178 '
-                                                                                        '47751 '
-                                                                                        '{27016}',
-                                                                                'status_codes': '*>',
-                                                                                'weight': 0}}},
-                                                              '10.9.5.0/24':
-                                                                  {'index':
-                                                                       {1:
-                                                                            {
-                                                                                'metric': 2219,
-                                                                                'next_hop': '10.66.6.6',
-                                                                                'origin_codes': 'e',
-                                                                                'path':
-                                                                                    '400 '
-                                                                                        '33299 '
-                                                                                        '51178 '
-                                                                                        '47751 '
-                                                                                        '{27016}',
-                                                                                'status_codes': '*>',
-                                                                                'weight': 0}}},
-                                                              '10.9.6.0/24':
-                                                                  {'index':
-                                                                       {1:
-                                                                            {
-                                                                                'metric': 2219,
-                                                                                'next_hop': '10.66.6.6',
-                                                                                'origin_codes': 'e',
-                                                                                'path':
-                                                                                    '400 '
-                                                                                        '33299 '
-                                                                                        '51178 '
-                                                                                        '47751 '
-                                                                                        '{27016}',
-                                                                                'status_codes': '*>',
-                                                                                'weight': 0}}}},
-                                                         'default_vrf': 'VRF2',
-                                                         'route_distinguisher': '400:1'},
-                                                    'vpnv6 unicast': {'advertised': {},
-                                                                      'input_queue': 0,
-                                                                      'msg_rcvd': 0,
-                                                                      'msg_sent': 0,
-                                                                      'output_queue': 0,
-                                                                      'received_routes': {},
-                                                                      'state_pfxrcd':
-                                                                          'Idle',
-                                                                      'tbl_ver': 1,
-                                                                      'up_down': 'never'},
-                                                    'vpnv6 unicast RD '
-                                                    '0xbb00010000000000': {
-                                                        'received_routes': {}},
-                                                    'vpnv6 unicast RD 100:200': {
-                                                        'received_routes': {
-                                                            '2001:db8:aaaa:1::/113': {'index': {
-                                                                1: {'localprf': 100,
-                                                                    'next_hop': '4444',
-                                                                    'origin_codes': 'i',
-                                                                    'status_codes': '*>',
-                                                                    'weight': 0}}},
-                                                            '2001:db8:2001:db8:aaaa:1::8000/113': {
-                                                                'index': {
-                                                                    1: {'localprf': 100,
-                                                                        'next_hop':
-                                                                            '4444',
-                                                                        'origin_codes':
-                                                                            'i',
-                                                                        'status_codes':
-                                                                            '*>',
-                                                                        'weight': 0}}}}},
-                                                    'vpnv6 unicast RD 300:1': {
-                                                        'advertised': {
-                                                            '2001:db8:31b9:144::/64': {
-                                                                'index': {
-                                                                    1: {'metric': 2219,
-                                                                        'next_hop':
-                                                                            '2001:DB8:4:6::6',
-                                                                        'origin_codes':
-                                                                            'e',
-                                                                        'path': '300 '
-                                                                                '33299 '
-                                                                                '51178 '
-                                                                                '47751 '
-                                                                                '{27016}',
-                                                                        'status_codes':
-                                                                            '*>',
-                                                                        'weight': 0}}},
-                                                            '2001:db8:31b9:169::/64': {
-                                                                'index': {
-                                                                    1: {'metric': 2219,
-                                                                        'next_hop':
-                                                                            '2001:DB8:4:6::6',
-                                                                        'origin_codes':
-                                                                            'e',
-                                                                        'path': '300 '
-                                                                                '33299 '
-                                                                                '51178 '
-                                                                                '47751 '
-                                                                                '{27016}',
-                                                                        'status_codes':
-                                                                            '*>',
-                                                                        'weight': 0}}},
-                                                            '2001:db8:31b9:190::/64': {
-                                                                'index': {
-                                                                    1: {'metric': 2219,
-                                                                        'next_hop':
-                                                                            '2001:DB8:4:6::6',
-                                                                        'origin_codes':
-                                                                            'e',
-                                                                        'path': '300 '
-                                                                                '33299 '
-                                                                                '51178 '
-                                                                                '47751 '
-                                                                                '{27016}',
-                                                                        'status_codes':
-                                                                            '*>',
-                                                                        'weight': 0}}},
-                                                            '2001:db8:31b9:1b9::/64': {
-                                                                'index': {
-                                                                    1: {'metric': 2219,
-                                                                        'next_hop':
-                                                                            '2001:DB8:4:6::6',
-                                                                        'origin_codes':
-                                                                            'e',
-                                                                        'path': '300 '
-                                                                                '33299 '
-                                                                                '51178 '
-                                                                                '47751 '
-                                                                                '{27016}',
-                                                                        'status_codes':
-                                                                            '*>',
-                                                                        'weight': 0}}},
-                                                            '2001:db8:31b9:121::/64': {'index': {
-                                                                1: {'metric': 2219,
-                                                                    'next_hop':
-                                                                        '2001:DB8:4:6::6',
-                                                                    'origin_codes': 'e',
-                                                                    'path': '300 '
-                                                                            '33299 '
-                                                                            '51178 '
-                                                                            '47751 '
-                                                                            '{27016}',
-                                                                    'status_codes': '*>',
-                                                                    'weight': 0}}}},
-                                                        'default_vrf': 'VRF1',
-                                                        'route_distinguisher': '300:1'},
-                                                    'vpnv6 unicast RD 400:1': {
-                                                        'advertised': {
-                                                            '2001:db8:a69:4c9::/64': {
-                                                                'index': {
-                                                                    1: {'metric': 2219,
-                                                                        'next_hop':
-                                                                            '2001:DB8:20:4:6::6',
-                                                                        'origin_codes':
-                                                                            'e',
-                                                                        'path': '400 '
-                                                                                '33299 '
-                                                                                '51178 '
-                                                                                '47751 '
-                                                                                '{27016}',
-                                                                        'status_codes':
-                                                                            '*>',
-                                                                        'weight': 0}}},
-                                                            '2001:db8:a69:510::/64': {
-                                                                'index': {
-                                                                    1: {'metric': 2219,
-                                                                        'next_hop':
-                                                                            '2001:DB8:20:4:6::6',
-                                                                        'origin_codes':
-                                                                            'e',
-                                                                        'path': '400 '
-                                                                                '33299 '
-                                                                                '51178 '
-                                                                                '47751 '
-                                                                                '{27016}',
-                                                                        'status_codes':
-                                                                            '*>',
-                                                                        'weight': 0}}},
-                                                            '2001:db8:a69:559::/64': {
-                                                                'index': {
-                                                                    1: {'metric': 2219,
-                                                                        'next_hop':
-                                                                            '2001:DB8:20:4:6::6',
-                                                                        'origin_codes':
-                                                                            'e',
-                                                                        'path': '400 '
-                                                                                '33299 '
-                                                                                '51178 '
-                                                                                '47751 '
-                                                                                '{27016}',
-                                                                        'status_codes':
-                                                                            '*>',
-                                                                        'weight': 0}}},
-                                                            '2001:db8:a69:5a4::/64': {
-                                                                'index': {
-                                                                    1: {'metric': 2219,
-                                                                        'next_hop':
-                                                                            '2001:DB8:20:4:6::6',
-                                                                        'origin_codes':
-                                                                            'e',
-                                                                        'path': '400 '
-                                                                                '33299 '
-                                                                                '51178 '
-                                                                                '47751 '
-                                                                                '{27016}',
-                                                                        'status_codes':
-                                                                            '*>',
-                                                                        'weight': 0}}},
-                                                            '2001:db8:a69:484::/64': {'index': {
-                                                                1: {'metric': 2219,
-                                                                    'next_hop':
-                                                                        '2001:DB8:20:4:6::6',
-                                                                    'origin_codes': 'e',
-                                                                    'path': '400 '
-                                                                            '33299 '
-                                                                            '51178 '
-                                                                            '47751 '
-                                                                            '{27016}',
-                                                                    'status_codes': '*>',
-                                                                    'weight': 0}}}},
-                                                        'default_vrf': 'VRF2',
-                                                        'route_distinguisher': '400:1'}},
-                                 'remote_as': 100}}}}}}}
-    BgpOpsOutput_routesperpeer_custom = {
+    bgp_info_custom = {
         'instance': {
             'default': {
-                'vrf': {'VRF1': {
-                    'neighbor': {'10.16.2.2': {
-                        'address_family': {
-                            'vpnv4 unicast RD 300:1': {'received_routes': {
-                                '10.169.1.0/24': {'index': {1: {'metric': 2219,
-                                                              'next_hop': '10.186.0.2',
-                                                              'origin_codes': 'e',
-                                                              'path': '300 '
-                                                                      '33299 '
-                                                                      '51178 '
-                                                                      '47751 '
-                                                                      '{27016}',
-                                                              'status_codes': '*',
-                                                              'weight': 0}}},
-                                '10.169.2.0/24': {'index': {1: {'metric': 2219,
-                                                              'next_hop': '10.186.0.2',
-                                                              'origin_codes': 'e',
-                                                              'path': '300 '
-                                                                      '33299 '
-                                                                      '51178 '
-                                                                      '47751 '
-                                                                      '{27016}',
-                                                              'status_codes': '*',
-                                                              'weight': 0}}},
-                                '10.169.3.0/24': {'index': {1: {'metric': 2219,
-                                                              'next_hop': '10.186.0.2',
-                                                              'origin_codes': 'e',
-                                                              'path': '300 '
-                                                                      '33299 '
-                                                                      '51178 '
-                                                                      '47751 '
-                                                                      '{27016}',
-                                                              'status_codes': '*',
-                                                              'weight': 0}}},
-                                '10.169.4.0/24': {'index': {1: {'metric': 2219,
-                                                              'next_hop': '10.186.0.2',
-                                                              'origin_codes': 'e',
-                                                              'path': '300 '
-                                                                      '33299 '
-                                                                      '51178 '
-                                                                      '47751 '
-                                                                      '{27016}',
-                                                              'status_codes': '*',
-                                                              'weight': 0}}},
-                                '10.169.5.0/24': {'index': {1: {'metric': 2219,
-                                                              'next_hop': '10.186.0.2',
-                                                              'origin_codes': 'e',
-                                                              'path': '300 '
-                                                                      '33299 '
-                                                                      '51178 '
-                                                                      '47751 '
-                                                                      '{27016}',
-                                                              'status_codes': '*',
-                                                              'weight': 0}}}}},
+                'bgp_id': 65000,
+                'vrf': {
+                    'default': {
+                        'cluster_id': '1.1.1.1',
+                        'neighbor': {
+                            '2.2.2.2': {
+                                'address_family': {
+                                    'ipv4 unicast': {
+                                        'bgp_table_version': 4,
+                                        'path': {
+                                            'memory_usage': 408,
+                                            'total_entries': 3,
+                                        },
+                                        'prefixes': {
+                                            'memory_usage': 744,
+                                            'total_entries': 3,
+                                        },
+                                        'routing_table_version': 4,
+                                        'total_memory': 2492,
+                                    },
+                                    'vpnv4 unicast': {
+                                        'bgp_table_version': 4,
+                                        'path': {
+                                            'memory_usage': 408,
+                                            'total_entries': 3,
+                                        },
+                                        'prefixes': {
+                                            'memory_usage': 768,
+                                            'total_entries': 3,
+                                        },
+                                        'routing_table_version': 4,
+                                        'total_memory': 2564,
+                                    },
+                                },
                             },
-                        'remote_as': 100},
-                    }}}}}}
+                        },
+                    },
+                },
+            },
+        },
+    }
+
+    bgp_routes_per_peer_custom = {
+        'instance': {
+            'default': {
+                'vrf': {
+                    'default': {
+                        'neighbor': {
+                            '2.2.2.2': {
+                                'address_family': {
+                                    'vpnv4 unicast': {
+                                        'input_queue': 0,
+                                        'msg_rcvd': 27420,
+                                        'msg_sent': 30177,
+                                        'output_queue': 0,
+                                        'state_pfxrcd': '1',
+                                        'tbl_ver': 4,
+                                        'up_down': '2w5d',
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    }

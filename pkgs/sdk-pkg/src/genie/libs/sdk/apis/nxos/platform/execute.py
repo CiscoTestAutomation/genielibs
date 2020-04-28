@@ -58,11 +58,39 @@ def execute_write_erase(device, timeout=300):
         loop_continue=True,
         continue_timer=False)
 
+    # Add permisson denied to error pattern
+    origin = list(device.execute.error_pattern)
+    error_pattern = ['.*[Pp]ermission denied.*']
+    error_pattern.extend(origin)
+
     try:
         device.execute("write erase", reply=Dialog([write_erase]),
-                       timeout=timeout)
+                       timeout=timeout, error_pattern=error_pattern)
     except Exception as err:
         log.error("Failed to write erase: {err}".format(err=err))
+        raise Exception(err)
+    finally:
+        # restore original error pattern
+        device.execute.error_pattern = origin
+
+def execute_write_erase_boot(device, timeout=300):
+    ''' Execute write erase on the device
+        Args:
+            device ('obj'): Device object
+    '''
+
+    log.info("Executing Write Erase Boot")
+    write_erase = Statement(
+        pattern=r'.*Do you wish to proceed anyway\? \(y\/n\)\s*\[n\]',
+        action='sendline(y)',
+        loop_continue=True,
+        continue_timer=False)
+
+    try:
+        device.execute("write erase boot", reply=Dialog([write_erase]),
+                       timeout=timeout)
+    except Exception as err:
+        log.error("Failed to write erase boot: {err}".format(err=err))
         raise Exception(err)
 
 

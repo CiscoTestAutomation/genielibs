@@ -1,0 +1,8 @@
+root_directories:
+  genie_clean:
+     root: 'genie.clean'
+     mod_name: 'clean'
+     url:
+         link: 'https://bitbucket-eng-sjc1.cisco.com/bitbucket/projects/PYATS-PYPI/repos/genieclean/browse/'
+         branch: ''
+         style: 'bitbucket'

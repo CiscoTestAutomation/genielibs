@@ -51,8 +51,14 @@ def learn_process_pids(device, search):
             ex.) PIDs = ['123', '456']
     """
     output = device.parse("ps -ef | grep {}".format(search))['pid']
+    pids = []
 
-    return list(output.keys())
+    # Skip over grep process
+    for pid, info in output.items():
+        if not 'grep' in info['cmd']:
+            pids.append(pid)
+
+    return pids
 
 def kill_processes(device, pids):
     """ Kills the processes with given PIDs 
@@ -60,16 +66,59 @@ def kill_processes(device, pids):
             pids ('list'): List of PIDs
             ex.) pids = [12, 15, 16]
         Raise:
-            ValueError: Process with PID does not exist
-        Returns:
             None
+        Returns:
+            Failed (list): List of pids that failed to be killed
     """
+    failed = []
+
     for pid in pids:
         output = device.execute("kill {}".format(pid))
         
         if "No such process" in output: 
-            raise ValueError("Process with PID {} does not exist.".format(pid))
+            failed.append(pid)
 
+    return failed
+
+def pkill_process(device, name):
+    """ pkills the process with the given name 
+        Args:
+            name ('str'): Name of the running process
+            ex.) name = 't-rex'
+        Raise:
+            None
+        Returns:
+            None
+    """
+    device.execute("pkill {}".format(name))
+
+def trex_save_configuration(device):
+    """ Save configuration of the currently running Trex instance using its API
+        Args:
+            None
+        Raise:
+            FileNotFoundError
+        Returns:
+            str
+    """
+    script = """import sys
+
+if len(sys.argv) < 2:
+    print('usage: python3 hltapi_save_config.py output-trex-config-file-name.json')
+    exit(1)
+
+import trex_hltapi
+trex = trex_hltapi.TRexHLTAPI()
+trex.connect(device='127.0.0.1', break_locks=True, reset=False, port_list=[0,1,2,3])
+trex.save_file(output_file=sys.argv[1])
+
+"""
+
+    device.execute("sudo -s")
+    device.api.copy_data_to_device(script, "/opt/trex", "hltapi_save_config.py")   
+    device.execute("python3 /opt/trex/hltapi_save_config.py saved_config.json")
+
+    return device.api.read_data_from_device("/opt/trex/saved_config.json")
 
 def copy_data_to_device(device, data, destination, filename=None):
     """ Copies data into a device and creates a file to store that data.
@@ -83,6 +132,12 @@ def copy_data_to_device(device, data, destination, filename=None):
         Returns:
             Path (str): path of created file
     """
+    try:
+        device.execute('ls {}'.format(destination))
+    except Exception:
+        raise FileNotFoundError("Directory '{}' does not exist.".format(
+                                                                destination))
+
     # Data must end in new line
     if len(data) > 0 and not data[-1] == "\n": 
         data += "\n"
@@ -122,7 +177,7 @@ def read_data_from_device(device, location):
         Args:
             location ('str'): Path to the text file
         Raises:
-            Exception: File Does not Exist
+            FileNotFoundError: File Does not Exist
         Returns:
             Data ('str'): Text data read from the device
     """
@@ -131,8 +186,10 @@ def read_data_from_device(device, location):
     # This API does not require the device to have network connection
     # copy_from_device is the other API that behaves similar to this one,
     # but it requires network connection since it uses SCP
-
-    return device.execute("cat {}".format(location))
+    try:
+        return device.execute("cat {}".format(location))
+    except Exception: # Throw file not found error when encounter generic error
+        raise FileNotFoundError("File {} does not exist.".format(location))
 
 def start_routem_process(device, config, routem_executable, config_save_location="/tmp"):
 
@@ -162,7 +219,6 @@ def start_routem_process(device, config, routem_executable, config_save_location
         return False
 
     return True
-
 
 def trex_copy_json(device, json, destination="/opt/trex"):
     """ Copies trex json config data to the trex folder
@@ -196,11 +252,16 @@ def start_trex_process(device, location = "/opt/trex"):
         Args:
             location (str): folder location of where the trex executable is at
         Raise:
-            None
+            FileNotFoundError
         Returns:
             Success (bool): Whether or not the operation was successful
     """
-    device.execute("cd {}".format(location))
+    try:
+        device.execute("cd {}".format(location))
+    except Exception:
+        raise FileNotFoundError("Location '{}' does not exist".format(
+                                                                    location))
+
     device.execute("nohup sudo ./bringup.sh trex-config.json &>/dev/null &")
     return True
 

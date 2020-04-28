@@ -1,4 +1,4 @@
-extends: "%ENV{VIRTUAL_ENV}/genie_yamls/trigger_datafile.yaml"
+extends: "%CALLABLE{genie.libs.sdk.genie_yamls.datafile(trigger)}"
 
 #===============================================================================
 #                                PROCESSORS
@@ -25,36 +25,31 @@ global_processors:
         rate_tolerance: 2
     test_case_genie_telemetry:
       method: genie.telemetry.processors.genie_telemetry_processor
-    order:
-      [
-        "check_traffic_loss",
-        "compare_traffic_profile",
-        "test_case_genie_telemetry",
-      ]
+    order: ['check_traffic_loss', 'compare_traffic_profile', 'test_case_genie_telemetry']
 
 #===============================================================================
 #                                SLEEP
 #===============================================================================
 
 TriggerSleep:
-  groups: ["sleep"]
-  sleep_time: 5
-  message_time: 1
-  count: 1
-  devices: ["uut"]
+    groups: ['sleep']
+    sleep_time: 5
+    message_time: 1
+    count: 1
+    devices: ['uut']
 
 TriggerProfileSystem:
-  groups: ["profile"]
-  timeout:
-    max_time: 300
-    interval: 15
-  tgn_timeout: 300
-  tgn_delay: 10
-  tgn_max_outage: 120
-  features: ["platform", "interface"]
-  devices: ["uut"]
-  # golden_file: <golden pts file to compare with, if not provided, no comparison>
-  # location: <Location to save the learnt features pts at, default runtime directory>
+    groups: ['profile']
+    timeout:
+       max_time: 300
+       interval: 15
+    tgn_timeout: 300
+    tgn_delay: 10
+    tgn_max_outage: 120
+    features: ['platform', 'interface']
+    devices: ['uut']
+    # golden_file: <golden pts file to compare with, if not provided, no comparison>
+    # location: <Location to save the learnt features pts at, default runtime directory>
 
 TriggerShutNoShutLoopbackInterface:
   groups: ["shut-noshut", "interface", "L3"]

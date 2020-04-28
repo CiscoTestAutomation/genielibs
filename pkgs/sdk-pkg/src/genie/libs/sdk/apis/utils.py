@@ -874,10 +874,14 @@ def _get_file_size_from_server(server, path, protocol, timeout=300,
     except NotImplementedError as e:
         log.warning(
             'The protocol {} does not support file listing, unable to get file '
-            'size.'.format(
-                protocol))
+            'size.'.format(protocol))
+        raise e from None
+    except FileNotFoundError as e:
+        log.error("Can not find file {} on server {}".format(path, server))
         raise e from None
     except Exception as e:
+        if 'not found' in str(e):
+            raise FileNotFoundError(str(e))
         raise Exception("Failed to get file size : {}".format(str(e)))
 
 def modify_filename(device, file, directory, protocol, server=None,
@@ -917,7 +921,7 @@ def modify_filename(device, file, directory, protocol, server=None,
 
         if not url.endswith('/'):
             url = url + '/'
-        if len(url) > limit:
+        if len(url) + len(image_ext) + 1 > limit:
             raise ValueError('The length of the directory URL already exceeds'
                              ' {} characters.'.format(limit))
 
@@ -935,18 +939,20 @@ def modify_filename(device, file, directory, protocol, server=None,
         if length > limit:
             # always negative number
             diff = limit - length
+            if abs(diff) > len(image_name):
+                raise Exception('File name {} does not have enough '
+                                'characters {} to truncate.'.format(
+                                    image_name, abs(diff)))
             image_name = image_name[:diff]
-        new_name = ''.join([image_name, image_ext])
 
     if append_hostname:
-        image_name, image_ext = os.path.splitext(new_name)
-        new_name = ''.join([image_name, '_', device.name, image_ext])
+        image_name += '_' + device.name
 
     if unique_file_name:
-        image_name, image_ext = os.path.splitext(new_name)
         rand_num = random.randint(100000, 999999)
-        new_name = ''.join([image_name, '_', str(rand_num), image_ext])
+        image_name += '_' + str(rand_num)
 
+    new_name = ''.join([image_name, image_ext])
     if new_name != file:
         log.info('File name changed to {}'.format(new_name))
 
@@ -1122,6 +1128,11 @@ def dynamic_diff_parameterized_running_config(device, base_config, mapping, runn
         output = output.replace(' {} '.format(interface), ' {} '.format(variable))
         output = output.replace(' {}\n'.format(interface), ' {}\n'.format(variable))
 
+    # Remove the end markers that are not at the end of file
+    # End of file end markers will have the pattern '\nend' or '\nend '
+    output = output.replace('\nend \n', '\n')
+    output = output.replace('\nend\n', '\n')
+    
     return output
 
 def dynamic_diff_create_running_config(device, mapping, template, base_config):
@@ -1139,6 +1150,14 @@ def dynamic_diff_create_running_config(device, mapping, template, base_config):
     """
     for variable, value in mapping.items():
         template = template.replace(variable, value)
+
+    # Remove all end markers if any
+    template = template.replace('\nend \n', '\n')
+    template = template.replace('\nend\n', '\n')
+    if template.endswith('\nend'):
+        template = template[:-4]
+    if template.endswith('\nend '):
+        template = template[:-5]
 
     return '{}{}'.format(template, base_config)
 

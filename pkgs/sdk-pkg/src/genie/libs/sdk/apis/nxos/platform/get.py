@@ -1,11 +1,11 @@
 """Common get info functions for platform"""
 
 # Python
-import logging
 import os
+import logging
 
 # pyATS
-from genie.metaparser.util.exceptions import SchemaEmptyParserError
+from genie.metaparser.util.exceptions import SchemaEmptyParserError, SchemaMissingKeyError
 
 log = logging.getLogger(__name__)
 
@@ -23,12 +23,17 @@ def get_file_size(device, file):
     directory = ''.join([os.path.dirname(file), '/'])
     try:
         out = device.parse("dir {}".format(directory))
-    except SchemaEmptyParserError as e:
-        log.error("Command 'dir' did not return any results")
+    except Exception as e:
+        log.error("Failed to parse the directory listing due to: {}".format(str(e)))
+        return None
+
+    filename = os.path.basename(file)
+    size = out.get('files',{}).get(filename, {}).get('size')
+    if size:
+        return int(size)
     else:
-        filename = os.path.basename(file)
-        return int(out.get('files',{}).get(filename, {}).get('size', -1))
-    return None
+        log.error("File '{}' is not found on device".format(file))
+
 
 def get_running_image(device):
 
@@ -49,10 +54,14 @@ def get_running_image(device):
             return [kickstart.replace('///', '/'), system.replace('///', '/')]
         else:
             return [system.replace('///', '/')]
-
     except SchemaEmptyParserError as e:
-        log.error("Command 'show version' did not return any results")
+        log.error("Command 'show version' did not return any results: {e}".format(e=e))
+    except SchemaMissingKeyError as e:
+        log.error("Missing key while parsing 'show version': {e}".format(e=e))
+    except Exception as e:
+        log.error("Failed to parse 'show version': {e}".format(e=e))
     return None
+
 
 def get_available_space(device, directory='', output=None):
     """Gets available space on a given directory
@@ -70,7 +79,11 @@ def get_available_space(device, directory='', output=None):
         log.error("Failed to parse the directory listing due to: {}".format(str(e)))
         return None
 
-    return int(dir_output.get('disk_free_space'))
+    free_space = dir_output.get('disk_free_space')
+    if free_space:
+        return int(free_space)
+    else:
+        log.error("Failed to get available space for {}".format(directory))
 
 
 def get_total_space(device, directory='', output=None):

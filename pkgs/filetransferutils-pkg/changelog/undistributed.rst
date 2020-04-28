@@ -7,4 +7,4 @@
 
 Features:
 ^^^^^^^^^
-* Fixed IOSXR copyfile to raise exception upon unsuccessful copy
+
