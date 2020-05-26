@@ -23,7 +23,7 @@ from genie.libs.parser.iosxe.show_platform import ShowSwitchDetail, \
                                                   ShowPlatform, ShowVersion
 
 from genie.libs.parser.iosxe.c3850.show_platform import ShowEnvironmentAll
-from genie.libs.parser.iosxe.show_power import ShowStackPower, ShowPowerInlineInterface
+from genie.libs.parser.iosxe.show_power import ShowStackPower, ShowPowerInline
 from genie.libs.parser.iosxe.show_crypto import ShowCryptoPkiCertificates
 
 
@@ -629,7 +629,7 @@ class TriggerCheckCommands(CheckCommandsTemplate):
           continue_=True) as step:
             while timeout.iterate():
                 try:
-                    output = ShowPowerInlineInterface(device=uut).parse(interface=intf)
+                    output = ShowPowerInline(device=uut).parse(interface=intf)
                 except Exception as e:
                     log.warning('Cannot get info from Parser\n{}'\
                         .format(traceback.format_exc()))

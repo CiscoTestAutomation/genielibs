@@ -74,9 +74,25 @@ def _load_saved_variable(self, val, key=None):
         markup_string = val[item.start():item.end()]
         var_name = item.groupdict()['var_name']
         group.update({markup_string : var_name})
-
     for blitz_key, blitz_val in group.items():
-        var_value = self.parameters['save_variable_name'][blitz_val]
+        #  Access object properties, list index, or dictinary value using key
+        # '%VARIABLE{interface[0].name}'
+        # '%VARIABLE{interface.name}'
+        # '%VARIABLE{interface['name']}'
+        if '.' in blitz_val or '[' in blitz_val:
+            split_list = re.split(r'[\.\[]', blitz_val)
+            last_parameter = self.parameters['save_variable_name']
+            for split_val in split_list:
+                if ']' in split_val:
+                    split_val = split_val.replace(']', '')
+                    split_val = int(split_val) if split_val.isdigit() else split_val
+                try:
+                    last_parameter = last_parameter[split_val]
+                except TypeError:
+                    last_parameter = getattr(last_parameter, split_val)
+            var_value = last_parameter
+        else:
+            var_value = self.parameters['save_variable_name'][blitz_val]
 
         if blitz_key == val:
             val = var_value

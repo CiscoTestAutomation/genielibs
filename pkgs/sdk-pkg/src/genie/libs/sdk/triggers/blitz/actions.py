@@ -106,11 +106,11 @@ def yang(self, device, steps, protocol, datastore, content, operation,
     if protocol == 'netconf':
         result = run_netconf(operation=operation, device=device, steps=steps,
                              datastore=datastore, rpc_data=content,
-                             returns=returns)
+                             returns=returns, **kwargs)
     elif protocol == 'gnmi':
         result = run_gnmi(operation=operation, device=device, steps=steps,
                           datastore=datastore, rpc_data=content,
-                          returns=returns)
+                          returns=returns, **kwargs)
     if not result:
         steps.failed('Yang action has failed')
     

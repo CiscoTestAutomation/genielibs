@@ -1,7 +1,10 @@
 #! /usr/bin/env python
 import re
 import logging
+from six import string_types
 from pyats.log.utils import banner
+
+
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
@@ -9,10 +12,39 @@ log.setLevel(logging.DEBUG)
 class EvalDatatype:
     """Evaluate opfields that contain "datatype" definition."""
 
+    integer_limits = {
+        'int8': (-128, 127),
+        'uint8': (0, 255),
+        'int16': (-32768, 32767),
+        'uint16': (0, 65535),
+        'int32': (-2147483648, 2147483647),
+        'uint32': (0, 4294967295),
+        'int64': (-9223372036854775808, 9223372036854775807),
+        'uint64': (0, 18446744073709551615)
+    }
+
     def __init__(self, value, field):
         """Usage: EvalDatatype(opfield).evalute()"""
+        self.min_max_failed = False
         self.value = value
         self.field = field
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, val):
+        if isinstance(val, string_types):
+            try:
+                self._value = int(val)
+            except ValueError:
+                try:
+                    self._value = float(val)
+                except ValueError:
+                    self._value = val
+        else:
+            self._value = val
 
     @property
     def field(self):
@@ -25,10 +57,18 @@ class EvalDatatype:
         self.datatype = datatype
         if datatype.startswith('int') or datatype.startswith('uint'):
             self.fval = int(field.get('value'))
+            if datatype not in self.integer_limits:
+                raise TypeError('Invalid datatype')
+            self.min, self.max = self.integer_limits[datatype]
+            if self.value < self.min or self.value > self.max:
+                self.min_max_failed = True
         elif datatype in ['decimal64', 'float']:
             self.fval = float(field.get('value'))
-        elif datatype == 'empty':
-            self.fval = ''
+            self.min, self.max = self.integer_limits['int64']
+            if self.value < self.min or self.value > self.max:
+                self.min_max_failed = True
+        elif datatype == 'boolean':
+            self.fval = bool(field.get('value'))
         else:
             self.fval = field.get('value')
         self.op = field.get('op')
@@ -40,13 +80,19 @@ class EvalDatatype:
                 self.fname
             ))
             return False
+        if self.min_max_failed:
+            return False
         if self.datatype == 'pattern':
             self.value = re.findall(self.fval, self.value)
             if self.value:
                 self.fval = self.value
         if self.op == '==':
+            if self.datatype == 'boolean':
+                return bool(self.value) == bool(self.fval)
             return self.value == self.fval
         elif self.op == '!=':
+            if self.datatype == 'boolean':
+                return bool(self.value) == bool(self.fval)
             return self.value != self.fval
         elif self.op == '<':
             return self.value < self.fval
@@ -161,7 +207,6 @@ class RpcVerify():
                 self._datastore.append('candidate')
             elif ':writable-running' in cap:
                 self._datastore.append('running')
-
 
     def _process_values(self, reply, expect):
         """Determine the variable state of the tag values.
@@ -340,8 +385,8 @@ class RpcVerify():
                     log.error(
                         'OPERATION VALUE {0}: {1} invalid for range {2}{3}'
                         .format(field['xpath'],
-                                value,
-                                field['value'],
+                                str(value),
+                                str(field['value']),
                                 ' FAILED')
                     )
                     return False
@@ -377,7 +422,7 @@ class RpcVerify():
                     log.error(
                         'OPERATION VALUE {0}: invalid range {1}{2}'
                         .format(field['xpath'],
-                                field['value'],
+                                str(field['value']),
                                 ' FAILED')
                     )
                     return False
@@ -385,20 +430,23 @@ class RpcVerify():
                 if value >= r1 and value <= r2:
                     log.info(
                         'OPERATION VALUE {0}: {1} in range {2} SUCCESS'
-                        .format(field['xpath'], value, field['value'])
+                        .format(
+                            field['xpath'], str(value), str(field['value'])
+                        )
                     )
                 else:
                     log.error(
                         'OPERATION VALUE {0}: {1} out of range {2}{3}'
                         .format(field['xpath'],
-                                value,
-                                field['value'],
+                                str(value),
+                                str(field['value']),
                                 ' FAILED')
                     )
                     return False
             else:
                 if not datatype:
-                    fval = field.get('value')
+                    value = str(value)
+                    fval = str(field.get('value'))
                     if (value.isnumeric() and not fval.isnumeric()) or \
                             (fval.isnumeric() and not value.isnumeric()):
                         # the eval_text will show the issue
@@ -438,18 +486,24 @@ class RpcVerify():
                         return False
                 else:
                     log_msg = 'OPERATION VALUE {0}: {1} {2} {3} {4}'
-                    if EvalDatatype(value, field).evaluate():
+                    failed_type = 'FAILED'
+                    evaldt = EvalDatatype(value, field)
+                    if evaldt.evaluate():
                         log.info(log_msg.format(
                                 field['xpath'], str(value),
-                                field['op'], field['value'],
+                                field['op'], str(field['value']),
                                 'SUCCESS'
                             )
                         )
                     else:
+                        if evaldt.min_max_failed:
+                            failed_type = '"{0}" MIN-MAX FAILED'.format(
+                                evaldt.datatype
+                            )
                         log.error(log_msg.format(
                                 field['xpath'], str(value),
-                                field['op'], field['value'],
-                                'FAILED'
+                                field['op'], str(field['value']),
+                                failed_type
                             )
                         )
                         return False
@@ -457,7 +511,7 @@ class RpcVerify():
         except Exception as e:
             log.error(
                 'OPERATION VALUE {0}: {1} {2} FAILED\n{3}'.format(
-                    field['xpath'], value, eval_text, str(e)
+                    field['xpath'], str(value), eval_text, str(e)
                 )
             )
             return False
@@ -514,7 +568,7 @@ class RpcVerify():
                 if opfield.get('selected', True) is False:
                     continue
                 msg += opfield.get('xpath', '') + ' value: '
-                msg += opfield.get('value', '')
+                msg += str(opfield.get('value', ''))
                 msg += '\n'
             log.error(msg)
             result = False

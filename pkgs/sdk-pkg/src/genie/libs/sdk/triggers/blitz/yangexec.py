@@ -379,7 +379,7 @@ def _included_excluded(caps, returns=[]):
     return result
 
 
-def run_netconf(operation, device, steps, datastore, rpc_data, returns):
+def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs):
     """Form NETCONF message and send to testbed."""
     log.debug('NETCONF MESSAGE')
     try:

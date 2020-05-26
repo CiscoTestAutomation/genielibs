@@ -5,7 +5,8 @@ import os
 import logging
 import re
 import jinja2
-import shlex, subprocess
+import shlex
+import subprocess
 import time
 import random
 import copy
@@ -18,6 +19,7 @@ from netaddr import IPAddress
 from pyats.easypy import runtime
 from pyats.utils.fileutils import FileUtils
 from pyats.utils.secret_strings import to_plaintext
+from pyats.datastructures.logic import Not
 
 # Genie
 from genie.utils.config import Config
@@ -34,6 +36,7 @@ from unicon.core.errors import ConnectionError
 from unicon.plugins.generic.statements import default_statement_list
 
 log = logging.getLogger(__name__)
+
 
 def _cli(device, cmd, timeout, prompt):
     """ Send command to device and get the output
@@ -93,7 +96,7 @@ def tabber(device, cmd, expected, timeout=20):
     output = escape_ansi(output)
     # Find location where command begins, and remove white space at the end
     trim_output = output.splitlines()[1]
-    trim_output = trim_output[trim_output.find(cmd) :].strip()
+    trim_output = trim_output[trim_output.find(cmd):].strip()
 
     if not expected == trim_output:
         raise Exception("'{e}' is not in output".format(e=expected))
@@ -253,7 +256,7 @@ def copy_pcap_file(testbed, filename, command=None):
         Args:
             testbed (`obj`): Testbed object
             filename (`str`): Pcap filename
-            command ('str'): cli command to copy file from remote 
+            command ('str'): cli command to copy file from remote
                              server to local server
         Returns:
             None
@@ -361,7 +364,7 @@ def int_to_mask(mask_int):
     bin_arr = ["0" for i in range(32)]
     for i in range(int(mask_int)):
         bin_arr[i] = "1"
-    tmpmask = ["".join(bin_arr[i * 8 : i * 8 + 8]) for i in range(4)]
+    tmpmask = ["".join(bin_arr[i * 8: i * 8 + 8]) for i in range(4)]
     tmpmask = [str(int(tmpstr, 2)) for tmpstr in tmpmask]
     return ".".join(tmpmask)
 
@@ -405,14 +408,26 @@ def copy_to_server(testbed, protocol, server, local_path, remote_path,
             _copy_to_server(protocol, server, local_path, remote_path,
                             timeout=timeout, fu_session=fu, quiet=quiet)
 
-def _copy_to_server(protocol, server, local_path, remote_path, timeout=300, fu_session=None, quiet=False):
+
+def _copy_to_server(
+        protocol,
+        server,
+        local_path,
+        remote_path,
+        timeout=300,
+        fu_session=None,
+        quiet=False):
     remote = "{p}://{s}/{f}".format(p=protocol, s=server, f=remote_path)
 
     log.info("Copying {local_path} to {remote_path}"
              .format(local_path=local_path,
                      remote_path=remote))
 
-    fu_session.copyfile(source=local_path, destination=remote, timeout_seconds=timeout, quiet=quiet)
+    fu_session.copyfile(
+        source=local_path,
+        destination=remote,
+        timeout_seconds=timeout,
+        quiet=quiet)
 
 
 def copy_file_from_tftp_ftp(testbed, filename, pro):
@@ -598,7 +613,7 @@ def analyze_rate(rate):
         parsed_rate = m.groupdict()["original_rate"]
         try:
             original_rate = int(parsed_rate)
-        except:
+        except BaseException:
             original_rate = float(parsed_rate)
 
         if m.groupdict()["rate_unit"]:
@@ -697,7 +712,12 @@ def configure_device(device, config, config_timeout=150):
     return
 
 
-def reconnect_device(device, max_time=300, interval=30, sleep_disconnect=30, via=None):
+def reconnect_device(
+        device,
+        max_time=300,
+        interval=30,
+        sleep_disconnect=30,
+        via=None):
     """ Reconnect device
         Args:
             device ('obj'): Device object
@@ -739,6 +759,7 @@ def reconnect_device(device, max_time=300, interval=30, sleep_disconnect=30, via
 
     log.info("Reconnected to device {dev}".format(dev=device.name))
 
+
 def netmask_to_bits(net_mask):
     """ Convert netmask to bits
         Args:
@@ -751,6 +772,7 @@ def netmask_to_bits(net_mask):
     """
     return IPAddress(net_mask).netmask_bits()
 
+
 def bits_to_netmask(bits):
     """ Convert bits to netmask
         Args:
@@ -762,13 +784,14 @@ def bits_to_netmask(bits):
             Net mask
     """
     mask = (0xffffffff >> (32 - bits)) << (32 - bits)
-    return (str( (0xff000000 & mask) >> 24)   + '.' +
-          str( (0x00ff0000 & mask) >> 16)   + '.' +
-          str( (0x0000ff00 & mask) >> 8)    + '.' +
-          str( (0x000000ff & mask)))
+    return (str((0xff000000 & mask) >> 24) + '.' +
+            str((0x00ff0000 & mask) >> 16) + '.' +
+            str((0x0000ff00 & mask) >> 8) + '.' +
+            str((0x000000ff & mask)))
+
 
 def copy_to_device(device, remote_path, local_path, server, protocol, vrf=None,
-    timeout=300, compact=False, use_kstack=False, **kwargs):
+                   timeout=300, compact=False, use_kstack=False, **kwargs):
     """
     Copy file from linux server to device
         Args:
@@ -808,7 +831,16 @@ def copy_to_device(device, remote_path, local_path, server, protocol, vrf=None,
         else:
             raise
 
-def copy_from_device(device, remote_path, local_path, server, protocol, vrf=None, timeout=300, **kwargs):
+
+def copy_from_device(
+        device,
+        remote_path,
+        local_path,
+        server,
+        protocol,
+        vrf=None,
+        timeout=300,
+        **kwargs):
     """
     Copy file from device to linux server (Works for sftp and ftp)
         Args:
@@ -828,9 +860,20 @@ def copy_from_device(device, remote_path, local_path, server, protocol, vrf=None
     # build the source address
     destination = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
     if vrf:
-        fu.copyfile(source=local_path, destination=destination, device=device, vrf=vrf, timeout_seconds=timeout, **kwargs)
+        fu.copyfile(
+            source=local_path,
+            destination=destination,
+            device=device,
+            vrf=vrf,
+            timeout_seconds=timeout,
+            **kwargs)
     else:
-        fu.copyfile(source=local_path, destination=destination, device=device, timeout_seconds=timeout, **kwargs)
+        fu.copyfile(
+            source=local_path,
+            destination=destination,
+            device=device,
+            timeout_seconds=timeout,
+            **kwargs)
 
 
 def get_file_size_from_server(device, server, path, protocol, timeout=300,
@@ -847,12 +890,13 @@ def get_file_size_from_server(device, server, path, protocol, timeout=300,
          integer representation of file size in bytes
     """
     if fu_session:
-        return _get_file_size_from_server(server, path, protocol, timeout=timeout,
-                                          fu_session=fu_session)
+        return _get_file_size_from_server(
+            server, path, protocol, timeout=timeout, fu_session=fu_session)
     else:
         with FileUtils(testbed=device.testbed) as fu:
-            return _get_file_size_from_server(server, path, protocol, timeout=timeout,
-                                              fu_session=fu)
+            return _get_file_size_from_server(
+                server, path, protocol, timeout=timeout, fu_session=fu)
+
 
 def _get_file_size_from_server(server, path, protocol, timeout=300,
                                fu_session=None):
@@ -884,9 +928,10 @@ def _get_file_size_from_server(server, path, protocol, timeout=300,
             raise FileNotFoundError(str(e))
         raise Exception("Failed to get file size : {}".format(str(e)))
 
+
 def modify_filename(device, file, directory, protocol, server=None,
                     append_hostname=False, check_image_length=False,
-                    limit=63, unique_file_name=False):
+                    limit=63, unique_file_name=False, unique_number=None):
     """ Truncation is done such that protocol:/directory/image should not
         exceed the limited characters.
         This for older devices, where it does not allow netboot from rommon,
@@ -929,7 +974,7 @@ def modify_filename(device, file, directory, protocol, server=None,
 
         # counts hostname in length if provided
         if append_hostname:
-            length += len(device.name)+1
+            length += len(device.name) + 1
 
         # counts random number in length.  6 digits + underscore = 7
         if unique_file_name:
@@ -949,14 +994,18 @@ def modify_filename(device, file, directory, protocol, server=None,
         image_name += '_' + device.name
 
     if unique_file_name:
-        rand_num = random.randint(100000, 999999)
-        image_name += '_' + str(rand_num)
+        if unique_number:
+            image_name += '_' + str(unique_number)
+        else:
+            rand_num = random.randint(100000, 999999)
+            image_name += '_' + str(rand_num)
 
     new_name = ''.join([image_name, image_ext])
     if new_name != file:
         log.info('File name changed to {}'.format(new_name))
 
     return new_name
+
 
 def get_longest_server_address(device):
     """
@@ -968,7 +1017,7 @@ def get_longest_server_address(device):
     """
     addresses = []
     for server in device.testbed.servers.values():
-        addr = server.get('address','')
+        addr = server.get('address', '')
         if isinstance(addr, list):
             addresses.extend(addr)
         else:
@@ -976,7 +1025,14 @@ def get_longest_server_address(device):
 
     return max(addresses, key=len)
 
-def delete_file_on_server(testbed, server, path, protocol='sftp', timeout=300, fu_session=None):
+
+def delete_file_on_server(
+        testbed,
+        server,
+        path,
+        protocol='sftp',
+        timeout=300,
+        fu_session=None):
     """ delete the file from server
     Args:
         testbed ('obj'): testbed object containing the server info
@@ -988,15 +1044,25 @@ def delete_file_on_server(testbed, server, path, protocol='sftp', timeout=300, f
         None
     """
     if fu_session:
-        return _delete_file_on_server(server, path, protocol=protocol, timeout=timeout,
-                               fu_session=fu_session)
+        return _delete_file_on_server(
+            server,
+            path,
+            protocol=protocol,
+            timeout=timeout,
+            fu_session=fu_session)
     else:
         with FileUtils(testbed=testbed) as fu:
             return _delete_file_on_server(server, path, protocol=protocol,
                                           timeout=timeout,
                                           fu_session=fu)
 
-def _delete_file_on_server(server, path, protocol='sftp', timeout=300, fu_session=None):
+
+def _delete_file_on_server(
+        server,
+        path,
+        protocol='sftp',
+        timeout=300,
+        fu_session=None):
 
     url = '{p}://{s}/{f}'.format(p=protocol, s=server, f=path)
 
@@ -1026,12 +1092,13 @@ def convert_server_to_linux_device(device, server):
                         connections={'linux': {
                             'ip': hostname,
                             'protocol': 'ssh'}},
-                        custom={'abstraction':{
-                            'order':['os']}},
+                        custom={'abstraction': {
+                            'order': ['os']}},
                         type='linux',
                         testbed=device.testbed)
 
     return device_obj
+
 
 def get_username_password(device, username=None, password=None, creds=None):
     """ Gets the username and password to use to log into the device console.
@@ -1045,7 +1112,7 @@ def get_username_password(device, username=None, password=None, creds=None):
                 for name in device.credentials:
                     cred = name
             else:
-                cred='default'
+                cred = 'default'
             username = device.credentials.get(cred, {}).get("username", "")
             password = to_plaintext(
                 device.credentials.get(cred, {}).get("password", ""))
@@ -1057,6 +1124,7 @@ def get_username_password(device, username=None, password=None, creds=None):
         raise Exception("No username or password was provided.")
 
     return username, password
+
 
 def compared_with_running_config(device, config):
     """ Show difference between given config and current config
@@ -1073,6 +1141,7 @@ def compared_with_running_config(device, config):
     diff.findDiff()
 
     return diff
+
 
 def diff_configuration(device, config1, config2):
     """ Show difference between two configurations
@@ -1095,7 +1164,9 @@ def diff_configuration(device, config1, config2):
 
     return diff
 
-def dynamic_diff_parameterized_running_config(device, base_config, mapping, running_config=None):
+
+def dynamic_diff_parameterized_running_config(
+        device, base_config, mapping, running_config=None):
     """ Parameterize device interface from the configuration and return the parameterized configuration
         with respect to the mapping.
         Args:
@@ -1112,12 +1183,16 @@ def dynamic_diff_parameterized_running_config(device, base_config, mapping, runn
     if running_config is None:
         running_config = device.execute('show running-config')
 
-    output = diff_configuration(device, base_config, running_config).diff_string('+')
+    output = diff_configuration(
+        device,
+        base_config,
+        running_config).diff_string('+')
     converted_map = {}
 
     # Make sure each mapping is not in short form
     for interface, variable in mapping.items():
-        full_info = device.execute('show interface {}'.format(interface)).split(' ')
+        full_info = device.execute(
+            'show interface {}'.format(interface)).split(' ')
         if len(full_info) > 0:
             # Assume full interface name is first word of output
             converted_map.setdefault(full_info[0], variable)
@@ -1125,15 +1200,20 @@ def dynamic_diff_parameterized_running_config(device, base_config, mapping, runn
             raise Exception("Invalid interface short form")
 
     for interface, variable in converted_map.items():
-        output = output.replace(' {} '.format(interface), ' {} '.format(variable))
-        output = output.replace(' {}\n'.format(interface), ' {}\n'.format(variable))
+        output = output.replace(
+            ' {} '.format(interface),
+            ' {} '.format(variable))
+        output = output.replace(
+            ' {}\n'.format(interface),
+            ' {}\n'.format(variable))
 
     # Remove the end markers that are not at the end of file
     # End of file end markers will have the pattern '\nend' or '\nend '
     output = output.replace('\nend \n', '\n')
     output = output.replace('\nend\n', '\n')
-    
+
     return output
+
 
 def dynamic_diff_create_running_config(device, mapping, template, base_config):
     """ Creates a merged running config from template dynamic diff with
@@ -1169,7 +1249,7 @@ def save_info_to_file(filename, parameters, header=[], separator=','):
             parameters ('list'): Parameters list
             header ('list'): Header list
             separator ('str'): Separator for the parameters
-            
+
             example for traffic loss:
                 parameters = ['TC1', 'PE1-PE2-1000pps', '0.0', 'PASSED']
                 header = ['uid', 'flows', 'outage', 'result']
@@ -1314,10 +1394,10 @@ def get_list_items(name, index, index_end='', to_num=False, to_str=False):
     if isinstance(name, list):
         try:
             if index_end:
-                ret_item = name[index:index_end+1]
+                ret_item = name[index:index_end + 1]
             else:
                 ret_item = name[index]
-        except:
+        except BaseException:
             raise Exception(
                 "Could not get the item from {name}".format(name=name))
         if to_num:
@@ -1461,7 +1541,96 @@ def get_dict_items(name,
 
     if headers is False:
         ret_item.pop(0)
-    # special case. if only one item, return just one without list for ease of use
+    # special case. if only one item, return just one without list for ease of
+    # use
     if len(ret_item) == 1 and len(ret_item[0]) == 1:
         ret_item = ret_item[0][0]
     return ret_item
+
+
+def get_interfaces(device, link_name=None, opposite=False, phy=False, num=0):
+    """ Get current or opposite interface from topology section of testbed file
+
+        Args:
+            device ('obj'): Device object
+            link_name ('str'): link name
+            opposite ('bool'): find opposite device interface
+            phy ('bool'): find only physical interface
+            num ('int'): num of interface to return
+
+        Returns:
+            topology dictionary
+
+        Raises:
+            None
+
+    """
+    # Example topology section in testbed yaml file:
+    #         topology:
+    #             # D1:
+    #             Device1:
+    #                 interfaces:
+    #                     ge-0/0/1.0:
+    #                         alias: D1-D2-1
+    #                         link: D1-D2-1
+    #                         type: ethernet
+
+    #             # D2:
+    #             Device2:
+    #                 interfaces:
+    #                     ge-0/0/0.0:
+    #                         alias: D1-D2-1
+    #                         link: D1-D2-1
+    #                         type: ethernet
+    if link_name:
+        try:
+            link = device.interfaces[link_name].link
+        except Exception as e:
+            log.error(str(e))
+            return None
+        intf_list = link.find_interfaces(
+            device__name=Not(device.name) if opposite else device.name
+        )
+    else:
+        intf_list = device.find_interfaces()
+
+    if intf_list:
+        intf_list.sort()
+
+        if num > 0 and num <= len(intf_list):
+            return intf_list[num - 1]
+        phy_intf_list = []
+        if phy:
+            for intf in intf_list:
+                phy_intf = copy.copy(intf)
+                phy_intf.name = phy_intf.name.split('.')[0]
+                phy_intf_list.append(phy_intf)
+
+        return phy_intf_list if phy else intf_list
+    else:
+        return {}
+
+
+def get_interface_interfaces(
+        device,
+        link_name=None,
+        opposite=False,
+        phy=False,
+        num=0):
+    """ Get current or opposite interface from topology section of testbed file
+
+        Args:
+            device ('obj'): Device object
+            link_name ('str'): link name
+            opposite ('bool'): find opposite device interface
+            phy ('bool'): find only physical interface
+            num ('int'): num of interface to return
+
+        Returns:
+            topology dictionary
+
+        Raises:
+            None
+    """
+    return get_interfaces(device=device, link_name=link_name,
+                          opposite=opposite, phy=phy, num=num)

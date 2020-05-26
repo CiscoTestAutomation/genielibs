@@ -19,9 +19,9 @@ except ImportError:
 from genie.conf import Genie
 import genie.conf.base.testbed
 from genie.conf.base import Device
+from genie.conf.base.attributes import AttributesHelper, AttributesHelper2
 from genie.conf.base.cli import CliConfigBuilder
 from genie.conf.base.config import Config, YangConfig, CliConfig
-
 
 def _clean_cfgs_dict(cfgs, *, testbed=None, device=None, add_to_cfgs=None, merge=True):
     '''Clean configurations and return a dictionnary of lists of Config objects
@@ -274,7 +274,7 @@ class Testbed(genie.conf.base.testbed.Testbed):
         return bo
 
     def build_config(self, *, devices=None, links=None, interfaces=None,
-                     apply=True):
+                     attributes=None, apply=True):
         """method to build the configuration of the whole testbed
 
         Loops through each testbed, link and configure the whole testbed
@@ -649,6 +649,29 @@ class Testbed(genie.conf.base.testbed.Testbed):
 
             # TODO late shutdown
 
+        # check added features and add to configurations per device
+        if devices is None:
+            devices = self.devices
+        for device, device_obj in devices.items():
+            if device_obj.features:
+                cfgs[device] = CliConfigBuilder()
+                for feature in device_obj.features:
+                    # check if feature in attributes
+                    feature_name = feature.__class__.__name__.lower()
+                    if isinstance(attributes, dict):
+                        if feature_name in attributes:
+                            attr = AttributesHelper2(feature, attributes[feature_name])
+                            for _, sub, attributes2 in attr.mapping_items(
+                                'device_attr',
+                                keys=set([device_obj]), sort=True):
+                                cfgs[device].append_block(sub.build_config(apply=False, attributes=attributes2))
+                    else:
+                        attr = AttributesHelper2(feature, attributes)
+                        for _, sub, attributes2 in attr.mapping_items(
+                            'device_attr',
+                            keys=set([device_obj]), sort=True):
+                            cfgs[device].append_block(sub.build_config(apply=False, attributes=attributes2))
+
         if apply:
             flush_cfgs()  # Should be no-op
         else:
@@ -656,7 +679,7 @@ class Testbed(genie.conf.base.testbed.Testbed):
             return cfgs
 
     def build_unconfig(self, devices=None, links=None, interfaces=None,
-                       clean=False, apply=True):
+                       clean=False, attributes=None, apply=True):
         """method to build the configuration of the whole testbed
 
         Loops through each testbed, link and configure the whole testbed
@@ -929,6 +952,29 @@ class Testbed(genie.conf.base.testbed.Testbed):
             flush_cfgs()
 
             tgen_apply_exit_stack.close()
+
+        # check added features and add to configurations per device
+        if devices is None:
+            devices = self.devices
+        for device, device_obj in devices.items():
+            if device_obj.features:
+                cfgs[device] = CliConfigBuilder()
+                for feature in device_obj.features:
+                    # check if feature in attributes
+                    feature_name = feature.__class__.__name__.lower()
+                    if isinstance(attributes, dict):
+                        if feature_name in attributes:
+                            attr = AttributesHelper2(feature, attributes[feature_name])
+                            for _, sub, attributes2 in attr.mapping_items(
+                                'device_attr',
+                                keys=set([device_obj]), sort=True):
+                                cfgs[device].append_block(sub.build_unconfig(apply=False, attributes=attributes2))
+                    else:
+                        attr = AttributesHelper2(feature, attributes)
+                        for _, sub, attributes2 in attr.mapping_items(
+                            'device_attr',
+                            keys=set([device_obj]), sort=True):
+                            cfgs[device].append_block(sub.build_unconfig(apply=False, attributes=attributes2))
 
         if apply:
             flush_cfgs()  # Should be no-op

@@ -23,11 +23,33 @@ log = logging.getLogger(__name__)
 
 class Restore(object):
 
-    def save_configuration(self, device, method, abstract, default_dir, copy_to_standby=False):
+    def save_configuration_to_file(self, device, default_dir, file_name):
+        ''' Save current configuration to file on device
+        '''
+        file_path = '{}{}'.format(default_dir, file_name)
+        try:
+            # Instantiate a filetransferutils instance for IOSXE device
+            self.filetransfer = FileUtils.from_device(device)
+            self.filetransfer.copyconfiguration(source='running-config',
+                                                destination=file_path,
+                                                device=device)
+        except Exception as e:
+            log.error(e)
+            raise Exception(
+                "Issue saving config to {c}".format(
+                    c=file_path)) from e
+
+    def save_configuration(
+            self,
+            device,
+            method,
+            abstract,
+            default_dir,
+            copy_to_standby=False):
         if method == 'checkpoint':
             # compose checkpoint name
             self.ckname = self.__class__.__name__ + \
-                          time.ctime().replace(' ', '_').replace(':', '_')
+                time.ctime().replace(' ', '_').replace(':', '_')
             # Create checkpoint
             self.create_delete_checkpoint(device=device, name=self.ckname,
                                           action='create')
@@ -44,12 +66,12 @@ class Restore(object):
         elif method == 'config_replace':
             # Create unique filename
             self.filename = self.__class__.__name__ + \
-                                time.ctime().replace(' ', '_').replace(':', '_')
+                time.ctime().replace(' ', '_').replace(':', '_')
 
             # Set from/to locations
             self.from_url = 'running-config'
-            self.to_url = '{dir}{filename}'.format(filename=self.filename,
-                                                   dir=default_dir[device.name])
+            self.to_url = '{dir}{filename}'.format(
+                filename=self.filename, dir=default_dir[device.name])
 
             # Instantiate a filetransferutils instance for NXOS device
             self.filetransfer = FileUtils.from_device(device)
@@ -58,10 +80,10 @@ class Restore(object):
             self.filetransfer.copyconfiguration(source=self.from_url,
                                                 destination=self.to_url,
                                                 device=device)
-            
+
             if copy_to_standby:
-                self.stby_url = '{dir}{filename}'.format(dir='stby-{}'
-                    .format(default_dir[device.name]), filename=self.filename)
+                self.stby_url = '{dir}{filename}'.format(
+                    dir='stby-{}' .format(default_dir[device.name]), filename=self.filename)
 
                 # copy config to stby-bootflash:
                 self.filetransfer.copyconfiguration(source=self.from_url,
@@ -78,17 +100,25 @@ class Restore(object):
             # Return filename generated to caller
             return self.to_url
 
-    def restore_configuration(self, device, method, abstract, iteration=10,
-                              interval=60, compare=False, compare_exclude=[], reload_timeout=None,
-                              delete_after_restore=True):
+    def restore_configuration(
+            self,
+            device,
+            method,
+            abstract,
+            iteration=10,
+            interval=60,
+            compare=False,
+            compare_exclude=[],
+            reload_timeout=None,
+            delete_after_restore=True):
         if method == 'checkpoint':
             # Enable the feature
-            for i in range(1,iteration):
+            for i in range(1, iteration):
                 try:
                     self.rollback_checkpoint(device=device, name=self.ckname)
                     break
                 except Exception as e:
-                    if i == iteration-1:
+                    if i == iteration - 1:
                         raise Exception('Unable to rollback config')
                     else:
                         log.error(e)
@@ -102,39 +132,47 @@ class Restore(object):
                                               action='delete')
 
                 # Check if checkpoint is successfully deleted
-                self.check_checkpoint_status(device=device, name=self.ckname,
-                                             expect='delete', abstract=abstract)
+                self.check_checkpoint_status(
+                    device=device,
+                    name=self.ckname,
+                    expect='delete',
+                    abstract=abstract)
         elif method == 'local':
             # reover the deivce with whole running-config
             device.configure(self.run_config)
         elif method == 'config_replace':
-            for i in range(1,iteration):
+            for i in range(1, iteration):
                 # configure replace location:<filename>
-                output = device.execute('configure replace {}'.\
+                output = device.execute('configure replace {}'.
                                         format(self.to_url))
                 if 'Configure replace completed successfully' in output:
                     break
-                elif i == iteration-1:
+                elif i == iteration - 1:
                     raise Exception('Unable to execute config replace')
                 else:
-                    log.info('Config replace failed: sleeping {} seconds before'
-                             ' retrying.'. format(interval))
+                    log.info(
+                        'Config replace failed: sleeping {} seconds before'
+                        ' retrying.'. format(interval))
                     # Execute 'show config-replace log exec|verify'
-                    output = device.execute(['show config-replace log exec', 'show config-replace log verify'])
+                    output = device.execute(
+                        ['show config-replace log exec', 'show config-replace log verify'])
                     time.sleep(interval)
 
-            # Execute 'show config-replace log exec' and 'show config-replace log verify'
-            output = device.execute(['show config-replace log exec', 'show config-replace log verify'])
+            # Execute 'show config-replace log exec' and 'show config-replace
+            # log verify'
+            output = device.execute(
+                ['show config-replace log exec', 'show config-replace log verify'])
 
             # Check if reload is required after executing 'configure replace'
             for out in output.values():
                 if 'before switch reload' in out:
-                    raise GenieConfigReplaceWarning('Warning: reload needed after '
-                                                    'configure replace')
+                    raise GenieConfigReplaceWarning(
+                        'Warning: reload needed after ' 'configure replace')
 
             # Compare restored configuration to details in file
             if compare:
-                log.info("Comparing current running-config with config-replace file")
+                log.info(
+                    "Comparing current running-config with config-replace file")
 
                 # Default
                 exclude = ['device', 'maker', 'diff_ignore', 'callables',
@@ -156,22 +194,28 @@ class Restore(object):
                 more_file_config.tree()
 
                 # Diff 'show run' and config replace file contents
-                diff = Diff(show_run_config.config, more_file_config.config, exclude=exclude)
+                diff = Diff(
+                    show_run_config.config,
+                    more_file_config.config,
+                    exclude=exclude)
                 diff.findDiff()
 
                 # Check for differences
                 if len(diff.diffs):
                     log.error("Differences observed betweenrunning-config and "
-                              "config-replce file:'{f}' for device {d}:".\
+                              "config-replce file:'{f}' for device {d}:".
                               format(f=self.to_url, d=device.name))
                     log.error(str(diff.diffs))
-                    raise Exception("Comparison between running-config and "
-                                    "config-replace file '{f}' failed for device"
-                                    " {d}".format(f=self.to_url, d=device.name))
+                    raise Exception(
+                        "Comparison between running-config and "
+                        "config-replace file '{f}' failed for device"
+                        " {d}".format(
+                            f=self.to_url, d=device.name))
                 else:
-                    log.info("Comparison between running-config and config-replace"
-                             "file '{f}' passed for device {d}".\
-                             format(f=self.to_url, d=device.name))
+                    log.info(
+                        "Comparison between running-config and config-replace"
+                        "file '{f}' passed for device {d}". format(
+                            f=self.to_url, d=device.name))
 
             if delete_after_restore:
                 # Delete location:<filename>
@@ -180,7 +224,8 @@ class Restore(object):
                 self.filetransfer.deletefile(target=self.to_url, device=device)
 
                 # Verify location:<filename> deleted
-                dir_output = self.filetransfer.dir(target=self.to_url,device=device)
+                dir_output = self.filetransfer.dir(
+                    target=self.to_url, device=device)
                 for file in dir_output:
                     if self.filename in file:
                         break
@@ -240,7 +285,6 @@ class Restore(object):
                 if 'ERROR' in ret:
                     raise SyntaxError(ret)
 
-
     def rollback_checkpoint(self, device, name):
         '''
             Rollback configuration by checkpoint
@@ -265,15 +309,16 @@ class Restore(object):
         log.info('rollback configuration by checkpoint {n}'.format(n=name))
         # rollback checkpoint
         try:
-            r_output = device.execute('rollback running-config checkpoint {} verbose'.format(name))
+            r_output = device.execute(
+                'rollback running-config checkpoint {} verbose'.format(name))
         except Exception as e:
             raise SyntaxError('Error when running rollback running-config '
                               'checkpoint {} verbose'.format(name)) from e
 
         # Check if rollback failed and execute supporting commands
         if re.search('Rollback failed', r_output):
-            log.info("Rollback failed for checkpoint '{}':\n Collecting data".\
-                        format(name))
+            log.info("Rollback failed for checkpoint '{}':\n Collecting data".
+                     format(name))
             device.execute('show rollback log verify')
             device.execute('show rollback log exec')
             raise Exception('Rollback failed for checkpoint {}'.format(name))
@@ -323,4 +368,3 @@ class Restore(object):
                 log.info('{n} is successfully deleted'.format(n=name))
             else:
                 raise KeyError('{n} is failed to delete'.format(n=name))
-

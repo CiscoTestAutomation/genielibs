@@ -22,11 +22,39 @@ log = logging.getLogger(__name__)
 
 class Restore(object):
 
-    def save_configuration(self, device, method, abstract, default_dir, copy_to_standby=False):
+    def save_configuration_to_file(
+            self,
+            device,
+            default_dir,
+            file_name,
+            timeout=60):
+        ''' Save current configuration to file on device
+        '''
+        file_path = '{}{}'.format(default_dir, file_name)
+        try:
+            # Instantiate a filetransferutils instance for IOSXE device
+            self.filetransfer = FileUtils.from_device(device)
+            self.filetransfer.copyconfiguration(source='running-config',
+                                                destination=file_path,
+                                                device=device,
+                                                timeout_seconds=timeout)
+        except Exception as e:
+            log.error(e)
+            raise Exception(
+                "Issue saving config to {c}".format(
+                    c=file_path)) from e
+
+    def save_configuration(
+            self,
+            device,
+            method,
+            abstract,
+            default_dir,
+            copy_to_standby=False):
         if method == 'checkpoint':
             # compose checkpoint name
             self.ckname = self.__class__.__name__ + \
-                          time.ctime().replace(' ', '_').replace(':', '_')
+                time.ctime().replace(' ', '_').replace(':', '_')
             # Create checkpoint
             self.create_delete_checkpoint(device=device, name=self.ckname,
                                           abstract=abstract, action='create')
@@ -40,12 +68,12 @@ class Restore(object):
 
             # Create unique filename
             self.filename = self.__class__.__name__ + \
-                                time.ctime().replace(' ', '_').replace(':', '_')
+                time.ctime().replace(' ', '_').replace(':', '_')
 
             # Set from/to locations
             self.from_url = 'running-config'
-            self.to_url = '{dir}{filename}'.format(filename=self.filename,
-                                                   dir=default_dir[device.name])
+            self.to_url = '{dir}{filename}'.format(
+                filename=self.filename, dir=default_dir[device.name])
 
             # Instantiate a filetransferutils instance for IOSXE device
             self.filetransfer = FileUtils.from_device(device)
@@ -56,8 +84,8 @@ class Restore(object):
                                                 device=device)
 
             if copy_to_standby:
-                self.stby_url = '{dir}{filename}'.format(dir='stby-{}'
-                    .format(default_dir[device.name]), filename=self.filename)
+                self.stby_url = '{dir}{filename}'.format(
+                    dir='stby-{}' .format(default_dir[device.name]), filename=self.filename)
 
                 # copy config to stby-bootflash:
                 self.filetransfer.copyconfiguration(source=self.from_url,
@@ -74,14 +102,23 @@ class Restore(object):
             # Return filename generated to caller
             return self.to_url
 
-    def restore_configuration(self, device, method, abstract, iteration=10,
-                              interval=60, compare=False, compare_exclude=[], reload_timeout=1200,
-                              delete_after_restore=True):
+    def restore_configuration(
+            self,
+            device,
+            method,
+            abstract,
+            iteration=10,
+            interval=60,
+            compare=False,
+            compare_exclude=[],
+            reload_timeout=1200,
+            delete_after_restore=True):
         if method == 'checkpoint':
             # Enable the feature
-            for i in range(1,iteration):
+            for i in range(1, iteration):
                 try:
-                    out = self.rollback_checkpoint(device=device, name=self.ckname)
+                    out = self.rollback_checkpoint(
+                        device=device, name=self.ckname)
                 except Exception as e:
                     raise Exception('Unable to rollback config')
 
@@ -97,12 +134,18 @@ class Restore(object):
 
             if delete_after_restore:
                 # Delete the checkpoint
-                self.create_delete_checkpoint(device=device, name=self.ckname,
-                                              abstract=abstract, action='delete')
+                self.create_delete_checkpoint(
+                    device=device,
+                    name=self.ckname,
+                    abstract=abstract,
+                    action='delete')
 
                 # Check if checkpoint is successfully deleted
-                self.check_checkpoint_status(device=device, name=self.ckname,
-                                             expect='delete', abstract=abstract)
+                self.check_checkpoint_status(
+                    device=device,
+                    name=self.ckname,
+                    expect='delete',
+                    abstract=abstract)
         elif method == 'local':
             # reover the deivce with whole running-config
             device.configure(self.run_config)
@@ -117,31 +160,37 @@ class Restore(object):
                           action='sendline(Y)',
                           loop_continue=True,
                           continue_timer=False),
-                ])
+            ])
             # dialog for plan B
             alt_dialog = Dialog([
-            Statement(pattern=r'Destination filename.*',
-                      action='sendline()',
-                      loop_continue=True,
-                      continue_timer=False),
+                Statement(pattern=r'Destination filename.*',
+                          action='sendline()',
+                          loop_continue=True,
+                          continue_timer=False),
             ])
 
-            for i in range(1,iteration):
+            for i in range(1, iteration):
                 # configure replace location:<filename>
-                out = device.execute('configure replace {}'.\
-                            format(self.to_url), reply=dialog, error_pattern=[])
+                out = device.execute(
+                    'configure replace {}'. format(
+                        self.to_url),
+                    reply=dialog,
+                    error_pattern=[])
 
                 if out and 'Rollback Done' in out:
                     break
                 elif 'invalid' in out.lower():
-                    # device does not support config replace, do it in different way
+                    # device does not support config replace, do it in
+                    # different way
                     device.execute('erase startup-config')
-                    device.execute('copy {} startup-config'.format(self.to_url), reply=alt_dialog)
+                    device.execute(
+                        'copy {} startup-config'.format(self.to_url), reply=alt_dialog)
                     device.reload(reload_timeout=reload_timeout)
                     break
                 else:
-                    log.info('Config replace failed: sleeping {} seconds before'
-                             ' retrying.'.format(interval))
+                    log.info(
+                        'Config replace failed: sleeping {} seconds before'
+                        ' retrying.'.format(interval))
                     time.sleep(interval)
 
             else:
@@ -149,12 +198,19 @@ class Restore(object):
 
             # Compare restored configuration to details in file
             if compare:
-                log.info("Comparing current running-config with config-replace file")
+                log.info(
+                    "Comparing current running-config with config-replace file")
 
                 # Default
-                exclude = ['device', 'maker', 'diff_ignore', 'callables',
-                           '(Current configuration.*)', '(.*Building configuration.*)',
-                           '(.*Load for.*)', '(.*Time source.*)']
+                exclude = [
+                    'device',
+                    'maker',
+                    'diff_ignore',
+                    'callables',
+                    '(Current configuration.*)',
+                    '(.*Building configuration.*)',
+                    '(.*Load for.*)',
+                    '(.*Time source.*)']
                 if compare_exclude:
                     if isinstance(compare_exclude, str):
                         exclude.extend([compare_exclude])
@@ -172,22 +228,28 @@ class Restore(object):
                 more_file_config.tree()
 
                 # Diff 'show run' and config replace file contents
-                diff = Diff(show_run_config.config, more_file_config.config, exclude=exclude)
+                diff = Diff(
+                    show_run_config.config,
+                    more_file_config.config,
+                    exclude=exclude)
                 diff.findDiff()
 
                 # Check for differences
                 if len(diff.diffs):
                     log.error("Differences observed betweenrunning-config and "
-                              "config-replce file:'{f}' for device {d}:".\
+                              "config-replce file:'{f}' for device {d}:".
                               format(f=self.to_url, d=device.name))
                     log.error(str(diff.diffs))
-                    raise Exception("Comparison between running-config and "
-                                    "config-replace file '{f}' failed for device"
-                                    " {d}".format(f=self.to_url, d=device.name))
+                    raise Exception(
+                        "Comparison between running-config and "
+                        "config-replace file '{f}' failed for device"
+                        " {d}".format(
+                            f=self.to_url, d=device.name))
                 else:
-                    log.info("Comparison between running-config and config-replace"
-                             "file '{f}' passed for device {d}".\
-                             format(f=self.to_url, d=device.name))
+                    log.info(
+                        "Comparison between running-config and config-replace"
+                        "file '{f}' passed for device {d}". format(
+                            f=self.to_url, d=device.name))
 
             if delete_after_restore:
                 # Delete location:<filename>
@@ -196,7 +258,8 @@ class Restore(object):
                 self.filetransfer.deletefile(target=self.to_url, device=device)
 
                 # Verify location:<filename> deleted
-                dir_output = self.filetransfer.dir(target=self.to_url,device=device)
+                dir_output = self.filetransfer.dir(
+                    target=self.to_url, device=device)
                 for file in dir_output:
                     if self.filename in file:
                         break
@@ -242,21 +305,30 @@ class Restore(object):
             # create checkpoint
             try:
                 # get dir location
-                dir_loc = abstract.parser.show_platform.Dir(device=device).parse()
+                dir_loc = abstract.parser.show_platform.Dir(
+                    device=device).parse()
                 dir_loc = dir_loc['dir']['dir'].replace(':/', '')
                 # activate archive mode
-                cfg_strs = ["archive", "path {dir}:{name}".format(dir=dir_loc, name=name),
-                            "do-exec archive config"]
+                cfg_strs = [
+                    "archive",
+                    "path {dir}:{name}".format(
+                        dir=dir_loc,
+                        name=name),
+                    "do-exec archive config"]
                 ret = device.configure(cfg_strs)
             except Exception as e:
-                raise SyntaxError("Issue sending {c}".format(c=cfg_strs)) from e
+                raise SyntaxError(
+                    "Issue sending {c}".format(
+                        c=cfg_strs)) from e
             else:
                 if 'ERROR' in ret:
                     raise SyntaxError("Issue sending {c}".format(c=cfg_strs))
         else:
             try:
                 # get location
-                location = re.search('(([\w\-]+)\:+).*', self.ckname).groups()[0]
+                location = re.search(
+                    r'(([\w\-]+)\:+).*',
+                    self.ckname).groups()[0]
 
                 # delete the archive file
                 dialog = Dialog([
@@ -276,7 +348,7 @@ class Restore(object):
                               action='sendline()',
                               loop_continue=True,
                               continue_timer=False),
-                    ])
+                ])
 
                 device.execute('delete {}'.format(self.ckname), reply=dialog)
 
@@ -284,11 +356,12 @@ class Restore(object):
                 cfg_strs = ['archive', 'no path', 'exit']
                 ret = device.configure(cfg_strs)
             except Exception as e:
-                raise SyntaxError("Issue sending {c}".format(c=cfg_strs)) from e
+                raise SyntaxError(
+                    "Issue sending {c}".format(
+                        c=cfg_strs)) from e
             else:
                 if 'ERROR' in ret:
                     raise SyntaxError("Issue sending {c}".format(c=cfg_strs))
-
 
     def rollback_checkpoint(self, device, name):
         '''
@@ -319,11 +392,13 @@ class Restore(object):
                           action='sendline(y)',
                           loop_continue=True,
                           continue_timer=False)])
-            return device.execute('configure replace {}'.format(name), reply=dialog, error_pattern=[])
+            return device.execute(
+                'configure replace {}'.format(name),
+                reply=dialog,
+                error_pattern=[])
         except Exception as e:
             raise SyntaxError('Error when running rollback running-config '
                               'checkpoint {}'.format(name)) from e
-
 
     def check_checkpoint_status(self, device, name, abstract, expect='create'):
         '''
@@ -364,10 +439,11 @@ class Restore(object):
                 self.ckname = ret['archive']['most_recent_file']
                 log.info('{n} is successfully created'.format(n=name))
             else:
-                raise KeyError('{n} is failed to create - no recent archive is found'.format(n=name))
+                raise KeyError(
+                    '{n} is failed to create - no recent archive is found'.format(n=name))
         else:
             if (not ret) or ('most_recent_file' not in ret['checkpoint']):
                 log.info('{n} is successfully deleted'.format(n=name))
             else:
-                raise KeyError('{n} is failed to delete - recent archive still can be found'.format(n=name))
-
+                raise KeyError(
+                    '{n} is failed to delete - recent archive still can be found'.format(n=name))

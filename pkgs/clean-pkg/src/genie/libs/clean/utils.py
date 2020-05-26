@@ -28,7 +28,8 @@ from unicon.core.errors import (SubCommandFailure, TimeoutError,
 # Logger
 log = logging.getLogger()
 
-SECTIONS_WITH_IMAGE = ['copy_to_linux',
+SECTIONS_WITH_IMAGE = ['tftp_boot',
+                       'copy_to_linux',
                        'copy_to_device',
                        'change_boot_variable',
                        'verify_running_image']
@@ -77,8 +78,7 @@ def verify_num_images_provided(image_list, expected_images=1):
         return True
 
 
-def _apply_configuration(step, device, configuration=None, file=None,
-    timeout=60):
+def _apply_configuration(device, configuration=None, file=None, timeout=60):
 
     # It is currently needed as hostname can be changed while applying
     # configuration. Unicon will add an enhnacement to learn hostname
@@ -86,10 +86,17 @@ def _apply_configuration(step, device, configuration=None, file=None,
 
     # Apply raw configuration strings or copy file provided to running-config
     try:
-        if configuration:
+        if configuration and not file:
+            log.info("Apply raw configuration provided to device {}".\
+                     format(device.name))
+
             # Apply raw config strings
             device.configure(configuration, timeout=timeout)
-        elif file:
+
+        elif file and not configuration:
+            log.info("Copy configuration file '{}' to running-config on "
+                     "device {}".format(file, device.name))
+
             # Copy file to running-config
             device.api.\
                 execute_copy_to_running_config(file=file,
@@ -105,12 +112,13 @@ def _apply_configuration(step, device, configuration=None, file=None,
             try:
                 device.destroy()
                 device.connect(learn_hostname=True)
-                step.failed("Error while applying configuration to device {}".\
-                            format(device.name))
             except Exception as e:
-                log.error(str(e))
-                step.failed("Error while reconnecting to device {} after "
-                            "applying configuration".format(device.name))
+                log.error("Error while reconnecting to device {} after "
+                          "applying configuration".format(device.name))
+                raise e from None
+            else:
+                raise Exception("Error while applying configuration to device "
+                                "{}".format(device.name))
 
         # StateMachineError is expected as the hostname would change after
         # applying config. Reconnect to the device and learn new hostname
@@ -120,11 +128,9 @@ def _apply_configuration(step, device, configuration=None, file=None,
             device.connect(learn_hostname=True)
         except Exception as e:
             # Okay, cannot reconnect, fail, stop clean
-            step.failed("{}\nFailed to reconnect to device after applying "
-                        "configuration on {}".format(str(e), device.name))
-        else:
-            step.passed("Successfully applied configuration to device {}".\
-                        format(device.name))
+            log.error("Failed to reconnect to device after applying "
+                      "configuration on {}".format(device.name))
+            raise e from None
 
 
 def update_clean_section(device, order, images):
@@ -144,6 +150,11 @@ def update_clean_section(device, order, images):
             continue
         elif not device.clean[section]:
             device.clean[section] = {}
+
+        # Section: tftp_boot
+        if section == 'tftp_boot':
+            image_handler.update_tftp_boot()
+            continue
 
         # Section: copy_to_linux
         if section == 'copy_to_linux':
@@ -304,7 +315,6 @@ def validate_schema(clean, testbed):
     # these sections are not true stages and therefore cant be loaded
     sections_to_ignore = [
         'images',
-        'device_recovery',
         'order'
     ]
 
@@ -324,13 +334,14 @@ def validate_schema(clean, testbed):
                         "testbed <file>' to validate the testbed file.")
 
     clean_json = load_clean_json()
+    from genie.libs.clean.stages.recovery import recovery_processor
 
     warning_messages = []
     for dev in clean["devices"]:
         schema = base_schema.setdefault('devices', {}).setdefault(dev, {})
         schema.update({Optional('order'): list})
         schema.update({Optional('device_recovery'): dict})
-        schema.update({Optional('images'): list})
+        schema.update({Optional('images'): Or(list, dict)})
 
         clean_data = clean["devices"][dev]
 
@@ -352,6 +363,10 @@ def validate_schema(clean, testbed):
         for section in clean_data:
             # ignore sections that aren't true stages
             if section in sections_to_ignore:
+                continue
+
+            if section == 'device_recovery':
+                schema.update({'device_recovery': recovery_processor.schema})
                 continue
 
             # when no data is provided under stage, change None to dict

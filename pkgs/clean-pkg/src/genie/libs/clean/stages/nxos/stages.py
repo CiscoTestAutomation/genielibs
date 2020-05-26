@@ -129,6 +129,10 @@ def change_boot_variable(section, steps, device, images, copy_vdc_all=False,
                                     check_interval=standby_copy_check_interval)
             except Exception as e:
                 section.failed('{e}'.format(e=e))
+    else:
+        section.passed("Successfully loaded boot variables for {}".\
+                       format(device.name))
+
 
 #===============================================================================
 #                       stage: tftp_boot

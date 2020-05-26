@@ -152,4 +152,3 @@ class FileUtils(FileUtilsDeviceBase):
         super().copyconfiguration(source=source, destination=destination,
                                   cmd=cmd, timeout_seconds=timeout_seconds,
                                   used_server=used_server, *args, **kwargs)
-

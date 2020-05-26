@@ -68,7 +68,8 @@ def connect(section, device, timeout=200, **kwargs):
             device.connect_reply.remove(rommon)
         except Exception:
             pass
-        
+
+
 #===============================================================================
 #                       stage: ping_server
 #===============================================================================
@@ -207,13 +208,14 @@ def ping_server(section, steps, device, server, vrf=None, timeout=60,
     Optional('image_length_limit'): int,
     Optional('copy_attempts'): int,
     Optional('check_file_stability'): bool,
-    Optional('unique_file_name'):bool
+    Optional('unique_file_name'): bool,
+    Optional('unique_number'): int,
 })
 @aetest.test
 def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
     timeout=300, check_image_length=False, overwrite=False,
     append_hostname=False, image_length_limit=63, copy_attempts=1,
-    check_file_stability=False, unique_file_name=False):
+    check_file_stability=False, unique_file_name=False, unique_number=None):
 
     '''
     Clean yaml file schema:
@@ -236,7 +238,8 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
                     append_hostname: <append device hostname to the end of image while copying 'bool', default False> (Optional)
                     copy_attempts: <number of times to retry if copy failed, default 1 (no retry) 'int'> (Optional)
                     check_file_stability: <Verify if the files are still being copied on the file server, 'bool' default False> (Optional)
-                    unique_file_name: <append a six digit random number to the end of file name to make it unique, 'bool', default False> (Optional)
+                    unique_file_name: <Enable/Disable appending six-digit random number to the end of file name to make it unique, 'bool', default False> (Optional)
+                    unique_number: <User provided six-digit random number to append to the end of file name to make it unique, 'int', default None> (Optional)
 
     Example:
     --------
@@ -253,7 +256,9 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
                     destination:
                         hostname: file-server
                         directory: /auto/tftp-ssr/
-
+                    copy_attempts: 2
+                    check_file_stability: True
+                    unique_file_name: True
 
     Flow:
     -----
@@ -345,26 +350,31 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
                                                           append_hostname=append_hostname,
                                                           check_image_length=check_image_length,
                                                           limit=image_length_limit,
-                                                          unique_file_name=unique_file_name)
+                                                          unique_file_name=unique_file_name,
+                                                          unique_number=unique_number)
                 except Exception as e:
                     log.error(banner("*** Terminating Genie Clean ***"))
                     section.failed("Can not change file name. Terminating clean:\n{e}"
                             .format(e=e), goto=['exit'])
 
-                file_path = os.path.join(dest_dir, new_name)
+                file_path = os.path.join(destination_hostname or dest_dir, new_name)
+
                 if not overwrite:
+                    log.info("Checking if file '{}' already exists at {}".\
+                            format(file_path, destination_hostname or dest_dir))
                     try:
-                        log.info("Verifying existence of '{}' on the file server {}".format(
-                            file_path, destination_hostname or dest_dir))
-                        exist = device.api.verify_file_exists_on_server(protocol=protocol,
-                                                                        server=destination_hostname,
-                                                                        file=file_path,
-                                                                        size=file_size,
-                                                                        timeout=timeout,
-                                                                        fu_session=fu)
-                    except NotImplementedError as e:
-                        log.warning(str(e))
+                        exist = device.api.verify_file_exists_on_server(
+                                                protocol=protocol,
+                                                server=destination_hostname,
+                                                file=file_path,
+                                                size=file_size,
+                                                timeout=timeout,
+                                                fu_session=fu)
+                    except Exception as e:
                         exist = False
+                        log.error("Unable to verify if file '{}' already exists"
+                                  " at {}\n{}".format(file_path,
+                                  destination_hostname or dest_dir, str(e)))
                 else:
                     exist = False
 
@@ -487,27 +497,29 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
         for name, image_data in section.history['copy_to_linux'].parameters[
             'files_copied'].items():
 
-            with step.start("Verify {}".format(image_data['dest_path'])) as substep:
-                # if size is -1 it means it failed to get the size
-                if image_data['size'] != -1:
-                    try:
-                        if not device.api.verify_file_exists_on_server(protocol=protocol,
-                                                                       server=destination_hostname,
-                                                                       file=image_data['dest_path'],
-                                                                       size=image_data['size'],
-                                                                       timeout=timeout,
-                                                                       fu_session=fu):
-                            substep.failed("File not found or size is not the same on the "
-                                           "origin and on the file server")
-                        substep.passed("File size is the same on the "
-                                       "origin and on the file server")
-                    except NotImplementedError as e:
-                        substep.skipped(str(e))
-                else:
-                    substep.skipped(
-                        'File has been copied correctly but cannot confirm file size')
-
-    fu.close()
+            # If size is -1 it means it failed to get the size
+            if image_data['size'] != -1:
+                try:
+                    if not device.api.verify_file_exists_on_server(
+                                                protocol=protocol,
+                                                server=destination_hostname,
+                                                file=image_data['dest_path'],
+                                                size=image_data['size'],
+                                                timeout=timeout,
+                                                fu_session=fu):
+                        log.error(banner("*** Terminating Genie Clean ***"))
+                        section.failed("File size is not the same on the origin"
+                                       " and on the file server", goto=['exit'])
+                    else:
+                        section.passed("File size is the same on the origin "
+                                       "and on the file server")
+                except Exception as e:
+                    log.error(banner("*** Terminating Genie Clean ***"))
+                    section.failed("File size is not the same on the origin"
+                                   " and on the file server", goto=['exit'])
+            else:
+                step.skipped("File has been copied correctly but cannot "
+                             "verify file size")
 
 
 #===============================================================================
@@ -640,7 +652,7 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
 
     # Check image files provided
     if verify_num_images:
-        # Get filesize of image file on remote server
+        # Verify correct number of images provided
         with steps.start("Verify correct number of images provided") as step:
             if not verify_num_images_provided(image_list=image_files,
                                         expected_images=expected_num_images):
@@ -667,7 +679,7 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
     # Loop over all image files provided by user
     for file in image_files:
 
-        # Get filesize of image file on remote server
+        # Get filesize of image files on remote server
         with steps.start("Get filesize of '{}' on remote server '{}'".\
                         format(file, server)) as step:
             try:
@@ -879,14 +891,17 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
                                             file=image_data['dest_path'],
                                             size=image_data['size'],
                                             dir_output=dir_after):
-                    step.failed("File does not exist or size is not the same "
-                                "on remote server and on the device")
+                    log.error(banner("*** Terminating Genie Clean ***"))
+                    section.failed("Size of image file copied to device {} is "
+                                   "not the same as remote server filesize".\
+                                   format(device.name), goto=['exit'])
                 else:
-                    step.passed("File size is the same on remote server and on "
-                                "the device")
+                    section.passed("Size of image file copied to device {} is "
+                                   "the same as imaage filesize on remote server".\
+                                   format(device.name))
             else:
-                step.skipped("File has been copied correctly but cannot "
-                             "verify file size")
+                step.skipped("Image file has been copied to device {} correctly"
+                             " but cannot verify file size".format(device.name))
 
 
 #===============================================================================
@@ -944,12 +959,14 @@ def write_erase(section, steps, device, timeout=300):
     Optional('sleep_after_reload'): int,
     Optional('credentials'): str,
     Optional('timeout'): int,
+    Optional('check_modules'): bool,
     Optional('module_timeout'): int,
     Optional('module_interval'): int,
 })
 @aetest.test
 def reload(section, steps, device, prompt_recovery=True, sleep_after_reload=120,
-    credentials=None, timeout=800, module_timeout=180, module_interval=30):
+    credentials=None, timeout=800, check_modules=True, module_timeout=180,
+    module_interval=30):
 
     '''
     Clean yaml file schema:
@@ -957,10 +974,11 @@ def reload(section, steps, device, prompt_recovery=True, sleep_after_reload=120,
     devices:
       <device>:
         reload:
-          prompt_recovery: <Enable/Disable prompt recovery feature, 'boolean'> (Optional)
+          prompt_recovery: <Enable/Disable prompt recovery feature, 'bool'> (Optional)
           sleep_after_reload: <Time to sleep after reload, 'int'> (Optional)
           credentials: <Credential name defined in the testbed yaml file to be used during reload, 'str'> (Optional)
           timeout: <reload timeout value, default 800 seconds. 'int'> (Optional)
+          check_modules: <Enable/Disable checking of modules after reload, 'bool'> (Optional)
           module_timeout: <timeout value to verify modules are in stable state, default 180 seconds. 'int'> (Optional)
           module_interval: <interval value between checks for verifying module status, default 30 seconds. 'int'> (Optional)
 
@@ -973,6 +991,7 @@ def reload(section, steps, device, prompt_recovery=True, sleep_after_reload=120,
           sleep_after_reload: 120
           credentials: clean_reload_creds
           timeout: 600
+          check_modules: True
           module_timeout: 120
           module_interval: 30
 
@@ -1032,18 +1051,19 @@ def reload(section, steps, device, prompt_recovery=True, sleep_after_reload=120,
                      format(device.name))
 
     # Verify all modules are in stable state
-    with steps.start("Verify modules on {} are in stable state after reload".\
-                     format(device.name)) as step:
-        try:
-            device.api.verify_module_status(timeout=module_timeout,
-                                            interval=module_interval)
-        except Exception as e:
-            log.error(banner("*** Terminating Genie Clean ***"))
-            section.failed("Modules on {} are not in stable state after reload".\
-                           format(device.name), goto=['exit'])
-        else:
-            section.passed("Modules on {} are in stable state after reload".\
-                           format(device.name))
+    if check_modules:
+        with steps.start("Verify modules on {} are in stable state after "
+                         "reload".format(device.name)) as step:
+            try:
+                device.api.verify_module_status(timeout=module_timeout,
+                                                interval=module_interval)
+            except Exception as e:
+                log.error(banner("*** Terminating Genie Clean ***"))
+                section.failed("Modules on {} are not in stable state after "
+                               "reload".format(device.name), goto=['exit'])
+            else:
+                section.passed("Modules on {} are in stable state after "
+                               "reload".format(device.name))
 
 
 #===============================================================================
@@ -1077,7 +1097,7 @@ def apply_configuration(section, steps, device, configuration=None, file=None,
           file: <Configuration file> (Optional)
           config_timeout: <Timeout in seconds, 'int'> (Optional)
           config_stable_time: <Time for configuration stability in seconds, 'int'> (Optional)
-          copy_vdc_all: <To copy on all VDCs or not, 'boolean'> (Optional)
+          copy_vdc_all: <To copy on all VDCs or not, 'bool'> (Optional)
           max_time: <Maximum time section will take for checks in seconds, 'int'> (Optional)
           check_interval: <Time interval, 'int'> (Optional)
 
@@ -1108,21 +1128,20 @@ def apply_configuration(section, steps, device, configuration=None, file=None,
              "\n2- Copy running-config to startup-config"
              "\n3- Sleep to stabilize configuration on the device")
 
-    # Caller has provided configuration file to apply onto device
-    if file:
-        with steps.start("Copy configuration file '{}' to device {}".\
-                         format(file, device.name)) as step:
-
-            _apply_configuration(step, device, file=file,
-                                 timeout=config_timeout)
-
-    # Caller has provided raw configuration to apply to the device
-    if configuration:
-        with steps.start("Apply raw configuration provided to device {}".\
-                         format(device.name)) as step:
-
-            _apply_configuration(step, device, configuration=configuration,
-                                 timeout=config_timeout)
+    # User has provided raw output or configuration file to apply onto device
+    with steps.start("Apply configuration to device {} after reload".\
+                     format(device.name)) as step:
+        try:
+            _apply_configuration(device=device, configuration=configuration,
+                                 file=file, timeout=config_timeout)
+        except Exception as e:
+            log.error(banner("*** Terminating Genie Clean ***"))
+            section.failed("Error while applying configuration to device "
+                            "{} after reload\n{}".format(device.name, str(e)),
+                            goto=['exit'])
+        else:
+            step.passed("Successfully applied configuration to device {} "
+                        "after reload".format(device.name))
 
     # Copy running-config to startup-config
     with steps.start("Copy running-config to startup-config on device {}".\
@@ -1133,14 +1152,20 @@ def apply_configuration(section, steps, device, configuration=None, file=None,
                                                  check_interval=check_interval,
                                                  copy_vdc_all=copy_vdc_all)
         except Exception as e:
-            step.failed("Failed to copy running-config to startup-config on "
-                        "{}\n{}".format(device.name, str(e)))
+            log.error(banner("*** Terminating Genie Clean ***"))
+            section.failed("Failed to copy running-config to startup-config on "
+                           "{}\n{}".format(device.name, str(e)), goto=['exit'])
+        else:
+            step.passed("Successfully copied running-config to startup-config "
+                        "on {}".format(device.name))
 
     # Allow configuration to stabilize
     with steps.start("Allow configuration to stabilize on device {}".\
                      format(device.name)) as step:
         log.info("Sleeping for '{}' seconds".format(config_stable_time))
         time.sleep(config_stable_time)
+        section.passed("Successfully applied configuration after reloading "
+                       "device {}".format(device.name))
 
 
 #===============================================================================
@@ -1183,7 +1208,12 @@ def verify_running_image(section, steps, device, images):
         try:
             device.api.verify_current_image(images=images)
         except Exception as e:
-            step.failed("{e}".format(e=e))
+            log.error(banner("*** Terminating Genie Clean ***"))
+            section.failed("Unable to verify running image on device {}\n{}".\
+                           format(device.name, str(e)), goto=['exit'])
+        else:
+            section.passed("Successfully verified running image on device {}".\
+                           format(device.name))
 
 
 #===============================================================================

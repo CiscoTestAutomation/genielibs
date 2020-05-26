@@ -100,10 +100,10 @@ def change_boot_variable(section, steps, device, images, timeout=300,
 
         # Get list of existing boot images if any
         try:
-            curr_boot_images = device.api.get_boot_variables()
+            curr_boot_images = device.api.get_boot_variables(boot_var='current')
         except Exception as e:
-            section.failed("Unable to check existing boot images on {}:\n{}".\
-                           format(device.name, str(e)), goto=['exit'])
+            step.failed("Unable to check existing boot images on {}:\n{}".\
+                        format(device.name, str(e)))
 
         if not curr_boot_images:
             step.passed("Device {} does not have any previously configured "
@@ -115,7 +115,7 @@ def change_boot_variable(section, steps, device, images, timeout=300,
                                                  timeout=timeout)
             except Exception as e:
                 step.failed("Failed to delete previously configured boot "
-                            "variable on {}".format(device.name))
+                            "variable on {}\n{}".format(device.name, str(e)))
             else:
                 step.passed("Succesfully deleted previously configured boot "
                             "variables on {}".format(device.name))
@@ -194,7 +194,7 @@ def change_boot_variable(section, steps, device, images, timeout=300,
             except Exception as e:
                 log.error(str(e))
                 log.error(banner("*** Terminating Genie Clean ***"))
-                section.failed("Failed to set copy running-config to "
+                section.failed("Failed to copy running-config to "
                                "startup-config on device {}".\
                                format(device.name), goto=['exit'])
             else:
@@ -214,8 +214,9 @@ def change_boot_variable(section, steps, device, images, timeout=300,
         if not device.api.verify_boot_variable(boot_images=images,
                                                output=show_bootvar_output):
             log.error(banner("*** Terminating Genie Clean ***"))
-            section.failed("Boot variables not correctly set for reloading "
-                           "device {}".format(device.name), goto=['exit'])
+            section.failed("Boot variables are not correctly set to {} prior "
+                           "to reloading device {}".format(images, device.name),
+                           goto=['exit'])
         else:
             step.passed("Verified boot variables are correctly set on {}".\
                         format(device.name))
@@ -232,8 +233,8 @@ def change_boot_variable(section, steps, device, images, timeout=300,
             section.failed("Config-register not correctly set for next reload "
                            "on device {}".format(device.name), goto=['exit'])
         else:
-            step.passed("Verified config-register is correctly set on {}".\
-                        format(device.name))
+            section.passed("Verified config-register is correctly set on {}".\
+                           format(device.name))
 
 
 #===============================================================================
@@ -247,11 +248,15 @@ def change_boot_variable(section, steps, device, images, timeout=300,
     'subnet_mask': str,
     'gateway': str,
     'tftp_server': str,
-    'timeout': int
+    'recovery_password': str,
+    Optional('timeout'): int,
+    Optional('config_reg_timeout'): int,
+    Optional('device_reload_sleep'): int,
 })
 @aetest.test
 def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
-              tftp_server, image, timeout=120):
+              tftp_server, image, recovery_password=None, timeout=600,
+              config_reg_timeout=30, device_reload_sleep=20):
     '''
     Clean yaml file schema:
     -----------------------
@@ -260,7 +265,11 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
             ip_address: <Management ip address to configure to reach to the TFTP server `str`> (Mandatory)
             subnet_mask: <Management subnet mask `str`> (Mandatory)
             gateway: <Management gateway `str`> (Mandatory)
-            tftp_server: <tftp server is reachable with management interface> (Mandatory)
+            tftp_server: <tftp server is reachable with management interface `str`> (Mandatory)
+            recovery_password: <Enable password for device required after bootup `str`> (Optional, Default None)
+            timeout: <Max time during which TFTP boot must complete `int`> (Optional, Default 600 seconds)
+            config_reg_timeout: <Max time to set config-register `int`> (Optional, Default 30 seconds)
+            device_reload_sleep: <Max time to wait after reloading device with config-register 0x0 `int`> (Optional, Default 20 seconds)
 
     Example:
     --------
@@ -271,6 +280,10 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
         gateway: 10.1.7.1
         subnet_mask: 255.255.255.0
         tftp_server: 11.1.7.251
+        recovery_password: nbv_12345
+        timeout: 600
+        config_reg_timeout: 10
+        device_reload_sleep: 30
 
     There is more than one ip address, one for each supervisor.
 
@@ -282,68 +295,116 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
             Connect
     '''
 
+    log.info("Section steps:\n1- Verify global recovery has not recovered device"
+             "\n2- Set config-register to 0x0"
+             "\n3- Bring device down to rommon> prompt prior to TFTP boot"
+             "\n4- Begin TFTP boot"
+             "\n5- Reconnect to device after TFTP boot"
+             "\n6- Reset config-register to 0x2101"
+             "\n7- Execute 'write memory'")
+
     # If the tftp boot has already ran - recovery
     # Then do not run it again and skip this section
     if section.parameters['common_data'].get('device_tftp_booted'):
         section.skipped('The global recovery has already booted the device with'
                         ' the provided tftp image - no need to do it again')
 
-    device.api.execute_set_config_register(config_register='0x0', timeout='60')
-    # Using sendline, as we dont want unicon boot to kick in and send "boot" to
-    # the device
-    # Cannot use .reload as in case of HA, we need both sup to do the commands
-    device.sendline('reload')
-    device.sendline('yes')
-    device.sendline()
-    log.info('** Rebooting the device **')
+    # Set config-register to 0x0
+    with steps.start("Set config-register to 0x0 on {}".format(device.name)) as step:
+        try:
+            device.api.execute_set_config_register(config_register='0x0',
+                                                   timeout=config_reg_timeout)
+        except Exception as e:
+            section.failed("Unable to set config-register to 0x0 prior to TFTP"
+                           " boot on {}".format(device.name), goto=['exit'])
 
-    # We now want to overwrite the statemachine
-    device.destroy_all()
-    # Sleep to make sure the device is reloading
-    time.sleep(20)
+    # Bring the device down to rommon> prompt prior to TFTP boot
+    with steps.start("Bring device {} down to rommon> prompt prior to TFTP boot".\
+                        format(device.name)) as step:
 
-    # Need to instantiate to get the device.start
-    # The device.start only works because of a|b
-    device.instantiate(connection_timeout=timeout)
+        # Using sendline, as we dont want unicon boot to kick in and send "boot"
+        # to the device. Cannot use device.reload() directly as in case of HA,
+        # we need both sup to do the commands
+        device.sendline('reload')
+        device.sendline('yes')
+        device.sendline()
 
-    tftp_boot = {'ip_address': ip_address,
-                 'subnet_mask': subnet_mask,
-                 'gateway': gateway,
-                 'tftp_server': tftp_server,
-                 'image': image}
-    try:
-        abstract = Lookup.from_device(device, packages={'clean': clean})
-        # Item is needed to be able to know in which parallel child
-        # we are
-        result = pcall(abstract.clean.stages.recovery.recovery_worker,
-                       start=device.start,
-                       ikwargs = [{'item': i} for i, _ in enumerate(device.start)],
-                       ckwargs = \
-                            {'device': device,
-                             'timeout': timeout,
-                             'tftp_boot': tftp_boot,
-                             'break_count': 0,
-                             # Irrelevant as we will not use this pattern anyway
-                             # But needed for the recovery
-                             'console_activity_pattern': '\\.\\.\\.\\.',
-                             'golden_image': None,
-                             'recovery_password': None})
-    except Exception as e:
-        log.error(str(e))
-        section.failed("Failed to recover the device '{}'".\
-                        format(device.name))
-    else:
-        log.info("Successfully recovered the device '{}'".\
-                 format(device.name))
+        # We now want to overwrite the statemachine
+        device.destroy_all()
+
+        # Sleep to make sure the device is reloading
+        time.sleep(device_reload_sleep)
+
+    # Begin TFTP boot of device
+    with steps.start("Begin TFTP boot of device {}".format(device.name)) as step:
+
+        # Need to instantiate to get the device.start
+        # The device.start only works because of a|b
+        device.instantiate(connection_timeout=timeout)
+
+        tftp_boot = {'ip_address': ip_address,
+                     'subnet_mask': subnet_mask,
+                     'gateway': gateway,
+                     'tftp_server': tftp_server,
+                     'image': image}
+        try:
+            abstract = Lookup.from_device(device, packages={'clean': clean})
+            # Item is needed to be able to know in which parallel child
+            # we are
+            result = pcall(abstract.clean.stages.recovery.recovery_worker,
+                           start=device.start,
+                           ikwargs = [{'item': i} for i, _ in enumerate(device.start)],
+                           ckwargs = \
+                                {'device': device,
+                                 'timeout': timeout,
+                                 'tftp_boot': tftp_boot,
+                                 'break_count': 0,
+                                 # Irrelevant as we will not use this pattern anyway
+                                 # But needed for the recovery
+                                 'console_activity_pattern': '\\.\\.\\.\\.',
+                                 'golden_image': None,
+                                 'recovery_password': recovery_password})
+        except Exception as e:
+            log.error(str(e))
+            section.failed("Failed to TFTP boot the device '{}'".\
+                           format(device.name), goto=['exit'])
+        else:
+            log.info("Successfully performed TFTP boot on device '{}'".\
+                     format(device.name))
 
     # Disconnect and reconnect to the device
-    if not _disconnect_reconnect(device):
-        # If that still doesnt work, Thats all we got
-        section.failed("Cannot reconnect to the device {d}".
-                        format(d=device.name))
-    else:
-        log.info("Success - Have recovered and reconnected to device '{}'".\
-                 format(device.name))
+    with steps.start("Reconnect to device {} after TFTP boot".\
+                        format(device.name)) as step:
+        if not _disconnect_reconnect(device):
+            # If that still doesnt work, Thats all we got
+            section.failed("Cannot reconnect to the device {d} after TFTP boot".
+                            format(d=device.name), goto=['exit'])
+        else:
+            log.info("Success - Have recovered and reconnected to device '{}'".\
+                     format(device.name))
 
-    device.api.execute_set_config_register(config_register='0x2102', timeout='60')
-    device.api.execute_write_memory()
+    # Reset config-register to 0x2101
+    with steps.start("Reset config-register to 0x2101 on {}".\
+                        format(device.name)) as step:
+        try:
+            device.api.execute_set_config_register(config_register='0x2102',
+                                                   timeout=config_reg_timeout)
+        except Exception as e:
+            log.error(str(e))
+            section.failed("Unable to reset config-register to 0x0 after TFTP"
+                           " boot on {}".format(device.name), goto=['exit'])
+
+    # Execute 'write memory'
+    with steps.start("Execute 'write memory' on {}".format(device.name)) as step:
+        try:
+            device.api.execute_write_memory()
+        except Exception as e:
+            log.error(str(e))
+            section.failed("Unable to execute 'write memory' after TFTP boot "
+                           "on {}".format(device.name), goto=['exit'])
+        else:
+            section.passed("Successfully performed TFTP boot on device {}".\
+                            format(device.name))
+
+
+

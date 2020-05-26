@@ -139,17 +139,19 @@ def verify_file_exists(device, file, size=None, dir_output=None):
 
 
 def verify_boot_variable(device, boot_images, output=None):
-    ''' Verifies given boot_images are the only BOOT vars set
+    ''' Verifies given boot_images are set to the next-reload BOOT vars
         Args:
             device ('obj'): Device object
             boot_images ('str'): System images
     '''
 
-    if boot_images == device.api.get_boot_variables(output=output):
-        log.info("Given boot images are set to 'BOOT' variable")
+    if boot_images == device.api.get_boot_variables(boot_var='next', output=output):
+        log.info("Given boot images '{}' are set to 'BOOT' variable".\
+                 format(boot_images))
         return True
     else:
-        log.info("Given boot images are not set to 'BOOT' variable")
+        log.info("Given boot images '{}' are not set to 'BOOT' variable".\
+                 format(boot_images))
         return False
 
 
@@ -194,7 +196,7 @@ def verify_module_status(device, timeout=180, interval=30):
         # Check state for all slots
         failed_slots = Dq(output).contains('state').\
                             not_contains_key_value('state',
-                                                   '.*ok.*|standby|ha-standby',
+                                                   '.*ok.*|standby|ha-standby|Ready',
                                                    value_regex=True).\
                             get_values('slot')
         if not failed_slots:

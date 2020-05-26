@@ -1,13 +1,12 @@
-'''Common verify functions for platform'''
+'''IOSXR verify functions for platform'''
+
 # Python
 import logging
 
 # Genie
 from genie.utils.timeout import Timeout
 
-# Platform get
-from genie.libs.sdk.apis.iosxr.platform.get import get_module_info
-
+# Logger
 log = logging.getLogger(__name__)
 
 
@@ -24,11 +23,12 @@ def verify_module_serial_num(device, module, expected_serial_num,
         Returns:
             result (`bool`): Verified result
     '''
+
     timeout = Timeout(max_time, check_interval)
 
     while timeout.iterate():
         try:
-            sn = get_module_info(device, module, key='sn')
+            sn = device.api.get_module_info(module, key='sn')
         except Exception as e:
             log.error(e)
             timeout.sleep()
@@ -41,4 +41,44 @@ def verify_module_serial_num(device, module, expected_serial_num,
         
         timeout.sleep()
     
+    return False
+
+
+def verify_installed_pies(device, installed_packages, max_time=300,
+    check_interval=60):
+
+    ''' Verify module serial number is matched with expected number
+
+        Args:
+            device (`obj`): Device object
+            installed_packages (`list`): List of packages to verify that exist
+            max_time (`int`): Maximum time to wait while checking for pies installed
+                              Default 300 seconds (Optional)
+          check_interval (`int`): Time interval while checking for pies installed
+                                  Default 30 seconds (Optional)
+
+        Returns:
+            result (`bool`): Verified result
+    '''
+
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+
+        active_packages = device.api.get_current_active_pies()
+
+        # Trim out active_packages
+        if active_packages:
+            active_packages = [item.split(":")[1] for item in active_packages]
+
+        if set(installed_packages).intersection(active_packages):
+            log.info("Installed packages {} present under 'Active Packages'".\
+                    format(installed_packages))
+            return True
+
+        log.warning("Installed packages {} *not* present in 'Active Packages'"
+                    "\nRe-checking after {} seconds...".\
+                    format(installed_packages, check_interval))
+        timeout.sleep()
+
     return False

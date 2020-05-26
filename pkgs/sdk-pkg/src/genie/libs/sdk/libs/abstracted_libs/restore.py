@@ -13,20 +13,33 @@ log = logging.getLogger(__name__)
 class Restore(object):
 
     def __init__(self, device=None):
-        self.abstract = Lookup.from_device(device, packages={'sdk': sdk, 'parser': parser})
+        self.abstract = Lookup.from_device(
+            device, packages={'sdk': sdk, 'parser': parser})
         self.lib = self.abstract.sdk.libs.abstracted_libs.restore.Restore()
+
+    def save_configuration_to_file(self, device, default_dir, file_name):
+        ''' Save current configuration to file on device
+        '''
+        try:
+            self.lib.save_configuration_to_file(device, default_dir, file_name)
+        except Exception as e:
+            self.failed('Saving the configuration failed', from_exception=e)
 
     def save_configuration(self, device, method, abstract, default_dir):
         try:
-            self.lib.save_configuration(device, method, self.abstract, default_dir)
+            self.lib.save_configuration(
+                device, method, self.abstract, default_dir)
         except Exception as e:
             self.failed('Saving the configuration failed', from_exception=e)
 
     def restore_configuration(self, device, method, abstract, iteration=10,
                               interval=60, delete_after_restore=True):
         try:
-            self.lib.restore_configuration(device, method, self.abstract,
-                                           delete_after_restore=delete_after_restore)
+            self.lib.restore_configuration(
+                device,
+                method,
+                self.abstract,
+                delete_after_restore=delete_after_restore)
         except Exception as e:
             self.failed('Restoring the configuration failed', from_exception=e)
 

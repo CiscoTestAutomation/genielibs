@@ -214,8 +214,8 @@ def _connectivity(device, console_activity_pattern=None, break_count=10,
     Optional('post_recovery_configuration'): str,
 })
 def recovery_processor(section, console_activity_pattern=None, break_count=None,
-    timeout=None, golden_image=None, tftp_boot=None, recovery_password=None, clear_line=True,
-    powercycler=True, powercycler_delay=30, reconnect_delay=60,
+    timeout=None, golden_image=None, tftp_boot=None, recovery_password=None,
+    clear_line=True, powercycler=False, powercycler_delay=30, reconnect_delay=60,
     post_recovery_configuration=None):
 
     '''

@@ -16,8 +16,8 @@ from genie.abstract import Lookup
 from genie.libs import parser
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.parser.iosxe.show_platform import ShowRedundancy, \
-                                                  ShowVersion, \
-                                                  ShowPlatform
+    ShowVersion, \
+    ShowPlatform
 # import pyats
 from pyats import aetest
 from pyats.log.utils import banner
@@ -55,18 +55,21 @@ def enter_shell(device, timeout=60):
     # Run workon.sh on the RP shell
     dialog = Dialog([
         Statement(pattern=r'continue\? +\[y\/n\]',
-                            action='sendline(y)',
-                            loop_continue=True,
-                            continue_timer=False)
+                  action='sendline(y)',
+                  loop_continue=True,
+                  continue_timer=False)
     ])
     # store original pattern
     enable_state = device.state_machine.get_state('enable')
     device.origin_pattern = enable_state._pattern
-    # Completely remove the enable state pattern and update it with new pattern.
+    # Completely remove the enable state pattern and update it with new
+    # pattern.
     enable_state._pattern = [r'(.*)\:\/]\$']
     # enter shell
-    device.execute('request platform software system shell switch active R0', reply=dialog)
-    
+    device.execute(
+        'request platform software system shell switch active R0',
+        reply=dialog)
+
 
 def exit_shell(device):
     """Exit shell prompt on IOSXE deivces by using command
@@ -112,16 +115,17 @@ def save_device_information(device, **kwargs):
     # configure config-register
     device.configure('config-register 0x2102')
 
-    # save all configuration to startup for all slots        
+    # save all configuration to startup for all slots
     dialog = Dialog([
         Statement(pattern=r'Destination +filename +\[.*\].*',
-                            action='sendline()',
-                            loop_continue=True,
-                            continue_timer=False)
+                  action='sendline()',
+                  loop_continue=True,
+                  continue_timer=False)
     ])
     device.execute('copy running-config nvram:startup-config',
-                        reply=dialog)
+                   reply=dialog)
     device.execute('write memory')
+
 
 def stack_ha_redundancy_state(device, timeout, platform_pts=None):
     """Stack HA Redundancy SSO State Check.
@@ -145,8 +149,9 @@ def stack_ha_redundancy_state(device, timeout, platform_pts=None):
     if platform_pts and hasattr(platform_pts, 'redundancy_mode') and \
         'sso' in platform_pts.redundancy_mode and \
         hasattr(platform_pts, 'redundancy_communication') and \
-        platform_pts.redundancy_communication:
-        log.info('System redundancy mode is sso and redundancy_communication is enabled')
+            platform_pts.redundancy_communication:
+        log.info(
+            'System redundancy mode is sso and redundancy_communication is enabled')
         pass_flag = True
     else:
         # learn it from show version in loop
@@ -160,7 +165,7 @@ def stack_ha_redundancy_state(device, timeout, platform_pts=None):
                 output = ShowRedundancy(device).parse()
             except Exception as e:
                 raise Exception('Cannot get output from "show redundancy"',
-                    from_exception=e)
+                                from_exception=e)
 
             # Check if HA redundancy status is sso
             try:
@@ -174,8 +179,8 @@ def stack_ha_redundancy_state(device, timeout, platform_pts=None):
                 for slot in output['slot']:
                     if 'ACTIVE' not in output['slot'][slot]['curr_sw_state'] and \
                        'STANDBY HOT' not in output['slot'][slot]['curr_sw_state']:
-                        log.warning('The {} does not reach to "ACTIVE|STANDBY HOT"'
-                                    .format(slot))
+                        log.warning(
+                            'The {} does not reach to "ACTIVE|STANDBY HOT"' .format(slot))
                         timeout.sleep()
                         pass_flag = False
                         continue
@@ -183,9 +188,11 @@ def stack_ha_redundancy_state(device, timeout, platform_pts=None):
                 log.warning(e)
                 timeout.sleep()
                 pass_flag = False
-                raise AssertionError('Redundancy status does not reach to "SSO"',
+                raise AssertionError(
+                    'Redundancy status does not reach to "SSO"',
                     from_exception=e)
             break
+
 
 def process_check(device):
     """Verify that all critical process are up and running
@@ -205,7 +212,7 @@ def process_check(device):
     Example:
         >>> process_check(device=Device())
     """
-    
+
     def parse_shell_process_output(output):
         """parse the output from shell command "workon.sh RP 0 status"
 
@@ -230,7 +237,7 @@ def process_check(device):
 
         # set pattern
         p = re.compile(r'^(?P<name>[\w\_\-]+) +(?P<state>(up|unavail)) +'
-                '\((?P<options>[\w\:\_\-]+)\)$')
+                       '\((?P<options>[\w\:\_\-]+)\)$')
 
         for line in output.splitlines():
             line = line.strip()
@@ -241,7 +248,7 @@ def process_check(device):
                 group = m.groupdict()
                 name = group.pop('name')
                 ret_dict.setdefault(name, {}).update(
-                    {k:v for k,v in group.items()})
+                    {k: v for k, v in group.items()})
         return ret_dict
 
     # get into shell
@@ -270,32 +277,38 @@ def process_check(device):
     # check below processes
     process_list = ['fman_rp', 'hman', 'linux_iosd_image', 'sif_mgr',
                     'periodic_sh', 'platform_mgr', 'plogd', 'psd',
-                    'sort_files_by_inode_sh','stack_mgr']
+                    'sort_files_by_inode_sh', 'stack_mgr']
 
     # check each process's status is up
     for process in process_list:
         if process in ret:
             if 'up' not in ret[process]['state']:
                 log.warning('Process {p} is {s}, should be up!!!'
-                    .format(p=process, s=ret[process]['state']))
-                raise AssertionError('Process {p} is {s}, should be up!!!'
-                    .format(p=process, s=ret[process]['state']))
+                            .format(p=process, s=ret[process]['state']))
+                raise AssertionError(
+                    'Process {p} is {s}, should be up!!!' .format(
+                        p=process, s=ret[process]['state']))
             else:
                 log.info('Process {p} is {s} as expected.'
-                    .format(p=process, s=ret[process]['state']))
+                         .format(p=process, s=ret[process]['state']))
         else:
             log.warning('Process {p} is not found'.format(p=process))
             raise AttributeError('Process {p} is not found'.format(p=process))
 
-    for process in ['btrace_rotate_sh', 'btrace_rotate', 'btman', 'btrace_manager']:
+    for process in [
+        'btrace_rotate_sh',
+        'btrace_rotate',
+        'btman',
+            'btrace_manager']:
         try:
             if 'up' not in ret[process]['state']:
-                raise AssertionError('Process {p} is {s}, should be up!!!'
-                    .format(p=process, s=ret[process]['state']))
+                raise AssertionError(
+                    'Process {p} is {s}, should be up!!!' .format(
+                        p=process, s=ret[process]['state']))
             else:
                 btrace_failed = False
                 log.info('Process {p} is {s} as expected.'
-                    .format(p=process, s=ret[process]['state']))
+                         .format(p=process, s=ret[process]['state']))
                 break
         except Exception:
             btrace_failed = True
@@ -304,7 +317,9 @@ def process_check(device):
     # check btrace process states
     if btrace_failed:
         log.warning('Process btrace_rotate_sh is not found in the output')
-        raise AttributeError('Process btrace_rotate_sh is not found in the output')
+        raise AttributeError(
+            'Process btrace_rotate_sh is not found in the output')
+
 
 def chasfs_properties(device, timeout):
     """Verify that Chasfs properties are updated by Stack Manager
@@ -329,10 +344,10 @@ def chasfs_properties(device, timeout):
         # print out the expected stack information
         log.info('Expected Stack State:\n'
                  'Master(Active RP): {}\nStandby: {}\nMembers:{}'
-                 .format(device.active, device.standby,device.members))
+                 .format(device.active, device.standby, device.members))
     else:
         raise AttributeError('There is no Active/Standby '
-            'switches on device {}'.format(device.name))
+                             'switches on device {}'.format(device.name))
 
     # get into shell
     try:
@@ -345,42 +360,38 @@ def chasfs_properties(device, timeout):
     switch_check_mapping = {
         'mode': {
             'command': 'echo -n chassis_role{n}:; cat /tmp/chassis/{n}/chassis_role; echo;',
-            'pattern': 'chassis_role{n}\:(?P<value>{role})'
-        },
+            'pattern': r'chassis_role{n}\:(?P<value>{role})'},
         'state': {
             'command': 'echo -n chassis_state{n}:; cat /tmp/chassis/{n}/state; echo;',
-            'pattern': 'chassis_state{n}\:(?P<value>compatible)'
-        },
+            'pattern': r'chassis_state{n}\:(?P<value>compatible)'},
         'MAC address': {
             'command': 'echo -n macaddr{n}:; cat /tmp/chassis/{n}/macaddr; echo;',
-            'pattern': 'macaddr{n}: *(?P<value>{mac_p})'
-        }
-    }
+            'pattern': 'macaddr{n}: *(?P<value>{mac_p})'}}
     system_check_mapping = {
         'Local comm_up': {
             'command': 'echo -n local_comm_up:;cat /tmp/chassis/local/stack_mgr/comm_up; echo;',
-            'pattern': 'local_comm_up:(?P<value>success)'        
+            'pattern': 'local_comm_up:(?P<value>success)'
         },
         'active controller': {
-            'command': 'echo -n local_rp_mastership_global-active-rp:;cat /tmp/chassis/'\
+            'command': 'echo -n local_rp_mastership_global-active-rp:;cat /tmp/chassis/'
                        'local/rp/chasfs/mastership/global-active-rp; echo;',
-            'pattern': 'local_rp_mastership_global\-active\-rp:(?P<value>[0-9]\/rp)'        
+            'pattern': r'local_rp_mastership_global\-active\-rp:(?P<value>[0-9]\/rp)'
         },
         'standby controller': {
-            'command': 'echo -n local_rp_mastership_global-standby-rp:;cat /tmp/chassis/'\
+            'command': 'echo -n local_rp_mastership_global-standby-rp:;cat /tmp/chassis/'
                        'local/rp/chasfs/mastership/global-standby-rp; echo;',
-            'pattern': 'local_rp_mastership_global\-standby\-rp:(?P<value>[0-9]\/rp)'
+            'pattern': r'local_rp_mastership_global\-standby\-rp:(?P<value>[0-9]\/rp)'
         },
         'standby': {
-            'command': 'echo -n local_rp_mastership_standby-rp-ehsa-state:;cat /tmp/'\
+            'command': 'echo -n local_rp_mastership_standby-rp-ehsa-state:;cat /tmp/'
                        'chassis/local/rp/chasfs/mastership/standby-rp-ehsa-state; echo;',
-            'pattern': 'local_rp_mastership_standby\-rp\-ehsa\-state:(?P<value>standby)'        
+            'pattern': r'local_rp_mastership_standby\-rp\-ehsa\-state:(?P<value>standby)'
         },
         'sso-ready': {
-            'command': 'echo -n local_rp_mastership_standby-rp-state:;cat /tmp/chassis/local/'\
+            'command': 'echo -n local_rp_mastership_standby-rp-state:;cat /tmp/chassis/local/'
                        'rp/chasfs/mastership/standby-rp-state; echo;',
-            'pattern': 'local_rp_mastership_standby\-rp\-state:(?P<value>sso\-ready)'        
-        }    
+            'pattern': r'local_rp_mastership_standby\-rp\-state:(?P<value>sso\-ready)'
+        }
     }
     mac_pattern = '(?:(?:[0-9A-Fa-f]){2}[:-]){5}(?:[0-9A-Fa-f]){2}'
 
@@ -398,30 +409,36 @@ def chasfs_properties(device, timeout):
 
             # check each slots
             for role, switch in slots.items():
-                # get the output from shell                
+                # get the output from shell
                 try:
-                    out = device.execute(item['command'].format(n=switch), timeout=60)
+                    out = device.execute(
+                        item['command'].format(
+                            n=switch), timeout=60)
                     out = out.splitlines()[-2].strip()
                 except Exception:
                     out = ''
 
                 # match the pattern
                 if 'MAC' in key:
-                    p = re.compile(r'{}'.format(item['pattern']\
-                            .format(n=switch, mac_p=mac_pattern)))
+                    p = re.compile(
+                        r'{}'.format(
+                            item['pattern'] .format(
+                                n=switch,
+                                mac_p=mac_pattern)))
                 elif 'mode' in key:
-                    p = re.compile(r'{}'.format(item['pattern']\
-                            .format(n=switch, role=role)))
+                    p = re.compile(r'{}'.format(item['pattern']
+                                                .format(n=switch, role=role)))
                 else:
-                    p = re.compile(r'{}'.format(item['pattern']\
-                            .format(n=switch)))
+                    p = re.compile(r'{}'.format(item['pattern']
+                                                .format(n=switch)))
                 m = p.match(out)
                 if m:
                     log.info('{k} is as expected: {v}'
-                        .format(k=key, v=m.groupdict()['value']))
+                             .format(k=key, v=m.groupdict()['value']))
                 else:
-                    log.warning('{k} is not as expected.\nexpected: {e}\npoll value: {v}'
-                        .format(k=key, e=p.pattern, v=out))
+                    log.warning(
+                        '{k} is not as expected.\nexpected: {e}\npoll value: {v}' .format(
+                            k=key, e=p.pattern, v=out))
                     pass_flag = False
                     break
 
@@ -437,15 +454,16 @@ def chasfs_properties(device, timeout):
             m = p.match(out)
             if m:
                 log.info('{k} is as expected: {v}'
-                    .format(k=key, v=m.groupdict()['value']))
+                         .format(k=key, v=m.groupdict()['value']))
             else:
-                log.warning('{k} is not as expected.\nexpected: {e}\npoll value: {v}'
-                    .format(k=key, e=p.pattern, v=out))
+                log.warning(
+                    '{k} is not as expected.\nexpected: {e}\npoll value: {v}' .format(
+                        k=key, e=p.pattern, v=out))
                 pass_flag = False
                 break
         if pass_flag:
             break
-        else:            
+        else:
             timeout.sleep()
             continue
 
@@ -475,25 +493,42 @@ def learn_system(device, steps, platform_pts=None):
     # learn show version
     if not platform_pts:
         with steps.start("Store image type/router type from 'show version' on {}"
-          .format(device.name)) as step:
+                         .format(device.name)) as step:
             try:
                 output = ShowVersion(device=device).parse()
                 device.image_type = output['version']['image_type']
                 device.router_type = output['version']['rtr_type']
             except Exception as e:
                 log.warning(e)
-                step.passx('Cannot get required router info on {}'.format(device.name))
+                step.passx(
+                    'Cannot get required router info on {}'.format(
+                        device.name))
 
             log.info('Image type: {}\nRouter type: {}'
-                        .format(device.image_type, device.router_type))
+                     .format(device.image_type, device.router_type))
 
         # learn show version
         with steps.start("Store switches info from 'show platform' on {}"
-          .format(device.name)) as step:
+                         .format(device.name)) as step:
 
-            req = {'active': [['slot', '(?P<switch>.*)', 'rp', '(.*)', 'role', 'Active']],
-                   'standby': [['slot', '(?P<switch>.*)', 'rp', '(.*)', 'role', 'Standby']],
-                   'members': [['slot', '(?P<switch>.*)', 'rp', '(.*)', 'role', 'Member']]}
+            req = {'active': [['slot',
+                               '(?P<switch>.*)',
+                               'rp',
+                               '(.*)',
+                               'role',
+                               'Active']],
+                   'standby': [['slot',
+                                '(?P<switch>.*)',
+                                'rp',
+                                '(.*)',
+                                'role',
+                                'Standby']],
+                   'members': [['slot',
+                                '(?P<switch>.*)',
+                                'rp',
+                                '(.*)',
+                                'role',
+                                'Member']]}
 
             try:
                 output = ShowPlatform(device=device).parse()
@@ -503,33 +538,61 @@ def learn_system(device, steps, platform_pts=None):
                 device.members = [i['switch'] for i in ret['members']]
             except Exception as e:
                 log.warning(e)
-                step.passx('Cannot get required router info on {}'.format(device.name))
+                step.passx(
+                    'Cannot get required router info on {}'.format(
+                        device.name))
 
             log.info('Active Switch: {}\nStandby Switch: {}\nMember Switch: {}'
-                        .format(device.active, device.standby, device.members))
+                     .format(device.active, device.standby, device.members))
     else:
         with steps.start("Store image type/router type from PTS on {}"
-          .format(device.name)) as step:
+                         .format(device.name)) as step:
             try:
                 # device.image_type = platform_pts.image_type
                 device.image_type = 'developer image'
                 device.router_type = platform_pts.rtr_type
             except Exception as e:
                 log.warning(e)
-                step.passx('Cannot get required router info on {}'.format(device.name))
+                step.passx(
+                    'Cannot get required router info on {}'.format(
+                        device.name))
 
             log.info('Image type: {}\nRouter type: {}'
-                        .format(device.image_type, device.router_type))
+                     .format(device.image_type, device.router_type))
 
         with steps.start("Store switches info from PTS on {}"
-          .format(device.name)) as step:
+                         .format(device.name)) as step:
 
-            req = {'active': [['slot', 'rp', '(?P<switch>.*)', 'swstack_role', 'Active'],
-                              ['slot', 'rp', '(?P<switch>.*)', 'state', 'Ready']],
-                   'standby': [['slot', 'rp', '(?P<switch>.*)', 'swstack_role', 'Standby'],
-                              ['slot', 'rp', '(?P<switch>.*)', 'state', 'Ready']],
-                   'members': [['slot', 'rp', '(?P<switch>.*)', 'swstack_role', 'Member'],
-                              ['slot', 'rp', '(?P<switch>.*)', 'state', 'Ready']]}
+            req = {'active': [['slot',
+                               'rp',
+                               '(?P<switch>.*)',
+                               'swstack_role',
+                               'Active'],
+                              ['slot',
+                               'rp',
+                               '(?P<switch>.*)',
+                               'state',
+                               'Ready']],
+                   'standby': [['slot',
+                                'rp',
+                                '(?P<switch>.*)',
+                                'swstack_role',
+                                'Standby'],
+                               ['slot',
+                                'rp',
+                                '(?P<switch>.*)',
+                                'state',
+                                'Ready']],
+                   'members': [['slot',
+                                'rp',
+                                '(?P<switch>.*)',
+                                'swstack_role',
+                                'Member'],
+                               ['slot',
+                                'rp',
+                                '(?P<switch>.*)',
+                                'state',
+                                'Ready']]}
 
             try:
                 ret = get_requirements(requirements=req, output=platform_pts)
@@ -538,10 +601,13 @@ def learn_system(device, steps, platform_pts=None):
                 device.members = [i['switch'] for i in ret['members']]
             except Exception as e:
                 log.warning(e)
-                step.passx('Cannot get required switches info on {}'.format(device.name))
+                step.passx(
+                    'Cannot get required switches info on {}'.format(
+                        device.name))
 
             log.info('Active Switch: {}\nStandby Switch: {}\nMember Switch: {}'
-                        .format(device.active, device.standby, device.members))
+                     .format(device.active, device.standby, device.members))
+
 
 def get_default_dir(device):
     """ Get the default directory of this device
@@ -577,7 +643,7 @@ def get_default_dir(device):
 
 @aetest.subsection
 def check_xe_sanity_device_ready(self, testbed, steps,
-    max_time=60, interval=10):
+                                 max_time=60, interval=10):
     """Check redudancy status, critial processes status and chassis properties
 
        Args:
@@ -589,72 +655,99 @@ def check_xe_sanity_device_ready(self, testbed, steps,
 
        Raises:
            pyATS Results
-    """    
+    """
     log.info(banner('Check redudancy status,\n'
-        'critial processes status,\n'
-        'chassis properties'))
+                    'critial processes status,\n'
+                    'chassis properties'))
     # get uut
     devices = testbed.find_devices(alias='uut')
 
     for uut in devices:
         lookup = Lookup.from_device(uut)
         # get platform pts
-        
-        platform_pts = self.parameters.get('pts', {}).get('platform', {}).get('uut', None)
+
+        platform_pts = self.parameters.get(
+            'pts',
+            {}).get(
+            'platform',
+            {}).get(
+            'uut',
+            None)
 
         # check redudancy
         with steps.start("Perform Redundancy Check on device {} - "
-            "to check if device reach 'SSO' status".format(uut.name)) as step:
+                         "to check if device reach 'SSO' status".format(uut.name)) as step:
 
             # create timeout object
             timeout = Timeout(max_time=int(max_time),
                               interval=int(interval))
             try:
                 lookup.sdk.libs.abstracted_libs\
-                  .subsection.stack_ha_redundancy_state(
-                      device=uut, timeout=timeout, platform_pts=platform_pts)
+                    .subsection.stack_ha_redundancy_state(
+                        device=uut, timeout=timeout, platform_pts=platform_pts)
             except Exception as e:
                 step.passx('Redundancy state SSO not reached in the stack',
-                            from_exception=e)
+                           from_exception=e)
 
         if hasattr(uut, 'workers'):
             with uut.allocate() as worker:
                 # check Process
                 with steps.start("Verify that all critical process are up "
-                  "and running on device {}".format(uut.name)) as step:
+                                 "and running on device {}".format(uut.name)) as step:
                     try:
                         lookup.sdk.libs.abstracted_libs\
-                          .subsection.process_check(device=worker)
+                            .subsection.process_check(device=worker)
                     except Exception as e:
                         step.passx('Processes verification test failed')
 
                 # check Chasfs
                 with steps.start("Verify that Chasfs properties are updated "
-                  "by Stack Manager on device {}".format(uut.name)) as step:
+                                 "by Stack Manager on device {}".format(uut.name)) as step:
                     try:
-                        lookup.sdk.libs.abstracted_libs\
-                          .subsection.chasfs_properties(device=worker, timeout=timeout)
+                        lookup.sdk.libs.abstracted_libs .subsection.chasfs_properties(
+                            device=worker, timeout=timeout)
                     except Exception as e:
-                        step.passx('Chasfs verification test failed\n{}'.format(e))
+                        step.passx(
+                            'Chasfs verification test failed\n{}'.format(e))
         else:
             # check Process
             with steps.start("Verify that all critical process are up "
-              "and running on device {}".format(uut.name)) as step:
+                             "and running on device {}".format(uut.name)) as step:
                 try:
                     lookup.sdk.libs.abstracted_libs\
-                      .subsection.process_check(device=uut)
+                        .subsection.process_check(device=uut)
                 except Exception as e:
                     step.passx('Processes verification test failed')
 
             # check Chasfs
             with steps.start("Verify that Chasfs properties are updated "
-              "by Stack Manager on device {}".format(uut.name)) as step:
+                             "by Stack Manager on device {}".format(uut.name)) as step:
                 try:
-                    lookup.sdk.libs.abstracted_libs\
-                      .subsection.chasfs_properties(device=uut, timeout=timeout)
+                    lookup.sdk.libs.abstracted_libs .subsection.chasfs_properties(
+                        device=uut, timeout=timeout)
                 except Exception as e:
                     step.passx('Chasfs verification test failed\n{}'.format(e))
 
 
-def configure_replace(device, file_location, timeout=60):
-    device.execute('configure replace {} force'.format(file_location), timeout=timeout)
+def configure_replace(device, file_location, timeout=60, file_name=None):
+    """Configure replace on device
+
+       Args:
+           device (`obj`): Device object
+           file_location (`str`): File location
+           timeout (`int`): Timeout value in seconds
+           file_name (`str`): File name
+
+       Returns:
+           None
+
+       Raises:
+           pyATS Results
+    """
+    if file_name:
+        file_location = '{}{}'.format(
+            file_location,
+            file_name)
+    device.execute(
+        'configure replace {} force'.format(file_location),
+        timeout=timeout)

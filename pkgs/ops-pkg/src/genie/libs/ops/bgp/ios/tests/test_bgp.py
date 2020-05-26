@@ -37,10 +37,20 @@ outputs['show bgp all neighbors 3.3.3.3 policy'] = BgpOutput.show_neighbor_polic
 outputs['show bgp all'] = BgpOutput.show_bgp_all
 outputs['show bgp all detail'] = BgpOutput.show_bgp_all_detail
 
-outputs['show bgp all neighbors 2.2.2.2'] = BgpOutput.show_bgp_all_neighbor_1
-outputs['show bgp all neighbors 2001:2:2:2::2'] = BgpOutput.show_bgp_all_neighbor_2
-outputs['show bgp all neighbors 2001:3:3:3::3'] = BgpOutput.show_bgp_all_neighbor_3
-outputs['show bgp all neighbors 3.3.3.3'] = BgpOutput.show_bgp_all_neighbor_4
+outputs['show bgp all neighbors 2.2.2.2 routes'] = BgpOutput.nbr_routes_1
+outputs['show bgp all neighbors 2001:2:2:2::2 routes'] = BgpOutput.nbr_routes_2
+outputs['show bgp all neighbors 2001:3:3:3::3 routes'] = BgpOutput.nbr_routes_3
+outputs['show bgp all neighbors 3.3.3.3 routes'] = BgpOutput.nbr_routes_4
+
+outputs['show bgp all neighbors 2.2.2.2 advertised-routes'] = BgpOutput.nbr_adv_routes_1
+outputs['show bgp all neighbors 2001:2:2:2::2 advertised-routes'] = BgpOutput.nbr_adv_routes_1
+outputs['show bgp all neighbors 2001:3:3:3::3 advertised-routes'] = BgpOutput.nbr_adv_routes_1
+outputs['show bgp all neighbors 3.3.3.3 advertised-routes'] = BgpOutput.nbr_adv_routes_1
+
+outputs['show bgp all neighbors 2.2.2.2 received-routes'] = ''
+outputs['show bgp all neighbors 2001:2:2:2::2 received-routes'] = ''
+outputs['show bgp all neighbors 2001:3:3:3::3 received-routes'] = ''
+outputs['show bgp all neighbors 3.3.3.3 received-routes'] = ''
 
 outputs['show bgp vpnv4 unicast all neighbors 2.2.2.2'] = BgpOutput.custom_output_1
 outputs['show bgp vpnv4 unicast all'] = BgpOutput.custom_output_2
@@ -56,7 +66,7 @@ outputs['show ip bgp all dampening parameters'] = ''
 
 def mapper(key):
     return outputs[key]
-
+ 
 
 class test_bgp(unittest.TestCase):
 

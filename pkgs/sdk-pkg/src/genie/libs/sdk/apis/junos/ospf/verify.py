@@ -2,6 +2,7 @@
 
 # Python
 import logging
+import re
 
 # pyATS
 from pyats.utils.objects import find, R
@@ -121,3 +122,162 @@ def verify_ospf_interface_cost(device, interface, expected_cost, cost_type='ospf
         return False
 
     log.info('This api does not support cost type {}'.format(cost_type))
+
+
+def verify_ospf_neighbor_state(device, state, interface, ospf_name='ospf', max_time=60, check_interval=10):
+    """ Verifies state of ospf
+
+        Args:
+            device ('obj'): device to use
+            ospf_name ('str'): Expected to be either ospf or ospf3
+            state ('str'): State of the interface
+            interface ('str'): Name of interface
+            max_time ('int'): Maximum time to keep checking
+            check_interval ('int'): How often to check
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            output = device.parse('show {} neighbor'.format(ospf_name))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        neighbors = output[ospf_name+'-neighbor-information'][ospf_name+'-neighbor']
+        for neighbor in neighbors:
+            if(neighbor['interface-name'] == interface and neighbor['ospf-neighbor-state'].lower() == state.lower() ):
+                return True
+
+        timeout.sleep()
+
+    return False
+
+def verify_no_ospf_neigbor_output(device, extensive=False, ospf_name='ospf', max_time=60, check_interval=10):
+    """ Verifies state of ospf
+
+        Args:
+            device ('obj'): device to use
+            ospf_name ('str'): Expected to be either ospf or ospf3
+            extensive ('bool'): If ospf command is extensive
+            max_time ('int'): Maximum time to keep checking
+            check_interval ('int'): How often to check
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        
+        if extensive:
+            output = device.execute('show {} neighbor extensive'.format(ospf_name))
+        else:
+            output = device.execute('show {} neighbor'.format(ospf_name))
+        
+        if not output:
+            return True
+            
+        timeout.sleep()
+
+    return False
+
+
+def verify_neighbor_state_went_down(device, interface, realm, fail_reason, max_time=60, check_interval=10):
+    """ Verifies state of ospf
+
+        Args:
+            device ('obj'): device to use
+            interface ('str'): Interface that went down
+            realm ('str'): ospf/ospf3 realm
+            fail_reason ('str'): Reason state changed from full to down
+            max_time ('int'): Maximum time to keep checking
+            check_interval ('int'): How often to check
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """
+    regex_string1 = 'area +0.0.0.0\)) +state +'\
+                    'changed +from +Full +to +Down +due +to +(?P<asdf>'
+    regex_string2 = '[\s\S]+)$'
+    temp = ('^(?P<ignored_portion>[\s\S]+)realm +(?P<interface>'
+    '{realm} {interface} {regex_string1}{fail_reason}{regex_string2}'.format(
+                        realm=realm,
+                        interface = interface,
+                        regex_string1 = regex_string1,
+                        regex_string2 = regex_string2,
+                        fail_reason = fail_reason
+                    ))
+    
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        output = device.execute('show log messages')
+        for line in output.splitlines():
+            line = line.strip()
+            
+            m = re.match(temp,line)
+            if m:
+                return True
+        timeout.sleep()
+
+    return False
+
+
+def verify_default_route_ospf(device, route, expect_output, ip_type='ipv4', max_time=80, check_interval=10):
+    """ Verifies state of ospf
+
+        Args:
+            device ('obj'): device to use
+            ip_type ('str'): Either ipv4/ipv6
+            route ('str'): ipv4/ipv6 default route
+            expect_output ('bool'): Flag, either expecting output or no output 
+            max_time ('int'): Maximum time to keep checking
+            check_interval ('int'): How often to check
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            output = device.parse('show route protocol ospf')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        route_tables = output['route-information']['route-table']
+        if(ip_type == 'ipv4'):
+            for routes in route_tables:
+                if(routes['table-name'] == 'inet.0'):
+                    default_route = routes['rt'][0]['rt-destination']
+        else:
+            for routes in route_tables:
+                if(routes['table-name'] == 'inet6.0'):
+                    default_route = routes['rt'][0]['rt-destination']
+
+        if expect_output:
+            if default_route == route:
+                return True
+        else:
+            if default_route != route:
+                return True
+        timeout.sleep()
+
+    return False

@@ -10,6 +10,7 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 log = logging.getLogger(__name__)
 
+
 def save_device_information(device, **kwargs):
     '''Save running configuration to startup configuration'''
 
@@ -30,7 +31,8 @@ def save_device_information(device, **kwargs):
     try:
         device.execute(cmd)
     except Exception as e:
-        raise Exception("Unable to save running-config to startup-config") from e
+        raise Exception(
+            "Unable to save running-config to startup-config") from e
 
 
 def get_default_dir(device):
@@ -63,3 +65,27 @@ def get_default_dir(device):
     log.info("Default directory on '{d}' is '{dir}'".format(d=device.name,
                                                             dir=default_dir))
     return default_dir
+
+
+def configure_replace(device, file_location, timeout=60, file_name=None):
+    """Configure replace on device
+
+       Args:
+           device (`obj`): Device object
+           file_location (`str`): File location
+           timeout (`int`): Timeout value in seconds
+           file_name (`str`): File name
+
+       Returns:
+           None
+
+       Raises:
+           pyATS Results
+    """
+    if file_name:
+        file_location = '{}{}'.format(
+            file_location,
+            file_name)
+    device.execute(
+        'configure replace {}'.format(file_location),
+        timeout=timeout)

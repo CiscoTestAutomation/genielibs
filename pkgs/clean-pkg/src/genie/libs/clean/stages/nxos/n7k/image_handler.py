@@ -30,6 +30,18 @@ class ImageHandler(CommonImageHandler):
                 setattr(self, key, value[0])
 
 
+    def update_tftp_boot(self):
+        '''Update clean section 'tftp_boot' with image information'''
+
+        # Init 'tftp_boot' defaults
+        self.tftp_boot_images = self.device.clean.setdefault('tftp_boot', {}).\
+                                                  setdefault('image', [])
+
+        # Add images to key 'files' in section tftp_boot
+        for file in [self.kickstart, self.system]:
+            self.tftp_boot_images.append(file)
+
+
     def update_copy_to_linux(self):
         '''Update clean section 'copy_to_linux' with image information'''
 
@@ -70,8 +82,14 @@ class ImageHandler(CommonImageHandler):
 
                 # Get base filename
                 filename = os.path.basename(file)
+
+                # Add hostname
                 if self.append_hostname:
                     filename = self.add_hostname(filename)
+
+                # Add unique number to filename
+                if self.unique_filename:
+                    filename = self.add_unique_filename(filename)
 
                 # Set filename after linux copy
                 filename_on_linux = os.path.join(ctl_dest_dir, filename)

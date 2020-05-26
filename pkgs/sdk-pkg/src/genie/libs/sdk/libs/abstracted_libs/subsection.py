@@ -76,9 +76,12 @@ def save_bootvar(self, testbed):
 
     # We don't catch exceptions since failures will lead to passx in that
     # CommonSetup subsection
-    asynchronous_boot_var_output = pcall(asynchronous_save_boot_variable,
-        ckwargs={'self':self, 'device_dict':device_dict},
-        device = tuple(devices))
+    asynchronous_boot_var_output = pcall(
+        asynchronous_save_boot_variable,
+        ckwargs={
+            'self': self,
+            'device_dict': device_dict},
+        device=tuple(devices))
 
     for item in asynchronous_boot_var_output:
         for dev, res in item.items():
@@ -99,7 +102,7 @@ def save_bootvar(self, testbed):
 
     if failed:
         self.passx("Issue while saving boot variable on one of the devices, "
-            "Check section summary for more details")
+                   "Check section summary for more details")
 
 
 @aetest.subsection
@@ -120,39 +123,47 @@ def learn_the_system(self, testbed, steps, features=None):
        Raises:
            pyATS Results
     """
-    log.info(banner('Learn and store platform information, lldp neighbors'
-        ', from PTS if PTS is existed, otherwise from show commands'))
+    log.info(
+        banner(
+            'Learn and store platform information, lldp neighbors'
+            ', from PTS if PTS is existed, otherwise from show commands'))
     # get uut, having a uut is mandatory in Genie
     uut = testbed.devices['uut']
 
     lookup = Lookup.from_device(uut)
 
-    # get platform PTS 
-    platform_pts = self.parameters.get('pts', {}).get('platform', {}).get('uut', None)
-    
+    # get platform PTS
+    platform_pts = self.parameters.get(
+        'pts',
+        {}).get(
+        'platform',
+        {}).get(
+            'uut',
+        None)
+
     with steps.start("Store and learn platform information from 'show lldp neighbors detail' on {}"
-          .format(self.name)) as step:
+                     .format(self.name)) as step:
         try:
-            lookup.sdk.libs.abstracted_libs\
-                .subsection.learn_system(device=uut, steps=steps, platform_pts=platform_pts)
+            lookup.sdk.libs.abstracted_libs .subsection.learn_system(
+                device=uut, steps=steps, platform_pts=platform_pts)
         except Exception as e:
             step.passx('Cannot Learn and Store system info',
-                        from_exception=e)
+                       from_exception=e)
 
     # learn platform lldp neighbors
     with steps.start("learn platform lldp neighbors on device {}"
-      .format(uut.name)) as step:
+                     .format(uut.name)) as step:
 
         # inital lldp ops object
         lldp_ops = lookup.ops.lldp.lldp.Lldp(
-                       uut, attributes=['info[interfaces][(.*)][neighbors][(.*)][port_id]'])
+            uut, attributes=['info[interfaces][(.*)][neighbors][(.*)][port_id]'])
 
         # learn the lldp ops
         try:
             lldp_ops.learn()
         except Exception as e:
             step.passx('Cannot learn lldp information',
-                        from_exception=e)
+                       from_exception=e)
 
         if not hasattr(lldp_ops, 'info'):
             step.passx('No LLDP neighbors')
@@ -207,7 +218,7 @@ def learn_the_system_from_conf_ops(self, testbed, steps, features=None):
             obj = attrgetter(ft)(lib)
         except Exception:
             raise AttributeError('Cannot load %s for '
-                               'device %s.' % (ft, device.name))
+                                 'device %s.' % (ft, device.name))
         # conf learn_config
         if issubclass(obj, ConfBase):
             ret = obj.learn_config(device=device, attributes=attr)
@@ -233,7 +244,6 @@ def learn_the_system_from_conf_ops(self, testbed, steps, features=None):
         # return the dictionary
         return ret_dict
 
-
     devices = []
     for name in testbed.devices:
         dev = testbed.devices[name]
@@ -250,14 +260,17 @@ def learn_the_system_from_conf_ops(self, testbed, steps, features=None):
             worker_devs.append(device)
             worker_features.append({ft: features[ft]})
         # pcall for each feature
-        ret = pcall(store_structure, device=worker_devs, feature=worker_features)
+        ret = pcall(
+            store_structure,
+            device=worker_devs,
+            feature=worker_features)
         [merge_dict(merged_dict, i) for i in ret]
-
 
     self.parent.parameters.update(merged_dict)
 
     # print out what we learned in LTS
     log.info('LTS information is \n{d}'.format(d=dumps(merged_dict, indent=5)))
+
 
 @aetest.subsection
 def load_config_as_string(self, testbed, steps, configs, connect=False):
@@ -268,15 +281,16 @@ def load_config_as_string(self, testbed, steps, configs, connect=False):
             try:
                 dev.connect(via='a')
             except Exception as e:
-                self.failed('Cannot connect the console on {}'.format(dev.name),
-                  from_exception=e)
+                self.failed(
+                    'Cannot connect the console on {}'.format(
+                        dev.name), from_exception=e)
     try:
         load_config_precessor(self, configs)
     except Exception as e:
         self.passx('Cannot Load configuration',
-                    from_exception=e)
+                   from_exception=e)
 
-    # disconnect the router from console 
+    # disconnect the router from console
     if connect:
         for name in self.parent.mapping_data['devices']:
             dev = testbed.devices[name]
@@ -285,8 +299,9 @@ def load_config_as_string(self, testbed, steps, configs, connect=False):
                 dev.disconnect()
                 dev.destroy()
             except Exception as e:
-                self.passx('Cannot disconnect the console on {}'.format(dev.name),
-                  from_exception=e)
+                self.passx(
+                    'Cannot disconnect the console on {}'.format(
+                        dev.name), from_exception=e)
 
 
 @aetest.subsection
@@ -297,13 +312,24 @@ def configure_replace(self, testbed, steps, devices, timeout=60):
             device = testbed.devices.get(name, None)
             if not device or not device.is_connected():
                 continue
-            try:
-                file_location = dev['file_location']
-            except KeyError:
-                log.error('Missing file_location for device {}'.format(name))
-                continue
+
+            file_name = None
+            file_location = None
             lookup = Lookup.from_device(device)
-            lookup.sdk.libs.abstracted_libs.subsection.configure_replace(device, file_location, timeout=dev.get('timeout', timeout))
+            if 'file_location' in dev:
+                file_location = dev['file_location']
+            else:
+                file_location = lookup.sdk.libs.\
+                    abstracted_libs.subsection.get_default_dir(
+                        device=device)
+                if 'file_name' not in dev:
+                    log.error('Missing file_name for device {}'.format(name))
+                    continue
+            if 'file_name' in dev:
+                file_name = dev['file_name']
+            lookup.sdk.libs.abstracted_libs.subsection.configure_replace(
+                device, file_location, timeout=dev.get(
+                    'timeout', timeout), file_name=file_name)
         except Exception as e:
             self.failed("Failed to replace config : {}".format(str(e)))
         log.info("Configure replace is done for device {}".format(name))
@@ -342,13 +368,13 @@ def learn_system_defaults(self, testbed):
 
         try:
             self.parent.default_file_system[dev.name] = lookup.sdk.libs.\
-                            abstracted_libs.subsection.get_default_dir(
-                                device=dev)
+                abstracted_libs.subsection.get_default_dir(
+                device=dev)
             msg = "    - Successfully learnt system default directory"
             summarize(summary, message=msg, device=device)
         except LookupError as e:
-            log.info('Cannot find device {d} correspoding get_default_dir'.\
-                format(d=dev.name))
+            log.info('Cannot find device {d} correspoding get_default_dir'.
+                     format(d=dev.name))
             msg = "    - Didn't find device OS corresponding "\
                 "'get_default_dir' implementation, Please contact Genie support"
             summarize(summary, message=msg, device=device)
@@ -357,15 +383,18 @@ def learn_system_defaults(self, testbed):
             summarize(summary, message=msg, device=device)
             summary.print()
             self.failed('Unable to learn system default directory',
-                from_exception=e)
+                        from_exception=e)
 
     summary.print()
 
     if not self.parent.default_file_system:
         # Create Summary
         summary = Summary(title='Summary', width=90)
-        summary.add_message("* Summary for device(s): "
-            "{}".format(', '.join(self.parent.mapping_data['devices'])))
+        summary.add_message(
+            "* Summary for device(s): "
+            "{}".format(
+                ', '.join(
+                    self.parent.mapping_data['devices'])))
         summary.add_sep_line()
         msg = "    - Couldn't set system default directory"
         summarize(summary, message=msg)
@@ -379,8 +408,8 @@ def summarize(summary, message, device=None):
     '''A function for building the summary table messages'''
 
     if device:
-        summary.add_message('* Summary for device: {}'.\
-            format(device))
+        summary.add_message('* Summary for device: {}'.
+                            format(device))
         summary.add_sep_line()
 
     summary.add_message(message)
@@ -391,8 +420,8 @@ def asynchronous_save_boot_variable(self, device, device_dict):
     '''Use asynchronous execution when saving boot variables on devices'''
 
     log.info(banner("Check boot information to see if they are consistent\n"
-      "and save bootvar to startup-config on device '{d}'".\
-      format(d=device.name)))
+                    "and save bootvar to startup-config on device '{d}'".
+                    format(d=device.name)))
 
     # get platform pts
     platform_pts = self.parameters.get('pts', {}).get('platform', {}).get(
@@ -410,5 +439,3 @@ def asynchronous_save_boot_variable(self, device, device_dict):
             device_dict[device.name] = 'Passed'
 
     return device_dict
-
-

@@ -46,6 +46,7 @@ import requests
 
 log = logging.getLogger(__name__)
 
+
 def _get_connection_class(section):
 
     conn_class_name = None
@@ -53,9 +54,10 @@ def _get_connection_class(section):
         for con in dev.connections:
             try:
                 conn_class_name = dev.connections[con]['class'].__name__
-            except:
+            except BaseException:
                 continue
     return conn_class_name
+
 
 def sleep_processor(section, sleep=None):
     '''Sleep prepostprocessor
@@ -73,18 +75,20 @@ def sleep_processor(section, sleep=None):
         if section and getattr(section, 'parameters', {}):
             sleep_time = section.parameters.get('sleep', None)
             log.warning(
-            "Please set `sleep` under processor like below:\n\n"
-            "processors:\n"
-            "  pre|post:\n"
-            "    sleep_processor:\n"
-            "      method: genie.libs.sdk.libs.abstracted_libs.sleep_processor\n"
-            "      parameters:\n"
-            "        sleep: {sleep_time}\n".format(sleep_time=sleep_time))
+                "Please set `sleep` under processor like below:\n\n"
+                "processors:\n"
+                "  pre|post:\n"
+                "    sleep_processor:\n"
+                "      method: genie.libs.sdk.libs.abstracted_libs.sleep_processor\n"
+                "      parameters:\n"
+                "        sleep: {sleep_time}\n".format(
+                    sleep_time=sleep_time))
 
     if sleep_time:
         log.info("Sleeping for '{t}' seconds before "
                  "executing the testcase".format(t=sleep_time))
         time.sleep(sleep_time)
+
 
 def learn_free_interfaces(section, configs):
     '''Learn from the system to find free unassigned interfaces
@@ -113,7 +117,7 @@ def learn_free_interfaces(section, configs):
         uut = testbed.devices['uut']
 
         if os.path.isfile(configs):
-            configs = yaml.load(open(configs))
+            configs = yaml.safe_load(open(configs))
         elif isinstance(configs, str):
             module = Lookup.from_device(uut)
             path = configs.split('.')
@@ -122,22 +126,22 @@ def learn_free_interfaces(section, configs):
             configs = module
         else:
             section.skipped('The configs type {} is not supported'
-                .format(type(configs)))
+                            .format(type(configs)))
 
         lookup = Lookup.from_device(uut)
         # learn the lldp neighbors
         if not hasattr(uut, 'lldp_mapping'):
             log.info(banner('Learn LLDP Neighbors'))
             # inital lldp ops object
-            lldp_ops = lookup.ops.lldp.lldp.Lldp(uut,
-                          attributes=['info[interfaces][(.*)][neighbors][(.*)][port_id]'])
+            lldp_ops = lookup.ops.lldp.lldp.Lldp(
+                uut, attributes=['info[interfaces][(.*)][neighbors][(.*)][port_id]'])
 
             # learn the lldp ops
             try:
                 lldp_ops.learn()
             except Exception as e:
                 section.passx('Cannot learn lldp information',
-                            from_exception=e)
+                              from_exception=e)
             # store the lldp information
             uut.lldp_mapping = lldp_ops.info['interfaces']
 
@@ -151,23 +155,37 @@ def learn_free_interfaces(section, configs):
         except Exception as e:
             section.failed('Cannot find peer neighbors')
 
-        log.info(banner('Find {u} interfaces connect to neighbor {p}'.format(u=uut.name, p=peer.name)))
+        log.info(
+            banner(
+                'Find {u} interfaces connect to neighbor {p}'.format(
+                    u=uut.name,
+                    p=peer.name)))
         # find peer connection interfaces
-        rs = R(['(?P<local_intf>.*)', 'neighbors', peer, 'port_id', '(?P<peer_intf>.*)'])
+        rs = R(['(?P<local_intf>.*)', 'neighbors',
+                peer, 'port_id', '(?P<peer_intf>.*)'])
         ret = find([uut.lldp_mapping], rs, filter_=False, all_keys=True)
         if ret:
             values = GroupKeys.group_keys(
-                        reqs=rs.args, ret_num={},  source=ret, all_keys=True)
+                reqs=rs.args, ret_num={}, source=ret, all_keys=True)
         else:
-            section.failed('No Peer inerface Found between {s} and {d}'.format(s=uut.name, d=peer))
+            section.failed(
+                'No Peer inerface Found between {s} and {d}'.format(
+                    s=uut.name, d=peer))
 
         # get free(unassigned) interfaces
-        log.info(banner('Find {u} free connected interfaces from {l}'.format(u=uut.name, l=values)))
+        log.info(
+            banner(
+                'Find {u} free connected interfaces from {l}'.format(
+                    u=uut.name,
+                    l=values)))
         try:
-            ip_out = lookup.parser.show_interface.ShowIpInterfaceBrief(uut).parse()
-            ip_out_peer = lookup.parser.show_interface.ShowIpInterfaceBrief(peer_dev).parse()
+            ip_out = lookup.parser.show_interface.ShowIpInterfaceBrief(
+                uut).parse()
+            ip_out_peer = lookup.parser.show_interface.ShowIpInterfaceBrief(
+                peer_dev).parse()
         except Exception as e:
-            section.failed('Cannot get information from show ip/ipv6 interface brief',
+            section.failed(
+                'Cannot get information from show ip/ipv6 interface brief',
                 from_exception=e)
 
         # initial local and peer intf
@@ -176,7 +194,7 @@ def learn_free_interfaces(section, configs):
 
         for item in values:
             if 'unassigned' in ip_out['interface'][item['local_intf']]['ip_address'] and \
-               'unassigned' in ip_out_peer['interface'][item['peer_intf']]['ip_address'] :
+               'unassigned' in ip_out_peer['interface'][item['peer_intf']]['ip_address']:
                 local_intf = item['local_intf']
                 peer_intf = item['peer_intf']
                 break
@@ -191,6 +209,7 @@ def learn_free_interfaces(section, configs):
             for _, conf in sorted(configs['devices'][peer].items()):
                 conf['config'] = conf['config'].format(intf=peer_intf)
                 conf['unconfig'] = conf['unconfig'].format(intf=peer_intf)
+
 
 def load_config_precessor(section, configs, unconfig=False, sleep=None):
     '''load configuration prepostprocessor
@@ -224,7 +243,7 @@ def load_config_precessor(section, configs, unconfig=False, sleep=None):
         uut = testbed.devices['uut']
 
         if os.path.isfile(configs):
-            configs = yaml.load(open(configs))
+            configs = yaml.safe_load(open(configs))
         elif isinstance(configs, str):
             module = Lookup.from_device(uut)
             path = configs.split('.')
@@ -233,7 +252,7 @@ def load_config_precessor(section, configs, unconfig=False, sleep=None):
             configs = module
         else:
             section.skipped('The configs type {} is not supported'
-                .format(type(configs)))
+                            .format(type(configs)))
 
         # copy dictionary without changing original configs
         # due to reuse it with conf/unconfig
@@ -248,7 +267,8 @@ def load_config_precessor(section, configs, unconfig=False, sleep=None):
                         uut.peer = testbed.devices[val]
                         tmp_config['devices']['uut'].pop(key)
                         continue
-                    section.mapping.requirements.setdefault('provided_values', {}).setdefault(key, val)
+                    section.mapping.requirements.setdefault(
+                        'provided_values', {}).setdefault(key, val)
                 tmp_config['devices']['uut'].pop(key)
 
         for dev in sorted(configs.get('devices', {})):
@@ -265,57 +285,68 @@ def load_config_precessor(section, configs, unconfig=False, sleep=None):
                 # replace the format syntax if has any
                 conf['config'] = conf['config'].format(
                     **section.mapping.requirements.get('provided_values', {})
-                        if hasattr(section, 'mapping') else {})
+                    if hasattr(section, 'mapping') else {})
 
-                log.info(banner("Applying configuration on '{d}'".format(d=device.name)))
+                log.info(
+                    banner(
+                        "Applying configuration on '{d}'".format(
+                            d=device.name)))
                 if os.path.isfile(conf['config']):
                     if 'invalid' not in conf:
                         # Set default
                         conf['invalid'] = []
                     try:
-                        device.tftp.copy_file_to_device(device=device,
-                                                        filename=conf['config'],
-                                                        location='running-config',
-                                                        vrf='management',
-                                                        invalid=conf['invalid'])
+                        device.tftp.copy_file_to_device(
+                            device=device,
+                            filename=conf['config'],
+                            location='running-config',
+                            vrf='management',
+                            invalid=conf['invalid'])
                     except Exception as e:
                         log.error(str(e))
-                        section.failed("Issue while applying the configuration "
-                                    "on {d}".format(d=dev))
+                        section.failed(
+                            "Issue while applying the configuration "
+                            "on {d}".format(
+                                d=dev))
                 elif isinstance(conf['config'], str):
                     try:
                         # Do you wish to continue? [yes]:
                         dialog = Dialog([
                             Statement(pattern=r'\[startup\-config\]\?.*',
-                                                action='sendline()',
-                                                loop_continue=True,
-                                                continue_timer=False),
+                                      action='sendline()',
+                                      loop_continue=True,
+                                      continue_timer=False),
                             Statement(pattern=r'\[yes]\:.*',
-                                                action='sendline()',
-                                                loop_continue=True,
-                                                continue_timer=False)
+                                      action='sendline()',
+                                      loop_continue=True,
+                                      continue_timer=False)
                         ])
                         device.configure(conf['config'], reply=dialog)
                     except Exception as e:
                         log.error(str(e))
-                        section.failed("Issue while applying the configuration "
-                                    "on {d}".format(d=dev))
+                        section.failed(
+                            "Issue while applying the configuration "
+                            "on {d}".format(
+                                d=dev))
                 else:
                     section.failed('The configs type {} is not supported'
-                        .format(type(conf['config'])))
+                                   .format(type(conf['config'])))
 
                 # sleep for x amount of time after
                 if 'sleep'in conf and not unconfig:
-                    log.info("Sleeping for '{s}' "
-                             "seconds for waiting system is stable "
-                             "after loading the configuration".format(s=conf['sleep']))
+                    log.info(
+                        "Sleeping for '{s}' "
+                        "seconds for waiting system is stable "
+                        "after loading the configuration".format(
+                            s=conf['sleep']))
                     time.sleep(conf['sleep'])
         # extral sleep if sleep in config file is not enough
         # can change it from trigger yaml
         time.sleep(sleep) if sleep else None
 
+
 def ping_devices(section, ping_parameters, expect_result='passed'):
-    '''PING prepostprocessor. Will ping two ends ip addresses 
+    '''PING prepostprocessor. Will ping two ends ip addresses
     from given devices ( learned by alias )
 
     Can be controlled via sections parameters which is provided by the
@@ -334,8 +365,10 @@ def ping_devices(section, ping_parameters, expect_result='passed'):
         None
 
     '''
-    log.info(banner('Dynamic learn the source and destination devices routing\n'
-        'information and issue pings to see if the passing percentage is expected'))
+    log.info(
+        banner(
+            'Dynamic learn the source and destination devices routing\n'
+            'information and issue pings to see if the passing percentage is expected'))
     # Get ping ip and vrf
     if not section or not getattr(section, 'parameters', {}):
         return
@@ -356,12 +389,12 @@ def ping_devices(section, ping_parameters, expect_result='passed'):
         dest = testbed.devices[item['dest']]
         log.info(banner(
             "Get sorce device {s} and destnation device {d}"
-                .format(s=src.name, d=dest.name)))
+            .format(s=src.name, d=dest.name)))
         lookup = Lookup.from_device(src)
 
         # create timeout for looping the ping
         timeout = Timeout(max_time=item['timeout_max_time'],
-            interval=item['timeout_interval'])
+                          interval=item['timeout_interval'])
 
         # determine af
         af = 'ipv4' if item['ping']['proto'] == 'ip' else 'ipv6'
@@ -377,20 +410,20 @@ def ping_devices(section, ping_parameters, expect_result='passed'):
 
         while timeout.iterate():
             for dev in [src, dest]:
-                if dev.name  not in routing_opses or relearn:
+                if dev.name not in routing_opses or relearn:
 
                     # learn the routing ops
                     try:
                         ret = lookup.sdk.libs.abstracted_libs.processors.learn_routing(
-                                    dev, af, paths, ops_container=routing_opses, ret_container=peers)
+                            dev, af, paths, ops_container=routing_opses, ret_container=peers)
                     except Exception as e:
-                        log.warning('Cannot learn routing information on {d}\n{e}'
-                            .format(d=dev.name, e=e))
+                        log.warning(
+                            'Cannot learn routing information on {d}\n{e}' .format(
+                                d=dev.name, e=e))
                         relearn = True
                         ping_pass = False
                         timeout.sleep()
                         continue
-
 
             # trim the ones not a peer
             trim_item = []
@@ -423,15 +456,20 @@ def ping_devices(section, ping_parameters, expect_result='passed'):
                         routes.remove(route)
                         peer_route = routes[0]
                         if peers[key][route][src.name]['vrf'] == 'default':
-                            ping_values.append({'addr': peer_route.split('/')[0]})
+                            ping_values.append(
+                                {'addr': peer_route.split('/')[0]})
                         else:
-                            ping_values.append({'addr': peer_route.split('/')[0],
-                                           'command': 'ping vrf {}'.format(peers[key][route][src.name]['vrf'])})
+                            ping_values.append({'addr': peer_route.split(
+                                '/')[0], 'command': 'ping vrf {}'.format(peers[key][route][src.name]['vrf'])})
                         break
 
             for ping_item in ping_values:
                 item['ping'].update(ping_item)
-                log.info(banner('Ping with args {a} on {d}'.format(a=item['ping'], d=src.name)))
+                log.info(
+                    banner(
+                        'Ping with args {a} on {d}'.format(
+                            a=item['ping'],
+                            d=src.name)))
                 try:
                     out = src.ping(**item['ping'])
                 except SubCommandFailure as e:
@@ -447,12 +485,15 @@ def ping_devices(section, ping_parameters, expect_result='passed'):
                 ret = re.search(r'Success +rate +is +(\d+) +percent', out)
                 perc = ret.groups()[0]
                 if perc == str(item['exp_succ_perc']):
-                    log.info('ping successed with {}% percent'.format(item['exp_succ_perc']))
+                    log.info(
+                        'ping successed with {}% percent'.format(
+                            item['exp_succ_perc']))
                     ping_pass = True
                     break
                 else:
-                    log.warning('ping failed. Expected percent: {e} But got: {r}'
-                        .format(e=item['exp_succ_perc'], r=perc))
+                    log.warning(
+                        'ping failed. Expected percent: {e} But got: {r}' .format(
+                            e=item['exp_succ_perc'], r=perc))
                     ping_pass = False
                     break
 
@@ -463,7 +504,9 @@ def ping_devices(section, ping_parameters, expect_result='passed'):
                 continue
 
         if not ping_pass:
-            section.passx('PING PRE POST PROCESSOR FAILED, SKIPPED THE TRIGGER')
+            section.passx(
+                'PING PRE POST PROCESSOR FAILED, SKIPPED THE TRIGGER')
+
 
 def debug_dumper(section, commands):
     '''debug_dumper prepostprocessor. Execute user specified show commands
@@ -485,7 +528,8 @@ def debug_dumper(section, commands):
         None
 
     '''
-    log.info(banner('Execute the show commands on the given result from the yaml if meet the conditions'))
+    log.info(banner(
+        'Execute the show commands on the given result from the yaml if meet the conditions'))
 
     if section and getattr(section, 'parameters', {}):
         testbed = section.parameters.get('testbed', {})
@@ -501,6 +545,7 @@ def debug_dumper(section, commands):
                             dev.execute(cmd)
                         except Exception:
                             pass
+
 
 def traceroute_loopback(section, traceroute_args, action='traceroute'):
     '''traceroute prepostprocessor
@@ -521,8 +566,10 @@ def traceroute_loopback(section, traceroute_args, action='traceroute'):
         None
 
     '''
-    log.info(banner('Dynamic learn the source and destination devices loopback interface routing\n'
-        'information and issue traceroute on source device to see if given route is in the traceroute table'))
+    log.info(
+        banner(
+            'Dynamic learn the source and destination devices loopback interface routing\n'
+            'information and issue traceroute on source device to see if given route is in the traceroute table'))
 
     if not section or not getattr(section, 'parameters', {}):
         return
@@ -539,7 +586,7 @@ def traceroute_loopback(section, traceroute_args, action='traceroute'):
         dest = testbed.devices[item['dest']]
         log.info(banner(
             "Get source device {s} and destination device {d}"
-                .format(s=src.name, d=dest.name)))
+            .format(s=src.name, d=dest.name)))
         lookup = Lookup.from_device(src)
 
         # determine af
@@ -553,14 +600,14 @@ def traceroute_loopback(section, traceroute_args, action='traceroute'):
                   'outgoing_interface', '(?P<intf>Loopback.*)',
                   'outgoing_interface', '(?P<intf>Loopback.*)']]
 
-        if dest.name  not in routing_opses:
+        if dest.name not in routing_opses:
             # learn the routing ops
             try:
                 ret = lookup.sdk.libs.abstracted_libs.processors.learn_routing(
-                            dest, af, paths, ops_container=routing_opses, ret_container=peers)
+                    dest, af, paths, ops_container=routing_opses, ret_container=peers)
             except Exception as e:
                 log.warning('Cannot learn routing information on {d}\n{e}'
-                    .format(d=dest.name, e=e))
+                            .format(d=dest.name, e=e))
                 relearn = True
                 ping_pass = False
                 timeout.sleep()
@@ -568,7 +615,7 @@ def traceroute_loopback(section, traceroute_args, action='traceroute'):
 
         # get ip address from returned peers value which is
         # {'10.4.1.0/24': {'10.4.1.1': {'R5': {'intf': 'Loopback1', 'vrf': 'default', 'route': '10.4.1.0/24'}}}}
-        peers = [ ip for item in peers.values() for ip in item ]
+        peers = [ip for item in peers.values() for ip in item]
 
         log.info(banner('Get the routing group information as {}'.format(peers)))
 
@@ -578,27 +625,40 @@ def traceroute_loopback(section, traceroute_args, action='traceroute'):
         # select ip and vrf to ping
         for key in list(peers)[:item['peer_num']]:
             route = key.split('/')[0]
-            #timeout
+            # timeout
             timeout = Timeout(max_time=item['timeout_max_time'],
-                interval=item['timeout_interval'])
+                              interval=item['timeout_interval'])
 
             while timeout.iterate():
                 try:
                     if 'ping' in action:
-                        log.info(banner('ping {r} on {d}'.format(r=route, d=src.name)))
+                        log.info(
+                            banner(
+                                'ping {r} on {d}'.format(
+                                    r=route,
+                                    d=src.name)))
                         out = src.ping(addr=route)
                     else:
-                        log.info(banner('Traceroute {r} to check if {e} in table on {d}'
-                            .format(r=route, d=src.name, e=item['dest_route'])))
-                        out = src.execute(command='traceroute {}'.format(route))
+                        log.info(
+                            banner(
+                                'Traceroute {r} to check if {e} in table on {d}' .format(
+                                    r=route,
+                                    d=src.name,
+                                    e=item['dest_route'])))
+                        out = src.execute(
+                            command='traceroute {}'.format(route))
                 except SubCommandFailure as e:
-                    log.warning('{a} failed\n{e}, try again.'.format(e=e, a=action))
+                    log.warning(
+                        '{a} failed\n{e}, try again.'.format(
+                            e=e, a=action))
                     ping_pass = False
                     timeout.sleep()
                     continue
 
                 if item['dest_route'] in out:
-                    log.info('Traceroute successed to {}'.format(item['dest_route']))
+                    log.info(
+                        'Traceroute successed to {}'.format(
+                            item['dest_route']))
                     ping_pass = True
                     break
                 elif '100' in out:
@@ -606,14 +666,17 @@ def traceroute_loopback(section, traceroute_args, action='traceroute'):
                     ping_pass = True
                     break
                 else:
-                    log.warning('Traceroute failed. Expected route: {e} But got: {r}'
-                        .format(e=item['dest_route'], r=out))
+                    log.warning(
+                        'Traceroute failed. Expected route: {e} But got: {r}' .format(
+                            e=item['dest_route'], r=out))
                     ping_pass = False
                     timeout.sleep()
                     continue
 
         if not ping_pass:
-            section.passx('TRACEROUTE PRE POST PROCESSOR FAILED, SKIPPED THE TRIGGER')
+            section.passx(
+                'TRACEROUTE PRE POST PROCESSOR FAILED, SKIPPED THE TRIGGER')
+
 
 def get_uut(section, attribute, **kwargs):
     '''Get uut with provided features from learned LTS in common_setup
@@ -649,22 +712,31 @@ def get_uut(section, attribute, **kwargs):
         if section.parent.parameters.get('%s_uut' % attribute, None):
             section.parameters['uut'] = getattr(uut, '%s_uut' % attribute)
 
-            log.info('Feature %s has previously learned\n'
-                'Found device: %s' % (attribute, section.parameters['uut'].name))
+            log.info(
+                'Feature %s has previously learned\n'
+                'Found device: %s' %
+                (attribute, section.parameters['uut'].name))
             return
 
         # get LTS
         lts_dict = section.parent.parameters.get('lts', None)
         if not lts_dict:
             log.info('No LTS is learned, Use default uut %s '
-                'for testcase %s' % (uut.name, section.uid))
+                     'for testcase %s' % (uut.name, section.uid))
             return
 
         # get devices specific feature R object,
         try:
-            rs = globals()['_get_%s_device' % attribute](kwargs.get('vrf', None))
+            rs = globals()[
+                '_get_%s_device' %
+                attribute](
+                kwargs.get(
+                    'vrf',
+                    None))
         except Exception as e:
-            section.skipped('%s device cannot be found:\n%s' %(attribute, str(e)))
+            section.skipped(
+                '%s device cannot be found:\n%s' %
+                (attribute, str(e)))
 
         # find the returned feature
         req_msg = '\n'.join([str(re.args) for re in rs])
@@ -673,13 +745,15 @@ def get_uut(section, attribute, **kwargs):
 
         if not ret:
             log.info('Feature "%s" is not found in LTS, will '
-                'use default uut %s' % (attribute, uut.name))
+                     'use default uut %s' % (attribute, uut.name))
             return
 
         # unchange uut if uut in the lts
         if True in [uut.name in i[1] for i in ret]:
-            log.info('Finding device which has feature '
-                '"%s"\n[Unchanged] device: uut %s' % (attribute, uut.name))
+            log.info(
+                'Finding device which has feature '
+                '"%s"\n[Unchanged] device: uut %s' %
+                (attribute, uut.name))
             return
 
         # choose one from it to change uut for this section
@@ -687,14 +761,19 @@ def get_uut(section, attribute, **kwargs):
 
         # assign feature uut to uut object --
         # in case multiple triggers looks for the same uut, save time
-        section.parent.parameters['%s_uut' % attribute] = section.parameters['uut']
+        section.parent.parameters['%s_uut' %
+                                  attribute] = section.parameters['uut']
 
         # change secion id
-        section.uid = '%s.%s' % (section.uid.split('.')[0], section.parameters['uut'].name)
+        section.uid = '%s.%s' % (section.uid.split(
+            '.')[0], section.parameters['uut'].name)
 
         # print logger
-        log.info('Finding device which has feature '
-            '"%s"\n[Changed] device: %s' % (attribute, section.parameters['uut'].name))
+        log.info(
+            'Finding device which has feature '
+            '"%s"\n[Changed] device: %s' %
+            (attribute, section.parameters['uut'].name))
+
 
 def get_uut_neighbor(section, **kwargs):
     '''Get uut neighbors from learned LTS in common_setup
@@ -716,7 +795,10 @@ def get_uut_neighbor(section, **kwargs):
     '''
     def get_peer(device, intf_dict, routing_dict, uut):
 
-        log.info(banner('Get device %s interface ip and vrf information' % device))
+        log.info(
+            banner(
+                'Get device %s interface ip and vrf information' %
+                device))
 
         # rebuild interface dict to has structure as
         # vrf[<vrf>][address_family][af][ip][<ip>][interface][<intf>]
@@ -725,17 +807,17 @@ def get_uut_neighbor(section, **kwargs):
         for intf in intf_dict:
             if intf_dict[intf].get('vrf'):
                 vrf_dict = new_intf_dict.setdefault('vrf', {})\
-                            .setdefault(intf_dict[intf].pop('vrf'), {})
+                    .setdefault(intf_dict[intf].pop('vrf'), {})
             else:
                 continue
             for af in intf_dict[intf]:
                 if af not in ['ipv4', 'ipv6']:
                     continue
                 af_dict = vrf_dict.setdefault('address_family', {})\
-                            .setdefault(af, {})
+                    .setdefault(af, {})
                 for ip in intf_dict[intf][af]:
                     ip_dict = af_dict.setdefault('ip', {})\
-                                .setdefault(intf_dict[intf][af][ip]['ip'], {})
+                        .setdefault(intf_dict[intf][af][ip]['ip'], {})
                     ip_dict['interface'] = intf
 
         # find routing ip to see if it is from other deivce
@@ -744,18 +826,52 @@ def get_uut_neighbor(section, **kwargs):
         for vrf in routing_dict.get('vrf', {}):
             for af in routing_dict['vrf'][vrf]['address_family']:
                 for route in routing_dict['vrf'][vrf]['address_family'][af]['routes']:
-                    if routing_dict['vrf'][vrf]['address_family'][af]\
-                        ['routes'][route].get('source_protocol', '') in ['direct', 'local']:
+                    if routing_dict['vrf'][vrf]['address_family'][af]['routes'][route].get(
+                            'source_protocol', '') in ['direct', 'local']:
                         continue
                     ip = route.split('/')[0]
 
-                    if new_intf_dict.get('vrf', {}).get(vrf, {}).get('address_family', {})\
-                        .get(af, {}).get('ip', {}).get(ip, {}):
-                        ret.setdefault(device, {}).setdefault('vrf', {})\
-                            .setdefault(vrf, {}).setdefault('address_family', {})\
-                                .setdefault(af, {}).setdefault('ip', {}).setdefault(ip, {})\
-                                    .update(new_intf_dict.get('vrf', {}).get(vrf, {})\
-                                            .get('address_family', {}).get(af, {}).get('ip', {}).get(ip, {}))
+                    if new_intf_dict.get(
+                        'vrf',
+                        {}).get(
+                        vrf,
+                        {}).get(
+                        'address_family',
+                        {}) .get(
+                        af,
+                        {}).get(
+                        'ip',
+                        {}).get(
+                            ip,
+                            {}):
+                        ret.setdefault(
+                            device,
+                            {}).setdefault(
+                            'vrf',
+                            {}) .setdefault(
+                            vrf,
+                            {}).setdefault(
+                            'address_family',
+                            {}) .setdefault(
+                            af,
+                            {}).setdefault(
+                            'ip',
+                            {}).setdefault(
+                            ip,
+                            {}) .update(
+                                new_intf_dict.get(
+                                    'vrf',
+                                    {}).get(
+                                        vrf,
+                                        {}) .get(
+                                            'address_family',
+                                            {}).get(
+                                                af,
+                                                {}).get(
+                                                    'ip',
+                                                    {}).get(
+                                                        ip,
+                                    {}))
 
         return ret
 
@@ -765,35 +881,50 @@ def get_uut_neighbor(section, **kwargs):
         testbed = section.parameters.get('testbed', {})
 
         # get default uut
-        uut = section.parameters.get('uut', getattr(section, 'uut', testbed.devices['uut']))
+        uut = section.parameters.get('uut', getattr(
+            section, 'uut', testbed.devices['uut']))
 
         # get LTS
         lts_dict = section.parent.parameters.get('lts', {})\
-                    .get('ops.interface.interface.Interface', None)
+            .get('ops.interface.interface.Interface', None)
 
         if not lts_dict:
-            section.skipped('No LTS is learned, No peer found for uut %s' % uut.name)
+            section.skipped(
+                'No LTS is learned, No peer found for uut %s' %
+                uut.name)
 
         # learning ops routing ops
         lookup = Lookup.from_device(uut)
         route_ret = lookup.ops.routing.routing.Routing(uut, attributes=[
-                'info[vrf][(.*)][address_family][(.*)][routes][(.*)][source_protocol]',
-                'info[vrf][(.*)][address_family][(.*)][routes][(.*)][active]'])
+            'info[vrf][(.*)][address_family][(.*)][routes][(.*)][source_protocol]',
+            'info[vrf][(.*)][address_family][(.*)][routes][(.*)][active]'])
         route_ret.learn()
 
-        # find if uut routing table has the route from other deivces interfaces ip address
+        # find if uut routing table has the route from other deivces interfaces
+        # ip address
         worker_devices = []
         worker_dicts = []
         for dev, intf_dict in lts_dict.items():
             worker_devices.append(dev)
             worker_dicts.append(intf_dict)
 
-        ret = pcall(get_peer, device=worker_devices, intf_dict=worker_dicts,
-              ckwargs={'routing_dict': getattr(route_ret, 'info', {}), 'uut': uut})
+        ret = pcall(
+            get_peer,
+            device=worker_devices,
+            intf_dict=worker_dicts,
+            ckwargs={
+                'routing_dict': getattr(
+                    route_ret,
+                    'info',
+                    {}),
+                'uut': uut})
         uut.neighbors = {}
         [uut.neighbors.update(i) for i in ret]
 
-        log.info('Get uut {u} neighbors information \n{d}'.format(u=uut.name, d=yaml.dump(uut.neighbors)))
+        log.info(
+            'Get uut {u} neighbors information \n{d}'.format(
+                u=uut.name, d=yaml.dump(
+                    uut.neighbors)))
 
 
 def _get_auto_rp_interface_device(vrf):
@@ -825,6 +956,7 @@ def _get_auto_rp_interface_device(vrf):
     rs = [R(r) for r in reqs]
     return rs
 
+
 def _get_bsr_rp_device(vrf):
     '''Get device which has bsr_rp from learned LTS in common_setup
 
@@ -852,6 +984,7 @@ def _get_bsr_rp_device(vrf):
     rs = [R(r) for r in reqs]
     return rs
 
+
 def _get_static_rp_device(vrf):
     '''Get device which has static_rp from learned LTS in common_setup
 
@@ -878,6 +1011,7 @@ def _get_static_rp_device(vrf):
              '(.*)', 'rp', 'static_rp', '(?P<static_rp>.*)']]
     rs = [R(r) for r in reqs]
     return rs
+
 
 def _get_msdp_device(vrf):
     '''Get device which has msdp from learned LTS in common_setup
@@ -909,9 +1043,16 @@ def _get_msdp_device(vrf):
 # ==============================================================================
 # processor: restore_running_configuration
 # ==============================================================================
-def restore_running_configuration(section, devices=None, iteration=10,
-    interval=60, compare=False, compare_exclude=[], reload_timeout=1200):
 
+
+def restore_running_configuration(
+        section,
+        devices=None,
+        iteration=10,
+        interval=60,
+        compare=False,
+        compare_exclude=[],
+        reload_timeout=1200):
     '''Trigger Pre-Processor:
         * Restore running configuration from default directory
     '''
@@ -925,7 +1066,7 @@ def restore_running_configuration(section, devices=None, iteration=10,
     for dev in devices:
         device = section.parameters['testbed'].devices[dev]
         # Abstract
-        lookup = Lookup.from_device(device, packages={'sdk':sdk})
+        lookup = Lookup.from_device(device, packages={'sdk': sdk})
         restore = lookup.sdk.libs.abstracted_libs.restore.Restore()
 
         if hasattr(section, 'trigger_config'):
@@ -937,21 +1078,28 @@ def restore_running_configuration(section, devices=None, iteration=10,
 
         # Restore configuration from default directory
         try:
-            restore.restore_configuration(device=device, method='config_replace',
-                                          abstract=lookup, iteration=iteration,
-                                          interval=interval, compare=compare,
-                                          compare_exclude=compare_exclude, reload_timeout=reload_timeout)
+            restore.restore_configuration(
+                device=device,
+                method='config_replace',
+                abstract=lookup,
+                iteration=iteration,
+                interval=interval,
+                compare=compare,
+                compare_exclude=compare_exclude,
+                reload_timeout=reload_timeout)
         except Exception as e:
             log.error(e)
-            section.failed("Unable to restore running-configuration from device")
+            section.failed(
+                "Unable to restore running-configuration from device")
         else:
             log.info("Restored running-configuration from device")
 
 # ==============================================================================
 # processor: save_running_configuration
 # ==============================================================================
-def save_running_configuration(section, devices=None, copy_to_standby=False):
 
+
+def save_running_configuration(section, devices=None, copy_to_standby=False):
     '''Trigger Pre-Processor:
         * Save running configuration to default directory
     '''
@@ -969,20 +1117,21 @@ def save_running_configuration(section, devices=None, copy_to_standby=False):
     for dev in devices:
         device = section.parameters['testbed'].devices[dev]
         # Abstract
-        lookup = Lookup.from_device(device, packages={'sdk':sdk})
+        lookup = Lookup.from_device(device, packages={'sdk': sdk})
         restore = lookup.sdk.libs.abstracted_libs.restore.Restore()
 
         # Get default directory
         save_dir = getattr(section.parent, 'default_file_system', {})
         if not save_dir or dev not in save_dir:
             section.parent.default_file_system = {}
-            section.parent.default_file_system[device.name] = lookup.sdk.libs.abstracted_libs.subsection.get_default_dir(device=device)
+            section.parent.default_file_system[device.name] = lookup.sdk.libs.abstracted_libs.subsection.get_default_dir(
+                device=device)
             save_dir = section.parent.default_file_system
 
         # Save configuration to default directory
         try:
-            section.trigger_config[device.name] = restore.save_configuration(device=device, method='config_replace',
-                abstract=lookup, default_dir=save_dir, copy_to_standby=copy_to_standby)
+            section.trigger_config[device.name] = restore.save_configuration(
+                device=device, method='config_replace', abstract=lookup, default_dir=save_dir, copy_to_standby=copy_to_standby)
         except Exception as e:
             log.error(e)
             section.failed("Unable to save running-configuration to device")
@@ -992,8 +1141,9 @@ def save_running_configuration(section, devices=None, copy_to_standby=False):
 # ==============================================================================
 # processor: clear_logging
 # ==============================================================================
-def clear_logging(section, devices=None):
 
+
+def clear_logging(section, devices=None):
     '''Trigger Pre-Processor:
         * Clear logging on device
     '''
@@ -1008,7 +1158,7 @@ def clear_logging(section, devices=None):
     for dev in devices:
         device = section.parameters['testbed'].devices[dev]
         # Abstract
-        lookup = Lookup.from_device(device, packages={'sdk':sdk})
+        lookup = Lookup.from_device(device, packages={'sdk': sdk})
         clear_log = lookup.sdk.libs.abstracted_libs.clear_logging.ClearLogging()
 
         # Clear logging on device
@@ -1024,6 +1174,8 @@ def clear_logging(section, devices=None):
 # ==============================================================================
 # processor: execute_command
 # ==============================================================================
+
+
 def pre_execute_command(section, devices=None, sleep_time=0, max_retry=1):
     '''Trigger Processor:
             * execute command
@@ -1042,35 +1194,38 @@ def pre_execute_command(section, devices=None, sleep_time=0, max_retry=1):
             continue
         # execute list of commands given in yaml
         for cmd in devices[dev].get('cmds', []):
-            if not cmd.get('condition') or section.result in list(map(TestResult.from_str,
-                                                                      cmd['condition'])):
+            if not cmd.get('condition') or section.result in list(
+                    map(TestResult.from_str, cmd['condition'])):
                 exec_cmd = cmd.get('cmd', '')
                 pattern = cmd.get('pattern', '')
                 answer = cmd.get('answer', '')
                 cmd_sleep = cmd.get('sleep', 0)
                 cmd_timeout = cmd.get('timeout', 60)
 
-                for _ in range(max_retry+1):
+                for _ in range(max_retry + 1):
                     try:
-                        # handle prompt if pattern and answer is in the datafile
+                        # handle prompt if pattern and answer is in the
+                        # datafile
                         if pattern:
                             if isinstance(pattern, str):
                                 pattern = [pattern]
                             statement_list = []
                             for p in pattern:
                                 statement_list.append(
-                                    Statement(pattern=p,
-                                              action='sendline({})'.format(answer),
-                                              loop_continue=True,
-                                              continue_timer=False))
+                                    Statement(
+                                        pattern=p,
+                                        action='sendline({})'.format(answer),
+                                        loop_continue=True,
+                                        continue_timer=False))
                             dialog = Dialog(statement_list)
-                            device.execute(exec_cmd, reply=dialog, timeout=cmd_timeout)
+                            device.execute(
+                                exec_cmd, reply=dialog, timeout=cmd_timeout)
                         else:
                             device.execute(exec_cmd, timeout=cmd_timeout)
                     except SubCommandFailure as e:
-                        log.error('Failed to execute "{cmd}" on device {d}: {e}'.format(cmd=exec_cmd,
-                                                                                        d=device.name,
-                                                                                        e=str(e)))
+                        log.error(
+                            'Failed to execute "{cmd}" on device {d}: {e}'.format(
+                                cmd=exec_cmd, d=device.name, e=str(e)))
 
                         device.destroy()
                         log.info('Trying to recover after execution failure')
@@ -1078,8 +1233,7 @@ def pre_execute_command(section, devices=None, sleep_time=0, max_retry=1):
                     else:
                         log.info(
                             "Successfully executed command '{cmd}' device {d}".format(
-                                cmd=exec_cmd,
-                                d=device.name))
+                                cmd=exec_cmd, d=device.name))
                         # sleep if any command is successfully executed
                         sleep_if_cmd_executed = True
                         break
@@ -1094,8 +1248,11 @@ def pre_execute_command(section, devices=None, sleep_time=0, max_retry=1):
                     time.sleep(cmd_sleep)
 
     if sleep_time and sleep_if_cmd_executed:
-        log.info("Sleeping for {sleep_time} seconds".format(sleep_time=sleep_time))
+        log.info(
+            "Sleeping for {sleep_time} seconds".format(
+                sleep_time=sleep_time))
         time.sleep(sleep_time)
+
 
 def post_execute_command(section, devices=None, sleep_time=0, max_retry=1):
     '''Trigger Processor:
@@ -1115,35 +1272,38 @@ def post_execute_command(section, devices=None, sleep_time=0, max_retry=1):
             continue
         # execute list of commands given in yaml
         for cmd in devices[dev].get('cmds', []):
-            if not cmd.get('condition') or section.result in list(map(TestResult.from_str,
-                                                                      cmd['condition'])):
+            if not cmd.get('condition') or section.result in list(
+                    map(TestResult.from_str, cmd['condition'])):
                 exec_cmd = cmd.get('cmd', '')
                 pattern = cmd.get('pattern', '')
                 answer = cmd.get('answer', '')
                 cmd_sleep = cmd.get('sleep', 0)
                 cmd_timeout = cmd.get('timeout', 60)
 
-                for _ in range(max_retry+1):
+                for _ in range(max_retry + 1):
                     try:
-                        # handle prompt if pattern and answer is in the datafile
+                        # handle prompt if pattern and answer is in the
+                        # datafile
                         if pattern:
                             if isinstance(pattern, str):
                                 pattern = [pattern]
                             statement_list = []
                             for p in pattern:
                                 statement_list.append(
-                                    Statement(pattern=p,
-                                              action='sendline({})'.format(answer),
-                                              loop_continue=True,
-                                              continue_timer=False))
+                                    Statement(
+                                        pattern=p,
+                                        action='sendline({})'.format(answer),
+                                        loop_continue=True,
+                                        continue_timer=False))
                             dialog = Dialog(statement_list)
-                            device.execute(exec_cmd, reply=dialog, timeout=cmd_timeout)
+                            device.execute(
+                                exec_cmd, reply=dialog, timeout=cmd_timeout)
                         else:
                             device.execute(exec_cmd, timeout=cmd_timeout)
                     except SubCommandFailure as e:
-                        log.error('Failed to execute "{cmd}" on device {d}: {e}'.format(cmd=exec_cmd,
-                                                                                        d=device.name,
-                                                                                        e=str(e)))
+                        log.error(
+                            'Failed to execute "{cmd}" on device {d}: {e}'.format(
+                                cmd=exec_cmd, d=device.name, e=str(e)))
 
                         device.destroy()
                         log.info('Trying to recover after execution failure')
@@ -1151,8 +1311,7 @@ def post_execute_command(section, devices=None, sleep_time=0, max_retry=1):
                     else:
                         log.info(
                             "Successfully executed command '{cmd}' device {d}".format(
-                                cmd=exec_cmd,
-                                d=device.name))
+                                cmd=exec_cmd, d=device.name))
                         # sleep if any command is successfully executed
                         sleep_if_cmd_executed = True
                         break
@@ -1167,12 +1326,16 @@ def post_execute_command(section, devices=None, sleep_time=0, max_retry=1):
                     time.sleep(cmd_sleep)
 
     if sleep_time and sleep_if_cmd_executed:
-        log.info("Sleeping for {sleep_time} seconds".format(sleep_time=sleep_time))
+        log.info(
+            "Sleeping for {sleep_time} seconds".format(
+                sleep_time=sleep_time))
         time.sleep(sleep_time)
 
 # ==============================================================================
 # processor: skip_setup_if_stable
 # ==============================================================================
+
+
 def pre_skip_setup_if_stable(section):
     params = section.parent.parameters
 
@@ -1198,6 +1361,7 @@ def pre_skip_setup_if_stable(section):
                 # Can only have one setup section per trigger
                 break
 
+
 def post_skip_setup_if_stable(section):
     params = section.parent.parameters
     params['previous_section_result'] = section.result
@@ -1209,33 +1373,40 @@ def post_skip_setup_if_stable(section):
 # ==============================================================================
 # processor: skip_by_defect_status
 # ==============================================================================
+
+
 def skip_by_defect_status(section, defect_id, status=['R']):
 
     if not status:
         status = ['R']
-    url = 'http://wwwin-metrics.cisco.com/cgi-bin/ws/ws_ddts_query_new.cgi/ws/ws_ddts_query_new.cgi?expert=_id:{}&type=json'.format(defect_id)
+    url = 'http://wwwin-metrics.cisco.com/cgi-bin/ws/ws_ddts_query_new.cgi/ws/ws_ddts_query_new.cgi?expert=_id:{}&type=json'.format(
+        defect_id)
     try:
         if not defect_id:
             raise Exception('The defect id is not provided.')
         request = requests.get(url, timeout=29)
         if not request.ok:
-            raise Exception('The website is unreachable due to {}'.format(request.reason))
+            raise Exception(
+                'The website is unreachable due to {}'.format(
+                    request.reason))
         value = request.json()
         if not value:
             raise Exception('the defect id does not exist')
     except Exception as e:
-        e = 'Timeout occurred. If you are an external user you cannot use this processor in your datafile.' if  isinstance(e, requests.exceptions.ReadTimeout) \
-            else str(e)
+        e = 'Timeout occurred. If you are an external user you cannot use this processor in your datafile.' if isinstance(
+            e, requests.exceptions.ReadTimeout) else str(e)
         log.error(e)
     else:
         if value[0]['Status'] not in status:
-            section.skipped('The section skipped since the defect_id provided ({}) has an inappropriate status'.format(defect_id))
+            section.skipped(
+                'The section skipped since the defect_id provided ({}) has an inappropriate status'.format(defect_id))
 
 # ==============================================================================
 # processor: stop_traffic
 # ==============================================================================
-def stop_traffic(section, wait_time=30):
 
+
+def stop_traffic(section, wait_time=30):
     '''Trigger Processor:
         * Stops traffic on traffic generator device
     '''
@@ -1278,8 +1449,9 @@ def stop_traffic(section, wait_time=30):
 # ==============================================================================
 # processor: start_traffic
 # ==============================================================================
-def start_traffic(section, wait_time=30):
 
+
+def start_traffic(section, wait_time=30):
     '''Trigger Processor:
         * Starts traffic on traffic generator device
     '''
@@ -1321,8 +1493,9 @@ def start_traffic(section, wait_time=30):
 # ==============================================================================
 # processor: disconnect_traffic_device
 # ==============================================================================
-def disconnect_traffic_device(section, wait_time=30):
 
+
+def disconnect_traffic_device(section, wait_time=30):
     '''Trigger Processor:
         * Disconnect from traffic generator device
     '''
@@ -1349,14 +1522,15 @@ def disconnect_traffic_device(section, wait_time=30):
             section.failed("Unable to disconnect from traffic generator "
                            "device '{}'".format(dev.name))
         else:
-            log.info("Disconnected from traffic generator device '{}'".\
+            log.info("Disconnected from traffic generator device '{}'".
                      format(dev.name))
 
 # ==============================================================================
 # processor: connect_traffic_device
 # ==============================================================================
-def connect_traffic_device(section, wait_time=30):
 
+
+def connect_traffic_device(section, wait_time=30):
     '''Trigger Processor:
         * Connects to traffic generator device
     '''
@@ -1383,16 +1557,23 @@ def connect_traffic_device(section, wait_time=30):
             section.failed("Unable to connect to traffic generator device "
                            "'{}'".format(dev.name))
         else:
-            log.info("Connected to traffic generator device '{}'".\
+            log.info("Connected to traffic generator device '{}'".
                      format(dev.name))
 
 # ==============================================================================
 # processor: compare_traffic_profile
 # ==============================================================================
-def compare_traffic_profile(section, clear_stats=True, clear_stats_time=30,
-    view_create_interval=30, view_create_iteration=10, loss_tolerance=1,
-    rate_tolerance=2, section_profile=''):
 
+
+def compare_traffic_profile(
+        section,
+        clear_stats=True,
+        clear_stats_time=30,
+        view_create_interval=30,
+        view_create_iteration=10,
+        loss_tolerance=1,
+        rate_tolerance=2,
+        section_profile=''):
     '''Trigger Post-Processor:
         * Create a traffic profile
         * Compare it to 'golden' traffic profile created in common_setup (if executed)
@@ -1413,8 +1594,9 @@ def compare_traffic_profile(section, clear_stats=True, clear_stats_time=30,
     if 'compare_traffic_profile' in section.parameters and\
        section.parameters['compare_traffic_profile'] is False:
         # User has elected to disable execution of this processor
-        log.info("SKIP: Processor 'compare_traffic_profile' skipped - parameter"
-                 " 'compare_traffic_profile' set to False in trigger YAML")
+        log.info(
+            "SKIP: Processor 'compare_traffic_profile' skipped - parameter"
+            " 'compare_traffic_profile' set to False in trigger YAML")
         return
 
     if _get_connection_class(section) == 'GenieTgn':
@@ -1449,18 +1631,20 @@ def compare_traffic_profile(section, clear_stats=True, clear_stats_time=30,
         # Create traffic profile
         try:
             section.tgn_profile = dev.create_traffic_streams_table(
-                                    clear_stats=clear_stats,
-                                    clear_stats_time=clear_stats_time,
-                                    view_create_interval=view_create_interval,
-                                    view_create_iteration=view_create_iteration)
+                clear_stats=clear_stats,
+                clear_stats_time=clear_stats_time,
+                view_create_interval=view_create_interval,
+                view_create_iteration=view_create_iteration)
         except GenieTgnError as e:
             log.error(e)
             section.failed("Unable to create traffic profile of configured "
-                           "streams on traffic generator device '{}'".\
+                           "streams on traffic generator device '{}'".
                            format(dev.name))
         else:
-            log.info("Created traffic profile of configured streams on traffic "
-                     "generator device '{}'".format(dev.name))
+            log.info(
+                "Created traffic profile of configured streams on traffic "
+                "generator device '{}'".format(
+                    dev.name))
 
         # Copy traffic profile to runtime logs
         try:
@@ -1496,28 +1680,33 @@ def compare_traffic_profile(section, clear_stats=True, clear_stats_time=30,
                                             rate_tolerance=rate_tolerance)
             except GenieTgnError as e:
                 log.error(e)
-                section.failed("Comparison between current traffic profile and "
-                               "section golden traffic profile failed")
+                section.failed(
+                    "Comparison between current traffic profile and "
+                    "section golden traffic profile failed")
             else:
                 log.info("Comparison between current traffic profile and "
                          "section golden traffic profile passed")
 
-        # Compare current traffic profile to common_setup generated golden traffic profile
+        # Compare current traffic profile to common_setup generated golden
+        # traffic profile
         else:
-            log.info("Comparing current traffic profile with golden traffic "
-                     "profile generated in common_setup: profile_traffic subsection")
+            log.info(
+                "Comparing current traffic profile with golden traffic "
+                "profile generated in common_setup: profile_traffic subsection")
 
             # Compare it to common_setup golden profile
             if dev.get_golden_profile().field_names:
                 try:
-                    dev.compare_traffic_profile(profile1=section.tgn_profile,
-                                                profile2=dev.get_golden_profile(),
-                                                loss_tolerance=loss_tolerance,
-                                                rate_tolerance=rate_tolerance)
+                    dev.compare_traffic_profile(
+                        profile1=section.tgn_profile,
+                        profile2=dev.get_golden_profile(),
+                        loss_tolerance=loss_tolerance,
+                        rate_tolerance=rate_tolerance)
                 except GenieTgnError as e:
                     log.error(e)
-                    section.failed("Comparison between current traffic profile "
-                                   "and common_setup:profile_traffic failed")
+                    section.failed(
+                        "Comparison between current traffic profile "
+                        "and common_setup:profile_traffic failed")
                 else:
                     log.info("Comparison between current traffic profile "
                              "and common_setup:profile_traffic passed")
@@ -1530,10 +1719,12 @@ def compare_traffic_profile(section, clear_stats=True, clear_stats_time=30,
 # ==============================================================================
 # processor: check_traffic_loss
 # ==============================================================================
+
+
 def check_traffic_loss(section, max_outage=120, loss_tolerance=15,
-    rate_tolerance=2, check_interval=60, check_iteration=10,
-    stream_settings='', clear_stats=False,
-    clear_stats_time=30, pre_check_wait=''):
+                       rate_tolerance=2, check_interval=60, check_iteration=10,
+                       stream_settings='', clear_stats=False,
+                       clear_stats_time=30, pre_check_wait=''):
 
     # Init
     log.info(banner("processor: 'check_traffic_loss'"))
@@ -1552,11 +1743,17 @@ def check_traffic_loss(section, max_outage=120, loss_tolerance=15,
                                    pre_check_wait=pre_check_wait)
 
 
-def _check_traffic_loss(section, max_outage=120, loss_tolerance=15,
-    rate_tolerance=2, check_interval=60, check_iteration=10,
-    stream_settings='', clear_stats=False,
-    clear_stats_time=30, pre_check_wait=''):
-
+def _check_traffic_loss(
+        section,
+        max_outage=120,
+        loss_tolerance=15,
+        rate_tolerance=2,
+        check_interval=60,
+        check_iteration=10,
+        stream_settings='',
+        clear_stats=False,
+        clear_stats_time=30,
+        pre_check_wait=''):
     '''Trigger Post-Processor:
         * Check traffic loss after trigger execution
         * Controlled via section parameters provided in the trigger datafile
@@ -1604,11 +1801,14 @@ def _check_traffic_loss(section, max_outage=120, loss_tolerance=15,
         # Check if user provided stream information
         streams_dict = {}
         if stream_settings:
-            streams_dict = unpickle_stream_data(file=stream_settings, copy=True,
-                                                copy_file='{}_stream_data'.\
-                                                format(section.uid.strip('.uut')))
+            streams_dict = unpickle_stream_data(
+                file=stream_settings,
+                copy=True,
+                copy_file='{}_stream_data'. format(
+                    section.uid.strip('.uut')))
             # Print to logs
-            log.info("User has provided outage/tolerance values for the following streams:")
+            log.info(
+                "User has provided outage/tolerance values for the following streams:")
             for stream in streams_dict['traffic_streams']:
                 log.info("-> {}".format(stream))
             # Check if streams passed in are valid
@@ -1640,7 +1840,6 @@ def _check_traffic_loss(section, max_outage=120, loss_tolerance=15,
 
 
 def _check_traffic_loss_tcl(section):
-
     '''Trigger Post-Processor:
         * Check traffic loss after trigger execution
         * Controlled via section parameters provided in the triggers datafile
@@ -1672,7 +1871,7 @@ def _check_traffic_loss_tcl(section):
         # Check if device is found in mapping context
         if not hasattr(section.parent, 'mapping_data') or \
            tgn_device.name not in section.parent.mapping_data['devices']:
-            log.info("TGN '{}' information not found in mapping datafile".\
+            log.info("TGN '{}' information not found in mapping datafile".
                      format(tgn_device.name))
             return
 
@@ -1682,8 +1881,8 @@ def _check_traffic_loss_tcl(section):
             return
 
         # Set connection alias
-        tgn_alias = getattr(tgn_device,
-            section.parent.mapping_data['devices'][tgn_device.name]['context'])
+        tgn_alias = getattr(
+            tgn_device, section.parent.mapping_data['devices'][tgn_device.name]['context'])
 
         # Check for traffic loss
         log.info(banner("Check for traffic loss"))
@@ -1700,9 +1899,8 @@ def _check_traffic_loss_tcl(section):
         else:
             try:
                 # Verify traffic is restored within timeout if there is a loss
-                tgn_alias.\
-                    poll_traffic_until_traffic_resumes(timeout=tgn_max_outage,
-                                                    delay_check_traffic=delay)
+                tgn_alias. poll_traffic_until_traffic_resumes(
+                    timeout=tgn_max_outage, delay_check_traffic=delay)
                 log.info("PASS: Traffic stats OK")
             except GenieTgnError:
                 traffic_loss = True
@@ -1727,6 +1925,8 @@ def _check_traffic_loss_tcl(section):
 # ==============================================================================
 # processor: clear_traffic_statistics
 # ==============================================================================
+
+
 def clear_traffic_statistics(section, clear_stats_time=30):
 
     # Init
@@ -1735,10 +1935,11 @@ def clear_traffic_statistics(section, clear_stats_time=30):
     if _get_connection_class(section) == 'GenieTgn':
         return _clear_traffic_statistics_tcl(section)
     else:
-        return _clear_traffic_statistics(section, clear_stats_time=clear_stats_time)
+        return _clear_traffic_statistics(
+            section, clear_stats_time=clear_stats_time)
+
 
 def _clear_traffic_statistics(section, clear_stats_time=30):
-
     '''Trigger Pre-Processor:
         * Clear statistics on TGN device before execution of a trigger
         * Controlled via section parameters provided in the triggers datafile
@@ -1756,8 +1957,9 @@ def _clear_traffic_statistics(section, clear_stats_time=30):
     if 'clear_traffic_statistics' in section.parameters and\
        section.parameters['clear_traffic_statistics'] is False:
         # User has elected to disable execution of this processor
-        log.info("SKIP: Processor 'clear_traffic_statistics' skipped - parameter"
-                 " 'clear_traffic_statistics' set to False in trigger YAML")
+        log.info(
+            "SKIP: Processor 'clear_traffic_statistics' skipped - parameter"
+            " 'clear_traffic_statistics' set to False in trigger YAML")
         return
 
     # Find TGN devices
@@ -1794,8 +1996,8 @@ def _clear_traffic_statistics(section, clear_stats_time=30):
             log.info("Cleared traffic statistics on traffic generator device "
                      "'{}'".format(dev.name))
 
-def _clear_traffic_statistics_tcl(section):
 
+def _clear_traffic_statistics_tcl(section):
     '''Trigger Pre-Processor:
         * Clear statistics on TGN device before execution of a trigger
         * Controlled via section parameters provided in the triggers datafile
@@ -1823,7 +2025,7 @@ def _clear_traffic_statistics_tcl(section):
         # Check if device is found in mapping context
         if not hasattr(section.parent, 'mapping_data') or\
            tgn_device.name not in section.parent.mapping_data['devices']:
-            log.info("TGN '{}' information not found in mapping datafile".\
+            log.info("TGN '{}' information not found in mapping datafile".
                      format(tgn_device.name))
             return
 
@@ -1833,19 +2035,21 @@ def _clear_traffic_statistics_tcl(section):
             return
 
         # Set connection alias
-        tgn_alias = getattr(tgn_device,
-            section.parent.mapping_data['devices'][tgn_device.name]['context'])
+        tgn_alias = getattr(
+            tgn_device, section.parent.mapping_data['devices'][tgn_device.name]['context'])
 
         if tgn_max_outage_ms:
             try:
                 tgn_alias.clear_stats()
             except GenieTgnError as e:
                 log.error("Unable to clear traffic generator statistics",
-                                from_exception=e)
+                          from_exception=e)
 
 # ==============================================================================
 # processor: disable_clear_traffic
 # ==============================================================================
+
+
 def disable_clear_traffic(section, clear_stats_time=10):
 
     log.info("Processor 'clear_traffic_statistics' disabled  - "

@@ -1,0 +1,111 @@
+cleaners:
+  DeviceClean:
+    module: genie.libs.clean
+    devices: [PE1]
+
+devices:
+  PE1:
+    images:
+      - /auto/release/path/vmlinux.bin
+
+    global_recovery:
+      break_count: 5
+      console_activity_pattern: "\\.\\.\\.\\."
+      timeout: 600
+      recovery_password: "%ENC{w5zDmsOD}"
+      golden_image:
+        - bootflash:/golden_image.bin
+
+    connect:
+
+    ping_server:
+      server: the-tftp-server
+      vrf: Mgmt-intf
+      timeout: 2
+      min_success_rate: 70
+      max_attempts: 2
+      interval: 1
+
+    copy_to_linux:
+      origin:
+        files:
+          - /auto/release/path/vmlinux.bin
+      destination:
+        directory: /auto/path/images/
+      append_hostname: True
+      overwrite: True
+      copy_attempts: 1
+
+    copy_to_device:
+      origin:
+        files:
+          - /auto/path/images/vmlinux_PE1.bin
+        hostname: 20.1.1.1
+      destination:
+        directory: 'harddisk:/'
+      protocol: ftp
+      timeout: 1
+      check_file_stability: True
+      min_free_space_percent: 50
+      overwrite: True
+      verify_num_images: False
+
+    change_boot_variable:
+      images: 
+        - harddisk:/vmlinux_PE1.bin
+      timeout: 1
+      max_time: 2
+      check_interval: 0.5
+
+    write_erase:
+      timeout: 1
+
+    reload:
+      prompt_recovery: True
+      sleep_after_reload: 1
+      credentials: None
+      timeout: 1
+      module_timeout: 1
+      module_interval: 1
+
+    apply_configuration:
+      configuration: |
+        hostname PE1
+        enable password banana
+        interface GigabitEthernet0
+          ip address 1.1.1.1 255.255.255.0
+          no shut
+        line console 0
+          exec-timeout 0 0
+          logging synchronous
+        line vty 0 4
+          password lab
+      config_timeout: 1
+      config_stable_time: 1
+      max_time: 1
+      check_interval: 0.5
+
+    verify_running_image:
+      images:
+        - harddisk:/vmlinux_PE1.bin
+
+    backup_file_on_device:
+        copy_dir: 'harddisk:'
+        copy_file: temp_file
+
+    delete_backup_from_device:
+        copy_before_delete: True
+        delete_dir: 'harddisk:'
+        delete_file: backup_temp_file
+
+    order:
+      - 'connect'
+      - 'ping_server'
+      - 'copy_to_linux'
+      - 'copy_to_device'
+      - 'change_boot_variable'
+      - 'write_erase'
+      - 'reload'
+      - 'apply_configuration'
+      - 'verify_running_image'
+  

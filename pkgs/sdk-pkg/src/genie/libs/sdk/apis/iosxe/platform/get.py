@@ -227,13 +227,18 @@ def get_total_space(device, directory='', output=None):
         return int(dir_output.get('dir').get(directory).get('bytes_total'))
 
 
-def get_boot_variables(device, output=None):
-    '''Get current boot variables on the device
+def get_boot_variables(device, boot_var, output=None):
+    '''Get current or next-reload boot variables on the device
         Args:
             device (`obj`): Device object
+            boot_var (`str`): Type of boot variable to return to caller
+            output (`str`): output from show boot
         Returns:
             List of boot images or []
     '''
+
+    # Check type
+    assert boot_var in ['current', 'next']
 
     boot_images = []
     try:
@@ -242,9 +247,17 @@ def get_boot_variables(device, output=None):
         log.error("Command 'show bootvar' did not return any output\n{}".\
                   format(str(e)))
     else:
-        boot_variables = boot_out.get("next_reload_boot_variable")
+        # Get current or next
+        if boot_var == 'current':
+            boot_variables = boot_out.get("current_boot_variable")
+        else:
+            boot_variables = boot_out.get("next_reload_boot_variable")
+
+        # Trim
         if boot_variables:
             for item in boot_variables.split(';'):
+                if not item:
+                    continue
                 if ',' in item:
                     item, num = item.split(',')
                 if " " in item:

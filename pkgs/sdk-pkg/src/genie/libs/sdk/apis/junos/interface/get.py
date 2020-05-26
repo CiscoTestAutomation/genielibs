@@ -3,11 +3,11 @@
 # Python
 import re
 import logging
-
+import copy
 # Genie
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.sdk.libs.utils.normalize import GroupKeys
-
+from genie.utils import Dq
 # Pyats
 from pyats.utils.objects import find, R
 
@@ -17,7 +17,8 @@ from unicon.core.errors import SubCommandFailure
 log = logging.getLogger(__name__)
 
 
-def get_interface_address_mask_running_config(device, interface, address_family):
+def get_interface_address_mask_running_config(
+        device, interface, address_family):
     """ Get interface address and mask from show running-config interface {interface}
         Args:
             device ('obj'): Device object
@@ -46,7 +47,8 @@ def get_interface_address_mask_running_config(device, interface, address_family)
         # address 2001:db8:1005:4401::b/128
         p1 = re.compile(r'address +(?P<ip>[\w\:]+)/(?P<mask>\d+);')
     else:
-        log.info('Must provide one of the following address families: "ipv4", "ipv6", "inet", "inet6"')
+        log.info(
+            'Must provide one of the following address families: "ipv4", "ipv6", "inet", "inet6"')
         return None, None
 
     match = p1.findall(output)
@@ -56,14 +58,15 @@ def get_interface_address_mask_running_config(device, interface, address_family)
     return None, None
 
 
-def get_interface_ip_address(device, interface, address_family):
-    """ Get interface ip_address from device
+def get_interface_ip_address(device, interface, address_family,
+                             return_all=False):
+    """ Get interface ip address from device
 
         Args:
             interface('str'): Interface to get address
             device ('obj'): Device object
             address_family ('str'): Address family
-
+            return_all ('bool'): return List of values
         Returns:
             None
             ip_address ('str'): If has multiple addresses
@@ -73,7 +76,8 @@ def get_interface_ip_address(device, interface, address_family):
             None
     """
     if address_family not in ["ipv4", "ipv6", "inet", "inet6"]:
-        log.info('Must provide one of the following address families: "ipv4", "ipv6", "inet", "inet6"')
+        log.info('Must provide one of the following address families: '
+                 '"ipv4", "ipv6", "inet", "inet6"')
         return
 
     if address_family == "ipv4":
@@ -82,22 +86,36 @@ def get_interface_ip_address(device, interface, address_family):
         address_family = "inet6"
 
     try:
-        out = device.parse('show interfaces {interface} terse'.format(interface=interface))
+        out = device.parse('show interfaces terse {interface}'.format(
+            interface=interface))
     except SchemaEmptyParserError:
         return
 
-    reqs = R([
-        interface,
-        'protocol',
-        address_family,
-        '(.*)',
-        'local',
-        '(?P<local>.*)'
-    ])
+    # Example dictionary structure:
+    #         {
+    #             "ge-0/0/0.0": {
+    #                 "protocol": {
+    #                     "inet": {
+    #                         "10.189.5.93/30": {
+    #                             "local": "10.189.5.93/30"
+    #                         }
+    #                     },
+    #                     "inet6": {
+    #                         "2001:db8:223c:2c16::1/64": {
+    #                             "local": "2001:db8:223c:2c16::1/64"
+    #                         },
+    #                         "fe80::250:56ff:fe8d:c829/64": {
+    #                             "local": "fe80::250:56ff:fe8d:c829/64"
+    #                         }
+    #                     },
+    #                 }
+    #             }
+    #         }
 
-    found = find([out], reqs, filter_=False, all_keys=True)
+    found = Dq(out).contains(interface).contains(address_family). \
+        get_values("local")
     if found:
-        keys = GroupKeys.group_keys(
-            reqs=reqs.args, ret_num={}, source=found, all_keys=True
-        )
-        return keys[0]['local']
+        if return_all:
+            return found
+        return found[0]
+    return None

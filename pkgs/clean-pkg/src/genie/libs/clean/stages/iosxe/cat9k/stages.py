@@ -89,10 +89,10 @@ def change_boot_variable(section, steps, device, images, timeout=300,
 
         # Get list of existing boot images if any
         try:
-            curr_boot_images = device.api.get_boot_variables()
+            curr_boot_images = device.api.get_boot_variables(boot_var='current')
         except Exception as e:
             step.failed("Unable to check existing boot images on {}:\n{}".\
-                        format(device.name, str(e)), goto=['exit'])
+                        format(device.name, str(e)))
 
         if not curr_boot_images:
             step.passed("Device {} does not have any previously configured "
@@ -179,13 +179,9 @@ def change_boot_variable(section, steps, device, images, timeout=300,
                      "on {}".format(device.name)) as step:
         if not device.api.verify_boot_variable(boot_images=images):
             log.error(banner("*** Terminating Genie Clean ***"))
-            section.failed("Failed to set boot variables for reloading device "
-                           "{}".format(device.name), goto=['exit'])
+            section.failed("Boot variables are not correctly set to {} prior "
+                           "to reloading device {}".format(images, device.name),
+                           goto=['exit'])
         else:
-            step.passed("Successfully verified boot variables are correctly "
-                        "set on {}".format(device.name))
-
-
-    if device.is_ha:
-        # LRTODO for HA case
-        pass
+            section.passed("Successfully verified boot variables are correctly "
+                           "set on {}".format(device.name))

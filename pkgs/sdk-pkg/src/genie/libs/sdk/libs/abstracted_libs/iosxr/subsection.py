@@ -9,10 +9,11 @@ from genie.abstract import Lookup
 from genie.libs import parser
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
-#unicon
+# unicon
 from unicon.eal.dialogs import Statement, Dialog
 
 log = logging.getLogger(__name__)
+
 
 def save_device_information(device, **kwargs):
     """Install the commit packages. This is for IOSXR devices.
@@ -81,7 +82,26 @@ def get_default_dir(device):
                                                             dir=default_dir))
     return default_dir
 
-def configure_replace(device, file_location, timeout=60):
+
+def configure_replace(device, file_location, timeout=60, file_name=None):
+    """Configure replace on device
+
+       Args:
+           device (`obj`): Device object
+           file_location (`str`): File location
+           timeout (`int`): Timeout value in seconds
+           file_name (`str`): File name
+
+       Returns:
+           None
+
+       Raises:
+           pyATS Results
+    """
+    if file_name:
+        file_location = '{}{}'.format(
+            file_location,
+            file_name)
     try:
         # check if file exist
         device.execute.error_pattern.append('.*Path does not exist.*')
@@ -91,9 +111,8 @@ def configure_replace(device, file_location, timeout=60):
 
     dialog = Dialog([
         Statement(pattern=r'\[no\]',
-                action='sendline(y)',
-                loop_continue=True,
-                continue_timer=False)])
+                  action='sendline(y)',
+                  loop_continue=True,
+                  continue_timer=False)])
     device.configure("load {}\ncommit replace".format(file_location),
-                    timeout=timeout, reply=dialog)
-    
+                     timeout=timeout, reply=dialog)

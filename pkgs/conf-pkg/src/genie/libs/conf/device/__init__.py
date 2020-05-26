@@ -16,7 +16,7 @@ from genie.decorator import managedattribute
 import genie.conf.base.device
 from genie.conf.base import Interface
 from genie.conf.base.link import EmulatedLink
-from genie.conf.base.attributes import AttributesHelper
+from genie.conf.base.attributes import AttributesHelper, AttributesHelper2
 from genie.conf.base.cli import CliConfigBuilder
 
 from genie.libs.conf.address_family import AddressFamily
@@ -143,9 +143,27 @@ class Device(genie.conf.base.device.Device):
 
             >>> configuration = device.build_config(apply=False)
         """
-
         attributes = AttributesHelper(self, attributes)
         configurations = CliConfigBuilder()
+
+        # check added features and add to configurations
+        if self.features:
+            for feature in self.features:
+                # check if feature in attributes
+                feature_name = feature.__class__.__name__.lower()
+                if isinstance(attributes.attributes, dict):
+                    if feature_name in attributes.attributes:
+                        attr = AttributesHelper2(feature, attributes.attributes[feature_name])
+                        for _, sub, attributes2 in attr.mapping_items(
+                            'device_attr',
+                            keys=set([self]), sort=True):
+                            configurations.append_block(sub.build_config(apply=False, attributes=attributes2.attributes))
+                else:
+                    attr = AttributesHelper2(feature, attributes)
+                    for _, sub, attributes2 in attr.mapping_items(
+                        'device_attr',
+                        keys=set([self]), sort=True):
+                        configurations.append_block(sub.build_config(apply=False, attributes=attributes2))
 
         configurations.append_block(
             attributes.format('{custom_config_cli}'))
@@ -187,9 +205,27 @@ class Device(genie.conf.base.device.Device):
 
             >>> configuration = device.build_unconfig(apply=False)
         """
-
         attributes = AttributesHelper(self, attributes)
         configurations = CliConfigBuilder(unconfig=True)
+
+        # check added features and add to configurations
+        if self.features:
+            for feature in self.features:
+                # check if feature in attributes
+                feature_name = feature.__class__.__name__.lower()
+                if isinstance(attributes.attributes, dict):
+                    if feature_name in attributes.attributes:
+                        attr = AttributesHelper2(feature, attributes.attributes[feature_name])
+                        for _, sub, attributes2 in attr.mapping_items(
+                            'device_attr',
+                            keys=set([self]), sort=True):
+                            configurations.append_block(sub.build_unconfig(apply=False, attributes=attributes2.attributes))
+                else:
+                    attr = AttributesHelper2(feature, attributes)
+                    for _, sub, attributes2 in attr.mapping_items(
+                        'device_attr',
+                        keys=set([self]), sort=True):
+                        configurations.append_block(sub.build_unconfig(apply=False, attributes=attributes2))
 
         configurations.append_block(
             attributes.format('{custom_unconfig_cli}'))

@@ -1,0 +1,104 @@
+cleaners:
+  DeviceClean:
+    module: genie.libs.clean
+    devices: [N95]
+
+devices:
+  N95:
+    images:
+      system:
+        - /auto/release/path/nxos.9.3.1.bin
+
+    global_recovery:
+      break_count: 5
+      console_activity_pattern: "\\.\\.\\.\\."
+      timeout: 600
+      recovery_password: "%ENC{w5zDmsOD}"
+      golden_image:
+        - bootflash:/golden_image.bin
+
+    connect:
+
+    ping_server:
+      server: the-tftp-server
+      vrf: management
+      timeout: 2
+      min_success_rate: 65
+      max_attempts: 2
+      interval: 1
+
+    copy_to_linux:
+      origin:
+        files:
+          - /auto/release/path/nxos.9.3.1.bin
+      destination:
+        directory: /auto/path/images/
+      append_hostname: True
+      overwrite: True
+      copy_attempts: 1
+
+    copy_to_device:
+      origin:
+        files:
+          - /auto/path/images/nxos.9.3.1_N95.bin
+        hostname: 20.1.1.1
+      destination:
+        directory: 'bootflash:/'
+      protocol: ftp
+      timeout: 1
+      check_file_stability: True
+      min_free_space_percent: 50
+      overwrite: True
+      verify_num_images: False
+
+    change_boot_variable:
+      images:
+        system: bootflash:nxos.9.3.1_N95.bin
+      timeout: 1
+      max_time: 2
+      check_interval: 0.5
+
+    write_erase:
+      timeout: 1
+
+    reload:
+      prompt_recovery: True
+      sleep_after_reload: 1
+      credentials: None
+      timeout: 1
+      module_timeout: 1
+      module_interval: 1
+
+    apply_configuration:
+      configuration: |
+        switchname N95
+        power redundancy-mode combined force
+        no password strength-check
+        interface mgmt0
+          ip address 10.1.2.70 255.255.255.0
+          no shutdown
+        vrf context management
+          ip route 0.0.0.0/0 10.1.2.1
+        line console
+          exec-timeout 0
+        no ip domain-lookup
+        feature telnet
+      config_timeout: 1
+      config_stable_time: 1
+      max_time: 1
+      check_interval: 0.5
+
+    verify_running_image:
+      images:
+        - bootflash:nxos.9.3.1_N95.bin
+
+    order:
+      - 'connect'
+      - 'ping_server'
+      - 'copy_to_linux'
+      - 'copy_to_device'
+      - 'change_boot_variable'
+      - 'write_erase'
+      - 'reload'
+      - 'apply_configuration'
+      - 'verify_running_image'

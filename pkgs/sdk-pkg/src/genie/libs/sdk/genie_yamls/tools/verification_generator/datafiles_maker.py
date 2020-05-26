@@ -36,7 +36,7 @@ EXCLUDE_PARSERS = ['ShowDir', 'ShowBgpPolicyStatistics', 'ShowBgpVrfAllNeighbors
                    'ShowEvpnEviDetail', 'ShowL2VpnXconnectSummary', 'ShowL2VpnXconnectBrief',
                    'ShowL2VpnXconnectDetail', 'ShowL2VpnBridgeDomain', 'ShowL2VpnBridgeDomainBrief',
                    'ShowL2VpnBridgeDomainDetail', 'ShowL2VpnBridgeDomainSummary', 'ShowEvpnEthernetSegment',
-                   'ShowIpRouteWord', 'ShowIpv6RouteWord', 'ShowInterfacesCounters','ShowPowerInlineInterface',
+                   'ShowIpRouteWord', 'ShowIpv6RouteWord', 'ShowInterfacesCounters','ShowPowerInline',
                    'ShowProcessesCpuSorted','ShowVlanOld', 'ShowIpMsdpPolicyStatisticsSaPolicyIn',
                    'ShowIpMsdpPolicyStatisticsSaPolicyInOut', 'ShowIpMsdpPolicyStatisticsSaPolicyOut',
                    'ShowBgpL2vpnEvpnWord', 'ShowL2routeEvpnMacEvi', 'ShowMacAddressTableVni',

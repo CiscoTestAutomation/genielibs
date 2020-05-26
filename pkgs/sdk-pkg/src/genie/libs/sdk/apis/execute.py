@@ -326,8 +326,8 @@ def execute_reload(device, prompt_recovery, reload_creds, sleep_after_reload=120
         device.reload(prompt_recovery=prompt_recovery, reload_creds=credentials,
                       timeout=timeout)
     except Exception as e:
-        raise Exception("Error while reloading device {}\n{}".\
-                        format(device.name, str(e)))
+        log.error("Error while reloading device {}".format(device.name))
+        raise e
 
     log.info("Waiting '{}' seconds after reload ...".format(sleep_after_reload))
     time.sleep(sleep_after_reload)

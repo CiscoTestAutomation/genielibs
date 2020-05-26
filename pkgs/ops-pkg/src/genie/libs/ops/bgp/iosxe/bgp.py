@@ -48,20 +48,20 @@ class Bgp(SuperBgp):
             bgp_nbr_class = 'show bgp {address_family} vrf {vrf} neighbors {neighbor}'.\
                             format(address_family=address_family, vrf=vrf, neighbor=neighbor)
             bgp_adv_route_class = 'show bgp {address_family} neighbors {neighbor} advertised-routes'.\
-                                  format(address_family=address_family, neighbor=neighbor)
+                                  format(address_family=address_family, neighbor=neighbor or '{nbr}')
             bgp_rec_rout_class = 'show bgp {address_family} neighbors {neighbor} received-routes'.\
-                                 format(address_family=address_family, neighbor=neighbor)
+                                 format(address_family=address_family, neighbor=neighbor or '{nbr}')
             bgp_route_class = 'show bgp {address_family} vrf {vrf} neighbors {neighbor} routes'.\
-                              format(address_family=address_family, vrf=vrf, neighbor=neighbor)
+                              format(address_family=address_family, vrf=vrf, neighbor=neighbor or '{nbr}')
         else:
             bgp_nbr_class = 'show bgp {address_family} all neighbors {neighbor}'.\
                             format(address_family=address_family, neighbor=neighbor)
             bgp_adv_route_class = 'show bgp {address_family} all neighbors {neighbor} advertised-routes'.\
-                                  format(address_family=address_family, neighbor=neighbor)
+                                  format(address_family=address_family, neighbor=neighbor or '{nbr}')
             bgp_rec_rout_class = 'show bgp {address_family} all neighbors {neighbor} received-routes'.\
-                                 format(address_family=address_family, neighbor=neighbor)
+                                 format(address_family=address_family, neighbor=neighbor or '{nbr}')
             bgp_route_class = 'show bgp {address_family} all neighbors {neighbor} routes'.\
-                              format(address_family=address_family, neighbor=neighbor)
+                              format(address_family=address_family, neighbor=neighbor or '{nbr}')
 
         for cmd in ['show bgp {address_family} all summary'.format(address_family=af), 
                     'show bgp vrf {vrf} all summary'.format(vrf=vrf),
@@ -710,7 +710,6 @@ class Bgp(SuperBgp):
 
         rpp_keys = ['msg_rcvd', 'msg_sent', 'tbl_ver',\
             'input_queue', 'output_queue', 'up_down', 'state_pfxrcd']
-
         for key in rpp_keys:
             self.add_leaf(cmd='show bgp all summary',
                       src='{rpp_src}[{key}]'.format(
@@ -789,31 +788,31 @@ class Bgp(SuperBgp):
                                        'neighbor][{neighbor}]' \
                                        '[address_family][(?P<address_family>.*)]'.format(neighbor=nbr)
                 # route_distinguisher
-                self.add_leaf(cmd=bgp_adv_route_class,
+                self.add_leaf(cmd=bgp_adv_route_class.format(nbr=nbr),
                               src=rpp_nbr_src + '[route_distinguisher]',
                               dest=rpp_nbr_dest + '[route_distinguisher]',
                               neighbor=nbr, address_family=af)
 
                 # default_vrf
-                self.add_leaf(cmd=bgp_adv_route_class,
+                self.add_leaf(cmd=bgp_adv_route_class.format(nbr=nbr),
                               src=rpp_nbr_src + '[default_vrf]',
                               dest=rpp_nbr_dest + '[default_vrf]',
                               neighbor=nbr, address_family=af)
 
                 # advertised
-                self.add_leaf(cmd=bgp_adv_route_class,
+                self.add_leaf(cmd=bgp_adv_route_class.format(nbr=nbr),
                               src=rpp_nbr_src + '[advertised]',
                               dest=rpp_nbr_dest + '[advertised]',
                               neighbor=nbr, address_family=af)
 
                 # routes
-                self.add_leaf(cmd=bgp_route_class,
+                self.add_leaf(cmd=bgp_route_class.format(nbr=nbr),
                               src=rpp_nbr_src + '[routes]',
                               dest=rpp_nbr_dest + '[routes]',
                               neighbor=nbr, address_family=af)
 
                 # received_routes
-                self.add_leaf(cmd=bgp_rec_rout_class,
+                self.add_leaf(cmd=bgp_rec_rout_class.format(nbr=nbr),
                               src=rpp_nbr_src + '[received_routes]',
                               dest=rpp_nbr_dest + '[received_routes]',
                               neighbor=nbr, address_family=af)

@@ -22,10 +22,10 @@ from genie.libs.conf.ospf.interfacestaticneighbor import InterfaceStaticNeighbor
 
 class test_ospf(TestCase):
 
-    def test_ospf_config1(self):
+    # For failures
+    maxDiff = None
 
-        # For failures
-        self.maxDiff = None
+    def test_ospf_config1(self):
 
         # Set testbed
         Genie.testbed = testbed = Testbed()
@@ -346,9 +346,6 @@ class test_ospf(TestCase):
 
     def test_ospf_config2(self):
 
-        # For failures
-        self.maxDiff = None
-
         # Set testbed
         Genie.testbed = testbed = Testbed()
         dev1 = Device(testbed=testbed, name='PE1', os='iosxe')
@@ -396,6 +393,121 @@ class test_ospf(TestCase):
                 ' exit',
             ]))
 
+    def test_ospf_device_build_config(self):
+
+        # Set testbed
+        Genie.testbed = testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='iosxe')
+
+        # Create VRF objects
+        vrf0 = Vrf('default')
+        # Create OSPF object
+        ospf1 = Ospf()
+
+        # Add OSPF configurations to vrf default
+        ospf1.device_attr[dev1].vrf_attr[vrf0].instance = '30'
+        ospf1.device_attr[dev1].vrf_attr[vrf0].pref_all = 115
+        ospf1.device_attr[dev1].vrf_attr[vrf0].nsr_enable = True
+
+        # Add OSPF to the device
+        dev1.add_feature(ospf1)
+
+        # Build config
+        cfgs = dev1.build_config(apply=False)
+
+        # Check config strings built correctly
+        self.assertMultiLineEqual(
+            str(cfgs),
+            '\n'.join([
+                'router ospf 30',
+                ' distance 115',
+                ' nsr',
+                ' exit',
+            ]))
+
+        # Unconfigure nsr
+        ospf_uncfg = dev1.build_unconfig(apply=False, attributes={
+            'ospf': {
+                'device_attr': {
+                    dev1.name: 'vrf_attr__default__nsr_enable',
+                }
+            }
+        })
+
+        # Check unconfig strings built correctly
+        self.assertMultiLineEqual(
+            str(ospf_uncfg),
+            '\n'.join([
+                'router ospf 30',
+                ' no nsr',
+                ' exit',
+            ]))
+
+    def test_ospf_testbed_build_config(self):
+
+        # Set testbed
+        Genie.testbed = testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='iosxe')
+        dev2 = Device(testbed=testbed, name='PE2', os='iosxe')
+
+        # Create VRF objects
+        vrf0 = Vrf('default')
+        # Create OSPF object
+        ospf1 = Ospf()
+
+        # Add OSPF configurations to vrf default
+        ospf1.device_attr[dev1].vrf_attr[vrf0].instance = '30'
+        ospf1.device_attr[dev1].vrf_attr[vrf0].pref_all = 115
+        ospf1.device_attr[dev1].vrf_attr[vrf0].nsr_enable = True
+        ospf1.device_attr[dev2].vrf_attr[vrf0].instance = '30'
+        ospf1.device_attr[dev2].vrf_attr[vrf0].pref_all = 115
+        ospf1.device_attr[dev2].vrf_attr[vrf0].nsr_enable = True
+
+        # Add OSPF to the device
+        dev1.add_feature(ospf1)
+        dev2.add_feature(ospf1)
+
+        # Build config
+        cfgs = testbed.build_config(apply=False)
+
+        # Check config strings built correctly
+        self.assertMultiLineEqual(
+            str(cfgs[dev1.name]),
+            '\n'.join([
+                'router ospf 30',
+                ' distance 115',
+                ' nsr',
+                ' exit',
+            ]))
+        self.assertMultiLineEqual(
+            str(cfgs[dev2.name]),
+            '\n'.join([
+                'router ospf 30',
+                ' distance 115',
+                ' nsr',
+                ' exit',
+            ]))
+
+        # Unconfigure nsr
+        ospf_uncfg = testbed.build_unconfig(apply=False, attributes={
+            'ospf': {
+                'device_attr': {
+                    dev1.name: 'vrf_attr__default__nsr_enable',
+                }
+            }
+        })
+
+        # Check unconfig strings built correctly
+        self.assertMultiLineEqual(
+            str(ospf_uncfg[dev1.name]),
+            '\n'.join([
+                'router ospf 30',
+                ' no nsr',
+                ' exit',
+            ]))
+        # no config for dev2 is expected
+        self.assertMultiLineEqual(
+            str(ospf_uncfg[dev2.name]), '')
 
 if __name__ == '__main__':
     unittest.main()

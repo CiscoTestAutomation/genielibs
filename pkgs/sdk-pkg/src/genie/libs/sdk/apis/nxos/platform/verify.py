@@ -222,12 +222,12 @@ def verify_module_status(device, timeout=180, interval=30):
         # Check state for all slots
         failed_slots = Dq(output).contains('status').\
                             not_contains_key_value('status',
-                                                   '.*ok.*|active|standby|ha-standby',
+                                                   '.*ok.*|active|standby|ha-standby|Ready',
                                                    value_regex=True).\
                             get_values('lc')
         failed_slots.extend(Dq(output).contains('status').\
                             not_contains_key_value('status',
-                                                   '.*ok.*|active|standby|ha-standby',
+                                                   '.*ok.*|active|standby|ha-standby|Ready',
                                                    value_regex=True).\
                             get_values('rp'))
         if not failed_slots:

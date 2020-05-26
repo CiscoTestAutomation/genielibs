@@ -139,7 +139,7 @@ def _output_query_template(self, output, steps, device, command, include, exclud
                     # verifying the inclusion/exclusion of actions : learn, parse and api
                     found = _get_output_from_query_validators(output, query)
                     kwargs = found
-                    kwargs.update({'step': substep, 'style':style, 'key':None})
+                    kwargs.update({'step': substep, 'style':style, 'key':query})
 
                 # steps would (pass | fail | error) within this function
                 _verify_include_exclude(**kwargs)
