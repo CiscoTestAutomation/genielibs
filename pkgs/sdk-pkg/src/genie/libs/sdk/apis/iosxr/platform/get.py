@@ -7,6 +7,8 @@ import logging
 # Logger
 log = logging.getLogger(__name__)
 
+# Genie
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 def get_module_info(device, module, key='sn'):
 

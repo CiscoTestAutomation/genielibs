@@ -66,30 +66,33 @@ def _is_boot_variable_as_expected(device, system, boot_variable, kickstart=None)
 
     if 'system_variable' in output[boot_variable]:
         # case for no supervisor
-        if kickstart and kickstart != output.get(boot_variable, {}).get('kickstart_variable', None):
-            raise Exception("Next reload kickstart boot variable are not as expected "
-                            "for '{d}'".format(d=device.name))
-        if system != output.get(boot_variable, {}).get('system_variable', None):
-            raise Exception("Next reload system boot variable are not as expected "
-                            "for '{d}'".format(d=device.name))
+        if kickstart:
+            actual_kickstart = output.get(boot_variable, {}).get('kickstart_variable', None)
+            if kickstart != actual_kickstart:
+                raise Exception("Next reload kickstart boot variable ({a}) is not as expected ({e}) "
+                                "for '{d}'".format(a=actual_kickstart, e=kickstart, d=device.name))
+        actual_system = output.get(boot_variable, {}).get('system_variable', None)
+        if system != actual_system:
+            raise Exception("Next reload system boot variable ({a}) is not as expected ({e}) "
+                            "for '{d}'".format(a=actual_system, e=system, d=device.name))
     else:
         # if there are supervisors, check if all of the boot var are changed
         for sup in output[boot_variable]['sup_number']:
-            expected_kick = output.get(boot_variable, None).\
+            actual_kickstart = output.get(boot_variable, None).\
                                    get('sup_number', None).\
                                    get(sup, None).\
                                    get('kickstart_variable', None)
-            expected_system = output.get(boot_variable, None).\
+            actual_system = output.get(boot_variable, None).\
                                      get('sup_number', None).\
                                      get(sup, None).\
                                      get('system_variable', None)
-            if kickstart and \
-                kickstart != output.get(boot_variable, {}).get('sup_number', {}).get(sup, {}).get('kickstart_variable', None):
-                raise Exception("Next reload kickstart boot variable are not as expected "
-                                "for '{d}', supervisor '{s}'".format(d=device.name, s=sup))
-            if system != output.get(boot_variable, {}).get('sup_number', {}).get(sup, {}).get('system_variable', None):
-                raise Exception("Next reload system boot variable are not as expected "
-                                "for '{d}', supervisor '{s}'".format(d=device.name, s=sup))
+            if kickstart:
+                if kickstart != actual_kickstart:
+                    raise Exception("Next reload kickstart boot variable ({a}) is not as expected ({e}) "
+                                "for '{d}', supervisor '{s}'".format(a=actual_kickstart, e=kickstart, d=device.name, s=sup))
+            if system != actual_system:
+                raise Exception("Next reload system boot variable ({a}) is not as expected ({e}) "
+                                "for '{d}', supervisor '{s}'".format(a=actual_system, e=system, d=device.name, s=sup))
 
 def verify_file_exists(device, file, size=None, dir_output=None):
     """verify that the given file exist on device with the same name and size

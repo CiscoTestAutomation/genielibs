@@ -1574,7 +1574,6 @@ def get_interfaces(device, link_name=None, opposite=False, phy=False, num=0):
     #                         alias: D1-D2-1
     #                         link: D1-D2-1
     #                         type: ethernet
-
     #             # D2:
     #             Device2:
     #                 interfaces:
@@ -1634,3 +1633,23 @@ def get_interface_interfaces(
     """
     return get_interfaces(device=device, link_name=link_name,
                           opposite=opposite, phy=phy, num=num)
+
+def slugify(word):
+    """ update all special characters in string to underscore
+        Args:
+            word (`str`): string which you want to convert special characters in the word to underscore
+        Raise:
+            Exception
+        Returns:
+            word
+
+        Example:
+
+        >>> dev.api.slugify('Ethernet1/1.100')
+        Ethernet1_1_100
+
+        >>> dev.api.slugify('2020-05-26_14:15:36.555')
+        2020_05_26_14_15_36_555
+
+    """
+    return re.sub(r'\W+', '_', word)

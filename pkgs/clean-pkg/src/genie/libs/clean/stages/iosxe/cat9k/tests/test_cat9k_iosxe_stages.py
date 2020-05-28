@@ -1,5 +1,6 @@
 
 # Python
+import os
 import logging
 import unittest
 from unittest.mock import Mock, MagicMock
@@ -40,15 +41,16 @@ from genie.libs.clean.stages.iosxe.cat9k.tests.cat9k_iosxe_neg_stage_outputs imp
 # Disable log messages
 logging.disable(logging.CRITICAL)
 
+test_path = os.path.dirname(os.path.abspath(__file__))
 
 class PositiveStages(unittest.TestCase):
 
     def setUp(self):
         # Load sample testbed YAML & clean YAML
-        self.tb = load('./mock_testbed.yaml')
+        self.tb = load(test_path+'/mock_testbed.yaml')
         self.clean_config = KleenexFileLoader(testbed=self.tb,
                                               invoke_clean=True).\
-                                              load('./mock_clean.yaml')
+                                              load(test_path+'/mock_clean.yaml')
         KleenexEngine.update_testbed(self.tb, **self.clean_config['devices'])
 
         self.steps = Steps()
@@ -72,10 +74,10 @@ class NegativeStages(unittest.TestCase):
 
     def setUp(self):
         # Load sample testbed YAML & clean YAML
-        self.tb = load('./mock_testbed.yaml')
+        self.tb = load(test_path+'/mock_testbed.yaml')
         self.clean_config = KleenexFileLoader(testbed=self.tb,
                                               invoke_clean=True).\
-                                              load('./mock_clean.yaml')
+                                              load(test_path+'/mock_clean.yaml')
         KleenexEngine.update_testbed(self.tb, **self.clean_config['devices'])
 
         self.steps = Steps()

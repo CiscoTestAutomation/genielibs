@@ -8,4 +8,4 @@
                             robot
 ----------------------------------------------------------------------------
 
-
+* Fixed feature discovery for classes with an underscore in the name

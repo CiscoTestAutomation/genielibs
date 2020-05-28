@@ -212,7 +212,7 @@ class GenieRobot(object):
 
         # Now find the right library
         attr_name = '.'.join([feature.lower(), feature.lower(),
-                              feature.title()])
+                              feature.title().replace('_', '')])
 
         # Find the right library with abstraction if needed
         # Get context in there

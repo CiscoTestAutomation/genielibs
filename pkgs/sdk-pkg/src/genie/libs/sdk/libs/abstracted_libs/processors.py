@@ -1,12 +1,16 @@
 # Python
+import datetime
 import os
 import re
 import time
 import yaml
 import copy
 import logging
+import shutil
+import zipfile
 
-# Ats
+# pyats
+from pyats.easypy import runtime
 from pyats.aetest import Testcase, skip
 from pyats.aetest.sections import SetupSection
 from pyats.log.utils import banner
@@ -1176,12 +1180,73 @@ def clear_logging(section, devices=None):
 # ==============================================================================
 
 
-def pre_execute_command(section, devices=None, sleep_time=0, max_retry=1):
-    '''Trigger Processor:
-            * execute command
-        '''
+def pre_execute_command(section,
+                        devices=None,
+                        sleep_time=0,
+                        max_retry=1,
+                        save_to_file='',
+                        zipped_folder=''):
+    '''
+    Execute commands as processors. This can be run only with specified condition and the log can be archived with text file or zip file.
+
+    Can be controlled via sections parameters which is provided by the datafile
+
+    Args:
+        section (`obj`) : Aetest Subsection object.
+        device (`obj`) : Device object.
+        sleep_time (`int`) : sleep after all commands (unit: seconds)
+        max_retry (`int`) : Retry issuing command in case any error (max_retry 1 by default)
+        save_to_file (`str`) : Set either one of below modes when show output needs to be saved as file. folder for the processor is generated and store files in the folder. (Disabled by default)
+                                 per_device : file generated per device
+                                 per_command : file generated per command
+        zipped_folder (`bool`) : Set if archive folder needs to be zipped.
+                                 If True, zip file generated and removed the folder with files. 
+
+    Returns:
+        AETEST results
+
+    Raises:
+        None
+    '''
     # Init
     log.info(banner("processor: 'execute_command'"))
+
+    # sanitize arguments
+    if save_to_file and save_to_file not in ['per_device', 'per_command']:
+        section.errored(
+            "`save_to_file` in datafile must be `per_device` or `per_command`")
+    if not save_to_file and isinstance(zipped_folder, bool):
+        log.warning(
+            "`zipped_folder` was ignored because `save_to_file` was not set in datafile"
+        )
+    elif save_to_file and not isinstance(zipped_folder, bool):
+        section.errored("`zipped_folder` must be True or False in datafile")
+
+    # prepare save location
+    if save_to_file:
+        now = datetime.datetime.now()
+        timestamp_format = '%Y%m%d_%H%M%S'
+        folder_log = '_'.join(
+            [section.parent.uid, section.uid,
+             now.strftime(timestamp_format)])
+        folder_name = runtime.directory + '/' + folder_log
+        try:
+            os.mkdir(folder_name)
+            log.info(
+                "Folder `{folder}` is created for `save_to_file` with mode {mode}"
+                .format(folder=folder_name, mode=save_to_file))
+        except Exception:
+            section.errored(
+                "Failed to create folder `{folder_name}` for `save_to_file`".
+                format(folder_name=folder_name))
+        if zipped_folder:
+            try:
+                zip = zipfile.ZipFile(folder_name + '.zip', 'w',
+                                      zipfile.ZIP_DEFLATED)
+            except Exception:
+                section.errored(
+                    "Failed to create zip file: {file} for `save_to_file`".
+                    format(file=folder_name + '.zip'))
 
     sleep_if_cmd_executed = False
     for dev in devices:
@@ -1218,22 +1283,70 @@ def pre_execute_command(section, devices=None, sleep_time=0, max_retry=1):
                                         loop_continue=True,
                                         continue_timer=False))
                             dialog = Dialog(statement_list)
-                            device.execute(
-                                exec_cmd, reply=dialog, timeout=cmd_timeout)
+                            output = device.execute(exec_cmd,
+                                                    reply=dialog,
+                                                    timeout=cmd_timeout)
                         else:
-                            device.execute(exec_cmd, timeout=cmd_timeout)
+                            output = device.execute(exec_cmd,
+                                                    timeout=cmd_timeout)
+                        # save output to file as per device or command
+                        if save_to_file == 'per_device':
+                            file_name = folder_name + '/' + dev
+                            with open(file_name + '.txt', 'a') as f:
+                                output = '+' * 10 + ' ' + datetime.datetime.now(
+                                ).strftime(
+                                    '%Y-%m-%d %H:%M:%S.%f'
+                                ) + ': ' + dev + ': executing command \'' + exec_cmd + '\' ' + '+' * 10 + '\n' + output + '\n'
+                                f.write(output)
+                                log.info(
+                                    "File {file} saved to folder {folder}".
+                                    format(file=file_name + '.txt',
+                                           folder=folder_name))
+                            if zipped_folder:
+                                try:
+                                    zip.write(
+                                        file_name + '.txt',
+                                        file_name.split('/')[-1] + '.txt')
+                                except Exception:
+                                    section.errored(
+                                        "Failed to add file `{file}` to zip file {zip}"
+                                        .format(file=file_name + '.txt',
+                                                zip=folder_name + '.zip'))
+                        elif save_to_file == 'per_command':
+                            file_name = folder_name + '/' + dev
+                            file_name = file_name + '_' + device.api.slugify(
+                                exec_cmd)
+                            with open(file_name + '.txt', 'w') as f:
+                                output = '+' * 10 + ' ' + datetime.datetime.now(
+                                ).strftime(
+                                    '%Y-%m-%d %H:%M:%S.%f'
+                                ) + ': ' + dev + ': executing command \'' + exec_cmd + '\' ' + '+' * 10 + '\n' + output + '\n'
+                                f.write(output)
+                                log.info(
+                                    "File {file} saved to folder {folder}".
+                                    format(file=file_name + '.txt',
+                                           folder=folder_name))
+                            if zipped_folder:
+                                try:
+                                    zip.write(
+                                        file_name + '.txt',
+                                        file_name.split('/')[-1] + '.txt')
+                                except Exception as e:
+                                    section.errored(
+                                        "Failed to add file `{file}` to zip file {zip}"
+                                        .format(file=file_name + '.txt',
+                                                zip=folder_name + '.zip' + e))
                     except SubCommandFailure as e:
                         log.error(
-                            'Failed to execute "{cmd}" on device {d}: {e}'.format(
-                                cmd=exec_cmd, d=device.name, e=str(e)))
-
+                            'Failed to execute "{cmd}" on device {d}: {e}'.
+                            format(cmd=exec_cmd, d=device.name, e=str(e)))
                         device.destroy()
                         log.info('Trying to recover after execution failure')
                         connect_device(device)
                     else:
                         log.info(
-                            "Successfully executed command '{cmd}' device {d}".format(
-                                cmd=exec_cmd, d=device.name))
+                            "Successfully executed command '{cmd}' device {d}".
+                            format(cmd=exec_cmd, d=device.name))
                         # sleep if any command is successfully executed
                         sleep_if_cmd_executed = True
                         break
@@ -1247,19 +1360,97 @@ def pre_execute_command(section, devices=None, sleep_time=0, max_retry=1):
                         sleep_time=cmd_sleep))
                     time.sleep(cmd_sleep)
 
+    if zipped_folder:
+        try:
+            zip.close()
+            log.info("Zip file `{zip}` was created with mode {mode}".format(
+                zip=folder_name + '.zip', mode=save_to_file))
+        except Exception:
+            section.errored("Failed to close zip file: {zip}".format(
+                file=folder_name + '.zip'))
+        try:
+            shutil.rmtree(folder_name)
+            log.info(
+                "Folder `{folder}` was deleted because the folder was zipped".
+                format(folder=folder_name))
+        except Exception:
+            section.errored(
+                "Failed to delete folder which was zipped. Folder: {folder}".
+                format(folder=folder_name))
+
     if sleep_time and sleep_if_cmd_executed:
         log.info(
-            "Sleeping for {sleep_time} seconds".format(
-                sleep_time=sleep_time))
+            "Sleeping for {sleep_time} seconds".format(sleep_time=sleep_time))
         time.sleep(sleep_time)
 
 
-def post_execute_command(section, devices=None, sleep_time=0, max_retry=1):
-    '''Trigger Processor:
-            * execute command
-        '''
+def post_execute_command(section,
+                         devices=None,
+                         sleep_time=0,
+                         max_retry=1,
+                         save_to_file='',
+                         zipped_folder=''):
+    '''
+    Execute commands as processors. This can be run only with specified condition and the log can be archived with text file or zip file.
+
+    Can be controlled via sections parameters which is provided by the datafile
+
+    Args:
+        section (`obj`) : Aetest Subsection object.
+        device (`obj`) : Device object.
+        sleep_time (`int`) : sleep after all commands (unit: seconds)
+        max_retry (`int`) : Retry issuing command in case any error (max_retry 1 by default)
+        save_to_file (`str`) : Set either one of below modes when show output needs to be saved as file. folder for the processor is generated and store files in the folder. (Disabled by default)
+                                 per_device : file generated per device
+                                 per_command : file generated per command
+        zipped_folder (`bool`) : Set if archive folder needs to be zipped.
+                                 If True, zip file generated and removed the folder with files. 
+
+    Returns:
+        AETEST results
+
+    Raises:
+        None
+    '''
     # Init
     log.info(banner("processor: 'execute_command'"))
+
+    # sanitize arguments
+    if save_to_file and save_to_file not in ['per_device', 'per_command']:
+        section.errored(
+            "`save_to_file` in datafile must be `per_device` or `per_command`")
+    if not save_to_file and isinstance(zipped_folder, bool):
+        log.warning(
+            "`zipped_folder` was ignored because `save_to_file` was not set in datafile"
+        )
+    elif save_to_file and not isinstance(zipped_folder, bool):
+        section.errored("`zipped_folder` must be True or False in datafile")
+
+    # prepare save location
+    if save_to_file:
+        now = datetime.datetime.now()
+        timestamp_format = '%Y%m%d_%H%M%S'
+        folder_log = '_'.join(
+            [section.parent.uid, section.uid,
+             now.strftime(timestamp_format)])
+        folder_name = runtime.directory + '/' + folder_log
+        try:
+            os.mkdir(folder_name)
+            log.info(
+                "Folder `{folder}` is created for `save_to_file` with mode {mode}"
+                .format(folder=folder_name, mode=save_to_file))
+        except Exception:
+            section.errored(
+                "Failed to create folder `{folder_name}` for `save_to_file`".
+                format(folder_name=folder_name))
+        if zipped_folder:
+            try:
+                zip = zipfile.ZipFile(folder_name + '.zip', 'w',
+                                      zipfile.ZIP_DEFLATED)
+            except Exception:
+                section.errored(
+                    "Failed to create zip file: {file} for `save_to_file`".
+                    format(file=folder_name + '.zip'))
 
     sleep_if_cmd_executed = False
     for dev in devices:
@@ -1279,7 +1470,6 @@ def post_execute_command(section, devices=None, sleep_time=0, max_retry=1):
                 answer = cmd.get('answer', '')
                 cmd_sleep = cmd.get('sleep', 0)
                 cmd_timeout = cmd.get('timeout', 60)
-
                 for _ in range(max_retry + 1):
                     try:
                         # handle prompt if pattern and answer is in the
@@ -1296,22 +1486,71 @@ def post_execute_command(section, devices=None, sleep_time=0, max_retry=1):
                                         loop_continue=True,
                                         continue_timer=False))
                             dialog = Dialog(statement_list)
-                            device.execute(
-                                exec_cmd, reply=dialog, timeout=cmd_timeout)
+                            output = device.execute(exec_cmd,
+                                                    reply=dialog,
+                                                    timeout=cmd_timeout)
                         else:
-                            device.execute(exec_cmd, timeout=cmd_timeout)
+                            output = device.execute(exec_cmd,
+                                                    timeout=cmd_timeout)
+                        # save output to file as per device or command
+                        if save_to_file == 'per_device':
+                            file_name = folder_name + '/' + dev
+                            with open(file_name + '.txt', 'a') as f:
+                                output = '+' * 10 + ' ' + datetime.datetime.now(
+                                ).strftime(
+                                    '%Y-%m-%d %H:%M:%S.%f'
+                                ) + ': ' + dev + ': executing command \'' + exec_cmd + '\' ' + '+' * 10 + '\n' + output + '\n'
+                                f.write(output)
+                                log.info(
+                                    "File {file} saved to folder {folder}".
+                                    format(file=file_name + '.txt',
+                                           folder=folder_name))
+                            if zipped_folder:
+                                try:
+                                    zip.write(
+                                        file_name + '.txt',
+                                        file_name.split('/')[-1] + '.txt')
+                                except Exception:
+                                    section.errored(
+                                        "Failed to add file `{file}` to zip file {zip}"
+                                        .format(file=file_name + '.txt',
+                                                zip=folder_name + '.zip'))
+                        elif save_to_file == 'per_command':
+                            file_name = folder_name + '/' + dev
+                            file_name = file_name + '_' + device.api.slugify(
+                                exec_cmd)
+                            with open(file_name + '.txt', 'w') as f:
+                                output = '+' * 10 + ' ' + datetime.datetime.now(
+                                ).strftime(
+                                    '%Y-%m-%d %H:%M:%S.%f'
+                                ) + ': ' + dev + ': executing command \'' + exec_cmd + '\' ' + '+' * 10 + '\n' + output + '\n'
+                                f.write(output)
+                                log.info(
+                                    "File {file} saved to folder {folder}".
+                                    format(file=file_name + '.txt',
+                                           folder=folder_name))
+                            if zipped_folder:
+                                try:
+                                    zip.write(
+                                        file_name + '.txt',
+                                        file_name.split('/')[-1] + '.txt')
+                                except Exception:
+                                    section.errored(
+                                        "Failed to add file `{file}` to zip file {zip}"
+                                        .format(file=file_name + '.txt',
+                                                zip=folder_name + '.zip'))
                     except SubCommandFailure as e:
                         log.error(
-                            'Failed to execute "{cmd}" on device {d}: {e}'.format(
-                                cmd=exec_cmd, d=device.name, e=str(e)))
+                            'Failed to execute "{cmd}" on device {d}: {e}'.
+                            format(cmd=exec_cmd, d=device.name, e=str(e)))
 
                         device.destroy()
                         log.info('Trying to recover after execution failure')
                         connect_device(device)
                     else:
                         log.info(
-                            "Successfully executed command '{cmd}' device {d}".format(
-                                cmd=exec_cmd, d=device.name))
+                            "Successfully executed command '{cmd}' device {d}".
+                            format(cmd=exec_cmd, d=device.name))
                         # sleep if any command is successfully executed
                         sleep_if_cmd_executed = True
                         break
@@ -1325,10 +1564,27 @@ def post_execute_command(section, devices=None, sleep_time=0, max_retry=1):
                         sleep_time=cmd_sleep))
                     time.sleep(cmd_sleep)
 
+    if zipped_folder:
+        try:
+            zip.close()
+            log.info("Zip file `{zip}` was created with mode {mode}".format(
+                zip=folder_name + '.zip', mode=save_to_file))
+        except Exception:
+            section.errored("Failed to close zip file: {file}".format(
+                file=folder_name + '.zip'))
+        try:
+            shutil.rmtree(folder_name)
+            log.info(
+                "Folder `{folder}` was deleted because the folder was zipped".
+                format(folder=folder_name))
+        except Exception:
+            section.errored(
+                "Failed to delete folder which was zipped. Folder: {folder}".
+                format(folder=folder_name))
+
     if sleep_time and sleep_if_cmd_executed:
         log.info(
-            "Sleeping for {sleep_time} seconds".format(
-                sleep_time=sleep_time))
+            "Sleeping for {sleep_time} seconds".format(sleep_time=sleep_time))
         time.sleep(sleep_time)
 
 # ==============================================================================
