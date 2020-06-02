@@ -4,7 +4,7 @@ import time
 
 from .snmp_client import SNMPClient
 
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 class PowerCyclerMeta(type):

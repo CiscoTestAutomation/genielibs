@@ -13,7 +13,7 @@ from genie.libs.clean.stages.nxos.recovery import sendbrk_handler
 from genie.libs.clean.stages.nxos.execute_dialogs import BreakBootDialog, RommonDialog
 
 # Logger
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 def recovery_worker(*args, **kwargs):
 

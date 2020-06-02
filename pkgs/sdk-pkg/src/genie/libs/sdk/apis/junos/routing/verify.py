@@ -96,7 +96,6 @@ def verify_ip_cef_nexthop_label(
         timeout.sleep()
     return False
 
-
 def verify_routing_static_routes(device,
                                  destination_address,
                                  to=None,
@@ -179,4 +178,104 @@ def verify_routing_static_routes(device,
                 continue
         return True
 
+    return False
+
+def verify_routing_interface_preference(device, protocol, interface, preference, 
+    extensive=None, max_time=60, check_interval=10):
+    """ Verify routing interface preference
+
+        Args:
+            device ('str'): Device str
+            protocol ('str'): Protocol name
+            interface ('str'): Interface name
+            preference ('int'): Preference value
+            extensive ('bool'): Check with extensive command
+            max_time (`int`): Max time, default: 60
+            check_interval (`int`): Check interval, default: 10
+        Returns:
+            True / False
+        Raises:
+            None
+
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            if extensive:
+                out = device.parse('show route protocol {protocol} extensive'.format(
+                    protocol=protocol
+                ))
+            else:
+                out = device.parse('show route protocol {protocol}'.format(
+                    protocol=protocol))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # Example dictionary structure:
+        #         {
+        #             "rt": [
+        #                 {
+        #                     "rt-destination": "10.169.14.240/32",
+        #                     "rt-entry": {
+        #                         "nh": [
+        #                             {
+        #                                 "to": "10.169.14.121",
+        #                                 "via": "ge-0/0/1.0"
+        #                             }
+        #                         ],
+        #                         "rt-tag": "100",
+        #                         "preference": "5",
+        #                         "protocol-name": "Static"
+        #                     }
+        #                 }
+        #             ],
+        #             "table-name": "inet.0",
+        #             "total-route-count": "240"
+        #         },
+        rt_list = Dq(out).get_values("rt")
+        for rt_dict in rt_list:
+            via_ = Dq(rt_dict).get_values("via", 0)
+            if not via_ or not via_.startswith(interface):
+                continue
+            preference_ = Dq(rt_dict).get_values("preference", 0)
+            if not preference_ or preference_ != str(preference):
+                continue
+            return True
+        timeout.sleep()
+    return False
+
+def verify_routing_ip_exist(device, protocol, destination_address,
+    max_time=60, check_interval=10):
+    """ Verify routing ip exists
+
+        Args:
+            device ('str'): Device str
+            protocol ('str'): Protocol name
+            destination_address ('str'): Destination address
+            max_time (`int`): Max time, default: 60
+            check_interval (`int`): Check interval, default: 10
+        Returns:
+            True / False
+        Raises:
+            None
+
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        out = None
+        try:
+            out = device.parse('show route protocol {protocol}'.format(
+                protocol=protocol))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+        
+        rt_list = Dq(out).get_values("rt")
+
+        for rt_dict in rt_list:
+            rt_destination_ = Dq(rt_dict).get_values("rt-destination", 0)
+            if rt_destination_.startswith(destination_address):
+                return True   
+        timeout.sleep()
     return False

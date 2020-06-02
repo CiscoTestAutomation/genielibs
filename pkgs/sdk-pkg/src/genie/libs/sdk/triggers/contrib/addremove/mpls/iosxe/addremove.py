@@ -6,7 +6,7 @@ from pprint import pprint as pp
 from genie.harness.base import Trigger
 import pdb
 
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 # Genie Libs
 from genie.libs.sdk.triggers.template.addremove import \

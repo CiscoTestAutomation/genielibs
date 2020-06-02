@@ -15,7 +15,7 @@ from genie.libs.clean.stages.iosxe.execute_dialogs import BreakBootDialog,\
                                                      RommonDialog, TftpRommonDialog
 
 # Logger
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 # Power Cycler handlers

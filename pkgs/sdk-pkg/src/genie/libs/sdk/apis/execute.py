@@ -15,7 +15,7 @@ from genie.libs.sdk.powercycler.base import PowerCycler
 from unicon.eal.dialogs import Statement, Dialog
 
 # Logger
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 def execute_clear_line(device, alias='cli'):

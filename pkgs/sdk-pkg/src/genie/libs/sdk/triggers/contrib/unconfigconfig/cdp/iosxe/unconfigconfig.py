@@ -2,7 +2,7 @@
 import re
 import logging
 import time
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 from pyats import aetest
 from pprint import pprint as pp
 from genie.harness.base import Trigger

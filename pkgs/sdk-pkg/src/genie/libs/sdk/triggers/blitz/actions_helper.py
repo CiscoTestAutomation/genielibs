@@ -1,4 +1,5 @@
 import re
+import sys
 import time
 import logging
 import copy
@@ -16,7 +17,7 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from pyats.results import TestResult, Passed, Failed, Skipped, Passx, Aborted, Errored
 
 
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 def configure_handler(self, step, device, command, reply=None):
@@ -33,12 +34,11 @@ def configure_handler(self, step, device, command, reply=None):
     
     return output
 
-def parse_handler(self, step, device, command, include, exclude,
-                  max_time, check_interval, continue_, action='parse'):
+def parse_handler(self, step, device, command, include=None, exclude=None,
+                  max_time=None, check_interval=None, continue_=True, action='parse'):
     # handeling parse command
     try:
-        output = device.parse(command) 
-    
+        output = device.parse(command)
     # check if the parser is empty then return an empty dictionary
     except SchemaEmptyParserError:
         step.passed('The result of this command is an empty parser.')
@@ -48,8 +48,8 @@ def parse_handler(self, step, device, command, include, exclude,
         return _output_query_template(self, output, step, device, command,
                                       include, exclude, max_time, check_interval, continue_, action)
 
-def execute_handler(self, step, device, command, include, exclude,
-                    max_time, check_interval, continue_, reply=None, action='execute'):
+def execute_handler(self, step, device, command, include=None, exclude=None,
+                    max_time=None, check_interval=None, continue_=True, action='execute', reply=None):
 
     kwargs = {}
     if reply:
@@ -59,18 +59,18 @@ def execute_handler(self, step, device, command, include, exclude,
     output = device.execute(command, **kwargs)
 
     return _output_query_template(self, output, step, device, command,
-                                  include, exclude, max_time, check_interval, continue_, action)
+                                  include, exclude, max_time, check_interval, continue_, action, reply=reply)
 
-def learn_handler(self, step, device, feature, include, exclude,
-                  max_time, check_interval, continue_, action='learn'):
-                
+def learn_handler(self, step, device, command, include=None, exclude=None,
+                  max_time=None, check_interval=None, continue_=True, action='learn'):
+
     # Save the to_dict learn output, 
-    output = device.learn(feature).to_dict()
-    return _output_query_template(self, output, step, device, feature,
+    output = device.learn(command).to_dict()
+    return _output_query_template(self, output, step, device, command,
                                   include, exclude, max_time, check_interval, continue_, action)
 
-def api_handler(self, step, device, command, include, exclude,
-                max_time, check_interval, continue_, function, arguments=None, action='api'):
+def api_handler(self, step, device, command, include=None, exclude=None,
+                max_time=None, check_interval=None, continue_=True, arguments=None, action='api'):
 
     #handeling api command
     output = None
@@ -95,14 +95,14 @@ def api_handler(self, step, device, command, include, exclude,
             arguments['device'] = arg_device
 
     try:
-        output = getattr(api_function, function)(**arguments)
+        output = getattr(api_function, command)(**arguments)
     except (AttributeError, TypeError) as e:  # if could not find api or the kwargs is wrong for api
         step.errored(str(e))
     except Exception as e:  # anything else
         step.failed(str(e))
 
-    return  _output_query_template(self, output, step,
-                                   device, function, include, exclude, max_time, check_interval, continue_, action)
+    return _output_query_template(self, output, step, device, command,
+                                        include, exclude, max_time, check_interval, continue_, action, arguments=arguments)
 
 def _prompt_handler(reply):
 
@@ -113,48 +113,81 @@ def _prompt_handler(reply):
 
     return Dialog(dialog_list)
 
-def _output_query_template(self, output, steps, device, command, include, exclude, max_time, check_interval, continue_, action):
+def _output_query_template(self, output, steps, device, command, include,
+                           exclude, max_time, check_interval, continue_, action, reply=None, arguments=None):
 
     keys = _include_exclude_list(include, exclude)
     max_time, check_interval = _get_timeout_from_ratios(
         device=device, max_time=max_time, check_interval=check_interval)
-
+    
+    timeout = Timeout(max_time, check_interval)
     for query, style in keys:
         # dict that would be sent with various data for inclusion/exclusion check
         kwargs = {}
+        send_cmd = False
         # for each query and style
         with steps.start("Verify that '{query}' is {style} in the output".\
             format(query=query, style=style), continue_=continue_) as substep:
 
-            timeout = Timeout(max_time, check_interval)
             while True:
+
+                if send_cmd:
+
+                    _send_command(command, device, action, arguments=arguments, reply=reply)
 
                 if action == 'execute':
                     # validating the inclusion/exclusion of action execute,
-                    pattern = re.compile(query)
-                    found = pattern.search(output)
+                    pattern = re.compile(str(query))
+                    found = pattern.search(str(output))
                     kwargs.update({'action_output': found, 'operation':None, 'expected_value': None,
-                                   'step': substep, 'style':style, 'key':query, 'query_type': 'execute_query'})
+                                   'style':style, 'key':query, 'query_type': 'execute_query'})
                 else:
                     # verifying the inclusion/exclusion of actions : learn, parse and api
                     found = _get_output_from_query_validators(output, query)
                     kwargs = found
-                    kwargs.update({'step': substep, 'style':style, 'key':query})
+                    kwargs.update({'style': style, 'key':None})
 
-                # steps would (pass | fail | error) within this function
-                _verify_include_exclude(**kwargs)
-                
+                # Function would return (pass | fail | error) 
+                step_result, message = _verify_include_exclude(**kwargs)
+
+                if step_result == Passed:
+                    substep.passed(message)
+
+                send_cmd = True
                 timeout.sleep()
                 if not timeout.iterate():
                     break
 
             # failing logic in case of timeout
-            if style == "included":
-                substep.failed("Could not find '{k}' in the output".format(k=query))
-            elif style == "excluded":
-                substep.failed("Found '{k}' in the output".format(k=query))
-                    
+            substep.failed(message)
+
     return output
+
+def _send_command(command, device, action, arguments=None, reply=None):
+
+    kwargs = {}
+
+    # if api
+    if action == 'api' :
+        if not arguments:
+            arguments = {}
+        if device.os == 'ixianative':
+            api_func = device
+        else:
+            api_func = device.api
+
+        return  getattr(api_func, command)(**arguments)
+
+    # if learn
+    elif action == ' learn':
+        return getattr(device, action)(command).to_dict()
+
+    # for everything else, just check if reply should get updated 
+
+    if reply and action == 'execute':
+        kwargs.update({'reply':_prompt_handler(reply)})
+
+    return getattr(device, action)(command, **kwargs)
 
 def _include_exclude_list(include, exclude):
     # create the list of quries that would be checked for include or exclude
@@ -183,50 +216,56 @@ def _get_timeout_from_ratios(device, max_time, check_interval):
             check_interval = int(check_interval * float(check_interval_ratio))
         except ValueError:
             log.error('The check_interval_ratio ({c}) value is not of type float'.format(c=check_interval_ratio))
+
+    if max_time and not check_interval:
+        check_interval = 0.0
+
     return max_time, check_interval
 
-def _verify_include_exclude(action_output, step, style, query_type,
+def _verify_include_exclude(action_output, style, query_type,
                             operation=None, expected_value=None, key=None):
     # Checking the inclusion or exclusion and verifies result values
     # With regards to different operations for actions ('api','parse', 'learn')
     if query_type == 'api_query': 
-        # if a value exist to compare the result   
-        _verify_string_query_include_exclude(action_output, expected_value, step, style, operation=operation)
+        # if a value exist to compare the result
+        return _verify_string_query_include_exclude(action_output, expected_value, style, operation=operation)
     else:
         # if results are dictionary and the queries are in dq format ( contains('value'))
-        _verify_dq_query_and_execute_include_exclude(action_output, step, style, key)
+        return _verify_dq_query_and_execute_include_exclude(action_output, style, key)
 
-def _verify_string_query_include_exclude(action_output, expected_value, step, style, operation=None):
+def _verify_string_query_include_exclude(action_output, expected_value, style, operation=None):
     # the query is in this format : ">= 1200"
     # verify the operator and value results for non dq queries (mostly apis)
-    
+
     if not operation:
         # default operation based on style
         if style == 'included':
             operation = '=='
         elif style == 'excluded':
             operation = '!='
-    
+
     # message template for the case that we are validating the result within a range
     msg_if_range = 'The API result "{result}" is "{operation}" the range provided in the trigger datafile'
     # message template for other general cases
     msg = 'The API result "{result}" is "{operation}" to "{value}" provided in the trigger datafile"'
 
     if _evaluate_operator(result=action_output, operation=operation, value=expected_value):
+        # Step would be Passed
 
         # The only current exception, when user asks for checking a range
         if isinstance(expected_value, range):
-            step.passed(msg_if_range.format(result=action_output, value=str(expected_value), operation=operation))
+            return (Passed, msg_if_range.format(result=action_output, operation=operation))
 
-        step.passed(msg.format(result=action_output, value=expected_value, operation=operation))
+        return (Passed, msg.format(result=action_output, value=expected_value, operation=operation))
+
     else:
 
         if isinstance(expected_value, range):
-            step.failed(msg_if_range.format(result=action_output, value=str(expected_value), operation = "not "+operation))
+            return (Failed, msg_if_range.format(result=action_output, operation = "not "+operation))
 
-        step.failed(msg.format(result=action_output, value=expected_value, operation="not "+operation))
+        return (Failed, msg.format(result=action_output, value=expected_value, operation="not "+operation))
 
-def _verify_dq_query_and_execute_include_exclude(action_output, step, style, key):
+def _verify_dq_query_and_execute_include_exclude(action_output, style, key):
     # Validating execute include exclude keys and queries that are following dq formats
 
     # if key is a query of type (contains('status')) then we show the resulted output
@@ -234,15 +273,17 @@ def _verify_dq_query_and_execute_include_exclude(action_output, step, style, key
     if not key:
         key = action_output
 
+    message = "'{k}' is {s} in the output"
+
     if style == "included" and action_output:
-        step.passed("'{k}' is {s} in the output".format(k=key, s=style))
+        return (Passed, message.format(k=key, s=style))
     elif style =='excluded' and not action_output:
-        step.passed("'{k}' is {s} in the output".format(k=key, s=style))
+        return (Passed, message.format(k=key, s=style))
     elif style == "included" and not action_output:
         # change the style if it is not included for reporting
-        step.failed("'{k}' is not {s} in the output".format(k=key, s=style))
+        return (Failed, message.format(k=key, s= 'not ' + style))
     else:
-        step.failed("'{k}' is not {s} in the output".format(k=key, s=style))
+        return (Failed, message.format(k=key, s= 'not ' + style))
 
 def _get_output_from_query_validators(output, query):
     # the function determines the type of query and returns the appropriate result

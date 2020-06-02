@@ -1,5 +1,5 @@
 import logging
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 try:
     from pysnmp.hlapi import *
     import pysnmp
@@ -20,7 +20,7 @@ class SNMPClient(object):
                             write_community='private',
                             version='2c',
                             port=161,
-                            log=logging.getlogger())
+                            log=logging.getLogger(__name__))
 
         # Get value
         cl.snmp_get(oid='1.3.6.1.4.1.13742.6.4.1.2.1.2.1.16')

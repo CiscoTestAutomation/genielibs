@@ -2,7 +2,7 @@ import re
 import logging
 import ast
 from genie.utils.dq import Dq
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 def filter_variable(self, output, filters=None):
     #filtering the action output

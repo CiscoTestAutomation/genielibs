@@ -7,7 +7,7 @@ from genie.harness.base import Trigger
 import pdb
 import re
 
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 # Genie Libs
 from genie.libs.sdk.triggers.template.unconfigconfig import \

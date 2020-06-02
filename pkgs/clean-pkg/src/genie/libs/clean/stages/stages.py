@@ -24,7 +24,7 @@ from genie.libs.clean.utils import _apply_configuration, find_clean_variable,\
 from genie.metaparser.util.schemaengine import Optional
 
 # Logger
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 #===============================================================================
@@ -357,7 +357,7 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
                     section.failed("Can not change file name. Terminating clean:\n{e}"
                             .format(e=e), goto=['exit'])
 
-                file_path = os.path.join(destination_hostname or dest_dir, new_name)
+                file_path = os.path.join(dest_dir, new_name)
 
                 if not overwrite:
                     log.info("Checking if file '{}' already exists at {}".\
@@ -490,6 +490,10 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
 
     # verify file copied section below
     with steps.start("Verify the files have been copied correctly") as step:
+        if protocol.lower() == 'tftp':
+            step.skipped(
+                'tftp protocol does not support check file size, skipping this step.')
+
         if 'files_copied' not in section.history['copy_to_linux'].parameters:
             step.skipped(
                 'No files was copied in previous steps, skipping this step.')

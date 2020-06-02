@@ -281,3 +281,36 @@ def verify_default_route_ospf(device, route, expect_output, ip_type='ipv4', max_
         timeout.sleep()
 
     return False
+
+def verify_ospf_interface_type(device, interface, interface_type, 
+    max_time=60, check_interval=10):
+    """ Verifies ospf interface type
+
+        Args:
+            device ('obj'): device to use
+            interface ('str'): Interface to use
+            interface_type ('str'): Interface type
+            max_time ('int'): Maximum time to keep checking
+            check_interval ('int'): How often to check
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        out = None
+        try:
+            out = device.parse('show ospf interface extensive')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+        for ospf_interface in out.q.get_values('ospf-interface'):
+            intf = ospf_interface.get('interface-name', None)
+            intf_type = ospf_interface.get('interface-type', None)
+            if intf == interface and intf_type == interface_type:
+                return True
+        timeout.sleep()
+    return False

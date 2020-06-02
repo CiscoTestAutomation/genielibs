@@ -9,7 +9,7 @@ import logging
 from pyats.utils.fileutils import FileUtils
 
 # Logger
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 def verify_connectivity(device):

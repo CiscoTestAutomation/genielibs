@@ -21,7 +21,7 @@ from genie.libs.clean.utils import clean_schema
 from genie.metaparser.util.schemaengine import Optional, Or
 
 # Logger
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 CONTINUE_RECOVERY = ['connect']
 

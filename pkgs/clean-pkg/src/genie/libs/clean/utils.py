@@ -26,7 +26,7 @@ from unicon.core.errors import (SubCommandFailure, TimeoutError,
                                 StateMachineError)
 
 # Logger
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 SECTIONS_WITH_IMAGE = ['tftp_boot',
                        'copy_to_linux',

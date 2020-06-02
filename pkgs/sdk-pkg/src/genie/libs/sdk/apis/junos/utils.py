@@ -88,3 +88,60 @@ def verify_ping(
         if loss_rate_found == loss_rate:
             return True
     return False
+
+def verify_file_details_exists(device, root_path, file, max_time=30, check_interval=10):
+    """ Verify file details exists
+
+        Args:
+            device ('obj'): Device object
+            root_path ('str'): Root path for command
+            file ('str'): File name
+            max_time (`int`): Max time, default: 30
+            check_interval (`int`): Check interval, default: 10
+        Returns:
+            Boolean
+        Raises:
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        out = None
+        try:
+            out = device.parse('file list {root_path} detail'.format(
+                root_path=root_path
+            ))
+        except SchemaEmptyParserError as e:
+            timeout.sleep()
+            continue
+        file_found = Dq(out).contains_key_value(
+            'file-name', file, 
+            value_regex=True)
+        if file_found:
+           return True
+        timeout.sleep()
+    
+    return False
+
+def get_file_size(device, root_path, file):
+    """ Get file size from device
+
+        Args:
+            device ('obj'): Device object
+            root_path ('str'): Root path for command
+            file ('str'): File name
+        Returns:
+            Boolean
+        Raises:
+            None
+    """
+    out = None
+    out = device.parse('file list {root_path} detail'.format(
+            root_path=root_path
+        ))
+    file_info_list = out.q.contains('{}|file-size'.format(file), 
+        regex=True).get_values('file-information')
+    
+    for file in file_info_list:
+        if 'file-name' in file and 'file-size' in file:
+            return int(file['file-size'])
+    return None

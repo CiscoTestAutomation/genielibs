@@ -22,7 +22,7 @@ from genie.libs.clean.utils import clean_schema
 from genie.metaparser.util.schemaengine import Optional
 
 # Logger
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 @clean_schema({

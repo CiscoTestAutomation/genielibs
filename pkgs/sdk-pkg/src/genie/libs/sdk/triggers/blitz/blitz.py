@@ -14,7 +14,7 @@ from .actions import actions
 from .actions import action_parallel
 from .markup import get_variable, filter_variable, save_variable
 
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 class Blitz(Trigger):

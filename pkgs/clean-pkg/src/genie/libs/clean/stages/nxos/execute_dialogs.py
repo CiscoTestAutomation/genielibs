@@ -14,7 +14,7 @@ from genie.libs.clean.stages.execute_dialogs import RommonDialog as \
 # Genie
 from genie.libs.clean.utils import print_message
 
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 class BreakBootDialog(CommonBreakBootDialog):

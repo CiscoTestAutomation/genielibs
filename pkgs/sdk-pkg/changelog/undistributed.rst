@@ -13,8 +13,13 @@
 
 * Common API:
     * Added slugify to convert special characters such as backslash, dot and etc to underscore
+    * Added verify_pcap_has_imcp_destination_unreachable and verify_pcap_has_imcpv6_destination_unreachable for verifying pcap files
+    * Added repeat_command_save_output to Execute the command on the device and store the output to file
 
 --------------------------------------------------------------------------------
                                 Fix
 --------------------------------------------------------------------------------
 
+* Blitz:
+    * Fixed the polling issue in blitz
+    * Fixed run_genie_sdk action

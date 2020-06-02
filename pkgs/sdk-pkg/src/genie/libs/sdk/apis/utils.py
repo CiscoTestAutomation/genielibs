@@ -15,6 +15,9 @@ from time import strptime
 from datetime import datetime
 from netaddr import IPAddress
 
+# Scapy
+import scapy.all
+
 # pyATS
 from pyats.easypy import runtime
 from pyats.utils.fileutils import FileUtils
@@ -36,6 +39,11 @@ from unicon.core.errors import ConnectionError
 from unicon.plugins.generic.statements import default_statement_list
 
 log = logging.getLogger(__name__)
+
+rdpcap = scapy.all.rdpcap
+ICMP = scapy.layers.inet.ICMP
+ICMPv6 = scapy.layers.inet6._ICMPv6
+ICMPv6DestUnreach = scapy.layers.inet6.ICMPv6DestUnreach
 
 
 def _cli(device, cmd, timeout, prompt):
@@ -171,23 +179,19 @@ def time_to_int(time):
     """
     out = 0
     # support patterns like ['00:00:00', '2d10h', '1w2d']
-    p = re.compile(
-        r"^(?P<time>(\d+):(\d+):(\d+))?(?P<dh>(\d+)d(\d+)h)?"
-        r"(?P<wd>(\d+)w(\d)+d)?$"
-    )
+    p = re.compile(r"^(?P<time>(\d+):(\d+):(\d+))?(?P<dh>(\d+)d(\d+)h)?"
+                   r"(?P<wd>(\d+)w(\d)+d)?$")
     m = p.match(time)
     if m:
         group = m.groupdict()
         if group["time"]:
-            out = (
-                int(m.group(2)) * 3600 + int(m.group(3)) * 60 + int(m.group(4))
-            )
+            out = (int(m.group(2)) * 3600 + int(m.group(3)) * 60 +
+                   int(m.group(4)))
         elif group["dh"]:
             out = int(m.group(6)) * 3600 * 24 + int(m.group(7)) * 3600
         elif group["wd"]:
-            out = (
-                int(m.group(9)) * 3600 * 24 * 7 + int(m.group(10)) * 3600 * 24
-            )
+            out = (int(m.group(9)) * 3600 * 24 * 7 +
+                   int(m.group(10)) * 3600 * 24)
     return out
 
 
@@ -206,8 +210,7 @@ def get_unconfig_line(config_dict, line):
         line_dict = config_dict[line]
     except Exception:
         raise Exception(
-            "line '{}' is not in running config output".format(line)
-        )
+            "line '{}' is not in running config output".format(line))
 
     unconfig.append(line)
     for key in line_dict.keys():
@@ -266,48 +269,39 @@ def copy_pcap_file(testbed, filename, command=None):
     """
     if not command:
         if "port" in testbed.servers["scp"]["custom"]:
-            command = (
-                "sshpass -p {password} scp -P {port} {user}@{add}:"
-                "/{serv_loc}/{file} {loc}/{file}".format(
-                    password=testbed.servers["scp"]["password"],
-                    port=testbed.servers["scp"]["custom"]["port"],
-                    user=testbed.servers["scp"]["username"],
-                    add=testbed.servers["scp"]["address"],
-                    serv_loc=testbed.servers["scp"]["custom"]["loc"],
-                    file=filename,
-                    loc=runtime.directory,
-                )
-            )
+            command = ("sshpass -p {password} scp -P {port} {user}@{add}:"
+                       "/{serv_loc}/{file} {loc}/{file}".format(
+                           password=testbed.servers["scp"]["password"],
+                           port=testbed.servers["scp"]["custom"]["port"],
+                           user=testbed.servers["scp"]["username"],
+                           add=testbed.servers["scp"]["address"],
+                           serv_loc=testbed.servers["scp"]["custom"]["loc"],
+                           file=filename,
+                           loc=runtime.directory,
+                       ))
         else:
             # In case of VIRL testbed where is no specific port
             # to connect to the server from
-            command = (
-                "sshpass -p {password} scp {user}@{add}:"
-                "/{serv_loc}/{file} {loc}/{file}".format(
-                    password=testbed.servers["scp"]["password"],
-                    user=testbed.servers["scp"]["username"],
-                    add=testbed.servers["scp"]["address"],
-                    serv_loc=testbed.servers["scp"]["custom"]["loc"],
-                    file=filename,
-                    loc=runtime.directory,
-                )
-            )
+            command = ("sshpass -p {password} scp {user}@{add}:"
+                       "/{serv_loc}/{file} {loc}/{file}".format(
+                           password=testbed.servers["scp"]["password"],
+                           user=testbed.servers["scp"]["username"],
+                           add=testbed.servers["scp"]["address"],
+                           serv_loc=testbed.servers["scp"]["custom"]["loc"],
+                           file=filename,
+                           loc=runtime.directory,
+                       ))
 
-    log.info(
-        "Copy pcap file '{file}' to '{loc}' for packet analysis".format(
-            file=filename, loc=runtime.directory
-        )
-    )
+    log.info("Copy pcap file '{file}' to '{loc}' for packet analysis".format(
+        file=filename, loc=runtime.directory))
 
     args = shlex.split(command)
     try:
         subprocess.check_output(args)
     except Exception as e:
         log.error(e)
-        raise Exception(
-            "Issue while copying pcap file to runtime directory"
-            " '{loc}'".format(loc=runtime.directory)
-        )
+        raise Exception("Issue while copying pcap file to runtime directory"
+                        " '{loc}'".format(loc=runtime.directory))
 
     pcap = "{loc}/{file}".format(file=filename, loc=runtime.directory)
 
@@ -379,8 +373,14 @@ def mask_to_int(mask):
     return sum(bin(int(x)).count("1") for x in mask.split("."))
 
 
-def copy_to_server(testbed, protocol, server, local_path, remote_path,
-                   timeout=300, fu_session=None, quiet=False):
+def copy_to_server(testbed,
+                   protocol,
+                   server,
+                   local_path,
+                   remote_path,
+                   timeout=300,
+                   fu_session=None,
+                   quiet=False):
     """ Copy file from directory to server
 
         Args:
@@ -400,34 +400,41 @@ def copy_to_server(testbed, protocol, server, local_path, remote_path,
     """
 
     if fu_session:
-        _copy_to_server(protocol, server, local_path, remote_path,
-                        timeout=timeout, fu_session=fu_session, quiet=quiet)
+        _copy_to_server(protocol,
+                        server,
+                        local_path,
+                        remote_path,
+                        timeout=timeout,
+                        fu_session=fu_session,
+                        quiet=quiet)
 
     else:
         with FileUtils(testbed=testbed) as fu:
-            _copy_to_server(protocol, server, local_path, remote_path,
-                            timeout=timeout, fu_session=fu, quiet=quiet)
+            _copy_to_server(protocol,
+                            server,
+                            local_path,
+                            remote_path,
+                            timeout=timeout,
+                            fu_session=fu,
+                            quiet=quiet)
 
 
-def _copy_to_server(
-        protocol,
-        server,
-        local_path,
-        remote_path,
-        timeout=300,
-        fu_session=None,
-        quiet=False):
+def _copy_to_server(protocol,
+                    server,
+                    local_path,
+                    remote_path,
+                    timeout=300,
+                    fu_session=None,
+                    quiet=False):
     remote = "{p}://{s}/{f}".format(p=protocol, s=server, f=remote_path)
 
-    log.info("Copying {local_path} to {remote_path}"
-             .format(local_path=local_path,
-                     remote_path=remote))
+    log.info("Copying {local_path} to {remote_path}".format(
+        local_path=local_path, remote_path=remote))
 
-    fu_session.copyfile(
-        source=local_path,
-        destination=remote,
-        timeout_seconds=timeout,
-        quiet=quiet)
+    fu_session.copyfile(source=local_path,
+                        destination=remote,
+                        timeout_seconds=timeout,
+                        quiet=quiet)
 
 
 def copy_file_from_tftp_ftp(testbed, filename, pro):
@@ -443,38 +450,31 @@ def copy_file_from_tftp_ftp(testbed, filename, pro):
             pyATS Results
     """
     if "port" in testbed.servers[pro]["custom"]:
-        command = (
-            "sshpass -p {svr[password]} scp -P {svr[custom][port]} "
-            "{svr[username]}@{svr[address]}:"
-            "/{svr[custom][loc]}/{file} {loc}/{file}".format(
-                svr=testbed.servers[pro], file=filename, loc=runtime.directory
-            )
-        )
+        command = ("sshpass -p {svr[password]} scp -P {svr[custom][port]} "
+                   "{svr[username]}@{svr[address]}:"
+                   "/{svr[custom][loc]}/{file} {loc}/{file}".format(
+                       svr=testbed.servers[pro],
+                       file=filename,
+                       loc=runtime.directory))
     else:
         # In case of VIRL testbed where is no specific port
         # to connect to the server from
         command = (
             "sshpass -p {svr[password]} scp {svr[username]}@{svr[address]}:"
             "/{svr[custom][loc]}/{file} {loc}/{file}".format(
-                svr=testbed.servers[pro], file=filename, loc=runtime.directory
-            )
-        )
+                svr=testbed.servers[pro], file=filename,
+                loc=runtime.directory))
 
-    log.info(
-        "Copy {pro} file '{file}' to '{loc}' for later analysis".format(
-            pro=pro, file=filename, loc=runtime.directory
-        )
-    )
+    log.info("Copy {pro} file '{file}' to '{loc}' for later analysis".format(
+        pro=pro, file=filename, loc=runtime.directory))
 
     args = shlex.split(command)
     try:
         subprocess.check_output(args)
     except Exception as e:
         log.error(e)
-        raise Exception(
-            "Issue while copying file to runtime directory"
-            " '{loc}'".format(loc=runtime.directory)
-        )
+        raise Exception("Issue while copying file to runtime directory"
+                        " '{loc}'".format(loc=runtime.directory))
 
     path = "{loc}/{file}".format(file=filename, loc=runtime.directory)
 
@@ -546,8 +546,7 @@ def get_time_source_from_output(output):
         r"Time\ssource\sis\sNTP\,\s\.*\*?(?P<hour>\d+)\:(?P<minute>\d+)\:"
         r"(?P<seconds>\d+)\.(?P<milliseconds>\d+)\s(?P<time_zone>"
         r"\S+)\s(?P<day_of_week>\S+)\s(?P<month>\S+)\s(?P<day>\d+)"
-        r"\s(?P<year>\d+)"
-    )
+        r"\s(?P<year>\d+)")
 
     for line in output.splitlines():
         line = line.strip()
@@ -563,9 +562,8 @@ def get_time_source_from_output(output):
             day = int(group["day"])
             year = int(group["year"])
 
-            return datetime(
-                year, month, day, hour, minute, second, milliseconds * 1000
-            )
+            return datetime(year, month, day, hour, minute, second,
+                            milliseconds * 1000)
 
     log.warning('Time source could not be found in output')
 
@@ -606,8 +604,7 @@ def analyze_rate(rate):
         no_unit = True
 
     parse = re.compile(
-        r"^(?P<original_rate>[0-9\.]+)(?P<rate_unit>[A-Za-z\%]+)?$"
-    )
+        r"^(?P<original_rate>[0-9\.]+)(?P<rate_unit>[A-Za-z\%]+)?$")
     m = parse.match(rate)
     if m:
         parsed_rate = m.groupdict()["original_rate"]
@@ -639,10 +636,8 @@ def analyze_rate(rate):
 
         return rate, rate_unit, original_rate
     else:
-        raise Exception(
-            "The provided rate is not in the correct "
-            "format in the trigger data file"
-        )
+        raise Exception("The provided rate is not in the correct "
+                        "format in the trigger data file")
 
 
 def reconnect_device_with_new_credentials(
@@ -712,12 +707,11 @@ def configure_device(device, config, config_timeout=150):
     return
 
 
-def reconnect_device(
-        device,
-        max_time=300,
-        interval=30,
-        sleep_disconnect=30,
-        via=None):
+def reconnect_device(device,
+                     max_time=300,
+                     interval=30,
+                     sleep_disconnect=30,
+                     via=None):
     """ Reconnect device
         Args:
             device ('obj'): Device object
@@ -754,8 +748,7 @@ def reconnect_device(
 
     if not device.is_connected():
         raise ConnectionError(
-            "Could not reconnect to device {dev}".format(dev=device.name)
-        )
+            "Could not reconnect to device {dev}".format(dev=device.name))
 
     log.info("Reconnected to device {dev}".format(dev=device.name))
 
@@ -786,12 +779,19 @@ def bits_to_netmask(bits):
     mask = (0xffffffff >> (32 - bits)) << (32 - bits)
     return (str((0xff000000 & mask) >> 24) + '.' +
             str((0x00ff0000 & mask) >> 16) + '.' +
-            str((0x0000ff00 & mask) >> 8) + '.' +
-            str((0x000000ff & mask)))
+            str((0x0000ff00 & mask) >> 8) + '.' + str((0x000000ff & mask)))
 
 
-def copy_to_device(device, remote_path, local_path, server, protocol, vrf=None,
-                   timeout=300, compact=False, use_kstack=False, **kwargs):
+def copy_to_device(device,
+                   remote_path,
+                   local_path,
+                   server,
+                   protocol,
+                   vrf=None,
+                   timeout=300,
+                   compact=False,
+                   use_kstack=False,
+                   **kwargs):
     """
     Copy file from linux server to device
         Args:
@@ -815,32 +815,44 @@ def copy_to_device(device, remote_path, local_path, server, protocol, vrf=None,
     source = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
     try:
         if vrf:
-            fu.copyfile(source=source, destination=local_path, device=device,
-                        vrf=vrf, timeout_seconds=timeout, compact=compact,
-                        use_kstack=use_kstack, **kwargs)
+            fu.copyfile(source=source,
+                        destination=local_path,
+                        device=device,
+                        vrf=vrf,
+                        timeout_seconds=timeout,
+                        compact=compact,
+                        use_kstack=use_kstack,
+                        **kwargs)
         else:
-            fu.copyfile(source=source, destination=local_path, device=device,
-                        timeout_seconds=timeout, compact=compact,
-                        use_kstack=use_kstack, **kwargs)
+            fu.copyfile(source=source,
+                        destination=local_path,
+                        device=device,
+                        timeout_seconds=timeout,
+                        compact=compact,
+                        use_kstack=use_kstack,
+                        **kwargs)
     except Exception as e:
         if compact or use_kstack:
             log.info("Failed to copy with compact/use-kstack option, "
                      "retrying again without compact/use-kstack")
-            fu.copyfile(source=source, destination=local_path, device=device,
-                        vrf=vrf, timeout_seconds=timeout, **kwargs)
+            fu.copyfile(source=source,
+                        destination=local_path,
+                        device=device,
+                        vrf=vrf,
+                        timeout_seconds=timeout,
+                        **kwargs)
         else:
             raise
 
 
-def copy_from_device(
-        device,
-        remote_path,
-        local_path,
-        server,
-        protocol,
-        vrf=None,
-        timeout=300,
-        **kwargs):
+def copy_from_device(device,
+                     remote_path,
+                     local_path,
+                     server,
+                     protocol,
+                     vrf=None,
+                     timeout=300,
+                     **kwargs):
     """
     Copy file from device to linux server (Works for sftp and ftp)
         Args:
@@ -860,23 +872,25 @@ def copy_from_device(
     # build the source address
     destination = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
     if vrf:
-        fu.copyfile(
-            source=local_path,
-            destination=destination,
-            device=device,
-            vrf=vrf,
-            timeout_seconds=timeout,
-            **kwargs)
+        fu.copyfile(source=local_path,
+                    destination=destination,
+                    device=device,
+                    vrf=vrf,
+                    timeout_seconds=timeout,
+                    **kwargs)
     else:
-        fu.copyfile(
-            source=local_path,
-            destination=destination,
-            device=device,
-            timeout_seconds=timeout,
-            **kwargs)
+        fu.copyfile(source=local_path,
+                    destination=destination,
+                    device=device,
+                    timeout_seconds=timeout,
+                    **kwargs)
 
 
-def get_file_size_from_server(device, server, path, protocol, timeout=300,
+def get_file_size_from_server(device,
+                              server,
+                              path,
+                              protocol,
+                              timeout=300,
                               fu_session=None):
     """ Get file size from the server
     Args:
@@ -890,15 +904,24 @@ def get_file_size_from_server(device, server, path, protocol, timeout=300,
          integer representation of file size in bytes
     """
     if fu_session:
-        return _get_file_size_from_server(
-            server, path, protocol, timeout=timeout, fu_session=fu_session)
+        return _get_file_size_from_server(server,
+                                          path,
+                                          protocol,
+                                          timeout=timeout,
+                                          fu_session=fu_session)
     else:
         with FileUtils(testbed=device.testbed) as fu:
-            return _get_file_size_from_server(
-                server, path, protocol, timeout=timeout, fu_session=fu)
+            return _get_file_size_from_server(server,
+                                              path,
+                                              protocol,
+                                              timeout=timeout,
+                                              fu_session=fu)
 
 
-def _get_file_size_from_server(server, path, protocol, timeout=300,
+def _get_file_size_from_server(server,
+                               path,
+                               protocol,
+                               timeout=300,
                                fu_session=None):
     """ Get file size from the server (works for sftp and ftp)
         Args:
@@ -929,9 +952,16 @@ def _get_file_size_from_server(server, path, protocol, timeout=300,
         raise Exception("Failed to get file size : {}".format(str(e)))
 
 
-def modify_filename(device, file, directory, protocol, server=None,
-                    append_hostname=False, check_image_length=False,
-                    limit=63, unique_file_name=False, unique_number=None):
+def modify_filename(device,
+                    file,
+                    directory,
+                    protocol,
+                    server=None,
+                    append_hostname=False,
+                    check_image_length=False,
+                    limit=63,
+                    unique_file_name=False,
+                    unique_number=None):
     """ Truncation is done such that protocol:/directory/image should not
         exceed the limited characters.
         This for older devices, where it does not allow netboot from rommon,
@@ -961,7 +991,8 @@ def modify_filename(device, file, directory, protocol, server=None,
     new_name = file
     image_name, image_ext = os.path.splitext(file)
     if check_image_length:
-        log.info('Checking if file length exceeds the limit of {}'.format(limit))
+        log.info(
+            'Checking if file length exceeds the limit of {}'.format(limit))
         url = ''.join([protocol, ':/', server, '//', directory])
 
         if not url.endswith('/'):
@@ -1026,13 +1057,12 @@ def get_longest_server_address(device):
     return max(addresses, key=len)
 
 
-def delete_file_on_server(
-        testbed,
-        server,
-        path,
-        protocol='sftp',
-        timeout=300,
-        fu_session=None):
+def delete_file_on_server(testbed,
+                          server,
+                          path,
+                          protocol='sftp',
+                          timeout=300,
+                          fu_session=None):
     """ delete the file from server
     Args:
         testbed ('obj'): testbed object containing the server info
@@ -1044,25 +1074,25 @@ def delete_file_on_server(
         None
     """
     if fu_session:
-        return _delete_file_on_server(
-            server,
-            path,
-            protocol=protocol,
-            timeout=timeout,
-            fu_session=fu_session)
+        return _delete_file_on_server(server,
+                                      path,
+                                      protocol=protocol,
+                                      timeout=timeout,
+                                      fu_session=fu_session)
     else:
         with FileUtils(testbed=testbed) as fu:
-            return _delete_file_on_server(server, path, protocol=protocol,
+            return _delete_file_on_server(server,
+                                          path,
+                                          protocol=protocol,
                                           timeout=timeout,
                                           fu_session=fu)
 
 
-def _delete_file_on_server(
-        server,
-        path,
-        protocol='sftp',
-        timeout=300,
-        fu_session=None):
+def _delete_file_on_server(server,
+                           path,
+                           protocol='sftp',
+                           timeout=300,
+                           fu_session=None):
 
     url = '{p}://{s}/{f}'.format(p=protocol, s=server, f=path)
 
@@ -1086,16 +1116,19 @@ def convert_server_to_linux_device(device, server):
         server_block = fu.get_server_block(server)
         hostname = fu.get_hostname(server)
 
-    device_obj = Device(name=server,
-                        os='linux',
-                        credentials=server_block.credentials,
-                        connections={'linux': {
-                            'ip': hostname,
-                            'protocol': 'ssh'}},
-                        custom={'abstraction': {
-                            'order': ['os']}},
-                        type='linux',
-                        testbed=device.testbed)
+    device_obj = Device(
+        name=server,
+        os='linux',
+        credentials=server_block.credentials,
+        connections={'linux': {
+            'ip': hostname,
+            'protocol': 'ssh'
+        }},
+        custom={'abstraction': {
+            'order': ['os']
+        }},
+        type='linux',
+        testbed=device.testbed)
 
     return device_obj
 
@@ -1165,8 +1198,10 @@ def diff_configuration(device, config1, config2):
     return diff
 
 
-def dynamic_diff_parameterized_running_config(
-        device, base_config, mapping, running_config=None):
+def dynamic_diff_parameterized_running_config(device,
+                                              base_config,
+                                              mapping,
+                                              running_config=None):
     """ Parameterize device interface from the configuration and return the parameterized configuration
         with respect to the mapping.
         Args:
@@ -1183,10 +1218,8 @@ def dynamic_diff_parameterized_running_config(
     if running_config is None:
         running_config = device.execute('show running-config')
 
-    output = diff_configuration(
-        device,
-        base_config,
-        running_config).diff_string('+')
+    output = diff_configuration(device, base_config,
+                                running_config).diff_string('+')
     converted_map = {}
 
     # Make sure each mapping is not in short form
@@ -1200,12 +1233,10 @@ def dynamic_diff_parameterized_running_config(
             raise Exception("Invalid interface short form")
 
     for interface, variable in converted_map.items():
-        output = output.replace(
-            ' {} '.format(interface),
-            ' {} '.format(variable))
-        output = output.replace(
-            ' {}\n'.format(interface),
-            ' {}\n'.format(variable))
+        output = output.replace(' {} '.format(interface),
+                                ' {} '.format(variable))
+        output = output.replace(' {}\n'.format(interface),
+                                ' {}\n'.format(variable))
 
     # Remove the end markers that are not at the end of file
     # End of file end markers will have the pattern '\nend' or '\nend '
@@ -1588,8 +1619,7 @@ def get_interfaces(device, link_name=None, opposite=False, phy=False, num=0):
             log.error(str(e))
             return None
         intf_list = link.find_interfaces(
-            device__name=Not(device.name) if opposite else device.name
-        )
+            device__name=Not(device.name) if opposite else device.name)
     else:
         intf_list = device.find_interfaces()
 
@@ -1610,12 +1640,11 @@ def get_interfaces(device, link_name=None, opposite=False, phy=False, num=0):
         return {}
 
 
-def get_interface_interfaces(
-        device,
-        link_name=None,
-        opposite=False,
-        phy=False,
-        num=0):
+def get_interface_interfaces(device,
+                             link_name=None,
+                             opposite=False,
+                             phy=False,
+                             num=0):
     """ Get current or opposite interface from topology section of testbed file
 
         Args:
@@ -1631,8 +1660,57 @@ def get_interface_interfaces(
         Raises:
             None
     """
-    return get_interfaces(device=device, link_name=link_name,
-                          opposite=opposite, phy=phy, num=num)
+    return get_interfaces(device=device,
+                          link_name=link_name,
+                          opposite=opposite,
+                          phy=phy,
+                          num=num)
+
+
+def verify_pcap_has_imcp_destination_unreachable(pcap_location,
+                                                 msg_type=3,
+                                                 msg_code=0):
+    """ Verify that the pcap file has messages with imcp destination
+        unreachable with type and code
+
+        Args:
+            pcap_location ('str'): location of pcap file
+            msg_type ('int'): pcap message type
+            msg_code ('int'): pcap message code
+        Returns:
+            Boolean if icmp destination reachable message in pcap
+    """
+    pcap_object = rdpcap(pcap_location)
+
+    for packet in pcap_object:
+        if (packet.haslayer(ICMP) and packet.getlayer(ICMP).type == msg_type
+                and packet.getlayer(ICMP).code == msg_code):
+            return True
+    return False
+
+
+def verify_pcap_has_imcpv6_destination_unreachable(pcap_location,
+                                                   msg_type=1,
+                                                   msg_code=3):
+    """ Verify that the pcap file has messages with imcpv6 destination
+        unreachable with type and code
+
+        Args:
+            pcap_location ('str'): location of pcap file
+            msg_type ('int'): pcap message type
+            msg_code ('int'): pcap message code
+        Returns:
+            Boolean if icmpv6 destination reachable message in pcap
+    """
+    pcap_object = rdpcap(pcap_location)
+
+    for packet in pcap_object:
+        if (packet.haslayer(ICMPv6DestUnreach)
+                and packet.getlayer(ICMPv6DestUnreach).type == msg_type
+                and packet.getlayer(ICMPv6DestUnreach).code == msg_code):
+            return True
+    return False
+
 
 def slugify(word):
     """ update all special characters in string to underscore
@@ -1653,3 +1731,50 @@ def slugify(word):
 
     """
     return re.sub(r'\W+', '_', word)
+
+
+def repeat_command_save_output(device, command, command_interval,
+                               command_count, report_file):
+    """
+        Execute the {command} on the device and store the output to file, can
+        repeat the same command with {command_count} and a sleep interval with
+        {command_interval}.
+
+        Args:
+            command ('str'): Command to run on device
+            command_interval ('int'): Waiting between command calls
+            command_count ('int'): Number of times to call command
+            report_file ('str'): File name to store in archive
+
+        Raises:
+            Parser and python file exceptions
+
+        Returns:
+            None
+    """
+    command_output_data = ""
+
+    for i in range(command_count):
+        log.info("Iteration: {}".format(str(i)))
+        command_output_data += "\nIteration {iteration} of \"{command}\":\n".format(
+            iteration=i, command=command)
+        try:
+            command_output_data += device.execute(command)
+
+        except Exception as e:
+            raise Exception("Failed to execute command {} error: {}".format(
+                command, str(e)))
+
+        time.sleep(command_interval)
+        log.info("Going to sleep for {command_interval}".format(
+            command_interval=command_interval))
+    path = "{}/{}.txt".format(runtime.directory, report_file)
+    try:
+        with open(path, "w") as report_file_object:
+            report_file_object.write(command_output_data)
+
+    except Exception as e:
+        raise Exception("Failed to write file {} error: {}".format(
+            path, str(e)))
+
+    return path

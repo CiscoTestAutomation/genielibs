@@ -15,7 +15,7 @@ from .yangexec import run_netconf, run_gnmi, notify_wait
 from .actions_helper import configure_handler, api_handler, learn_handler, parse_handler, execute_handler
 
 
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 def configure(self, device, steps, command, reply=None, continue_=True):
@@ -39,8 +39,8 @@ def parse(self, device, steps, command, include=None,
     with steps.start("Parsing '{c}' on '{d}'".\
                     format(c=command, d=device.name), continue_=continue_) as step:
 
-        output = parse_handler(self, step, device, command, include, exclude,
-                              max_time, check_interval, continue_)
+        output = parse_handler(self, step, device, command, include=include, exclude=exclude,
+                               max_time=max_time, check_interval=check_interval, continue_=continue_)
 
     notify_wait(steps, device)
 
@@ -53,8 +53,8 @@ def execute(self, device, steps, command, include=None, exclude=None,
     with steps.start("Executing '{c}' on '{d}'".\
                     format(c=command, d=device.name), continue_=continue_) as step:
 
-        output = execute_handler(self, step, device, command, include, exclude,
-                                max_time, check_interval, continue_, reply=reply)
+        output = execute_handler(self, step, device, command, include=include, exclude=exclude,
+                                 max_time=max_time, check_interval=check_interval, continue_=continue_, reply=reply)
 
     notify_wait(steps, device)
 
@@ -68,8 +68,8 @@ def api(self, device, steps, function, arguments=None, include=None,
     with steps.start("Calling API '{f}' on '{d}'".\
                     format(f=function, d=device.name), continue_=continue_) as step:
 
-        output = api_handler(self, step, device, function, include, exclude,
-                            max_time, check_interval, continue_, function, arguments=arguments)
+        output = api_handler(self, step, device, function, include=include, exclude=exclude,
+                             max_time=max_time, check_interval=check_interval, continue_=continue_, arguments=arguments)
 
     notify_wait(steps, device)
 
@@ -82,8 +82,8 @@ def learn(self, device, steps, feature, include=None, exclude=None,
     with steps.start("Learning '{f}' on '{d}'".\
                     format(f=feature, d=device.name), continue_=continue_) as step:
 
-        output = learn_handler(self, step, device, feature, include, exclude, 
-                              max_time, check_interval, continue_=continue_)
+        output = learn_handler(self, step, device, feature, include=include, exclude=exclude,
+                               max_time=max_time, check_interval=check_interval, continue_=continue_,)
 
     return output
 
@@ -201,8 +201,17 @@ def bash_console(self, device, steps, commands, continue_=True, **kwargs):
     return ret_dict
 
 def genie_sdk(self, steps, continue_=True, **kwargs):
+
+    # This is to remove the uut dependency of genie standalone.
+    # Since the device we are running the sdk on is in the
+    # kwargs we just pass the first device found as the 'uut'
+    uut = 'uut'
+    for _, params in kwargs.items():
+        uut = params.get('devices', ['uut'])[0]
+        break
+
     sdks = list(kwargs.keys())
-    run_genie_sdk(self, steps, sdks, parameters=kwargs)
+    run_genie_sdk(self, steps, sdks, uut=uut, parameters=kwargs)
 
 def print(self, steps, continue_=True, *args, **kwargs):
 
@@ -248,7 +257,6 @@ def action_parallel(self, steps, testbed, section, data):
                 kwargs = {'steps': step, 'testbed': testbed, 'section': section, 'data': [{action:action_kwargs}]}
                 pcall_payloads.append(kwargs)
         pcall_returns = pcall(self.dispatcher, ikwargs=pcall_payloads)
-
         # Each action return is a dictionary containing the action name, possible saved_variable
         # Action results, and device name that action is being implemented on
         # These value would be lost when the child processor that executes the action end the process.
@@ -262,7 +270,7 @@ def action_parallel(self, steps, testbed, section, data):
                         log.info('Applied filter: {} to the action {} output'.format(each_return['filters'], action))
 
                     save_variable(self, saved_var_data, saved_var_name)
-        
+
             if each_return['device']:
                 msg = 'Executed action {action} on {device} in parallel'.format(
                     action=each_return['action'], device=each_return['device'])

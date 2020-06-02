@@ -17,7 +17,7 @@ from genie.libs.clean.stages.nxos.execute_dialogs import BreakBootDialog,\
 
 
 # Logger
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 def recovery_worker(*args, **kwargs):
 

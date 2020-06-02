@@ -1224,11 +1224,12 @@ def pre_execute_command(section,
 
     # prepare save location
     if save_to_file:
+        file_list = {}
         now = datetime.datetime.now()
         timestamp_format = '%Y%m%d_%H%M%S'
         folder_log = '_'.join(
             [section.parent.uid, section.uid,
-             now.strftime(timestamp_format)])
+             'pre_execute_command', now.strftime(timestamp_format)])
         folder_name = runtime.directory + '/' + folder_log
         try:
             os.mkdir(folder_name)
@@ -1253,7 +1254,14 @@ def pre_execute_command(section,
         if dev == 'uut':
             device = section.parameters['uut']
         else:
-            device = section.parameters['testbed'].devices.get(dev, None)
+            if dev in section.parameters[
+                    'testbed'].devices.names or dev in section.parameters[
+                        'testbed'].devices.aliases:
+                device = section.parameters['testbed'].devices[dev]
+            else:
+                section.errored(
+                    "Failed to find a device {device} in testbed yaml".format(
+                        device=dev))
         # if device not in TB or not connected, then skip
         if not device or not device.is_connected():
             continue
@@ -1292,6 +1300,7 @@ def pre_execute_command(section,
                         # save output to file as per device or command
                         if save_to_file == 'per_device':
                             file_name = folder_name + '/' + dev
+                            save_file_name = file_name.split('/')[-1] + '.txt'
                             with open(file_name + '.txt', 'a') as f:
                                 output = '+' * 10 + ' ' + datetime.datetime.now(
                                 ).strftime(
@@ -1300,22 +1309,15 @@ def pre_execute_command(section,
                                 f.write(output)
                                 log.info(
                                     "File {file} saved to folder {folder}".
-                                    format(file=file_name + '.txt',
+                                    format(file=save_file_name,
                                            folder=folder_name))
                             if zipped_folder:
-                                try:
-                                    zip.write(
-                                        file_name + '.txt',
-                                        file_name.split('/')[-1] + '.txt')
-                                except Exception:
-                                    section.errored(
-                                        "Failed to add file `{file}` to zip file {zip}"
-                                        .format(file=file_name + '.txt',
-                                                zip=folder_name + '.zip'))
+                                file_list.update({file_name+'.txt': save_file_name})
                         elif save_to_file == 'per_command':
                             file_name = folder_name + '/' + dev
                             file_name = file_name + '_' + device.api.slugify(
                                 exec_cmd)
+                            save_file_name = file_name.split('/')[-1] + '.txt'
                             with open(file_name + '.txt', 'w') as f:
                                 output = '+' * 10 + ' ' + datetime.datetime.now(
                                 ).strftime(
@@ -1324,18 +1326,10 @@ def pre_execute_command(section,
                                 f.write(output)
                                 log.info(
                                     "File {file} saved to folder {folder}".
-                                    format(file=file_name + '.txt',
+                                    format(file=save_file_name,
                                            folder=folder_name))
                             if zipped_folder:
-                                try:
-                                    zip.write(
-                                        file_name + '.txt',
-                                        file_name.split('/')[-1] + '.txt')
-                                except Exception as e:
-                                    section.errored(
-                                        "Failed to add file `{file}` to zip file {zip}"
-                                        .format(file=file_name + '.txt',
-                                                zip=folder_name + '.zip' + e))
+                                file_list.update({file_name+'.txt': save_file_name})
                     except SubCommandFailure as e:
                         log.error(
                             'Failed to execute "{cmd}" on device {d}: {e}'.
@@ -1361,6 +1355,14 @@ def pre_execute_command(section,
                     time.sleep(cmd_sleep)
 
     if zipped_folder:
+        for fname, sname in file_list.items():
+            try:
+                zip.write(fname ,sname)
+            except Exception:
+                section.errored(
+                    "Failed to add file `{file}` to zip file {zip}"
+                    .format(file=sname + '.txt',
+                            zip=folder_name + '.zip'))
         try:
             zip.close()
             log.info("Zip file `{zip}` was created with mode {mode}".format(
@@ -1428,11 +1430,12 @@ def post_execute_command(section,
 
     # prepare save location
     if save_to_file:
+        file_list = {}
         now = datetime.datetime.now()
         timestamp_format = '%Y%m%d_%H%M%S'
         folder_log = '_'.join(
             [section.parent.uid, section.uid,
-             now.strftime(timestamp_format)])
+             'post_execute_command', now.strftime(timestamp_format)])
         folder_name = runtime.directory + '/' + folder_log
         try:
             os.mkdir(folder_name)
@@ -1457,7 +1460,14 @@ def post_execute_command(section,
         if dev == 'uut':
             device = section.parameters['uut']
         else:
-            device = section.parameters['testbed'].devices.get(dev, None)
+            if dev in section.parameters[
+                    'testbed'].devices.names or dev in section.parameters[
+                        'testbed'].devices.aliases:
+                device = section.parameters['testbed'].devices[dev]
+            else:
+                section.errored(
+                    "Failed to find a device {device} in testbed yaml".format(
+                        device=dev))
         # if device not in TB or not connected, then skip
         if not device or not device.is_connected():
             continue
@@ -1495,6 +1505,7 @@ def post_execute_command(section,
                         # save output to file as per device or command
                         if save_to_file == 'per_device':
                             file_name = folder_name + '/' + dev
+                            save_file_name = file_name.split('/')[-1] + '.txt'
                             with open(file_name + '.txt', 'a') as f:
                                 output = '+' * 10 + ' ' + datetime.datetime.now(
                                 ).strftime(
@@ -1503,22 +1514,15 @@ def post_execute_command(section,
                                 f.write(output)
                                 log.info(
                                     "File {file} saved to folder {folder}".
-                                    format(file=file_name + '.txt',
+                                    format(file=save_file_name,
                                            folder=folder_name))
                             if zipped_folder:
-                                try:
-                                    zip.write(
-                                        file_name + '.txt',
-                                        file_name.split('/')[-1] + '.txt')
-                                except Exception:
-                                    section.errored(
-                                        "Failed to add file `{file}` to zip file {zip}"
-                                        .format(file=file_name + '.txt',
-                                                zip=folder_name + '.zip'))
+                                file_list.update({file_name+'.txt': save_file_name})
                         elif save_to_file == 'per_command':
                             file_name = folder_name + '/' + dev
                             file_name = file_name + '_' + device.api.slugify(
                                 exec_cmd)
+                            save_file_name = file_name.split('/')[-1] + '.txt'
                             with open(file_name + '.txt', 'w') as f:
                                 output = '+' * 10 + ' ' + datetime.datetime.now(
                                 ).strftime(
@@ -1527,18 +1531,10 @@ def post_execute_command(section,
                                 f.write(output)
                                 log.info(
                                     "File {file} saved to folder {folder}".
-                                    format(file=file_name + '.txt',
+                                    format(file=save_file_name,
                                            folder=folder_name))
                             if zipped_folder:
-                                try:
-                                    zip.write(
-                                        file_name + '.txt',
-                                        file_name.split('/')[-1] + '.txt')
-                                except Exception:
-                                    section.errored(
-                                        "Failed to add file `{file}` to zip file {zip}"
-                                        .format(file=file_name + '.txt',
-                                                zip=folder_name + '.zip'))
+                                file_list.update({file_name+'.txt': save_file_name})
                     except SubCommandFailure as e:
                         log.error(
                             'Failed to execute "{cmd}" on device {d}: {e}'.
@@ -1565,6 +1561,14 @@ def post_execute_command(section,
                     time.sleep(cmd_sleep)
 
     if zipped_folder:
+        for fname, sname in file_list.items():
+            try:
+                zip.write(fname, sname)
+            except Exception:
+                section.errored(
+                    "Failed to add file `{file}` to zip file {zip}"
+                    .format(file=sname + '.txt',
+                            zip=folder_name + '.zip'))
         try:
             zip.close()
             log.info("Zip file `{zip}` was created with mode {mode}".format(
