@@ -15,9 +15,6 @@ from time import strptime
 from datetime import datetime
 from netaddr import IPAddress
 
-# Scapy
-import scapy.all
-
 # pyATS
 from pyats.easypy import runtime
 from pyats.utils.fileutils import FileUtils
@@ -40,10 +37,6 @@ from unicon.plugins.generic.statements import default_statement_list
 
 log = logging.getLogger(__name__)
 
-rdpcap = scapy.all.rdpcap
-ICMP = scapy.layers.inet.ICMP
-ICMPv6 = scapy.layers.inet6._ICMPv6
-ICMPv6DestUnreach = scapy.layers.inet6.ICMPv6DestUnreach
 
 
 def _cli(device, cmd, timeout, prompt):
@@ -1680,6 +1673,18 @@ def verify_pcap_has_imcp_destination_unreachable(pcap_location,
         Returns:
             Boolean if icmp destination reachable message in pcap
     """
+
+    try:
+        import scapy.all
+        rdpcap = scapy.all.rdpcap
+        ICMP = scapy.layers.inet.ICMP
+        ICMPv6 = scapy.layers.inet6._ICMPv6
+        ICMPv6DestUnreach = scapy.layers.inet6.ICMPv6DestUnreach
+    except ImportError:
+        raise ImportError(
+            'scapy is not installed, please install it by running: '
+            'pip install scapy') from None
+
     pcap_object = rdpcap(pcap_location)
 
     for packet in pcap_object:
@@ -1702,6 +1707,18 @@ def verify_pcap_has_imcpv6_destination_unreachable(pcap_location,
         Returns:
             Boolean if icmpv6 destination reachable message in pcap
     """
+
+    try:
+        import scapy.all
+        rdpcap = scapy.all.rdpcap
+        ICMP = scapy.layers.inet.ICMP
+        ICMPv6 = scapy.layers.inet6._ICMPv6
+        ICMPv6DestUnreach = scapy.layers.inet6.ICMPv6DestUnreach
+    except ImportError:
+        raise ImportError(
+            'scapy is not installed, please install it by running: '
+            'pip install scapy') from None
+
     pcap_object = rdpcap(pcap_location)
 
     for packet in pcap_object:

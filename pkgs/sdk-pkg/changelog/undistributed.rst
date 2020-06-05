@@ -19,7 +19,9 @@
 --------------------------------------------------------------------------------
                                 Fix
 --------------------------------------------------------------------------------
-
+* Junos
+    * Modified 'verify_routing_ip_exist' to handle more variations
+    
 * Blitz:
     * Fixed the polling issue in blitz
     * Fixed run_genie_sdk action

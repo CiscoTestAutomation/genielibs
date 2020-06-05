@@ -13,22 +13,27 @@ class ImageHandler(CommonImageHandler):
     def __init__(self, device, images, *args, **kwargs):
         super().__init__(device, images, *args, **kwargs)
 
-        # Ensure 'images' provided is a dict for nxos
+        # Set 'kickstart' and 'system' images
         if self.images:
-            if not isinstance(self.images, dict):
-                raise Exception("'images' is not a dict as expected for 'nxos'")
-
-            for key, value in self.images.items():
-                try:
-                    assert key in ['kickstart', 'system']
-                except AssertionError:
-                    raise Exception("Invalid key '{}' provided for N7K images"
-                                    "\nValid keys are 'kickstart' and 'system'")
-                if len(value) > 1:
-                    raise Exception("Found more than 1 image for '{}' image".\
-                                    format(key))
-                setattr(self, key, value[0])
-
+            if isinstance(self.images, dict):
+                for key, value in self.images.items():
+                    try:
+                        assert key in ['kickstart', 'system']
+                    except AssertionError:
+                        raise Exception("Invalid key '{}' provided for N7K images"
+                                        "\nValid keys are 'kickstart' and 'system'")
+                    if len(value) > 1:
+                        raise Exception("Found more than 1 image for '{}' image".\
+                                        format(key))
+                    setattr(self, key, value[0])
+            elif isinstance(self.images, list) and len(self.images)==2:
+                # Set 'kickstart'
+                setattr(self, 'kickstart', self.images[0])
+                # Set 'system'
+                setattr(self, 'system', self.images[1])
+        else:
+            raise Exception("'images' list or dictionary not provided and is "
+                            "expected for 'nxos'")
 
     def update_tftp_boot(self):
         '''Update clean section 'tftp_boot' with image information'''

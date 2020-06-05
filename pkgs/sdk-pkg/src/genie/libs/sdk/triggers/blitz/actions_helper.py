@@ -133,7 +133,7 @@ def _output_query_template(self, output, steps, device, command, include,
 
                 if send_cmd:
 
-                    _send_command(command, device, action, arguments=arguments, reply=reply)
+                    output = _send_command(command, device, action, arguments=arguments, reply=reply)
 
                 if action == 'execute':
                     # validating the inclusion/exclusion of action execute,

@@ -15,19 +15,23 @@ class ImageHandler(CommonImageHandler):
 
         # Ensure 'images' provided is a dict for nxos
         if self.images:
-            if not isinstance(self.images, dict):
-                raise Exception("'images' is not a dict as expected for 'nxos'")
-
-            for key, value in self.images.items():
-                try:
-                    assert key in ['system']
-                except AssertionError:
-                    raise Exception("Invalid key '{}' provided for N9K images"
-                                    "\nValid key is 'system'")
-                if len(value) > 1:
-                    raise Exception("Found more than 1 image for '{}' image".\
-                                    format(key))
-                setattr(self, key, value[0])
+            if isinstance(self.images, dict):
+                for key, value in self.images.items():
+                    try:
+                        assert key in ['system']
+                    except AssertionError:
+                        raise Exception("Invalid key '{}' provided for N9K images"
+                                        "\nValid key is 'system'")
+                    if len(value) > 1:
+                        raise Exception("Found more than 1 image for '{}' image".\
+                                        format(key))
+                    setattr(self, key, value[0])
+            elif isinstance(self.images, list) and len(self.images)==1:
+                # Set 'system'
+                setattr(self, 'system', self.images[0])
+        else:
+            raise Exception("'images' list or dictionary not provided and is "
+                            "expected for 'nxos'")
 
 
     def update_tftp_boot(self):

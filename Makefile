@@ -51,7 +51,7 @@ RELATED_PKGS = genie.libs.clean genie.libs.conf genie.libs.ops genie.libs.robot 
 RELATED_PKGS += genie.libs.filetransferutils
 DEPENDENCIES = restview psutil Sphinx wheel asynctest pysnmp
 DEPENDENCIES += setproctitle  sphinx-rtd-theme 
-DEPENDENCIES += pip-tools Cython requests
+DEPENDENCIES += Cython requests
 
 # Internal variables.
 # (note - build examples & templates last because it will fail uploading to pypi

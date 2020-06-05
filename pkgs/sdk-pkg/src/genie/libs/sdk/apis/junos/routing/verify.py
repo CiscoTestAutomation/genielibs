@@ -99,85 +99,219 @@ def verify_ip_cef_nexthop_label(
 def verify_routing_static_routes(device,
                                  destination_address,
                                  to=None,
+                                 not_to=None,
                                  known_via=None,
                                  tag=None,
                                  preference=None,
                                  protocol_name=None,
-                                 extensive=False):
+                                 extensive=False,
+                                 max_time=60, 
+                                 check_interval=10):
     """ Verify static route exists
 
         Args:
             device ('str'): Device str
             destination_address ('str'): destination ip address
             to ('str'): to value
+            not_to ('str'): not to value
             known_via ('str'): known via value
             tag ('str'): Tag value
             preference ('str'): Preference value
             protocol_name ('str'): Protocol name
             extensive ('bool'): if command with extensive at the end
+            max_time (`int`): Max time, default: 60
+            check_interval (`int`): Check interval, default: 10
         Returns:
             True / False
         Raises:
             None
 
     """
-    try:
-        if extensive:
-            out = device.parse('show route protocol static extensive')
-        else:
-            out = device.parse('show route protocol static')
-    except SchemaEmptyParserError:
-        return False
-
-    # Example dictionary structure:
-    #         {
-    #             "rt": [
-    #                 {
-    #                     "rt-destination": "10.169.14.240/32",
-    #                     "rt-entry": {
-    #                         "nh": [
-    #                             {
-    #                                 "to": "10.169.14.121",
-    #                                 "via": "ge-0/0/1.0"
-    #                             }
-    #                         ],
-    #                         "rt-tag": "100",
-    #                         "preference": "5",
-    #                         "protocol-name": "Static"
-    #                     }
-    #                 }
-    #             ],
-    #             "table-name": "inet.0",
-    #             "total-route-count": "240"
-    #         },
-    rt_list = Dq(out).get_values("rt")
-
-    for rt_dict in rt_list:
-        rt_destination_ = Dq(rt_dict).get_values("rt-destination", 0)
-        if not rt_destination_.startswith(destination_address):
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            if extensive:
+                out = device.parse('show route protocol static extensive')
+            else:
+                out = device.parse('show route protocol static')
+        except SchemaEmptyParserError:
+            timeout.sleep()
             continue
-        if to:
-            to_ = Dq(rt_dict).get_values("to", 0)
-            if not to_.startswith(to):
-                continue
-        if known_via:
-            via_ = Dq(rt_dict).get_values("via", 0)
-            if not via_.startswith(known_via):
-                continue
-        if tag:
-            tag_ = Dq(rt_dict).get_values("rt-tag", 0)
-            if str(tag_) != str(tag):
-                continue
-        if preference:
-            preference_ = Dq(rt_dict).get_values("preference", 0)
-            if str(preference_) != str(preference):
-                continue
-        if protocol_name:
-            protocol_ = Dq(rt_dict).get_values("protocol-name", 0)
-            if protocol_.upper() != protocol_name.upper():
-                continue
-        return True
 
+        # Example dictionary structure:
+        #         {
+        #             "rt": [
+        #                 {
+        #                     "rt-destination": "10.169.14.240/32",
+        #                     "rt-entry": {
+        #                         "nh": [
+        #                             {
+        #                                 "to": "10.169.14.121",
+        #                                 "via": "ge-0/0/1.0"
+        #                             }
+        #                         ],
+        #                         "rt-tag": "100",
+        #                         "preference": "5",
+        #                         "protocol-name": "Static"
+        #                     }
+        #                 }
+        #             ],
+        #             "table-name": "inet.0",
+        #             "total-route-count": "240"
+        #         },
+        rt_list = Dq(out).get_values("rt")
+        rt_destination_ = None
+        for rt_dict in rt_list:
+            current_rt_destination = Dq(rt_dict).get_values("rt-destination", 0)
+            if current_rt_destination:
+                rt_destination_ = current_rt_destination
+            if not rt_destination_:
+                continue
+            if not rt_destination_.startswith(destination_address):
+                continue
+
+            if not_to:
+                not_to_ = Dq(rt_dict).get_values("to", 0)
+                if not_to_.startswith(not_to):
+                    continue
+            if to:
+                to_ = Dq(rt_dict).get_values("to", 0)
+                if not to_.startswith(to):
+                    continue
+            if known_via:
+                via_ = Dq(rt_dict).get_values("via", 0)
+                if not via_.startswith(known_via):
+                    continue
+            if tag:
+                tag_ = Dq(rt_dict).get_values("rt-tag", 0)
+                if str(tag_) != str(tag):
+                    continue
+            if preference:
+                preference_ = Dq(rt_dict).get_values("preference", 0)
+                if str(preference_) != str(preference):
+                    continue
+            if protocol_name:
+                protocol_ = Dq(rt_dict).get_values("protocol-name", 0)
+                if protocol_.upper() != protocol_name.upper():
+                    continue
+            return True
+        timeout.sleep()
+    return False
+
+def verify_routing_interface_preference(device, protocol, interface, preference, 
+    extensive=None, max_time=60, check_interval=10):
+    """ Verify routing interface preference
+
+        Args:
+            device ('str'): Device str
+            protocol ('str'): Protocol name
+            interface ('str'): Interface name
+            preference ('int'): Preference value
+            extensive ('bool'): Check with extensive command
+            max_time (`int`): Max time, default: 60
+            check_interval (`int`): Check interval, default: 10
+        Returns:
+            True / False
+        Raises:
+            None
+
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            if extensive:
+                out = device.parse('show route protocol {protocol} extensive'.format(
+                    protocol=protocol
+                ))
+            else:
+                out = device.parse('show route protocol {protocol}'.format(
+                    protocol=protocol))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # Example dictionary structure:
+        #         {
+        #             "rt": [
+        #                 {
+        #                     "rt-destination": "10.169.14.240/32",
+        #                     "rt-entry": {
+        #                         "nh": [
+        #                             {
+        #                                 "to": "10.169.14.121",
+        #                                 "via": "ge-0/0/1.0"
+        #                             }
+        #                         ],
+        #                         "rt-tag": "100",
+        #                         "preference": "5",
+        #                         "protocol-name": "Static"
+        #                     }
+        #                 }
+        #             ],
+        #             "table-name": "inet.0",
+        #             "total-route-count": "240"
+        #         },
+        rt_list = Dq(out).get_values("rt")
+        for rt_dict in rt_list:
+            via_ = Dq(rt_dict).get_values("via", 0)
+            if not via_ or not via_.startswith(interface):
+                continue
+            preference_ = Dq(rt_dict).get_values("preference", 0)
+            if not preference_ or preference_ != str(preference):
+                continue
+            return True
+        timeout.sleep()
+    return False
+
+def verify_routing_ip_exist(device, destination_address, protocol=None,
+    max_time=60, check_interval=10, extensive=None, exact=None):
+    """ Verify routing ip exists
+
+        Args:
+            device ('str'): Device str
+            destination_address ('str'): Destination address
+            protocol ('str'): Protocol name
+            max_time (`int`): Max time, default: 60
+            check_interval (`int`): Check interval, default: 10
+            extensive ('bool'): Is extensive
+            exact ('bool'): Is exact
+        Returns:
+            True / False
+        Raises:
+            None
+
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        out = None
+        try:
+            if extensive:
+                if exact:
+                    out = device.parse('show route extensive {destination_address} exact'.format(
+                        destination_address=destination_address
+                    ))
+                else:
+                    out = device.parse('show route extensive {destination_address}'.format(
+                        destination_address=destination_address
+                    ))
+            elif protocol:
+                out = device.parse('show route protocol {protocol}'.format(
+                    protocol=protocol
+                ))
+            else:
+                out = device.parse('show route')
+
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+        
+        rt_list = Dq(out).get_values("rt")
+
+        for rt_dict in rt_list:
+            rt_destination_ = Dq(rt_dict).get_values("rt-destination", 0)
+            if rt_destination_.startswith(str(destination_address)):
+                return True   
+        timeout.sleep()
     return False
 
 def verify_routing_interface_preference(device, protocol, interface, preference, 
