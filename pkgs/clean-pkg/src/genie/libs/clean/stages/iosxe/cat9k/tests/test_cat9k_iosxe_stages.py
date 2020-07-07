@@ -55,6 +55,7 @@ class PositiveStages(unittest.TestCase):
 
         self.steps = Steps()
         self.device = self.tb.devices['PE1']
+        self.device.is_ha = None
         self.raw_output = PassedStageOutputs
         self.section = TestItem(uid='test', description='', parameters={})
 
@@ -82,6 +83,7 @@ class NegativeStages(unittest.TestCase):
 
         self.steps = Steps()
         self.device = self.tb.devices['PE1']
+        self.device.is_ha = None
         self.raw_output = FailedStageOutputs
         self.section = TestItem(uid='test', description='', parameters={})
 

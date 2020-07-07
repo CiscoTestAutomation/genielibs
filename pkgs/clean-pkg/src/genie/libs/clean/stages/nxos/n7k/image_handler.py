@@ -31,6 +31,10 @@ class ImageHandler(CommonImageHandler):
                 setattr(self, 'kickstart', self.images[0])
                 # Set 'system'
                 setattr(self, 'system', self.images[1])
+            else:
+                raise Exception("Expecting 'kickstart' and 'system' images for "
+                                "NXOS N7K platform provided under 'images' "
+                                "key as a list or dictionary")
         else:
             raise Exception("'images' list or dictionary not provided and is "
                             "expected for 'nxos'")

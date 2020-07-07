@@ -341,7 +341,6 @@ def execute_copy_to_running_config(device, file, copy_config_timeout=60):
     '''
 
     log.info("Copying {} to running-config on '{}'".format(file, device.name))
-
     try:
         output = device.copy(source=file, dest='running-config',
                              timeout=copy_config_timeout)
@@ -371,8 +370,9 @@ def execute_copy_run_to_start(device, command_timeout=300, max_time=120,
         cmd += " vdc-all"
 
     # Build Unicon Dialogs
+
     startup = Statement(
-        pattern=r'.*Destination +filename +\[startup-config\]\?',
+        pattern=r'^.*Destination +(filename|file +name)(\s\(control\-c +to +abort\)\:)? +\[(\/)?startup\-config]\?',
         action='sendline()',
         loop_continue=True,
         continue_timer=False)
@@ -382,12 +382,19 @@ def execute_copy_run_to_start(device, command_timeout=300, max_time=120,
         loop_continue=True,
         continue_timer=False)
 
+    # XR platform specific when over-write the existing configurations
+    yes_cmd = Statement(
+        pattern=r'^.*The +destination +file +already +exists\. +Do +you +want +to +overwrite\? +\[no\]\:',
+        action='sendline(y)',
+        loop_continue=True,
+        continue_timer=False)
+
     # Begin timeout
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
         try:
             output = device.execute(cmd, timeout=command_timeout,
-                                    reply=Dialog([startup, proceed]))
+                                    reply=Dialog([startup, proceed, yes_cmd]))
         except Exception as e:
             raise Exception("Cannot save running-config to startup-config {}".\
                             format(str(e)))

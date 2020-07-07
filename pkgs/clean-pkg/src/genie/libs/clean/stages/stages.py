@@ -17,8 +17,11 @@ from unicon.core.errors import SubCommandFailure, ConnectionError
 
 # Genie
 from genie.libs.clean.utils import clean_schema
-from genie.libs.clean.utils import _apply_configuration, find_clean_variable,\
-                                   verify_num_images_provided
+from genie.libs.clean.utils import (_apply_configuration,
+                                    find_clean_variable,
+                                    verify_num_images_provided,
+                                    handle_rommon_exception,
+                                    remove_string_from_image)
 
 # MetaParser
 from genie.metaparser.util.schemaengine import Optional
@@ -31,18 +34,32 @@ log = logging.getLogger(__name__)
 #                       stage: connect
 #===============================================================================
 
-def handle_rommon_exception(spawn, context):
-    log.error('Device is in Rommon')
-    raise Exception('Device is in Rommon')
-
 @clean_schema({
     Optional('timeout'): str,
 })
 @aetest.test
 def connect(section, device, timeout=200, **kwargs):
-    """
-    Checks if the connection to device is available
-    """
+    '''
+    Clean yaml file schema:
+    -----------------------
+        devices:
+            <device>:
+                connect:
+    Example:
+    --------
+        devices:
+            N95_1:
+                connect:
+                  timeout: 60
+
+    Flow:
+    -----
+        before:
+            All stages
+        after:
+            N/A
+    '''
+
     log.info('Checking connection to device : %s' % device.name)
 
     # If the device is in rommon, just raise an exception
@@ -68,7 +85,6 @@ def connect(section, device, timeout=200, **kwargs):
             device.connect_reply.remove(rommon)
         except Exception:
             pass
-
 
 #===============================================================================
 #                       stage: ping_server
@@ -274,7 +290,7 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
 
     destination_hostname = destination.get('hostname')
 
-    origin_path = origin['files']
+    origin_path = remove_string_from_image(images=origin['files'])
 
     if len(origin_path) == 0:
         log.error(banner("*** Terminating Genie Clean ***"))
@@ -525,7 +541,6 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
                 step.skipped("File has been copied correctly but cannot "
                              "verify file size")
 
-
 #===============================================================================
 #                       stage: copy_to_device
 #===============================================================================
@@ -537,6 +552,7 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
         },
     'destination': {
         'directory': str,
+        Optional('standby_directory'): str,
         },
     'protocol': str,
     Optional('verify_num_images'): bool,
@@ -644,8 +660,16 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
 
     # Get args
     server = origin['hostname']
-    image_files = origin['files']
-    destination = destination['directory']
+    image_files = remove_string_from_image(images=origin['files'])
+
+    # Set active node destination directory
+    destination_act = destination['directory']
+
+    # Set standby node destination directory
+    if 'standby_directory' in destination:
+        destination_stby = destination['standby_directory']
+    else:
+        destination_stby = None
 
     # Check remote server info present in testbed YAML
     if not FileUtils.from_device(device).get_server_block(server):
@@ -669,6 +693,7 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
                 step.passed("Correct number of images provided")
 
     # Init
+    success_copy_ha = False
     files_to_copy = {}
     unknown_size = False
 
@@ -677,9 +702,8 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
 
     # Execute 'dir' before copying image files
     log.info(banner("Executing 'dir {}' before copying image files".\
-                    format(destination)))
-    dir_before = device.execute('dir {}'.format(destination))
-
+                    format(destination_act)))
+    dir_before = device.execute('dir {}'.format(destination_act))
     # Loop over all image files provided by user
     for file in image_files:
 
@@ -712,7 +736,7 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
                             "{} bytes".format(file, file_size))
         
         # Check if file with same name and size exists on device
-        dest_file_path = os.path.join(destination, os.path.basename(file))
+        dest_file_path = os.path.join(destination_act, os.path.basename(file))
         with steps.start("Check if file '{}' exists on device {}".\
                         format(dest_file_path, device.name)) as step:
 
@@ -740,6 +764,36 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
                 log.warning(str(e))
                 step.passx("Unable to check if image '{}' exists on device {}".\
                            format(dest_file_path, device.name))
+
+            # Check if file with same name and size exists on device
+            dest_file_path = os.path.join(destination_act, os.path.basename(file))
+            with steps.start("Check if file '{}' exists on device ".\
+                            format(dest_file_path, device.name)) as step:
+
+                # Check if file exists
+                try:
+                    exist = device.api.verify_file_exists(file=dest_file_path,
+                                                        size=file_size,
+                                                        dir_output=dir_before)
+                    if (not exist) or (exist and overwrite):
+                        # Update list of files to copy
+                        file_copy_info = {
+                            file: {
+                                'size': file_size,
+                                'dest_path': dest_file_path,
+                                'exist': exist
+                            }}
+                        files_to_copy.update(file_copy_info)
+                        # Print message to user
+                        step.passed("Proceeding with copying image {} to device {}".\
+                                    format(dest_file_path, device.name))
+                    else:
+                        step.passed("Image '{}' already exists on device {}, "
+                                    "skipping copy".format(file, device.name))
+                except Exception as e:
+                    log.warning(str(e))
+                    step.passx("Unable to check if image '{}' exists on device {}".\
+                            format(dest_file_path, device.name))
 
     # Check if any file copy is in progress
     if check_file_stability:
@@ -806,7 +860,7 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
 
                     try:
                         free_space = device.api.free_up_disk_space(
-                                        destination=destination,
+                                        destination=destination_act,
                                         required_size=total_size,
                                         skip_deletion=skip_deletion,
                                         protected_files=protected_files,
@@ -866,13 +920,13 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
                     else:
                         log.info("File {} has been copied to device {} "
                                  "successfully".format(file, device.name))
-                        break
+                        success_copy_ha = True
 
+                        break
                 # Save the file copied path and size info for future use
                 history = section.history['copy_to_device'].parameters.\
-                                  setdefault('files_copied', {})
+                                    setdefault('files_copied', {})
                 history.update({file: file_data})
-
     # If nothing copied dont need to verify, skip
     if 'files_copied' not in section.history['copy_to_device'].parameters:
         step.skipped("Image files were not copied in previous steps, "
@@ -880,8 +934,36 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
 
     # Execute 'dir' after copying image files
     log.info(banner("Executing 'dir {}' after copying image files".\
-                    format(destination)))
-    dir_after = device.execute('dir {}'.format(destination))
+                    format(destination_act)))
+    dir_after = device.execute('dir {}'.format(destination_act))
+
+    # Flag to make sure that the image is successfully copied to the first device
+    proceed = Statement(pattern=r'^Destination +filename +\S+\?$',
+                        action='sendline()',
+                        loop_continue=False,
+                        continue_timer=False)
+
+    if destination_stby and device.is_ha:
+        if success_copy_ha:
+            with steps.start("Copying image to standby device {}".\
+                    format(destination_stby)) as step:
+                try:
+                    device.execute("copy {} {}".format(dest_file_path,destination_stby),\
+                            reply=Dialog([proceed]))
+                except Exception as e:
+                    log.warning("Unable to copy {} to {} on device {} due to:\n{}".\
+                                        format(dest_file_path, destination_stby, device.name, e))
+            with steps.start("Show dir on {} to see if image copied to standby".\
+                        format(destination_stby)) as step:
+                try:
+                    device.execute("dir {}".format(destination_stby))
+                except Exception as e:
+                    log.warning("Unable to show dir on {} on device {} due to:\n{}".\
+                                        format(destination_stby, device.name, e))
+        else:
+            log.warning(banner("Failed to copy to active device"))
+            log.warning("Unable to copy file to active dir on {} on device {} due to:\n".\
+                                        format(destination_act, device.name))
 
     for name, image_data in section.history['copy_to_device'].\
                                     parameters['files_copied'].items():
@@ -906,7 +988,6 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
             else:
                 step.skipped("Image file has been copied to device {} correctly"
                              " but cannot verify file size".format(device.name))
-
 
 #===============================================================================
 #                       stage: write_erase
@@ -1314,6 +1395,7 @@ def backup_file_on_device(section, steps, device, copy_dir, copy_file,
 
 @clean_schema({
     'delete_dir': str,
+    Optional('delete_dir_stby'): str,
     'delete_file': str,
     Optional('restore_from_backup'): bool,
     Optional('overwrite'): bool,
@@ -1330,6 +1412,7 @@ def delete_backup_from_device(section, steps, device, delete_dir, delete_file,
       <device>:
         delete_backup_from_device:
           delete_dir ('str'): Directory containing file to be deleted (Mandatory)
+          delete_dir_stby ('str'): Directory containing file to be deleted for standby (Optional)
           delete_file ('str'): File to be deleted up (Mandatory)
           restore_from_backup ('bool'): Restore the file from backup file. 
                                         Default value is False (Optional)
@@ -1342,6 +1425,7 @@ def delete_backup_from_device(section, steps, device, delete_dir, delete_file,
       PE1:
         delete_backup_from_device:
           delete_dir: 'bootflash:'
+          delete_dir_stby: 'bootflash-stby:'
           delete_file: ISSUCleanGolden.cfg_backup
 
     Flow:
@@ -1397,9 +1481,34 @@ def delete_backup_from_device(section, steps, device, delete_dir, delete_file,
             section.failed("Unable to delete '{}/{} from device {}".format(
                            delete_dir, delete_file, device.name), goto=['exit'])
         else:
-            step.passed("Successfully deleted '{}/{}' from device {}".\
-                        format(delete_dir, delete_file, device.name))
+            if not device.is_ha:
+                step.passed("Successfully deleted '{}/{}' from device {}".\
+                                format(delete_dir, delete_file, device.name))
+                                
+            # Delete file from on standby
+            if device.is_ha:
+                # Make sure standby directory is provided
+                if device.clean.delete_backup_from_device.get('delete_dir_stby'):
+                    delete_dir_stby = device.clean.delete_backup_from_device.get('delete_dir_stby')
 
+                    # Delete the golden backup file
+                    log.info("Successfully deleted '{}/{}' from device {}".
+                                format(delete_dir, delete_file, device.name))
+                    log.info("Deleting '{}/{}' on standby from device{}".
+                                format(delete_dir_stby,delete_file, device.name))
+                    try:
+                        device.execute('delete {}{}'.format(delete_dir_stby, delete_file),
+                                        reply=Dialog([delete_backup]))
+                    except Exception as e:
+                        log.error(e)
+                        log.error(banner("*** Cannot delete from standby ***"))
+                        section.failed("Unable to delete '{}/{} from device {}".format(
+                                    delete_dir_stby, delete_file, device.name))
+                    else:
+                        step.passed("Successfully deleted from standby '{}/{}' from device {}".\
+                                    format(delete_dir_stby, delete_file, device.name))
+                else:
+                    section.failed(banner("*** HA device, but no standby device provided ***"))
 
 #===============================================================================
 #                       stage: delete_files_from_server

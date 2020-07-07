@@ -2,13 +2,12 @@
 
 # Python
 import logging
-
-# pyATS
-from pyats.easypy import runtime
+import datetime
+import re
 
 # Genie
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
-
+from genie.utils.timeout import Timeout
 
 log = logging.getLogger(__name__)
 
@@ -26,8 +25,8 @@ def get_ospf_interface_and_area(device):
         out = device.parse("show ospf interface brief")
     except SchemaEmptyParserError as spe:
         raise SchemaEmptyParserError(
-            "Could not parse output for" " command 'show ospf interface brief'"
-        ) from spe
+            "Could not parse output for"
+            " command 'show ospf interface brief'") from spe
 
     key_val = {}
 
@@ -39,3 +38,54 @@ def get_ospf_interface_and_area(device):
     except KeyError as ke:
         raise KeyError("Key issue with exception: {}".format(str(ke))) from ke
     return key_val
+
+def get_ospf_spf_scheduled_time(log):
+    """
+    Get OSPF spf scheduled time in log 'Jun 12 03:32:19.068983 OSPF SPF scheduled for topology default in 8s' 
+
+    Args:
+        log ('str'): log string
+
+    Returns:
+        date time ('str')  
+    """  
+    # Jun 12 03:32:19.068983 OSPF SPF scheduled for topology default in 8s
+    p_scheduled = ('(?P<date>\S+\s+\d+) (?P<scheduled_time>\d+\:\d+\:\d+\.\d+) '\
+        'OSPF SPF scheduled for topology default in (?P<spf_change>\d+)s')    
+    m = re.match(p_scheduled, log)
+
+    try:
+        if m:
+            group = m.groupdict()
+            scheduled_time = group['scheduled_time']
+            return scheduled_time
+    except KeyError as e:
+        raise KeyError(f"Key issue with exception: {str(e)}") from e
+    
+    
+
+def get_ospf_spf_start_time(log):
+    """
+    Get OSPF spf start time in log 'Jun 12 03:40:19.068983 Starting full SPF for topology default' 
+
+    Args:
+        log ('str'): log string
+
+    Returns:
+        date time ('str')  
+    """
+    # Jun 12 03:40:19.068983 Starting full SPF for topology default
+    p_start = (
+        '(?P<date>\S+\s+\d+) (?P<start_time>\d+\:\d+\:\d+\.\d+) Starting full SPF for topology default'
+    )     
+    m = re.match(p_start, log)
+    
+    try:
+        if m:
+            group = m.groupdict()
+            start_time = group['start_time']
+            return start_time
+    except KeyError as e:
+        raise KeyError(f"Key issue with exception: {str(e)}") from e
+    
+    

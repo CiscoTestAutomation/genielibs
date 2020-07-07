@@ -119,3 +119,65 @@ def get_interface_ip_address(device, interface, address_family,
             return found
         return found[0]
     return None
+
+
+def get_interface_speed(device, interface, bit_size='gbps'):
+    """Get speed of an interface
+
+    Args:
+        device (obj): device object
+        interface (str): interface name
+        bit_size (str): desired return size (gbps/mbps/kbps)
+    
+    Returns:
+        Device speed or None
+
+    Raises:
+        None
+    """
+
+    try:
+        out = device.parse('show interfaces extensive {interface}'.format(
+            interface=interface.split('.')[0]
+        ))
+    except SchemaEmptyParserError as e:
+        return None
+    
+    # Example Dictionary
+    # "physical-interface": [
+    #             {
+    #                 "name": "ge-0/0/0",
+    #                 "speed": "1000mbps",
+    #               }
+
+    speed_matrix = {
+        'kbps': {
+            'kbps': 1,
+            'mbps': 1000,
+            'gbps': 1000000,
+        },
+        'mbps': {
+            'kbps': 0.001,
+            'mbps': 1,
+            'gbps': 1000,
+        },
+        'gbps': {
+            'kbps': .0000001,
+            'mbps': 0.001,
+            'gbps': 1,
+        },
+    }
+
+    interfaces_list = Dq(out).get_values('physical-interface')
+    for interfaces_dict in interfaces_list:
+        speed_ = Dq(interfaces_dict).get_values('speed', 0)
+        if not speed_:
+            continue
+
+        if 'kbps' in speed_:
+            speed_ = int(re.sub(r'[a-z,]', '', speed_)) / speed_matrix['kbps'][bit_size]
+        elif 'mbps' in speed_:
+            speed_ = int(re.sub(r'[a-z,]', '', speed_)) / speed_matrix['mbps'][bit_size]
+        else:
+            speed_ = int(re.sub(r'[a-z,]', '', speed_)) / speed_matrix['gbps'][bit_size]
+        return speed_

@@ -1,4 +1,4 @@
-'''IOSXE specific recovery functions'''
+'''IOSXR specific recovery functions'''
 
 # Python
 import re
@@ -8,16 +8,15 @@ import logging
 # Unicon
 from unicon.eal.expect import Spawn
 from unicon.eal.dialogs import Dialog, Statement
-from unicon.plugins.iosxe.patterns import IosXEReloadPatterns
+from unicon.plugins.iosxr.patterns import IOSXRPatterns
 
 # Genie
-from genie.libs.clean.stages.iosxe.execute_dialogs import BreakBootDialog,\
+from genie.libs.clean.stages.iosxr.execute_dialogs import BreakBootDialog,\
                                                           RommonDialog,\
                                                           TftpRommonDialog
 
 # Logger
-log = logging.getLogger(__name__)
-
+log = logging.getLogger()
 
 # Power Cycler handlers
 def sendbrk_handler(spawn, break_count):
@@ -30,10 +29,10 @@ def sendbrk_handler(spawn, break_count):
     '''
 
     count = 1
-    xe_patterns = IosXEReloadPatterns()
+    xr_patterns = IOSXRPatterns()
     while count <= break_count:
         spawn.send("\035")
-        spawn.expect([xe_patterns.telnet_prompt])
+        spawn.expect([xr_patterns.telnet_prompt])
         spawn.send("send brk\r\r")
         time.sleep(1)
         count += 1
@@ -48,8 +47,8 @@ def recovery_worker(*args, **kwargs):
 
 
 def device_recovery(start, device, console_activity_pattern, golden_image=None,
-                           break_count=10, timeout=600, recovery_password=None,
-                           tftp_boot=None, item=None):
+    break_count=10, timeout=600, recovery_password=None,
+    tftp_boot=None, item=None):
     ''' A method for starting Spawns and handling the device statements during recovery
         Args:
             device ('obj'): Device object
@@ -62,7 +61,6 @@ def device_recovery(start, device, console_activity_pattern, golden_image=None,
         Returns:
             None
     '''
-
     break_dialog = BreakBootDialog()
     break_dialog.add_statement(Statement(pattern=console_activity_pattern,
                                          action=sendbrk_handler,
@@ -97,7 +95,7 @@ def device_recovery(start, device, console_activity_pattern, golden_image=None,
 
 
 def tftp_recovery_worker(start, device, console_activity_pattern, tftp_boot=None,
-    break_count=10, timeout=600, recovery_password=None,
+    break_count=10, timeout=600, recovery_username=None, recovery_password=None,
     golden_image=None, item=None):
     ''' A method for starting Spawns and handling the device statements during recovery
         Args:
@@ -107,6 +105,7 @@ def tftp_recovery_worker(start, device, console_activity_pattern, tftp_boot=None
             tftp_boot ('dict'): Tftp boot information
             break_count ('int'): Number of sending break times
             timeout ('int'): Recovery process timeout
+            recovery_username ('str'): Device username after recovery
             recovery_password ('str'): Device password after recovery
         Returns:
             None
@@ -138,17 +137,28 @@ def tftp_recovery_worker(start, device, console_activity_pattern, tftp_boot=None
                   log=log,
                   logfile=log.handlers[1].logfile)
 
-    rommon_dialog = TftpRommonDialog()
-    rommon_dialog.hostname_statement(device.hostname)
-    rommon_dialog.dialog.process(spawn, timeout=timeout,
-                                 context={'device_name': device.name,
-                                          'ip': tftp_boot['ip_address'][item],
-                                          'password': recovery_password,
-                                          'subnet_mask': tftp_boot['subnet_mask'],
-                                          'gateway': tftp_boot['gateway'],
-                                          'image': tftp_boot['image'],
-                                          'tftp_server': tftp_boot['tftp_server'],
-                                          'hostname': device.hostname})
+    tftp_rommon_dialog = TftpRommonDialog()
+
+    if not recovery_username:
+        recovery_username = device.connections[device.context]['credentials'].\
+                                    get('default', {}).get('username', {})
+    if not recovery_password:
+        recovery_password = device.connections[device.context]['credentials'].\
+                                    get('default', {}).get('password', {})
+
+    tftp_rommon_dialog.hostname_statement(device.hostname)
+
+    # exec_prompt, username, password
+    tftp_rommon_dialog.dialog.process(spawn, timeout=timeout,
+                                context={'device_name': device.name,
+                                         'ip': tftp_boot['ip_address'][item],
+                                         'username': recovery_username,
+                                         'password': recovery_password,
+                                         'subnet_mask': tftp_boot['subnet_mask'],
+                                         'gateway': tftp_boot['gateway'],
+                                         'image': tftp_boot['image'],
+                                         'tftp_server': tftp_boot['tftp_server'],
+                                         'hostname': device.hostname})
     spawn.close()
 
 
@@ -156,26 +166,34 @@ def tftp_recover_from_rommon(spawn, session, context, device_name,
     ip, subnet_mask, gateway, image, tftp_server):
     '''Load new image on the device from rommon with tftp'''
 
-    config = {'ip': "IP_ADDRESS={ip}".format(ip=ip),
-              'subnet': "IP_SUBNET_MASK={sm}".format(sm=subnet_mask),
-              'gateway': "DEFAULT_GATEWAY={gateway}".format(gateway=gateway)}
+    log.info("Assigning boot variables in rommon...")
 
-    for item, conf in config.items():
-        log.info("Assign {} on {} device".format(item, device_name))
+    # rommon arg name mapping
+    mapping_list = {
+        'ip': 'IP_ADDRESS',
+        'subnet_mask': 'IP_SUBNET_MASK',
+        'gateway': 'DEFAULT_GATEWAY',
+        'tftp_server': 'TFTP_SERVER',
+    }
+
+    for item in mapping_list:
+        log.info("\nSet '{}' to {}".format(mapping_list[item], context[item]))
         try:
-            spawn.sendline(conf)
+            spawn.sendline("{}={}".format(mapping_list[item], context[item]))
         except Exception as e:
-            raise Exception("Unable to assign {}:\n{}".
-                            format(item, str(e)), goto=['exit'])
+            log.error(str(e))
+            raise Exception("Unable to set {}={}".format(item, goto=['exit']))
+
 
     # Build the boot command
-    boot_cmd = 'boot tftp://{tftp}{image}'.format(tftp=tftp_server,
-                                                  image=image[0])
+    boot_cmd = 'boot tftp://{tftp}/{image}'.format(tftp=tftp_server,
+                                                   image=image[0])
 
     # Send the boot command to the device
-    log.info("Send boot command {}".format(boot_cmd))
+    log.info("Sending TFTP boot command...")
     try:
         spawn.sendline(boot_cmd)
     except Exception as e:
-        raise Exception("Unable to boot {} error {}".format(boot_cmd,str(e)),
+        raise Exception("Unable to boot {} error {}".format(boot_cmd, str(e)),
                                                             goto=['exit'])
+

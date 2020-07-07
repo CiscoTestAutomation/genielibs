@@ -11,7 +11,14 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 log = logging.getLogger(__name__)
 
 
-def verify_interfaces_terse_state(device, interface, expected_admin_state=None, expected_link_state=None, expected_oper_status=None, max_time=30, check_interval=10, expected_result=True):
+def verify_interfaces_terse_state(device,
+                                  interface,
+                                  expected_admin_state=None,
+                                  expected_link_state=None,
+                                  expected_oper_status=None,
+                                  max_time=30,
+                                  check_interval=10,
+                                  expected_result=True):
     """ Verify interfaces terse
 
         Args:
@@ -35,8 +42,9 @@ def verify_interfaces_terse_state(device, interface, expected_admin_state=None, 
     while timeout.iterate():
         try:
             if interface:
-                interface_terse_out = device.parse('show interfaces {interface} terse'.format(
-                    interface=interface))
+                interface_terse_out = device.parse(
+                    'show interfaces {interface} terse'.format(
+                        interface=interface))
             else:
                 interface_terse_out = device.parse('show interfaces terse')
             result = True
@@ -47,7 +55,7 @@ def verify_interfaces_terse_state(device, interface, expected_admin_state=None, 
             result = False
             timeout.sleep()
             continue
-        
+
         for intf, intf_dict in interface_terse_out.items():
             admin_state = intf_dict.get('admin_state', None)
             link_state = intf_dict.get('link_state', None)
@@ -59,7 +67,7 @@ def verify_interfaces_terse_state(device, interface, expected_admin_state=None, 
                 result = False
             if expected_oper_status and oper_status != expected_oper_status:
                 result = False
-            
+
             if result == expected_result:
                 return expected_result
 

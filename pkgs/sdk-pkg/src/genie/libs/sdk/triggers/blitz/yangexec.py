@@ -1,6 +1,7 @@
 import logging
 from time import sleep
 from copy import deepcopy
+from six import string_types
 
 from pyats.log.utils import banner
 from .rpcbuilder import YSNetconfRPCBuilder
@@ -11,8 +12,11 @@ log = logging.getLogger(__name__)
 try:
     from ncclient.operations import RaiseMode
 except Exception:
-    log.error('Make sure you have ncclient installed in your virtual env')
-
+    pass
+try:
+    import lxml.etree as et
+except Exception:
+    pass
 
 lock_retry_errors = ['lock-denied', 'resource-denied', 'in-use']
 
@@ -69,6 +73,8 @@ def netconf_send(uut, rpcs, ds_state, lock=True, lock_retry=40, timeout=30):
 
         try:
             ret = ''
+            commit_ret = ''
+            dc_ret = ''
 
             if nc_op == 'edit-config':
                 # default to running datastore
@@ -88,16 +94,23 @@ def netconf_send(uut, rpcs, ds_state, lock=True, lock_retry=40, timeout=30):
                         running_locked = try_lock(
                             uut, 'running', timer=lock_retry
                         )
-                    ret = uut.commit()
-                    if not ret.ok and ret.error.tag in lock_retry_errors:
-                        # writable-running not advertized but running is locked
-                        running_locked = try_lock(
-                            uut, 'running', timer=lock_retry
-                        )
-                        ret = uut.commit()
-                        if running_locked:
-                            uut.unlock(target='running')
-                            running_locked = False
+                    commit_ret = uut.commit()
+                    if not commit_ret.ok:
+                        if commit_ret.error.tag in lock_retry_errors:
+                            # writable-running not advertized but running is locked
+                            running_locked = try_lock(
+                                uut, 'running', timer=lock_retry
+                            )
+                            commit_ret = uut.commit()
+                            if running_locked:
+                                uut.unlock(target='running')
+                                running_locked = False
+                        if not commit_ret.ok:
+                            log.error('COMMIT FAILED\n{0}\n'.format(commit_ret))
+                            dc_ret = uut.discard_changes()
+                            log.info('\n{0}\n'.format(dc_ret))
+                        else:
+                            log.info(commit_ret)
                     if running_locked:
                         uut.unlock(target='running')
                         running_locked = False
@@ -106,7 +119,17 @@ def netconf_send(uut, rpcs, ds_state, lock=True, lock_retry=40, timeout=30):
                     target_locked = False
 
             elif nc_op == 'commit':
-                ret = uut.commit()
+                commit_ret = uut.commit()
+                if not commit_ret.ok:
+                    log.error(
+                            'COMMIT FAILED\n{0}\n'.format(
+                                commit_ret
+                            )
+                        )
+                    dc_ret = uut.discard_changes()
+                    log.info('\n{0}\n'.format(dc_ret))
+                else:
+                    log.info(commit_ret)
 
             elif nc_op == 'get-config':
                 ret = uut.get_config(**kwargs)
@@ -124,6 +147,19 @@ def netconf_send(uut, rpcs, ds_state, lock=True, lock_retry=40, timeout=30):
 
                 # raw return
                 reply = uut.request(rpc)
+
+                if target == 'candidate' and '<rpc-error' not in reply:
+                    commit_ret = uut.commit()
+                    if not commit_ret.ok:
+                        log.error(
+                            'COMMIT FAILED\n{0}\n'.format(
+                                commit_ret
+                            )
+                        )
+                        dc_ret = uut.discard_changes()
+                        log.info('\n{0}\n'.format(dc_ret))
+                    else:
+                        log.info(commit_ret)
 
                 if target_locked:
                     uut.unlock(target)
@@ -386,7 +422,12 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
         device.raise_mode = RaiseMode.NONE
     except NameError:
         log.error('Make sure you have ncclient installed in your virtual env')
-        return
+        return False
+    try:
+        et.iselement('<test>')
+    except NameError:
+        log.error('The "lxml" library is required for NETCONF testing')
+        return False
 
     if operation == 'capabilities':
         if not returns:
@@ -414,6 +455,35 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
     ds = datastore.get('type', '')
     lock = datastore.get('lock', True)
     retry = datastore.get('retry', 10)
+    format = kwargs.get('format', {})
+    auto_validate = format.get('auto-validate', True)
+    negative_test = format.get('negative-test', False)
+    timeout = format.get('timeout', None)
+    pause = format.get('pause', 0)
+
+    if pause:
+        if isinstance(pause, string_types):
+            try:
+                sleep(int(pause))
+            except ValueError:
+                try:
+                    pause = sleep(float(pause))
+                except ValueError:
+                    log.error('Invalid "pause" type {0}'.format(type(pause)))
+        else:
+            sleep(pause)
+
+    if timeout:
+        if isinstance(timeout, string_types):
+            try:
+                device.timeout = int(timeout)
+            except ValueError:
+                try:
+                    device.timeout = float(timeout)
+                except ValueError:
+                    log.error('Invalid "timeout" type {0}'.format(type(timeout)))
+        else:
+            device.timeout = timeout
 
     actual_ds, ds_state = get_datastore_state(ds, rpc_verify)
     if not ds:
@@ -444,6 +514,22 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
             lock_retry=retry
         )
 
+    try:
+        for op, reply in result:
+            log.info(
+                et.tostring(
+                    et.fromstring(
+                        reply.encode('utf-8'),
+                        parser=et.XMLParser(
+                            recover=True,
+                            encoding='utf-8')
+                    ),
+                    pretty_print=True
+                ).decode('utf-8')
+            )
+    except Exception as exc:
+        log.info('Pretty print failed: {0}'.format(str(exc)))
+
     # rpc-reply should show up in NETCONF log
     if not result:
         log.error(banner('NETCONF rpc-reply NOT RECIEVED'))
@@ -457,12 +543,11 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
             errors.append(res)
 
     if errors:
-        log.error(
-            banner('NETCONF MESSAGE ERRORED\n{0}'.format('\n'.join(errors)))
-        )
-        return False
+        log.error(banner('NETCONF MESSAGE ERRORED'))
+        if not negative_test:
+            return False
 
-    if rpc_data['operation'] == 'edit-config':
+    if rpc_data['operation'] == 'edit-config' and auto_validate:
         # Verify the get-config TODO: what do we do with custom rpc's?
         rpc_clone = deepcopy(rpc_data)
         rpc_clone['operation'] = 'get-config'

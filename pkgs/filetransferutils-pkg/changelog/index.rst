@@ -22,3 +22,4 @@ Changelog
    2020/february
    2020/april
    2020/may
+   2020/june

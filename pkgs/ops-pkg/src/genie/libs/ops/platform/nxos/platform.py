@@ -231,6 +231,7 @@ class Platform(SuperPlatform):
                 self.slot['rp'][str(slot_number)]['rp_uptime'] = self.rp_uptime
 
             if 'lc' in self.slot:
+                delete_dup_lc = []
                 for item in self.slot['lc']:
                     if 'sn' in self.slot['lc'][item]:
                         serial = self.slot['lc'][item]['sn']
@@ -238,6 +239,7 @@ class Platform(SuperPlatform):
                         serial = None
                     
                     if 'module' in self.__dict__:
+
                         for key in self.module['lc']:
                             for mod_name in self.module['lc'][key]:
                                 if 'serial_number' not in self.module['lc'][key][mod_name]:
@@ -257,6 +259,18 @@ class Platform(SuperPlatform):
                             if self.xbar[key]['serial_number'] == serial:
                                 linecard_status = self.xbar[key]['status']
                                 self.slot.setdefault('oc',{}).setdefault(item,{}).update({'state':linecard_status})
+                    
+                    if item in self.slot['rp'] and\
+                       (self.slot['rp'][item]['sn'] == serial):
+                       delete_dup_lc.append(item)
+
+                for del_itm in delete_dup_lc:
+                    del self.slot['lc'][del_itm]
+
+                if (not self.module['lc'] and 'lc' in self.slot) or \
+                   ('lc' in self.slot and not self.slot['lc']):
+                    self.slot.pop('lc')
+
             if 'oc' in self.slot:
                 for item in self.slot['oc']:
                     if 'sn' in self.slot['oc'][item]:

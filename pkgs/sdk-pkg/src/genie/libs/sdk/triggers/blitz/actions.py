@@ -3,6 +3,7 @@ import time
 import logging
 
 from genie.libs import sdk
+from genie.utils.diff import Diff
 from genie.harness.standalone import run_genie_sdk
 
 from pyats.async_ import pcall
@@ -12,7 +13,8 @@ from pyats.results import TestResult, Passed, Failed, Skipped, Passx, Aborted, E
 
 from .markup import save_variable
 from .yangexec import run_netconf, run_gnmi, notify_wait
-from .actions_helper import configure_handler, api_handler, learn_handler, parse_handler, execute_handler
+from .actions_helper import configure_handler, api_handler, learn_handler,\
+                            parse_handler, execute_handler, _get_exclude
 
 
 log = logging.getLogger(__name__)
@@ -227,6 +229,27 @@ def print(self, steps, continue_=True, *args, **kwargs):
 
         log.info(print_value)
 
+def diff(self, steps, device, pre, post, continue_=True, fail_different=False,
+         command=None, exclude=None):
+
+    with steps.start("Perform Diff for '{device}'".format(device=device.name),
+                                            continue_=continue_) as step:
+        exclude_items = _get_exclude(command, device)
+        if exclude and isinstance(exclude, list):
+            exclude_items.extend(exclude)
+
+        try:
+            diff = Diff(pre, post, exclude=exclude_items)
+        except Exception:
+            step.failed(str(e))
+
+        diff.findDiff()
+        if diff:
+            log.info(diff)
+            if fail_different:
+                step.failed('{pre} and {post} are not '
+                            'identical'.format(pre=pre, post=post))
+
 actions = {'configure': configure,
            'parse': parse,
            'execute': execute,
@@ -240,6 +263,7 @@ actions = {'configure': configure,
            'save_config_snapshot': save_config_snapshot,
            'restore_config_snapshot': restore_config_snapshot,
            'run_genie_sdk': genie_sdk,
+           'diff': diff,
            'bash_console': bash_console}
 
 def action_parallel(self, steps, testbed, section, data):

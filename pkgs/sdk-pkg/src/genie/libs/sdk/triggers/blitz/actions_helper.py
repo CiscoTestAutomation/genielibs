@@ -13,6 +13,8 @@ from genie.utils.timeout import Timeout
 from unicon.eal.dialogs import Statement, Dialog
 from genie.harness.standalone import run_genie_sdk
 
+from genie.ops.utils import get_ops_exclude
+from genie.libs.parser.utils import get_parser_exclude
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from pyats.results import TestResult, Passed, Failed, Skipped, Passx, Aborted, Errored
 
@@ -427,3 +429,18 @@ def _evaluate_operator(result, operation=None, value=None):
         raise Exception('Operator {} is not supported'.format(operation))
     
     return dict_of_ops[operation](result, value)
+
+def _get_exclude(command, device):
+    exclude = None
+    if command:
+        try:
+            # Try parser
+            return get_parser_exclude(command, device)
+        except Exception:
+            pass
+        try:
+            # Try ops
+            return get_ops_exclude(command, device)
+        except Exception:
+            pass
+    return []

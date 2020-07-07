@@ -20,6 +20,7 @@ from pyats.results import (Passed, Failed, Aborted, Errored,
                          Skipped, Blocked, Passx)
 
 from genie.conf import Genie
+from genie.utils.dq import Dq
 from genie.utils.diff import Diff
 from genie.conf.base import loader
 from genie.conf.base import Testbed
@@ -33,6 +34,10 @@ from genie.harness.datafile.loader import TriggerdatafileLoader,\
                                           PtsdatafileLoader
 
 log = logging.getLogger(__name__)
+
+
+class GenieRobotException(Exception):
+    pass
 
 
 class GenieRobot(object):
@@ -81,7 +86,7 @@ class GenieRobot(object):
         except RuntimeError:
             # No pyATS
             pass
-        
+
         try:
             # If pyATS, then call their use_testbed api, then convert
             self.builtin.get_library_instance(ats_pyats).use_testbed(testbed)
@@ -519,6 +524,28 @@ class GenieRobot(object):
                                         context='cli',
                                         name=name,
                                         alias=alias)
+
+    @keyword('dq query')
+    def dq_query(self, data, filters):
+        ''' Search dictionary using Dq filters
+
+        Examples:
+
+        .. code:: robotframework
+
+            dq query    data=${data}   filters=contains('lc').not_contains('2').get_values('slot/world_wide_name')
+
+        :param data: dictionary with data
+        :param filters: Dq filter specification
+        :return: dictionary, list, str or int
+
+        '''
+        if not isinstance(data, dict):
+            raise GenieRobotException('Invalid data, dictionary expected, got %s' % type(data))
+        if not Dq.query_validator(filters):
+            raise GenieRobotException('Invalid filter')
+
+        return Dq.str_to_dq_query(data, filters)
 
     def _profile_the_system(self, feature, device, context, name, alias):
         '''Profile system as per the provided features on the devices

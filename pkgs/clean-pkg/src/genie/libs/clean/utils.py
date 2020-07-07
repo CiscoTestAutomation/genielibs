@@ -3,6 +3,7 @@ Common Utilities for Genie Clean
 '''
 
 # Python
+import re
 import os
 import logging
 import json
@@ -176,6 +177,7 @@ def update_clean_section(device, order, images):
             image_handler.update_verify_running_image()
             continue
 
+
 def load_clean_json():
     """get all clean data in json file"""
     try:
@@ -195,6 +197,7 @@ def load_clean_json():
         with open(functions) as f:
             clean_data = json.load(f)
     return clean_data
+
 
 def get_clean_function(clean_name, clean_data, device):
     """From a clean function and device, return the function object"""
@@ -233,12 +236,14 @@ def get_clean_function(clean_name, clean_data, device):
                         "and common".format(cn=name,
                                             o=device.os)) from None
 
+
 def _get_submodule(abs_mod, mods):
     """recursively find the submodule"""
     ret = abs_mod
     for mod in mods.split('.'):
         ret = getattr(ret, mod)
     return ret
+
 
 def format_missing_key_msg(missing_list):
     """Beautifully populate missing keys in to human readable format
@@ -258,6 +263,7 @@ def format_missing_key_msg(missing_list):
                 d = d.setdefault(path, {})
 
     return _pprint_missing_key(missing_dict, max_path_len, max_key_len, indent)
+
 
 def _pprint_missing_key(missing_dict, max_path_len, max_key_len, indent):
     """format missing key dict into a yaml-like human readable output"""
@@ -285,6 +291,7 @@ def _pprint_missing_key(missing_dict, max_path_len, max_key_len, indent):
     __pprint_missing_key(missing_dict, lines)
     return '\n'.join(lines)
 
+
 def pretty_schema_exception(e):
     if isinstance(e, SchemaMissingKeyError):
         # proto type
@@ -303,6 +310,7 @@ def pretty_schema_exception(e):
                 format_missing_key_msg(e.unsupported_keys))) from None
     else:
         raise e
+
 
 def validate_schema(clean, testbed):
     """ Validates the clean yaml using device abstraction to collect
@@ -397,3 +405,23 @@ def validate_schema(clean, testbed):
         log.error('\nExceptions')
         log.error('----------')
         pretty_schema_exception(e)
+
+
+def handle_rommon_exception(spawn, context):
+    log.error('Device is in Rommon')
+    raise Exception('Device is in Rommon')
+
+
+def remove_string_from_image(images, string='tftpboot/'):
+    ''' Removes user given string from any provided image path
+
+        Args:
+            string (str): String to remove from the image path
+            images (dict): List of image files to remove the user provided string from
+                           Default: 'tftpboot/'
+    '''
+
+    regex = re.compile(r'.*{}.*'.format(string))
+
+    return [item.replace(string, "") if regex.match(item) else item for item in images]
+

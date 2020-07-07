@@ -249,7 +249,7 @@ def get_boot_variables(device, boot_var, output=None):
     else:
         # Get current or next
         if boot_var == 'current':
-            boot_variables = boot_out.get("current_boot_variable")
+            boot_variables = boot_out.get("active", {}).get("boot_variable")
         else:
             boot_variables = boot_out.get("next_reload_boot_variable")
 

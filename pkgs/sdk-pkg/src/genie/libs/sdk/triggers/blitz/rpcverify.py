@@ -532,11 +532,13 @@ class RpcVerify():
         result = True
 
         if not opfields:
-            log.error(banner("OPERATIONAL STATE FAILED: No opfields"))
+            log.error(
+                banner("OPERATIONAL STATE FAILED: No opfields to compare")
+            )
             return False
         if not response:
             log.error(
-                banner("OPERATIONAL STATE FAILED: No valid rpc-reply")
+                banner("OPERATIONAL STATE FAILED: Expected data")
             )
             return False
 
@@ -704,11 +706,16 @@ class RpcVerify():
             log.info('WITH DEFAULTS - NOT SUPPORTED')
 
         for node in rpc_data.get('nodes', []):
+            list_rpc = False
             edit_op = node.get('edit-op')
             default = node.get('default')
             xpath = re.sub(self.RE_FIND_KEYS, '', node.get('xpath', ''))
             xpath = re.sub(self.RE_FIND_PREFIXES, '/', xpath)
             value = node.get('value', '')
+            if node.get('nodetype', '') == 'list':
+                # get-config on empty list will return no data
+                list_rpc = True
+                continue
             if not value:
                 value = 'empty'
             if 'explicit' in self.with_defaults:
@@ -729,6 +736,9 @@ class RpcVerify():
             else:
                 # RFC 6243 not supported
                 if edit_op in ['delete', 'remove']:
+                    if node.get('nodetype', '') == 'contaner':
+                        # presence container so nothing else is relavent
+                        break
                     continue
             nodes.append(
                 {'name': xpath.split('/')[-1],
@@ -737,7 +747,8 @@ class RpcVerify():
                  'selected': True,
                  'op': '=='}
             )
-        if not response and not nodes and edit_op in ['delete', 'remove']:
+        if not response and not nodes and \
+                edit_op in ['delete', 'remove'] or list_rpc:
             log.info('NO DATA RETURNED')
             return True
         return self.process_operational_state(response, nodes)
@@ -761,6 +772,7 @@ class RpcVerify():
 
         try:
             resp = self.et.fromstring(resp_xml.encode('utf-8'))
+            log.info(self.et.tostring(resp, pretty_print=True).decode('utf-8'))
         except self.et.XMLSyntaxError as e:
             log.error(
                 banner('OPERATIONAL-VERIFY FAILED: Response XML:\n{0}'

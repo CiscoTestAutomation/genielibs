@@ -2,6 +2,7 @@
 
 # Python
 import logging
+from netaddr import IPAddress
 import re
 
 # pyATS
@@ -11,12 +12,20 @@ from pyats.utils.objects import find, R
 from genie.utils.timeout import Timeout
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.sdk.libs.utils.normalize import GroupKeys
+from genie.utils import Dq
+
 
 log = logging.getLogger(__name__)
 
 
-def verify_ospf_interface_cost(device, interface, expected_cost, cost_type='ospf', instance=None,
-                               area=None, max_time=60, check_interval=15):
+def verify_ospf_interface_cost(device,
+                               interface,
+                               expected_cost,
+                               cost_type='ospf',
+                               instance=None,
+                               area=None,
+                               max_time=60,
+                               check_interval=15):
     """ Verifies ospf cost on interface
 
         Args:
@@ -40,28 +49,26 @@ def verify_ospf_interface_cost(device, interface, expected_cost, cost_type='ospf
     if 'ospf' in cost_type.lower():
         while timeout.iterate():
             try:
-                out = device.parse('show ospf interface {interface} detail'.format(interface=interface))
+                out = device.parse(
+                    'show ospf interface {interface} detail'.format(
+                        interface=interface))
             except SchemaEmptyParserError:
                 log.info('Parser is empty')
                 timeout.sleep()
                 continue
 
             reqs = R([
-                'instance',
-                '{}'.format(instance if instance else 'master'),
-                'areas',
-                '{}'.format(area if area else '(.*)'),
-                'interfaces',
-                interface,
-                'cost',
-                '(?P<cost>.*)'
+                'instance', '{}'.format(instance if instance else 'master'),
+                'areas', '{}'.format(area if area else '(.*)'), 'interfaces',
+                interface, 'cost', '(?P<cost>.*)'
             ])
 
             found = find([out], reqs, filter_=False, all_keys=True)
             if found:
-                keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={},
-                                            source=found, all_keys=True)
-                if 'cost' in keys[0] and int(expected_cost) == int(keys[0]['cost']):
+                keys = GroupKeys.group_keys(
+                    reqs=reqs.args, ret_num={}, source=found, all_keys=True)
+                if 'cost' in keys[0] and int(expected_cost) == int(
+                        keys[0]['cost']):
                     return True
 
             timeout.sleep()
@@ -69,25 +76,21 @@ def verify_ospf_interface_cost(device, interface, expected_cost, cost_type='ospf
     elif 'te' in cost_type.lower():
         while timeout.iterate():
             try:
-                out = device.parse('show interfaces {interface} terse'.format(interface=interface))
+                out = device.parse('show interfaces {interface} terse'.format(
+                    interface=interface))
             except SchemaEmptyParserError:
                 log.info('Parser is empty')
                 timeout.sleep()
                 continue
 
             reqs = R([
-                interface,
-                'protocol',
-                'inet',
-                '(.*)',
-                'local',
-                '(?P<local>.*)'
+                interface, 'protocol', 'inet', '(.*)', 'local', '(?P<local>.*)'
             ])
 
             found = find([out], reqs, filter_=False, all_keys=True)
             if found:
-                keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={},
-                                            source=found, all_keys=True)
+                keys = GroupKeys.group_keys(
+                    reqs=reqs.args, ret_num={}, source=found, all_keys=True)
                 local_address = keys[0].get('local')
 
                 try:
@@ -98,24 +101,19 @@ def verify_ospf_interface_cost(device, interface, expected_cost, cost_type='ospf
                     continue
 
                 reqs = R([
-                    'node',
-                    '(.*)',
-                    'protocol',
-                    '(.*)',
-                    'to',
-                    '(.*)',
-                    'local',
-                    local_address.split('/')[0],
-                    'remote',
-                    '(.*)',
-                    'metric',
+                    'node', '(.*)', 'protocol', '(.*)', 'to', '(.*)', 'local',
+                    local_address.split('/')[0], 'remote', '(.*)', 'metric',
                     '(?P<metric>.*)'
                 ])
                 found = find([out], reqs, filter_=False, all_keys=True)
                 if found:
-                    keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={},
-                                                source=found, all_keys=True)
-                    if 'metric' in keys[0] and int(expected_cost) == int(keys[0]['metric']):
+                    keys = GroupKeys.group_keys(
+                        reqs=reqs.args,
+                        ret_num={},
+                        source=found,
+                        all_keys=True)
+                    if 'metric' in keys[0] and int(expected_cost) == int(
+                            keys[0]['metric']):
                         return True
 
             timeout.sleep()
@@ -124,47 +122,18 @@ def verify_ospf_interface_cost(device, interface, expected_cost, cost_type='ospf
     log.info('This api does not support cost type {}'.format(cost_type))
 
 
-def verify_ospf_neighbor_state(device, state, interface, ospf_name='ospf', max_time=60, check_interval=10):
-    """ Verifies state of ospf
+def verify_ospf_neighbor_state(device,
+                               expected_state,
+                               interface,
+                               extensive=False,
+                               max_time=60,
+                               check_interval=10):
+    """ Verifies state of ospf neighbor
 
         Args:
             device ('obj'): device to use
-            ospf_name ('str'): Expected to be either ospf or ospf3
-            state ('str'): State of the interface
+            expected_state ('str'): OSPF adjacency state that is expected
             interface ('str'): Name of interface
-            max_time ('int'): Maximum time to keep checking
-            check_interval ('int'): How often to check
-
-        Returns:
-            True/False
-
-        Raises:
-            N/A
-    """
-    timeout = Timeout(max_time, check_interval)
-
-    while timeout.iterate():
-        try:
-            output = device.parse('show {} neighbor'.format(ospf_name))
-        except SchemaEmptyParserError:
-            timeout.sleep()
-            continue
-
-        neighbors = output[ospf_name+'-neighbor-information'][ospf_name+'-neighbor']
-        for neighbor in neighbors:
-            if(neighbor['interface-name'] == interface and neighbor['ospf-neighbor-state'].lower() == state.lower() ):
-                return True
-
-        timeout.sleep()
-
-    return False
-
-def verify_no_ospf_neigbor_output(device, extensive=False, ospf_name='ospf', max_time=60, check_interval=10):
-    """ Verifies state of ospf
-
-        Args:
-            device ('obj'): device to use
-            ospf_name ('str'): Expected to be either ospf or ospf3
             extensive ('bool'): If ospf command is extensive
             max_time ('int'): Maximum time to keep checking
             check_interval ('int'): How often to check
@@ -178,22 +147,94 @@ def verify_no_ospf_neigbor_output(device, extensive=False, ospf_name='ospf', max
     timeout = Timeout(max_time, check_interval)
 
     while timeout.iterate():
-        
-        if extensive:
-            output = device.execute('show {} neighbor extensive'.format(ospf_name))
-        else:
-            output = device.execute('show {} neighbor'.format(ospf_name))
-        
-        if not output:
-            return True
-            
+        try:
+            if extensive:
+                output = device.parse('show ospf neighbor extensive')
+            else:
+                output = device.parse('show ospf neighbor')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        #{'ospf-neighbor-information': {'ospf-neighbor': [{}]}}
+        neighbors = output.q.get_values('ospf-neighbor')
+        for neighbor in neighbors:
+            #'interface-name': 'ge-0/0/0.0'
+            #'ospf-neighbor-state': 'Full'
+            if neighbor.get('interface-name',[]) == interface and \
+               neighbor.get('ospf-neighbor-state',[]).lower() == expected_state.lower():
+                return True
+
         timeout.sleep()
 
     return False
 
 
-def verify_neighbor_state_went_down(device, interface, realm, fail_reason, max_time=60, check_interval=10):
-    """ Verifies state of ospf
+def verify_no_ospf_neigbor_output(device,
+                                  interface=None,
+                                  extensive=False,
+                                  max_time=60,
+                                  check_interval=10):
+    """ Verifies ospf neighbor doesn't exists
+
+        Args:
+            device ('obj'): device to use
+            interface ('str'): Interface being searched for
+            extensive ('bool'): If ospf command is extensive
+            max_time ('int'): Maximum time to keep checking
+            check_interval ('int'): How often to check
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    exists = False
+
+    while timeout.iterate():
+
+        if extensive:
+            try:
+                output = device.parse('show ospf neighbor extensive')
+            except SchemaEmptyParserError:
+                output = None
+                timeout.sleep()
+                continue
+
+        else:
+            try:
+                output = device.parse('show ospf neighbor')
+            except SchemaEmptyParserError:
+                output = None
+                timeout.sleep()
+                continue
+
+        for neighbor in Dq(output).get_values('ospf-neighbor'):
+            if neighbor.get('interface-name') == interface:
+                exists = True
+                timeout.sleep()
+                break
+            else:
+                exists = False
+
+        timeout.sleep()
+
+
+    if not output or not exists:
+        return True
+    else:
+        return False
+
+
+def verify_neighbor_state_went_down(device,
+                                    interface,
+                                    realm,
+                                    fail_reason,
+                                    max_time=60,
+                                    check_interval=10):
+    """ Verifies message in log
 
         Args:
             device ('obj'): device to use
@@ -213,22 +254,22 @@ def verify_neighbor_state_went_down(device, interface, realm, fail_reason, max_t
                     'changed +from +Full +to +Down +due +to +(?P<asdf>'
     regex_string2 = '[\s\S]+)$'
     temp = ('^(?P<ignored_portion>[\s\S]+)realm +(?P<interface>'
-    '{realm} {interface} {regex_string1}{fail_reason}{regex_string2}'.format(
-                        realm=realm,
-                        interface = interface,
-                        regex_string1 = regex_string1,
-                        regex_string2 = regex_string2,
-                        fail_reason = fail_reason
-                    ))
-    
+            '{realm} {interface} {regex_string1}{fail_reason}{regex_string2}'.
+            format(
+                realm=realm,
+                interface=interface,
+                regex_string1=regex_string1,
+                regex_string2=regex_string2,
+                fail_reason=fail_reason))
+
     timeout = Timeout(max_time, check_interval)
 
     while timeout.iterate():
         output = device.execute('show log messages')
         for line in output.splitlines():
             line = line.strip()
-            
-            m = re.match(temp,line)
+
+            m = re.match(temp, line)
             if m:
                 return True
         timeout.sleep()
@@ -236,54 +277,11 @@ def verify_neighbor_state_went_down(device, interface, realm, fail_reason, max_t
     return False
 
 
-def verify_default_route_ospf(device, route, expect_output, ip_type='ipv4', max_time=80, check_interval=10):
-    """ Verifies state of ospf
-
-        Args:
-            device ('obj'): device to use
-            ip_type ('str'): Either ipv4/ipv6
-            route ('str'): ipv4/ipv6 default route
-            expect_output ('bool'): Flag, either expecting output or no output 
-            max_time ('int'): Maximum time to keep checking
-            check_interval ('int'): How often to check
-
-        Returns:
-            True/False
-
-        Raises:
-            N/A
-    """
-    timeout = Timeout(max_time, check_interval)
-
-    while timeout.iterate():
-        try:
-            output = device.parse('show route protocol ospf')
-        except SchemaEmptyParserError:
-            timeout.sleep()
-            continue
-
-        route_tables = output['route-information']['route-table']
-        if(ip_type == 'ipv4'):
-            for routes in route_tables:
-                if(routes['table-name'] == 'inet.0'):
-                    default_route = routes['rt'][0]['rt-destination']
-        else:
-            for routes in route_tables:
-                if(routes['table-name'] == 'inet6.0'):
-                    default_route = routes['rt'][0]['rt-destination']
-
-        if expect_output:
-            if default_route == route:
-                return True
-        else:
-            if default_route != route:
-                return True
-        timeout.sleep()
-
-    return False
-
-def verify_ospf_interface_type(device, interface, interface_type, 
-    max_time=60, check_interval=10):
+def verify_ospf_interface_type(device,
+                               interface,
+                               interface_type,
+                               max_time=60,
+                               check_interval=10):
     """ Verifies ospf interface type
 
         Args:
@@ -307,10 +305,591 @@ def verify_ospf_interface_type(device, interface, interface_type,
         except SchemaEmptyParserError:
             timeout.sleep()
             continue
+
+        ##{'ospf-interface': [{'interface-name': 'ge-0/0/1.0'}]}
         for ospf_interface in out.q.get_values('ospf-interface'):
+
+            #{'interface-name': 'ge-0/0/1.0'}
             intf = ospf_interface.get('interface-name', None)
+
+            #{'interface-type': 'LAN'}
             intf_type = ospf_interface.get('interface-type', None)
             if intf == interface and intf_type == interface_type:
                 return True
         timeout.sleep()
+    return False
+
+
+def verify_ospf_interface(device,
+                          expected_interface=None,
+                          expected_interface_type=None,
+                          expected_state=None,
+                          extensive=True,
+                          max_time=60,
+                          check_interval=10,
+                          expected_hello_interval=None):
+    """ Verifies ospf interface exists with criteria
+
+        Args:
+            device ('obj'): device to use
+            expected_interface ('str'): Interface to use
+            expected_interface_type ('str'): Interface type
+            expected_state ('str'): Interface state
+            extensive ('boolean'): Flag for extensive command
+            max_time ('int'): Maximum time to keep checking
+            check_interval ('int'): How often to check
+            expected_hello_interval ('str'): Expected hello interval
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        out = None
+        try:
+            if extensive:
+                out = device.parse('show ospf interface extensive')
+            else:
+                out = device.parse('show ospf interface')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # {
+        # "ospf-interface-information": {
+        #     "ospf-interface": [
+        #         {
+        #             "interface-name": "ge-0/0/0.0",
+        #             "interface-type": "P2P",
+        #             "ospf-interface-state": "PtToPt",
+        #             "hello-interval": "100",
+        #         },
+
+        for ospf_interface in out.q.get_values('ospf-interface'):
+            # check variables
+            intf = ospf_interface.get('interface-name', None)
+            if expected_interface and expected_interface != intf:
+                continue
+
+            intf_type = ospf_interface.get('interface-type', None)
+            if expected_interface_type and expected_interface_type != intf_type:
+                continue
+
+            intf_state = ospf_interface.get('ospf-interface-state', None)
+            if expected_state and expected_state != intf_state:
+                continue
+
+            intf_hello_interval = ospf_interface.get('hello-interval', None)
+            if expected_hello_interval and str(expected_hello_interval) != intf_hello_interval:
+                continue
+
+            return True
+        timeout.sleep()
+    return False
+
+
+def verify_ospf_neighbor_number(device,
+                                expected_interface=None,
+                                expected_number=None,
+                                expected_state=None,
+                                max_time=60,
+                                check_interval=10):
+    """ Verifies the number of ospf neighbors that meets the criteria
+
+        Args:
+            device ('obj'): device to use
+            expected_interface ('str'): Interface to use
+            expected_number ('str'): State occurrence
+            expected_state ('str'): Interface state
+            max_time ('int'): Maximum time to keep checking
+            check_interval ('int'): How often to check
+
+        Returns:
+            Boolean
+
+        Raises:
+            N/A
+    """
+
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            out = device.parse("show ospf neighbor")
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # {
+        # "ospf3-neighbor-information": {
+        #     "ospf3-neighbor": [
+        #         {
+        #             "interface-name": "ge-0/0/0.0",
+        #             "ospf-neighbor-state": "Full"
+        #         },
+
+        count = 0
+        for neighbor in out.q.get_values('ospf-neighbor'):
+            # check variables
+
+            interface_name = neighbor.get('interface-name', None)
+            if expected_interface and expected_interface != interface_name:
+                continue
+
+            neighbor_state = neighbor.get('ospf-neighbor-state', None)
+            if expected_state and expected_state.lower(
+            ) != neighbor_state.lower():
+                continue
+
+            # if all variables exist, count plus 1
+            count += 1
+
+        if count == expected_number:
+            return True
+
+        timeout.sleep()
+
+    return False
+
+
+def verify_ospf_metric(device,
+                       interface,
+                       metric,
+                       max_time=60,
+                       check_interval=10):
+    """Verify the OSPF metric
+
+    Args:
+        device (obj): Device object
+        interface (str): Interface name
+        metric (str): OSPF metric
+    Returns:
+        True/False
+    Raises:
+        N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        out = None
+        try:
+            out = device.parse('show ospf interface extensive')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # Example dictionary
+
+        # "ospf-interface": [
+        #         {
+        #             "interface-name": "ge-0/0/0.0",
+        #             "ospf-interface-topology": {
+        #                 "ospf-topology-metric": "5",
+        #             },
+        #         },
+
+        ospf_interface_list = Dq(out).get_values('ospf-interface')
+
+        for ospf_interface_dict in ospf_interface_list:
+
+            #{'interface-name': 'ge-0/0/1.0'}
+            interface_ = Dq(ospf_interface_dict).get_values(
+                'interface-name', 0)
+
+            #{'ospf-topology-metric': '5'}
+            metric_ = Dq(ospf_interface_dict).get_values(
+                'ospf-topology-metric', 0)
+
+            if interface_.lower() == interface.lower() and str(metric_) == str(
+                    metric):
+                return True
+        timeout.sleep()
+    return False
+
+def verify_ospf_neighbors_found(device, extensive=False,
+    max_time=90, check_interval=10, expected_interface=None, instance=None):
+    """ Verifies ospf neighbors values exists
+
+        Args:
+            device ('obj'): device to use
+            extensive ('str'): If to check with extensive command
+            max_time ('int'): Maximum time to keep checking
+            check_interval ('int'): How often to check
+            expected_interface ('str'): Interface to check for
+            instance ('str'): Instance to check for
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        out = None
+        try:
+            if instance:
+                out = device.parse('show ospf neighbor instance {instance}'.format(
+                    instance=instance
+                ))
+            elif extensive:
+                out = device.parse('show ospf neighbor extensive')
+            else:
+                out = device.parse('show ospf neighbor')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        ospf_neighbors = out.q.get_values('ospf-neighbor')
+
+        if expected_interface:
+            if len([
+                neighbor for neighbor in ospf_neighbors if neighbor.get('interface-name') == expected_interface
+                ]) > 0:
+                return True
+            else:
+                timeout.sleep()
+                continue
+
+        if len(ospf_neighbors) > 0:
+            return True
+        timeout.sleep()
+    return False
+
+def verify_ospf_neighbors_not_found(device, extensive=False,
+    max_time=90, check_interval=10, expected_interface=None):
+    """ Verifies ospf neighbors values don't exist
+
+        Args:
+            device ('obj'): device to use
+            extensive ('str'): If to check with extensive command. Defaults to False
+            max_time ('int'): Maximum time to keep checking. Defaults to 90
+            check_interval ('int'): How often to check. Defaults to 10
+            expected_interface ('str'): Interface to check for. Defaults to None
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        out = None
+        try:
+            if extensive:
+                out = device.parse('show ospf neighbor extensive')
+            else:
+                out = device.parse('show ospf neighbor')
+        except SchemaEmptyParserError:
+            return True
+
+        ospf_neighbors = out.q.get_values('ospf-neighbor')
+
+        if expected_interface:
+            if len([
+                neighbor for neighbor in ospf_neighbors \
+                    if neighbor.get('interface-name') == expected_interface
+                ]) == 0:
+                return True
+            else:
+                timeout.sleep()
+                continue
+
+        if len(ospf_neighbors) == 0:
+            return True
+        timeout.sleep()
+    return False
+
+
+def verify_ospf_overview(device, router_id, max_time=90, check_interval=10):
+    """ Verifies ospf overview values
+
+        Args:
+            device ('obj'): device to use
+            router_id ('str'): Router ID
+            max_time ('int'): Maximum time to keep checking
+            check_interval ('int'): How often to check
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        out = None
+        try:
+            out = device.parse('show ospf overview')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+        router_id_ = out.q.contains_key_value('ospf-router-id',
+                                              router_id,
+                                              value_regex=True)
+        if router_id_:
+            return True
+        timeout.sleep()
+    return False
+
+
+def verify_ospf_spf_delay(device,
+                          expected_spf_delay=None,
+                          max_time=60,
+                          check_interval=10):
+    """ Verify SPF delay
+
+        Args:
+            device('obj'): device to use
+            expected_spf_delay('float'): SPF delay time
+            max_time ('int'): Maximum time to keep checking
+            check_interval ('int'): How often to check
+        Returns:
+            True/False
+
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)            
+
+    # show commands: "show ospf overview"
+    while timeout.iterate():
+        try:
+            output = device.parse('show ospf overview')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+        spf_delay = output.q.get_values('ospf-spf-delay', None)
+        if spf_delay:
+            spf_delay = float(spf_delay[0])
+
+        if spf_delay == expected_spf_delay:
+            return True
+
+        timeout.sleep()
+    return False      
+
+def verify_ospf_interface_in_database(device,
+                                      expected_interface,
+                                      expected_interface_type=None,
+                                      subnet_mask=None,
+                                      expected_metric=None,
+                                      adv_router=False,
+                                      max_time=60,
+                                      check_interval=10):
+    """ Verifies ospf interface exists with criteria
+
+        Args:
+            device ('obj'): device to use
+            expected_interface ('str'): Interface to use
+            expected_interface_type ('str'): Interface type
+            subnet_mask ('str'): Subnet mask
+            expected_metric ('str'): Metric of Interface
+            adv_router ('bool'): Whether to look for address in adversiting router
+            max_time ('int'): Maximum time to keep checking
+            check_interval ('int'): How often to check
+
+        Returns:
+            Boolean
+        Raises:
+            N/A
+    """            
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse('show ospf database extensive')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+
+        #'ospf-database':[
+        #    {'lsa-type':
+        #        'Router',
+        #        'lsa-id': '1.1.1.1'
+        #    }
+        #]
+
+        for ospf_database in Dq(out).get_values('ospf-database'):
+
+            #'ospf-external-lsa':
+            #   {'address-mask': '255.255.255.255',
+            #   'ospf-external-lsa-topology': {
+            #        'ospf-topology-name':
+            #            'default'}}
+            ospf_external_lsa = ospf_database.get('ospf-external-lsa',{})
+            if not adv_router:
+                if 'address-mask' not in ospf_external_lsa:
+                    continue
+                else:
+                    #{'address-mask': '255.255.255.255'}
+                    current_mask = IPAddress(ospf_external_lsa.get('address-mask')).netmask_bits()
+                    if str(current_mask) != subnet_mask:
+                        continue
+
+                #'type-value': '2'
+                if not ospf_external_lsa:
+                    continue
+                if not ospf_external_lsa.get('ospf-external-lsa-topology',{}):
+                    continue
+                if str(expected_metric) != ospf_external_lsa.get('ospf-external-lsa-topology',{}).get('type-value',{}):
+                    continue
+
+                #'lsa-type': 'Extern'
+                lsa_type = ospf_database.get('lsa-type', None)
+                lsa_type = lsa_type.lower() if lsa_type else lsa_type
+
+                if expected_interface_type.lower() != lsa_type:
+                        continue
+
+                #'lsa-id': '11.11.11.11'
+                lsa_id = ospf_database.get('lsa-id', None)
+                if expected_interface != lsa_id:
+                    continue
+            else:
+                advertising_router = ospf_database.get('advertising-router', None)
+                if expected_interface != advertising_router:
+                    continue
+
+            return True
+
+        timeout.sleep()
+
+    return False
+
+
+def verify_no_ospf_interface_in_database(device,
+                                         expected_interface,
+                                         max_time=60,
+                                         check_interval=10):
+    """ Verifies ospf interface exists with criteria
+
+        Args:
+            device ('obj'): device to use
+            expected_interface ('str'): Interface to use
+            max_time ('int'): Maximum time to keep checking
+            check_interval ('int'): How often to check
+
+        Returns:
+            Boolean
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        exist = False
+        try:
+            out = device.parse('show ospf database extensive')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+        
+
+        #'ospf-database':[
+        #    {'lsa-type': 
+        #        'Router', 
+        #        'lsa-id': '1.1.1.1'
+        #    }
+        #]
+
+        for ospf_database in Dq(out).get_values('ospf-database'):
+            
+            #'ospf-external-lsa': 
+            #   {'address-mask': '255.255.255.255', 
+            #   'ospf-external-lsa-topology': {
+            #        'ospf-topology-name': 
+            #            'default'}}
+            ospf_external_lsa = ospf_database.get('ospf-external-lsa',{})
+
+            advertising_router = ospf_database.get('advertising-router', None)
+            if expected_interface == advertising_router:
+                exist = True
+        
+        if exist:
+            timeout.sleep()
+            continue
+        else:
+            return True
+
+    return False
+
+def verify_ospf_database_lsa_id(device,
+                                lsa_id,
+                                max_time=60,
+                                check_interval=10):
+    """Verify 'show ospf database lsa-id {lsa_id}' against criteria
+
+    Args:
+        lsa_id ('str'): lsa_id to check
+        max_time ('int'): Maximum time to keep checking
+        check_interval ('int'): How often to check
+
+    Raise: None
+
+    Returns: Boolean
+
+    """
+
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        out = None
+        try:
+            out = device.parse(
+                'show ospf database lsa-id {lsa_id} detail'.format(
+                    lsa_id=lsa_id))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # add criteria to test against
+        return True
+
+    return False
+
+
+def verify_show_ospf_database_lsa_types(device,
+                                        expected_types,
+                                        max_time=60,
+                                        check_interval=10):
+    """Verify 'show ospf database' lsa-types contains expected_types
+
+    Args:
+        device ('obj'): device to use
+        expected_types ('str'): types to verify
+        max_time ('int'): Maximum time to keep checking
+        check_interval ('int'): How often to check
+
+    Raise: None
+
+    Returns: Boolean
+
+    """
+
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        out = None
+        try:
+            out = device.parse('show ospf database')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        found_types = out.q.get_values("lsa-type")
+
+        verified = set(found_types).issuperset(set(expected_types))
+
+        if verified:
+            return True
+        else:
+            timeout.sleep()
+            continue
+
     return False

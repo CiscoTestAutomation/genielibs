@@ -3,6 +3,7 @@
 # Python
 import re
 import logging
+import datetime
 
 # Genie
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
@@ -145,3 +146,68 @@ def get_file_size(device, root_path, file):
         if 'file-name' in file and 'file-size' in file:
             return int(file['file-size'])
     return None
+
+def verify_diff_timestamp(device, expected_spf_delay=None, ospf_trace_log=None,\
+                       max_time=60, check_interval=10):
+    """
+    Verify the difference between time on two logs
+
+    Args:
+        device('obj'): device to use
+        expected_spf_delay('float'): SPF change value   
+        ospf_trace_log('str') : OSPF trace log
+        max_time ('int'): Maximum time to keep checking
+        check_interval ('int'): How often to check
+
+    Returns:  
+        Boolean       
+    Raises:
+        N/A    
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    # show commands: "show log {ospf_trace_log}"
+    while timeout.iterate():
+        try:
+            output = device.parse('show log {ospf_trace_log}'.format(
+                ospf_trace_log=ospf_trace_log))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # Example parsed output:
+        # 
+        # {
+        #     "file-content": [
+        #     "        show log messages",
+        #     "        Mar  5 00:45:00 sr_hktGCS001 newsyslog[89037]: "
+        #     "logfile turned over due to size>1024K",
+        #     "        Mar  5 02:42:53  sr_hktGCS001 sshd[87374]: Received "
+        #     "disconnect from 10.1.0.1 port 46480:11: disconnected by user",
+        #     "        Mar  5 02:42:53  sr_hktGCS001 sshd[87374]: "
+        #     "Disconnected from 10.1.0.1 port 46480",
+        #     "        Mar  5 02:42:53  sr_hktGCS001 inetd[6841]: "
+        #     "/usr/sbin/sshd[87371]: exited, status 255",
+        # }
+
+        file_content_list = output['file-content']
+
+        scheduled_time = start_time = datetime.datetime.now()                      
+
+        for i in file_content_list:
+            scheduled_time_str = device.api.get_ospf_spf_scheduled_time(i)            
+            if scheduled_time_str:
+                scheduled_time = datetime.datetime.strptime(
+                    scheduled_time_str, '%H:%M:%S.%f')
+
+            start_time_str = device.api.get_ospf_spf_start_time(i)
+            if start_time_str:
+                start_time = datetime.datetime.strptime(
+                    start_time_str, '%H:%M:%S.%f')
+
+            time_change = (start_time - scheduled_time).seconds
+            if time_change == expected_spf_delay:
+                return True
+
+        timeout.sleep()
+    return False     

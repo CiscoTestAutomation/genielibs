@@ -29,6 +29,10 @@ class ImageHandler(CommonImageHandler):
             elif isinstance(self.images, list) and len(self.images)==1:
                 # Set 'system'
                 setattr(self, 'system', self.images[0])
+            else:
+                raise Exception("Expecting 'system' image for NXOS N9K "
+                                "platform provided under 'images' key as a "
+                                "list or dictionary")
         else:
             raise Exception("'images' list or dictionary not provided and is "
                             "expected for 'nxos'")

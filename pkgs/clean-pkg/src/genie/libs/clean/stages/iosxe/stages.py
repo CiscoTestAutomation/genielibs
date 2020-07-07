@@ -100,7 +100,7 @@ def change_boot_variable(section, steps, device, images, timeout=300,
 
         # Get list of existing boot images if any
         try:
-            curr_boot_images = device.api.get_boot_variables(boot_var='current')
+            curr_boot_images = device.api.get_boot_variables(boot_var='next')
         except Exception as e:
             step.failed("Unable to check existing boot images on {}:\n{}".\
                         format(device.name, str(e)))
@@ -391,7 +391,7 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
                                                    timeout=config_reg_timeout)
         except Exception as e:
             log.error(str(e))
-            section.failed("Unable to reset config-register to 0x0 after TFTP"
+            section.failed("Unable to reset config-register to 0x2101 after TFTP"
                            " boot on {}".format(device.name), goto=['exit'])
 
     # Execute 'write memory'
@@ -405,6 +405,4 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
         else:
             section.passed("Successfully performed TFTP boot on device {}".\
                             format(device.name))
-
-
 

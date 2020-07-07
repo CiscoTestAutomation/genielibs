@@ -129,3 +129,24 @@ def execute_remove_inactive_pies(device, remove_timeout=300):
     else:
         log.info("Successfully removed inactive pies on device {}".format(device.name))
 
+
+def execute_set_config_register(device, config_register, timeout=60):
+    '''Set config register to load image in boot variable
+        Args:
+            device ('obj'): Device object
+            config_reg ('str'): Hexadecimal value to set the config register to
+            timeout ('int'): Max time to set config-register in seconds
+                             Default 60 seconds (Optional)
+    '''
+
+    try:
+        device.admin_execute("config-register {}".format(config_register),
+                             timeout=timeout)
+    except Exception as e:
+        log.error(str(e))
+        raise Exception("Failed to set config register to '{}' on device {}".\
+                        format(config_register, device.name))
+    else:
+        log.info("Set config-register to '{}' on device".\
+                format(config_register, device.name))
+

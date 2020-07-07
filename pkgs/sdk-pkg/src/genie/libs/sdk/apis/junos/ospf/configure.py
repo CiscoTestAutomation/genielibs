@@ -102,3 +102,26 @@ def configure_ospf_interface_metric_cost(device, interface, area, cost, cost_typ
                 cost=cost, error=e
             )
         )
+
+def clear_ospf_trace_log(device, ospf_trace_log):
+    """
+    Clear log ospf_trace_log
+
+    Args:
+        device (`obj`): Device object
+        ospf_trace_log(`str`): OSPF trace log
+
+    Returns:
+        None
+    """
+    log.info(
+        f"Clearing log {ospf_trace_log}"
+    )
+
+    try:
+        device.execute(
+            f"clear log {ospf_trace_log}"
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not clear log on {ospf_trace_log}. Error:\n{e}")

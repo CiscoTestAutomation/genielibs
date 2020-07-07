@@ -12,7 +12,7 @@ try:
     from lxml.etree import QName
     from lxml.builder import ElementMaker
 except Exception:
-    log.error('Make sure you have lxml installed in your virtual env')
+    pass
 
 NETCONF_NS_1_0 = "urn:ietf:params:xml:ns:netconf:base:1.0"
 YANG_NS_1 = "urn:ietf:params:xml:ns:yang:1"
