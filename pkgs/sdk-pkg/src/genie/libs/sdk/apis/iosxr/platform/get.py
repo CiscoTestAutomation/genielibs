@@ -194,3 +194,59 @@ def get_current_active_pies(device):
 
     return [i for i in out.get('active_packages', []) if not regex.match(i)]
 
+def get_platform_default_dir(device, output=None):
+    '''Get the default directory of this device
+
+        Args:
+            device (`obj`): Device object
+            output (`str`): Output of `dir` command
+        Returns:
+            default_dir (`str`): Default directory of the system
+    '''
+
+    try:
+        output = device.parse("dir", output=output)
+    except SchemaEmptyParserError as e:
+        raise Exception("Command 'dir' did not return any output") from e
+
+    default_dir = output.setdefault('dir', {}).get('dir_name', '')
+
+    return default_dir
+
+def get_platform_core(device, default_dir, output=None, keyword=['.x86.']):
+    '''Get the default directory of this device
+
+        Args:
+            device      (`obj`) : Device object
+            default_dir (`str`) : default directory on device
+            output      (`str`) : Output of `dir` command
+            keyword     (`list`): List of keywords to search
+        Returns:
+            corefiles (`list`): List of found core files
+    '''
+
+    cmd = "dir {default_dir}/dumper/".format(default_dir=default_dir)
+
+    try:
+        # sample output:
+        # #dir harddisk:/dumper/
+        # Fri Sep 15 18:14:57.449 UTC
+        #
+        # Directory of harddisk:/dumper
+        #
+        # 1769728     -rw-  2353427     Thu Sep 14 06:34:54 2017  first.dsc_174.by.wdsysmon.sparse.20170914-063449.node0_0_CPU0.x86.Z
+        # 1769952     -rw-  7814        Thu Sep 14 06:34:54 2017  first.dsc_174.by.wdsysmon.sparse.20170914-063449.node0_0_CPU0.x86.txt
+        # 1770176     -rw-  73415       Thu Sep 14 06:34:56 2017  first.dsc_174.by.wdsysmon.sparse.20170914-063449.node0_0_CPU0.x86.cpu_info.Z
+        output = device.parse(cmd, output=output)
+    except SchemaEmptyParserError:
+        # empty is possible. so pass instead of exception
+        pass
+
+    corefiles = []
+    if output:
+        for file in output.q.get_values('files'):
+            for kw in keyword:
+                if kw in file:
+                    corefiles.append('file')
+
+    return corefiles

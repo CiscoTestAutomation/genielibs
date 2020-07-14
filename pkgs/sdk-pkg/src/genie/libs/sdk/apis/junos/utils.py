@@ -19,13 +19,12 @@ from unicon.core.errors import SubCommandFailure
 log = logging.getLogger(__name__)
 
 
-def verify_ping(
-        device,
-        address,
-        loss_rate=0,
-        count=None,
-        max_time=30,
-        check_interval=10):
+def verify_ping(device,
+                address,
+                loss_rate=0,
+                count=None,
+                max_time=30,
+                check_interval=10):
     """ Verify ping loss rate on ip address provided
 
         Args:
@@ -43,14 +42,10 @@ def verify_ping(
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
         if count:
-            cmd = 'ping {address} count {count}'.format(
-                address=address,
-                count=count
-            )
+            cmd = 'ping {address} count {count}'.format(address=address,
+                                                        count=count)
         else:
-            cmd = 'ping {address}'.format(
-                address=address
-            )
+            cmd = 'ping {address}'.format(address=address)
         try:
             out = device.parse(cmd)
         except SchemaEmptyParserError as e:
@@ -90,7 +85,12 @@ def verify_ping(
             return True
     return False
 
-def verify_file_details_exists(device, root_path, file, max_time=30, check_interval=10):
+
+def verify_file_details_exists(device,
+                               root_path,
+                               file,
+                               max_time=30,
+                               check_interval=10):
     """ Verify file details exists
 
         Args:
@@ -108,20 +108,20 @@ def verify_file_details_exists(device, root_path, file, max_time=30, check_inter
     while timeout.iterate():
         out = None
         try:
-            out = device.parse('file list {root_path} detail'.format(
-                root_path=root_path
-            ))
+            out = device.parse(
+                'file list {root_path} detail'.format(root_path=root_path))
         except SchemaEmptyParserError as e:
             timeout.sleep()
             continue
-        file_found = Dq(out).contains_key_value(
-            'file-name', file, 
-            value_regex=True)
+        file_found = Dq(out).contains_key_value('file-name',
+                                                file,
+                                                value_regex=True)
         if file_found:
-           return True
+            return True
         timeout.sleep()
-    
+
     return False
+
 
 def get_file_size(device, root_path, file):
     """ Get file size from device
@@ -136,15 +136,23 @@ def get_file_size(device, root_path, file):
             None
     """
     out = None
-    out = device.parse('file list {root_path} detail'.format(
-            root_path=root_path
-        ))
-    file_info_list = out.q.contains('{}|file-size'.format(file), 
-        regex=True).get_values('file-information')
-    
-    for file in file_info_list:
-        if 'file-name' in file and 'file-size' in file:
-            return int(file['file-size'])
+    out = device.parse(
+        'file list {root_path} detail'.format(root_path=root_path))
+    try:
+        file_info_list = out.q.contains(
+            '{}|file-size'.format(file),
+            regex=True).get_values('file-information')
+
+        for file_info_dict in file_info_list:
+            if 'file-name' in file_info_dict and 'file-size' in file_info_dict:
+                return int(file_info_dict['file-size'])
+    except:
+        file_info_list = Dq(out).get_values('file-information')
+
+        for file_info_dict in file_info_list:
+            if file == file_info_dict.get('file-name'):
+                return int(file_info_dict.get('file-size', 0))
+
     return None
 
 def verify_diff_timestamp(device, expected_spf_delay=None, ospf_trace_log=None,\
@@ -176,7 +184,7 @@ def verify_diff_timestamp(device, expected_spf_delay=None, ospf_trace_log=None,\
             continue
 
         # Example parsed output:
-        # 
+        #
         # {
         #     "file-content": [
         #     "        show log messages",
@@ -192,10 +200,10 @@ def verify_diff_timestamp(device, expected_spf_delay=None, ospf_trace_log=None,\
 
         file_content_list = output['file-content']
 
-        scheduled_time = start_time = datetime.datetime.now()                      
+        scheduled_time = start_time = datetime.datetime.now()
 
         for i in file_content_list:
-            scheduled_time_str = device.api.get_ospf_spf_scheduled_time(i)            
+            scheduled_time_str = device.api.get_ospf_spf_scheduled_time(i)
             if scheduled_time_str:
                 scheduled_time = datetime.datetime.strptime(
                     scheduled_time_str, '%H:%M:%S.%f')
@@ -210,4 +218,41 @@ def verify_diff_timestamp(device, expected_spf_delay=None, ospf_trace_log=None,\
                 return True
 
         timeout.sleep()
-    return False     
+    return False
+
+
+def verify_file_size(device,
+                     root_path,
+                     file,
+                     file_size,
+                     max_time=30,
+                     check_interval=10):
+    """ Verify specified file size
+
+    Args:
+        device (obj): Device object
+        root_path (str): Root path
+        file (str): File name
+        file_size (int): File size
+        max_time (int, optional): Maximum sleep time. Defaults to 30.
+        check_interval (int, optional): Check interval. Defaults to 10.
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        out = None
+        try:
+            out = device.parse(
+                'file list {root_path} detail'.format(root_path=root_path))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        file_info_list = Dq(out).get_values('file-information')
+
+        for file_info_dict in file_info_list:
+            if file == file_info_dict.get('file-name'):
+                if int(file_info_dict.get('file-size', 0)) == int(file_size):
+                    return True
+
+    return False

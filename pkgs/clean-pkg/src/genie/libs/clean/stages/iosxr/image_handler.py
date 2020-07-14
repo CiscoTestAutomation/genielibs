@@ -11,9 +11,19 @@ class ImageHandler(CommonImageHandler):
     def __init__(self, device, images, *args, **kwargs):
         super().__init__(device, images, *args, **kwargs)
 
-        # Ensure 'images' provided is a list for iosxr
-        if not isinstance(images, list):
-            raise Exception("'images' is not a list as expected for 'iosxr'")
+        # Ensure 'images' provided is valid
+        if isinstance(images, list):
+            # set in CommonImageHandler
+            pass
+        elif isinstance(images.get('image', {}).get('file', {}), list):
+            self.images = images['image']['file']
+        else:
+            raise Exception("For 'iosxr' images must be one of the following formats:\n\n"
+                            "    images: [<image>]\n\n"
+                            "or\n\n"
+                            "    images:\n"
+                            "        image:\n"
+                            "            file: [<image>]")
 
 
     def update_tftp_boot(self):

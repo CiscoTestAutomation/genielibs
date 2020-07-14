@@ -240,7 +240,7 @@ def diff(self, steps, device, pre, post, continue_=True, fail_different=False,
 
         try:
             diff = Diff(pre, post, exclude=exclude_items)
-        except Exception:
+        except Exception as e:
             step.failed(str(e))
 
         diff.findDiff()

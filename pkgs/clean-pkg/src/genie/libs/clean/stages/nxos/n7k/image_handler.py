@@ -22,10 +22,18 @@ class ImageHandler(CommonImageHandler):
                     except AssertionError:
                         raise Exception("Invalid key '{}' provided for N7K images"
                                         "\nValid keys are 'kickstart' and 'system'")
-                    if len(value) > 1:
+
+                    # incase the file key is used
+                    if isinstance(value, dict):
+                        image_list = value['file']
+                    else:
+                        image_list = value
+
+                    if len(image_list) > 1:
                         raise Exception("Found more than 1 image for '{}' image".\
                                         format(key))
-                    setattr(self, key, value[0])
+
+                    setattr(self, key, image_list[0])
             elif isinstance(self.images, list) and len(self.images)==2:
                 # Set 'kickstart'
                 setattr(self, 'kickstart', self.images[0])

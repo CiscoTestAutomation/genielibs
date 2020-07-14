@@ -275,7 +275,9 @@ def verify_routing_ip_exist(device,
                             max_time=60,
                             check_interval=10,
                             extensive=None,
-                            exact=None):
+                            exact=None,
+                            known_via=None,
+                            ):
     """ Verify routing ip exists
 
         Args:
@@ -319,12 +321,21 @@ def verify_routing_ip_exist(device,
 
         for rt_dict in rt_list:
             rt_destination_ = Dq(rt_dict).get_values("rt-destination", 0)
+            
+            if not rt_destination_.startswith(str(destination_address)):
+                continue
+            
             if metric:
                 destination_metric = Dq(rt_dict).get_values("metric", [0])
-                if destination_metric == str(metric) and rt_destination_.startswith(str(destination_address)):
-                    return True
-            elif rt_destination_.startswith(str(destination_address)):
-                return True
+                if destination_metric != str(metric):
+                    continue
+
+            if known_via:
+                via_ = Dq(rt_dict).get_values("via", 0)
+                if not via_.startswith(known_via):
+                    continue
+            
+            return True
         timeout.sleep()
     return False
 

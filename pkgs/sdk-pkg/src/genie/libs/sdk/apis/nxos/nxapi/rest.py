@@ -5,7 +5,7 @@ import copy
 # Logger
 log = logging.getLogger(__name__)
 
-def nxapi_method_nxapi_rest(device, action, commands, input_type=None,
+def nxapi_method_nxapi_rest(device, action, commands='', input_type='cli',
                             dn='/api/mo/sys.json', rest_method='POST',
                             timeout=30, alias='cli'):
     """ NX-API Method: NXAPI-REST (DME)
@@ -81,19 +81,27 @@ def nxapi_method_nxapi_rest(device, action, commands, input_type=None,
         raise Exception("'{action}' is an invalid action for NXAPI-REST "
                         "(DME)".format(action=action))
 
+    kwargs = {
+        'dn': dn,
+        'timeout': timeout,
+        'headers': {'Content-Type': 'application/json-rpc'}
+    }
+
+    if rest_method == 'post':
+        kwargs.update({'payload': payload})
+
     # send rest request
     try:
-        output = getattr(rest, rest_method.lower())(
-            dn=dn,
-            payload=payload,
-            timeout=timeout,
-            headers={'Content-Type': 'application/json-rpc'}
-        )
+        output = getattr(rest, rest_method)(**kwargs)
     except AttributeError as e:
         raise Exception("The rest_method '{rest_method}' does not exist "
                         "in the connector with the alias '{alias}'."
                         .format(rest_method=rest_method,
                                 alias=alias)) from e
+
+    # Return as is if the method is get
+    if rest_method == 'get':
+        return output
 
     # from the response get the dictionary with a result
     if isinstance(output, list):

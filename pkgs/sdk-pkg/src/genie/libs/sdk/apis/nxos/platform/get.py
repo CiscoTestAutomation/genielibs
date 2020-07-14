@@ -103,3 +103,54 @@ def get_total_space(device, directory='', output=None):
         return None
 
     return int(dir_output.get('disk_total_space'))
+
+def get_platform_default_dir(device, output=None):
+    '''Get the default directory of this device
+
+        Args:
+            device (`obj`): Device object
+            output (`str`): Output of `dir` command
+        Returns:
+            default_dir (`str`): Default directory of the system
+    '''
+
+    try:
+        output = device.parse("dir", output=output)
+    except SchemaEmptyParserError as e:
+        raise Exception("Command 'dir' did not return any output") from e
+
+    default_dir = output.get('dir', '')
+
+    return default_dir
+
+def get_platform_core(device, default_dir, output=None, keyword=['_core.']):
+    '''Get the default directory of this device
+
+        Args:
+            device      (`obj`) : Device object
+            default_dir (`str`) : default directory on device
+            output      (`str`) : Output of `dir` command
+            keyword     (`list`): List of keywords to search
+        Returns:
+            corefiles (`list`): List of found core files
+    '''
+
+    cmd = "dir {default_dir}//sup-active/core/".format(default_dir=default_dir)
+
+    try:
+        # sample output:
+        # # dir logflash://sup-active/core/
+        #   119173734    May 25 00:09:00 2017  0x101_vsh.bin_core.27380.gz
+        output = device.parse(cmd, output=output)
+    except SchemaEmptyParserError:
+        # empty is possible. so pass instead of exception
+        pass
+
+    corefiles = []
+    if output:
+        for file in output.q.get_values('files'):
+            for kw in keyword:
+                if kw in file:
+                    corefiles.append('file')
+
+    return corefiles
