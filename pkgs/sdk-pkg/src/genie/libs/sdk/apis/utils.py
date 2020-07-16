@@ -17,6 +17,8 @@ from netaddr import IPAddress
 
 # pyATS
 from pyats.easypy import runtime
+from pyats import configuration as cfg
+from pyats.utils.email import EmailMsg
 from pyats.utils.fileutils import FileUtils
 from pyats.utils.secret_strings import to_plaintext
 from pyats.datastructures.logic import Not
@@ -1795,3 +1797,60 @@ def repeat_command_save_output(device, command, command_interval,
             path, str(e)))
 
     return path
+
+def send_email(from_email,
+               to_email,
+               subject='',
+               body='',
+               attachments=None,
+               html_email=False,
+               html_body=''):
+    """
+        Send an email from execution server where pyATS runs. 
+        Plain or HTML email can be sent.
+
+        Args:
+            from_email (list/str): list or string-list of addresses to be used
+                                   in the generated email's "From:" field.
+            to_email(list/str): list or string-list of addresses to be used
+                                in the generated email's "To:" field.
+            subject (str): alternate subject for the report email
+            body (string): message body in the email
+            attachments (list): list of attachments paths
+            html_email (bool): flag to enable alternative email format
+            html_body (string): html content
+
+        Raises:
+            python file exceptions
+
+        Returns:
+            None
+    """
+    email = EmailMsg(from_email, to_email, subject, body, attachments,
+                     html_email, html_body)
+    email.send()
+
+def get_tolerance_min_max(value, expected_tolerance):
+    """
+       Get minimum and maximum tolerance range
+
+        Args:
+            value(int): value to find minumum and maximum range
+            expected_tolerance ('int'): Expected tolerance precentage
+
+        Returns:
+            minimum and maximum value of tolerance
+    """
+    # Convert it to int
+    value = int(value)
+    
+    # Expected tolerance %
+    tolerance = (value * expected_tolerance) / 100
+
+    # Minimum tolerance value
+    min_value = abs(value - tolerance)
+
+    # Maximum tolerance value
+    max_value = abs(value + tolerance)
+
+    return (min_value, max_value)

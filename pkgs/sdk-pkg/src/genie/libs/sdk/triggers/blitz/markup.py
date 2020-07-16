@@ -79,7 +79,10 @@ def _load_saved_variable(self, val, key=None):
         # '%VARIABLE{interface[0].name}'
         # '%VARIABLE{interface.name}'
         # '%VARIABLE{interface['name']}'
-        if '.' in blitz_val or '[' in blitz_val:
+        
+        if ('.' in blitz_val or '[' in blitz_val) and\
+            blitz_val not in self.parameters['save_variable_name']:
+
             split_list = re.split(r'[\.\[]', blitz_val)
             last_parameter = self.parameters['save_variable_name']
             for split_val in split_list:

@@ -88,4 +88,20 @@ def get_ospf_spf_start_time(log):
     except KeyError as e:
         raise KeyError(f"Key issue with exception: {str(e)}") from e
     
+
+def get_ospf_router_id(device):
+    """ Retrieve ospf router id
+
+    Args:
+        device (obj): Device object
+    """
+    try:
+        output = device.parse('show ospf overview')
+    except SchemaEmptyParserError:
+            return None
+    
+    try:
+        return output.q.get_values('ospf-router-id', 0)
+    except Exception as e:
+        log.info("Error retrieving router ID: {e}".format(e=e))    
     

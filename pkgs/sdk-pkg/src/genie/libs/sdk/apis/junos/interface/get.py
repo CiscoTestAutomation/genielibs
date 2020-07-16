@@ -181,3 +181,228 @@ def get_interface_speed(device, interface, bit_size='gbps'):
         else:
             speed_ = int(re.sub(r'[a-z,]', '', speed_)) / speed_matrix['gbps'][bit_size]
         return speed_
+
+def get_interface_output_error_drops(device, interface):
+    """ Get output error drops based on interface name
+
+        Args:
+            device ('obj'): Device object
+            interface('str'): Interface name
+            
+        Returns:
+            output_drops: Output error drops
+
+        Raises:
+            None
+    """
+    try:
+        out = device.parse('show interfaces extensive {interface}'.format(
+            interface=interface.split('.')[0]
+        ))
+    except SchemaEmptyParserError as e:
+        return None
+    
+    output_drops = out.q.get_values('output-drops', 0)
+    if not output_drops:
+        return None
+    return output_drops
+
+def get_interface_statistics_output_error_drops(device, interface):
+    """ Get output error drops based on interface statistics
+
+        Args:
+            device ('obj'): Device object
+            interface('str'): Interface name
+            
+        Returns:
+            output_drops: Output error drops
+
+        Raises:
+            None
+    """
+    try:
+        out = device.parse('show interfaces statistics {interface}'.format(
+            interface=interface.split('.')[0]
+        ))
+    except SchemaEmptyParserError as e:
+        return None
+    
+    output_drops = out.q.get_values('output-error-count', 0)
+    if not output_drops:
+        return None
+    return output_drops
+
+def get_interface_queue_tail_dropped_packets(device, interface):
+    """ Get tail-dropped packets based on interfaces queue
+
+        Args:
+            device ('obj'): Device object
+            interface('str'): Interface name
+            
+        Returns:
+            tail_drop_packets: Output error drops
+
+        Raises:
+            None
+    """
+    try:
+        out = device.parse('show interfaces queue {interface}'.format(
+            interface=interface.split('.')[0]
+        ))
+    except SchemaEmptyParserError as e:
+        return None
+    
+    tail_drop_packets = out.q.get_values('queue-counters-tail-drop-packets')
+    if not tail_drop_packets:
+        return None
+    return tail_drop_packets
+
+def get_interface_queue_rl_dropped_packets(device, interface):
+    """ Get rl-dropped packets based on interfaces queue
+
+        Args:
+            device ('obj'): Device object
+            interface('str'): Interface name
+            
+        Returns:
+            rl_drop_packets: Output error drops
+
+        Raises:
+            None
+    """
+    try:
+        out = device.parse('show interfaces queue {interface}'.format(
+            interface=interface.split('.')[0]
+        ))
+    except SchemaEmptyParserError as e:
+        return None
+    
+    rl_drop_packets = out.q.get_values('queue-counters-rl-drop-packets')
+    if not rl_drop_packets:
+        return None
+    return rl_drop_packets
+
+def get_interface_queue_red_dropped_packets(device, interface):
+    """ Get red-dropped packets based on interfaces queue
+
+        Args:
+            device ('obj'): Device object
+            interface('str'): Interface name
+            
+        Returns:
+            red_drop_packets: Output error drops
+
+        Raises:
+            None
+    """
+    try:
+        out = device.parse('show interfaces queue {interface}'.format(
+            interface=interface.split('.')[0]
+        ))
+    except SchemaEmptyParserError as e:
+        return None
+    
+    red_drop_packets = out.q.get_values('queue-counters-red-packets')
+    if not red_drop_packets:
+        return None
+    return red_drop_packets
+
+def get_interface_queue_counters_dropped(device, interface, expected_queue_number, extensive=False):
+    """ Get queue counters dropped based on interfaces queue
+
+        Args:
+            device ('obj'): Device object
+            interface('str'): Interface name
+            expected_queue_number ('str'): Queue number to check
+            extensive ('str'): Flag to check extensive in command
+            
+        Returns:
+            total_drop_packets: Output error drops
+
+        Raises:
+            None
+    """
+    try:
+        if extensive:
+            out = device.parse('show interfaces extensive {interface}'.format(
+                interface=interface.split('.')[0]
+            ))
+        else:
+            out = device.parse('show interfaces {interface}'.format(
+                interface=interface.split('.')[0]
+            ))
+    except SchemaEmptyParserError as e:
+        return None
+    
+    total_drop_packets = out.q.get_values('queue-counters-total-drop-packets', int(expected_queue_number))
+    if not total_drop_packets:
+        return None
+    return total_drop_packets
+
+def get_interface_logical_output_bps(device, logical_interface, 
+    interface=None, extensive=False, output_dict=None):
+    """Get logical output bps of a logical interface
+
+    Args:
+        device ('obj'): device object
+        logical_interface ('str'): Logical interface to check output bps
+        interface ('str'): interface name to pass in show command
+        extensive ('bool'): Use extensive in show command
+        output_dict ('dict'): Pass if dictionary already exist
+    
+    Returns:
+        Device speed or None
+
+    Raises:
+        None
+    """
+    out = None
+    try:
+        if not output_dict:
+            try: 
+                if interface:
+                    cmd = 'show interfaces {interface}'.format(interface=interface)
+                else:
+                    cmd = 'show interfaces'
+                if extensive:
+                    cmd = '{cmd} extensive'.format(cmd=cmd)
+                out = device.parse(cmd)
+            except SchemaEmptyParserError:
+                return None
+        else:
+            out = output_dict
+
+    except SchemaEmptyParserError:
+        return None
+    
+    result = True
+
+    # Get first interface inorder to compare output-bps with other interfaces
+    physical_intf_check = out.q.contains(
+            '{interface}|.*output-bps.*'.format(
+                interface=logical_interface), 
+                regex=True)
+    
+    # To handle list within list
+    logical_interface_check = Dq(physical_intf_check.reconstruct())
+
+    logical_intf_list = logical_interface_check.contains('name|output-bps', 
+        regex=True).get_values('logical-interface')
+    
+    for l_i_dict in logical_intf_list:
+        name = l_i_dict.get('name', None)
+        if not name or name != logical_interface:
+            continue
+
+        transit_traffic_statistic = l_i_dict.get('transit-traffic-statistics', 0)
+        
+        if not transit_traffic_statistic:
+            return None
+
+        output_bps = transit_traffic_statistic.get('output-bps', 0)
+        if not output_bps:
+            return None
+
+        return output_bps
+    
+    return None

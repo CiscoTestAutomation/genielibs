@@ -111,6 +111,8 @@ class Blitz(Trigger):
                     kwargs['device'] = device
                     # adding the device name to return dictionary
                     ret_dict['device'] = device.name
+                    save_variable(self, device.name, 'device.name')
+
                 else:
                     # in cases that no device is defined
                     ret_dict['device'] = None

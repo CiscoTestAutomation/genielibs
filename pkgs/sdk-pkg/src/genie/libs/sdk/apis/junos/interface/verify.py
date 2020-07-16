@@ -73,3 +73,112 @@ def verify_interfaces_terse_state(device,
 
         timeout.sleep()
     return False
+
+def verify_interface_load_balance(device, 
+    load_balance_interfaces,
+    interface=None,
+    zero_bps_interfaces=None,
+    expected_tolerance=10,
+    max_time=30, check_interval=10,
+    extensive=False):
+    """ Verify logical interface load balance
+
+        Args:
+            device (`obj`): Device object
+            load_balance_interfaces (`list`): List of interfaces to check load balance
+            interface (`str`): Pass interface in show command
+            zero_bps_interfaces (`list`): List of interfaces to check zero as bps value
+            expected_tolerance (`int`): Expected tolerance in load balance of interfaces
+            max_time (`int`): Max time, default: 60
+            check_interval (`int`): Check interval, default: 10
+            extensive (`bool`): Execute show command with extensive
+
+        Returns:
+            result (`bool`): Verified result
+        Raises:
+            N/A
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        result = True
+        try: 
+            if interface:
+                cmd = 'show interfaces {interface}'.format(interface=interface)
+            else:
+                cmd = 'show interfaces'
+            if extensive:
+                cmd = '{cmd} extensive'.format(cmd=cmd)
+            out = device.parse(cmd)
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        intf_output_bps = device.api.get_interface_logical_output_bps(
+            interface=interface,
+            logical_interface=load_balance_interfaces[0],
+            extensive=True,
+            output_dict=out,
+        )
+        if not intf_output_bps or int(intf_output_bps) == 0:
+            timeout.sleep()
+            continue
+        intf_output_bps = int(intf_output_bps)
+        min_value, max_value = device.api.get_tolerance_min_max(
+            value=intf_output_bps,
+            expected_tolerance=expected_tolerance)
+
+        log.info('Load balance of interfaces {load_balance_interfaces}'
+            ' should be between {min_value}<>{max_value} '
+            'with tolerance of {expected_tolerance}%'.format(
+                load_balance_interfaces=load_balance_interfaces,
+                min_value=min_value,
+                max_value=max_value,
+                expected_tolerance=expected_tolerance,
+            ))
+
+        for logical_intf in load_balance_interfaces[1:]:
+            intf_output_bps = device.api.get_interface_logical_output_bps(
+                interface=interface, logical_interface=logical_intf,
+                extensive=True, output_dict=out)
+
+            # Check load balance is within tolerance
+            if not intf_output_bps or int(intf_output_bps) < min_value or int(intf_output_bps) > max_value:
+                result = False
+                log.info('Interface {logical_intf} output-bps: {intf_output_bps} '
+                    'is not between {min_value}<>{max_value}'.format(
+                        logical_intf=logical_intf,
+                        intf_output_bps=intf_output_bps,
+                        min_value=min_value,
+                        max_value=max_value,
+                    ))
+                break
+
+        # Check if need to changed "0" bps interfaces
+        if zero_bps_interfaces:
+            log.info('Load balance of interfaces {zero_bps_interfaces}'
+                ' should be "0" bps'.format(
+                    zero_bps_interfaces=zero_bps_interfaces
+                ))
+
+            for logical_intf in zero_bps_interfaces:
+                intf_output_bps = device.api.get_interface_logical_output_bps(
+                    interface=interface,
+                    logical_interface=logical_intf,
+                    extensive=True,
+                    output_dict=out)
+
+                if not intf_output_bps or int(intf_output_bps) != 0:
+                    log.info('Interface {logical_intf} is not "0" bps'.format(
+                        logical_intf=logical_intf
+                    ))
+                    result = False
+                    break
+
+        if result:
+            return True
+        
+        timeout.sleep()
+        continue
+    
+    return False
