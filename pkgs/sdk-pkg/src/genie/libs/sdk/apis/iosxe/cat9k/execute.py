@@ -31,7 +31,7 @@ def execute_reload(device, prompt_recovery, reload_creds, reload_file=None, slee
         try:
             # tftp://223.255.254.254/francois/cat9k_iosxe.2019-06-14_19.31_francois.SSA.bin
             device.execute('install add file {} activate commit prompt-level none'.\
-                format(file), prompt_recovery=prompt_recovery,
+                format(reload_file), prompt_recovery=prompt_recovery,
                 reload_creds=credentials, timeout=timeout)
         except Exception as e:
             log.error("Error while copying image to standby and reloading "

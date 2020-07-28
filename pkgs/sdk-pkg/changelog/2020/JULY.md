@@ -9,6 +9,9 @@
 * UTILS
     * Added send_email
 
+* GENERAL
+    * Added verify_dscp_bits
+
 * JUNOS
     * Added verify_file_size
     * Added verify_ldp_session
@@ -51,6 +54,7 @@
     * Added verify_ldp_interface
     * Added verify_traceroute_number_of_hops
     * Added verify_ping_loss_rate
+    * Added verify_class_of_service_object_exists
 
 * LINUX
     * Added get_platform_logging

@@ -1865,3 +1865,34 @@ def get_tolerance_min_max(value, expected_tolerance):
     max_value = abs(value + tolerance)
 
     return (min_value, max_value)
+
+def verify_pcap_dscp_bits(pcap_location, expected_bits):
+    """Verifies the dscp bits of the first packet in a capture file
+
+    Args:
+        pcap_location (str): Location of pcap file
+        expected_bits (str/int): Expeceted bits to find / Integer to be converted to bits
+
+    Returns:
+        bool: True or False
+    """
+
+    if isinstance(expected_bits, int):
+        expected_bits = format(expected_bits, '#010b')[4:]
+
+    try:
+        from scapy.all import rdpcap, IP
+    except ImportError:
+        log.info(
+            'scapy is not installed, please install it by running: '
+            'pip install scapy')
+        return False
+
+    pcap_object = rdpcap(pcap_location)
+    # Six bits 111000
+    bits_ = bin(pcap_object[0].tos)[2:8]
+
+    if bits_.startswith(str(expected_bits)):
+        return True
+
+    return False

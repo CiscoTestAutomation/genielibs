@@ -305,7 +305,7 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
 
 
 def execute_reload(device, prompt_recovery, reload_creds, sleep_after_reload=120,
-    timeout=800):
+    timeout=800, **kwargs):
     ''' Reload device
         Args:
             device ('obj'): Device object
