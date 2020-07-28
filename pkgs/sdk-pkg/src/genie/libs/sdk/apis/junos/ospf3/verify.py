@@ -213,7 +213,7 @@ def verify_ospf3_neighbor_number(device,
             # if all variables exist, count plus 1
             count += 1
 
-        if count >= expected_number:
+        if count == expected_number:
             return True
 
         timeout.sleep()
@@ -475,7 +475,8 @@ def verify_ospfv3_neighbors_not_found(device, extensive=False,
     return False
 
 
-def verify_ospf3_overview(device, router_id, max_time=90, check_interval=10):
+def verify_ospf3_overview(device, router_id=None, max_time=90, check_interval=10,
+                          expected_configured_overload=None):
     """ Verifies ospf3 overview values
 
         Args:
@@ -483,6 +484,7 @@ def verify_ospf3_overview(device, router_id, max_time=90, check_interval=10):
             router_id ('str'): Router ID
             max_time ('int'): Maximum time to keep checking
             check_interval ('int'): How often to check
+            expected_configured_overload ('str'/'int'): Configured overload time or * for any
 
         Returns:
             True/False
@@ -498,11 +500,29 @@ def verify_ospf3_overview(device, router_id, max_time=90, check_interval=10):
         except SchemaEmptyParserError:
             timeout.sleep()
             continue
-        router_id_ = out.q.contains_key_value('ospf-router-id',
-                                              router_id,
-                                              value_regex=True)
-        if router_id_:
-            return True
+
+        if router_id:
+            router_id_ = out.q.contains_key_value('ospf-router-id',
+                                                router_id,
+                                                value_regex=True)
+            if router_id_:
+                return True
+
+        if expected_configured_overload:
+            configured_overload = out.q.get_values(
+                'ospf-configured-overload-remaining-time', None)
+
+            if configured_overload and expected_configured_overload == "*":
+                return True
+            
+            if configured_overload:
+                try:
+                    if int(configured_overload) == int(expected_configured_overload):
+                        return True
+                except ValueError as e:
+                    log.info("Non-integer value given")
+                    raise
+
         timeout.sleep()
     return False
 
@@ -676,6 +696,50 @@ def verify_show_ospf3_database_lsa_types(device,
 
     return False
 
+
+def verify_show_ospfv3_database(device, 
+                                advertising_router=None, 
+                                lsa_type=None,
+                                expected_node_id=None,
+                                max_time=60,
+                                check_interval=10):
+    """ Verify data in show ospf3 database
+
+    Args:
+        device (obj): Device object
+        advertising_router (str, optional): Advertising router to check. Defaults to None.
+        lsa_type (str, optional): LSA Type to check for. Defaults to None.
+        expected_node_id (str, optional): Expected node ID to check. Defaults to None.
+        max_time (int, optional): Maximum timeout time. Defaults to 60.
+        check_interval (int, optional): Check interval. Defaults to 10.
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            if advertising_router and lsa_type:
+                out = device.parse('show ospf3 database {lsa_type} advertising-router {address} extensive'.format(
+                    address=advertising_router,
+                    lsa_type=lsa_type
+                ))
+            elif advertising_router:
+                out = device.parse('show ospf3 database advertising-router {address} extensive'.format(
+                    address=advertising_router
+                ))
+            else:
+                out = device.parse('show ospf3 database extensive')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+        
+        if expected_node_id:
+            node_ids_ = Dq(out).get_values('ospf-lsa-topology-link-node-id')
+            if expected_node_id not in node_ids_:
+                timeout.sleep()
+                continue
+
+        return True
+    return False
 
 def verify_ospfv3_path_type(device,
                             expected_interface,

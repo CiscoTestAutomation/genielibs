@@ -256,3 +256,15 @@ def verify_file_size(device,
                     return True
 
     return False
+
+def delete_file_on_device(device, file_name):
+    """ Deletes file on device
+
+    Args:
+        device (obj): Device object
+        file_name ('str'): File name
+    """
+    try:
+        device.execute('file delete {}'.format(file_name))
+    except Exception as e:
+        raise Exception('Failed to delete file: {e}'.format(e=str(e)))

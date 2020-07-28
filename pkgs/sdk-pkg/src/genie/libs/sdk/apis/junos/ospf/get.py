@@ -88,6 +88,44 @@ def get_ospf_spf_start_time(log):
     except KeyError as e:
         raise KeyError(f"Key issue with exception: {str(e)}") from e
     
+    return None
+
+def get_ospf_database_checksum(device, lsa_type=None):
+    """ Get ospf data base checksum data in a list
+
+    Args:
+        device (obj): Device object
+        lsa_type (str, optional): LSA type to check for. Defaults to None.
+
+    Returns:
+        list: List of checksums
+    """
+
+    try:
+        out = device.parse('show ospf database')
+    except SchemaEmptyParserError:
+        return list()
+    
+    ret_list = []
+
+    # Example dict
+    # {
+    #     'ospf-database-information': {
+    #         'ospf-database': [{
+    #             'lsa-type': 'Router',
+    #             'checksum': '0xa9b6',
+    #         }]
+    #     }
+    # }
+
+    for entry_ in out.q.get_values('ospf-database'):
+        if lsa_type and entry_.get('lsa-type') != lsa_type:
+            continue
+
+        if entry_.get('checksum'):
+            ret_list.append(entry_.get('checksum'))
+
+    return ret_list
 
 def get_ospf_router_id(device):
     """ Retrieve ospf router id
@@ -104,4 +142,5 @@ def get_ospf_router_id(device):
         return output.q.get_values('ospf-router-id', 0)
     except Exception as e:
         log.info("Error retrieving router ID: {e}".format(e=e))    
+    return None
     

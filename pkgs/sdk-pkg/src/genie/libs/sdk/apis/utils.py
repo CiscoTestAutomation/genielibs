@@ -786,6 +786,8 @@ def copy_to_device(device,
                    timeout=300,
                    compact=False,
                    use_kstack=False,
+                   username=None,
+                   password=None,
                    **kwargs):
     """
     Copy file from linux server to device
@@ -798,6 +800,8 @@ def copy_to_device(device,
             vrf ('str'): vrf to use (optional)
             timeout('int'): timeout value in seconds, default 300
             compact('bool'): compress image option for n9k, defaults False
+            username('str'): Username to be used during copy operation
+            password('str'): Password to be used during copy operation
             use_kstack('bool'): Use faster version of copy, defaults False
                                 Not supported with a file transfer protocol
                                 prompting for a username and password
@@ -806,8 +810,12 @@ def copy_to_device(device,
     """
     fu = FileUtils.from_device(device)
 
-    # build the source address
-    source = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
+    if username:
+        # build the source address
+        source = '{p}://{u}@{s}/{f}'.format(p=protocol, u=username, s=server, f=remote_path)
+    else:
+        # build the source address
+        source = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
     try:
         if vrf:
             fu.copyfile(source=source,
@@ -817,6 +825,7 @@ def copy_to_device(device,
                         timeout_seconds=timeout,
                         compact=compact,
                         use_kstack=use_kstack,
+                        protocol=protocol,
                         **kwargs)
         else:
             fu.copyfile(source=source,
@@ -825,6 +834,7 @@ def copy_to_device(device,
                         timeout_seconds=timeout,
                         compact=compact,
                         use_kstack=use_kstack,
+                        protocol=protocol,
                         **kwargs)
     except Exception as e:
         if compact or use_kstack:
@@ -835,6 +845,7 @@ def copy_to_device(device,
                         device=device,
                         vrf=vrf,
                         timeout_seconds=timeout,
+                        protocol=protocol,
                         **kwargs)
         else:
             raise

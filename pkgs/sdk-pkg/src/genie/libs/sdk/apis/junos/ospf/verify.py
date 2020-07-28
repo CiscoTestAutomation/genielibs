@@ -453,7 +453,7 @@ def verify_ospf_neighbor_number(device,
             # if all variables exist, count plus 1
             count += 1
 
-        if count >= expected_number:
+        if count == expected_number:
             return True
 
         timeout.sleep()
@@ -610,7 +610,8 @@ def verify_ospf_neighbors_not_found(device, extensive=False,
     return False
 
 
-def verify_ospf_overview(device, router_id, max_time=90, check_interval=10):
+def verify_ospf_overview(device, router_id=None, max_time=90, check_interval=10,
+                          expected_configured_overload=None):
     """ Verifies ospf overview values
 
         Args:
@@ -618,6 +619,7 @@ def verify_ospf_overview(device, router_id, max_time=90, check_interval=10):
             router_id ('str'): Router ID
             max_time ('int'): Maximum time to keep checking
             check_interval ('int'): How often to check
+            expected_configured_overload ('str'/'int'): Configured overload time or * for any
 
         Returns:
             True/False
@@ -633,11 +635,29 @@ def verify_ospf_overview(device, router_id, max_time=90, check_interval=10):
         except SchemaEmptyParserError:
             timeout.sleep()
             continue
-        router_id_ = out.q.contains_key_value('ospf-router-id',
-                                              router_id,
-                                              value_regex=True)
-        if router_id_:
-            return True
+
+        if router_id:
+            router_id_ = out.q.contains_key_value('ospf-router-id',
+                                                router_id,
+                                                value_regex=True)
+            if router_id_:
+                return True
+
+        if expected_configured_overload:
+            configured_overload = out.q.get_values(
+                'ospf-configured-overload-remaining-time', None)
+
+            if configured_overload and expected_configured_overload == "*":
+                return True
+            
+            if configured_overload:
+                try:
+                    if int(configured_overload) == int(expected_configured_overload):
+                        return True
+                except ValueError as e:
+                    log.info("Non-integer value given")
+                    raise
+
         timeout.sleep()
     return False
 
@@ -653,6 +673,7 @@ def verify_ospf_spf_delay(device,
             expected_spf_delay('float'): SPF delay time
             max_time ('int'): Maximum time to keep checking
             check_interval ('int'): How often to check
+
         Returns:
             True/False
 
@@ -669,7 +690,9 @@ def verify_ospf_spf_delay(device,
         except SchemaEmptyParserError:
             timeout.sleep()
             continue
+
         spf_delay = output.q.get_values('ospf-spf-delay', None)
+
         if spf_delay:
             spf_delay = float(spf_delay[0])
 
@@ -829,13 +852,15 @@ def verify_no_ospf_interface_in_database(device,
 def verify_ospf_database_lsa_id(device,
                                 lsa_id,
                                 max_time=60,
-                                check_interval=10):
+                                check_interval=10,
+                                expected_node_id=None):
     """Verify 'show ospf database lsa-id {lsa_id}' against criteria
 
     Args:
         lsa_id ('str'): lsa_id to check
         max_time ('int'): Maximum time to keep checking
         check_interval ('int'): How often to check
+        expected_node_id ('str'): Expected node ID to check for
 
     Raise: None
 
@@ -854,6 +879,14 @@ def verify_ospf_database_lsa_id(device,
         except SchemaEmptyParserError:
             timeout.sleep()
             continue
+
+
+        if expected_node_id:
+            node_ids_ = Dq(out).get_values('ospf-lsa-topology-link-node-id')
+            if expected_node_id not in node_ids_:
+                timeout.sleep()
+                continue
+
 
         # add criteria to test against
         return True

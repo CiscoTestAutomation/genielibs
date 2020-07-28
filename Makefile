@@ -36,7 +36,7 @@ BUILD_DIR     = $(shell pwd)/__build__
 DIST_DIR      = $(BUILD_DIR)/dist
 BUILD_CMD     = python setup.py bdist_wheel --dist-dir=$(DIST_DIR)
 PROD_USER     = pyadm@pyats-ci
-PROD_PKGS     = /auto/pyats/packages/cisco-shared
+PROD_PKGS     = /auto/pyats/packages
 PROD_SCRIPTS  = /auto/pyats/bin
 TESTCMD       = runAll
 WATCHERS      = asg-genie-dev@cisco.com

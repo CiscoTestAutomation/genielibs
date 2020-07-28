@@ -54,3 +54,40 @@ def is_logging_ospf_spf_logged(device, expected_spf_delay=None, ospf_trace_log=N
 
         timeout.sleep()
     return False  
+
+def verify_log_exists(device, file_name, expected_log,
+                            max_time=60, check_interval=10):
+    """
+    Verify log exists
+
+    Args:
+        device('obj'): device to use  
+        file_name('str') : File name to check log
+        expected_log ('str'): Expected log message
+        max_time ('int'): Maximum time to keep checking
+        check_interval ('int'): How often to check
+
+    Returns:  
+        Boolean       
+    Raises:
+        N/A    
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    # show commands: "show log {file_name}"
+    while timeout.iterate():
+        try:
+            log_output = device.parse('show log {file_name}'.format(
+                file_name=file_name))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        log_found = log_output.q.contains(
+                    '.*{}.*'.format(expected_log), regex=True)
+        
+        if log_found:
+            return True
+
+        timeout.sleep()
+    return False  

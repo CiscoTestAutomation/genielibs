@@ -428,7 +428,10 @@ def get_platform_cpu_load(device,
             count = len(pids)
             for pid in pids:
                 cpu_load += parsed.q.contains_key_value('sort', pid).get_values('five_sec_cpu', 0)
-        cpu_load = cpu_load / count
+        if count == 0:
+            cpu_load = 0
+        else: 
+            cpu_load = cpu_load / count
     else:
         cpu_load = float(parsed[check_key])
 
@@ -495,8 +498,14 @@ def get_platform_memory_usage(device,
                 memory_holding += sum(
                     parsed.q.contains_key_value('pid',
                                                 pid).get_values('holding'))
-        memory_usage = memory_holding / parsed[check_key]['total']
+        if parsed.get(check_key, {}).get('total', 0) == 0:
+            memory_usage = 0
+        else:
+            memory_usage = memory_holding / parsed[check_key]['total']
     else:
-        memory_usage = parsed[check_key]['used'] / parsed[check_key]['total']
+        if parsed.get(check_key, {}).get('total', 0) == 0:
+            memory_usage = 0
+        else:
+            memory_usage = parsed[check_key]['used'] / parsed[check_key]['total']
 
     return memory_usage * 100

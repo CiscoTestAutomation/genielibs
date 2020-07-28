@@ -1,12 +1,15 @@
 import re
 import sys
 import time
-import logging
+import json
 import copy
+import logging
 import operator
+import xmltodict
 from genie.libs import sdk
 from genie.utils.dq import Dq
 
+import xml.etree.ElementTree as ET
 from pyats.aetest.steps import Steps
 from genie.utils.timeout import Timeout
 
@@ -106,6 +109,38 @@ def api_handler(self, step, device, command, include=None, exclude=None,
     return _output_query_template(self, output, step, device, command,
                                         include, exclude, max_time, check_interval, continue_, action, arguments=arguments)
 
+def rest_handler(self, device, method, step, continue_=True, include=None, exclude=None,
+                 max_time=None, check_interval=None, action='rest', connection_alias='rest', *args, **kwargs):
+    output = ''
+
+    # Checking the connection alias
+    try:
+        device_alias = getattr(device, connection_alias)
+    except AttributeError as e:
+        raise Exception("'{dev}' does not have a connection with the "
+                        "alias '{alias}'".format(
+                            dev=device.name, alias=connection_alias)) from e
+
+    # Calling the http protocol
+    try:
+        output = getattr(device_alias, method)(**kwargs)
+    except Exception as e:
+        log.info("REST method '{}' failed. Error: {}".format(method ,e))
+
+    # if xml convert it to json
+    if output and ET.iselement(output):
+        output = xmltodict.parse(output)
+
+    log.info(output)
+    # check for include exclude
+    if output:
+        return _output_query_template(self, output, step, device, method,
+                                      include, exclude, max_time, check_interval, continue_, action, rest_device_alias=device_alias, rest_kwargs=kwargs)
+    elif not output and (include or exclude):
+        step.errored('No rest output exist to be queried')
+    else:
+        step.failed('No rest output came back from the device {}'.format(device.name))
+
 def _prompt_handler(reply):
 
     # handeling the reply for instances that a prompt message would get displayed in the console
@@ -116,7 +151,8 @@ def _prompt_handler(reply):
     return Dialog(dialog_list)
 
 def _output_query_template(self, output, steps, device, command, include,
-                           exclude, max_time, check_interval, continue_, action, reply=None, arguments=None):
+                           exclude, max_time, check_interval, continue_, action,
+                           reply=None, arguments=None, rest_device_alias=None, rest_kwargs={}):
 
     keys = _include_exclude_list(include, exclude)
     max_time, check_interval = _get_timeout_from_ratios(
@@ -135,7 +171,8 @@ def _output_query_template(self, output, steps, device, command, include,
 
                 if send_cmd:
 
-                    output = _send_command(command, device, action, arguments=arguments, reply=reply)
+                    output = _send_command(command, device, action, arguments=arguments, reply=reply,
+                                           rest_device_alias=rest_device_alias, rest_kwargs=rest_kwargs)
 
                 if action == 'execute':
                     # validating the inclusion/exclusion of action execute,
@@ -165,7 +202,8 @@ def _output_query_template(self, output, steps, device, command, include,
 
     return output
 
-def _send_command(command, device, action, arguments=None, reply=None):
+def _send_command(command, device, action, arguments=None, reply=None,
+                  rest_device_alias=None, rest_kwargs={}):
 
     kwargs = {}
 
@@ -183,6 +221,12 @@ def _send_command(command, device, action, arguments=None, reply=None):
     # if learn
     elif action == ' learn':
         return getattr(device, action)(command).to_dict()
+
+    # if rest action
+    elif action == 'rest':
+        output = getattr(rest_device_alias, command)(**rest_kwargs)
+        log.info(output) 
+        return output
 
     # for everything else, just check if reply should get updated 
 

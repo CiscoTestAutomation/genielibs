@@ -74,9 +74,16 @@ class FileUtils(FileUtilsBase):
             raise AttributeError("Device object is missing, can't proceed with"
                              " execution")
 
+        # Extracting protocol to get the corresponding authentication info
+        protocol = kwargs['protocol'] if 'protocol' in kwargs else ''
+
         # Extracting username and password to be used during device calls
         if used_server:
-            username, password = self.get_auth(used_server)
+            # Case when cli sent contains the username
+            # EX: admin@1.1.1.1
+            if 'username' in kwargs and kwargs['username'] in used_server:
+                used_server = used_server.split('@')[1]
+            username, password = self.get_auth(used_server, protocol=protocol)
         else:
             username = None
             password = None

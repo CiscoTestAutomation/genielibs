@@ -892,6 +892,14 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
                 if not overwrite and file_data['exist']:
                     substep.skipped("File with the same name size exists on "
                                     "the device, skipped copying")
+                testbed = device.testbed
+                if protocol in testbed.servers and \
+                    hasattr(testbed.servers[protocol], 'credentials'):
+                    username = testbed.servers[protocol].credentials.default.username
+                    password = testbed.servers[protocol].credentials.default.password
+                else:
+                    username = None
+                    password = None
 
                 for i in range(1, copy_attempts+1):
                     try:
@@ -904,6 +912,8 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
                                            timeout=timeout,
                                            compact=compact,
                                            use_kstack=use_kstack,
+                                           username=username,
+                                           password=password,
                                            **kwargs)
                     except Exception as e:
                         # Retry attempt if user specified
@@ -937,29 +947,32 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
                     format(destination_act)))
     dir_after = device.execute('dir {}'.format(destination_act))
 
-    # Flag to make sure that the image is successfully copied to the first device
-    proceed = Statement(pattern=r'^Destination +filename +\S+\?$',
-                        action='sendline()',
-                        loop_continue=False,
-                        continue_timer=False)
-
     if destination_stby and device.is_ha:
         if success_copy_ha:
             with steps.start("Copying image to standby device {}".\
-                    format(destination_stby)) as step:
+                    format(destination_stby)):
                 try:
-                    device.execute("copy {} {}".format(dest_file_path,destination_stby),\
-                            reply=Dialog([proceed]))
+                    device.copy(source=dest_file_path,
+                                dest=destination_stby,
+                                timeout=timeout)
                 except Exception as e:
-                    log.warning("Unable to copy {} to {} on device {} due to:\n{}".\
-                                        format(dest_file_path, destination_stby, device.name, e))
-            with steps.start("Show dir on {} to see if image copied to standby".\
-                        format(destination_stby)) as step:
-                try:
-                    device.execute("dir {}".format(destination_stby))
-                except Exception as e:
-                    log.warning("Unable to show dir on {} on device {} due to:\n{}".\
-                                        format(destination_stby, device.name, e))
+                    log.error(banner("*** Terminating Genie Clean ***"))
+                    section.failed("Failed to copy '{}' to '{}'\n"
+                                   "Error: {}\n"
+                                   .format(dest_file_path,
+                                           destination_stby,
+                                           e),
+                                   goto=['exit'])
+
+            # TODO (daniel): this section is useless. add actual check or remove
+            # with steps.start("Show dir on {} to see if image copied to standby".\
+            #             format(destination_stby)):
+            #     try:
+            #         device.execute("dir {}".format(destination_stby))
+            #     except Exception as e:
+            #         log.warning("Unable to show dir on {} on device {} due to:\n{}".\
+            #                             format(destination_stby, device.name, e))
+
         else:
             log.warning(banner("Failed to copy to active device"))
             log.warning("Unable to copy file to active dir on {} on device {} due to:\n".\
@@ -1047,11 +1060,12 @@ def write_erase(section, steps, device, timeout=300):
     Optional('check_modules'): bool,
     Optional('module_timeout'): int,
     Optional('module_interval'): int,
+    Optional('reload_file'): str,
 })
 @aetest.test
 def reload(section, steps, device, prompt_recovery=True, sleep_after_reload=120,
     credentials=None, timeout=800, check_modules=True, module_timeout=180,
-    module_interval=30):
+    module_interval=30, reload_file=None):
 
     '''
     Clean yaml file schema:
@@ -1066,6 +1080,7 @@ def reload(section, steps, device, prompt_recovery=True, sleep_after_reload=120,
           check_modules: <Enable/Disable checking of modules after reload, 'bool'> (Optional)
           module_timeout: <timeout value to verify modules are in stable state, default 180 seconds. 'int'> (Optional)
           module_interval: <interval value between checks for verifying module status, default 30 seconds. 'int'> (Optional)
+          reload_file: <File to reload the setup with, 'str'> (Optional)
 
     Example:
     --------
@@ -1079,6 +1094,7 @@ def reload(section, steps, device, prompt_recovery=True, sleep_after_reload=120,
           check_modules: True
           module_timeout: 120
           module_interval: 30
+          reload_file: 'bootflash:cat9k_iosxe.bin'
 
     Flow:
     -----
@@ -1100,7 +1116,8 @@ def reload(section, steps, device, prompt_recovery=True, sleep_after_reload=120,
             device.api.execute_reload(prompt_recovery=prompt_recovery,
                                       reload_creds=credentials,
                                       sleep_after_reload=sleep_after_reload,
-                                      timeout=timeout)
+                                      timeout=timeout,
+                                      reload_file=reload_file)
         except (SubCommandFailure, TimeoutError) as e:
             # Could not reload the device, or it didn't go as expected
             log.error(banner("*** Terminating Genie Clean ***"))

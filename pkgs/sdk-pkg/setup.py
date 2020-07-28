@@ -125,7 +125,8 @@ setup(
                 'restview',
                 'Sphinx',
                 'sphinxcontrib-napoleon',
-                'sphinx-rtd-theme'],
+                'sphinx-rtd-theme',
+                'xmltodict'],
     },
 
     # external modules

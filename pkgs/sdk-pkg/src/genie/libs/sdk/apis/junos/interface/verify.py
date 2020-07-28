@@ -7,6 +7,7 @@ import logging
 # Genie
 from genie.utils.timeout import Timeout
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
+from genie.utils import Dq
 
 log = logging.getLogger(__name__)
 
@@ -181,4 +182,66 @@ def verify_interface_load_balance(device,
         timeout.sleep()
         continue
     
+    return False
+
+def verify_interfaces_input_output_policer_found(device, interface, logical_interface, 
+    max_time=90, check_interval=10):
+    """ Verify input and output policer value for interface
+
+        Args:
+            device ('obj'): Device object
+            interface('str'): Interface name
+            logical_interface ('str'): Logical interface name
+            max_time ('int'): Maximum time to keep checking
+            check_interval ('int'): How often to check
+        Returns:
+            Boolean
+
+        Raises:
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+    # Dictionary:
+    # "interface-policer-information": {
+    #     "physical-interface": [
+    #         {
+    #             "admin-status": "up",
+    #             "logical-interface": [
+    #                 {
+    #                     "admin-status": "up",
+    #                     "name": "ge-0/0/2.0",
+    #                     "oper-status": "up",
+    #                     "policer-information": [
+    #                         {
+    #                             "policer-family": "inet",
+    #                             "policer-input": "GE_1M-ge-0/0/2.0-log_int-i",
+    #                             "policer-output": "GE_1M-ge-0/0/2.0-log_int-o"
+    while timeout.iterate():
+        try:
+            out = device.parse('show interfaces policers {interface}'.format(
+                interface=interface.split('.')[0]
+            ))
+        except SchemaEmptyParserError as e:
+            return None
+        
+        logical_interface_list = out.q.contains('policer-information|{logical_interface}'.format(logical_interface=logical_interface),
+            regex=True).get_values('logical-interface')
+
+        for logical_intf_dict in logical_interface_list:
+            name = logical_intf_dict.get('name', None)
+            if name != logical_interface:
+                continue
+            policer_information_list = logical_intf_dict.get('policer-information', [])
+            if not policer_information_list:
+                continue
+            
+            policer_input = Dq(policer_information_list[0]).get_values('policer-input')
+            policer_output = Dq(policer_information_list[0]).get_values('policer-output')
+
+            if not policer_input or not policer_output:
+                continue
+
+            return True
+
+        timeout.sleep()
     return False

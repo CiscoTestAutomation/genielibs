@@ -62,11 +62,19 @@ def golden_recovery(start, device, console_activity_pattern, golden_image=None,
     # Set target
     target = "{}_{}".format(device.hostname, last_word_in_start)
 
+    # TODO: We need to fix that handlers[1]...
+    # Make it stronger.
+    # For now, if it doesnt exists, then just get out
+    try:
+        logfile = log.handlers[1].logfile
+    except IndexError as e:
+        raise Exception('Could not recover the device')
+
     spawn = Spawn(start,
                   settings=device.cli.settings,
                   target=target,
                   log=log,
-                  logfile=log.handlers[1].logfile)
+                  logfile=logfile)
 
     if 'system' not in golden_image:
         raise Exception("System image has not been provided in the "

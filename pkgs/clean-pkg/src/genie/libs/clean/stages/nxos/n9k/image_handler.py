@@ -32,10 +32,13 @@ class ImageHandler(CommonImageHandler):
                     if len(image_list) > 1:
                         raise Exception("Found more than 1 image for '{}' image".\
                                         format(key))
-                    setattr(self, key, image_list[0])
+                    # Workaround for Xpresso for now
+                    img = image_list[0].replace('file://', '')
+                    setattr(self, key, img)
             elif isinstance(self.images, list) and len(self.images)==1:
                 # Set 'system'
-                setattr(self, 'system', self.images[0])
+                img = self.images[0].replace('file://', '')
+                setattr(self, 'system', img)
             else:
                 raise Exception("Expecting 'system' image for NXOS N9K "
                                 "platform provided under 'images' key as a "
@@ -134,6 +137,8 @@ class ImageHandler(CommonImageHandler):
             system_filename = os.path.basename(self.system)
             if self.append_hostname:
                 system_filename = self.add_hostname(system_filename)
+            if self.add_unique_filename:
+                system_filename = self.add_unique_filename(system_filename)
 
             # Set 'system' 'images'
             self.device.clean.setdefault('change_boot_variable', {}).\
@@ -166,6 +171,8 @@ class ImageHandler(CommonImageHandler):
             system_filename = os.path.basename(self.system)
             if self.append_hostname:
                 system_filename = self.add_hostname(system_filename)
+            if self.add_unique_filename:
+                system_filename = self.add_unique_filename(system_filename)
 
             # Add file to 'images' key under 'verify_running_image'
             vrv_images.append(os.path.join(ctd_dest_dir, system_filename))

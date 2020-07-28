@@ -7,7 +7,7 @@ log = logging.getLogger(__name__)
 
 def nxapi_method_nxapi_rest(device, action, commands='', input_type='cli',
                             dn='/api/mo/sys.json', rest_method='POST',
-                            timeout=30, alias='cli'):
+                            timeout=30, alias='cli', expected_return_code=None):
     """ NX-API Method: NXAPI-REST (DME)
 
         Args:
@@ -31,6 +31,9 @@ def nxapi_method_nxapi_rest(device, action, commands='', input_type='cli',
 
             # Optional if this is the only connection defined
             alias (str): The alias for the nxapi connection
+
+            # Optional
+            expected_return_code (str): used for negative testing.
     """
     try:
         rest = getattr(device, alias)
@@ -90,6 +93,9 @@ def nxapi_method_nxapi_rest(device, action, commands='', input_type='cli',
     if rest_method == 'post':
         kwargs.update({'payload': payload})
 
+    if expected_return_code:
+        kwargs.update({'expected_return_code': expected_return_code})
+
     # send rest request
     try:
         output = getattr(rest, rest_method)(**kwargs)
@@ -125,7 +131,7 @@ def nxapi_method_nxapi_rest(device, action, commands='', input_type='cli',
 
 def nxapi_method_nxapi_cli(device, action, commands, message_format='json_rpc',
               command_type='cli', error_action=None, chunk=False,
-              sid='sid', timeout=30, alias='cli'):
+              sid='sid', timeout=30, alias='cli', expected_return_code=None):
     """ NX-API Method: NXAPI-CLI
 
         Args:
@@ -154,6 +160,9 @@ def nxapi_method_nxapi_cli(device, action, commands, message_format='json_rpc',
 
             # Optional if this is the only connection defined
             alias (str): The alias for the nxapi connection
+
+            # Optional
+            expected_return_code (str): used for negative testing.
     """
     try:
         rest = getattr(device, alias)
@@ -202,7 +211,8 @@ def nxapi_method_nxapi_cli(device, action, commands, message_format='json_rpc',
             dn='/ins',
             payload=payload,
             timeout=timeout,
-            headers=headers
+            headers=headers,
+            expected_return_code=expected_return_code
         )
     except AttributeError as e:
         raise Exception("The rest_method 'post' does not exist "
@@ -212,7 +222,7 @@ def nxapi_method_nxapi_cli(device, action, commands, message_format='json_rpc',
 def nxapi_method_restconf(device, action, commands,
                           dn='restconf/data/Cisco-NX-OS-device:System/',
                           message_format='json', rest_method='POST',
-                          timeout=30, alias='cli'):
+                          timeout=30, alias='cli', expected_return_code=None):
     """ NX-API Method: NXAPI-CLI
 
         Args:
@@ -235,6 +245,9 @@ def nxapi_method_restconf(device, action, commands,
 
             # Optional if this is the only connection defined
             alias (str): The alias for the nxapi connection
+
+            # Optional
+            expected_return_code (str): used for negative testing.
     """
     try:
         rest = getattr(device, alias)
@@ -282,7 +295,8 @@ def nxapi_method_restconf(device, action, commands,
             dn=dn,
             payload=payload,
             timeout=timeout,
-            headers=headers
+            headers=headers,
+            expected_return_code=expected_return_code
         )
     except AttributeError as e:
         raise Exception("The rest_method '{rest_method}' does not exist "

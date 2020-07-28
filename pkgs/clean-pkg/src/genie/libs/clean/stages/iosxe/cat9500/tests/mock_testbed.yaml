@@ -1,0 +1,56 @@
+testbed:
+  name: GENIE-CLEAN-TESTBED
+  passwords:
+    tacacs: lab
+    enable: lab
+  servers:
+    tftp:
+      server: the-tftp-server
+      address: 20.1.1.1
+      credentials:
+        default:
+          username: rcpuser
+          password: "%ENC{wqHCq8KUw6bDlsOPwoU=}"
+      path: /auto/path/images/
+    scp:
+      server: the-tftp-server
+      address: 20.1.1.1
+      credentials:
+        default:
+          username: rcpuser
+          password: "%ENC{wqHCq8KUw6bDlsOPwoU=}"
+      path: /auto/path/images/
+
+
+devices:
+  PE1:
+    alias: uut
+    os: iosxe
+    type: cat9k
+    platform: cat9k
+    credentials:
+      default:
+        password: "%ENC{w5zDmsOD}"
+        username: admin
+      enable:
+        password: "%ENC{w5zDmsOD}"
+        username: admin
+    connections:
+      defaults:
+        class: unicon.Unicon
+      vty:
+        protocol: telnet
+        ip: 1.1.1.1
+      cli:
+        protocol: telnet
+        ip: 2.2.2.2
+        port: 2001
+      a:
+        protocol: telnet
+        ip: 2.2.2.2
+        port: 2001
+    custom:
+      execute_timeout: 600
+      configure_timeout: 250
+      abstraction:
+        order: [os, platform]

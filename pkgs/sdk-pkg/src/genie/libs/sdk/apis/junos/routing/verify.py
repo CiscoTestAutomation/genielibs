@@ -4,6 +4,7 @@
 import re
 import logging
 from prettytable import PrettyTable
+import operator
 
 # pyATS
 from pyats.utils.objects import find, R
@@ -337,6 +338,7 @@ def verify_routing_ip_exist(device,
             
             return True
         timeout.sleep()
+
     return False
 
 
@@ -534,3 +536,220 @@ def verify_routing_routes(device,
         return False
     else:
         return True
+
+                            
+def _search_table_for_metric(op, **kwargs):
+    route_tables = Dq(kwargs['output']).get_values('route-table')
+
+    for route_table in route_tables:
+        for rt in Dq(route_table).get_values('rt'):
+
+            destination_address_ = Dq(rt).get_values('rt-destination', 0)
+            if kwargs['address_exceptions'] and destination_address_ in kwargs['address_exceptions']:
+                continue
+
+            metric_ = Dq(rt).get_values('metric', 0)
+
+            if op(int(metric_), int(kwargs['metric'])):
+                return False
+    return True
+
+
+def verify_routing_no_ospf_metric_match(device, 
+                                        metric, 
+                                        address_exceptions=None,
+                                        max_time=60, 
+                                        check_interval=10):
+    """Verify that no OSPF routes have given metric
+
+    Args:
+        device (obj): Device object
+        metric (int): Metric to check for
+        address_exceptions (list, optional): List of addresses to not check. Defaults to None.
+        max_time (int, optional): Maximum timeout time. Defaults to 60.
+        check_interval (int, optional): Check interval. Defaults to 10.
+    """
+    
+
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            output = device.parse(
+                "show route protocol ospf")
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+    
+        if _search_table_for_metric(operator.eq, **locals()):
+            return True
+        else:
+            timeout.sleep()
+            continue
+    return False
+
+
+def verify_routing_ospf_metric_match_or_greater(device, 
+                                        metric, 
+                                        address_exceptions=None,
+                                        max_time=60, 
+                                        check_interval=10):
+    """Verify that all OSPF routes have given metric
+
+    Args:
+        device (obj): Device object
+        metric (int): Metric to check for
+        address_exceptions (list, optional): List of addresses to not check. Defaults to None.
+        max_time (int, optional): Maximum timeout time. Defaults to 60.
+        check_interval (int, optional): Check interval. Defaults to 10.
+    """
+
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            output = device.parse(
+                "show route protocol ospf")
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+    
+        if _search_table_for_metric(operator.lt, **locals()):
+            return True
+        else:
+            timeout.sleep()
+            continue
+    return False
+
+
+def verify_metric_in_route(device, address, expected_metric, table_name, 
+                          max_time=60,
+                          check_interval=10):
+    """Verify metric in 'show route {address}' when given table_name
+
+        Args:
+            device ('obj'): Device to use
+            address ('str'): IP address in show command
+            expected_metric ('int'): Expected metric number
+            table_name ('str'): Table name. E.g. "inet.3".
+            max_time ('int', optional): Maximum time to keep checking. Default to 60.
+            check_interval ('int', optional): How often to check. Default to 10.
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """  
+
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+
+            out = device.parse("show route {address}".format(address=address))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+        
+        # Sample output  
+        #  {'route-information': {'route-table': [{'active-route-count': '8',
+        #                                         'destination-count': '8',
+        #                                         'hidden-route-count': '0',
+        #                                         'holddown-route-count': '0',
+        #                                         'rt': [{'rt-destination': '106.187.14.240/32',
+        #                                                 'rt-entry': {'active-tag': '*',
+        #                                                             'age': {'#text': '00:07:19'},
+        #                                                             'metric': '1',  <-------------------------- 
+        #                                                             'nh': [{'to': '106.187.14.157',
+        #                                                                     'via': 'ge-0/0/0.0'}],
+        #                                                             'preference': '10',
+        #                                                             'protocol-name': 'OSPF'}}],
+        #                                         'table-name': 'inet.0', <--------------------------
+        #                                         'total-route-count': '8'},
+        #                                     {'active-route-count': '1',
+        #                                         'destination-count': '1',
+        #                                         'hidden-route-count': '0',
+        #                                         'holddown-route-count': '0',
+        #                                         'rt': [{'rt-destination': '106.187.14.240/32',
+        #                                                 'rt-entry': {'active-tag': '*',
+        #                                                             'age': {'#text': '00:07:19'},
+        #                                                             'metric': '1',  <--------------------------
+        #                                                             'nh': [{'to': '106.187.14.157',
+        #                                                                     'via': 'ge-0/0/0.0'}],
+        #                                                             'preference': '9',
+        #                                                             'protocol-name': 'LDP'}}],
+        #                                         'table-name': 'inet.3', <--------------------------
+        #                                         'total-route-count': '1'}]}}
+
+        # Filter the outputs:
+        # Input:        out.q.contains('metric|inet.3', regex=True).reconstruct()
+        # Output:       {'route-information': {'route-table': [{'rt': [{'rt-entry': {'metric': '1'}}]},
+        #                                                      {'rt': [{'rt-entry': {'metric': '1'}}],
+        #                                                                    'table-name': 'inet.3'}
+        #                                                     ]}}
+        filtered_output = out.q.contains('metric|{table_name}'.format(table_name=table_name), regex=True).reconstruct()
+
+        rt_list = filtered_output['route-information']['route-table']
+
+        for rt in rt_list:
+            if 'table-name' in rt and rt['table-name'] == table_name:
+                if expected_metric == int(Dq(rt).get_values('metric', 0)):
+                    return True
+
+        timeout.sleep()
+    return False 
+
+
+def verify_specific_route(device,
+                          address,
+                          learn_protocol,
+                          max_time=60,
+                          check_interval=10):
+    """Verifies address list agianst 'show route protocol {protocol}'
+
+    Args:
+        device ('obj'): device to use
+        address('str'): address to search for
+        learn_protocol('str'): Learned protocol
+        max_time ('int'): Maximum time to keep checking
+        check_interval ('int'): How often to check
+
+    Returns:
+        True/False
+
+    Raises:
+        N/A
+    """
+
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            output = device.parse(
+                "show route {address}".format(address=address))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+        
+        #   [{'rt-entry': {'active-tag': '*', 'protocol-name': 'OSPF', 
+        #   'preference': '10', 'metric': '1', 'age': {'#text': '00:00:01'}, 
+        #   'nh': [{'to': '106.187.14.158', 'via': 'ge-0/0/0.0'}]}, 
+        #   'rt-destination': '59.128.2.250/32'}]
+        rt_destination_ = Dq(output).get_values("rt-destination", 0)
+
+        #   [{'rt-entry': {'active-tag': '*', 'protocol-name': 'OSPF', 
+        #   'preference': '10', 'metric': '1', 'age': {'#text': '00:00:01'}
+        protocol_name = Dq(output).get_values("protocol-name", 0)
+
+        if protocol_name:
+            if rt_destination_.startswith(str(address)) and \
+                protocol_name.lower() ==  learn_protocol.lower():
+                return True
+            else:
+                timeout.sleep()
+                continue
+                
+        timeout.sleep()
+
+    return False

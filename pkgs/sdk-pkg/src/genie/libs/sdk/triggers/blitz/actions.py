@@ -14,7 +14,8 @@ from pyats.results import TestResult, Passed, Failed, Skipped, Passx, Aborted, E
 from .markup import save_variable
 from .yangexec import run_netconf, run_gnmi, notify_wait
 from .actions_helper import configure_handler, api_handler, learn_handler,\
-                            parse_handler, execute_handler, _get_exclude
+                            parse_handler, execute_handler, _get_exclude,\
+                            rest_handler
 
 
 log = logging.getLogger(__name__)
@@ -92,6 +93,15 @@ def learn(self, device, steps, feature, include=None, exclude=None,
 def sleep(self, steps, sleep_time, continue_=True, *args, **kwargs):
     log.info('Sleeping for {s} seconds'.format(s=sleep_time))
     time.sleep(float(sleep_time))
+
+def rest(self, device, method, steps, continue_=True, include=None,
+         exclude=None, max_time=None, check_interval=None, connection_alias='rest',
+         *args, **kwargs):
+
+    output = rest_handler(self, device, method, steps, continue_=continue_, include=include, exclude=exclude,
+                          max_time=max_time, check_interval=check_interval, connection_alias=connection_alias, *args, **kwargs)
+
+    return output
     
 def yang(self, device, steps, protocol, datastore, content, operation,
          continue_=True, connection=None, returns=None, *args, **kwargs):
@@ -259,6 +269,7 @@ actions = {'configure': configure,
            'yang': yang,
            'learn': learn,
            'print': print,
+           'rest': rest,
            'configure_replace': configure_replace,
            'save_config_snapshot': save_config_snapshot,
            'restore_config_snapshot': restore_config_snapshot,

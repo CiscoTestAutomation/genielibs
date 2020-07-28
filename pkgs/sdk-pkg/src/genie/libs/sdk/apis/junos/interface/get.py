@@ -6,6 +6,7 @@ import logging
 import copy
 # Genie
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
+from genie.utils.timeout import Timeout
 from genie.libs.sdk.libs.utils.normalize import GroupKeys
 from genie.utils import Dq
 # Pyats
@@ -406,3 +407,40 @@ def get_interface_logical_output_bps(device, logical_interface,
         return output_bps
     
     return None
+
+def get_interface_queue_counters_trans_packets(device, interface, expected_queue_number, extensive=False):
+    """ Get queue counters transmitter based on interfaces queue
+
+        Args:
+            device ('obj'): Device object
+            interface('str'): Interface name
+            expected_queue_number ('str'): Queue number to check
+            extensive ('str'): Flag to check extensive in command
+            
+        Returns:
+            total_drop_packets: Output error drops
+
+        Raises:
+            None
+    """
+    try:
+        if extensive:
+            out = device.parse('show interfaces extensive {interface}'.format(
+                interface=interface.split('.')[0]
+            ))
+        else:
+            out = device.parse('show interfaces {interface}'.format(
+                interface=interface.split('.')[0]
+            ))
+    except SchemaEmptyParserError as e:
+        return None
+    # Dcitonary:
+    # 'queue': [{'queue-counters-queued-packets': '0',
+    #             'queue-counters-total-drop-packets': '0',
+    #             'queue-counters-trans-packets': '0',
+    #             'queue-number': '0'}]
+    transmitted_drop_packets = out.q.get_values('queue-counters-trans-packets', 
+        int(expected_queue_number))
+    if not transmitted_drop_packets:
+        return None
+    return transmitted_drop_packets
