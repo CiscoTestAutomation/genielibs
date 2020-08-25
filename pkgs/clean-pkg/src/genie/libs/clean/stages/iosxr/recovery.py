@@ -182,7 +182,7 @@ def tftp_recover_from_rommon(spawn, session, context, device_name,
             spawn.sendline("{}={}".format(mapping_list[item], context[item]))
         except Exception as e:
             log.error(str(e))
-            raise Exception("Unable to set {}={}".format(item, goto=['exit']))
+            raise Exception("Unable to set {}={}".format(mapping_list[item], context[item]))
 
 
     # Build the boot command
@@ -194,6 +194,6 @@ def tftp_recover_from_rommon(spawn, session, context, device_name,
     try:
         spawn.sendline(boot_cmd)
     except Exception as e:
-        raise Exception("Unable to boot {} error {}".format(boot_cmd, str(e)),
-                                                            goto=['exit'])
+        raise Exception("Unable to boot {} error {}".format(boot_cmd, str(e)))
+
 

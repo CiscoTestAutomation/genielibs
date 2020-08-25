@@ -10,7 +10,7 @@ testbed:
       credentials:
         default:
           username: rcpuser
-          password: "%ENC{wqHCq8KUw6bDlsOPwoU=}"
+          password: password
       path: /auto/path/images/
     scp:
       server: the-tftp-server
@@ -18,7 +18,7 @@ testbed:
       credentials:
         default:
           username: rcpuser
-          password: "%ENC{wqHCq8KUw6bDlsOPwoU=}"
+          password: password
       path: /auto/path/images/
 
 
@@ -30,10 +30,10 @@ devices:
     platform: cat9k
     credentials:
       default:
-        password: "%ENC{w5zDmsOD}"
+        password: password
         username: admin
       enable:
-        password: "%ENC{w5zDmsOD}"
+        password: password
         username: admin
     connections:
       defaults:

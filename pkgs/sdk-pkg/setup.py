@@ -126,7 +126,8 @@ setup(
                 'Sphinx',
                 'sphinxcontrib-napoleon',
                 'sphinx-rtd-theme',
-                'xmltodict'],
+                'xmltodict',
+                'ruamel.yaml'],
     },
 
     # external modules

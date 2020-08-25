@@ -10,19 +10,23 @@ from functools import partial
 from collections import OrderedDict
 
 # pyATS
+from pyats import aetest
+from pyats import results
 from pyats.aetest import Testcase
+from pyats.log.utils import banner
 from pyats.aetest.base import Source
 from pyats.aetest import base, processors
 from pyats.kleenex.bases import BaseCleaner
 from pyats.aetest.parameters import ParameterDict
 from pyats.aetest.loop import loopable, get_iterations
 
+
 # Genie
 from genie.libs import clean
 from genie.testbed import load
 from genie.harness.utils import load_class
 from genie.harness.discovery import copy_func
-from genie.libs.clean.utils import update_clean_section
+from genie.libs.clean.utils import initialize_clean_sections
 from genie.metaparser.util.schemaengine import Schema
 from genie.libs.clean.stages.recovery import recovery_processor, block_section
 from genie.metaparser.util.exceptions import SchemaMissingKeyError,\
@@ -87,7 +91,7 @@ def _get_clean(clean_name, clean_data, device):
 
     try:
         mod = getattr(_get_submodule(lookup.clean, data["module_name"]), name)
-        mod.__name__ = clean_name
+        mod.__wrapped__.__name__ = clean_name
         return mod
 
     except Exception:
@@ -109,6 +113,16 @@ class CleanTestcase(Testcase):
         self.device = device
         super().__init__(*args, **kwargs)
 
+        if self.device.clean['images']:
+            # Get abstracted ImageHandler class
+            abstract = Lookup.from_device(self.device, packages={'clean': clean})
+            ImageHandler = abstract.clean.stages.image_handler.ImageHandler
+
+            # Image handler
+            self.image_handler = ImageHandler(self.device, self.device.clean['images'])
+        else:
+            self.image_handler = None
+
     def __iter__(self):
         '''Built-in function __iter__
 
@@ -123,9 +137,15 @@ class CleanTestcase(Testcase):
         iterations are processed.
         '''
         for section in self.discover():
+
             if not hasattr(section, '__testcls__'):
                 raise TypeError("Expected a subsection object with "
                                 "'__testcls__' set by the section decorator")
+
+            # If image handler has a method to update this section - execute it
+            if self.image_handler:
+                getattr(self.image_handler, 'update_section')(section.uid)
+
             # discovered Subsection
             # ------------------------
             if loopable(section):
@@ -142,6 +162,17 @@ class CleanTestcase(Testcase):
                 new_section = section.__testcls__(section, parent = self)
                 yield new_section
 
+            if not new_section.result:
+                # Do not run anything else as it did not passed
+                log.error(banner("*** Terminating Genie Clean ***"))
+                aetest.executer.goto_result = results.Blocked
+                aetest.executer.goto = [['{} has not Passed'.format(new_section.uid),
+                                         str]]
+
+            # image handler updates latest image
+            if self.image_handler:
+                self.image_handler.update_image_references(section)
+
     def discover(self):
         self.history = OrderedDict()
         try:
@@ -152,7 +183,8 @@ class CleanTestcase(Testcase):
 
         # Insert the 'images' value into necessary clean sections
         if self.device.clean['images']:
-            update_clean_section(self.device, order, self.device.clean['images'])
+            initialize_clean_sections(self.image_handler, order)
+        # self.device.clean['change_boot_variable'] = {'images': []}
 
         all_data = {}
         all_schema = {}

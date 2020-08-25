@@ -12,7 +12,7 @@ devices:
       break_count: 5
       console_activity_pattern: "\\.\\.\\.\\."
       timeout: 600
-      recovery_password: "%ENC{w5zDmsOD}"
+      recovery_password: password
       golden_image:
         - bootflash:/golden_image.bin
 
@@ -61,12 +61,14 @@ devices:
       timeout: 1
 
     reload:
-      prompt_recovery: True
-      sleep_after_reload: 1
-      credentials: None
-      timeout: 1
-      module_timeout: 1
-      module_interval: 1
+      reload_service_args:
+        prompt_recovery: True
+        reload_creds: None
+        timeout: 1
+      check_modules:
+        check: True
+        timeout: 1
+        interval: 1
 
     apply_configuration:
       configuration: |

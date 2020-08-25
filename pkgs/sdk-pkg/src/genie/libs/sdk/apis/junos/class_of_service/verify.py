@@ -65,5 +65,59 @@ def verify_class_of_service_object_exists(device, interface, expected_object, in
         return True
     return False
 
+def verify_class_of_service_interface(device,
+                                  interface,
+                                  expected_object_type=None,
+                                  expected_object_name=None,
+                                  max_time=60,
+                                  check_interval=10):
+    """ Verify interfaces terse
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            expected_object_type (`str`, optional): Expected object type. Defaults to None
+            expected_object_name (`str`, optional): Expected object name. Defaults to None
+            max_time (`int`, optional): Maximum time to keep checking. Defaults to 60
+            check_interval (`int`, optional): How often to check. Defaults to 10
+        Returns:
+            result (`bool`): Verified result
+        Raises:
+            N/A
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    interface_out = None
+    result = True
+    while timeout.iterate():
+        try:
+            interface_out = device.parse(
+                'show class-of-service interface {interface}'.format(
+                    interface=interface))
+            result = True
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
         
+        if expected_object_type:
+            object_type_ = interface_out.q.contains(expected_object_type, regex=True). \
+                            get_values('cos-object-type', 0)
+            
+            if object_type_ != expected_object_type:
+                result = False
+                continue
         
+        if expected_object_name:
+            object_name_ = interface_out.q.contains(expected_object_name, regex=True). \
+                            get_values('cos-object-name', 0)
+            
+            if object_name_ != expected_object_name:
+                result = False
+                continue
+        
+        if result:
+            return True
+        
+        timeout.sleep()
+    
+    return False

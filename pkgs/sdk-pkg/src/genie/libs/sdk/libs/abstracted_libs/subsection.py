@@ -308,11 +308,22 @@ def load_config_as_string(self, testbed, steps, configs, connect=False):
 def configure_replace(self, testbed, steps, devices, timeout=60):
 
     for name, dev in devices.items():
-        try:
-            device = testbed.devices.get(name, None)
-            if not device or not device.is_connected():
-                continue
+        log.info("Executing 'configure_replace' subsection on '{dev}'"
+                 .format(dev=name))
 
+        if name not in testbed.devices:
+            log.warning("Skipping '{dev}' as it does not exist in the testbed"
+                        .format(dev=name))
+            continue
+
+        device = testbed.devices[name]
+
+        if not device.is_connected():
+            log.warning("Skipping '{dev}' as it is not connected"
+                        .format(dev=name))
+            continue
+
+        try:
             file_name = None
             file_location = None
             lookup = Lookup.from_device(device)

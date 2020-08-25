@@ -4,12 +4,14 @@
 import os
 import logging
 import re
+import json
 import jinja2
 import shlex
 import subprocess
 import time
 import random
 import copy
+import operator
 
 from time import strptime
 from datetime import datetime
@@ -967,7 +969,8 @@ def modify_filename(device,
                     check_image_length=False,
                     limit=63,
                     unique_file_name=False,
-                    unique_number=None):
+                    unique_number=None,
+                    new_name=None):
     """ Truncation is done such that protocol:/directory/image should not
         exceed the limited characters.
         This for older devices, where it does not allow netboot from rommon,
@@ -986,6 +989,8 @@ def modify_filename(device,
             limit ('int'): character limit of the url, default 63
             unique_file_name（'bool'): append a six digit random number to the end of
                                         file name to make it unique
+            new_name ('str'): replace original file name with new_name
+
         Raises:
             ValueError
         Returns:
@@ -994,7 +999,9 @@ def modify_filename(device,
     if not server:
         server = device.api.get_longest_server_address()
 
-    new_name = file
+    if new_name:
+        file = new_name
+
     image_name, image_ext = os.path.splitext(file)
     if check_image_length:
         log.info(
@@ -1620,7 +1627,8 @@ def get_interfaces(device, link_name=None, opposite=False, phy=False, num=0):
     #                         type: ethernet
     if link_name:
         try:
-            link = device.interfaces[link_name].link
+            link = device.testbed.find_links(interfaces__device__name=device.name, 
+                name=link_name).pop()
         except Exception as e:
             log.error(str(e))
             return None
@@ -1866,19 +1874,167 @@ def get_tolerance_min_max(value, expected_tolerance):
 
     return (min_value, max_value)
 
-def verify_pcap_dscp_bits(pcap_location, expected_bits):
-    """Verifies the dscp bits of the first packet in a capture file
+
+def verify_mpls_experimental_bits(pcap_location, expected_dst_address, expected_bit_value):
+    """ Verify the first packet to have expected_dst_address has the
+        MPLS experiement bits set to expected_bit_value
+
+    Args:
+        pcap_location (obj): PCAP file location
+        expected_dst_address (str): Destination IP address to search for
+        expected_bit_value (int): Expected bit value to check
+    """
+
+    try:
+        from scapy.contrib.mpls import MPLS
+        from scapy.all import rdpcap, IP, Raw
+    except ImportError:
+        raise ImportError(
+            'scapy is not installed, please install it by running: '
+            'pip install scapy') from None
+
+    pcap_object = rdpcap(pcap_location)
+
+    for packet in pcap_object:
+        if IP in packet and packet[IP].dst == expected_dst_address:
+            if MPLS in packet:
+                return expected_bit_value == packet[MPLS].cos
+        else:
+            mpls_ = MPLS(packet[Raw])
+            if IP in packet and packet[IP].dst == expected_dst_address:
+                if MPLS in packet:
+                    return expected_bit_value == packet[MPLS].cos
+
+    return False
+    
+def verify_pcap_dscp_bits(pcap_location, expected_bits, position=0, expected_protocol=None, 
+                          expected_dst_port_number=None, expected_src_address=None, check_all=False,
+                          expected_src_port_number=None, port_and_or='and'):
+    """Verifies the dscp bits of packets in a capture file
 
     Args:
         pcap_location (str): Location of pcap file
         expected_bits (str/int): Expeceted bits to find / Integer to be converted to bits
+        position (int, optional): Which packet to check. Defaults to 0.
+        expected_protocol (str, optional): Expected protocol to verify against. Defaults to None
+        expected_dst_port_number (int, optional): Expected destination port number to verify again. Defaults to None
+        expected_src_address (str, optional): Expected source IP address. Defaults to None
+        check_all (bool, optional): Ignore position and check all packets until one is found that meets criteria. Defaults to False
+        expected_src_port_number (int, optional): Expected source port number to verify again. Defaults to None
+        port_and_or (str, optional): Whether to and/or the expected port number results. Defaults to 'and'
 
     Returns:
         bool: True or False
     """
 
+    # Defines whether to check for one or both port numbers
+    if port_and_or.lower() == 'and':
+        port_and_or_op = operator.and_
+    elif port_and_or.lower() == 'or':
+        port_and_or_op = operator.or_
+    else:
+        raise Exception("port_and_or must be either 'and' or 'or'")
+
+    # Converts int to bit string, IE, 56 == '111000'
     if isinstance(expected_bits, int):
         expected_bits = format(expected_bits, '#010b')[4:]
+
+    # Converts CS# into bit string, IE, CS7 == '111000'
+    dscp_options_ = {'cs' + str(num): format(num, '#010b')[7:] for num in range(8)}
+    if expected_bits.lower() in dscp_options_:
+        expected_bits = dscp_options_.get(expected_bits.lower())
+
+    # Import modules from scapy
+    try:
+        from scapy.all import rdpcap, IP, IPv6, UDP, Raw, TCP
+        from scapy.contrib.ospf import OSPF_Hdr, OSPF_Hello
+        from scapy.contrib.rsvp import RSVP
+    except ImportError:
+        log.info(
+            'scapy is not installed, please install it by running: '
+            'pip install scapy')
+        return False
+
+    # If expected_protocol is an int, convert it to its respective protocol string
+    if isinstance(expected_protocol, int):
+        protocols_ = {46: 'rsvp'}
+        expected_protocol = protocols_.get(expected_protocol)
+        if not expected_protocol:
+            raise Exception("Supplied protocol integer is not currently available, please supply string representation instead")
+
+    pcap_object = rdpcap(pcap_location)
+
+    for packet in pcap_object:
+        if not check_all:
+            packet = pcap_object[position]
+        bits_ = None
+        if IP in packet:
+            # Six bits 111000
+            bits_ = bin(packet[0].tos)[2:8]
+        elif IPv6 in packet:
+            # Six bits 111000
+            bits_ = bin(packet[0].tc)[2:8]
+
+        # Handles looking for protocols
+        try:
+            if str(expected_protocol).lower() == 'ospf' and OSPF_Hello not in OSPF_Hdr(packet[Raw]):
+                continue
+        except Exception:
+            pass
+
+        try:
+            if str(expected_protocol).lower() == 'rsvp' and RSVP not in RSVP(packet[Raw]):
+                continue
+        except Exception:
+            pass
+
+        if str(expected_protocol).lower() == 'udp' and UDP not in packet:
+            continue
+
+        if str(expected_protocol).lower() == 'tcp' and TCP not in packet:
+            continue
+
+        
+
+        # Handles port numbers
+        if expected_dst_port_number and expected_src_port_number:
+            if not port_and_or_op(
+                expected_dst_port_number == packet.dport,
+                expected_src_port_number == packet.sport):
+                continue
+        else:
+            if expected_dst_port_number and expected_dst_port_number != packet.dport:
+                continue
+
+            if expected_src_port_number and expected_src_port_number != packet.sport:
+                continue
+
+        # Handles IPv4/IPv6 addresses
+        if expected_src_address:
+            if IP in packet and packet[IP].src != expected_src_address.split('/')[0]:
+                continue
+            if IPv6 in packet and packet[IPv6].src != expected_src_address.split('/')[0]:
+                continue
+
+        if bits_ and bits_.startswith(str(expected_bits)):
+            return True
+        
+        if not check_all:
+            break
+
+    return False
+
+def verify_pcap_packet_type(pcap_location, expected_type, position=0):
+    """Verifies expected type of a packet
+
+    Args:
+        pcap_location (`str`): Location of pcap file
+        expected_type (`str`): Expected type
+        position (`int`, optional): Which packet to check. Defaults to 0.
+
+    Returns:
+        bool: True or False
+    """
 
     try:
         from scapy.all import rdpcap, IP
@@ -1889,10 +2045,368 @@ def verify_pcap_dscp_bits(pcap_location, expected_bits):
         return False
 
     pcap_object = rdpcap(pcap_location)
-    # Six bits 111000
-    bits_ = bin(pcap_object[0].tos)[2:8]
-
-    if bits_.startswith(str(expected_bits)):
+    packet = pcap_object[position]
+    target_type_ = packet[IP].version
+    
+    if expected_type == target_type_:
         return True
+    
+    return False
+
+def verify_pcap_packet_protocol(pcap_location, expected_protocol, position=0):
+    """Verifies expected protocol of a packet
+
+    Args:
+        pcap_location (`str`): Location of pcap file
+        expected_protocol (`str`): Expected protocol name
+        position (`int`, optional): Which packet to check. Defaults to 0.
+
+    Returns:
+        bool: True or False
+    """
+
+    try:
+        from scapy.all import rdpcap, IP
+    except ImportError:
+        log.info(
+            'scapy is not installed, please install it by running: '
+            'pip install scapy')
+        return False
+
+    pcap_object = rdpcap(pcap_location)
+    packet = pcap_object[position]
+    protocol_ = packet[IP].proto
+    
+    if expected_protocol == protocol_:
+        return True
+    
+    return False
+
+def verify_pcap_packet_source_port(pcap_location, expected_source_port, position=0):
+    """Verifies expected source port of a packet
+
+    Args:
+        pcap_location (`str`): Location of pcap file
+        expected_source_port (`str`): Expected source port
+        position (`int`, optional): Which packet to check. Defaults to 0.
+
+    Returns:
+        bool: True or False
+    """
+
+    try:
+        from scapy.all import rdpcap, IP
+    except ImportError:
+        log.info(
+            'scapy is not installed, please install it by running: '
+            'pip install scapy')
+        return False
+
+    pcap_object = rdpcap(pcap_location)
+    packet = pcap_object[position]
+    src_port_ = packet[IP].sport
+    
+    if expected_source_port == src_port_:
+        return True
+    
+    return False
+
+def verify_pcap_packet_destination_port(pcap_location, expected_destination_port, position=0):
+    """Verifies expected destination port of a packet
+
+    Args:
+        pcap_location (`str`): Location of pcap file
+        expected_destination_port (`str`): Expected destination port
+        position (`int`, optional): Which packet to check. Defaults to 0.
+
+    Returns:
+        bool: True or False
+    """
+
+    try:
+        from scapy.all import rdpcap, IP
+    except ImportError:
+        log.info(
+            'scapy is not installed, please install it by running: '
+            'pip install scapy')
+        return False
+
+    pcap_object = rdpcap(pcap_location)
+    packet = pcap_object[position]
+    dst_port_ = packet[IP].dport
+    
+    if expected_destination_port == dst_port_:
+        return True
+    
+    return False
+
+def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_dst_address=None, 
+    expected_inner_exp_bits=None, expected_outer_exp_bits=None, expected_tos=None,
+    expected_mpls_label=None, check_all=False):
+    """ Verify pcap mpls packets values
+
+    Args:
+        pcap_location (obj): PCAP file location
+        expected_src_address (str): Source IP address to search for
+        expected_dst_address (str): Destination IP address to search for
+        expected_inner_exp_bits (int): Expected inner Exp bits
+        expected_outer_exp_bits (int): Expected outer Exp bits
+        expected_tos (int): Expected tos value
+        expected_mpls_label (str): Expected mpls label
+        check_all (bool): Check all matching packets
+    
+    Returns:
+        bool: True or False
+    """
+
+    try:
+        from scapy.contrib.mpls import MPLS
+        from scapy.all import rdpcap, IP, load_contrib
+        load_contrib("mpls")
+    except ImportError:
+        raise ImportError(
+            'scapy is not installed, please install it by running: '
+            'pip install scapy') from None
+
+    pcap_object = rdpcap(pcap_location)
+
+    
+    for packet in pcap_object:
+        if IP in packet or MPLS in packet:
+                
+            ip_packet = packet.getlayer(IP)
+
+            if expected_dst_address:
+
+                dst = ip_packet.dst
+                if dst != expected_dst_address:
+                    continue
+            
+            if expected_src_address:
+                src = ip_packet.src
+                if src != expected_src_address:
+                    continue
+                
+            if expected_outer_exp_bits:
+                if not packet.haslayer(MPLS):
+                    continue
+                mpls_layer = packet.getlayer(MPLS)
+                mpls_outer = mpls_layer[0]
+                mpls_outer_cos = mpls_outer.cos
+                if bin(mpls_outer_cos) != bin(expected_outer_exp_bits):
+                    if check_all:
+                        return False 
+                    continue
+
+            
+            if expected_mpls_label:
+                if not packet.haslayer(MPLS):
+                    continue
+                mpls_layer = packet.getlayer(MPLS)
+                mpls_outer = mpls_layer[0]
+                mpls_outer_label = mpls_outer.label
+                if bin(mpls_outer_label) != bin(expected_mpls_label):
+                    if check_all:
+                        return False 
+                    continue
+            
+            if expected_inner_exp_bits:
+                if not packet.haslayer(MPLS):
+                    continue
+                mpls_layer = packet.getlayer(MPLS)
+                mpls_inner = mpls_layer[1]
+                mpls_inner_cos = mpls_inner.cos
+                if bin(mpls_inner_cos) != bin(expected_inner_exp_bits):
+                    if check_all:
+                        return False 
+                    continue
+
+            if expected_tos is not None:
+                ip_tos = ip_packet.tos
+                if not bin(ip_tos).startswith(bin(expected_tos)):
+                    if check_all:
+                        return False 
+                    continue
+
+            return True
+
+    return False
+
+
+def verify_no_mpls_header(pcap_location, expected_dst_address=None):
+    """ Verify no mpls header
+
+    Args:
+        pcap_location (obj): PCAP file location
+        expected_dst_address (str): Destination IP address to search for
+    
+    Returns:
+        bool: True or False
+    """
+    try:
+        from scapy.contrib.mpls import MPLS
+        from scapy.all import rdpcap, IP, load_contrib
+        load_contrib("mpls")
+    except ImportError:
+        raise ImportError(
+            'scapy is not installed, please install it by running: '
+            'pip install scapy') from None
+
+    pcap_object = rdpcap(pcap_location)
+    for packet in pcap_object:
+        if IP in packet:
+                
+            ip_packet = packet.getlayer(IP)
+
+            if expected_dst_address:
+
+                dst = ip_packet.dst
+                if dst == expected_dst_address and MPLS not in packet:
+                    return True
+
+    return False
+
+def save_dict_to_json_file(data, filename):
+    """ merge a list of Python dictionaries into one dictionary
+        and save the dictionary to a JSON file
+        If same key exists in data(dicts) which will be merged, 
+        the key will be overridden.
+
+        Args:
+            data (`list`): list of dictionaries
+            filename (`string`): filename to save
+        Raise:
+            Exception
+        Returns:
+            output (`dict`): Python dictionary
+
+        Example:
+
+        >>> dev.api.save_dict_to_file(data=[dict1, dict2], 'merged_dict')
+        {
+            'a': {        # came from `dict1`
+                'b': 1,
+            },
+            'c': {        # came from `dict2`
+                'd': 2,
+            }
+        }
+
+    """
+    if isinstance(data, list):
+        output = {}
+        for dict_ in data:
+            if isinstance(dict_, dict):
+                output.update(dict_)
+            else:
+                raise Exception('{dict_} is not dictionary.'.format(dict_=dict_))
+        with open(filename, 'w+') as f:
+            f.write(json.dumps(output))
+    else:
+        raise Exception('`data` {data} is not list.'.format(data=data))
+
+    return output
+
+def load_dict_from_json_file(filename):
+    """ load python dictionary from a JSON file
+        Args:
+            filename (`string`): JSON file name
+        Raise:
+            Exception
+        Returns:
+            output (`dict`): Python dictionary
+
+        Example:
+
+        >>> dev.api.load_dict_from_json_file('merged_dict')
+        {
+            'a': {
+                'b': 1,
+            },
+            'c': {
+                'd': 2,
+            }
+        }
+
+    """
+    with open(filename, 'r') as f:
+        output = json.loads(f.read())
+
+    return output
+
+def verify_pcap_packet(pcap_location, expected_src_address=None, expected_dst_address=None, 
+    expected_protocol=None, expected_dst_port_number=None, expected_tos=None,
+    expected_src_port_number=None, expected_traffic_class=None, check_all=False):
+    """ Verify pcap mpls packets values
+
+    Args:
+        pcap_location (obj): PCAP file location
+        expected_src_address (str): Source IP address to search for
+        expected_dst_address (str): Destination IP address to search for
+        expected_protocol (str): Expected protocol in packet
+        expected_dst_port_number (int): Expected destination port number
+        expected_src_port_number (int): Expected source port number
+        expected_tos (int): Expected tos value
+        expected_traffic_class (str): Expected traffic class
+        check_all (bool): Check all matching packets
+    
+    Returns:
+        bool: True or False
+    """
+
+    try:
+        from scapy.contrib.mpls import MPLS
+        from scapy.all import rdpcap, IP, load_contrib, IPv6, TCP, UDP
+        load_contrib("mpls")
+    except ImportError:
+        raise ImportError(
+            'scapy is not installed, please install it by running: '
+            'pip install scapy') from None
+
+    pcap_object = rdpcap(pcap_location)
+    
+    for packet in pcap_object:
+        
+        if IP in packet or IPv6 in packet:
+            ip_packet = packet.getlayer(IP) if IP in packet else packet.getlayer(IPv6)
+
+            if expected_dst_address:
+
+                dst = ip_packet.dst
+                if dst != expected_dst_address:
+                    continue
+            
+            if expected_src_address:
+                src = ip_packet.src
+                if src != expected_src_address:
+                    continue
+
+
+            if expected_tos is not None:
+                ip_tos = ip_packet.tos
+
+                if not bin(ip_tos).startswith(bin(expected_tos)):
+                    if check_all:
+                        return False 
+                    continue
+                
+            if expected_protocol and expected_protocol.lower() == 'tcp' and TCP not in packet:
+                continue
+
+            if expected_protocol and expected_protocol.lower() == 'udp' and UDP not in packet:
+                continue
+            
+            if expected_dst_port_number and expected_dst_port_number != packet.dport:
+                continue
+            
+            if expected_src_port_number and expected_src_port_number != packet.sport:
+                continue
+            
+            if expected_traffic_class is not None:
+                
+                if IPv6 in packet and ip_packet.tc != expected_traffic_class:
+                    continue
+
+            return True
 
     return False

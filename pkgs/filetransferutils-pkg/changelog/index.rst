@@ -24,3 +24,4 @@ Changelog
    2020/may
    2020/june
    2020/july
+   2020/august

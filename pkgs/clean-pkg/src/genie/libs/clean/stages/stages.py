@@ -8,12 +8,11 @@ import logging
 
 # pyATS
 from pyats import aetest
-from pyats.log.utils import banner
 from pyats.utils.fileutils import FileUtils
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
-from unicon.core.errors import SubCommandFailure, ConnectionError
+from unicon.core.errors import SubCommandFailure
 
 # Genie
 from genie.libs.clean.utils import clean_schema
@@ -24,7 +23,7 @@ from genie.libs.clean.utils import (_apply_configuration,
                                     remove_string_from_image)
 
 # MetaParser
-from genie.metaparser.util.schemaengine import Optional
+from genie.metaparser.util.schemaengine import Optional, Any
 
 # Logger
 log = logging.getLogger(__name__)
@@ -63,7 +62,7 @@ def connect(section, device, timeout=200, **kwargs):
     log.info('Checking connection to device : %s' % device.name)
 
     # If the device is in rommon, just raise an exception
-    device.instantiate(timeout=timeout, learn_hostname=True)
+    device.instantiate(timeout=timeout, learn_hostname=True, prompt_recovery=True)
     rommon = Statement(pattern=r'^(.*)(rommon(.*)|loader(.*))+>.*$',
                        #action=lambda section: section.failed('Device is in rommon'),
                        action=handle_rommon_exception,
@@ -72,7 +71,7 @@ def connect(section, device, timeout=200, **kwargs):
     device.connect_reply.append(rommon)
 
     try:
-        device.connect(learn_hostname=True)
+        device.connect()
     except Exception as err:
         log.error('Connection to the device failed, with error {e}'.\
                   format(e=str(err)))
@@ -134,7 +133,7 @@ def ping_server(section, steps, device, server, vrf=None, timeout=60,
             None
     '''
 
-    with steps.start("Checking connectivity between device and file server"):
+    with steps.start("Checking connectivity between device and file server") as step:
 
         # Patterns for success rate
         p1 = r'Success +rate +is +(?P<success>(\d+)) +percent +\((?P<pass>(\d+))\/(?P<fail>(\d+))\)'
@@ -144,17 +143,16 @@ def ping_server(section, steps, device, server, vrf=None, timeout=60,
         try:
             server_from_obj = device.api.convert_server_to_linux_device(server)
         except Exception:
-            log.error(banner("*** Terminating Genie Clean ***"))
-            section.failed("Server '{}' was provided in the clean YAML file "
+            step.failed("Server '{}' was provided in the clean YAML file "
                            "but doesn't exist in the testbed YAML file".\
-                           format(server), goto=['exit'])
+                           format(server))
         else:
             log.info("Server '{}' found in the testbed YAML file".\
                      format(server))
 
         # If hostname of server given, return IP address
-        fu = FileUtils(testbed=device.testbed)
-        server = fu.get_hostname(server)
+        fu = FileUtils.from_device(device)
+        server = fu.get_hostname(server, device, vrf=vrf)
 
         for i in range(1, max_attempts+1):
             log.info ("\nAttempt #{}: Ping server '{}'".format(i, server))
@@ -197,10 +195,9 @@ def ping_server(section, steps, device, server, vrf=None, timeout=60,
                             min_success_rate, interval))
                 time.sleep(interval)
         else:
-            log.error(banner("*** Terminating Genie Clean ***"))
-            section.failed('Server {} is not reachable from device {} after {} '
-                           'attempts'.format(server, device.name, max_attempts),
-                           goto=['exit'])
+            step.failed('Server {} is not reachable from device {} after {} '
+                           'attempts'.format(server, device.name, max_attempts))
+
 
 
 #===============================================================================
@@ -209,7 +206,7 @@ def ping_server(section, steps, device, server, vrf=None, timeout=60,
 
 @clean_schema({
     'origin':{
-        'files': list,
+        Optional('files'): list,
         Optional('hostname'): str
     },
     'destination': {
@@ -226,12 +223,14 @@ def ping_server(section, steps, device, server, vrf=None, timeout=60,
     Optional('check_file_stability'): bool,
     Optional('unique_file_name'): bool,
     Optional('unique_number'): int,
+    Optional('rename_images'): str
 })
 @aetest.test
 def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
     timeout=300, check_image_length=False, overwrite=False,
     append_hostname=False, image_length_limit=63, copy_attempts=1,
-    check_file_stability=False, unique_file_name=False, unique_number=None):
+    check_file_stability=False, unique_file_name=False, unique_number=None,
+    rename_images=None):
 
     '''
     Clean yaml file schema:
@@ -241,7 +240,7 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
                 copy_to_linux:
                     origin:
                         files: <File location on remote server or local disk, 'list'> (Mandatory)
-                        hostanme: <Hostname or address of the server, if not provided the file will be treated as local. 'str'> (Optional)
+                        hostname: <Hostname or address of the server, if not provided the file will be treated as local. 'str'> (Optional)
                     destination:
                         directory: <Location on the file server, 'str'> (Mandatory)
                         hostname: <Hostname or address of the file server, if not provided the directory will be treated as local.
@@ -256,6 +255,7 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
                     check_file_stability: <Verify if the files are still being copied on the file server, 'bool' default False> (Optional)
                     unique_file_name: <Enable/Disable appending six-digit random number to the end of file name to make it unique, 'bool', default False> (Optional)
                     unique_number: <User provided six-digit random number to append to the end of file name to make it unique, 'int', default None> (Optional)
+                    rename_images: <User provided new file name. If multiple files exist then we append an incrementing number 'str'> (Optional)
 
     Example:
     --------
@@ -285,18 +285,9 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
     '''
 
     if not hasattr(device.testbed, 'servers'):
-        log.error(banner("*** Terminating Genie Clean ***"))
-        section.failed("Cannot find any servers in the testbed", goto=['exit'])
+        section.failed("Cannot find any servers in the testbed")
 
     destination_hostname = destination.get('hostname')
-
-    origin_path = remove_string_from_image(images=origin['files'])
-
-    if len(origin_path) == 0:
-        log.error(banner("*** Terminating Genie Clean ***"))
-        section.failed("No file was provided to copy. Please provide files under destination.path in the clean yaml file.", goto=['exit'])
-
-    dest_dir = destination['directory']
 
     # If not provided, assume its localhost
     server_from = origin.get('hostname')
@@ -308,27 +299,40 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
             # From IP/hostname find server from testbed file - get device obj
             server_from_obj = device.api.convert_server_to_linux_device(server_from)
         except (KeyError, AttributeError):
-            log.error(banner("*** Terminating Genie Clean ***"))
             section.failed("Server '{}' was provided in the clean yaml file "
                            "but doesn't exist in the testbed file".\
-                           format(server_from), goto=['exit'])
+                           format(server_from))
 
         try:
             # Connect to the server
             server_from_obj.connect()
         except Exception as e:
-            log.error(banner("*** Terminating Genie Clean ***"))
             section.failed('Failed to connect to {} due to {}'.\
-                           format(server_from_obj.name, str(e)), goto=['exit'])
+                           format(server_from_obj.name, str(e)))
+
 
     # establish a FileUtils session for all FileUtils operations
     fu = FileUtils(testbed=device.testbed)
+    if server_from:
+        server_block = fu.get_server_block(server_from)
+        string_to_remove = server_block.get('path', '')
+    else:
+        string_to_remove = ''
+
+    origin_path = remove_string_from_image(images=origin['files'],
+                                           string=string_to_remove)
+
+    if len(origin_path) == 0:
+        section.failed("No file was provided to copy. Please provide files under destination.path in the clean yaml file.")
+
+    dest_dir = destination['directory']
+
 
     files_to_copy = {}
     with steps.start("Collecting file info on origin and '{d}' "
                      "before copy".format(d=destination_hostname or dest_dir)) as step:
         file_size = -1
-        for file in origin_path:
+        for index,file in enumerate(origin_path):
             with step.start("Collecting '{f}' info".format(f=file)) as substep:
                 # file to copy is remote
                 if server_from:
@@ -336,15 +340,14 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
                         log.info(
                             "Getting size of the file '{}' from file server '{}'".format(
                                 file, server_from))
-                        file_size = device.api.get_file_size_from_server(server=server_from,
+                        file_size = device.api.get_file_size_from_server(server=fu.get_hostname(server_from),
                                                                          path=file,
                                                                          protocol=protocol,
                                                                          timeout=timeout,
                                                                          fu_session=fu)
                     except FileNotFoundError:
-                        log.error(banner("*** Terminating Genie Clean ***"))
-                        section.failed("Can not find file {} on server {}. Terminating clean"
-                            .format(file, server_from), goto=['exit'])
+                        step.failed("Can not find file {} on server {}. Terminating clean"
+                            .format(file, server_from))
                     except Exception:
                         log.warning("Could not verify the size for file '{}'".format(file))
 
@@ -353,11 +356,13 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
                     try:
                         file_size = os.path.getsize(file)
                     except FileNotFoundError:
-                        log.error(banner("*** Terminating Genie Clean ***"))
-                        section.failed("Can not find file {} on local server."
-                            "Terminating clean".format(file), goto=['exit'])
+                        step.failed("Can not find file {} on local server."
+                            "Terminating clean".format(file))
                     except Exception:
                         log.warning("Could not verify the size for file '{}'".format(file))
+
+                if rename_images:
+                    rename_images = rename_images + '_' + str(index)
 
                 try:
                     new_name = device.api.modify_filename(file=os.path.basename(file),
@@ -367,11 +372,11 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
                                                           check_image_length=check_image_length,
                                                           limit=image_length_limit,
                                                           unique_file_name=unique_file_name,
-                                                          unique_number=unique_number)
+                                                          unique_number=unique_number,
+                                                          new_name=rename_images)
                 except Exception as e:
-                    log.error(banner("*** Terminating Genie Clean ***"))
-                    section.failed("Can not change file name. Terminating clean:\n{e}"
-                            .format(e=e), goto=['exit'])
+                    step.failed("Can not change file name. Terminating clean:\n{e}"
+                            .format(e=e))
 
                 file_path = os.path.join(dest_dir, new_name)
 
@@ -393,6 +398,11 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
                                   destination_hostname or dest_dir, str(e)))
                 else:
                     exist = False
+
+                image_mapping = section.history[
+                    'copy_to_linux'].parameters.setdefault(
+                    'image_mapping', {})
+                image_mapping.update({origin['files'][index]: file_path})
 
                 file_copy_info = {
                     file: {
@@ -427,10 +437,9 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
 
                     if not stable:
                         fu.close()
-                        log.error(banner("*** Terminating Genie Clean ***"))
-                        section.failed("The the size of file '{}' on server "
+                        substep.failed("The size of file '{}' on server "
                                        "'{}' is not stable".format(file,
-                                       server_from), goto=['exit'])
+                                       server_from))
 
     with steps.start("Check if there is enough space on {server} to "
                      "perform the copy".format(server=destination_hostname or dest_dir)) as step:
@@ -445,11 +454,10 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
                                                               timeout=timeout,
                                                               fu_session=fu):
                 fu.close()
-                log.error(banner("*** Terminating Genie Clean ***"))
-                section.failed("There is not enough space on server '{}' at '{}'."
+                step.failed("There is not enough space on server '{}' at '{}'."
                                "Terminating clean".format(destination_hostname,
                                                             dest_dir),
-                               goto=['exit'])
+                               )
         except NotImplementedError as e:
             step.skipped(str(e))
         except Exception as e:
@@ -468,7 +476,7 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
                         if server_from:
                             server_from_obj.api.copy_from_device(remote_path=file_data['dest_path'],
                                                                  local_path=file,
-                                                                 server=destination_hostname,
+                                                                 server=fu.get_hostname(destination_hostname),
                                                                  protocol=protocol,
                                                                  timeout=timeout,
                                                                  quiet=True)
@@ -476,7 +484,7 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
                             device.api.copy_to_server(testbed=device.testbed,
                                                       remote_path=file_data['dest_path'],
                                                       local_path=file,
-                                                      server=destination_hostname,
+                                                      server=fu.get_hostname(destination_hostname),
                                                       protocol=protocol,
                                                       timeout=timeout,
                                                       fu_session=fu,
@@ -492,8 +500,8 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
                                 "attempt #{iteration}".format(
                                     file=file, d=destination_hostname, e=e, iteration=i+1))
                         else:
-                            section.failed("Could not copy '{file}' to '{d}'\n{e}".format(
-                                    file=file, d=destination_hostname, e=e))
+                            substep.failed("Could not copy '{file}' to '{d}'\n{e}"\
+                                        .format(file=file, d=destination_hostname, e=e))
                     else:
                         # copy passed, will not retry
                         log.info('{f} has been copied correctly'.format(f=file))
@@ -527,16 +535,14 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
                                                 size=image_data['size'],
                                                 timeout=timeout,
                                                 fu_session=fu):
-                        log.error(banner("*** Terminating Genie Clean ***"))
-                        section.failed("File size is not the same on the origin"
-                                       " and on the file server", goto=['exit'])
+                        step.failed("File size is not the same on the origin"
+                                       " and on the file server")
                     else:
                         section.passed("File size is the same on the origin "
                                        "and on the file server")
                 except Exception as e:
-                    log.error(banner("*** Terminating Genie Clean ***"))
-                    section.failed("File size is not the same on the origin"
-                                   " and on the file server", goto=['exit'])
+                    step.failed("File size is not the same on the origin"
+                                   " and on the file server")
             else:
                 step.skipped("File has been copied correctly but cannot "
                              "verify file size")
@@ -547,7 +553,7 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
 
 @clean_schema({
     'origin':{
-        'files': list,
+        Optional('files'): list,
         'hostname': str
         },
     'destination': {
@@ -596,7 +602,7 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
           expected_num_images ('int'): Number of images expected to be provided
                                        by user for clean
                                        Default 1 (Optional)
-          vrf ('str'): Vrf name if applicable 
+          vrf ('str'): Vrf name if applicable
                        Default None (Optional)
           timeout ('int'): Copy operation timeout in seconds
                            Default 300 (Optional)
@@ -622,7 +628,7 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
                                          stability in seconds
                                          Default 2 (Optional)
           min_free_space_percent ('int') : Minimum acceptable free disk space
-                                           percentage trying to reach by 
+                                           percentage trying to reach by
                                            deleting unprotected files
                                            Default None (Optional)
           use_kstack ('bool'): Use faster version of copy with limited options
@@ -660,7 +666,13 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
 
     # Get args
     server = origin['hostname']
-    image_files = remove_string_from_image(images=origin['files'])
+
+    # Establish FileUtils session for all FileUtils operations
+    file_utils = FileUtils(testbed=device.testbed)
+
+    string_to_remove = file_utils.get_server_block(server).get('path', '')
+    image_files = remove_string_from_image(images=origin['files'],
+                                           string=string_to_remove)
 
     # Set active node destination directory
     destination_act = destination['directory']
@@ -673,10 +685,9 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
 
     # Check remote server info present in testbed YAML
     if not FileUtils.from_device(device).get_server_block(server):
-        log.error(banner("*** Terminating Genie Clean ***"))
         section.failed("Server '{}' was provided in the clean yaml file but "
                        "doesn't exist in the testbed file.\n".format(server),
-                       goto=['exit'])
+                       )
 
     # Check image files provided
     if verify_num_images:
@@ -684,11 +695,10 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
         with steps.start("Verify correct number of images provided") as step:
             if not verify_num_images_provided(image_list=image_files,
                                         expected_images=expected_num_images):
-                log.error(banner("*** Terminating Genie Clean ***"))
-                section.failed("Incorrect number of images provided. Please "
+                step.failed("Incorrect number of images provided. Please "
                                "provide {} expected image(s) under destination"
                                ".path in clean yaml file.\n".format(
-                                expected_num_images), goto=['exit'])
+                                expected_num_images))
             else:
                 step.passed("Correct number of images provided")
 
@@ -697,15 +707,10 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
     files_to_copy = {}
     unknown_size = False
 
-    # Establish FileUtils session for all FileUtils operations
-    file_utils = FileUtils(testbed=device.testbed)
-
     # Execute 'dir' before copying image files
-    log.info(banner("Executing 'dir {}' before copying image files".\
-                    format(destination_act)))
     dir_before = device.execute('dir {}'.format(destination_act))
     # Loop over all image files provided by user
-    for file in image_files:
+    for index, file in enumerate(image_files):
 
         # Get filesize of image files on remote server
         with steps.start("Get filesize of '{}' on remote server '{}'".\
@@ -718,9 +723,8 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
                                             timeout=timeout,
                                             fu_session=file_utils)
             except FileNotFoundError:
-                log.error(banner("*** Terminating Genie Clean ***"))
-                section.failed("Can not find file {} on server {}. Terminating clean"
-                    .format(file, server), goto=['exit'])
+                step.failed("Can not find file {} on server {}. Terminating clean"
+                    .format(file, server))
             except Exception as e:
                 log.warning(str(e))
                 # Something went wrong, set file_size to -1
@@ -734,9 +738,13 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
             else:
                 step.passed("Verified filesize of file '{}' to be "
                             "{} bytes".format(file, file_size))
-        
+
         # Check if file with same name and size exists on device
         dest_file_path = os.path.join(destination_act, os.path.basename(file))
+        image_mapping = section.history['copy_to_device'].parameters.setdefault(
+            'image_mapping', {})
+        image_mapping.update({origin['files'][index]: dest_file_path})
+
         with steps.start("Check if file '{}' exists on device {}".\
                         format(dest_file_path, device.name)) as step:
 
@@ -765,36 +773,6 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
                 step.passx("Unable to check if image '{}' exists on device {}".\
                            format(dest_file_path, device.name))
 
-            # Check if file with same name and size exists on device
-            dest_file_path = os.path.join(destination_act, os.path.basename(file))
-            with steps.start("Check if file '{}' exists on device ".\
-                            format(dest_file_path, device.name)) as step:
-
-                # Check if file exists
-                try:
-                    exist = device.api.verify_file_exists(file=dest_file_path,
-                                                        size=file_size,
-                                                        dir_output=dir_before)
-                    if (not exist) or (exist and overwrite):
-                        # Update list of files to copy
-                        file_copy_info = {
-                            file: {
-                                'size': file_size,
-                                'dest_path': dest_file_path,
-                                'exist': exist
-                            }}
-                        files_to_copy.update(file_copy_info)
-                        # Print message to user
-                        step.passed("Proceeding with copying image {} to device {}".\
-                                    format(dest_file_path, device.name))
-                    else:
-                        step.passed("Image '{}' already exists on device {}, "
-                                    "skipping copy".format(file, device.name))
-                except Exception as e:
-                    log.warning(str(e))
-                    step.passx("Unable to check if image '{}' exists on device {}".\
-                            format(dest_file_path, device.name))
-
     # Check if any file copy is in progress
     if check_file_stability:
         for file in files_to_copy:
@@ -811,10 +789,9 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
                                                 max_tries=stability_check_tries)
 
                     if not stable:
-                        log.error(banner("*** Terminating Genie Clean ***"))
-                        section.failed("The size of file '{}' on server is not "
+                        step.failed("The size of file '{}' on server is not "
                                        "stable\n".format(file),
-                                       goto=['exit'])
+                                       )
                     else:
                         step.passed("Size of file '{}' is stable".format(file))
                 except NotImplementedError:
@@ -823,12 +800,11 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
                                .format(protocol=protocol))
                 except Exception as e:
                     log.error(str(e))
-                    log.error(banner("*** Terminating Genie Clean ***"))
-                    section.failed("Error while verifying file stability on "
-                                   "server\n", goto=['exit'])
+                    step.failed("Error while verifying file stability on "
+                                   "server\n")
 
     # Verify available space on the device is sufficient for image copy, delete
-    # unprotected files if needed, copy file to the device 
+    # unprotected files if needed, copy file to the device
     # unless overwrite: False
     if files_to_copy:
         with steps.start("Verify sufficient free space on device '{}' or delete"
@@ -867,102 +843,95 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
                                         min_free_space_percent=min_free_space_percent,
                                         dir_output=dir_before)
                         if not free_space:
-                            log.error(banner("*** Terminating Genie Clean ***"))
-                            section.failed("Unable to create enough space for "
+                            step.failed("Unable to create enough space for "
                                            "image on device {}".\
-                                           format(device.name), goto=['exit'])
+                                           format(device.name))
                         else:
                             step.passed("Device has sufficient space to "
                                         "copy images")
                     except Exception as e:
                         log.error(str(e))
-                        log.error(banner("*** Terminating Genie Clean ***"))
-                        section.failed("Error while creating free space for "
+                        step.failed("Error while creating free space for "
                                        "image on device {}".\
-                                       format(device.name), goto=['exit'])
+                                       format(device.name))
 
     # Copy the file to the devices
     for file, file_data in files_to_copy.items():
         with steps.start("Copying image file {} to device {}".\
                          format(file, device.name)) as step:
-            with step.start("Copying image '{}' to '{}'".\
-                            format(file, device.name)) as substep:
 
-                # Copy file unless overwrite is False
-                if not overwrite and file_data['exist']:
-                    substep.skipped("File with the same name size exists on "
-                                    "the device, skipped copying")
-                testbed = device.testbed
-                if protocol in testbed.servers and \
-                    hasattr(testbed.servers[protocol], 'credentials'):
-                    username = testbed.servers[protocol].credentials.default.username
-                    password = testbed.servers[protocol].credentials.default.password
-                else:
-                    username = None
-                    password = None
+           # Copy file unless overwrite is False
+           if not overwrite and file_data['exist']:
+               step.skipped("File with the same name size exists on "
+                            "the device, skipped copying")
+           testbed = device.testbed
+           if protocol in testbed.servers and \
+               hasattr(testbed.servers[protocol], 'credentials'):
+               username = testbed.servers[protocol].credentials.default.username
+               password = testbed.servers[protocol].credentials.default.password
+           else:
+               username = None
+               password = None
 
-                for i in range(1, copy_attempts+1):
-                    try:
-                        device.api.\
-                            copy_to_device(protocol=protocol,
-                                           server=server,
-                                           remote_path=file,
-                                           local_path=file_data['dest_path'],
-                                           vrf=vrf,
-                                           timeout=timeout,
-                                           compact=compact,
-                                           use_kstack=use_kstack,
-                                           username=username,
-                                           password=password,
-                                           **kwargs)
-                    except Exception as e:
-                        # Retry attempt if user specified
-                        if i < copy_attempts:
-                            log.warning("Attempt #{}: Unable to copy {} to '{}' due to:\n{}".\
-                                        format(i, file, device.name, e))
-                            continue
-                        else:
-                            log.error(str(e))
-                            log.error(banner("*** Terminating Genie Clean ***"))
-                            section.failed("Failed to copy image '{}' to device"
-                                           " '{}'\n".format(file, device.name),
-                                           goto=['exit'])
-                    else:
-                        log.info("File {} has been copied to device {} "
-                                 "successfully".format(file, device.name))
-                        success_copy_ha = True
+           for i in range(1, copy_attempts+1):
+               try:
+                   device.api.\
+                       copy_to_device(protocol=protocol,
+                                      server=server,
+                                      remote_path=file,
+                                      local_path=file_data['dest_path'],
+                                      vrf=vrf,
+                                      timeout=timeout,
+                                      compact=compact,
+                                      use_kstack=use_kstack,
+                                      username=username,
+                                      password=password,
+                                      **kwargs)
+               except Exception as e:
+                   # Retry attempt if user specified
+                   if i < copy_attempts:
+                       log.warning("Attempt #{}: Unable to copy {} to '{}' due to:\n{}".\
+                                   format(i, file, device.name, e))
+                       continue
+                   else:
+                       log.error(str(e))
+                       step.failed("Failed to copy image '{}' to device"
+                                      " '{}'\n".format(file, device.name),
+                                      )
+               else:
+                   log.info("File {} has been copied to device {} "
+                            "successfully".format(file, device.name))
+                   success_copy_ha = True
 
-                        break
-                # Save the file copied path and size info for future use
-                history = section.history['copy_to_device'].parameters.\
-                                    setdefault('files_copied', {})
-                history.update({file: file_data})
+                   break
+           # Save the file copied path and size info for future use
+           history = section.history['copy_to_device'].parameters.\
+                               setdefault('files_copied', {})
+           history.update({file: file_data})
+
     # If nothing copied dont need to verify, skip
     if 'files_copied' not in section.history['copy_to_device'].parameters:
-        step.skipped("Image files were not copied in previous steps, "
+        step.passed("Image files were not copied in previous steps, "
                      "skipping verification steps")
 
     # Execute 'dir' after copying image files
-    log.info(banner("Executing 'dir {}' after copying image files".\
-                    format(destination_act)))
     dir_after = device.execute('dir {}'.format(destination_act))
 
     if destination_stby and device.is_ha:
         if success_copy_ha:
             with steps.start("Copying image to standby device {}".\
-                    format(destination_stby)):
+                    format(destination_stby)) as step:
                 try:
                     device.copy(source=dest_file_path,
                                 dest=destination_stby,
                                 timeout=timeout)
                 except Exception as e:
-                    log.error(banner("*** Terminating Genie Clean ***"))
-                    section.failed("Failed to copy '{}' to '{}'\n"
+                    step.failed("Failed to copy '{}' to '{}'\n"
                                    "Error: {}\n"
                                    .format(dest_file_path,
                                            destination_stby,
                                            e),
-                                   goto=['exit'])
+                                   )
 
             # TODO (daniel): this section is useless. add actual check or remove
             # with steps.start("Show dir on {} to see if image copied to standby".\
@@ -974,7 +943,7 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
             #                             format(destination_stby, device.name, e))
 
         else:
-            log.warning(banner("Failed to copy to active device"))
+            log.warning("Failed to copy to active device")
             log.warning("Unable to copy file to active dir on {} on device {} due to:\n".\
                                         format(destination_act, device.name))
 
@@ -990,10 +959,9 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
                                             file=image_data['dest_path'],
                                             size=image_data['size'],
                                             dir_output=dir_after):
-                    log.error(banner("*** Terminating Genie Clean ***"))
-                    section.failed("Size of image file copied to device {} is "
+                    step.failed("Size of image file copied to device {} is "
                                    "not the same as remote server filesize".\
-                                   format(device.name), goto=['exit'])
+                                   format(device.name))
                 else:
                     section.passed("Size of image file copied to device {} is "
                                    "the same as imaage filesize on remote server".\
@@ -1041,9 +1009,8 @@ def write_erase(section, steps, device, timeout=300):
         try:
             device.api.execute_write_erase(timeout=timeout)
         except Exception as e:
-            log.error(banner("*** Terminating Genie Clean ***"))
-            section.failed("Unable to execute 'write erase' on {}:\n{}".\
-                           format(device.name, str(e)), goto=['exit'])
+            step.failed("Unable to execute 'write erase' on {}:\n{}".\
+                           format(device.name, str(e)))
         else:
             section.passed("Successfully executed 'write erase' on device {}".\
                             format(device.name))
@@ -1053,48 +1020,52 @@ def write_erase(section, steps, device, timeout=300):
 #===============================================================================
 
 @clean_schema({
-    Optional('prompt_recovery'): bool,
-    Optional('sleep_after_reload'): int,
-    Optional('credentials'): str,
-    Optional('timeout'): int,
-    Optional('check_modules'): bool,
-    Optional('module_timeout'): int,
-    Optional('module_interval'): int,
-    Optional('reload_file'): str,
+    Optional('check_modules'): {
+        Optional('check'): bool,
+        Optional('timeout'): int,
+        Optional('interval'): int
+    },
+    Optional('reload_service_args'): {
+        Optional('timeout'): int,
+        Optional('reload_creds'): str,
+        Optional('prompt_recovery'): bool,
+        Any(): Any()
+    }
 })
 @aetest.test
-def reload(section, steps, device, prompt_recovery=True, sleep_after_reload=120,
-    credentials=None, timeout=800, check_modules=True, module_timeout=180,
-    module_interval=30, reload_file=None):
-
-    '''
+def reload(section, steps, device, reload_service_args=None, check_modules=None):
+    """
     Clean yaml file schema:
     -----------------------
     devices:
       <device>:
         reload:
-          prompt_recovery: <Enable/Disable prompt recovery feature, 'bool'> (Optional)
-          sleep_after_reload: <Time to sleep after reload, 'int'> (Optional)
-          credentials: <Credential name defined in the testbed yaml file to be used during reload, 'str'> (Optional)
-          timeout: <reload timeout value, default 800 seconds. 'int'> (Optional)
-          check_modules: <Enable/Disable checking of modules after reload, 'bool'> (Optional)
-          module_timeout: <timeout value to verify modules are in stable state, default 180 seconds. 'int'> (Optional)
-          module_interval: <interval value between checks for verifying module status, default 30 seconds. 'int'> (Optional)
-          reload_file: <File to reload the setup with, 'str'> (Optional)
+          reload_service_args: (Optional, if not specified defaults below are used)
+            timeout: <reload timeout value, default 800 seconds. 'int'> (Optional)
+            reload_creds: <Credential name defined in the testbed yaml file to be used during reload, default 'default'. 'str'> (Optional)
+            prompt_recovery: <Enable/Disable prompt recovery feature, 'bool'> (Optional)
+            <Key>: <Value> (Any other key:value pairs that the unicon reload service allows for)
+
+          check_modules:
+            check: <Enable/Disable checking of modules after reload, default 'True'. 'bool'> (Optional)>
+            timeout: <timeout value to verify modules are in stable state, default 180 seconds. 'int'> (Optional)
+            interval: <interval value between checks for verifying module status, default 30 seconds. 'int'> (Optional)
+
 
     Example:
     --------
     devices:
       N95_1:
         reload:
-          prompt_recovery: True
-          sleep_after_reload: 120
-          credentials: clean_reload_creds
-          timeout: 600
-          check_modules: True
-          module_timeout: 120
-          module_interval: 30
-          reload_file: 'bootflash:cat9k_iosxe.bin'
+          reload_service_args:
+            timeout: 600
+            reload_creds: clean_reload_creds
+            prompt_recovery: True
+            reconnect_sleep: 200 (Unicon NXOS reload service argument)
+
+          check_modules:
+            check: False
+
 
     Flow:
     -----
@@ -1103,69 +1074,79 @@ def reload(section, steps, device, prompt_recovery=True, sleep_after_reload=120,
       apply_golden_config (Optional, configure device to come up with specific startup configs)
     after:
       change_boot_variable (Optional, to verify current boot variable and set next)
-    '''
+    """
+
+    # Initialize 'reload_service_args' defaults if not defined by user
+    if not reload_service_args:
+        reload_service_args = {}
+    reload_service_args.setdefault('timeout', 800)
+    reload_service_args.setdefault('reload_creds', 'default')
+    reload_service_args.setdefault('prompt_recovery', True)
+
+    # Initialize 'check_modules' defaults if not defined by user
+    if not check_modules:
+        check_modules = {}
+    check_modules.setdefault('check', True)
+    check_modules.setdefault('timeout', 180)
+    check_modules.setdefault('interval', 30)
+
 
     log.info("Section steps:\n1- Reload the device"
              "\n2- Disconnect from the device"
              "\n3- Reconnect to the device"
              "\n4- Verify all modules are in stable state after reload")
 
+
     # Reloading the device
-    with steps.start("Reload device {}".format(device.name)) as step:
+    with steps.start("Reload '{dev}'".format(dev=device.name)) as step:
         try:
-            device.api.execute_reload(prompt_recovery=prompt_recovery,
-                                      reload_creds=credentials,
-                                      sleep_after_reload=sleep_after_reload,
-                                      timeout=timeout,
-                                      reload_file=reload_file)
-        except (SubCommandFailure, TimeoutError) as e:
-            # Could not reload the device, or it didn't go as expected
-            log.error(banner("*** Terminating Genie Clean ***"))
-            section.failed("Could not reload the device correctly in the "
-                           "maximum allotted time of {} seconds:\n{}".\
-                           format(timeout, str(e)), goto=['exit'])
-        else:
-            log.info("Device {} has reloaded successfully".format(device.name))
+            device.reload(**reload_service_args)
+        except Exception as e:
+            step.failed("'{dev}' failed to reload within {timeout} seconds.\n"
+                        "Error: {e}"
+                        .format(dev=device.name,
+                                timeout=reload_service_args['timeout'],
+                                e=str(e)))
+
+        step.passed("'{dev}' has successfully reloaded".format(dev=device.name))
 
     # Disconnect from the device
-    with steps.start("Disconnect from device {} after reload".\
-                     format(device.name)) as step:
+    with steps.start("Disconnect from '{dev}'".format(dev=device.name)) as step:
         try:
             device.destroy()
-        except Exception as e:
+        except Exception:
             # That's okay, as long we can reconnect, keep moving!
             pass
         else:
-            log.info("Disconnected successfully from device '{}'".\
-                     format(device.name))
+            step.passed("Disconnected successfully from device '{dev}'"
+                        .format(dev=device.name))
 
     # Reconnect to device
-    with steps.start("Reconnect to device {} after reload".\
-                     format(device.name)) as step:
+    with steps.start("Reconnect to '{dev}'".format(dev=device.name)) as step:
         try:
             device.connect(learn_hostname=True)
         except Exception as e:
-            log.error(banner("*** Terminating Genie Clean ***"))
-            section.failed("Could not reconnect to device {} after reload:\n{}".\
-                           format(device.name, str(e)), goto=['exit'])
+            step.failed("Could not reconnect to '{dev}':\nError: {e}"
+                        .format(dev=device.name, e=str(e)))
         else:
-            log.info("Reconnected to the device {} sucessfully".\
-                     format(device.name))
+            step.passed("Successfully reconnected to '{dev}'"
+                        .format(dev=device.name))
 
     # Verify all modules are in stable state
-    if check_modules:
-        with steps.start("Verify modules on {} are in stable state after "
-                         "reload".format(device.name)) as step:
+    if check_modules['check']:
+        with steps.start("Verify modules on '{dev}' are in a stable state"
+                         .format(dev=device.name)) as step:
             try:
-                device.api.verify_module_status(timeout=module_timeout,
-                                                interval=module_interval)
-            except Exception as e:
-                log.error(banner("*** Terminating Genie Clean ***"))
-                section.failed("Modules on {} are not in stable state after "
-                               "reload".format(device.name), goto=['exit'])
+                device.api.verify_module_status(
+                    timeout=check_modules['timeout'],
+                    interval=check_modules['interval']
+                )
+            except Exception:
+                step.failed("Modules on '{dev}' are not in stable state"
+                            .format(dev=device.name))
             else:
-                section.passed("Modules on {} are in stable state after "
-                               "reload".format(device.name))
+                step.passed("Modules on '{dev}' are in stable state"
+                            .format(dev=device.name))
 
 
 #===============================================================================
@@ -1237,10 +1218,9 @@ def apply_configuration(section, steps, device, configuration=None, file=None,
             _apply_configuration(device=device, configuration=configuration,
                                  file=file, timeout=config_timeout)
         except Exception as e:
-            log.error(banner("*** Terminating Genie Clean ***"))
-            section.failed("Error while applying configuration to device "
+            step.failed("Error while applying configuration to device "
                             "{} after reload\n{}".format(device.name, str(e)),
-                            goto=['exit'])
+                            )
         else:
             step.passed("Successfully applied configuration to device {} "
                         "after reload".format(device.name))
@@ -1254,9 +1234,8 @@ def apply_configuration(section, steps, device, configuration=None, file=None,
                                                  check_interval=check_interval,
                                                  copy_vdc_all=copy_vdc_all)
         except Exception as e:
-            log.error(banner("*** Terminating Genie Clean ***"))
-            section.failed("Failed to copy running-config to startup-config on "
-                           "{}\n{}".format(device.name, str(e)), goto=['exit'])
+            step.failed("Failed to copy running-config to startup-config on "
+                           "{}\n{}".format(device.name, str(e)))
         else:
             step.passed("Successfully copied running-config to startup-config "
                         "on {}".format(device.name))
@@ -1274,7 +1253,9 @@ def apply_configuration(section, steps, device, configuration=None, file=None,
 #                       stage: verify_running_image
 #===============================================================================
 
-@clean_schema({'images': list})
+@clean_schema({
+    Optional('images'): list
+})
 @aetest.test
 def verify_running_image(section, steps, device, images):
 
@@ -1310,9 +1291,8 @@ def verify_running_image(section, steps, device, images):
         try:
             device.api.verify_current_image(images=images)
         except Exception as e:
-            log.error(banner("*** Terminating Genie Clean ***"))
-            section.failed("Unable to verify running image on device {}\n{}".\
-                           format(device.name, str(e)), goto=['exit'])
+            step.failed("Unable to verify running image on device {}\n{}".\
+                           format(device.name, str(e)))
         else:
             section.passed("Successfully verified running image on device {}".\
                            format(device.name))
@@ -1374,15 +1354,13 @@ def backup_file_on_device(section, steps, device, copy_dir, copy_file,
         avail_space = device.api.get_available_space(directory=copy_dir)
 
         if file_size is None or avail_space is None:
-            log.error(banner("*** Terminating Genie Clean ***"))
-            section.failed("Failed to get '{}' file size or available space on {}".format(
-                                copy_file, device.name), goto=['exit'])
+            step.failed("Failed to get '{}' file size or available space on {}".format(
+                                copy_file, device.name))
 
         if avail_space <= file_size:
-            log.error(banner("*** Terminating Genie Clean ***"))
-            section.failed("Do not have enough space to copy file. "
+            step.failed("Do not have enough space to copy file. "
                            "Required '{}' bytes, Available '{}' bytes".format(
-                               file_size, avail_space), goto=['exit'])
+                               file_size, avail_space))
         else:
             log.info("Required '{}' bytes, Available '{}' bytes".format(
                       file_size, avail_space))
@@ -1398,9 +1376,8 @@ def backup_file_on_device(section, steps, device, copy_dir, copy_file,
                         reply=Dialog([owt]), timeout=timeout)
         except Exception as e:
             log.error(str(e))
-            log.error(banner("*** Terminating Genie Clean ***"))
-            section.failed("Unable to backup '{}/{}'' on device {}".format(
-                           copy_dir, copy_file, device.name), goto=['exit'])
+            step.failed("Unable to backup '{}/{}'' on device {}".format(
+                           copy_dir, copy_file, device.name))
         else:
             section.passed("Successfully backed up '{}/{}' on device {}".\
                            format(copy_dir, copy_file, device.name))
@@ -1431,7 +1408,7 @@ def delete_backup_from_device(section, steps, device, delete_dir, delete_file,
           delete_dir ('str'): Directory containing file to be deleted (Mandatory)
           delete_dir_stby ('str'): Directory containing file to be deleted for standby (Optional)
           delete_file ('str'): File to be deleted up (Mandatory)
-          restore_from_backup ('bool'): Restore the file from backup file. 
+          restore_from_backup ('bool'): Restore the file from backup file.
                                         Default value is False (Optional)
           overwrite ('bool'): Overwrite the file if exists. Default value is True (Optional)
           timeout ('int'): Copy/Execute timeout in second. Default value is 300 (Optional)
@@ -1462,7 +1439,7 @@ def delete_backup_from_device(section, steps, device, delete_dir, delete_file,
 
     with steps.start("Delete the targeted file '{}/{}' from device {}".\
                      format(delete_dir, delete_file, device.name)) as step:
-        
+
         if restore_from_backup:
             # Set original filename
             original_file = delete_file.strip("backup_")
@@ -1482,10 +1459,9 @@ def delete_backup_from_device(section, steps, device, delete_dir, delete_file,
                             timeout=timeout)
             except Exception as e:
                 log.error(e)
-                log.error(banner("*** Terminating Genie Clean ***"))
-                section.failed("Unable to restore '{}/{}'' on device {}".format(
+                step.failed("Unable to restore '{}/{}'' on device {}".format(
                                delete_dir, delete_file, device.name),
-                               goto=['exit'])
+                               )
 
         device.execute.error_pattern.extend(['.*%Error.*', '.*No such file.*'])
         try:
@@ -1494,14 +1470,13 @@ def delete_backup_from_device(section, steps, device, delete_dir, delete_file,
                             reply=Dialog([delete_backup]))
         except Exception as e:
             log.error(e)
-            log.error(banner("*** Terminating Genie Clean ***"))
-            section.failed("Unable to delete '{}/{} from device {}".format(
-                           delete_dir, delete_file, device.name), goto=['exit'])
+            step.failed("Unable to delete '{}/{} from device {}".format(
+                           delete_dir, delete_file, device.name))
         else:
             if not device.is_ha:
                 step.passed("Successfully deleted '{}/{}' from device {}".\
                                 format(delete_dir, delete_file, device.name))
-                                
+
             # Delete file from on standby
             if device.is_ha:
                 # Make sure standby directory is provided
@@ -1518,14 +1493,14 @@ def delete_backup_from_device(section, steps, device, delete_dir, delete_file,
                                         reply=Dialog([delete_backup]))
                     except Exception as e:
                         log.error(e)
-                        log.error(banner("*** Cannot delete from standby ***"))
-                        section.failed("Unable to delete '{}/{} from device {}".format(
+                        log.error("*** Cannot delete from standby ***")
+                        step.failed("Unable to delete '{}/{} from device {}".format(
                                     delete_dir_stby, delete_file, device.name))
                     else:
                         step.passed("Successfully deleted from standby '{}/{}' from device {}".\
                                     format(delete_dir_stby, delete_file, device.name))
                 else:
-                    section.failed(banner("*** HA device, but no standby device provided ***"))
+                    step.failed("*** HA device, but no standby device provided ***")
 
 #===============================================================================
 #                       stage: delete_files_from_server
@@ -1594,8 +1569,7 @@ def delete_files_from_server(section, steps, device, server=None, files=None,
                                  get('destination', {}).get('hostname')
 
         if not server:
-            log.error(banner("*** Terminating Genie Clean ***"))
-            section.failed("No server has been provided in the clean yaml file")
+            step.failed("No server has been provided in the clean yaml file")
 
         for file in files:
             with step.start('Deleting {f}'.format(f=file)) as substep:

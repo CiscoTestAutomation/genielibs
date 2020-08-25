@@ -41,6 +41,9 @@ class Routing(SuperRouting):
         ##############################################
         ####            Ipv4                ##########
 
+        # if None, will run all VRFs (None is default vrf)
+        vrf = [None, 'all'] if vrf is None else vrf
+
         kwargs = {k: v for k, v in locals().items() if v}
         [kwargs.pop(x, None) for x in ['address_family', 'self','interface']]
 

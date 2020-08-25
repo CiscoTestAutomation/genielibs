@@ -333,7 +333,7 @@ Recovery Steps:
         # Could not recover the device!
         log.error(banner("*** Terminating Genie Clean ***"))
         section.parent.parameters['block_section'] = True
-        section.failed(goto=['exit'], from_exception=e)
+        section.failed(from_exception=e)
 
     if post_recovery_configuration:
         log.info('Applying post recovery configuration to the device')
@@ -345,8 +345,7 @@ Recovery Steps:
         log.error(banner("*** Terminating Genie Clean ***"))
         section.parent.parameters['block_section'] = True
         section.failed("Device '{d}' has been recovered - "
-                       "Terminating clean".format(d=device.name),
-                       goto=['exit'])
+                       "Terminating clean".format(d=device.name))
     else:
         try:
             # Modify Testcase and Kleenex to Passed

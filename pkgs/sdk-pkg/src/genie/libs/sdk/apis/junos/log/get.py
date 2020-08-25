@@ -33,5 +33,11 @@ def get_log_message_time(device, message):
     if not messages_:
         return None
 
-    return datetime.strptime(messages_[0][1].split(' ')[2], '%H:%M:%S')
+    time_group = re.match(r'^(?P<month>\S+) +(?P<day>\d+) +(?P<time>[\d:]+)', messages_[0][1]).groupdict()
+
+    time_text = f"{time_group['month']} {time_group['day']} {time_group['time']}"
+
+    time_obj = datetime.strptime(time_text, '%b %d %H:%M:%S')
+
+    return time_obj.replace(year=datetime.now().year)
 

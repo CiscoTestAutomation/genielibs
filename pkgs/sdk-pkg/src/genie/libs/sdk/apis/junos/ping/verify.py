@@ -12,53 +12,86 @@ from genie.utils import Dq
 
 log = logging.getLogger(__name__)
 
-
-def verify_ping_loss_rate(device,
-                    expected_loss_rate,
-                    address,
-                    ttl,
-                    count,
-                    wait,
-                    max_time=100,
-                    check_interval=10):
-    """ Verifies loss rate via ping {address} ttl {ttl} count {count} wait {wait}
+def verify_ping(device,
+                address=None,
+                ttl=None,
+                wait=None,
+                mpls_rsvp=None,
+                loss_rate=0,
+                count=None,
+                max_time=30,
+                check_interval=10):
+    """ Verify ping loss rate on ip address provided
 
         Args:
-            device ('obj'): device to use
-            expected_loss_rate ('int'): Expected loss rate
-            address ('str'): IP address passed in command
+            device ('obj'): Device object
+            address ('str'): Address value
             ttl ('int'): ttl value passed in command
-            count ('int'): count value passed in command
             wait ('int'): wait value passed in command
-            max_time ('int', optional): Maximum time to keep checking. Default to 100
-            check_interval ('int', optional): How often to check. Default to 10
-
+            mpls_rsvp ('str'): MPLS RSVP value
+            loss_rate ('int'): Expected loss rate value
+            count ('int'): Count value for ping command
+            max_time (`int`): Max time, default: 30
+            check_interval (`int`): Check interval, default: 10
         Returns:
-            True/False
-
+            Boolean
         Raises:
-            N/A
+            None
     """
-
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
-        out = None
+        if address and count and not ttl and not wait:
+            cmd = 'ping {address} count {count}'.format(address=address,
+                                                        count=count)
+        elif address and count and ttl and wait:
+            cmd = 'ping {address} ttl {ttl} count {count} wait {wait}'.format(
+                    address=address,
+                    ttl=ttl,
+                    count=count,
+                    wait=wait)
+        elif not address and mpls_rsvp:
+            cmd = 'ping mpls rsvp {rsvp}'.format(rsvp=mpls_rsvp)
+        elif address:
+            cmd = 'ping {address}'.format(address=address)
+        else:
+            log.info('Need to pass address as argument')
+            return False
         try:
-            out = device.parse('ping {address} ttl {ttl} count {count} wait {wait}'.format(
-                address=address,
-                ttl=ttl,
-                count=count,
-                wait=wait))
-        except SchemaEmptyParserError:
+            out = device.parse(cmd)
+        except SchemaEmptyParserError as e:
             timeout.sleep()
             continue
-        # {'ping': {'address': '11.0.0.1',
-        #         'data-bytes': 56,
-        #         'source': '11.0.0.1',
-        #         'statistics': {'loss-rate': 100, 'received': 0, 'send': 5}}}
-        if out.q.get_values("loss-rate", 0)==expected_loss_rate:
+        # Example dictionary structure:
+        #     {
+        #         "ping": {
+        #             "address": "10.189.5.94",
+        #             "data-bytes": 56,
+        #             "result": [
+        #                 {
+        #                     "bytes": 64,
+        #                     "from": "10.189.5.94",
+        #                     "icmp-seq": 0,
+        #                     "time": "2.261",
+        #                     "ttl": 62
+        #                 },
+        #             ],
+        #             "source": "10.189.5.94",
+        #             "statistics": {
+        #                 "loss-rate": 0,
+        #                 "received": 1,
+        #                 "round-trip": {
+        #                     "avg": "2.175",
+        #                     "max": "2.399",
+        #                     "min": "1.823",
+        #                     "stddev": "0.191"
+        #                 },
+        #                 "send": 1
+        #             }
+        #         }
+        #     }
+        loss_rate_found = Dq(out).get_values("loss-rate", 0)
+
+        if loss_rate_found == loss_rate:
             return True
-
         timeout.sleep()
-
     return False

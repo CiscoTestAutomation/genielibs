@@ -692,9 +692,13 @@ class RpcVerify():
     # Pattern to detect keys in an xpath
     RE_FIND_KEYS = re.compile(r'\[.*?\]')
     RE_FIND_PREFIXES = re.compile(r'/.*?:')
+    # Pattern to detect prefix in the key name
+    RE_FIND_KEY_PREFIX = re.compile(r'\[.*?:')
 
     def verify_rpc_data_reply(self, response, rpc_data, opfields=[]):
         nodes = []
+        par_xp = ''
+        del_parent = False
         if 'explicit' in self.with_defaults:
             # RFC 6243 - Only tags set by client sould be in reply
             log.info('WITH DEFAULTS - EXPLICIT MODE')
@@ -712,15 +716,36 @@ class RpcVerify():
             xpath = re.sub(self.RE_FIND_KEYS, '', node.get('xpath', ''))
             xpath = re.sub(self.RE_FIND_PREFIXES, '/', xpath)
             value = node.get('value', '')
+            if del_parent:
+                # Check to see if parent and child have same xpath,
+                # so "not boundary" will be True hence continue.
+                # If boundary does not starts with '/' then xpath is not a child.
+                # Ex: /xpath/foo/foobar is not a child of /xpath/foobar/foo
+                if par_xp and par_xp in xpath:
+                    boundary = xpath[len(par_xp):]
+                    if not boundary or \
+                            boundary.startswith('/'):
+                        continue
             if node.get('nodetype', '') == 'list':
                 # get-config on empty list will return no data
-                list_rpc = True
+                if edit_op in ['delete', 'remove']:
+                    # current xpath is a list node. So get the parent xpath,
+                    # to check for key/value
+                    list_xpath = node.get('xpath', '')
+                    parent_path = list_xpath[:list_xpath.rfind('/')]
+                    self.add_key_nodes(parent_path, nodes)
+                    del_parent = True
+                    par_xp = xpath
                 continue
             if not value:
                 value = 'empty'
             if 'explicit' in self.with_defaults:
                 # RFC 6243 - Only tags set by client sould be in reply
                 if edit_op in ['delete', 'remove']:
+                    if node.get('nodetype', '') == 'container':
+                        par_xp = xpath
+                        del_parent = True
+                    self.add_key_nodes(node.get('xpath', ''), nodes)
                     continue
             elif 'report-all' in self.with_defaults:
                 # RFC 6243 - if value is default it should match
@@ -738,7 +763,8 @@ class RpcVerify():
                 if edit_op in ['delete', 'remove']:
                     if node.get('nodetype', '') == 'contaner':
                         # presence container so nothing else is relavent
-                        break
+                        par_xp = xpath
+                        del_parent = True
                     continue
             nodes.append(
                 {'name': xpath.split('/')[-1],
@@ -748,10 +774,50 @@ class RpcVerify():
                  'op': '=='}
             )
         if not response and not nodes and \
-                edit_op in ['delete', 'remove'] or list_rpc:
+                edit_op in ['delete', 'remove']:
             log.info('NO DATA RETURNED')
             return True
         return self.process_operational_state(response, nodes)
+
+    def add_key_nodes(self, xpath, nodes):
+        """Add the List key nodes to the opfields"""
+        # Remove the prefixes from the xpath.
+        # Ex: convert /ios:foo/ios:foo1[ios:name='val']/ios:foo2 to
+        # /foo/foo1[ios:name='val']/foo2
+        xpath = re.sub(self.RE_FIND_PREFIXES, '/', xpath)
+        # Loop through all the key/value in the xpath
+        for key in self.RE_FIND_KEYS.findall(xpath):
+             # Remove the prefix from list key name,
+             # Ex: changes [ios:foo="val"] to foo="val"]
+             key_no_pfx = re.sub(self.RE_FIND_KEY_PREFIX, '', key)
+             # Split the key/value on "=", get the first entry,
+             # and strip the '[' if present.
+             # Ex: for [foo="val"] the keyname will be 'foo'
+             keyname = key_no_pfx.split('=')[0].strip('[')
+             # Get the value field from [foo="val"]
+             # second entry after spliting on "=" will get the value
+             # strip the ending ']'.
+             # Ex: [foo="val"] will return '"val"' after stripping the ']'
+             keyval = key_no_pfx.split('=')[1].strip(']')
+             # To remove double quotes from the value
+             # Ex: Change '"val"' to 'val'
+             keyval = re.sub('"', '', keyval)
+             # contruct xpath /xpath/list/foo by appending the key name.
+             key_path = xpath.split(key)[0] + '/' + keyname
+             # If there are multiple key/values in xpath, substitute other
+             # key value pairs with empty string.
+             key_path = re.sub(self.RE_FIND_KEYS, '', key_path)
+             for entry in nodes:
+                 if entry['xpath'] == key_path:
+                     break
+             else:
+                 nodes.append(
+                     {'name': keyname,
+                      'value': keyval,
+                      'xpath': key_path,
+                      'selected': True,
+                      'op': '=='}
+                 )
 
     def process_rpc_reply(self, resp):
         """Transform XML into elements with associated xpath.

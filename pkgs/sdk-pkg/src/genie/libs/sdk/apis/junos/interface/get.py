@@ -121,6 +121,32 @@ def get_interface_ip_address(device, interface, address_family,
         return found[0]
     return None
 
+def get_address_without_netmask(device, interface, address_family,
+                             return_all=False):
+    """ Get interface ip address without mask
+
+        Args:
+            interface('str'): Interface to get address
+            device ('obj'): Device object
+            address_family ('str'): Address family
+            return_all ('bool'): return List of values. Defaults to False
+        Returns:
+            None
+            ip_address ('str'): If has multiple addresses
+                                will return the first one.
+
+        Raises:
+            None
+    """
+    ip_addr_with_mask = get_interface_ip_address(
+                            device=device,
+                            interface=interface, 
+                            address_family=address_family)
+
+    if ip_addr_with_mask:
+        return ip_addr_with_mask.split('/')[0]
+
+    return None
 
 def get_interface_speed(device, interface, bit_size='gbps'):
     """Get speed of an interface
@@ -429,7 +455,7 @@ def get_interface_queue_counters_trans_packets(device, interface, expected_queue
                 interface=interface.split('.')[0]
             ))
         else:
-            out = device.parse('show interfaces {interface}'.format(
+            out = device.parse('show interfaces queue {interface}'.format(
                 interface=interface.split('.')[0]
             ))
     except SchemaEmptyParserError as e:
@@ -444,3 +470,67 @@ def get_interface_queue_counters_trans_packets(device, interface, expected_queue
     if not transmitted_drop_packets:
         return None
     return transmitted_drop_packets
+
+def get_interface_queue_counters_queued_packets(device, interface, expected_queue_number, extensive=False):
+    """ Get queued packets based on queue number
+
+        Args:
+            device ('obj'): Device object
+            interface('str'): Interface name
+            expected_queue_number ('str'): Queue number to check
+            extensive ('str'): Flag to check extensive in command
+            
+        Returns:
+            total_drop_packets: Output error drops
+
+        Raises:
+            None
+    """
+    try:
+        if extensive:
+            out = device.parse('show interfaces extensive {interface}'.format(
+                interface=interface.split('.')[0]
+            ))
+        else:
+            out = device.parse('show interfaces {interface}'.format(
+                interface=interface.split('.')[0]
+            ))
+    except SchemaEmptyParserError as e:
+        return None
+    # Dcitonary:
+    # 'queue': [{'queue-counters-queued-packets': '0',
+    #             'queue-counters-total-drop-packets': '0',
+    #             'queue-counters-trans-packets': '0',
+    #             'queue-number': '0'}]
+    queue_counters_queued_packets = out.q.get_values('queue-counters-queued-packets', 
+        int(expected_queue_number))
+    if not queue_counters_queued_packets:
+        return None
+    return queue_counters_queued_packets
+
+def get_interface_queue_counters_transmitted_byte_rate(device, interface, expected_queue_number):
+    """ Get queue counters transmitted byte rate based on interfaces queue
+
+        Args:
+            device ('obj'): Device object
+            interface('str'): Interface name
+            expected_queue_number ('str'): Queue number to check
+            
+        Returns:
+            total_drop_packets: Output error drops
+
+        Raises:
+            None
+    """
+    try:
+        out = device.parse('show interfaces queue {interface}'.format(
+                interface=interface.split('.')[0]
+            ))
+    except SchemaEmptyParserError as e:
+        return None
+    
+    transmitted_byte_rate = out.q.get_values('queue-counters-trans-bytes-rate', 
+        int(expected_queue_number))
+    if not transmitted_byte_rate:
+        return None
+    return transmitted_byte_rate

@@ -54,9 +54,11 @@ def get_system_current_time(device):
     except SchemaEmptyParserError:
         return None
 
-    timestamp = datetime.strptime(out.get('system-uptime-information', {}) \
+    time_text = out.get('system-uptime-information', {}) \
                         .get('current-time', {}) \
                         .get('date-time', {}) \
-                        .get('#text').split(' ')[1], '%H:%M:%S')
+                        .get('#text')
+
+    timestamp = datetime.strptime(' '.join(time_text.split(' ')[0:2]), '%Y-%m-%d %H:%M:%S')
 
     return timestamp

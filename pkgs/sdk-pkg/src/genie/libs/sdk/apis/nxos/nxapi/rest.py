@@ -109,25 +109,27 @@ def nxapi_method_nxapi_rest(device, action, commands='', input_type='cli',
     if rest_method == 'get':
         return output
 
-    # from the response get the dictionary with a result
-    if isinstance(output, list):
-        for item in output:
-            result = item.get('result')
-            if not result:
-                continue
-            output = item
-            break
+    # if a convert action we need to do what the gui does
+    if action in convert_option_mapper:
+        # from the response get the dictionary with a result
+        if isinstance(output, list):
+            for item in output:
+                result = item.get('result')
+                if not result:
+                    continue
+                output = item
+                break
 
-    msg = output.get('result', {}).get('msg')
+        output = output.get('result', {}).get('msg')
 
-    # The nxapi returns this at the end of the message.
-    # But the GUI strips it - So it gets stripped here too
-    if msg:
-        msg = msg.replace("===ERROR===", "")
+        # The nxapi returns this at the end of the message.
+        # But the GUI strips it - So it gets stripped here too
+        if output:
+            output = output.replace("===ERROR===", "")
 
     # returning the message rather than the entire payload because
     # this is what the gui does
-    return msg
+    return output
 
 def nxapi_method_nxapi_cli(device, action, commands, message_format='json_rpc',
               command_type='cli', error_action=None, chunk=False,
@@ -304,24 +306,22 @@ def nxapi_method_restconf(device, action, commands,
                         .format(rest_method=rest_method,
                                 alias=alias)) from e
 
-    # from the response get the dictionary with a result
-    if isinstance(output, list):
-        for item in output:
-            result = item.get('result')
-            if not result:
-                continue
-            output = item
-            break
-
-    if isinstance(output, dict):
-        msg = output.get('result', {}).get('msg')
-    else:
-        msg = output
-
+    # if a convert action we need to do what the gui does
     if action == 'convert':
+        # from the response get the dictionary with a result
+        if isinstance(output, list):
+            for item in output:
+                result = item.get('result')
+                if not result:
+                    continue
+                output = item
+                break
+
+        output = output.get('result', {}).get('msg')
+
         # The GUI strips the 'system' in the hierarchy
         # so we do it here too
-        lines = msg.splitlines(keepends=True)
+        lines = output.splitlines(keepends=True)
         if message_format == 'json':
             # system is the second line and second last line
             del lines[1]
@@ -331,9 +331,9 @@ def nxapi_method_restconf(device, action, commands,
             del lines[0]
             del lines [-1]
 
-        msg = ''.join(lines)
+        output = ''.join(lines)
 
-    return msg
+    return output
 
 def _nxapi_payload_builder(
         commands, payload_format, method, error_action=None,

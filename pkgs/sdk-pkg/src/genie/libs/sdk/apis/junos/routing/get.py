@@ -140,6 +140,40 @@ def get_route_destination_address(device, extensive=None, prefix='inet.0', proto
     
     return None
 
+def get_route_table_switched_path_destination_address(device, table, name):
+    """ Get route table switched path destination address
+
+    Args:
+        device (obj): Device object
+        table (str): Table name
+        name (str): switched path label
+
+    Returns:
+        str or None: metric value
+    """
+
+    # Example dictionary
+    # {
+    #     "route-information": {
+    #         "route-table": {
+    #             "rt": [{
+    #                 "rt-destination": str,
+    #             }]
+    #         }
+    #     }
+    # }
+
+    try:
+        out = device.parse('show route table {table} label-switched-path {name}'.format(
+            table=table,
+            name=name
+        ))
+    except SchemaEmptyParserError:
+        return None
+
+    
+
+    return out.q.get_values('rt-destination', 0) or None
 
 def get_ospf_metric(device,
                     destination_address):
@@ -176,3 +210,148 @@ def get_ospf_metric(device,
                     continue
                 return metric_
     return None
+
+
+def get_route_advertising_label(device,
+                          protocol,
+                          ip_address,
+                          route,
+                          table_name):
+    """Get the label with given table_name via
+        'show route advertising-protocol {protocol} {ip_address} {route} detail'
+
+        Args:
+            device ('obj'): Device to use
+            protocol ('str'): Protocol used in show command
+            ip_address ('str'): IP address used in show command
+            route ('str'): Route used in show command
+            table_name ('str'): Label inet
+
+        Returns:
+            str
+
+        Raises:
+            N/A
+    """
+    out = device.parse(
+        "show route advertising-protocol {protocol} {ip_address} {route} detail".format(
+            protocol=protocol,
+            ip_address=ip_address,
+            route=route
+        )
+    )
+    # Example output
+    # {'route-information': {'route-table': [{'table-name': 'inet.3', <------------------
+    #                                         'rt-entry': {'active-tag': '*',
+    #                                                     'as-path': '[1] I',
+    #                                                     'bgp-group': {'bgp-group-name': 'eBGP_SUT-2',
+    #                                                                 'bgp-group-type': 'External'},
+    #                                                     'flags': 'Nexthop Change',
+    #                                                     'med': '1',
+    #                                                     'nh': {'to': 'Self'},
+    #                                                     'route-label': '17', <------------------
+
+    filtered_out = out.q.contains('{table_name}|route-label'.format(table_name=table_name),regex=True).reconstruct()
+    # filtered_out: 
+    # {'route-information': {'route-table': [{'rt-entry': {'route-label': '19'},
+    #                                     'table-name': 'inet.3'}]}}
+    
+    rt_list = Dq(filtered_out).get_values('route-table')
+    # rt_list:
+    # [{'table-name': 'inet.3', 'rt-entry': {'route-label': '19'}}]
+
+    for rt in rt_list:
+        if rt.get('table-name') == table_name:
+            label = Dq(rt).get_values('route-label', 0)
+            if type(label) == str:
+                return int(label)
+            
+    return None
+def get_route_table_output_interface(device,
+    table, route):
+    """Get route table output interface
+
+    Args:
+        device (obj): Device object
+        table (str): Table name
+        route (str): Route IP address
+    
+    Returns:
+        output_interface (str)
+    """
+
+    # Example Dictionary
+    # {'table_name': {'inet.3': {'active_route_count': 5001,
+    #                        'destination_count': 5001,
+    #                        'hidden_route_count': 0,
+    #                        'holddown_route_count': 0,
+    #                        'routes': {'200.0.0.0/32': {'active_tag': '*',
+    #                                                    'age': '00:01:29',
+    #                                                    'metric': '1',
+    #                                                    'next_hop': {'next_hop_list': {1: {'best_route': '>',
+    #                                                                                       'mpls_label': 'Push '
+    #                                                                                                     '574',
+    #                                                                                       'to': '106.187.14.121',
+    #                                                                                       'via': 'ge-0/0/1.0'}}},
+    #                                                    'preference': '9',
+    #                                                    'protocol_name': 'LDP'}},
+    #                        'total_route_count': 5001}}}
+    
+    out = device.parse('show route table {table} {route}'.format(
+        table=table,
+        route=route
+    ))
+    
+
+    output_interface = out.q.contains('.*{route}.*'.format(route=route), 
+        regex=True).get_values('via', 0)
+    
+    if not output_interface:
+        return None
+
+    return output_interface
+
+
+def get_route_table_output_label(device,
+    table, route):
+    """Get route table output label
+
+    Args:
+        device (obj): Device object
+        table (str): Table name
+        route (str): Route IP address
+    
+    Returns:
+        output_label (str)
+    """
+
+    # Example Dictionary
+    # {'table_name': {'inet.3': {'active_route_count': 5001,
+    #                        'destination_count': 5001,
+    #                        'hidden_route_count': 0,
+    #                        'holddown_route_count': 0,
+    #                        'routes': {'200.0.0.0/32': {'active_tag': '*',
+    #                                                    'age': '00:01:29',
+    #                                                    'metric': '1',
+    #                                                    'next_hop': {'next_hop_list': {1: {'best_route': '>',
+    #                                                                                       'mpls_label': 'Push '
+    #                                                                                                     '574',
+    #                                                                                       'to': '106.187.14.121',
+    #                                                                                       'via': 'ge-0/0/1.0'}}},
+    #                                                    'preference': '9',
+    #                                                    'protocol_name': 'LDP'}},
+    #                        'total_route_count': 5001}}}
+    
+    out = device.parse('show route table {table} {route}'.format(
+        table=table,
+        route=route
+    ))
+    
+
+    output_label = out.q.contains('.*{route}.*'.format(route=route), 
+        regex=True).get_values('mpls_label', 0)
+    
+    if not output_label:
+        return None
+
+    return output_label

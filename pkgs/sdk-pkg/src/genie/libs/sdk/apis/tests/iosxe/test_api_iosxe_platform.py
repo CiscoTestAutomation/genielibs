@@ -2,14 +2,26 @@
 import unittest
 
 from genie.conf import Genie
-from genie.metaparser.util.exceptions import SchemaEmptyParserError
-
-from genie.libs.clean.stages.iosxe.tests.iosxe_pos_stage_outputs import get_parsed_output as pos_parsed
 from genie.libs.sdk.apis.iosxe.platform.get import (
     get_boot_variables, get_config_register)
 
 
 class TestApiIiosxePlatform(unittest.TestCase):
+
+    parsed_outputs = {
+        'show bootvar': {
+            'active': {
+                'boot_variable': 'harddisk:/vmlinux_PE1.bin,12',
+                'configuration_register': '0x2102'
+            },
+            'next_reload_boot_variable': 'harddisk:/vmlinux_PE1.bin,12'
+        },
+    }
+
+    @classmethod
+    def get_parsed_output(cls, arg, **kwargs):
+        '''Return the parsed output of the given show command '''
+        return cls.parsed_outputs[arg]
 
     @classmethod
     def setUpClass(cls):
@@ -22,7 +34,7 @@ class TestApiIiosxePlatform(unittest.TestCase):
         """
         cls.tb = Genie.init(testbed)
         cls.device = cls.tb.devices['R1']
-        cls.device.parse = pos_parsed
+        cls.device.parse = cls.get_parsed_output
 
     def test_get_boot_variables(self):
         boot_vars = get_boot_variables(self.device, 'current')

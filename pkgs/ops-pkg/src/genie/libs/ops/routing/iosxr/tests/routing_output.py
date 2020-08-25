@@ -48,9 +48,44 @@ class RoutingOutput(object):
         C    10.23.120.0/24 is directly connected, 3w3d, GigabitEthernet0/0/0/1.120
         L    10.23.120.2/32 is directly connected, 3w3d, GigabitEthernet0/0/0/11.120 
     '''
+    showRouteVrfAllIpv4 = '''\
+       genie_Router#show route vrf all ipv4
+        Tue Oct 29 14:23:27.507 UTC
+
+        VRF: VRF1
+
+        Codes: C - connected, S - static, R - RIP, B - BGP, (>) - Diversion path
+            D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+            N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+            E1 - OSPF external type 1, E2 - OSPF external type 2, E - EGP
+            i - ISIS, L1 - IS-IS level-1, L2 - IS-IS level-2
+            ia - IS-IS inter area, su - IS-IS summary null, * - candidate default
+            U - per-user static route, o - ODR, L - local, G  - DAGR, l - LISP
+            A - access/subscriber, a - Application route
+            M - mobile route, r - RPL, t - Traffic Engineering, (!) - FRR Backup path
+
+        Gateway of last resort is not set
+
+        L    10.23.120.2/32 is directly connected, 3w3d, GigabitEthernet0/0/0/11.120 
+    '''
     showRouteIpv4_route = '''\
         genie_Router#show route ipv4 10.23.90.0
         Tue Oct 29 15:00:22.242 UTC
+
+        Routing entry for 10.23.90.0/24
+        Known via "connected", distance 0, metric 0 (connected)
+        Installed Oct  4 15:47:45.390 for 3w3d
+        Routing Descriptor Blocks
+            directly connected, via GigabitEthernet0/0/0/1.90
+            Route metric is 0
+        Redist Advertisers:
+            eigrp/100 (protoid=5, clientid=22)
+    '''
+    showRouteVrfAllIpv4_route = '''\
+        genie_Router#show route vrf all ipv4 10.23.90.0
+        Tue Oct 29 15:00:22.242 UTC
+
+        VRF: VRF1
 
         Routing entry for 10.23.90.0/24
         Known via "connected", distance 0, metric 0 (connected)
@@ -124,10 +159,68 @@ class RoutingOutput(object):
         L    2001:10:23:120::2/128 is directly connected,
             3w3d, GigabitEthernet0/0/0/1.120
     '''
+    showRouteVrfAllIpv6 = '''\
+    genie_Router#show route vrf all ipv6
+        Tue Oct 29 14:24:32.669 UTC
 
+        VRF: VRF1
+
+        Codes: C - connected, S - static, R - RIP, B - BGP, (>) - Diversion path
+            D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+            N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+            E1 - OSPF external type 1, E2 - OSPF external type 2, E - EGP
+            i - ISIS, L1 - IS-IS level-1, L2 - IS-IS level-2
+            ia - IS-IS inter area, su - IS-IS summary null, * - candidate default
+            U - per-user static route, o - ODR, L - local, G  - DAGR, l - LISP
+            A - access/subscriber, a - Application route
+            M - mobile route, r - RPL, t - Traffic Engineering, (!) - FRR Backup path
+
+        Gateway of last resort is not set
+
+        L    2001:10:23:120::2/128 is directly connected,
+            3w3d, GigabitEthernet0/0/0/1.120
+    '''
 
     showRouteOpsOutput = {
         'vrf': {
+            'VRF1': {
+                'address_family': {
+                    'ipv4': {
+                        'routes': {
+                            '10.23.120.2/32': {
+                                'route': '10.23.120.2/32',
+                                'active': True,
+                                'source_protocol': 'local',
+                                'source_protocol_codes': 'L',
+                                'next_hop': {
+                                    'outgoing_interface': {
+                                        'GigabitEthernet0/0/0/11.120': {
+                                            'outgoing_interface': 'GigabitEthernet0/0/0/11.120',
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    'ipv6': {
+                        'routes': {
+                            '2001:10:23:120::2/128': {
+                                'route': '2001:10:23:120::2/128',
+                                'active': True,
+                                'source_protocol': 'local',
+                                'source_protocol_codes': 'L',
+                                'next_hop': {
+                                    'outgoing_interface': {
+                                        'GigabitEthernet0/0/0/1.120': {
+                                            'outgoing_interface': 'GigabitEthernet0/0/0/1.120',
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             'default': {
                 'address_family': {
                     'ipv4': {
@@ -834,6 +927,26 @@ class RoutingOutput(object):
 
     showRouteOpsOutput_custom = {
         'vrf': {
+            'VRF1': {
+                'address_family': {
+                    'ipv4': {
+                        'routes': {
+                            '10.23.90.0/24': {
+                                'active': True,
+                                'metric': 0,
+                                'next_hop': {
+                                    'outgoing_interface': {
+                                        'GigabitEthernet0/0/0/1.90': {
+                                            'outgoing_interface': 'GigabitEthernet0/0/0/1.90',
+                                        }
+                                    }
+                                },
+                                'route': '10.23.90.0/24',
+                            }
+                        }
+                    }
+                }
+            },
             'default': {
                 'address_family': {
                     'ipv4': {

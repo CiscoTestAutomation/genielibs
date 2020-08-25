@@ -82,11 +82,16 @@ def device_recovery(start, device, console_activity_pattern, golden_image=None,
     # Set target
     target = "{}_{}".format(device.hostname, last_word_in_start)
 
+    if log.handlers and isinstance(log.handlers, list):
+        logfile= log.handlers[1].logfile
+    else:
+        logfile = None
+
     spawn = Spawn(spawn_command=start,
                   settings=device.cli.settings,
                   target=target,
                   log=log,
-                  logfile=log.handlers[1].logfile)
+                  logfile=logfile)
 
     dialog = RommonDialog()
     dialog.dialog.process(spawn, timeout=timeout,
@@ -132,11 +137,16 @@ def tftp_recovery_worker(start, device, console_activity_pattern, tftp_boot=None
     # Set target
     target = "{}_{}".format(device.hostname, last_word_in_start)
 
+    if log.handlers and isinstance(log.handlers, list):
+        logfile= log.handlers[1].logfile
+    else:
+        logfile = None
+
     spawn = Spawn(spawn_command=start,
                   settings=device.cli.settings,
                   target=target,
                   log=log,
-                  logfile=log.handlers[1].logfile)
+                  logfile=logfile)
 
     rommon_dialog = TftpRommonDialog()
     rommon_dialog.hostname_statement(device.hostname)
@@ -166,7 +176,7 @@ def tftp_recover_from_rommon(spawn, session, context, device_name,
             spawn.sendline(conf)
         except Exception as e:
             raise Exception("Unable to assign {}:\n{}".
-                            format(item, str(e)), goto=['exit'])
+                            format(item, str(e)))
 
     # Build the boot command
     boot_cmd = 'boot tftp://{tftp}{image}'.format(tftp=tftp_server,
@@ -177,5 +187,5 @@ def tftp_recover_from_rommon(spawn, session, context, device_name,
     try:
         spawn.sendline(boot_cmd)
     except Exception as e:
-        raise Exception("Unable to boot {} error {}".format(boot_cmd,str(e)),
-                                                            goto=['exit'])
+        raise Exception("Unable to boot {} error {}".format(boot_cmd,str(e)))
+

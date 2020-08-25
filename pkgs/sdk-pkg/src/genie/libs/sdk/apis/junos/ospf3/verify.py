@@ -116,8 +116,8 @@ def verify_no_ospf3_neigbor_output(device,
         Args:
             device ('obj'): device to use
             extensive ('bool'): If ospf command is extensive
-            max_time ('int'): Maximum time to keep checking
-            check_interval ('int'): How often to check
+            max_time ('int', optional): Maximum time to keep checking. Defaults to 60 seconds.
+            check_interval (`int`,optional): Check interval, default: 10 seconds
 
         Returns:
             True/False
@@ -238,7 +238,7 @@ def verify_ospf3_interface(device,
             expected_state ('str'): Interface state
             extensive ('boolean'): Flag for extensive command
             max_time ('int'): Maximum time to keep checking
-            check_interval ('int'): How often to check
+            check_interval (`int`,optional): Check interval, default: 10 seconds
             expected_hello_interval ('str'): Expected hello interval
 
         Returns:
@@ -598,6 +598,57 @@ def verify_ospfv3_interface_in_database(device,
         timeout.sleep()
     return False
 
+
+def verify_no_ospfv3_interface_in_database(device,
+                                           expected_interface,
+                                           max_time=60,
+                                           check_interval=10):
+    """ Verifies ospfv3 interface exists with criteria
+
+        Args:
+            device ('obj'): device to use
+            expected_interface ('str'): Interface to use
+            max_time ('int', optional): Maximum time to keep checking. Defaults to 60 seconds.
+            check_interval (`int`): Check interval, default: 10
+
+        Returns:
+            Boolean
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse('show ospf3 database extensive')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        #'ospf3-database': [{
+        #    'lsa-type':
+        #        'Router',
+        #        'lsa-id':
+        #            '0.0.0.0',
+        #        'advertising-router':
+        #            '1.1.1.1'
+        #            }
+        #        ]
+
+        exists = False
+        for ospf3_database in Dq(out).get_values('ospf3-database'):
+
+            prefix_ips = ospf3_database.get('ospf3-intra-area-prefix-lsa',{}).get('ospf3-prefix',{})
+            if expected_interface in prefix_ips:
+                exists = True
+
+        if not exists:
+            return False
+        else:
+            timeout.sleep()
+
+    return exists
+
 def verify_ospf3_database_prefix(device,
                                  expected_prefix,
                                  ipaddress=None,
@@ -667,7 +718,7 @@ def verify_show_ospf3_database_lsa_types(device,
         device ('obj'): device to use
         expected_types ('str'): types to verify
         max_time ('int'): Maximum time to keep checking
-        check_interval ('int'): How often to check
+        check_interval (`int`,optional): Check interval, default: 10 seconds
 
     Raise: None
 

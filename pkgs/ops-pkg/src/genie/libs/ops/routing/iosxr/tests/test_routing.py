@@ -12,10 +12,14 @@ from genie.libs.ops.routing.iosxr.tests.routing_output import RoutingOutput
 from genie.libs.parser.iosxr.show_routing import ShowRouteIpv4, ShowRouteIpv6
 
 
-outputs = {}
-outputs['show route ipv4'] = RoutingOutput.showRouteIpv4
-outputs['show route ipv6'] = RoutingOutput.showRouteIpv6
-outputs['show route ipv4 10.23.90.0'] = RoutingOutput.showRouteIpv4_route
+outputs = {
+    'show route ipv4': RoutingOutput.showRouteIpv4,
+    'show route vrf all ipv4': RoutingOutput.showRouteVrfAllIpv4,
+    'show route ipv6': RoutingOutput.showRouteIpv6,
+    'show route vrf all ipv6': RoutingOutput.showRouteVrfAllIpv6,
+    'show route ipv4 10.23.90.0': RoutingOutput.showRouteIpv4_route,
+    'show route vrf all ipv4 10.23.90.0': RoutingOutput.showRouteVrfAllIpv4_route,
+}
 
 def mapper(key):
     return outputs[key]
@@ -26,8 +30,7 @@ class test_route_all(unittest.TestCase):
         self.device = Device(name='aDevice')
         self.device.os = 'iosxr'
         self.device.custom['abstraction'] = {'order':['os']}
-        self.device.mapping={}
-        self.device.mapping['cli']='cli'
+        self.device.mapping = {'cli': 'cli'}
         self.device.connectionmgr.connections['cli'] = self.device
 
     def test_custom_output(self):
@@ -69,8 +72,11 @@ class test_route_all(unittest.TestCase):
         f = Routing(device=self.device)
 
         outputs['show route ipv4'] = ''
+        outputs['show route vrf all ipv4'] = ''
         outputs['show route ipv6'] = ''
+        outputs['show route vrf all ipv6'] = ''
         outputs['show route ipv4 10.23.90.0'] = ''
+        outputs['show route vrf all ipv4 10.23.90.0'] = ''
         # Get outputs
         self.device.execute = Mock()
         self.device.execute.side_effect = mapper
@@ -79,8 +85,11 @@ class test_route_all(unittest.TestCase):
         f.learn()
         self.maxDiff = None
         outputs['show route ipv4'] = RoutingOutput.showRouteIpv4
+        outputs['show route vrf all ipv4'] = RoutingOutput.showRouteVrfAllIpv4
         outputs['show route ipv6'] = RoutingOutput.showRouteIpv6
+        outputs['show route vrf all ipv6'] = RoutingOutput.showRouteVrfAllIpv6
         outputs['show route ipv4 10.23.90.0'] = RoutingOutput.showRouteIpv4_route
+        outputs['show route vrf all ipv4 10.23.90.0'] = RoutingOutput.showRouteVrfAllIpv4_route
         # Check no attribute not found
         with self.assertRaises(AttributeError):
             f.info['vrf']

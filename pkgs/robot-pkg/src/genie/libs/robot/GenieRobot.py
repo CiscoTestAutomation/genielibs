@@ -46,6 +46,8 @@ class GenieRobot(object):
     # Need to maintain the testscript object
     ROBOT_LIBRARY_SCOPE = "GLOBAL"
 
+    ROBOT_LIBRARY_DOC_FORMAT = 'reST'
+
     def __init__(self):
         # save builtin so we dont have to re-create then everytime
         self.builtin = BuiltIn()
@@ -393,6 +395,10 @@ class GenieRobot(object):
         '''Verify that a specific number of <...> is <...> on a device using a
         specific alias
 
+        Examples:
+
+        .. code:: robotframework
+
            verify count "<number>" "bgp neighbors" on device "<device>"
 
            verify count "<number>" "bgp routes" on device "<device>"
@@ -400,6 +406,7 @@ class GenieRobot(object):
            verify count "<number>" "ospf neighbors" on device "<device>"
 
            verify count "<number>" "interfaces neighbors" on device "<device>"
+
         '''
         # First word of action is the protocol
         # Last word is the expected value

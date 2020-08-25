@@ -26,9 +26,9 @@ log = logging.getLogger(__name__)
 
 
 @clean_schema({
-    'images': {
-        'system': str,
-        Optional('kickstart'): str
+    Optional('images'): {
+        'system': list,
+        Optional('kickstart'): list
     },
     Optional('copy_vdc_all'): bool,
     Optional('timeout'): int,
@@ -50,8 +50,8 @@ def change_boot_variable(section, steps, device, images, copy_vdc_all=False,
         <device>:
             change_boot_variable:
                 images:
-                    kickstart: <kickstart image> (Optional)
-                    system: <system image> (Mandatory)
+                    kickstart: [<kickstart image>] (Optional)
+                    system: [<system image>] (Mandatory)
                 copy_vdc_all: <Copy on all VDCs, 'Boolean'> (Optional)
                 timeout: <Execute timeout in seconds, 'int'> (Optional)
                 max_time: <Maximum time section will take for checks in seconds, 'int'> (Optional)
@@ -88,10 +88,13 @@ def change_boot_variable(section, steps, device, images, copy_vdc_all=False,
     log.info("Section steps:\n1- Execute changing the boot variables"
              "\n2- Save running configuration to startup configuration"
              "\n3- Verify next boot variables as expected"
-             "\n4- Verify files transfered successfully to the standby (if HA)")
+             "\n4- Verify files transferred successfully to the standby (if HA)")
 
     kickstart = images.get('kickstart')
+    kickstart = kickstart[0] if kickstart else None
+
     system = images.get('system')
+    system = system[0] if system else None
 
     with steps.start("Changing the boot variables") as step:
         try:
@@ -99,7 +102,7 @@ def change_boot_variable(section, steps, device, images, copy_vdc_all=False,
                                                     system=system,
                                                     timeout=timeout)
         except Exception as e:
-            section.failed('{e}'.format(e=e), goto=['exit'])
+            step.failed('{e}'.format(e=e))
 
     with steps.start("Save running configuration to startup "
                      "configuration") as step:
@@ -118,7 +121,7 @@ def change_boot_variable(section, steps, device, images, copy_vdc_all=False,
                                               kickstart=kickstart,
                                               system=system)
         except Exception as e:
-            section.failed('{e}'.format(e=e), goto=['exit'])
+            step.failed('{e}'.format(e=e))
 
     if device.is_ha:
         with steps.start("Verify the files transferred successfully to "
@@ -128,7 +131,7 @@ def change_boot_variable(section, steps, device, images, copy_vdc_all=False,
                                     max_time=standby_copy_max_time,
                                     check_interval=standby_copy_check_interval)
             except Exception as e:
-                section.failed('{e}'.format(e=e))
+                step.failed('{e}'.format(e=e))
     else:
         section.passed("Successfully loaded boot variables for {}".\
                        format(device.name))

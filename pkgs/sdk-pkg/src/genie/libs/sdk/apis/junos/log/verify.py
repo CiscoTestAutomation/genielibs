@@ -1,8 +1,9 @@
 """Common verification functions for log"""
 
 # Python
-import logging
 import re
+import logging
+import operator
 
 # Genie
 from genie.utils.timeout import Timeout
@@ -56,7 +57,7 @@ def is_logging_ospf_spf_logged(device, expected_spf_delay=None, ospf_trace_log=N
     return False  
 
 def verify_log_exists(device, file_name, expected_log,
-                            max_time=60, check_interval=10):
+                            max_time=60, check_interval=10, invert=False):
     """
     Verify log exists
 
@@ -66,12 +67,17 @@ def verify_log_exists(device, file_name, expected_log,
         expected_log ('str'): Expected log message
         max_time ('int'): Maximum time to keep checking
         check_interval ('int'): How often to check
+        invert ('bool', 'optional'): Inverts to check if it doesn't exist
 
     Returns:  
         Boolean       
     Raises:
         N/A    
     """
+    op = operator.truth
+    if invert:
+        op = lambda val : operator.not_(operator.truth(val))
+
     timeout = Timeout(max_time, check_interval)
 
     # show commands: "show log {file_name}"
@@ -86,7 +92,7 @@ def verify_log_exists(device, file_name, expected_log,
         log_found = log_output.q.contains(
                     '.*{}.*'.format(expected_log), regex=True)
         
-        if log_found:
+        if op(log_found):
             return True
 
         timeout.sleep()

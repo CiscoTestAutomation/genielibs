@@ -1,46 +1,44 @@
 '''Common OS: Image Handler Class'''
 
-# Python
-import os
-import random
+import yaml
 
-class ImageHandler(object):
+class BaseImageHandler(object):
+
+    # In case this is not defined by the child
+    # class this will prevent an AttributeError
+    exception = None
+
+    # In case this is not defined by the child class
+    # we use a generic message
+    EXPECTED_IMAGE_STRUCTURE_MSG = """
+----------------------------------------------------
+An invalid structure for 'images' has been provided:
+----------------------------------------------------
+{}"""
+
+    def __init__(self, device, *args, **kwargs):
+
+        if self.exception:
+            # The child ImageHandler has deemed 'images' to have an
+            # invalid structure so raise an exception to halt the
+            # process and inform the user
+            raise Exception(self.EXPECTED_IMAGE_STRUCTURE_MSG.format(
+                yaml.dump(self.exception)))
+        else:
+            # No exception to raise - Set vars and continue as normal.
+            # Go pyATS Clean Go!
+            self.device = device
+
+    def update_section(self, section_uid):
+        ''' Initializes section dictionary and calls update method for
+            respective method '''
+
+        if (section_uid not in self.device.clean or
+                not self.device.clean[section_uid]):
+            self.device.clean[section_uid] = {}
+
+        # call the ImageHandler update method
+        if hasattr(self, 'update_' + section_uid):
+            getattr(self, 'update_' + section_uid)()
 
 
-    def __init__(self, device, images, *args, **kwargs):
-        self.device = device
-        self.images = images
-        self.ctl_files = []
-        self.ctd_files = []
-        # Save 'append_hostname' (if provided)
-        self.append_hostname = self.device.clean.get('copy_to_linux', {}).\
-                                                 get('append_hostname')
-        # Save 'unique_file_name' (if provided)
-        self.unique_filename = self.device.clean.get('copy_to_linux', {}).\
-                                                  get('unique_file_name')
-
-
-    def add_hostname(self, file):
-        '''Adds hostname to the given file'''
-
-        image_name, image_ext = os.path.splitext(file)
-        return ''.join([image_name, '_', self.device.name, image_ext])
-
-
-    def add_unique_filename(self, file):
-        '''Adds unique random number generated to the given file'''
-
-        # Check if user has provided any unique number
-        unique_num = self.device.clean.get('copy_to_linux', {}).\
-                                       get('unique_number', None)
-
-        # Generate random number to file
-        if not unique_num:
-            unique_num = random.randint(100000, 999999)
-
-        # Set random number generated into section
-        self.device.clean.get('copy_to_linux', {}).\
-                          setdefault('unique_number', unique_num)
-
-        image_name, image_ext = os.path.splitext(file)
-        return ''.join([image_name, '_', str(unique_num), image_ext])

@@ -3,6 +3,7 @@
 # Python
 import re
 import logging
+import operator
 
 # Genie
 from genie.utils.timeout import Timeout
@@ -243,5 +244,70 @@ def verify_interfaces_input_output_policer_found(device, interface, logical_inte
 
             return True
 
+        timeout.sleep()
+    return False
+
+def verify_interfaces_queue_packets(device, interface, queue, expected_packets,
+    packet_type='trans', invert=False, max_time=60, check_interval=10):
+    """ Verifies number of packets in an interface queue
+
+    Args:
+        device (obj): Device object
+        interface (str): Interface name
+        queue (int): Queue number
+        expected_packets (int): Expected number of packets
+        packet_type (str, optional): Packet type to check for. Defaults to queued.
+        invert (bool, optional): Inverts from equals to not equals. Defaults to False.
+        max_time (int, optional): Maximum timeout time. Defaults to 60.
+        check_interval (int, optional): Check interval. Defaults to 10.
+
+    Returns:
+        bool: True/False
+    """
+
+    op = operator.eq
+    if invert:
+        op = operator.ne
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse('show interfaces queue {interface}'.format(
+                interface=interface
+            ))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        queue_ = out.q.get_values('queue', queue)
+        if not queue_:
+            timeout.sleep()
+            continue
+
+        # Example Dict
+        # "queue": [
+        #                 {
+        #                     "queue-counters-queued-packets": "1470816406",
+        #                     "queue-counters-red-packets": "0",
+        #                     "queue-counters-tail-drop-packets": "0",
+        #                     "queue-counters-rl-drop-packets": "0",
+        #                 },]
+
+        available_packet_types_ = ["queued", "red", "rl-drop", "tail-drop", "trans"]
+
+        if packet_type.lower() in available_packet_types_:
+            packets_ = queue_.get("queue-counters-{}-packets".format(packet_type.lower()))
+            if not packets_:
+                timeout.sleep()
+                continue
+            if op(int(expected_packets), int(packets_)):
+                return True
+        else:
+            log.info("{packet_type} not among available types {type_list}".format(
+                packet_type=packet_type,
+                type_list=available_packet_types_
+            ))
+            return False
+        
         timeout.sleep()
     return False

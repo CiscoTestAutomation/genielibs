@@ -4,6 +4,7 @@
 import logging
 from netaddr import IPAddress
 import re
+import operator
 
 # pyATS
 from pyats.utils.objects import find, R
@@ -514,6 +515,7 @@ def verify_ospf_metric(device,
         timeout.sleep()
     return False
 
+
 def verify_ospf_neighbors_found(device, extensive=False,
     max_time=90, check_interval=10, expected_interface=None, instance=None):
     """ Verifies ospf neighbors values exists
@@ -563,6 +565,7 @@ def verify_ospf_neighbors_found(device, extensive=False,
             return True
         timeout.sleep()
     return False
+
 
 def verify_ospf_neighbors_not_found(device, extensive=False,
     max_time=90, check_interval=10, expected_interface=None):
@@ -702,6 +705,7 @@ def verify_ospf_spf_delay(device,
         timeout.sleep()
     return False      
 
+
 def verify_ospf_interface_in_database(device,
                                       expected_interface,
                                       expected_interface_type=None,
@@ -719,8 +723,8 @@ def verify_ospf_interface_in_database(device,
             subnet_mask ('str'): Subnet mask
             expected_metric ('str'): Metric of Interface
             adv_router ('bool'): Whether to look for address in adversiting router
-            max_time ('int'): Maximum time to keep checking
-            check_interval ('int'): How often to check
+            max_time ('int', optional): Maximum time to keep checking. Defaults to 60 seconds.
+            check_interval (`int`): Check interval, default: 10
 
         Returns:
             Boolean
@@ -792,6 +796,60 @@ def verify_ospf_interface_in_database(device,
 
     return False
 
+def verify_ospf_advertising_router_metric_in_database(device,
+                                      lsa_id,
+                                      ospf_link_id,
+                                      expected_metric,
+                                      max_time=60,
+                                      check_interval=10):
+    """ Verifies ospf advertising router metric in database
+
+        Args:
+            device ('obj'): Device to use
+            lsa_id: lsa_id to check
+            ospf_link_id ('str'): Ospf link id to check
+            expected_metric ('str'): Metric of desired ospf link
+            max_time ('int'): Maximum time to keep checking
+            check_interval ('int'): How often to check
+
+        Returns:
+            Boolean
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            cmd = 'show ospf database advertising-router {ipaddress} extensive'.format(
+                ipaddress=lsa_id)
+            out = device.parse(cmd)
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # Example output:
+        # {
+        #     "ospf-database-information": {
+        #         "ospf-database": [
+        #             {
+        #                 "ospf-router-lsa": {
+        #                     "ospf-link": [
+        #                         {
+        #                             "link-id": "106.187.14.240",
+        #                             "metric": "1"
+        #                         }]}}]}}
+
+
+        for ospf_database in out.q.get_values('ospf-database'):
+            ospf_links = Dq(ospf_database).get_values('ospf-link')
+            for ospf_link in ospf_links:
+                if ospf_link.get('link-id', None) == ospf_link_id \
+                        and ospf_link.get('metric', None) == str(expected_metric):
+                    return True
+
+        timeout.sleep()
+
+    return False
 
 def verify_no_ospf_interface_in_database(device,
                                          expected_interface,
@@ -802,8 +860,8 @@ def verify_no_ospf_interface_in_database(device,
         Args:
             device ('obj'): device to use
             expected_interface ('str'): Interface to use
-            max_time ('int'): Maximum time to keep checking
-            check_interval ('int'): How often to check
+            max_time ('int', optional): Maximum time to keep checking. Defaults to 60 seconds.
+            check_interval (`int`): Check interval, default: 10
 
         Returns:
             Boolean
@@ -845,9 +903,10 @@ def verify_no_ospf_interface_in_database(device,
             timeout.sleep()
             continue
         else:
-            return True
+            return False
 
-    return False
+    return True
+
 
 def verify_ospf_database_lsa_id(device,
                                 lsa_id,
@@ -933,7 +992,6 @@ def verify_show_ospf_database_lsa_types(device,
             continue
 
     return False
-
 
 
 def verify_show_ospf_route_network_extensive(device,
@@ -1073,6 +1131,7 @@ def verify_ospf_router_id(device, ipaddress, expected_id,max_time=60,check_inter
 
     return False
 
+
 def verify_ospf_no_router_id(device, ipaddress, expected_id,max_time=60,check_interval=10):
 
     """Verify 'show ospf database network lsa-id {ipaddress} detail' attached-router doesn't contain expected_id
@@ -1108,6 +1167,7 @@ def verify_ospf_no_router_id(device, ipaddress, expected_id,max_time=60,check_in
             continue
 
     return False    
+
 
 def verify_ospf_two_router_id(device, ipaddress, expected_id_1, expected_id_2, max_time=60,check_interval=10):
 
@@ -1146,3 +1206,64 @@ def verify_ospf_two_router_id(device, ipaddress, expected_id_1, expected_id_2, m
 
     return False             
 
+
+def verify_ospf_database(device, lsa_type=None, expected_lsa_id=None, 
+                         max_time=60, check_interval=10, extensive=True, invert=False):
+    """ Verifies information from show ospf database
+
+    Args:
+        device ([obj]): Device object
+        lsa_type ([str], optional): LSA type to check. Defaults to None.
+        expected_lsa_id ([str], optional): Expected LSA ID to find. Defaults to None.
+        max_time (int, optional): Maximum timeout time. Defaults to 60.
+        check_interval (int, optional): Check interval. Defaults to 10.
+        extensive (bool, optional): Extensive or not. Default to True.
+        invert (bool, optional): Inverts verification to check if criteria doesn't exist
+    """
+
+    op = operator.ne
+    if invert:
+        op = operator.eq
+
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        out = None
+        try:
+            if extensive:
+                if lsa_type:
+                    out = device.parse('show ospf database {lsa_type} extensive'.format(
+                        lsa_type=lsa_type.lower()
+                    ))
+                else:    
+                    out = device.parse('show ospf database extensive')
+            else:
+                if lsa_type:
+                    out = device.parse('show ospf database {lsa_type}'.format(
+                        lsa_type=lsa_type.lower()
+                    ))
+                else:    
+                    out = device.parse('show ospf database')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        count = 0
+
+        ospf_database_ = out.q.get_values('ospf-database')
+        for database in ospf_database_:
+            if expected_lsa_id and op(expected_lsa_id.split('/')[0], database.get('lsa-id')):
+                continue
+
+            # Add criteria to check against
+
+            count += 1
+            if not invert:
+                return True
+            else:
+                if count == len(ospf_database_):
+                    return True
+
+        timeout.sleep()
+
+    return False

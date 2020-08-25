@@ -156,7 +156,7 @@ def tftp_recover_from_rommon(spawn, session, context, device_name,
             spawn.sendline(conf)
         except Exception as e:
             raise Exception("Unable to assign {}:\n{}".
-                            format(item, str(e)), goto=['exit'])
+                            format(item, str(e)))
 
     # Build the boot command
     boot_cmd = 'boot tftp://{tftp}{image}'.format(tftp=tftp_server,
@@ -167,7 +167,7 @@ def tftp_recover_from_rommon(spawn, session, context, device_name,
     try:
         spawn.sendline(boot_cmd)
     except Exception as e:
-        raise Exception("Unable to boot {} error {}".format(boot_cmd,str(e)),
-                                                            goto=['exit'])
+        raise Exception("Unable to boot {} error {}".format(boot_cmd,str(e)))
+
     # It remains in rommon for a few seconds
     time.sleep(5)

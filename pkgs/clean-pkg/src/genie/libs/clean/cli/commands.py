@@ -2,14 +2,14 @@ import logging
 import argparse
 
 # Genie
-from genie.libs.clean.utils import validate_schema
+from genie.libs.clean.utils import validate_clean
 
 # pyATS
 from pyats.cli.base import Subcommand, ERROR
 from pyats.utils.yaml import Loader
 from pyats.utils.commands import do_lint
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 class ValidateClean(Subcommand):
@@ -51,18 +51,30 @@ class ValidateClean(Subcommand):
         loader = Loader(enable_extensions=True)
 
         try:
-            logger.info('-'*70)
-            logger.info('Loading clean datafile: %s' % args.clean_file.name)
+            log.info('-'*70)
+            log.info('Loading clean datafile: %s' % args.clean_file.name)
             clean = loader.load(args.clean_file)
 
-            logger.info('Loading testbed datafile: %s' % args.testbed_file.name)
+            log.info('Loading testbed datafile: %s' % args.testbed_file.name)
             testbed = loader.load(args.testbed_file)
-            logger.info('-'*70)
+            log.info('-'*70)
         except Exception as e:
-            logger.error(str(e))
+            log.error(str(e))
             return ERROR
 
         if args.lint:
             do_lint(args.clean_file.name)
 
-        validate_schema(clean, testbed)
+        validation_results = validate_clean(clean, testbed)
+
+        if validation_results['warnings']:
+            log.warning('\nWarning Messages')
+            log.warning('----------------')
+            log.warning(' - ' + '\n - '.join(validation_results['warnings']))
+
+        if validation_results['exceptions']:
+            log.error('\nExceptions')
+            log.error('----------')
+            for exception in validation_results['exceptions']:
+                log.error(exception)
+

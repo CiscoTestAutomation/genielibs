@@ -134,48 +134,12 @@ def _apply_configuration(device, configuration=None, file=None, timeout=60):
             raise e from None
 
 
-def update_clean_section(device, order, images):
+def initialize_clean_sections(image_handler, order):
     '''Updates given section with images provided'''
-
-    # Get abstracted ImageHandler class
-    abstract = Lookup.from_device(device, packages={'clean': clean})
-    ImageHandler = abstract.clean.stages.image_handler.ImageHandler
-
-    # Image handler
-    image_handler = ImageHandler(device, images)
 
     # Update section with image information if needed
     for section in order:
-
-        if section not in SECTIONS_WITH_IMAGE:
-            continue
-        elif not device.clean[section]:
-            device.clean[section] = {}
-
-        # Section: tftp_boot
-        if section == 'tftp_boot':
-            image_handler.update_tftp_boot()
-            continue
-
-        # Section: copy_to_linux
-        if section == 'copy_to_linux':
-            image_handler.update_copy_to_linux()
-            continue
-
-        # Section: copy_to_device
-        if section == 'copy_to_device':
-            image_handler.update_copy_to_device()
-            continue
-
-        # Section: change_boot_variable
-        if section == 'change_boot_variable':
-            image_handler.update_change_boot_variable()
-            continue
-
-        # Section: verify_running_image
-        if section == 'verify_running_image':
-            image_handler.update_verify_running_image()
-            continue
+        getattr(image_handler, 'update_section')(section)
 
 
 def load_clean_json():
@@ -295,31 +259,41 @@ def _pprint_missing_key(missing_dict, max_path_len, max_key_len, indent):
 def pretty_schema_exception(e):
     if isinstance(e, SchemaMissingKeyError):
         # proto type
-        raise ValueError(
+        return ValueError(
             "Clean schema check failed. The following keys are missing from clean yaml file:\n\n{}".format(
-                format_missing_key_msg(e.missing_list))) from None
+                format_missing_key_msg(e.missing_list)))
     elif isinstance(e, SchemaTypeError):
-        raise TypeError(
+        return TypeError(
             "Clean schema check failed. Incorrect value type was provided for the "
             "following key:\n\n{}\n\nExpected type {} but got type {}".format(
                 format_missing_key_msg([e.path]), str(e.type),
-                type(e.data))) from None
+                type(e.data)))
     if isinstance(e, SchemaUnsupportedKeyError):
-        raise ValueError(
+        return ValueError(
             "Clean schema check failed. The following keys are not supported:\n\n{}".format(
-                format_missing_key_msg(e.unsupported_keys))) from None
+                format_missing_key_msg(e.unsupported_keys)))
     else:
-        raise e
+        return e
 
 
-def validate_schema(clean, testbed):
+def validate_clean(clean_dict, testbed_dict):
     """ Validates the clean yaml using device abstraction to collect
         the proper schemas
 
         Args:
-            clean (dict): clean datafile
-            testbed (dict): testbed datafile
+            clean_dict (dict): clean datafile
+            testbed_dict (dict): testbed datafile
+
+        Returns:
+            {
+                'warnings' ['Warning example', ...],
+                'exceptions: [ValueError, ...]
+            }
     """
+    warnings = []
+    exceptions = []
+    validation_results = {'warnings': warnings, 'exceptions': exceptions}
+
     # these sections are not true stages and therefore cant be loaded
     sections_to_ignore = [
         'images',
@@ -328,7 +302,13 @@ def validate_schema(clean, testbed):
 
     base_schema = {
         'cleaners': {
-            Any(): Any()
+            Any(): {
+                'module': str,
+                Optional('devices'): list,
+                Optional('platforms'): list,
+                Optional('groups'): list,
+                Any(): Any()
+            }
         },
         'devices': {
 
@@ -336,29 +316,31 @@ def validate_schema(clean, testbed):
     }
 
     try:
-        loaded_tb = testbed_loader(testbed)
+        loaded_tb = testbed_loader(testbed_dict)
     except Exception:
-        raise Exception("Could not load the testbed file. Use 'pyats validate "
-                        "testbed <file>' to validate the testbed file.")
+        exceptions.append(
+            Exception("Could not load the testbed file. Use "
+                      "'pyats validate testbed <file>' to validate "
+                      "the testbed file.")
+        )
 
     clean_json = load_clean_json()
     from genie.libs.clean.stages.recovery import recovery_processor
 
-    warning_messages = []
-    for dev in clean["devices"]:
+    for dev in clean_dict.get('devices', {}):
         schema = base_schema.setdefault('devices', {}).setdefault(dev, {})
         schema.update({Optional('order'): list})
         schema.update({Optional('device_recovery'): dict})
         schema.update({Optional('images'): Or(list, dict)})
 
-        clean_data = clean["devices"][dev]
+        clean_data = clean_dict["devices"][dev]
 
         try:
             dev = loaded_tb.devices[dev]
         except KeyError as e:
-            warning_messages.append("The device {dev} specified in the clean "
-                                    "yaml does not exist in the testbed."
-                                    .format(dev=e))
+            warnings.append(
+                "The device {dev} specified in the clean yaml does "
+                "not exist in the testbed.".format(dev=e))
             # cant validate schema so allow anything under dev
             schema.update({Any(): Any()})
             continue
@@ -366,7 +348,13 @@ def validate_schema(clean, testbed):
         # update stages with image
         if clean_data.get('images'):
             setattr(dev, 'clean', clean_data)
-            update_clean_section(dev, clean_data.keys(), clean_data['images'])
+            # Get abstracted ImageHandler class
+            abstract = Lookup.from_device(dev, packages={'clean': clean})
+            ImageHandler = abstract.clean.stages.image_handler.ImageHandler
+
+            # Image handler
+            image_handler = ImageHandler(dev, dev.clean['images'])
+            initialize_clean_sections(image_handler, clean_data['order'])
 
         for section in clean_data:
             # ignore sections that aren't true stages
@@ -382,7 +370,6 @@ def validate_schema(clean, testbed):
             if clean_data[section] is None:
                 clean_data[section] = {}
 
-
             # Load it up so we can grab the schema from the stage
             # If source isnt provided then check if it is inside the clean json
             if 'source' not in clean_data:
@@ -394,17 +381,12 @@ def validate_schema(clean, testbed):
             if hasattr(task, 'schema'):
                 schema.update({task.__name__: task.schema})
 
-    if warning_messages:
-        log.warning('\nWarning Messages')
-        log.warning('----------------')
-        log.warning(' - ' + '\n - '.join(warning_messages))
-
     try:
-        Schema(base_schema).validate(clean)
+        Schema(base_schema).validate(clean_dict)
     except Exception as e:
-        log.error('\nExceptions')
-        log.error('----------')
-        pretty_schema_exception(e)
+        exceptions.append(pretty_schema_exception(e))
+
+    return validation_results
 
 
 def handle_rommon_exception(spawn, context):
@@ -412,13 +394,12 @@ def handle_rommon_exception(spawn, context):
     raise Exception('Device is in Rommon')
 
 
-def remove_string_from_image(images, string='tftpboot/'):
+def remove_string_from_image(images, string):
     ''' Removes user given string from any provided image path
 
         Args:
-            string (str): String to remove from the image path
             images (dict): List of image files to remove the user provided string from
-                           Default: 'tftpboot/'
+            string (str): String to remove from the image path
     '''
 
     regex = re.compile(r'.*{}.*'.format(string))

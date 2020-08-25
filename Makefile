@@ -47,7 +47,7 @@ PYLINT_CMD	  = pylintAll
 CYTHON_CMD	  = compileAll
 
 # Development pkg requirements
-RELATED_PKGS = genie.libs.clean genie.libs.conf genie.libs.ops genie.libs.robot genie.libs.sdk
+RELATED_PKGS = genie.libs.health genie.libs.clean genie.libs.conf genie.libs.ops genie.libs.robot genie.libs.sdk
 RELATED_PKGS += genie.libs.filetransferutils
 DEPENDENCIES = restview psutil Sphinx wheel asynctest pysnmp
 DEPENDENCIES += setproctitle  sphinx-rtd-theme 
@@ -56,7 +56,7 @@ DEPENDENCIES += Cython requests
 # Internal variables.
 # (note - build examples & templates last because it will fail uploading to pypi
 #  due to duplicates, and we'll for now accept that error)
-PYPI_PKGS      = clean-pkg conf-pkg ops-pkg robot-pkg sdk-pkg filetransferutils-pkg
+PYPI_PKGS      = health-pkg clean-pkg conf-pkg ops-pkg robot-pkg sdk-pkg filetransferutils-pkg
 
 ALL_PKGS       = $(PYPI_PKGS)
 
@@ -88,6 +88,7 @@ help:
 	@echo ""
 	@echo "     --- build specific targets ---"
 	@echo ""
+	@echo " health-pkg            	build genie.libs.health package"
 	@echo " clean-pkg            	build genie.libs.clean package"
 	@echo " conf-pkg             	build genie.libs.conf package"
 	@echo " ops-pkg              	build genie.libs.ops package"

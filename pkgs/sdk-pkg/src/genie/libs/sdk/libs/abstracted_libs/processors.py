@@ -10,6 +10,7 @@ import shutil
 import zipfile
 
 # pyats
+from pyats.async_ import pcall
 from pyats.easypy import runtime
 from pyats.aetest import Testcase, skip
 from pyats.aetest.sections import SetupSection
@@ -1387,11 +1388,14 @@ def pre_execute_command(section,
 
 
 def post_execute_command(section,
-                         devices=None,
                          sleep_time=0,
                          max_retry=1,
                          save_to_file='',
-                         zipped_folder=''):
+                         zipped_folder='',
+                         valid_section_results = None,
+                         devices=None,
+                         server_to_store = None):
+
     '''
     Execute commands as processors. This can be run only with specified condition and the log can be archived with text file or zip file.
 
@@ -1399,7 +1403,7 @@ def post_execute_command(section,
 
     Args:
         section (`obj`) : Aetest Subsection object.
-        device (`obj`) : Device object.
+        devices (`obj`) : Device object.
         sleep_time (`int`) : sleep after all commands (unit: seconds)
         max_retry (`int`) : Retry issuing command in case any error (max_retry 1 by default)
         save_to_file (`str`) : Set either one of below modes when show output needs to be saved as file. folder for the processor is generated and store files in the folder. (Disabled by default)
@@ -1407,6 +1411,9 @@ def post_execute_command(section,
                                  per_command : file generated per command
         zipped_folder (`bool`) : Set if archive folder needs to be zipped.
                                  If True, zip file generated and removed the folder with files. 
+        valid_section_results (`list`): if provided the section result should be in this list so commands 
+                                        gets executed
+        server_to_store ('dict'): name of the server that output would be store on on demand.
 
     Returns:
         AETEST results
@@ -1473,6 +1480,7 @@ def post_execute_command(section,
             continue
         # execute list of commands given in yaml
         for cmd in devices[dev].get('cmds', []):
+
             if not cmd.get('condition') or section.result in list(
                     map(TestResult.from_str, cmd['condition'])):
                 exec_cmd = cmd.get('cmd', '')
@@ -1503,38 +1511,39 @@ def post_execute_command(section,
                             output = device.execute(exec_cmd,
                                                     timeout=cmd_timeout)
                         # save output to file as per device or command
-                        if save_to_file == 'per_device':
-                            file_name = folder_name + '/' + dev
-                            save_file_name = file_name.split('/')[-1] + '.txt'
-                            with open(file_name + '.txt', 'a') as f:
-                                output = '+' * 10 + ' ' + datetime.datetime.now(
-                                ).strftime(
-                                    '%Y-%m-%d %H:%M:%S.%f'
-                                ) + ': ' + dev + ': executing command \'' + exec_cmd + '\' ' + '+' * 10 + '\n' + output + '\n'
-                                f.write(output)
-                                log.info(
-                                    "File {file} saved to folder {folder}".
-                                    format(file=save_file_name,
-                                           folder=folder_name))
-                            if zipped_folder:
-                                file_list.update({file_name+'.txt': save_file_name})
-                        elif save_to_file == 'per_command':
-                            file_name = folder_name + '/' + dev
-                            file_name = file_name + '_' + device.api.slugify(
-                                exec_cmd)
-                            save_file_name = file_name.split('/')[-1] + '.txt'
-                            with open(file_name + '.txt', 'w') as f:
-                                output = '+' * 10 + ' ' + datetime.datetime.now(
-                                ).strftime(
-                                    '%Y-%m-%d %H:%M:%S.%f'
-                                ) + ': ' + dev + ': executing command \'' + exec_cmd + '\' ' + '+' * 10 + '\n' + output + '\n'
-                                f.write(output)
-                                log.info(
-                                    "File {file} saved to folder {folder}".
-                                    format(file=save_file_name,
-                                           folder=folder_name))
-                            if zipped_folder:
-                                file_list.update({file_name+'.txt': save_file_name})
+                        if not valid_section_results or str(section.result) in valid_section_results:
+                            if save_to_file == 'per_device':
+                                file_name = folder_name + '/' + dev
+                                save_file_name = file_name.split('/')[-1] + '.txt'
+                                with open(file_name + '.txt', 'a') as f:
+                                    output = '+' * 10 + ' ' + datetime.datetime.now(
+                                    ).strftime(
+                                        '%Y-%m-%d %H:%M:%S.%f'
+                                    ) + ': ' + dev + ': executing command \'' + exec_cmd + '\' ' + '+' * 10 + '\n' + output + '\n'
+                                    f.write(output)
+                                    log.info(
+                                        "File {file} saved to folder {folder}".
+                                        format(file=save_file_name,
+                                               folder=folder_name))
+                                if zipped_folder:
+                                    file_list.update({file_name+'.txt': save_file_name})
+                            elif save_to_file == 'per_command':
+                                file_name = folder_name + '/' + dev
+                                file_name = file_name + '_' + device.api.slugify(
+                                    exec_cmd)
+                                save_file_name = file_name.split('/')[-1] + '.txt'
+                                with open(file_name + '.txt', 'w') as f:
+                                    output = '+' * 10 + ' ' + datetime.datetime.now(
+                                    ).strftime(
+                                        '%Y-%m-%d %H:%M:%S.%f'
+                                    ) + ': ' + dev + ': executing command \'' + exec_cmd + '\' ' + '+' * 10 + '\n' + output + '\n'
+                                    f.write(output)
+                                    log.info(
+                                        "File {file} saved to folder {folder}".
+                                        format(file=save_file_name,
+                                               folder=folder_name))
+                                if zipped_folder or server_to_store:
+                                    file_list.update({file_name+'.txt': save_file_name})
                     except SubCommandFailure as e:
                         log.error(
                             'Failed to execute "{cmd}" on device {d}: {e}'.
@@ -1559,6 +1568,10 @@ def post_execute_command(section,
                     log.info("Sleeping for {sleep_time} seconds".format(
                         sleep_time=cmd_sleep))
                     time.sleep(cmd_sleep)
+
+    if server_to_store:
+        _store_in_server_func(section, server_to_store,
+                              file_list, list(devices.keys()))
 
     if zipped_folder:
         for fname, sname in file_list.items():
@@ -1590,6 +1603,53 @@ def post_execute_command(section,
         log.info(
             "Sleeping for {sleep_time} seconds".format(sleep_time=sleep_time))
         time.sleep(sleep_time)
+
+def _store_in_server_func(section, server_to_store, file_list, devices):
+    
+    '''
+    section (`obj`): section of the testcase data
+    server_to_store (`dict`): a dictionary like : 
+                    {server_in_testbed: <name of the server that user want to store the log into. 
+                                        The server should be specified in testbed>
+                    protocol: <protocol that'd be used, e.g. tftp, sftp, scp>
+                    remote_path: <the path to the directory in the server that log would be stored on>}
+    file_list(`obj`): list of file created per command and device
+    devices (`obj`): device that commands are running on
+    '''
+
+    if not file_list:
+        section.errored('No file has been generated to be stored')
+
+    try:
+        server_in_testbed = server_to_store['server_in_testbed']
+        server = section.parameters['testbed'].servers[server_in_testbed]['server']
+    except Exception as e :
+        section.errored(str(e))
+
+    # default protocol is sftp
+    protocol = server_to_store.get('protocol', 'sftp')
+    remote_path = server_to_store['remote_path']
+
+    # common keyword arguments common for each call
+    ckwargs = {
+                'testbed':section.parameters['testbed'],
+                'protocol': protocol,
+                'server': server,
+                'remote_path': remote_path
+              }
+
+    # copying the files generated based on each device to the server
+    for dev in devices:
+
+        # arguments that is individual for each parallel call 
+        ikwargs = []
+        device = section.parameters['testbed'].devices[dev]
+
+        for local_path, file_name in file_list.items():
+            if dev in file_name:
+                ikwargs.append({'local_path': local_path}) 
+
+        pcall(device.api.copy_to_server, ikwargs=ikwargs, ckwargs=ckwargs)
 
 # ==============================================================================
 # processor: skip_setup_if_stable

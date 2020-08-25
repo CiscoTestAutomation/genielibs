@@ -42,3 +42,29 @@ def get_class_of_service_shaping_rate(device, interface):
     if not shaping_rate:
         return None
     return shaping_rate
+
+def get_class_of_service_classifiers(device, interface):
+    """ Get list of classifiers based interface
+
+        Args:
+            device ('obj'): Device object
+            interface('str'): Interface to get shaping rate
+            
+        Returns:
+            classifiers: list
+
+        Raises:
+            None
+    """
+    
+    try:
+        out = device.parse('show class-of-service interface {interface}'.format(
+            interface=interface))
+    except SchemaEmptyParserError:
+        return None
+
+    # Dict
+    # 'cos-object-name': ['dscp-ipv6-compatibility', 'exp-default', 'ipprec-compatibility'],
+    classifiers = out.q.get_values('cos-object-name')
+    
+    return classifiers

@@ -1,27 +1,114 @@
-import re
+import json
 import time
+import json
 import logging
+from datetime import datetime
 
+# from genie
 from genie.libs import sdk
 from genie.utils.diff import Diff
 from genie.harness.standalone import run_genie_sdk
 
-from pyats.async_ import pcall
+# from pyats
+from pyats.easypy import runtime
 from pyats.log.utils import banner
-from pyats.aetest.steps import Steps
-from pyats.results import TestResult, Passed, Failed, Skipped, Passx, Aborted, Errored
+from pyats.utils.secret_strings import SecretString
 
-from .markup import save_variable
+from .maple import maple, maple_search
 from .yangexec import run_netconf, run_gnmi, notify_wait
 from .actions_helper import configure_handler, api_handler, learn_handler,\
-                            parse_handler, execute_handler, _get_exclude,\
-                            rest_handler
-
+                            parse_handler, execute_handler,_get_exclude,\
+                            _condition_validator, rest_handler
 
 log = logging.getLogger(__name__)
 
 
-def configure(self, device, steps, command, reply=None, continue_=True):
+# decorator for pyATS health
+# result with data will be added to pyATS extra field
+def add_result_as_extra(func):
+    def wrapper(*args, **kwargs):
+        # adding extra is done only when it's pyATS health
+        if kwargs['self'].__class__.__name__ == 'Health':
+            extra_action_result = {}
+
+            section = kwargs['section']
+            extra_action_result.setdefault('health_name', kwargs['name'])
+            extra_action_result.setdefault('action', func.__name__)
+
+            extra_action_result.setdefault(
+                'section',
+                json.loads(json.dumps(section.uid, default=lambda a: str(a))))
+            extra_action_result.setdefault(
+                'section_parent',
+                json.loads(
+                    json.dumps(section.parent.uid, default=lambda a: str(a))))
+            extra_action_result.setdefault('job', runtime.job.uid)
+            # action start time
+            action_start = datetime.now()
+
+            # execute action for Health class
+            action_output = func(*args, **kwargs)
+
+            # action stop time
+            action_stop = datetime.now()
+            # calculate delta (action_stop - action_start)
+            action_runtime = str(action_stop - action_start)
+            # date format change
+            action_start = action_start.isoformat()
+            action_stop = action_stop.isoformat()
+
+            extra_action_result.setdefault('starttime', action_start)
+            extra_action_result.setdefault('stoptime', action_stop)
+            extra_action_result.setdefault('runtime', action_runtime)
+            extra_action_result.setdefault('steps_result',
+                                           kwargs['steps'].result.name)
+
+            # encode any action to protect contents such as password
+            if 'reply' in kwargs:
+                for reply in kwargs['reply']:
+                    for key, value in reply.items():
+                        if key == 'action':
+                            reply['action'] = '%ENC{{{action}}}'.format(
+                                action=SecretString.from_plaintext(value).data)
+
+            # added `data` and `output` to ret_dict
+            extra_action_result.setdefault(
+                'kwargs',
+                json.loads(json.dumps(kwargs, default=lambda a: str(a))))
+            extra_action_result.setdefault('output', action_output)
+
+            # add extra to testsuite
+            extra_args = {
+                'pyats_health_{action_start}'.format(action_start=action_start):
+                extra_action_result
+            }
+            section.reporter.client.add_testsuite_extra(**extra_args)
+
+            # add extra to processor
+            section.reporter.client.add_extra(**extra_args)
+
+            log.debug('extra:\n' +
+                      json.dumps(extra_args, indent=2, sort_keys=True))
+        else:
+            # execute action for Blitz class
+            action_output = func(*args, **kwargs)
+
+        return action_output
+
+    return wrapper
+
+
+@add_result_as_extra
+def configure(self,
+              device,
+              steps,
+              section,
+              name,
+              command,
+              alias=None,
+              reply=None,
+              continue_=True,
+              processor=''):
 
     # default output set to none in case of an exception
     output = None
@@ -34,104 +121,293 @@ def configure(self, device, steps, command, reply=None, continue_=True):
 
     return output
 
-def parse(self, device, steps, command, include=None,
-          exclude=None,  max_time=None, check_interval=None, continue_=True, *args, **kwargs):
+
+@add_result_as_extra
+def parse(self,
+          device,
+          steps,
+          section,
+          name,
+          command,
+          alias=None,
+          include=None,
+          exclude=None,
+          max_time=None,
+          check_interval=None,
+          continue_=True,
+          processor='',
+          *args,
+          **kwargs):
 
     # action parse
     output = {}
     with steps.start("Parsing '{c}' on '{d}'".\
                     format(c=command, d=device.name), continue_=continue_) as step:
 
-        output = parse_handler(self, step, device, command, include=include, exclude=exclude,
-                               max_time=max_time, check_interval=check_interval, continue_=continue_)
+        output = parse_handler(self,
+                               step,
+                               device,
+                               command,
+                               include=include,
+                               exclude=exclude,
+                               max_time=max_time,
+                               check_interval=check_interval,
+                               continue_=continue_)
 
     notify_wait(steps, device)
 
     return output
 
-def execute(self, device, steps, command, include=None, exclude=None,
-            max_time=None, check_interval=None, reply=None, continue_=True):
+
+@add_result_as_extra
+def execute(self,
+            device,
+            steps,
+            section,
+            name,
+            command,
+            alias=None,
+            include=None,
+            exclude=None,
+            max_time=None,
+            check_interval=None,
+            reply=None,
+            continue_=True,
+            processor=''):
 
     # action execute
     with steps.start("Executing '{c}' on '{d}'".\
                     format(c=command, d=device.name), continue_=continue_) as step:
 
-        output = execute_handler(self, step, device, command, include=include, exclude=exclude,
-                                 max_time=max_time, check_interval=check_interval, continue_=continue_, reply=reply)
+        output = execute_handler(self,
+                                 step,
+                                 device,
+                                 command,
+                                 include=include,
+                                 exclude=exclude,
+                                 max_time=max_time,
+                                 check_interval=check_interval,
+                                 continue_=continue_,
+                                 reply=reply)
 
     notify_wait(steps, device)
 
     return output
 
-def api(self, device, steps, function, arguments=None, include=None,
-        exclude=None, max_time=None, check_interval=None, continue_=True):
+
+@add_result_as_extra
+def api(self,
+        device,
+        steps,
+        section,
+        name,
+        function,
+        arguments=None,
+        include=None,
+        exclude=None,
+        max_time=None,
+        check_interval=None,
+        continue_=True,
+        processor='',
+        alias=None):
 
     # action api
     output = None
     with steps.start("Calling API '{f}' on '{d}'".\
                     format(f=function, d=device.name), continue_=continue_) as step:
 
-        output = api_handler(self, step, device, function, include=include, exclude=exclude,
-                             max_time=max_time, check_interval=check_interval, continue_=continue_, arguments=arguments)
+        output = api_handler(self,
+                             step,
+                             device,
+                             function,
+                             include=include,
+                             exclude=exclude,
+                             max_time=max_time,
+                             check_interval=check_interval,
+                             continue_=continue_,
+                             arguments=arguments)
 
     notify_wait(steps, device)
 
     return output
 
-def learn(self, device, steps, feature, include=None, exclude=None,
-          max_time=None, check_interval=None, continue_=True):
+
+@add_result_as_extra
+def learn(self,
+          device,
+          steps,
+          section,
+          name,
+          feature,
+          alias=None,
+          include=None,
+          exclude=None,
+          max_time=None,
+          check_interval=None,
+          continue_=True,
+          processor=''):
 
     # action learn
     with steps.start("Learning '{f}' on '{d}'".\
                     format(f=feature, d=device.name), continue_=continue_) as step:
 
-        output = learn_handler(self, step, device, feature, include=include, exclude=exclude,
-                               max_time=max_time, check_interval=check_interval, continue_=continue_,)
+        output = learn_handler(
+            self,
+            step,
+            device,
+            feature,
+            include=include,
+            exclude=exclude,
+            max_time=max_time,
+            check_interval=check_interval,
+            continue_=continue_,
+        )
 
     return output
 
-def sleep(self, steps, sleep_time, continue_=True, *args, **kwargs):
+
+@add_result_as_extra
+def compare(self,
+            steps,
+            section,
+            name,
+            items,
+            continue_=True,
+            alias=None,
+            processor=''):
+
+    # action compare
+    if not items:
+        steps.failed('No item is provided for comparision')
+
+    for comp_item in items:
+        with steps.start("Verifying the following comparison request {}"\
+                        .format(comp_item), continue_=continue_) as step:
+
+            condition_validator_dict = _condition_validator(comp_item)
+
+            condition = condition_validator_dict['condition_output']
+            right_hand = condition_validator_dict['right_hand']
+            operation = condition_validator_dict['operation']
+            left_hand = condition_validator_dict['left_hand']
+
+            if condition:
+                step.passed('{} is {} {}'.format(right_hand, operation,
+                                                 left_hand))
+            else:
+                step.failed('{} is not {} {}'.format(right_hand, operation,
+                                                     left_hand))
+
+
+@add_result_as_extra
+def sleep(self,
+          steps,
+          section,
+          name,
+          sleep_time,
+          continue_=True,
+          processor='',
+          *args,
+          **kwargs):
     log.info('Sleeping for {s} seconds'.format(s=sleep_time))
     time.sleep(float(sleep_time))
 
-def rest(self, device, method, steps, continue_=True, include=None,
-         exclude=None, max_time=None, check_interval=None, connection_alias='rest',
-         *args, **kwargs):
 
-    output = rest_handler(self, device, method, steps, continue_=continue_, include=include, exclude=exclude,
-                          max_time=max_time, check_interval=check_interval, connection_alias=connection_alias, *args, **kwargs)
+@add_result_as_extra
+def rest(self,
+         device,
+         method,
+         steps,
+         section,
+         name,
+         continue_=True,
+         include=None,
+         exclude=None,
+         max_time=None,
+         check_interval=None,
+         connection_alias='rest',
+         processor='',
+         *args,
+         **kwargs):
 
-    return output
-    
-def yang(self, device, steps, protocol, datastore, content, operation,
-         continue_=True, connection=None, returns=None, *args, **kwargs):
+    return rest_handler(self,
+                        device,
+                        method,
+                        steps,
+                        continue_=continue_,
+                        include=include,
+                        exclude=exclude,
+                        max_time=max_time,
+                        check_interval=check_interval,
+                        connection_alias=connection_alias,
+                        *args,
+                        **kwargs)
+
+
+@add_result_as_extra
+def yang(self,
+         device,
+         steps,
+         section,
+         name,
+         protocol,
+         datastore,
+         content,
+         operation,
+         continue_=True,
+         connection=None,
+         returns=None,
+         alias=None,
+         processor='',
+         *args,
+         **kwargs):
     if connection:
         device = getattr(device, connection)
         # Verify that we are connected
         # TODO
         # I think all our connection implementation (unicon, rest, yang)
         # should have an isconnected which does an action on the device, example show
-        # clock for cli, to verify.  Right now, we dont havet his, we have
+        # clock for cli, to verify.  Right now, we don't have this, we have
         # connected but we all know its of no use.
     if returns is None:
         returns = {}
     if protocol == 'netconf':
-        result = run_netconf(operation=operation, device=device, steps=steps,
-                             datastore=datastore, rpc_data=content,
-                             returns=returns, **kwargs)
+        result = run_netconf(operation=operation,
+                             device=device,
+                             steps=steps,
+                             datastore=datastore,
+                             rpc_data=content,
+                             returns=returns,
+                             **kwargs)
     elif protocol == 'gnmi':
-        result = run_gnmi(operation=operation, device=device, steps=steps,
-                          datastore=datastore, rpc_data=content,
-                          returns=returns, **kwargs)
+        result = run_gnmi(operation=operation,
+                          device=device,
+                          steps=steps,
+                          datastore=datastore,
+                          rpc_data=content,
+                          returns=returns,
+                          **kwargs)
     if not result:
         steps.failed('Yang action has failed')
-    
+
     if operation != 'subscribe':
         notify_wait(steps, device)
 
     return result
 
-def configure_replace(self, device, steps, config, continue_=True, iteration=2, interval=30):
+
+@add_result_as_extra
+def configure_replace(self,
+                      device,
+                      steps,
+                      section,
+                      name,
+                      config,
+                      continue_=True,
+                      alias=None,
+                      iteration=2,
+                      interval=30,
+                      processor=''):
     restore = sdk.libs.abstracted_libs.restore.Restore(device=device)
 
     # lib.to_url is normally saved via restore.save_configuration()
@@ -148,12 +424,22 @@ def configure_replace(self, device, steps, config, continue_=True, iteration=2, 
         delete_after_restore=False,
     )
 
-def save_config_snapshot(self, device, steps, continue_=True):
+
+@add_result_as_extra
+def save_config_snapshot(self,
+                         device,
+                         steps,
+                         section,
+                         name,
+                         alias=None,
+                         continue_=True,
+                         processor=''):
     # setup restore object for device
     if not hasattr(self, 'restore'):
         self.restore = {}
     if device not in self.restore:
-        self.restore[device] = sdk.libs.abstracted_libs.restore.Restore(device=device)
+        self.restore[device] = sdk.libs.abstracted_libs.restore.Restore(
+            device=device)
 
     # Get default directory
     save_dir = getattr(self.parent, 'default_file_system')
@@ -170,31 +456,40 @@ def save_config_snapshot(self, device, steps, continue_=True):
         device=device,
         abstract=None,
         method='config_replace',
-        default_dir=self.parent.default_file_system
-    )
+        default_dir=self.parent.default_file_system)
 
     # To keep track of snapshots (whether they are deleted or not)
     self.restore[device].snapshot_deleted = False
 
-def restore_config_snapshot(self, device, steps, continue_=True, delete_snapshot=True):
+
+@add_result_as_extra
+def restore_config_snapshot(self,
+                            device,
+                            steps,
+                            section,
+                            name,
+                            continue_=True,
+                            delete_snapshot=True,
+                            alias=None,
+                            processor=''):
 
     if not hasattr(self, 'restore') or device not in self.restore:
         steps.errored("Must use action 'save_config_snapshot' first.\n\n")
 
     # If the snapshot file was deleted - error
     if self.restore[device].snapshot_deleted:
-        steps.errored("If you want to restore with the same snapshot "
-                      "multiple times then you must pass 'delete_snapshot=False' "
-                      "to previous uses of this action. Otherwise the "
-                      "snapshot will be deleted on the first usage.")
+        steps.errored(
+            "If you want to restore with the same snapshot "
+            "multiple times then you must pass 'delete_snapshot=False' "
+            "to previous uses of this action. Otherwise the "
+            "snapshot will be deleted on the first usage.")
 
     try:
         self.restore[device].restore_configuration(
             device=device,
             abstract=None,
             method='config_replace',
-            delete_after_restore=delete_snapshot
-            )
+            delete_after_restore=delete_snapshot)
     except Exception as e:
         steps.failed(str(e))
 
@@ -202,17 +497,36 @@ def restore_config_snapshot(self, device, steps, continue_=True, delete_snapshot
     if delete_snapshot:
         self.restore[device].snapshot_deleted = True
 
-def bash_console(self, device, steps, commands, continue_=True, **kwargs):
+
+@add_result_as_extra
+def bash_console(self,
+                 device,
+                 steps,
+                 section,
+                 name,
+                 commands,
+                 continue_=True,
+                 alias=None,
+                 processor='',
+                 **kwargs):
 
     ret_dict = {}
     with device.bash_console(**kwargs) as bash:
         for command in commands:
             output = bash.execute(command, **kwargs)
-            ret_dict.update({command:output})
-    
+            ret_dict.update({command: output})
+
     return ret_dict
 
-def genie_sdk(self, steps, continue_=True, **kwargs):
+
+@add_result_as_extra
+def genie_sdk(self,
+              steps,
+              section,
+              name,
+              continue_=True,
+              processor='',
+              **kwargs):
 
     # This is to remove the uut dependency of genie standalone.
     # Since the device we are running the sdk on is in the
@@ -225,28 +539,53 @@ def genie_sdk(self, steps, continue_=True, **kwargs):
     sdks = list(kwargs.keys())
     run_genie_sdk(self, steps, sdks, uut=uut, parameters=kwargs)
 
-def print(self, steps, continue_=True, *args, **kwargs):
+
+@add_result_as_extra
+def print(self,
+          steps,
+          section,
+          name,
+          continue_=True,
+          processor='',
+          *args,
+          **kwargs):
 
     if 'steps' in kwargs:
         kwargs.pop('steps')
-    
+
     for key, value in kwargs.items():
         if value.get('type') == 'banner':
 
-            print_value = 'printing message: {k}\n{v}'.format(k=key,v=banner(value['value']))
+            print_value = 'printing message: {k}\n{v}'.format(
+                k=key, v=banner(str(value['value'])))
         else:
-            print_value = 'The value of {k}: {v}'.format(k=key,v=value['value'])
+            print_value = 'The value of {k}: {v}'.format(k=key,
+                                                         v=value['value'])
 
         log.info(print_value)
 
-def diff(self, steps, device, pre, post, continue_=True, fail_different=False,
-         command=None, exclude=None):
+
+@add_result_as_extra
+def diff(self,
+         steps,
+         section,
+         name,
+         device,
+         pre,
+         post,
+         alias=None,
+         continue_=True,
+         fail_different=False,
+         command=None,
+         exclude=None,
+         processor=''):
 
     with steps.start("Perform Diff for '{device}'".format(device=device.name),
-                                            continue_=continue_) as step:
+                     continue_=continue_) as step:
         exclude_items = _get_exclude(command, device)
         if exclude and isinstance(exclude, list):
             exclude_items.extend(exclude)
+            log.debug('exclude: {exclude}'.format(exclude=exclude_items))
 
         try:
             diff = Diff(pre, post, exclude=exclude_items)
@@ -254,67 +593,35 @@ def diff(self, steps, device, pre, post, continue_=True, fail_different=False,
             step.failed(str(e))
 
         diff.findDiff()
-        if diff:
+        # check content of diff
+        if str(diff):
             log.info(diff)
             if fail_different:
                 step.failed('{pre} and {post} are not '
                             'identical'.format(pre=pre, post=post))
+        else:
+            step.passed('{pre} and {post} are identical'.format(pre=pre,
+                                                                post=post))
 
-actions = {'configure': configure,
-           'parse': parse,
-           'execute': execute,
-           'api': api,
-           'tgn': api,
-           'sleep': sleep,
-           'yang': yang,
-           'learn': learn,
-           'print': print,
-           'rest': rest,
-           'configure_replace': configure_replace,
-           'save_config_snapshot': save_config_snapshot,
-           'restore_config_snapshot': restore_config_snapshot,
-           'run_genie_sdk': genie_sdk,
-           'diff': diff,
-           'bash_console': bash_console}
 
-def action_parallel(self, steps, testbed, section, data):
-    # When called run all the actions
-    # below the keyword parallel concurently
-    pcall_payloads = []
-    with steps.start('Executing actions in parallel', continue_=True) as steps:
-
-        for action_item in data:
-            for action, action_kwargs in action_item.items():
-                # for future use - Enhancement needed in pyATS
-                # with steps.start("Implementing action '{a}' in parallel".format(a=actions)) as step:
-                # on parallel it is not possible to set continue to False and benefit from that feature
-                step = Steps()
-                kwargs = {'steps': step, 'testbed': testbed, 'section': section, 'data': [{action:action_kwargs}]}
-                pcall_payloads.append(kwargs)
-        pcall_returns = pcall(self.dispatcher, ikwargs=pcall_payloads)
-        # Each action return is a dictionary containing the action name, possible saved_variable
-        # Action results, and device name that action is being implemented on
-        # These value would be lost when the child processor that executes the action end the process.
-        # It is being implemented this way in order to add these values to the main processor.
-        for each_return in pcall_returns:
-
-            if each_return.get('saved_vars'):
-                for saved_var_name, saved_var_data in each_return.get('saved_vars').items():
-
-                    if each_return.get('filters'):
-                        log.info('Applied filter: {} to the action {} output'.format(each_return['filters'], action))
-
-                    save_variable(self, saved_var_data, saved_var_name)
-
-            if each_return['device']:
-                msg = 'Executed action {action} on {device} in parallel'.format(
-                    action=each_return['action'], device=each_return['device'])
-            else:
-                msg = 'Executed action {action} in parallel'.format(
-                    action=each_return['action'])
- 
-            with steps.start(msg, continue_=True, description=each_return['description']) as report_step:
-
-                log.info('Check above for detailed action report')
-                getattr(report_step, str(each_return['step_result']))()
-    
+actions = {
+    'configure': configure,
+    'parse': parse,
+    'execute': execute,
+    'api': api,
+    'tgn': api,
+    'sleep': sleep,
+    'yang': yang,
+    'learn': learn,
+    'print': print,
+    'rest': rest,
+    'configure_replace': configure_replace,
+    'save_config_snapshot': save_config_snapshot,
+    'restore_config_snapshot': restore_config_snapshot,
+    'run_genie_sdk': genie_sdk,
+    'maple': maple,
+    'compare': compare,
+    'maple_search': maple_search,
+    'diff': diff,
+    'bash_console': bash_console
+}

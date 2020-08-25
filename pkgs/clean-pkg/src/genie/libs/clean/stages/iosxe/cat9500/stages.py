@@ -7,7 +7,6 @@ import logging
 
 # pyATS
 from pyats import aetest
-from pyats.log.utils import banner
 from pyats.utils.fileutils import FileUtils
 
 # Genie
@@ -25,17 +24,15 @@ log = logging.getLogger(__name__)
 #===============================================================================
 
 @clean_schema({
-    'images': list,
+    Optional('images'): list,
     Optional('timeout'): int,
     Optional('max_time'): int,
     Optional('check_interval'): int,
-    Optional('config_register'): str,
     Optional('write_memory'): bool,
 })
 @aetest.test
 def change_boot_variable(section, steps, device, images, timeout=300,
-    max_time=300, check_interval=30, config_register='0x2102',
-    write_memory=False):
+    max_time=300, check_interval=30, write_memory=False):
 
     '''
     Clean yaml file schema:
@@ -54,8 +51,6 @@ def change_boot_variable(section, steps, device, images, timeout=300,
                                   Default 30 (Optional)
           write_memory ('bool'): Execute 'write memory' after setting BOOT var
                                  Default False (Optional)
-          config_register ('str'): Value to set config-register for reload
-                                   Default '0x2102' (Optional)
 
     Example:
     --------
@@ -117,12 +112,26 @@ def change_boot_variable(section, steps, device, images, timeout=300,
                 device.api.execute_write_memory(timeout=timeout)
             except Exception as e:
                 log.error(str(e))
-                log.error(banner("*** Terminating Genie Clean ***"))
-                section.failed("Failed to execute 'write memory' after setting "
+                step.failed("Failed to execute 'write memory' after setting "
                                "BOOT variables on device {}".format(device.name),
-                               goto=['exit'])
+                               )
             else:
                 step.passed("Succesfully executed 'write memory'")
+    else:
+        with steps.start("Save running-configuration to startup-configuration "
+                         "on {}".format(device.name)) as step:
+            try:
+                device.api.\
+                    execute_copy_run_to_start(max_time=max_time,
+                                              check_interval=check_interval)
+            except Exception as e:
+                log.error(str(e))
+                step.failed("Failed to set copy running-config to "
+                               "startup-config on device {}".\
+                               format(device.name), )
+            else:
+                step.passed("Successully saved running-config to startup-config"
+                            " on {}".format(device.name))
 
 
     # Setting boot variable to image specified
@@ -133,9 +142,8 @@ def change_boot_variable(section, steps, device, images, timeout=300,
                                                  timeout=timeout)
         except Exception as e:
             log.error(str(e))
-            log.error(banner("*** Terminating Genie Clean ***"))
-            section.failed("Failed to set boot variables to images specified "
-                           "on device {}\n".format(device.name), goto=['exit'])
+            step.failed("Failed to set boot variables to images specified "
+                           "on device {}\n".format(device.name), )
         else:
             step.passed("Succesfully set boot variables to image provided: {}".\
                         format(images))
@@ -149,10 +157,9 @@ def change_boot_variable(section, steps, device, images, timeout=300,
                 device.api.execute_write_memory(timeout=timeout)
             except Exception as e:
                 log.error(str(e))
-                log.error(banner("*** Terminating Genie Clean ***"))
-                section.failed("Failed to execute 'write memory' after setting "
+                step.failed("Failed to execute 'write memory' after setting "
                                "BOOT variables on device {}".format(device.name),
-                               goto=['exit'])
+                               )
             else:
                 step.passed("Succesfully executed 'write memory'")
 
@@ -165,10 +172,9 @@ def change_boot_variable(section, steps, device, images, timeout=300,
                                               check_interval=check_interval)
             except Exception as e:
                 log.error(str(e))
-                log.error(banner("*** Terminating Genie Clean ***"))
-                section.failed("Failed to set copy running-config to "
+                step.failed("Failed to set copy running-config to "
                                "startup-config on device {}".\
-                               format(device.name), goto=['exit'])
+                               format(device.name), )
             else:
                 step.passed("Successully saved running-config to startup-config"
                             " on {}".format(device.name))
@@ -178,10 +184,9 @@ def change_boot_variable(section, steps, device, images, timeout=300,
     with steps.start("Verify next reload boot variables are correctly set "
                      "on {}".format(device.name)) as step:
         if not device.api.verify_boot_variable(boot_images=images):
-            log.error(banner("*** Terminating Genie Clean ***"))
-            section.failed("Boot variables are not correctly set to {} prior "
+            step.failed("Boot variables are not correctly set to {} prior "
                            "to reloading device {}".format(images, device.name),
-                           goto=['exit'])
+                           )
         else:
             section.passed("Successfully verified boot variables are correctly "
                            "set on {}".format(device.name))

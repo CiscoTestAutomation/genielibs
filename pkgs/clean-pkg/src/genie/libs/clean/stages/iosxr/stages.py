@@ -113,9 +113,8 @@ def load_pies(section, steps, device, files, server=None, prompt_level='none',
                     install_timeout=install_timeout)
             except Exception as e:
                 log.error(str(e))
-                section.failed("Unable to install or activate pie file {} on "
-                               "device {}".format(file, device.name),
-                               goto=['exit'])
+                step.failed("Unable to install or activate pie file {} on "
+                               "device {}".format(file, device.name))
             else:
                 installed_packages.append(os.path.basename(file).split(".pie")[0])
                 log.info("Installed and activated file {} on device {}".\
@@ -132,8 +131,8 @@ def load_pies(section, steps, device, files, server=None, prompt_level='none',
                     installed_packages=installed_packages,
                     check_interval=check_interval,
                     max_time=max_time):
-            section.failed("Unable to activate pie files on device {}".\
-                            format(device.name), goto=['exit'])
+            step.failed("Unable to activate pie files on device {}".\
+                            format(device.name))
         else:
             section.passed("Successfully activated pie files on device {}".\
                             format(device.name))
@@ -219,8 +218,8 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
             device.api.execute_set_config_register(config_register='0x1820',
                                                    timeout=config_reg_timeout)
         except Exception as e:
-            section.failed("Unable to set config-register to 0x1820 prior to TFTP"
-                           " boot on {}".format(device.name), goto=['exit'])
+            step.failed("Unable to set config-register to 0x1820 prior to TFTP"
+                           " boot on {}".format(device.name))
 
     # Bring the device down to rommon > prompt prior to TFTP boot
     with steps.start("Bring device {} down to rommon > prompt prior to TFTP boot".\
@@ -236,8 +235,8 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
             # Sleep to make sure the device is reloading
             time.sleep(device_reload_sleep)
         else:
-            section.failed("Unable to bring the device down to rommon> prompt",
-                            goto=['exit'])
+            step.failed("Unable to bring the device down to rommon> prompt")
+
 
     # Begin TFTP boot of device
     with steps.start("Begin TFTP boot of device {}".format(device.name)) as step:
@@ -271,8 +270,8 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
                                  'recovery_password': recovery_password})
         except Exception as e:
             log.error(str(e))
-            section.failed("Failed to TFTP boot the device '{}'".\
-                           format(device.name), goto=['exit'])
+            step.failed("Failed to TFTP boot the device '{}'".\
+                           format(device.name))
         else:
             log.info("Successfully performed TFTP boot on device '{}'".\
                      format(device.name))
@@ -282,8 +281,8 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
                         format(device.name)) as step:
         if not _disconnect_reconnect(device):
             # If that still doesnt work, Thats all we got
-            section.failed("Cannot reconnect to the device {d} after TFTP boot".
-                            format(d=device.name), goto=['exit'])
+            step.failed("Cannot reconnect to the device {d} after TFTP boot".
+                            format(d=device.name))
         else:
             log.info("Success - Have recovered and reconnected to device '{}'".\
                      format(device.name))
@@ -296,6 +295,6 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
                                                    timeout=config_reg_timeout)
         except Exception as e:
             log.error(str(e))
-            section.failed("Unable to reset config-register to 0x1922 after TFTP"
-                           " boot on {}".format(device.name), goto=['exit'])
+            step.failed("Unable to reset config-register to 0x1922 after TFTP"
+                           " boot on {}".format(device.name))
 
