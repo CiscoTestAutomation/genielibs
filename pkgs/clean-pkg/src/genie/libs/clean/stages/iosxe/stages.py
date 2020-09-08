@@ -317,7 +317,7 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
         # to the device. Cannot use device.reload() directly as in case of HA,
         # we need both sup to do the commands
         device.sendline('reload')
-        device.sendline('yes')
+        device.sendline('no')
         device.sendline()
 
         # We now want to overwrite the statemachine
