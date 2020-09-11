@@ -240,13 +240,14 @@ def change_boot_variable(section, steps, device, images, timeout=300,
     'gateway': str,
     'tftp_server': str,
     'recovery_password': str,
+    Optional('save_system_config'): bool,
     Optional('timeout'): int,
     Optional('config_reg_timeout'): int,
     Optional('device_reload_sleep'): int,
 })
 @aetest.test
 def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
-              tftp_server, image, recovery_password=None, timeout=600,
+              tftp_server, image, recovery_password=None, save_system_config=True, timeout=600,
               config_reg_timeout=30, device_reload_sleep=20):
     '''
     Clean yaml file schema:
@@ -258,6 +259,7 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
             gateway: <Management gateway `str`> (Mandatory)
             tftp_server: <tftp server is reachable with management interface `str`> (Mandatory)
             recovery_password: <Enable password for device required after bootup `str`> (Optional, Default None)
+            save_system_config: <Whether or not to save the system config if it was modified `bool`> (Optional) Default: True
             timeout: <Max time during which TFTP boot must complete `int`> (Optional, Default 600 seconds)
             config_reg_timeout: <Max time to set config-register `int`> (Optional, Default 30 seconds)
             device_reload_sleep: <Max time to wait after reloading device with config-register 0x0 `int`> (Optional, Default 20 seconds)
@@ -272,6 +274,7 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
         subnet_mask: 255.255.255.0
         tftp_server: 11.1.7.251
         recovery_password: nbv_12345
+        save_system_config: False
         timeout: 600
         config_reg_timeout: 10
         device_reload_sleep: 30
@@ -317,7 +320,7 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
         # to the device. Cannot use device.reload() directly as in case of HA,
         # we need both sup to do the commands
         device.sendline('reload')
-        device.sendline('yes')
+        device.sendline('yes') if save_system_config else device.sendline('no')
         device.sendline()
 
         # We now want to overwrite the statemachine
