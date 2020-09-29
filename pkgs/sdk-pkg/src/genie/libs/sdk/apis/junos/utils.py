@@ -4,6 +4,7 @@
 import re
 import logging
 import datetime
+import operator
 
 # Genie
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
@@ -22,20 +23,26 @@ def verify_file_details_exists(device,
                                root_path,
                                file,
                                max_time=30,
-                               check_interval=10):
+                               check_interval=10,
+                               invert=False):
     """ Verify file details exists
 
         Args:
             device ('obj'): Device object
             root_path ('str'): Root path for command
             file ('str'): File name
-            max_time (`int`): Max time, default: 30
-            check_interval (`int`): Check interval, default: 10
+            max_time (`int`, optional): Max time, default: 30
+            check_interval (`int`, optional): Check interval, default: 10
+            invert ('bool', optional): Invert to check for file absense, default: False
         Returns:
             Boolean
         Raises:
             None
     """
+    op = operator.truth
+    if invert:
+        op = lambda file_found : operator.not_(operator.truth(file_found))
+
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
         out = None
@@ -48,12 +55,11 @@ def verify_file_details_exists(device,
         file_found = Dq(out).contains_key_value('file-name',
                                                 file,
                                                 value_regex=True)
-        if file_found:
+        if op(file_found):
             return True
         timeout.sleep()
 
     return False
-
 
 def get_file_size(device, root_path, file):
     """ Get file size from device
@@ -63,7 +69,7 @@ def get_file_size(device, root_path, file):
             root_path ('str'): Root path for command
             file ('str'): File name
         Returns:
-            Boolean
+            int
         Raises:
             None
     """
@@ -152,7 +158,6 @@ def verify_diff_timestamp(device, expected_spf_delay=None, ospf_trace_log=None,\
         timeout.sleep()
     return False
 
-
 def verify_file_size(device,
                      root_path,
                      file,
@@ -200,3 +205,32 @@ def delete_file_on_device(device, file_name):
         device.execute('file delete {}'.format(file_name))
     except Exception as e:
         raise Exception('Failed to delete file: {e}'.format(e=str(e)))
+
+def get_file_timestamp(device, root_path, file):
+    """ Get file size from device
+
+        Args:
+            device ('obj'): Device object
+            root_path ('str'): Root path for command
+            file ('str'): File name
+        Returns:
+            Boolean
+        Raises:
+            None
+    """
+    out = None
+    out = device.parse(
+        'file list {root_path} detail'.format(root_path=root_path))
+
+    file_info_list = out.get('directory-list', {}).get('directory', {}).get('file-information')
+
+    for file_info_dict in file_info_list:
+        if file_info_dict.get('file-name') == file:
+            timestamp = file_info_dict.get('file-date', {}).get('@junos:format')
+            if not timestamp:
+                return None
+            timestamp = re.sub(' +', ' ', timestamp)
+            return datetime.datetime.strptime(timestamp, "%b %d %H:%M")\
+                            .replace(year=datetime.datetime.now().year)
+
+    return None

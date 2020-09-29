@@ -514,7 +514,7 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
 
     # verify file copied section below
     with steps.start("Verify the files have been copied correctly") as step:
-        if protocol.lower() == 'tftp':
+        if protocol.lower() in ['tftp', 'scp']:
             step.skipped(
                 'tftp protocol does not support check file size, skipping this step.')
 
@@ -541,8 +541,7 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
                         section.passed("File size is the same on the origin "
                                        "and on the file server")
                 except Exception as e:
-                    step.failed("File size is not the same on the origin"
-                                   " and on the file server")
+                    step.failed("Failed to verify file. Error: {}".format(str(e)))
             else:
                 step.skipped("File has been copied correctly but cannot "
                              "verify file size")
@@ -809,16 +808,18 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
     if files_to_copy:
         with steps.start("Verify sufficient free space on device '{}' or delete"
                          " unprotected files".format(device.name)) as step:
+
             if unknown_size:
                 total_size = -1
                 log.warning("Amount of space required cannot be confirmed, "
                             "copying the files on the device '{}' may fail".\
                             format(device.name))
-            else:
-                # Check protected files list
-                if not protected_files:
-                    protected_files = []
 
+            if not protected_files:
+                protected_files = []
+
+            # Try to free up disk space if skip_deletion is not set to True
+            if not skip_deletion:
                 # TODO: add golden images, config to protected files once we have golden section
                 golden_config = find_clean_variable(section, 'golden_config')
                 golden_image = find_clean_variable(section, 'golden_image')
@@ -828,32 +829,31 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
                 if golden_image:
                     protected_files.extend(golden_image)
 
-                for file, file_data in files_to_copy.items():
-                    # Only calculate size of file being copied
-                    total_size = sum(0 if file_data['exist'] \
-                                     else file_data['size'] for \
-                                     file_data in files_to_copy.values())
+                # Only calculate size of file being copied
+                total_size = sum(0 if file_data['exist'] \
+                                 else file_data['size'] for \
+                                 file_data in files_to_copy.values())
 
-                    try:
-                        free_space = device.api.free_up_disk_space(
-                                        destination=destination_act,
-                                        required_size=total_size,
-                                        skip_deletion=skip_deletion,
-                                        protected_files=protected_files,
-                                        min_free_space_percent=min_free_space_percent,
-                                        dir_output=dir_before)
-                        if not free_space:
-                            step.failed("Unable to create enough space for "
-                                           "image on device {}".\
-                                           format(device.name))
-                        else:
-                            step.passed("Device has sufficient space to "
-                                        "copy images")
-                    except Exception as e:
-                        log.error(str(e))
-                        step.failed("Error while creating free space for "
+                try:
+                    free_space = device.api.free_up_disk_space(
+                                    destination=destination_act,
+                                    required_size=total_size,
+                                    skip_deletion=skip_deletion,
+                                    protected_files=protected_files,
+                                    min_free_space_percent=min_free_space_percent,
+                                    dir_output=dir_before)
+                    if not free_space:
+                        step.failed("Unable to create enough space for "
                                        "image on device {}".\
                                        format(device.name))
+                    else:
+                        step.passed("Device has sufficient space to "
+                            "copy images")
+                except Exception as e:
+                    log.error(str(e))
+                    step.failed("Error while creating free space for "
+                                   "image on device {}".\
+                                   format(device.name))
 
     # Copy the file to the devices
     for file, file_data in files_to_copy.items():
@@ -865,8 +865,10 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
                step.skipped("File with the same name size exists on "
                             "the device, skipped copying")
            testbed = device.testbed
-           if protocol in testbed.servers and \
-               hasattr(testbed.servers[protocol], 'credentials'):
+           if (protocol in testbed.servers and
+                   'default' in testbed.servers[protocol].credentials and
+                   'username' in testbed.servers[protocol].credentials.default and
+                   'password' in testbed.servers[protocol].credentials.default):
                username = testbed.servers[protocol].credentials.default.username
                password = testbed.servers[protocol].credentials.default.password
            else:
@@ -1155,6 +1157,7 @@ def reload(section, steps, device, reload_service_args=None, check_modules=None)
 
 @clean_schema({
     Optional('configuration'): str,
+    Optional('configuration_from_file'): str,
     Optional('file'): str,
     Optional('config_timeout'): int,
     Optional('config_stable_time'): int,
@@ -1163,8 +1166,9 @@ def reload(section, steps, device, reload_service_args=None, check_modules=None)
     Optional('check_interval'): int,
 })
 @aetest.test
-def apply_configuration(section, steps, device, configuration=None, file=None,
-    config_timeout=60, config_stable_time=10, copy_vdc_all=False, max_time=300,
+def apply_configuration(section, steps, device, configuration=None,
+    configuration_from_file=None, file=None, config_timeout=60,
+    config_stable_time=10, copy_vdc_all=False, max_time=300,
     check_interval=60):
 
     '''
@@ -1177,7 +1181,8 @@ def apply_configuration(section, steps, device, configuration=None, file=None,
       <device>:
         apply_configuration:
           configuration: <Configuration block to be applied, 'str'> (Optional)
-          file: <Configuration file> (Optional)
+          configuration_from_file: <File that contains a configuration to apply, 'str'> (Optional)
+          file: <Configuration file for config replace> (Optional)
           config_timeout: <Timeout in seconds, 'int'> (Optional)
           config_stable_time: <Time for configuration stability in seconds, 'int'> (Optional)
           copy_vdc_all: <To copy on all VDCs or not, 'bool'> (Optional)
@@ -1216,6 +1221,7 @@ def apply_configuration(section, steps, device, configuration=None, file=None,
                      format(device.name)) as step:
         try:
             _apply_configuration(device=device, configuration=configuration,
+                                 configuration_from_file=configuration_from_file,
                                  file=file, timeout=config_timeout)
         except Exception as e:
             step.failed("Error while applying configuration to device "

@@ -6,6 +6,8 @@ import logging
 from unicon.core.errors import SubCommandFailure
 
 from genie.libs.sdk.apis.utils import get_config_dict
+from genie.libs.sdk.apis.iosxe.running_config.get import \
+    get_valid_config_from_running_config as base_get_valid_config_from_running_config
 
 log = logging.getLogger(__name__)
 
@@ -52,4 +54,19 @@ def get_running_config_dict(device, option=None):
     config_dict = get_config_dict(out)
     return config_dict
 
+def get_valid_config_from_running_config(device, exclude=None, begin='hostname'):
+    """ Returns a configuration from 'show running-config | begin version'.
+        The API will exclude any configuration and sub configuration that
+        matches regex from exclude. The returned string can be used to
+        configure a device.
+
+        Args:
+            device ('obj'): Device to run on
+            exclude ('str'): Regex of config to exclude
+            begin ('str'): Begin command for show run
+
+        Returns:
+            String of configuration
+    """
+    return base_get_valid_config_from_running_config(device, exclude, begin)
 

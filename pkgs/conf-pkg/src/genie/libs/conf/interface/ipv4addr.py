@@ -58,6 +58,14 @@ class IPv4Addr(ConfigurableBase):
         type=(None, managedattribute.test_istype(str)),
         doc='Assign the secondary address to a VRF table')
 
+    # ip redirect
+    redirect = managedattribute(
+        name='redirect',
+        default=True,
+        type=(None, managedattribute.test_istype(bool)),
+        doc='Assign the redirect attribute'
+    )
+
     # Overload __eq__
     def __eq__(self, other):
         if not isinstance(other, IPv4Addr):

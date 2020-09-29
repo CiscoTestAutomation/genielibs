@@ -16,6 +16,5 @@ def get_cdp_neighbors_info(device):
     """
     try:
         return device.parse('show cdp neighbors detail')
-    except Exception as e:
-        log.error('Failed to parse command due to: {}'.format(e))
+    except SchemaEmptyParserError as e:
         return None

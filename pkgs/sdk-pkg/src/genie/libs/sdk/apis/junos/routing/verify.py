@@ -290,12 +290,14 @@ def verify_routing_ip_exist(device,
                             extensive=None,
                             exact=None,
                             known_via=None,
+                            protocol_type=None,
+                            command_address=None
                             ):
     """ Verify routing ip exists
 
         Args:
             device ('str'): Device str
-            destination_address ('str'): Destination address
+            destination_address ('str'): Destination address to check existence
             protocol ('str'): Protocol name
             extensive_protocol ('bool'): If show command includes extensive
             max_time (`int`): Max time, default: 60
@@ -303,6 +305,8 @@ def verify_routing_ip_exist(device,
             check_interval (`int`): Check interval, default: 10
             extensive ('bool'): Is extensive
             exact ('bool'): Is exact
+            protocol_type ('str'): Protocol type 
+            command_address ('str'): Address to run command with
         Returns:
             True / False
         Raises:
@@ -328,8 +332,15 @@ def verify_routing_ip_exist(device,
                     'show route protocol {protocol} extensive'.format(protocol=protocol))
 
             elif protocol:
-                out = device.parse(
-                    'show route protocol {protocol}'.format(protocol=protocol))
+                if protocol_type and command_address:
+                    out = device.parse(
+                        'show route {protocol_type}-protocol {protocol} {command_address}'.
+                        format(protocol_type=protocol_type,
+                               protocol=protocol,
+                               command_address=command_address))
+                else:
+                    out = device.parse(
+                        'show route protocol {protocol}'.format(protocol=protocol))
             else:
                 out = device.parse('show route')
 
@@ -498,7 +509,8 @@ def verify_routing_route(device,
                          expected_tag=None,
                          expected_protocol_nexthop=None,
                          expected_load_balance_label=None,
-                         invert=False):
+                         invert=False,
+                         single_community=False):
     """Verify show route exists against critera
 
     Args:
@@ -541,8 +553,7 @@ def verify_routing_route(device,
                     table_name_ = table_entry.get('table-name')
                     if table_name_ != expected_table_name:
                         timeout.sleep()
-                        continue                
-
+                        continue
             for rt in table_entry.get('rt', []):
 
                 # Check values. If value is wrong then skip
@@ -558,7 +569,10 @@ def verify_routing_route(device,
                 
                 if expected_community:
                     # Put all communities into a string for regex to match
-                    community_str = " ".join(expected_community)
+                    if not single_community:
+                        community_str = " ".join(expected_community)
+                    else:
+                        community_str=expected_community
                     
                     regexp = re.compile('Communities: +{community}'.format(
                         community=community_str))
@@ -920,21 +934,27 @@ def is_push_present_in_route(device, address, table_name,
 
 def verify_route_is_advertised_or_received(
         device,
-        protocol,
         protocol_type,
         address,
         expected_route,
+        target_address=None,
+        protocol='bgp',
         max_time=60,
         check_interval=10,
+        extensive=False,
+        invert=False,
 ):
     """ Verify the route is advertised
 
         Args:
             device ('obj'): Device object
-            protocol ('str'): Protocol name that passed in command
             protocol_type ('str'): Protocol type in show command, e.g., advertising-protocol or receive-protocol
             expected_route ('str'): Expected route
             address ('str'): IP address
+            target_address ('str'): Address used in show command
+            protocol ('str', optional): Protocol name that passed in command. Defaults to 'bgp'
+            extensive ('bool', optional): True means the show command contains 'extensive'. Defaults to False. 
+            invert ('bool', optional): True means to verify not advertised or received. Defaults to False.
             max_time ('int', optional): Maximum time to keep checking. Default to 60
             check_interval ('int', optional): How often to check. Default to 10.     
 
@@ -948,37 +968,71 @@ def verify_route_is_advertised_or_received(
 
     while timeout.iterate():
         try:
-            out = device.parse(
-                "show route {protocol_type}-protocol {protocol} {address}".format(
+            if extensive:
+                out = device.parse(
+                "show route {protocol_type}-protocol {protocol} {address} extensive".format(
                     protocol_type=protocol_type,
                     protocol=protocol,
                     address=address)) 
+            else:
+                if target_address:
+                    out = device.parse(
+                    "show route {protocol_type}-protocol {protocol} {address} {target_address}".format(
+                        protocol_type=protocol_type,
+                        protocol=protocol,
+                        address=address,
+                        target_address=target_address))
+
+                else:
+                    out = device.parse(
+                        "show route {protocol_type}-protocol {protocol} {address}".format(
+                            protocol_type=protocol_type,
+                            protocol=protocol,
+                            address=address)) 
                 
         except SchemaEmptyParserError:
+            if invert:
+                return True
             timeout.sleep()
             continue                    
-
+        
+        # Example 1
+        # expected_route = '0.0.0.0/0'
         # {
         #         'route-information': {
         #             'route-table': {
-        #                 'active-route-count':
-        #                 '10',
-        #                 'destination-count':
-        #                 '10',
-        #                 'hidden-route-count':
-        #                 '0',
-        #                 'holddown-route-count':
         #                 '0',
         #                 'rt': [{
-        #                     'rt-destination': '0.0.0.0/0',
-        #                     'rt-entry': {
-        #                         'active-tag': '*',
+        #                     'rt-destination': '0.0.0.0/0', <-----------
+        #                     'rt-entry': { ...
+
+        # Example 2
+        # expected_route = '20.0.0.0'
+        # ...
+        #  {'rt-announced-count': '1',
+        #   'rt-destination': '20.0.0.0', <-------------
+        #   'rt-prefix-length': '24'}, <-------------
+        # ...
+
+        # Example 3
+        # expected_route = '0.0.0.0'
+        # 'rt-destination': '0.0.0.0/0',
 
         rt_list = out.q.get_values('rt')
-        destinations = [i.get('rt-destination') for i in rt_list]
+        destinations = []
 
-        if expected_route in destinations:
-            return True 
+        for i in rt_list:
+            # support Example 2
+            if i.get('rt-prefix-length'):
+                destinations.append(i.get('rt-destination')+'/'+i.get('rt-prefix-length'))
+            else:
+                destinations.append(i.get('rt-destination'))
+
+        else:
+            # support Example 1 and Example 3
+            for item in destinations:
+                if expected_route in item:
+                    return True 
         
         timeout.sleep()
 
@@ -1202,6 +1256,7 @@ def verify_learned_protocol(device,
                             address,
                             next_hop=None,
                             learn_protocol=None,
+                            cluster_value=None,
                             max_time=60,
                             check_interval=10):
     """Verifies learned protocol and next hop agianst 'show route {address} extensive'
@@ -1211,6 +1266,7 @@ def verify_learned_protocol(device,
         address ('str'): IP address for show command
         next_hop ('str'): next hop ip address
         learn_protocol('str'): Learned protocol
+        cluster_value('str'): Cluster value in show route
         max_time ('int', optional): Maximum time to keep checking. Default to 60 seconds.
         check_interval ('int', optional): How often to check. Default to 10 seconds.
 
@@ -1230,7 +1286,7 @@ def verify_learned_protocol(device,
         except SchemaEmptyParserError:
             timeout.sleep()
             continue
-
+        
         #   [{'rt-entry': {'active-tag': '*', 'protocol-name': 'OSPF', 
         #   'preference': '10', 'metric': '1', 'age': {'#text': '00:00:01'}, 
         #   'nh': [{'to': '106.187.14.158', 'via': 'ge-0/0/0.0'}]}, 
@@ -1248,6 +1304,20 @@ def verify_learned_protocol(device,
         if learn_protocol:
             protocol_name = Dq(output).get_values("protocol-name", 0)
             if protocol_name.lower() ==  learn_protocol.lower():
+                return True
+            else:
+                timeout.sleep()
+                continue
+
+        #[{"rt-entry-state": "Active Int Ext",
+        #"validation-state": "unverified",
+        #"task-name": "BGP_2.2.2.2.2",
+        #"announce-bits": "2",
+        #"announce-tasks": "0-KRT 5-Resolve tree 1",
+        #"cluster-list": "2.2.2.2 4.4.4.4"}]
+        if cluster_value:
+            cluster_item = Dq(output).get_values("cluster-list", 0)
+            if cluster_value in str(cluster_item):
                 return True
             else:
                 timeout.sleep()
@@ -1383,7 +1453,6 @@ def verify_route_best_path(device,
         #         ]
         #     }
         # }
-        
         route_tables = output.q.get_values('route-table')
         
         for routes in route_tables:
@@ -1452,7 +1521,8 @@ def verify_route_best_path_metric(device,
                          ip_address,
                          metric2=False,
                          max_time=60, 
-                         check_interval=10
+                         check_interval=10,
+                         protocol='bgp'
                         ):
     """ Verify the metric of best path
 
@@ -1474,7 +1544,9 @@ def verify_route_best_path_metric(device,
         
     while timeout.iterate():
         try:
-            output = device.parse('show route protocol bgp {ip_address} extensive'.format(ip_address=ip_address))
+            output = device.parse('show route protocol {protocol} {ip_address} extensive'.format(
+                ip_address=ip_address,
+                protocol=protocol))
 
         except SchemaEmptyParserError:
             log.info('Failed to parse. Device output might contain nothing.')
@@ -1539,7 +1611,8 @@ def verify_route_non_best_path_metric(device,
                          ip_address,
                          metric2=False,
                          max_time=60, 
-                         check_interval=10
+                         check_interval=10,
+                         protocol='bgp'
                         ):
     """ Verify the metric of non best path
 
@@ -1561,7 +1634,9 @@ def verify_route_non_best_path_metric(device,
         
     while timeout.iterate():
         try:
-            output = device.parse('show route protocol bgp {ip_address} extensive'.format(ip_address=ip_address))
+            output = device.parse('show route protocol {protocol} {ip_address} extensive'.format(
+                ip_address=ip_address,
+                protocol=protocol))
 
         except SchemaEmptyParserError:
             log.info('Failed to parse. Device output might contain nothing.')
@@ -1624,7 +1699,10 @@ def verify_route_has_no_output(device,
                          max_time=60,
                          check_interval=10,
                          protocol=None,
+                         invert=False,
                          protocol_type=None,
+                         peer_address=None,
+                         target_address=None,
                          ):
     """Verify route has no output
 
@@ -1632,9 +1710,12 @@ def verify_route_has_no_output(device,
         target_route ('str'): Route to check
         max_time ('int', optional): Maximum time to keep checking. Default to 60.
         check_interval ('int', optional): How often to check. Default to 10.
-        protocol ('str', optional): Protocol name that passed in command. Default to None.
+        protocol ('str', optional): Protocol to check. Defaults to None.
+        invert ('bool', optional): Invert the operation. Defaults to False
         protocol_type ('str', optional): Protocol type in show command, e.g., advertising-protocol
                                          or receive-protocol. Default to None.
+        peer_address ('str', optional): Address used in command. Defaults to None. 
+        target_address ('str', optional): Address used in command. Defaults to None. 
 
     Raise: None
 
@@ -1646,15 +1727,35 @@ def verify_route_has_no_output(device,
 
     while timeout.iterate():
         try:
-            if protocol and protocol_type:
+            if peer_address and target_address:
+                device.parse("show route receive-protocol {protocol} {peer_address} {target_address} extensive".format(
+                    protocol=protocol,
+                    peer_address=peer_address,
+                    target_address=target_address
+                ))
+            
+            elif protocol and protocol_type:
                 device.parse("show route {protocol_type}-protocol {protocol} {address}".format(
                         protocol_type=protocol_type,
                         protocol=protocol,
                         address=target_route))
+            elif protocol:
+                device.parse(
+                    "show route protocol {protocol} {route}".format(
+                        protocol=protocol,
+                        route=target_route
+                    )
+                )
             else:
                 device.parse(
                     "show route {route} extensive".format(route=target_route))
         except SchemaEmptyParserError:
+            if invert:
+                timeout.sleep()
+                continue
+            return True
+
+        if invert:
             return True
         timeout.sleep()
     return False
@@ -2001,6 +2102,215 @@ def verify_route_table_mpls_label(device,
     return False
 
 
+def verify_route_has_as_path(
+        device: object,
+        target_route: str,
+        expected_as_path: str,
+        max_time: int = 60,
+        check_interval: int = 10,
+        protocol_type: str = None,
+        invert: bool = False,
+        extensive: bool = False,
+        peer_address: str = None
+) -> bool:
+    """Verifies a BGP route has an AS path
+
+    Args:
+        device (object): Device object
+        target_route (str): Target route to check
+        expected_as_path (str): Expected AS path
+        max_time (int, optional): Maximum time to keep checking. Default to 60 seconds.
+        check_interval (int, optional): How often to check. Default to 10 seconds.
+        invert (bool, optional): Inverts to check if AS path doesn't exist. Defaults to False.
+        extensive (bool, optional): True if show command ends with 'extensive'. Defaults to False.
+        protocol_type ('str', optional): Protocol type in show command, e.g., advertising-protocol
+                                             or receive-protocol. Default to None.
+        peer_addrress ('str', optional): Address used in show command. Defaults to None. 
+    Returns:
+        bool: True/False
+    """
+
+    op = operator.contains
+    if invert:
+        op = lambda data, check: operator.not_(operator.contains(data, check))
+
+    op1 = operator.eq
+    if invert:
+        op1 = operator.ne
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        out = None
+
+        try:
+            if extensive:
+                if protocol_type:
+                    out = device.parse(
+                        "show route {protocol_type}-protocol bgp {peer_address} extensive".format(
+                                                peer_address=peer_address.split('/')[0],
+                                                protocol_type=protocol_type)) 
+                else:
+                    out = device.parse("show route protocol bgp {route} extensive".format(route=target_route))
+            else:
+                out = device.parse("show route protocol bgp {route}".format(route=target_route))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # Example dict
+        # "route-information": {
+        #         "route-table": [
+        #             {
+        #                 "rt": [
+        #                     {
+        #                         "rt-entry": {
+        #                             "as-path": str,
+        
+        for route_table in out.q.get_values('route-table'):
+
+            for rt in Dq(route_table).get_values('rt'):
+                
+                if protocol_type:
+                    compared_text = Dq(rt).get_values('rt-destination', 0)+'/'+Dq(rt).get_values('rt-prefix-length',0)
+                    if target_route == compared_text:
+                        if expected_as_path in Dq(rt).get_values('attr-value', 0):
+                            return True
+
+                as_paths_ = rt.get('rt-entry', {}).get('as-path').split()
+
+                # '(65001)'
+                p = re.compile(r'\((?P<as>\d+)\)')
+                for as_path in as_paths_:
+                    m = p.match(as_path)
+                    if m and m.groupdict()['as'] == str(expected_as_path):
+                        return True
+
+                if op(as_paths_, str(expected_as_path)):
+                    return True
+
+                expected_as_path_list = "AS path: {}".format(str(expected_as_path)).split()
+                if op1(as_paths_, expected_as_path_list):
+                    return True
+
+        timeout.sleep()
+    return False
+
+def verify_route_has_as_path_length(
+        device: object,
+        expected_as_path_length: int,
+        protocol_type: str = 'receive',
+        peer_address: str = None,
+        target_address: str = None,
+        max_time: int = 60,
+        check_interval: int = 10,
+) -> bool:
+    """Verifies a BGP route has an AS path
+
+    Args:
+        device (object): Device object
+        expected_as_path_length (int): Expected AS path length
+        protocol_type (str, optional): Protocol type in show command, e.g., advertising-protocol
+                                        or receive-protocol. Defaults to 'receive'.
+        peer_address (str, optional): Peer address used in show command. Defaults to None.
+        target_address (str, optional): Target address used in show command. Defaults to None.
+        max_time (int, optional): Maximum time to keep checking. Default to 60 seconds.
+        check_interval (int, optional): How often to check. Default to 10 seconds.
+    Returns:
+        bool: True/False
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse("show route {protocol_type}-protocol bgp {peer_address} {target_address} extensive".format(
+                    protocol_type=protocol_type,
+                    peer_address=peer_address,
+                    target_address=target_address,
+                ))
+
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue    
+
+        # show route {protocol_type}-protocol bgp {peer_address} {route} extensive
+        # {
+        #     "route-information": {
+        #         "route-table": [
+        #             {
+        #                 "active-route-count": "18",
+        #                 "destination-count": "18",
+        #                 "hidden-route-count": "0",
+        #                 "holddown-route-count": "0",
+        #                 "rt": {
+        #                     "rt-announced-count": "2",
+        #                     "rt-destination": "4.4.4.4",
+        #                     "rt-entry": {
+        #                         "as-path": "AS path: I",
+        #                         "bgp-path-attributes": {
+        #                             "attr-as-path-effective": {
+        #                                 "aspath-effective-string": "AS path:",
+        #                                 "attr-value": "I" <---------------------------
+        #                             }
+
+        # '1 {123} {456} I' <------ only '1 {123} {456}' needed
+        attr_value = out.q.get_values('attr-value', 0)
+        attr_value_pattern = re.compile(r'(?P<attr_value>[\d{}\s]+)\w+')
+
+        m = attr_value_pattern.match(attr_value)
+        if m:
+            sub_attr_value = m.groupdict()['attr_value']
+
+            as_path_len = len(sub_attr_value.split())
+            if expected_as_path_length == as_path_len:
+                    return True
+
+        timeout.sleep()
+    return False
+
+def verify_routing_accepted_message(
+    device: object,
+    route: str,
+    expected_message: str,
+    max_time: int = 60,
+    check_interval: int = 10,
+) -> bool:
+    """Verify accepted message of route
+
+    Args:
+        device (object): Device object
+        route (str): Route to check
+        expected_message (str): Expected message to verify against
+        max_time (int, optional): Maximum timeout time. Defaults to 60.
+        check_interval (int, optional): Check interval. Defaults to 10.
+
+    Returns:
+        bool: True/False
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse(
+                "show route {route} extensive".format(route=route))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # Example dict
+        # "route-information": {
+        #         "route-table": [
+        #             {
+        #                 "rt": [
+        #                     {
+        #                         "rt-entry": {
+        #                             "accepted": str,
+
+        if expected_message in out.q.get_values('accepted'):
+            return True
+        
+        timeout.sleep()
+
+    return False
+
 def verify_communities_in_route(device,
                                 route,
                                 expected_community,
@@ -2106,6 +2416,7 @@ def verify_route_as_length(device,
             timeout.sleep()
             continue
 
+        
         # schema = {
         #     "route-information": {
         #         "route-table": [
@@ -2149,16 +2460,24 @@ def verify_route_as_length(device,
     return False
 
 
-def verify_best_path_is_towards_to_interface(device, target_route,
-                           ip_address,
+def verify_best_path_is_towards_to_interface(device,
+                           route=None,
+                           protocol=None,
+                           expected_ip_address=None,
+                           expected_target_route=None,
+                           expected_via=None,
                            max_time=60,
-                           check_interval=10):
+                           check_interval=10,
+                           extensive=False):
     """Verify best path towards to given interface
 
         Args:
             device ('obj'): Device to use
-            target_route ('str'): target route address
-            ip_address ('str'): expected interface address
+            route ('str'): Route name. Default to None.
+            protocol ('str'): Protocol name. Default to None.
+            expected_ip_address ('str'): Expected IP address. Default to None.
+            expected_target_route ('str'): Expected target route. Default to None.
+            expected_via ('str'): Expected via interface. Default to None.
             max_time ('int', optional): Maximum time to keep checking. Default to 60.
             check_interval ('int', optional): How often to check. Default to 10.
 
@@ -2170,10 +2489,23 @@ def verify_best_path_is_towards_to_interface(device, target_route,
     """
 
     timeout = Timeout(max_time, check_interval)
-
+    
     while timeout.iterate():
         try:
-            out = device.parse("show route protocol bgp")
+            if extensive:
+                if protocol and route:
+                    out = device.parse("show route protocol {protocol} {route} extensive".format(
+                        protocol=protocol,
+                        route=route
+                    ))
+                elif protocol:
+                    out = device.parse("show route protocol {protocol} extensive".format(
+                        protocol=protocol
+                    ))
+            else:
+                out = device.parse("show route protocol {protocol}".format(
+                    protocol=protocol
+                ))
         except SchemaEmptyParserError:
             timeout.sleep()
             continue
@@ -2192,16 +2524,35 @@ def verify_best_path_is_towards_to_interface(device, target_route,
 
         rt_list = Dq(out).get_values("rt")
         for rt in rt_list:
-            rt_destination = rt.get('rt-destination', '')
-            if '/' in ip_address:
-                ip_address = ip_address.split('/')[0]
+            if isinstance(rt.get('rt-entry'), dict):
+                rt_entry_list = [rt.get('rt-entry')]
+            else:
+                rt_entry_list = Dq(rt).get_values('rt-entry')
+            
+            for rt_entry in rt_entry_list:
+                best_path = rt_entry.get('active-tag', None)
+                if not best_path:
+                    continue
 
-            if rt_destination == target_route and ip_address in Dq(rt).get_values('to'):
+                rt_destination = rt.get('rt-destination', '')
+                
+                if expected_target_route:
+                    if rt_destination != expected_target_route:
+                        continue
+                
+                if expected_ip_address:
+                    expected_ip_address = expected_ip_address.split('/')[0]
+                    if expected_ip_address not in Dq(rt).get_values('to'):
+                        continue
+                
+                if expected_via and expected_via not in Dq(rt).get_values('via'):
+                    continue
+
                 return True
 
         timeout.sleep()
     return False
-
+    
 def _getMetricInroute(output):
     metric_dict = {}
     rt_list = Dq(output).get_values("rt")
@@ -2317,6 +2668,7 @@ def compare_metric_of_route(device,
             timeout.sleep()
             continue
 
+        
         # schema = {
         #     "route-information": {
         #         "route-table": [
@@ -2410,6 +2762,211 @@ def verify_rt_destination(device,
         timeout.sleep()
     return False
 
+
+def verify_route_as_path_count(
+    device: object,
+    route: str,
+    expected_count: int,
+    excluded_paths: list = list(),
+    best_path: bool = True,
+    max_time: int = 60,
+    check_internval: int = 10
+) -> bool:
+    """Verify route as path count
+
+    Args:
+        device (object): Device object
+        route (str): Route to check
+        expected_count (int): Expected count to check against
+        excluded_paths (list, optional): Paths to exclude. Defaults to [].
+        best_path (bool, optional): Check the best path or the next, non-best path. Defaults to True.
+        max_time (int, optional): Maximum timeout time. Defaults to 60.
+        check_internval (int, optional): Check interval. Defaults to 10.
+
+    Returns:
+        bool: True/False
+    """
+
+    timeout = Timeout(max_time, check_internval)
+    while timeout.iterate():
+        try:
+            out = device.parse('show route protocol bgp {route} extensive'.format(
+                route=route
+            ))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # schema = {
+        #     "route-information": {
+        #         "route-table": [
+        #             {
+        #                   ...
+        #                 "rt": [
+        #                     {
+        #                         "rt-destination": str,
+        #                         "rt-entry": {
+        #                             "as-path": "4 2 I"
+        #                              ...
+
+        excluded_paths = [str(path) for path in excluded_paths] + ['AS', 'path:']
+        break_loop = False
+
+        as_path = list()
+
+        for rt in out.q.get_values('rt'):
+            rt_entry_ = rt.get('rt-entry', {})
+            if not isinstance(rt_entry_, list):
+                rt_entry_ = [rt_entry_]
+            for rt_entry in rt_entry_:
+                if best_path and rt_entry.get('active-tag') == "*":
+                    as_path_ = rt_entry.get('as-path')
+                    as_path = [path for path in as_path_.split() if path.translate(
+                        {ord('('):None,ord(')'):None}) not in excluded_paths]
+                    break_loop = True
+                    break
+                elif not best_path and not rt_entry.get('active-tag'):
+                    as_path_ = rt_entry.get('as-path')
+                    as_path = [path for path in as_path_.split() if path.translate(
+                        {ord('('):None,ord(')'):None}) not in excluded_paths]
+                    break_loop = True
+                    break
+            if break_loop:
+                break
+
+        if len(as_path)-1 == expected_count:
+            return True
+
+        timeout.sleep()
+    return False
+
+
+def verify_route_all_as_length(
+    device: object,
+    route: str,
+    expected_path_as_length: str,
+    excluded_paths: list = [],
+    max_time: int = 60,
+    check_interval: int = 10
+    ) -> bool:
+    """Verifies the as path length of all paths
+
+    Args:
+        device (object): Device object
+        route (str): Route to check path lengths of
+        expected_path_as_length (str): Expected AS path length
+        excluded_paths (list, optional): Paths to exclude from the count. Defaults to [].
+        max_time (int, optional): Max timeout time. Defaults to 60.
+        check_interval (int, optional): Check interval. Defaults to 10.
+
+    Returns:
+        bool: True/False
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            output = device.parse('show route {route} extensive'.format(
+                route = route
+            ))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # schema = {
+        #     "route-information": {
+        #         "route-table": [
+        #             {
+        #                   ...
+        #                 "rt": [
+        #                     {
+        #                         "rt-destination": str,
+        #                         "rt-entry": {
+        #                             "as-path": "4 2 I"
+        #                              ...
+        excluded_paths = [str(path) for path in excluded_paths]
+        failed = False
+
+        for as_path in output.q.get_values('as-path'):
+            as_path = as_path.replace('AS path: ', '')
+            if len(
+                [path for path in as_path.split(' ') if path.translate(
+                    {ord('('):None,ord(')'):None}) not in excluded_paths]
+                ) - 1 != expected_path_as_length:
+                failed = True
+                break
+
+        if failed:
+            timeout.sleep()
+            continue
+
+        return True
+        
+    return False
+
+
+def verify_route_same_as_peer_local(
+    device: object,
+    target_route: str,
+    best_path: bool = True,
+    invert: bool = False,
+    max_time: int = 60,
+    check_interval: int = 10,
+) -> bool:
+    """Verifies a route's Peer AS and Local AS are the same
+
+    Args:
+        device (object): Device object
+        target_route (str): Target route to check
+        best_path (bool): Whether to check the best path or not
+        invert (bool, optional): Invert to check if they're different. Defaults to False.
+        max_time (int, optional): Maximum timeout time. Defaults to 60.
+        check_interval (int, optional): Check interval. Defaults to 10.
+
+    Returns:
+        bool: True/False
+    """
+    bp_op = operator.eq
+    if not best_path:
+        bp_op = operator.ne
+
+    invert_op = operator.eq
+    if invert:
+        invert_op = operator.ne
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            output = device.parse('show route {route} extensive'.format(
+                route = target_route
+            ))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # Example dict
+        # Optional("@xmlns:junos"): str,
+        #     "route-information": {
+        #         "route-table": [
+        #             {
+        #                 "rt": [
+        #                     {
+        #                         "rt-entry": {
+        #                             "local-as": str,
+        #                             "peer-as": str,
+
+        for rt in output.q.get_values('rt'):
+            for rt_entry in Dq(rt).get_values('rt-entry'):
+                rt_entry_ = Dq(rt_entry)
+                if bp_op(rt_entry_.get_values('active-tag', 0), '*'):
+                    if invert_op(rt_entry_.get_values('peer-as', 0), rt_entry_.get_values('local-as', 0)):
+                        return True
+        
+        timeout.sleep()
+
+    return False
+
+
 def verify_route_table_output_interface(device,
                              label,
                              table='mpls.0',
@@ -2477,12 +3034,15 @@ def verify_route_forwarding_table(device, label, expected_type, expected_nh_inde
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
         try:
+            
             out = device.parse('show route forwarding-table label {label}'.format(
                 label=label
             ))
         except SchemaEmptyParserError:
             timeout.sleep()
             continue
+
+        
 
         # Example dictionary
         # {
@@ -2520,4 +3080,379 @@ def verify_route_forwarding_table(device, label, expected_type, expected_nh_inde
         
         timeout.sleep()
 
+    return False
+
+
+def verify_route_peer_as(
+    device: object,
+    route: str,
+    expected_peer_as: str,
+    best_path: bool = True,
+    max_time: int = 60,
+    check_interval: int = 10,
+) -> bool:
+    """Verify a BGP route's peer as
+
+    Args:
+        device (object): Device object
+        route (str): Route to check
+        expected_peer_as (str): Expected peer as to check for
+        best_path (bool, optional): Whether to check the best route or not. Defaults to True.
+        max_time (int, optional): Maximum timeout time. Defaults to 60.
+        check_interval (int, optional): Checkout interval. Defaults to 10.
+
+    Returns:
+        bool: True/False
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse("show route {route} extensive".format(
+                route=route
+            ))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # Example dict
+        # Optional("@xmlns:junos"): str,
+        #     "route-information": {
+        #         "route-table": [
+        #             {
+        #                 "rt": [
+        #                     {
+        #                         "rt-entry": {
+        #                             "peer-as": str,
+
+        for rt in out.q.get_values('rt-entry'):
+            if best_path and rt.get('active-tag') == "*":
+                peer_as_ = rt.get('peer-as')
+                break
+            elif not best_path and not rt.get('active-tag'):
+                peer_as_ = rt.get('peer-as')
+                break
+
+        if str(peer_as_) == str(expected_peer_as):
+            return True
+
+        timeout.sleep()
+    return False
+
+
+def verify_route_push_label(device, table_name, expected_label, ip_address,
+    max_time=60, check_interval=10):
+    """ Verifies there is Push expected_label in the table_name via show route ip_address
+
+    Args:
+        device (obj): Device object
+        table_name (str): Given table name
+        expected_label (str): Expected label
+        ip_address (str): IP address used in show command
+        max_time (int, optional): Maximum sleep time. Defaults to 60 seconds.
+        check_interval (int, optional): Check interval. Defaults to 10 seconds.
+
+    Returns:
+        bool
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            
+            out = device.parse('show route {ip_address}'.format(
+                ip_address=ip_address
+            ))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue    
+
+        # {'route-information': {'route-table': [{'active-route-count': '1',
+        #                                 'table-name': 'inet.3', <-----------------------------
+        #                                 'rt': [{'rt-destination': '3.3.3.3/32',
+        #                                         'rt-entry': {'active-tag': '*',
+        #                                                      'age': {'#text': '00:01:13'},
+        #                                                      'as-path': ' 1 I',
+        #                                                      'local-preference': '100',
+        #                                                      'med': '1',
+        #                                                      'nh': [{'mpls-label': 'Push '
+        #                                                                            '38', <-----------------------------
+        #                                                              'to': '20.0.0.1',
+        #                                                              'via': 'ge-0/0/0.0'}],
+
+        filtered_out = out.q.contains('{table_name}|nh'.format(table_name=table_name),regex=True).reconstruct()
+        mpls_label = Dq(filtered_out).get_values('mpls-label', 0)
+        # mple_label:
+        # 'Push 38' or [] 
+
+        if type(mpls_label) == str:
+            if int(mpls_label.split(' ')[1]) == expected_label:
+                return True 
+        timeout.sleep()
+
+    return False   
+
+
+def verify_route_table_label_output(device,  
+                                    label_name,
+                                    table_name='mpls.0',
+                                    max_time=60, 
+                                    check_interval=10):
+    """ Verifies there is path via show route table table_name label label_name
+
+    Args:
+        device (obj): Device object
+        table_name (str): Table name used in show command. Defaults to 'mpls.0'
+        label_name (str): Given label used in show command
+        max_time (int, optional): Maximum sleep time. Defaults to 60 seconds.
+        check_interval (int, optional): Check interval. Defaults to 10 seconds.
+
+    Returns:
+        bool
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse('show route table {table_name} label {label_name}'.format(
+                table_name=table_name,
+                label_name=label_name
+            ))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue    
+
+        # {'table_name': {'mpls.0': {'active_route_count': 10,
+        #                         'destination_count': 10,
+        #                         'hidden_route_count': 0,
+        #                         'holddown_route_count': 0,
+        #                         'routes': {'46': {'active_tag': '*',  <------------------------ '46' is a label
+        #                                             'age': '00:07:53',
+        #                                             'next_hop': {'next_hop_list': {1: {'best_route': '>',
+        #                                                                                 'mpls_label': 'Pop',
+        #                                                                                 'to': '30.0.0.2',
+        #                                                                                 'via': 'ge-0/0/1.0'}}},
+        #                                             'preference': '170',
+        #                                             'protocol_name': 'VPN'},
+        #                                     '46(S=0)': {'active_tag': '*', <------------------------ '46(S=0)' is a label
+        
+        labels = out.q.get_values('routes')
+        # labels:
+        # ['46', '46(S=0)'] or [] 
+
+        if label_name in labels:
+            return True 
+        timeout.sleep()
+
+    return False        
+
+
+def verify_route_exists(device, expected_route, invert=False, max_time=60, check_interval=10):
+    """ Verifies route exists via show route protocol bgp
+
+    Args:
+        device (obj): Device object
+        expected_route (str): Expected route
+        invert (bool): Default to False. Set to True if verify route doesn't exist.
+        max_time (int, optional): Maximum sleep time. Defaults to 60.
+        check_interval (int, optional): Check interval. Defaults to 10.    
+    Returns:
+        bool
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:       
+            out = device.parse('show route protocol bgp')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue  
+
+        # {'route-information': {'route-table': [{'active-route-count': '14',
+        #                                 'destination-count': '14',
+        #                                 'hidden-route-count': '0',
+        #                                 'holddown-route-count': '0',
+        #                                 'rt': [{'rt-destination': '1.0.0.0/24', <----------------------
+        #                                         'rt-entry': {'age': {'#text': '00:00:48'},
+        #                                                      'as-path': ' 2 I',
+        #                                                      'local-preference': '100',
+        #                                                      'nh': [{'to': '20.0.0.2',
+
+        routes = out.q.get_values('rt-destination')
+
+        if invert:
+            if expected_route not in routes:
+                return True 
+        
+        if expected_route in routes:
+            return True      
+        timeout.sleep()
+
+    return False                     
+
+def verify_preference_show_route(device,
+                                 address,
+                                 preference,
+                                 max_time=60,
+                                 check_interval=10):
+    """ Verify routing interface preference
+
+        Args:
+            device ('str'): Device str
+            address ('str'): address to be ued in show command
+            preference ('int'): Preference name
+            max_time (`int`): Max time, defaults to 60 seconds
+            check_interval (`int`): Check interval, defaults to 10 seconds
+        Returns:
+            True / False
+        Raises:
+            None
+
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse(
+                'show route protocol bgp extensive {address}'.format(
+                    address=address))
+
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+
+        # Example dictionary structure:
+        #"rt": {
+        #            "rt-announced-count": "1",
+        #            "rt-destination": "100.0.0.0",
+        #            "rt-entry": {
+        #                "active-tag": "*",
+        #                "age": {
+        #                    "#text": "4:32"
+        #                },
+        #                "bgp-rt-flag": "Accepted",
+        #                "gateway": "60.0.0.2",
+        #                "local-as": "1",
+        #                "local-preference": "100",
+        #                "peer-as": "2",
+        #                "peer-id": "206.26.0.1",
+        #                "preference": "170",
+        #                "preference2": "101",
+        #                "protocol-name": "BGP",
+        #            },
+        #}
+
+        rt_destination = out.q.get_values("rt-destination",0)
+        
+        if str(rt_destination) == str(address) and out.q.get_values("preference", 0) == str(preference):
+            return True
+
+        timeout.sleep()
+
+    return False
+
+
+def verify_cluster_exists_in_route(device,
+                                   protocol,
+                                   address,
+                                   cluster_value,
+                                   max_time=60,
+                                   check_interval=10):
+    """Verifies cluster exists in route
+
+    Args:
+        device ('obj'): device to use
+        address ('str'): IP address for show command
+        protocol ('str'): Protocol to use in show command
+        cluster_value('str'): Cluster value in show route
+        max_time ('int', optional): Maximum time to keep checking. Default to 60 seconds.
+        check_interval ('int', optional): How often to check. Default to 10 seconds.
+
+    Returns:
+        True/False
+
+    Raises:
+        N/A
+    """
+
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            output = device.parse(
+                "show route protocol {protocol} {address} extensive".format(protocol=protocol, address=address))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+        
+        #[{"rt-entry-state": "Active Int Ext",
+        #"validation-state": "unverified",
+        #"task-name": "BGP_2.2.2.2.2",
+        #"announce-bits": "2",
+        #"announce-tasks": "0-KRT 5-Resolve tree 1",
+        #"cluster-list": "2.2.2.2 4.4.4.4"}]
+        if cluster_value:
+            cluster_item = Dq(output).get_values("cluster-list", 0)
+            if cluster_value in str(cluster_item):
+                return True
+            else:
+                timeout.sleep()
+                continue
+                
+        timeout.sleep()
+
+    return False
+
+    
+def verify_route_best_path_counter(device, expected_count, protocol=None, ip_address=None,
+    max_time=60, check_interval=10):
+    """ Verify best path counter
+
+        Args:
+            device ('str'): Device str
+            expected_count ('int'): Expected best path count
+            protocol ('str'): Protocol name. Default to None
+            ip_address ('str'): IP address. Default to None.
+            max_time (`int`, optional): Max time, defaults to 60 seconds
+            check_interval (`int`, optional): Check interval, defaults to 10 seconds
+        Returns:
+            True / False
+        Raises:
+            None
+
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    
+    while timeout.iterate():
+        try:
+            out = device.parse('show route protocol {protocol} {ip_address}'.format(
+                protocol=protocol,
+                ip_address=ip_address
+            ))
+        except Exception as e:
+            timeout.sleep()
+            continue
+        
+        # Example dictionary structure:
+        #"rt": {
+        #            "rt-announced-count": "1",
+        #            "rt-destination": "100.0.0.0",
+        #            "rt-entry": {
+        #                "active-tag": "*",
+
+        rt_list = out.q.contains('active-tag|nh', regex=True).get_values('rt')
+
+        best_path_counter = 0
+
+        for rt in rt_list:
+            rt_entry = rt.get('rt-entry', {})
+            if not rt_entry.get('active-tag', None):
+                continue
+            nh_list = Dq(rt_entry).get_values('nh')
+            best_path_counter = best_path_counter + len(nh_list)
+        
+        if expected_count == best_path_counter:
+            return True
+        
     return False

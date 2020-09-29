@@ -59,11 +59,16 @@ def device_recovery(start, device, console_activity_pattern, golden_image=None,
     # Set target
     target = "{}_{}".format(device.hostname, last_word_in_start)
 
+    if len(log.handlers) >=2:
+        logfile= log.handlers[1].logfile
+    else:
+        logfile = None
+
     spawn = Spawn(start,
                   settings=device.cli.settings,
                   target=target,
                   log=log,
-                  logfile=log.handlers[1].logfile)
+                  logfile=logfile)
 
     if 'kickstart' not in golden_image or 'system' not in golden_image:
         raise Exception("Either Kickstart or System image has not been provided "

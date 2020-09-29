@@ -1,16 +1,74 @@
-"""Common get info functions for BGP"""
-
+'''Common get info functions for bgp'''
 # Python
 import re
 import logging
 import datetime
 
+# unicon
+from unicon.core.errors import SubCommandFailure
+
 # Genie
-from genie.utils.dq import Dq
+from genie.utils import Dq
 from genie.utils.timeout import Timeout
+from genie.libs.sdk.apis.utils import get_config_dict
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 log = logging.getLogger(__name__)
+
+def get_bgp_peer_prefixes(
+    device: object,
+    peer_address: str,
+) -> dict:
+    """Return a dictionary of BGP prefix value
+
+    Args:
+        device (object): Device object
+        peer_address (str): Peer address
+
+    Returns:
+        dict: Dictionary of prefix values
+    """
+
+    try:
+        out = device.parse('show bgp neighbor')
+    except SchemaEmptyParserError:
+        return dict()
+
+    # Example dict
+    # "bgp-information": {
+    #     "bgp-peer": [
+    #         {
+    #             "bgp-rib": [
+    #                 {
+    #                     "accepted-prefix-count": str,
+    #                     "active-prefix-count": str,
+    #                     "received-prefix-count": str,
+    #                     "advertised-prefix-count": str,
+    #                     "suppressed-prefix-count": str,
+
+    for peer in out.q.get_values('bgp-peer'):
+        peer_interface_ = peer.get('peer-address')
+
+        # 20.0.0.3+63208
+        if '+' in peer_interface_:
+            peer_interface_ = peer_interface_.split('+')[0]
+
+        # 20.0.0.2/24
+        if '/' in peer_address:
+            peer_address = peer_address.split('/')[0]
+
+        if peer_interface_ != peer_address:
+            continue
+
+        ret_dict = {
+            "accepted-prefix-count": Dq(peer).get_values('accepted-prefix-count', 0),
+            "active-prefix-count": Dq(peer).get_values('active-prefix-count', 0),
+            "received-prefix-count": Dq(peer).get_values('received-prefix-count', 0),
+            "advertised-prefix-count": Dq(peer).get_values('advertised-prefix-count', 0),
+            "suppressed-prefix-count": Dq(peer).get_values('suppressed-prefix-count', 0),
+            }
+
+        return ret_dict
 
 
 def get_peer_bgp_address(device, address_family):
@@ -58,3 +116,28 @@ def get_peer_bgp_address(device, address_family):
         else:
             return None
 
+
+def get_peer_restart_flags_received(device, neighbor_address=None):
+    """ Retrieve peer restart flags received
+
+        Args:
+            device ('obj'): Device object
+            neighbor_address ('str'): Neighbor IP address
+
+        Returns:
+            List of peer restart flags received
+    """
+    
+    try:
+        if neighbor_address:
+            out = device.parse("show bgp neighbor {neighbor_address}".format(
+                neighbor_address=neighbor_address
+            ))
+        else:
+            out = device.parse("show bgp neighbor")
+    except SchemaEmptyParserError:
+        return None
+
+    peer_restart_flags = out.q.get_values('peer-restart-flags-received')
+    
+    return peer_restart_flags

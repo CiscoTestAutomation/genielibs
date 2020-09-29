@@ -7,7 +7,7 @@ import datetime
 from pyats import aetest
 
 from genie.utils.diff import Diff
-from genie.utils.timeout import TempResult
+from genie.utils.timeout import TempResult, Timeout
 from genie.harness.utils import connect_device, disconnect_device
 
 log = logging.getLogger(__name__)
@@ -158,10 +158,16 @@ class ProcessRestartLib(object):
         if self.process in self.reconnect:
             self._reconnect(steps, timeout)
 
+
         # Switchover if needed
         if self.process in self.switchover:
             # Do switchover
-            self._switchover(steps, timeout)
+            # urib uses `kill -6 <pid>` already restarted the switchover
+            # therefore, no longer need the this manual process
+            if 'urib' in self.process:
+                pass
+            else:
+                self._switchover(steps, timeout)
 
         if self.obj.method == 'cli':
             return self.verify_process(repeat_restart=repeat_restart,
@@ -372,6 +378,7 @@ class ProcessRestartLib(object):
     def _switchover(self, steps, timeout):
         '''Switchover the device if needed'''
         # Switchover
+
         with steps.start('Switchover',
                          continue_=True) as step:
             self.device.execute('system switchover')
@@ -380,22 +387,28 @@ class ProcessRestartLib(object):
         # reconnect
         self._reconnect(steps, timeout)
 
-
-
     def _reconnect(self, steps, timeout):
         '''Reconnect to the device if needed'''
         if self.process in self.reconnect:
-
             ha = self.abstract.sdk.libs.abstracted_libs.ha.HA(
                 device=self.device)
             with steps.start('The device is reloading when restarting this process',
                              continue_=True) as step:
-                disconnect_device(self.device)
+                
+                # Waiting 4-7 mins for switchover to complete 
+                log.info("Waiting for a maximum of 7 minutes for device switchover to completess")
+                check_time = Timeout(max_time = 700, interval = 20)
+                while check_time.iterate():
+                    check_time.sleep()
+                    continue
+
+                self.device.destroy()
                 time.sleep(30)
+
                 temp = TempResult(container=step)
                 while timeout.iterate():
                     try:
-                        connect_device(self.device)
+                        self.device.connect(prompt_recovery=True)
                     except Exception as e:
                         temp.failed('Could not reconnect to the device',
                                     from_exception=e)
@@ -408,7 +421,6 @@ class ProcessRestartLib(object):
             # check show module
             with steps.start('Check module status after reconnection',
                              continue_=True) as step:
-                
                 temp = TempResult(container=step)
                 while timeout.iterate():
                     try:

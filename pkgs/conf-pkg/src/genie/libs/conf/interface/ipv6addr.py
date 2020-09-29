@@ -58,6 +58,14 @@ class IPv6Addr(ConfigurableBase):
         type=(None, managedattribute.test_istype(bool)),
         doc='Route-tag to be associated with this address')
 
+    # ipv6 redirect
+    redirect = managedattribute(
+        name='redirect',
+        default=True,
+        type=(None, managedattribute.test_istype(bool)),
+        doc='Assign the v6 redirect attribute'
+    )
+
 
     # Overload __eq__
     def __eq__(self, other):

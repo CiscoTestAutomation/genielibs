@@ -19,6 +19,7 @@ def verify_ping(device,
                 mpls_rsvp=None,
                 loss_rate=0,
                 count=None,
+                source=None,
                 max_time=30,
                 check_interval=10):
     """ Verify ping loss rate on ip address provided
@@ -31,6 +32,7 @@ def verify_ping(device,
             mpls_rsvp ('str'): MPLS RSVP value
             loss_rate ('int'): Expected loss rate value
             count ('int'): Count value for ping command
+            source ('str'): Source IP address, default: None
             max_time (`int`): Max time, default: 30
             check_interval (`int`): Check interval, default: 10
         Returns:
@@ -39,8 +41,14 @@ def verify_ping(device,
             None
     """
     timeout = Timeout(max_time, check_interval)
+    
     while timeout.iterate():
-        if address and count and not ttl and not wait:
+        if address and count and source:
+            cmd = 'ping {address} source {source} count {count}'.format(
+                    address=address,
+                    source=source,
+                    count=count)
+        elif address and count and not ttl and not wait:
             cmd = 'ping {address} count {count}'.format(address=address,
                                                         count=count)
         elif address and count and ttl and wait:

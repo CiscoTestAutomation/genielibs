@@ -65,10 +65,11 @@ def golden_recovery(start, device, console_activity_pattern, golden_image=None,
     # TODO: We need to fix that handlers[1]...
     # Make it stronger.
     # For now, if it doesnt exists, then just get out
-    try:
-        logfile = log.handlers[1].logfile
-    except IndexError as e:
-        raise Exception('Could not recover the device')
+
+    if len(log.handlers) >= 2:
+        logfile= log.handlers[1].logfile
+    else:
+        logfile = None
 
     spawn = Spawn(start,
                   settings=device.cli.settings,
@@ -122,11 +123,16 @@ def tftp_recovery_worker(start, device, console_activity_pattern, tftp_boot=None
     # Set target
     target = "{}_{}".format(device.hostname, last_word_in_start)
 
+    if len(log.handlers) >= 2:
+        logfile= log.handlers[1].logfile
+    else:
+        logfile = None
+
     spawn = Spawn(spawn_command=start,
                   settings=device.cli.settings,
                   target=target,
                   log=log,
-                  logfile=log.handlers[1].logfile)
+                  logfile=logfile)
 
     rommon_dialog = TftpRommonDialog()
     rommon_dialog.hostname_statement(device.hostname)

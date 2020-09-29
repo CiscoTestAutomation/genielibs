@@ -82,7 +82,7 @@ def device_recovery(start, device, console_activity_pattern, golden_image=None,
     # Set target
     target = "{}_{}".format(device.hostname, last_word_in_start)
 
-    if log.handlers and isinstance(log.handlers, list):
+    if len(log.handlers) >= 2:
         logfile= log.handlers[1].logfile
     else:
         logfile = None
@@ -137,7 +137,7 @@ def tftp_recovery_worker(start, device, console_activity_pattern, tftp_boot=None
     # Set target
     target = "{}_{}".format(device.hostname, last_word_in_start)
 
-    if log.handlers and isinstance(log.handlers, list):
+    if len(log.handlers) >= 2:
         logfile= log.handlers[1].logfile
     else:
         logfile = None

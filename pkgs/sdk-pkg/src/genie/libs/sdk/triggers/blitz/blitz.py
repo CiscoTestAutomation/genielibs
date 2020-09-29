@@ -6,6 +6,9 @@ from datetime import datetime
 from genie.harness.base import Trigger
 from genie.harness.discovery import copy_func
 
+#ats
+from pyats.easypy import runtime
+
 # from pyats
 from pyats import aetest
 from pyats.log.utils import banner
@@ -111,10 +114,6 @@ class Blitz(Trigger):
 
             for action, kwargs in action_item.items():
 
-                # # remove `processor` which comes from pyATS health
-                # if 'processor' in kwargs:
-                #     kwargs.pop('processor')
-
                 if not kwargs and not isinstance(kwargs, bool):
                     raise Exception(
                         'No data was provided for {a}'.format(a=action))
@@ -146,8 +145,16 @@ class Blitz(Trigger):
 
                 # Giving action aliases
                 action_alias = kwargs.get('alias')
-                step_msg = "Starting action {a}".format(
-                    a=action_alias if action_alias else action)
+                # Giving user ability to change step message
+                custom_msg = kwargs.pop('custom_start_step_message', None)
+
+                if custom_msg:
+                    step_msg= custom_msg
+                    log.info('The action is: {a}'.format(a=action))
+                else:
+                    step_msg = "Starting action {a}".format(
+                        a=action_alias if action_alias else action)
+
                 if 'device' in kwargs:
                     try:
                         # check if device object, or not
@@ -158,7 +165,10 @@ class Blitz(Trigger):
                         raise Exception("Could not find the device '{d}' "
                                         "which was provided in the "
                                         "action".format(d=kwargs['device']))
-                    step_msg += " on device '{d}'".format(d=device.name)
+                    if not custom_msg:
+                        step_msg += " on device '{d}'".format(d=device.name)
+                    else:
+                        log.info('Device: {d}'.format(d=device.name))
 
                     # Provide device object
                     kwargs['device'] = device
@@ -176,6 +186,11 @@ class Blitz(Trigger):
                 # check if user wants the testcase to stop after a failure or to continue
                 continue_ = kwargs.pop('continue', True)
                 ret_dict['continue_'] = continue_
+
+                save_variable(self, 'section', section)
+                save_variable(self, 'runtime', runtime)
+                save_variable(self, 'testscript.name', self.uid.split('.')[0])
+                save_variable(self, 'task.id', runtime.tasks._tasks[len(runtime.tasks._tasks) -1].taskid)
 
                 with steps.start(step_msg,
                                  continue_=continue_,
@@ -297,6 +312,7 @@ class Blitz(Trigger):
         save_variable(self,
                       self.uid.split('.')[0] + '.' + section.uid,
                       str(section.result))
+            
 
         # if continue == false ...
         if not section_continue and section.result != Passed:

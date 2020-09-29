@@ -80,11 +80,16 @@ def device_recovery(start, device, console_activity_pattern, golden_image=None,
     # Set target
     target = "{}_{}".format(device.hostname, last_word_in_start)
 
+    if len(log.handlers) >=2:
+        logfile= log.handlers[1].logfile
+    else:
+        logfile = None
+
     spawn = Spawn(spawn_command=start,
                   settings=device.cli.settings,
                   target=target,
                   log=log,
-                  logfile=log.handlers[1].logfile)
+                  logfile=logfile)
 
     dialog = RommonDialog()
     dialog.dialog.process(spawn, timeout=timeout,
@@ -131,11 +136,16 @@ def tftp_recovery_worker(start, device, console_activity_pattern, tftp_boot=None
     # Set target
     target = "{}_{}".format(device.hostname, last_word_in_start)
 
+    if len(log.handlers) >= 2:
+        logfile= log.handlers[1].logfile
+    else:
+        logfile = None
+
     spawn = Spawn(spawn_command=start,
                   settings=device.cli.settings,
                   target=target,
                   log=log,
-                  logfile=log.handlers[1].logfile)
+                  logfile=logfile)
 
     tftp_rommon_dialog = TftpRommonDialog()
 

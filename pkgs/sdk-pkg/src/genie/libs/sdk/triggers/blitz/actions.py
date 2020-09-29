@@ -7,6 +7,7 @@ from datetime import datetime
 # from genie
 from genie.libs import sdk
 from genie.utils.diff import Diff
+from genie.ops.utils import get_ops_exclude
 from genie.harness.standalone import run_genie_sdk
 
 # from pyats
@@ -18,7 +19,7 @@ from .maple import maple, maple_search
 from .yangexec import run_netconf, run_gnmi, notify_wait
 from .actions_helper import configure_handler, api_handler, learn_handler,\
                             parse_handler, execute_handler,_get_exclude,\
-                            _condition_validator, rest_handler
+                            _condition_validator, rest_handler, bash_console_handler
 
 log = logging.getLogger(__name__)
 
@@ -82,7 +83,6 @@ def add_result_as_extra(func):
                 'pyats_health_{action_start}'.format(action_start=action_start):
                 extra_action_result
             }
-            section.reporter.client.add_testsuite_extra(**extra_args)
 
             # add extra to processor
             section.reporter.client.add_extra(**extra_args)
@@ -106,16 +106,20 @@ def configure(self,
               name,
               command,
               alias=None,
-              reply=None,
+              expected_failure=False,
               continue_=True,
-              processor=''):
+              processor='',
+              health_uids=None,
+              health_groups=None,
+              health_sections=None,
+              **kwargs):
 
     # default output set to none in case of an exception
     output = None
     with steps.start("Configuring '{device}'".\
                     format(device=device.name), continue_=continue_) as step:
 
-        output = configure_handler(self, step, device, command, reply)
+        output = configure_handler(self, step, device, command, expected_failure, **kwargs)
 
     notify_wait(steps, device)
 
@@ -129,6 +133,7 @@ def parse(self,
           section,
           name,
           command,
+          expected_failure=False,
           alias=None,
           include=None,
           exclude=None,
@@ -136,6 +141,9 @@ def parse(self,
           check_interval=None,
           continue_=True,
           processor='',
+          health_uids=None,
+          health_groups=None,
+          health_sections=None,
           *args,
           **kwargs):
 
@@ -152,7 +160,8 @@ def parse(self,
                                exclude=exclude,
                                max_time=max_time,
                                check_interval=check_interval,
-                               continue_=continue_)
+                               continue_=continue_,
+                               expected_failure=expected_failure)
 
     notify_wait(steps, device)
 
@@ -166,16 +175,21 @@ def execute(self,
             section,
             name,
             command,
+            expected_failure=False,
             alias=None,
             include=None,
             exclude=None,
             max_time=None,
             check_interval=None,
-            reply=None,
             continue_=True,
-            processor=''):
+            processor='',
+            health_uids=None,
+            health_groups=None,
+            health_sections=None,
+            **kwargs):
 
     # action execute
+    output = None
     with steps.start("Executing '{c}' on '{d}'".\
                     format(c=command, d=device.name), continue_=continue_) as step:
 
@@ -188,7 +202,8 @@ def execute(self,
                                  max_time=max_time,
                                  check_interval=check_interval,
                                  continue_=continue_,
-                                 reply=reply)
+                                 expected_failure=expected_failure,
+                                 **kwargs)
 
     notify_wait(steps, device)
 
@@ -202,6 +217,7 @@ def api(self,
         section,
         name,
         function,
+        expected_failure=False,
         arguments=None,
         include=None,
         exclude=None,
@@ -209,6 +225,9 @@ def api(self,
         check_interval=None,
         continue_=True,
         processor='',
+        health_uids=None,
+        health_groups=None,
+        health_sections=None,
         alias=None):
 
     # action api
@@ -225,12 +244,12 @@ def api(self,
                              max_time=max_time,
                              check_interval=check_interval,
                              continue_=continue_,
-                             arguments=arguments)
+                             arguments=arguments,
+                             expected_failure=expected_failure)
 
     notify_wait(steps, device)
 
     return output
-
 
 @add_result_as_extra
 def learn(self,
@@ -244,8 +263,12 @@ def learn(self,
           exclude=None,
           max_time=None,
           check_interval=None,
+          expected_failure=False,
           continue_=True,
-          processor=''):
+          processor='',
+          health_uids=None,
+          health_groups=None,
+          health_sections=None):
 
     # action learn
     with steps.start("Learning '{f}' on '{d}'".\
@@ -261,10 +284,10 @@ def learn(self,
             max_time=max_time,
             check_interval=check_interval,
             continue_=continue_,
+            expected_failure=expected_failure
         )
 
     return output
-
 
 @add_result_as_extra
 def compare(self,
@@ -274,7 +297,10 @@ def compare(self,
             items,
             continue_=True,
             alias=None,
-            processor=''):
+            processor='',
+            health_uids=None,
+            health_groups=None,
+            health_sections=None):
 
     # action compare
     if not items:
@@ -307,6 +333,9 @@ def sleep(self,
           sleep_time,
           continue_=True,
           processor='',
+          health_uids=None,
+          health_groups=None,
+          health_sections=None,
           *args,
           **kwargs):
     log.info('Sleeping for {s} seconds'.format(s=sleep_time))
@@ -320,6 +349,7 @@ def rest(self,
          steps,
          section,
          name,
+         expected_failure=False,
          continue_=True,
          include=None,
          exclude=None,
@@ -327,22 +357,31 @@ def rest(self,
          check_interval=None,
          connection_alias='rest',
          processor='',
+         health_uids=None,
+         health_groups=None,
+         health_sections=None,
          *args,
          **kwargs):
 
-    return rest_handler(self,
-                        device,
-                        method,
-                        steps,
-                        continue_=continue_,
-                        include=include,
-                        exclude=exclude,
-                        max_time=max_time,
-                        check_interval=check_interval,
-                        connection_alias=connection_alias,
-                        *args,
-                        **kwargs)
+    # action rest
+    with steps.start("Submitting a '{m}' call to a REST API on '{d}'".\
+                    format(m=method, d=device.name), continue_=continue_) as step:
 
+        output = rest_handler(self,
+                            device,
+                            method,
+                            step,
+                            expected_failure=expected_failure,
+                            continue_=continue_,
+                            include=include,
+                            exclude=exclude,
+                            max_time=max_time,
+                            check_interval=check_interval,
+                            connection_alias=connection_alias,
+                            *args,
+                            **kwargs)
+
+    return output
 
 @add_result_as_extra
 def yang(self,
@@ -359,6 +398,9 @@ def yang(self,
          returns=None,
          alias=None,
          processor='',
+         health_uids=None,
+         health_groups=None,
+         health_sections=None,
          *args,
          **kwargs):
     if connection:
@@ -407,7 +449,10 @@ def configure_replace(self,
                       alias=None,
                       iteration=2,
                       interval=30,
-                      processor=''):
+                      processor='',
+                      health_uids=None,
+                      health_groups=None,
+                      health_sections=None):
     restore = sdk.libs.abstracted_libs.restore.Restore(device=device)
 
     # lib.to_url is normally saved via restore.save_configuration()
@@ -433,7 +478,10 @@ def save_config_snapshot(self,
                          name,
                          alias=None,
                          continue_=True,
-                         processor=''):
+                         processor='',
+                         health_uids=None,
+                         health_groups=None,
+                         health_sections=None):
     # setup restore object for device
     if not hasattr(self, 'restore'):
         self.restore = {}
@@ -471,7 +519,10 @@ def restore_config_snapshot(self,
                             continue_=True,
                             delete_snapshot=True,
                             alias=None,
-                            processor=''):
+                            processor='',
+                            health_uids=None,
+                            health_groups=None,
+                            health_sections=None):
 
     if not hasattr(self, 'restore') or device not in self.restore:
         steps.errored("Must use action 'save_config_snapshot' first.\n\n")
@@ -505,19 +556,37 @@ def bash_console(self,
                  section,
                  name,
                  commands,
+                 expected_failure=False,
+                 include=None,
+                 exclude=None,
+                 max_time=None,
+                 check_interval=None,
                  continue_=True,
                  alias=None,
                  processor='',
+                 health_uids=None,
+                 health_groups=None,
+                 health_sections=None,
                  **kwargs):
 
-    ret_dict = {}
-    with device.bash_console(**kwargs) as bash:
-        for command in commands:
-            output = bash.execute(command, **kwargs)
-            ret_dict.update({command: output})
+    # action bash_console
+    with steps.start("Executing bash commands on '{d}'".\
+                    format(d=device.name), continue_=continue_) as step:
 
-    return ret_dict
+        output = bash_console_handler(self,
+                                      device,
+                                      step,
+                                      commands,
+                                      expected_failure=expected_failure,
+                                      include=include,
+                                      exclude=exclude,
+                                      max_time=max_time,
+                                      check_interval=check_interval,
+                                      continue_=True,
+                                      action='bash_console',
+                                      **kwargs)
 
+    return output
 
 @add_result_as_extra
 def genie_sdk(self,
@@ -526,6 +595,9 @@ def genie_sdk(self,
               name,
               continue_=True,
               processor='',
+              health_uids=None,
+              health_groups=None,
+              health_sections=None,
               **kwargs):
 
     # This is to remove the uut dependency of genie standalone.
@@ -547,6 +619,9 @@ def print(self,
           name,
           continue_=True,
           processor='',
+          health_uids=None,
+          health_groups=None,
+          health_sections=None,
           *args,
           **kwargs):
 
@@ -578,17 +653,34 @@ def diff(self,
          fail_different=False,
          command=None,
          exclude=None,
-         processor=''):
+         processor='',
+         health_uids=None,
+         health_groups=None,
+         health_sections=None,
+         feature=None,
+         mode=None):
 
     with steps.start("Perform Diff for '{device}'".format(device=device.name),
                      continue_=continue_) as step:
         exclude_items = _get_exclude(command, device)
+        # if feature is given, get exclude from the Ops
+        if feature:
+            try:
+                exclude_items.extend(get_ops_exclude(feature, device))
+            except LookupError:
+                log.warning(
+                    "No Ops for {feature} was found. Couldn't retrieve exclude list."
+                    .format(feature=feature))
+        # check given mode
+        if mode and mode not in ['add', 'remove', 'modified']:
+            log.warning(
+                "Wrong mode '{mode}' was given. Ignored.".format(mode=mode))
         if exclude and isinstance(exclude, list):
             exclude_items.extend(exclude)
             log.debug('exclude: {exclude}'.format(exclude=exclude_items))
 
         try:
-            diff = Diff(pre, post, exclude=exclude_items)
+            diff = Diff(pre, post, exclude=exclude_items, mode=mode)
         except Exception as e:
             step.failed(str(e))
 

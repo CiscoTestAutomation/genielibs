@@ -19,6 +19,6 @@ def get_vlan_info(device):
     '''    
     try:
         return device.parse('show vlan') 
-    except Exception as e:
-        log.error('Failed to parse command due to: {}'.format(e))
+    except SchemaEmptyParserError as e:
+        log.error('Device {} has no vlan information: {}'.format(device.name, e))
         return None

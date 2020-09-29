@@ -115,7 +115,7 @@ def analyze_core_by_bingopy(
         #     }
         # }
         sap_id = out.q.contains(service).get_values('sap', 0)
-        pid = out.q.contains('bgp').get_values('pid', 0)
+        pid = out.q.contains(service).get_values('pid', 0)
         if not sap_id:
             raise Exception("Couldn't get sap id")
     except SchemaEmptyParserError:

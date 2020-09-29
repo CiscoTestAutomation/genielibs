@@ -81,7 +81,8 @@ class FileUtils(FileUtilsBase):
         if used_server:
             # Case when cli sent contains the username
             # EX: admin@1.1.1.1
-            if 'username' in kwargs and kwargs['username'] in used_server:
+
+            if 'username' in kwargs and kwargs['username'] and kwargs['username'] in used_server:
                 used_server = used_server.split('@')[1]
             username, password = self.get_auth(used_server, protocol=protocol)
         else:
@@ -366,8 +367,14 @@ class FileUtils(FileUtilsBase):
             parsed = self.parse_url(item)
             # Validate parsed address is a valid IP address
             if parsed.netloc:
-                # remove tailing colon
-                netloc = parsed.netloc.split(':')[0]
+                # remove any username:password before the @addr
+                if '@' in parsed.netloc:
+                    netloc = parsed.netloc.split('@')[1]
+                else:
+                    netloc = parsed.netloc
+
+                # remove any trailing colon
+                netloc = netloc.split(':')[0]
                 used_server = netloc
                 break
 

@@ -3,6 +3,7 @@
 # Python
 import re
 import logging
+import operator
 
 # Genie
 from genie.utils.dq import Dq
@@ -49,7 +50,13 @@ def verify_bgp_peer_state(device, interface, expected_state,
         except SchemaEmptyParserError:
             timeout.sleep()
             continue
+        
+        is_bgp_running = out.q.get_values("is-bgp-running")
 
+        if False in is_bgp_running:
+            timeout.sleep()
+            continue
+            
         peers_list = out.q.get_values("bgp-peer")
 
         for peer in peers_list:
@@ -501,7 +508,7 @@ def verify_bgp_all_neighbor_status(device, expected_state, max_time=60, check_in
     return False  
 
 
-def verify_bgp_updown_time(device, given_seconds, max_time=60, check_interval=10):
+def verify_bgp_updown_time(device, given_seconds, invert=False, max_time=60, check_interval=10):
     """
     Verify the up/down time of all neighbors is less than given_time
 
@@ -516,6 +523,10 @@ def verify_bgp_updown_time(device, given_seconds, max_time=60, check_interval=10
     Raises:
         N/A    
     """
+    op = operator.ge
+    if invert:
+        op = operator.lt
+
     timeout = Timeout(max_time, check_interval)
 
     # show commands: "show bgp summary"
@@ -542,38 +553,43 @@ def verify_bgp_updown_time(device, given_seconds, max_time=60, check_interval=10
         seconds_per_day = 24*seconds_per_hour
         seconds_per_week = 7*seconds_per_day
 
-        for t in time_list:
+        for elapsed_time in time_list:
 
             # '1:01'
             p_min = re.compile(r'^\d+\:\d+$')
-            if p_min.match(t):
-                min_sec_list = t.split(':')
-                t = int(min_sec_list[0])*60 + int(min_sec_list[1])
 
             # '11:11:11'
             p_hour = re.compile(r'^\d+\:\d+\:\d+$')
-            if p_hour.match(t):
-                hour_min_sec_list = t.split(':')
-                t = int(hour_min_sec_list[0])*seconds_per_hour+\
-                    int(hour_min_sec_list[1])*60+\
-                    int(hour_min_sec_list[2])
 
             # "29w5d 22:42:36"
             p_day = re.compile(r'^(?P<week>\d+)w(?P<day>\d+)d\s+(?P<hour>\d+)\:(?P<minute>\d+)\:(?P<second>\d+)$')
-            p_day_match = p_day.match(t)
-            if p_day_match:
+            p_day_match = p_day.match(elapsed_time)
+
+            if p_min.match(elapsed_time):
+                min_sec_list = elapsed_time.split(':')
+                elapsed_time = int(min_sec_list[0])*60 + int(min_sec_list[1])
+
+            
+            elif p_hour.match(elapsed_time):
+                hour_min_sec_list = elapsed_time.split(':')
+                elapsed_time = int(hour_min_sec_list[0])*seconds_per_hour+\
+                    int(hour_min_sec_list[1])*60+\
+                    int(hour_min_sec_list[2])
+
+            
+            elif p_day_match:
                 group = p_day_match.groupdict()
-                t = int(group['week'])*seconds_per_week+\
+                elapsed_time = int(group['week'])*seconds_per_week+\
                     int(group['day'])*seconds_per_day+\
                     int(group['hour'])*seconds_per_hour+\
                     int(group['minute'])*60+\
                     int(group['second'])
             
             else:
-                t = int(t)
+                elapsed_time = int(elapsed_time)
 
             # compare current up/dwn time with given time
-            if t > given_seconds:
+            if op(elapsed_time, given_seconds):
                 return False
 
         timeout.sleep()
@@ -651,3 +667,248 @@ def get_bgp_neighbor_prefixes_count(device, interface, max_time=60, check_interv
 
         timeout.sleep()
     return prefixes_count_dict
+
+def verify_bgp_peer_prefixes_match(
+    device: object,
+    peer_address: str,
+    active: bool = True,
+    received: bool = True,
+    accepted: bool = True,
+    max_time: int = 60,
+    check_interval: int = 10
+) -> bool:
+    """Verifies whether BGP peer prefixes match or not
+
+    Args:
+        device (object): Device object
+        peer_address (str): Peer address
+        active (bool, optional): Check active prefix. Defaults to True.
+        received (bool, optional): Check received prefix. Defaults to True.
+        accepted (bool, optional): Check accepted prefix. Defaults to True.
+        max_time (int, optional): Maximum timeout time. Defaults to 60.
+        check_interval (int, optional): Check interval. Defaults to 10.
+
+    Returns:
+        bool: True/False
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse('show bgp neighbor')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # Example dict
+        # "bgp-information": {
+        #     "bgp-peer": [
+        #         {
+        #             "bgp-rib": [
+        #                 {
+        #                     "accepted-prefix-count": str,
+        #                     "active-prefix-count": str,
+        #                     "received-prefix-count": str,
+
+        for peer in out.q.get_values('bgp-peer'):
+            peer_interface_ = peer.get('peer-address')
+
+            # 20.0.0.3+63208
+            if '+' in peer_interface_:
+                peer_interface_ = peer_interface_.split('+')[0]
+
+            # 20.0.0.2/24
+            if '/' in peer_address:
+                peer_address = peer_address.split('/')[0]
+
+            if peer_interface_ != peer_address:
+                continue
+
+            prefix_list_ = list()
+
+            if active:
+                prefix_list_.append(Dq(peer).get_values('active-prefix-count', 0))
+            if accepted:
+                prefix_list_.append(Dq(peer).get_values('accepted-prefix-count', 0))
+            if received:
+                prefix_list_.append(Dq(peer).get_values('received-prefix-count', 0))
+
+            if len(set(prefix_list_)) == 1:
+                return True
+
+        timeout.sleep()
+    return False
+
+def verify_bgp_peer_import_value(
+    device: object,
+    peer_address: str,
+    expected_import_value: str,
+    max_time: int = 60,
+    check_interval: int = 10
+) -> bool:
+    """Verifies BGP peer import value
+
+    Args:
+        device (object): Device object
+        peer_address (str): Peer address
+        expected_import_value (str): Expected import value to check against
+        max_time (int, optional): Maximum timeout time. Defaults to 60.
+        check_interval (int, optional): Check interval. Defaults to 10.
+
+    Returns:
+        bool: True/False
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse('show bgp neighbor')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # Example dict
+        # "bgp-information": {
+        #     "bgp-peer": [
+        #         {
+        #             "bgp-option-information": {
+        #                 "import-policy": str,
+
+        for peer in out.q.get_values('bgp-peer'):
+            peer_interface_ = peer.get('peer-address')
+
+            # 20.0.0.3+63208
+            if '+' in peer_interface_:
+                peer_interface_ = peer_interface_.split('+')[0]
+
+            # 20.0.0.2/24
+            if '/' in peer_address:
+                peer_address = peer_address.split('/')[0]
+
+            if peer_interface_ != peer_address:
+                continue
+
+            if Dq(peer).get_values('import-policy', 0) == expected_import_value:
+                return True
+
+        timeout.sleep()
+    return False
+
+def verify_bgp_peer_option(device,
+                           interface,
+                           protocol,
+                           expected_bgp_option,
+                           invert=False,
+                           max_time=60,
+                           check_interval=10):
+    """
+    Verify bgp peer's bgp option
+
+    Args:
+        device('obj'): device to use
+        interface('str'): Peer interface
+        protocol('str'): protocol name
+        expected_bgp_option('str') : Expected peer bgp-option flag
+        invert (bool, optional): True if output does not contain expected_bgp_option. Defaults to False.
+        max_time ('int', optional): Maximum time to keep checking. Default to 60 seconds.
+        check_interval ('int', optional): How often to check. Default to 10 seconds.
+
+    Returns:
+        Boolean
+    Raises:
+        N/A
+    """
+    op = operator.contains
+    if invert:
+        op = lambda data, check: operator.not_(operator.contains(data, check))
+
+    timeout = Timeout(max_time, check_interval)
+
+    # show commands: "show bgp neighbor"
+
+    # {'bgp-information': {'bgp-peer': [{
+    #                                 'peer-address': '20.0.0.3+63208',
+    #                                 'peer-state': 'Established',
+    #                                  {'bgp-option-information': {
+    #                                       "bgp-options": "Confed",
+    #                                   .
+
+    # 20.0.0.2/24
+    interface = interface.split('/')[0]
+
+    while timeout.iterate():
+        try:
+            out = device.parse('show {protocol} neighbor'.format(protocol=protocol))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        peers_list = out.q.get_values("bgp-peer")
+
+        for peer in peers_list:
+            peer_interface = peer.get('peer-address')
+            peer_bgp_option = Dq(peer).get_values('bgp-options')
+
+            # 20.0.0.3+63208
+            peer_interface = peer_interface.split('+')[0]
+            if peer_interface == interface and op(''.join(peer_bgp_option), expected_bgp_option):
+                return True
+
+        timeout.sleep()
+    return False
+
+def verify_bgp_peer_as(device,
+                        peer_address,
+                        expected_peer_as,
+                        max_time=60,
+                        check_interval=10):
+    """
+    Verify bgp peer AS number
+
+    Args:
+        device('obj'): device to use
+        peer_address('str'): Peer interface
+        expected_peer_as ('int'): Expected peer AS number
+        max_time ('int', optional): Maximum time to keep checking. Default to 60 seconds.
+        check_interval ('int', optional): How often to check. Default to 10 seconds.
+
+    Returns:
+        Boolean
+    Raises:
+        N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    # show commands: "show bgp neighbor"
+
+    # {
+    #     "bgp-information": {
+    #         "bgp-peer": [
+    #             {
+    #                 "local-address": "10.189.5.252",
+    #                 "local-as": "65171",
+    #                 "peer-address": "10.49.216.179",
+    #                 "peer-as": "65171", <-----------------------
+
+    while timeout.iterate():
+        try:
+            out = device.parse('show bgp neighbor')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        peers_list = out.q.get_values("bgp-peer")
+
+        for peer in peers_list:
+            addr = peer.get('peer-address')
+            peer_as = Dq(peer).get_values('peer-as', 0)
+
+            # 20.0.0.3+63208
+            addr = addr.split('+')[0]
+            if addr == peer_address.split('/')[0] and int(peer_as)==expected_peer_as:
+                return True
+
+        timeout.sleep()
+    return False
+
+

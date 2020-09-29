@@ -211,6 +211,39 @@ def get_ospf_metric(device,
                 return metric_
     return None
 
+def get_routing_best_routes(
+    device: object,
+    address: str,
+    protocol: str,
+    active_tag: str = "*",
+) -> list:
+    """Return a list of best routes
+
+    Args:
+        device (object): Device object
+        address (str): Address to check
+        protocol (str): Protocol to check
+        active_tag (str, optional): Active tag. Defaults to "*".
+
+    Returns:
+        list: List of best routes
+    """
+
+    try:
+        out = device.parse(
+            "show route protocol {protocol} {address}".format(
+                protocol = protocol,
+                address = address,
+            )
+        )
+    except SchemaEmptyParserError:
+        return list()
+
+    for rt_ in out.q.get_values('rt'):
+        if rt_.get('rt-entry').get('active-tag') == active_tag:
+            return Dq(rt_).get_values('nh')
+    
+    return list()
 
 def get_route_advertising_label(device,
                           protocol,
@@ -355,3 +388,171 @@ def get_route_table_output_label(device,
         return None
 
     return output_label
+
+def get_routing_metric(device,
+                    protocol=None,
+                    ip_address=None,
+                    extensive=False,
+                    expected_metric_2=False
+                    ):
+    """Get OSPF metric
+
+    Args:
+        device (obj): Device object
+        protocol (str): Protocol name. Default is None.
+        ip_address (str): IP address name. Default is None.
+        extensive (bool): Run with extensive command.
+        expected_metric_2 (bool): Flag for checking metric2
+    """
+    try:
+        if extensive:
+            if protocol and ip_address:
+                output = device.parse('show route protocol {protocol} {ip_address} extensive'.format(
+                    ip_address=ip_address,
+                    protocol=protocol))
+            elif protocol:
+                output = device.parse('show route protocol {protocol} extensive'.format(
+                    protocol=protocol))
+            else:
+                output = device.parse('show route extensive')
+        else:
+            if protocol and ip_address:
+                output = device.parse('show route protocol {protocol} {ip_address}'.format(
+                    ip_address=ip_address,
+                    protocol=protocol))
+            elif protocol:
+                output = device.parse('show route protocol {protocol}'.format(
+                    protocol=protocol))
+            else:
+                output = device.parse('show route')
+
+    except SchemaEmptyParserError:
+        log.info('Failed to parse. Device output might contain nothing.')
+        return None
+    
+
+    # Example dictionary
+
+    # "route-table": [
+    #             {
+    #                 "active-route-count": "0",
+    #                 "destination-count": "0",
+    #                 "hidden-route-count": "0",
+    #                 "holddown-route-count": "0",
+    #                 "rt": [
+    #                     {
+    #                             "metric": "101",
+    #                         }
+    #                     },
+
+    metric = output.q.get_values('metric' if not expected_metric_2 else 'metric2')
+    return metric
+
+def get_routing_best_path_peer_id(device, protocol, ip_address, extensive=False):
+    """Get routing best path peer-id
+
+    Args:
+        device (obj): Device object
+        protocol (str): Protocol name
+        ip_address (str): IP address name
+        extensive (bool): Run with extensive command
+    """
+
+    try:
+        if extensive:
+            out = device.parse('show route protocol {protocol} {ip_address} extensive'.format(
+                protocol=protocol,
+                ip_address=ip_address
+            ))
+        else:
+            out = device.parse('show route protocol {protocol} {ip_address}'.format(
+                protocol=protocol,
+                ip_address=ip_address
+            ))
+    except SchemaEmptyParserError:
+        return None
+
+    rt_entries = out.q.contains('active-tag|peer-id', regex=True).get_values('rt-entry')
+    for rt_entry in rt_entries:
+        if rt_entry.get('active-tag', None):
+            peer_id = rt_entry.get('peer-id', None)
+            if peer_id:
+                return peer_id
+    
+    return None
+
+def get_routing_nonbest_path_peer_id(device, protocol, ip_address, extensive=False):
+    """Get routing nonbest path peer-id
+
+    Args:
+        device (obj): Device object
+        protocol (str): Protocol name
+        ip_address (str): IP address name
+        extensive (bool): Run with extensive command
+    """
+
+
+    try:
+        if extensive:
+            out = device.parse('show route protocol {protocol} {ip_address} extensive'.format(
+                protocol=protocol,
+                ip_address=ip_address
+            ))
+        else:
+            out = device.parse('show route protocol {protocol} {ip_address}'.format(
+                protocol=protocol,
+                ip_address=ip_address
+            ))
+    except SchemaEmptyParserError:
+        return None
+
+    rt_entries = out.q.contains('active-tag|peer-id', regex=True).get_values('rt-entry')
+    for rt_entry in rt_entries:
+        if rt_entry.get('active-tag', None):
+            continue
+        
+        peer_id = rt_entry.get('peer-id', None)
+        if peer_id:
+            return peer_id
+    
+    return None
+
+
+def get_route_as_path(device, target_route):
+    """
+    Get the AS path via 'show route target_route extensive'
+
+    Args:
+        device (obj): Device object
+        target_route (str): Address used in show command
+    """
+    try:
+        out = device.parse('show route {target_route} extensive'.format(
+            target_route=target_route,
+        ))
+    except SchemaEmptyParserError:
+        return None
+
+    # {'route-information': {'route-table': [{
+    #                                         'rt': [{
+    #                                                 'rt-entry': {'active-tag': '*',
+    #                                                              'age': {'#text': '7:24'},
+    #                                                              'announce-bits': '2',
+    #                                                              'announce-tasks': '0-KRT '
+    #                                                                                '1-BGP_RT_Background',
+    #                                                              'as-path': 'AS ' <--------------------------
+    #                                                                         'path: '
+    #                                                                         '100000 '
+    #                                                                         'I',
+    as_path_value = out.q.get_values('as-path', 0)
+
+    # AS path: 1000 I
+    # AS path: 1 1000 {10} I
+    as_path_pattern = re.compile(r'AS +path: +(?P<as_path>.*) +\w')
+
+    m = as_path_pattern.match(as_path_value)
+    if m:
+        as_path = m.groupdict()['as_path']
+        return as_path
+    
+    return None

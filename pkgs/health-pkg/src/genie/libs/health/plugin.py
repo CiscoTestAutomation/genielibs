@@ -45,6 +45,21 @@ class HealthCheckPlugin(BasePlugin):
                                       default=None,
                                       help='Specify health yaml file')
 
+        pyats_health_grp.add_argument('--health-sections',
+                                      dest='health_sections',
+                                      default=None,
+                                      help='Specify sections where want to run pyATS Health Check. Regex is supported.')
+
+        pyats_health_grp.add_argument('--health-uids',
+                                      dest='health_uids',
+                                      default=None,
+                                      help='Specify triggers uids where want to run pyATS Health Check. Regex is supported')
+
+        pyats_health_grp.add_argument('--health-groups',
+                                      dest='health_groups',
+                                      default=None,
+                                      help='Specify groups where want to run pyATS Health Check. Regex is supported')
+ 
         return parser
 
     def __init__(self, *args, **kwargs):
@@ -112,26 +127,24 @@ class HealthCheckPlugin(BasePlugin):
                 for section in section_names:
                     for section_name, section_data in section.items():
 
-                        # params for health_dispacher and pass `Steps()` as dummy.
-                        params = {
-                            'steps': Steps(),
-                            'testbed': tb,
-                            'data': section_data,
-                            'name': section_name
-                        }
-
-                        method = functools.partial(health.health_dispatcher,
-                                                   **params)
-                        # enable processor report
-                        method.__report__ = True
                         # add processors to pyATS
                         processor_decorator = ProcessorDecorator()
                         processor_method = processor_decorator.context(
-                            func=method,
+                            func=health.health_dispatcher,
                             name='pyATS Health Check {section_name}'.format(
                                 section_name=section_name))
+                        processor = functools.partial(
+                            processor_method,
+                            # enable processor report
+                            report = True,
+                            # params for health dispatcher
+                            parameters={
+                                'name': section_name,
+                                'data': section_data
+                            }
+                        )
                         processors.setdefault('context',
-                                              []).append(processor_method)
+                                              []).append(processor)
 
             else:
                 # Block testcase when error is found

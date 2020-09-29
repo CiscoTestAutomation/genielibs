@@ -250,3 +250,288 @@ def get_platform_core(device, default_dir, output=None, keyword=['.x86.']):
                     corefiles.append('file')
 
     return corefiles
+
+def get_platform_cpu_load(device,
+                          command='show processes cpu',
+                          processes=None,
+                          check_key='one_min_cpu',
+                          output=None):
+    '''Get cpu load on device
+
+        Args:
+            device     (`obj`): Device object
+            command    (`str`): Override show command
+                                Default to `show processes cpu`
+            processes (`list`): List of processes to check
+                                Default to None
+            check_key  (`str`): Key to check in parsed output
+                                Default to `one_min_cpu`
+            output     (`str`): Output of show command
+                                Default to None
+        Returns:
+            cpu_load   (`int`): Cpu load (5 mins average by default) on the device (percentage)
+                                If multiple processes are given, returns average.
+    '''
+
+    cpu_load = 0
+
+    try:
+        parsed = device.parse(command, output=output)
+    except SchemaEmptyParserError as e:
+        log.error("Command '{cmd}' did not return any output\n{msg}".\
+                  format(cmd=command, msg=str(e)))
+        return None
+
+    if processes:
+        count = 0
+        for ps_item in processes:
+            # To get process id based on check_key
+            # {
+            #   (snip))
+            #   "index": {
+            #     "1": {
+            #       "process": "sleep",
+            #       (snip)
+            #       "one_min_cpu": 0.0,
+            pids = parsed.q.contains_key_value(
+                'process', ps_item, value_regex=True).get_values('index')
+            count = len(pids)
+            for pid in pids:
+                cpu_load += parsed.q.contains_key_value('index',
+                                                        pid).get_values(
+                                                            check_key, 0)
+        if count == 0:
+            cpu_load = 0
+        else:
+            cpu_load /= count
+    else:
+        for location in parsed['location']:
+            cpu_load = float(parsed['location'][location][check_key])
+
+    return float(cpu_load)
+
+
+def get_platform_cpu_load_detail(device,
+                                 command='show processes cpu',
+                                 processes=None,
+                                 check_key='one_min_cpu',
+                                 output=None):
+    '''Get cpu load on device
+
+        Args:
+            device     (`obj`): Device object
+            command    (`str`): Override show command
+                                Default to `show processes cpu`
+            processes (`list`): List of processes to check
+                                Default to None
+            check_key  (`str`): Key to check in parsed output
+                                Default to `one_min_cpu`
+            output     (`str`): Output of show command
+                                Default to None
+        Returns:
+            cpu_load_dict  (`dict`): Cpu load dictionary on the device
+                                     example:
+                                     {
+                                         'netconf': 0.0,
+                                         'bgp': 0.0,
+                                     }
+    '''
+
+    cpu_load_dict = {}
+
+    try:
+        parsed = device.parse(command, output=output)
+    except SchemaEmptyParserError as e:
+        log.error("Command '{cmd}' did not return any output\n{msg}".\
+                  format(cmd=command, msg=str(e)))
+        return None
+
+    all_processes = parsed.q.get_values('process')
+
+    if processes or all_processes:
+        for ps_item in processes or all_processes:
+            # To get process id based on check_key
+            # {
+            #   (snip))
+            #   "index": {
+            #     "1": {
+            #       "process": "sleep",
+            #       (snip)
+            #       "one_min_cpu": 0.0,
+            indexes = parsed.q.contains_key_value(
+                'process', ps_item, value_regex=True).get_values('index')
+            for index in indexes:
+                process = parsed.q.contains_key_value('index', index).get_values('process', 0)
+                cpu_load_dict.update({
+                    process:
+                    parsed.q.contains_key_value('index',
+                                                index).get_values(check_key, 0)
+                })
+
+    return cpu_load_dict
+
+
+def get_platform_memory_usage(device,
+                              command='show processes memory detail',
+                              processes=None,
+                              check_key='dynamic',
+                              output=None):
+    '''Get memory usage on device
+
+        Args:
+            device         (`obj`): Device object
+            command        (`str`): Override show command
+                                    Default to `show processes memory`
+            processes     (`list`): List of processes to check
+                                    If both processes and check_key are given,
+                                    processes are preferred.
+                                    Default to None
+            check_key      (`str`): Key to check in parsed output
+                                    Default to 'dynamic'
+            output         (`str`): Output of show command
+                                    Default to None
+        Returns:
+            memory_usage (`float`): memory usage on the device (percentage)
+                                    If multiple processes are given, returns average.
+    '''
+
+    memory_usage = 0
+    try:
+        parsed = device.parse(command, output=output)
+    except SchemaEmptyParserError as e:
+        log.error("Command '{cmd}' did not return any output\n{msg}".\
+                  format(cmd=command, msg=str(e)))
+        return None
+
+    # get all `phy_tot` and calculate the total
+    physical_total = 0
+    for phy_tot in parsed.q.get_values('phy_tot'):
+        physical_total += device.api.unit_convert(phy_tot)
+
+    if processes:
+        count = 0
+        memory_holding = 0
+        for ps_item in processes:
+            # To get job id based on check_key
+            # {
+            #   "jid": {
+            #     "1114": {
+            #       "index": {
+            #         "1": {
+            #           "jid": 1114,
+            #           "text": "10M",
+            #           "data": "1059M",
+            #           "stack": "136K",
+            #           "dynamic": "44M",
+            #           "dyn_limit": "2048M",
+            #           "shm_tot": "132M",
+            #           "phy_tot": "197M",
+            #           "process": "emsd"
+            #         }
+            #       }
+            #     },
+            pids = parsed.q.contains_key_value(
+                'process', ps_item, value_regex=True).get_values('jid')
+            count = len(pids)
+            for pid in pids:
+                for dynamic in parsed.q.contains_key_value(
+                        'jid', pid).get_values(check_key):
+                    # accumulating because it's possible one pid returns multiple `holding`
+                    memory_holding += device.api.unit_convert(dynamic)
+
+        memory_usage = 0 if physical_total == 0 else memory_holding / physical_total
+    else:
+        dynamic_total = 0
+        # get all `dynamic` and calculate the total
+        for dynamic in parsed.q.get_values(check_key):
+            dynamic_total += device.api.unit_convert(dynamic)
+        memory_usage = dynamic_total / physical_total
+
+    return float(memory_usage * 100)
+
+
+def get_platform_memory_usage_detail(device,
+                                     command='show processes memory detail',
+                                     processes=None,
+                                     check_key='dynamic',
+                                     output=None):
+    '''Get memory usage on device
+
+        Args:
+            device         (`obj`): Device object
+            command        (`str`): Override show command
+                                    Default to `show processes memory`
+            processes     (`list`): List of processes to check
+                                    If both processes and check_key are given,
+                                    processes are preferred.
+                                    Default to None
+            check_key      (`str`): Key to check in parsed output
+                                    Default to `dynamic`
+            output         (`str`): Output of show command
+                                    Deault to None
+        Returns:
+            memory_usage_dict (`dict`): memory usage dict on the device (percentage)
+                                        example:
+                                        {
+                                            'OMP': 0.0012294695662956926,
+                                            'NAT-ROUTE': 0.0012294695662956926,
+                                        }
+    '''
+    regex_items = []
+    memory_usage_dict = {}
+    try:
+        parsed = device.parse(command, output=output)
+    except SchemaEmptyParserError as e:
+        log.error("Command '{cmd}' did not return any output\n{msg}".\
+                  format(cmd=command, msg=str(e)))
+        return None
+
+    # get all `phy_tot` and calculate the total
+    physical_total = 0
+    for phy_tot in parsed.q.get_values('phy_tot'):
+        physical_total += device.api.unit_convert(phy_tot)
+
+    all_processes = parsed.q.get_values('process')
+    if isinstance(processes, list):
+        for item in processes:
+            regex_items += parsed.q.contains_key_value(
+                'process', item, value_regex=True).get_values('process')
+
+    if regex_items:
+        processes = regex_items
+    if processes or all_processes:
+        for ps_item in (sorted(processes) if isinstance(processes, list) else
+                        processes) or (sorted(all_processes) if isinstance(
+                            all_processes, list) else all_processes):
+            memory_holding = 0
+            # To get job id based on check_key
+            # {
+            #   "jid": {
+            #     "1114": {
+            #       "index": {
+            #         "1": {
+            #           "jid": 1114,
+            #           "text": "10M",
+            #           "data": "1059M",
+            #           "stack": "136K",
+            #           "dynamic": "44M",
+            #           "dyn_limit": "2048M",
+            #           "shm_tot": "132M",
+            #           "phy_tot": "197M",
+            #           "process": "emsd"
+            #         }
+            #       }
+            #     },
+            pids = parsed.q.contains_key_value(
+                'process', ps_item, value_regex=True).get_values('jid')
+            memory_holding = 0
+            for pid in pids:
+                for dynamic in parsed.q.contains_key_value(
+                        'jid', pid).get_values(check_key):
+                    # accumulating because it's possible one pid returns multiple `holding`
+                    memory_holding += device.api.unit_convert(dynamic)
+
+            memory_usage = 0 if physical_total == 0 else memory_holding / physical_total
+            memory_usage_dict.update({ps_item: memory_usage * 100})
+
+    return memory_usage_dict

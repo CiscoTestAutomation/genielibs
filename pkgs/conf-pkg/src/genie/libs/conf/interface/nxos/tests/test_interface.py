@@ -26,6 +26,7 @@ class test_interface(TestCase):
         # Defining attributes section
         intf1.evpn_multisite_fabric_tracking = True
         intf1.evpn_multisite_dci_tracking = True
+        intf1.fabric_forwarding_mode = 'anycast-gateway'
         intf1.ip_forward = True
 
         cfg = intf1.build_config(apply=False)
@@ -35,6 +36,7 @@ class test_interface(TestCase):
                 'interface Ethernet0/0/1',
                 ' evpn multisite dci-tracking',
                 ' evpn multisite fabric-tracking',
+                ' fabric forwarding mode anycast-gateway',
                 ' ip forward',
                 ' exit',
             ]))
@@ -322,6 +324,7 @@ class test_nx_interface(TestCase):
         ipv4b.ipv4 = IPv4Address('192.168.1.2')
         ipv4b.prefix_length = '24'
         ipv4b.ipv4_secondary = True
+        ipv4b.redirect = False
         intf1.add_ipv4addr(ipv4b)
         intf1.shutdown = False
         # make intf2 as L3 interface
@@ -338,7 +341,9 @@ class test_nx_interface(TestCase):
                 ' no shutdown',
                 ' no switchport',
                 ' ip address 192.168.1.1/24',
+                ' ip redirects',
                 ' ip address 192.168.1.2/24 secondary',
+                ' no ip redirects',
                 ' exit'
                 ]))
 
@@ -382,6 +387,7 @@ class test_nx_interface(TestCase):
         ipv6b = IPv6Addr(device=dev1)
         ipv6b.ipv6 = IPv6Address('2001:db1:2::2')
         ipv6b.ipv6_prefix_length = '64'
+        ipv6b.redirect = False
         intf1.add_ipv6addr(ipv6b)
         intf1.shutdown = False
         # make intf2 as L3 interface
@@ -398,7 +404,9 @@ class test_nx_interface(TestCase):
                 ' no shutdown',
                 ' no switchport',
                 ' ipv6 address 2001:db1:1::1/64',
+                ' ipv6 redirects',
                 ' ipv6 address 2001:db1:2::2/64',
+                ' no ipv6 redirects',
                 ' exit'
                 ]))        
 

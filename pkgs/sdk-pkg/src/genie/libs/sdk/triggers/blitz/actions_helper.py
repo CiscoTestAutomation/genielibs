@@ -21,17 +21,19 @@ from unicon.eal.dialogs import Statement, Dialog
 log = logging.getLogger(__name__)
 
 
-def configure_handler(self, step, device, command, reply=None):
+def configure_handler(self, step, device, command, expected_failure=False, **kwargs):
 
-    kwargs = {}
-    if reply:
-        kwargs.update({'reply': _prompt_handler(reply)})
+    if 'reply' in kwargs:
+        kwargs.update({'reply': _prompt_handler(kwargs['reply'])})
 
     try:
-        # if reply dialog exist append to command if not configure normal command
         output = device.configure(command, **kwargs)
     except Exception as e:
-        step.failed('Configure failed {}'.format(str(e)))
+        if not expected_failure:
+            step.failed('Configure failed {}'.format(str(e)))
+        else:
+            log.info('Configure failed as expected, the step test result is set as passed')
+            output = ''
 
     return output
 
@@ -40,6 +42,7 @@ def parse_handler(self,
                   step,
                   device,
                   command,
+                  expected_failure=False,
                   include=None,
                   exclude=None,
                   max_time=None,
@@ -63,27 +66,33 @@ def parse_handler(self,
         # go through the include/exclude process
         return _output_query_template(self, output, step, device, command,
                                       include, exclude, max_time,
-                                      check_interval, continue_, action)
-
+                                      check_interval, continue_, action, expected_failure=expected_failure)
 
 def execute_handler(self,
                     step,
                     device,
                     command,
+                    expected_failure=False,
                     include=None,
                     exclude=None,
                     max_time=None,
                     check_interval=None,
                     continue_=True,
                     action='execute',
-                    reply=None):
+                    **kwargs):
 
-    kwargs = {}
-    if reply:
-        kwargs.update({'reply': _prompt_handler(reply)})
+    if 'reply' in kwargs:
+        kwargs.update({'reply': _prompt_handler(kwargs['reply'])})
 
     # handeling execute command
-    output = device.execute(command, **kwargs)
+    try:
+        output = device.execute(command, **kwargs)
+    except Exception as e:
+        if not expected_failure:
+            step.failed("Step failed because of this error: {e}".format(e=e))
+        else:
+            log.info('Execute failed as expected, the step test result is set as passed')
+            output = ''
 
     return _output_query_template(self,
                                   output,
@@ -96,13 +105,14 @@ def execute_handler(self,
                                   check_interval,
                                   continue_,
                                   action,
-                                  reply=reply)
-
+                                  expected_failure=expected_failure,
+                                  extra_kwargs=kwargs)
 
 def learn_handler(self,
                   step,
                   device,
                   command,
+                  expected_failure=False,
                   include=None,
                   exclude=None,
                   max_time=None,
@@ -114,13 +124,14 @@ def learn_handler(self,
     output = device.learn(command).to_dict()
     return _output_query_template(self, output, step, device, command, include,
                                   exclude, max_time, check_interval, continue_,
-                                  action)
+                                  action, expected_failure=expected_failure)
 
 
 def api_handler(self,
                 step,
                 device,
                 command,
+                expected_failure=False,
                 include=None,
                 exclude=None,
                 max_time=None,
@@ -151,9 +162,17 @@ def api_handler(self,
         output = getattr(api_function, command)(**arguments)
     except (AttributeError, TypeError
             ) as e:  # if could not find api or the kwargs is wrong for api
-        step.errored(str(e))
+        if not expected_failure:
+            step.errored(str(e))
+        else:
+            log.info('API failed as expected, the step test result is set as passed')
+            output = ''
     except Exception as e:  # anything else
-        step.failed(str(e))
+        if not expected_failure:
+            step.failed(str(e))
+        else:
+            log.info('API failed as expected, the step test result is set as passed')
+            output = ''
 
     return _output_query_template(self,
                                   output,
@@ -166,13 +185,51 @@ def api_handler(self,
                                   check_interval,
                                   continue_,
                                   action,
+                                  expected_failure=expected_failure,
                                   arguments=arguments)
+
+def bash_console_handler(self,
+                         device,
+                         step,
+                         commands,
+                         expected_failure=False,
+                         include=None,
+                         exclude=None,
+                         max_time=None,
+                         check_interval=None,
+                         continue_=True,
+                         action='bash_console',
+                         **kwargs):
+
+    output_dict = {}
+    with device.bash_console(**kwargs) as bash:
+        for command in commands:
+            bash_command_output = bash.execute(command, **kwargs)
+            if isinstance(bash_command_output, dict):
+                output_dict.update(bash_command_output)
+            else:
+                output_dict.update({command:bash_command_output})
+
+    return _output_query_template(self,
+                                  output_dict,
+                                  step,
+                                  device,
+                                  commands,
+                                  include,
+                                  exclude,
+                                  max_time,
+                                  check_interval,
+                                  continue_,
+                                  action,
+                                  expected_failure=expected_failure,
+                                  extra_kwargs=kwargs)
 
 
 def rest_handler(self,
                  device,
                  method,
                  step,
+                 expected_failure=False,
                  continue_=True,
                  include=None,
                  exclude=None,
@@ -196,7 +253,11 @@ def rest_handler(self,
     try:
         output = getattr(device_alias, method)(**kwargs)
     except Exception as e:
-        step.failed("REST method '{}' failed. Error: {}".format(method, e))
+        if not expected_failure:
+            step.failed("REST method '{}' failed. Error: {}".format(method, e))
+        else:               
+            log.info('Rest failed as expected, the step test result is set as passed')
+            output = ''
 
     # if xml convert it to json
     if output and ET.iselement(output):
@@ -216,8 +277,8 @@ def rest_handler(self,
                                   continue_,
                                   action,
                                   rest_device_alias=device_alias,
-                                  rest_kwargs=kwargs)
-
+                                  expected_failure=expected_failure,
+                                  extra_kwargs=kwargs)
 
 def _prompt_handler(reply):
 
@@ -237,11 +298,13 @@ def _output_query_template(self,
                            check_interval,
                            continue_,
                            action,
-                           reply=None,
                            arguments=None,
                            rest_device_alias=None,
-                           rest_kwargs={}):
-
+                           expected_failure=False,
+                           extra_kwargs=None):
+    
+    if not extra_kwargs:
+        extra_kwargs = {}
     keys = _include_exclude_list(include, exclude)
     max_time, check_interval = _get_timeout_from_ratios(
         device=device, max_time=max_time, check_interval=check_interval)
@@ -264,9 +327,9 @@ def _output_query_template(self,
                             device,
                             action,
                             arguments=arguments,
-                            reply=reply,
                             rest_device_alias=rest_device_alias,
-                            rest_kwargs=rest_kwargs)
+                            **extra_kwargs)
+
                     except SchemaEmptyParserError:
                         # add empty to proceed `include`/`exclude`/`max_time`/`check_interval`
                         output = ''
@@ -301,21 +364,21 @@ def _output_query_template(self,
                     break
 
             # failing logic in case of timeout
-            substep.failed(message)
+            if not expected_failure:
+                substep.failed(message)
+            else:
+                log.info('{} failed as expected, the step test result is set as passed'.format(action))
 
     return output
-
 
 def _send_command(command,
                   device,
                   action,
                   arguments=None,
-                  reply=None,
                   rest_device_alias=None,
-                  rest_kwargs={}):
+                  **kwargs):
 
     # sending command to get restarted if max_time
-    kwargs = {}
 
     # if api
     if action == 'api':
@@ -334,14 +397,27 @@ def _send_command(command,
 
     # if rest action
     elif action == 'rest':
-        output = getattr(rest_device_alias, command)(**rest_kwargs)
+        output = getattr(rest_device_alias, command)(**kwargs)
         log.info(output)
         return output
 
+    elif action == 'bash_console':
+
+        output_dict = {}
+        with device.bash_console(**kwargs) as bash:
+            for cmd in command:
+                bash_command_output = bash.execute(cmd, **kwargs)
+                if isinstance(bash_command_output, dict):
+                    output_dict.update(bash_command_output)
+                else:
+                    output_dict.update({cmd:bash_command_output})
+        
+        return output_dict
+
     # for everything else, just check if reply should get updated
 
-    if reply and action == 'execute':
-        kwargs.update({'reply': _prompt_handler(reply)})
+    if  'reply' in kwargs and action == 'execute':
+        kwargs.update({'reply': _prompt_handler(kwargs['reply'])})
 
     return getattr(device, action)(command, **kwargs)
 
@@ -393,7 +469,7 @@ def _verify_include_exclude(action_output,
                             key=None):
     # Checking the inclusion or exclusion and verifies result values
     # With regards to different operations for actions ('api','parse', 'learn')
-    if query_type in ['non_dq_query', 'compare_query']:
+    if query_type in ['non_dq_query']:
         # if a value exist to compare the result
         return _verify_string_query_include_exclude(action_output,
                                                     expected_value,
@@ -551,7 +627,7 @@ def _string_query_validator(right_hand_value, query):
     # if the query is of type dictionary or a list
     # the output of the parsers are of type QDict
     # hence right_hand_values that are of type
-    # QDict or parsers outputs, needs to be caste to dict
+    # QDict or parsers outputs, needs to be casted to dict
     if isinstance(query, (dict, list)):
         if isinstance(right_hand_value, (dict, QDict)):
             right_hand_value = dict(right_hand_value)

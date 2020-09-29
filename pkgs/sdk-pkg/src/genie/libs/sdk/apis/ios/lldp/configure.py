@@ -5,15 +5,21 @@ import logging
 
 log = logging.getLogger(__name__)
 
-def configure_device_lldp(device):
+def configure_lldp(device):
     """ Enables lldp on target device
         Args:
             device ('obj'): Device object
         Returns:
             None
     """
-    try:
-        device.configure('lldp run')
-    except Exception as e:
-        log.error('Failed to configure device: {}'.format(e))
-        raise(e)
+    device.configure('lldp run')
+
+
+def unconfigure_lldp(device):
+    """ Disables lldp on target device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+    """
+    device.configure('no lldp run')

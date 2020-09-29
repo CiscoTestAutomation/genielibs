@@ -169,7 +169,6 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
     Returns:
          True if there is enough space after the operation, False otherwise
     '''
-
     # Check correct arguments provided
     if (min_free_space_percent is None and required_size is None):
         raise ValueError("Either 'required_size' or 'min_free_space_percent' "
@@ -270,11 +269,11 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
                     'It is not possible to reach the target free space percentage after deleting all '
                     'unprotected files. Operation will be aborted and no file has been deleted.')
                 return False
+
         device.api.delete_unprotected_files(directory=destination,
                                             protected=protected_files,
                                             files_to_delete=to_delete,
                                             dir_output=dir_out)
-
         # after deletion verify again fail if still not enough space,
         # execute dir again since files are changed
         dir_out_after = device.execute('dir {}'.format(destination))

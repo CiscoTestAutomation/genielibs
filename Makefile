@@ -51,7 +51,7 @@ RELATED_PKGS = genie.libs.health genie.libs.clean genie.libs.conf genie.libs.ops
 RELATED_PKGS += genie.libs.filetransferutils
 DEPENDENCIES = restview psutil Sphinx wheel asynctest pysnmp
 DEPENDENCIES += setproctitle  sphinx-rtd-theme 
-DEPENDENCIES += Cython requests
+DEPENDENCIES += Cython requests ruamel.yaml
 
 # Internal variables.
 # (note - build examples & templates last because it will fail uploading to pypi

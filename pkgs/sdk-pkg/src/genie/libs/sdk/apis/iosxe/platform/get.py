@@ -224,7 +224,7 @@ def get_total_space(device, directory='', output=None):
                   format(str(e)))
         return None
     else:
-        return int(dir_output.get('dir').get(directory).get('bytes_total'))
+        return int(Dq(dir_output).get_values('bytes_total')[0])
 
 
 def get_boot_variables(device, boot_var, output=None):
@@ -609,7 +609,6 @@ def get_platform_memory_usage_detail(device,
                   format(cmd=command, msg=str(e)))
         return None
 
-    all_processes = parsed.q.get_values('process')
     all_processes = parsed.q.get_values('process')
     if isinstance(processes, list):
         for item in processes:

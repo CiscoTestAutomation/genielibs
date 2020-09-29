@@ -454,6 +454,12 @@ class Interface(BaseInterface):
         type=(None, managedattribute.test_istype(bool)),
         doc='Configure evpn multisites dci links')
 
+    fabric_forwarding_mode = managedattribute(
+        name='fabric_forwarding_mode',
+        default=None,
+        type=(None, managedattribute.test_istype(str)),
+        doc='Configure fabric forwarding mode')
+
     ip_forward = managedattribute(
         name='ip_forward',
         default=None,

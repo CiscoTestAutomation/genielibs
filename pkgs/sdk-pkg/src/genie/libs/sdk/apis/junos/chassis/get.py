@@ -34,11 +34,12 @@ def get_chassis_memory_util(device):
 
     return out.q.get_values("memory-buffer-utilization", 0)
 
-def get_chassis_cpu_util(device):
+def get_chassis_cpu_util(device, cpu_idle_section = 'cpu-idle-5sec'):
     """Returns chassis cpu utilization
 
     Args:
         device (obj): Device object
+        cpu_idle_section (str): cpu utilization, defaults to cpu-idle-5sec
 
     Returns:
         str: CPU utilization percentage
@@ -56,4 +57,4 @@ def get_chassis_cpu_util(device):
     except SchemaEmptyParserError:
         return None
 
-    return out.q.get_values("cpu-idle-5sec", 0)
+    return out.q.get_values(cpu_idle_section, 0)

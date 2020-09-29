@@ -508,6 +508,66 @@ def get_interface_queue_counters_queued_packets(device, interface, expected_queu
         return None
     return queue_counters_queued_packets
 
+def get_interface_traffic_output_pps(device: object, interface: str) -> str:
+    """Get interface output pps
+
+    Args:
+        device (object): Device object
+        interface (str): Interface to check
+
+    Returns:
+        str: Interface pps
+    """
+
+    try:
+        out = device.parse(
+            'show interfaces {interface} extensive'.format(
+                interface=interface
+            )
+        )
+    except SchemaEmptyParserError as e:
+        return None
+        
+    # Example dict
+    #     "interface-information": {
+    #         "physical-interface": [
+    #             {
+    #                 "traffic-statistics": {
+    #                     "output-pps": str
+
+    phy_ = out.q.get_values('physical-interface', 0)
+    return phy_.get('traffic-statistics').get('output-pps')
+
+def get_interface_traffic_input_pps(device: object, interface: str) -> str:
+    """Get interface input pps
+
+    Args:
+        device (object): Device object
+        interface (str): Interface to check
+
+    Returns:
+        str: Interface pps
+    """
+
+    try:
+        out = device.parse(
+            'show interfaces {interface} extensive'.format(
+                interface=interface
+            )
+        )
+    except SchemaEmptyParserError as e:
+        return None
+        
+    # Example dict
+    #     "interface-information": {
+    #         "physical-interface": [
+    #             {
+    #                 "traffic-statistics": {
+    #                     "input-pps": str
+
+    phy_ = out.q.get_values('physical-interface', 0)
+    return phy_.get('traffic-statistics').get('input-pps')
+    
 def get_interface_queue_counters_transmitted_byte_rate(device, interface, expected_queue_number):
     """ Get queue counters transmitted byte rate based on interfaces queue
 

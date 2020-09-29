@@ -33,7 +33,7 @@ class ProcessRestartLib(ProcessRestartLibNxos):
            Raises:
                pyATS Results
         '''
-        if not hasattr(self.device, 'debug_plugin'):
+        if not hasattr(self.device.custom, 'debug_plugin'):
             raise Exception('No debug plugin has been loaded on the device.')
 
         ha = self.abstract.sdk.libs.abstracted_libs.ha.HA(device=self.device,
@@ -42,8 +42,7 @@ class ProcessRestartLib(ProcessRestartLibNxos):
         State('config', r'Linux')
         State('exec', r'Linux')
 
-        ha.load_debug_plugin(self.device.debug_plugin)
-
+        ha.load_debug_plugin(self.device.custom.debug_plugin)
         try:
             self.device.execute('kill -{cm} {p}\n'.\
                                   format(p=self.previous_pid,

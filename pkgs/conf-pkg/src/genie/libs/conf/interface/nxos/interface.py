@@ -368,6 +368,13 @@ class Interface(genie.libs.conf.interface.Interface):
                 attributes.format('evpn multisite fabric-tracking'),
                 unconfig_cmd='no evpn multisite fabric-tracking')
 
+        # fabric_forwarding_mode
+        mode = attributes.value('fabric_forwarding_mode')
+        if mode:
+            configurations.append_line(
+                attributes.format('fabric forwarding mode {}'.format(mode)),
+                unconfig_cmd='no fabric forwarding mode{}'.format(mode))
+
         # ip forward
         if attributes.value('ip_forward'):
             configurations.append_line(

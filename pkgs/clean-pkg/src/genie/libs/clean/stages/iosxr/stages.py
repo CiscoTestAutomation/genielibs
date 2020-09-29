@@ -6,22 +6,25 @@ IOSXR specific clean stages
 import os
 import time
 import logging
+import re
 
 # pyATS
 from pyats import aetest
 from pyats.async_ import pcall
 from pyats.log.utils import banner
-from pyats.utils.fileutils import FileUtils
 
 # Genie
 from genie.libs import clean
 from genie.abstract import Lookup
-from .recovery import tftp_recover_from_rommon
 from ..recovery import _disconnect_reconnect
 from genie.libs.clean.utils import clean_schema
+from genie.utils.timeout import Timeout
 
 # MetaParser
 from genie.metaparser.util.schemaengine import Optional
+
+# Unicon
+from unicon.eal.dialogs import Statement, Dialog
 
 # Logger
 log = logging.getLogger()
@@ -254,9 +257,17 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
             abstract = Lookup.from_device(device, packages={'clean': clean})
             # Item is needed to be able to know in which parallel child
             # we are
+
+            # device.start only gets filled with single rp devices
+            # for multiple rp devices we need to use subconnections
+            if device.is_ha and hasattr(device, 'subconnections'):
+                start = [i.start[0] for i in device.subconnections]
+            else:
+                start = device.start
+
             result = pcall(abstract.clean.stages.recovery.recovery_worker,
-                           start=device.start,
-                           ikwargs = [{'item': i} for i, _ in enumerate(device.start)],
+                           start=start,
+                           ikwargs = [{'item': i} for i, _ in enumerate(start)],
                            ckwargs = \
                                 {'device': device,
                                  'timeout': timeout,
@@ -297,4 +308,171 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
             log.error(str(e))
             step.failed("Unable to reset config-register to 0x1922 after TFTP"
                            " boot on {}".format(device.name))
+
+
+@clean_schema({
+    Optional('image'): list,
+    Optional('packages'): list,
+    Optional('install_timeout'): int,
+    Optional('reload_timeout'): int
+})
+@aetest.test
+def install_image_and_packages(section, steps, device, image, packages,
+                           install_timeout=300, reload_timeout=900):
+    """
+    Clean yaml file schema:
+    -----------------------
+    install_image_and_packages:
+        image:
+            - <image to install> (Mandatory)
+        packages:
+            - <package to install> (Optional)
+            - <package to install> (Optional)
+        install_timeout: <timeout used for install operations, 'int', Default 300> (Optional)
+        reload_timeout: <timeout used for device reloads, 'int', Default 900> (Optional)
+
+
+    Example:
+    --------
+    install_image_and_packages:
+        image:
+            - flash:image.iso
+        packages:
+            - flash:package.rpm
+
+    Flow:
+    -----
+        Before:
+            Any
+        After:
+            copy_to_device
+    """
+
+    # Commonly used patterns
+    error_patterns = [
+        r".*Could not start this install operation.*",
+        r".*Install operation \d+ aborted.*"]
+
+    successful_operation_string = \
+        r".*Install operation (?P<id>\d+) finished successfully.*"
+
+    if ':' not in image[0]:
+        section.failed("The image provided is not in the format '<dir>:<image>'.")
+
+    with steps.start("Running install commit to clear any in progress "
+                     "installs") as step:
+
+        try:
+            device.execute("install commit")
+            device.expect(
+                [successful_operation_string],
+                timeout=install_timeout)
+        except Exception as e:
+            step.failed("The command 'install commit' failed. Reason: "
+                        "{}".format(str(e)))
+
+    with steps.start("Adding image and any provided packages to the "
+                     "install repository") as step:
+
+        # Separate directory and image
+        directory, image = image[0].replace('/', '').split(':')
+
+        # Get packages and remove directories
+        # pkgs = ' pkg1 pkg2 pkg3 ...'
+        pkgs = ''
+        for pkg in packages:
+            pkg = pkg.replace('/', '').split(':')
+            if len(pkg) == 1:
+                pkgs += ' '+pkg[0]
+            else:
+                pkgs += ' '+pkg[1]
+
+        # install add source flash: <image> <pkg1> <pkg2>
+        cmd = 'install add source {dir}: {image}{packages}'.format(
+            dir=directory, image=image, packages=pkgs)
+
+        try:
+            device.execute(
+                cmd,
+                timeout=install_timeout,
+                error_pattern=error_patterns)
+
+            out = device.expect(
+                [successful_operation_string],
+                trim_buffer=False,
+                timeout=install_timeout)
+        except Exception as e:
+            step.failed("The command '{cmd}' failed. Error: {e}"
+                        .format(cmd=cmd, e=str(e)))
+
+        out = out.match_output
+
+        # If code execution reaches here the regex has already been matched
+        # via the expect. So we know it will match again here. We just need
+        # to retrieve the operation id for the next steps.
+        p1 = re.compile(successful_operation_string)
+        for line in out.splitlines():
+            m = p1.match(line)
+            if m:
+                operation_id = m.groupdict()['id']
+                break
+
+        step.passed("The command '{cmd}' succeeded. The "
+                    "operation ID is '{operation_id}'"
+                    .format(cmd=cmd, operation_id=operation_id))
+
+    with steps.start("Activating operation ID {}".format(operation_id)) as step:
+
+        cmd = 'install activate id {id}'.format(id=operation_id)
+
+        install_activate_dialog = Dialog([
+            Statement(pattern='.*This install operation will reload the '
+                              'system\, continue\?.*\[yes\:no\]\:\[yes\].*',
+                      action='sendline(yes)',
+                      loop_continue=True,
+                      continue_timer=False)])
+
+        try:
+            device.execute(
+                cmd,
+                reply=install_activate_dialog,
+                timeout=reload_timeout,
+                error_pattern=error_patterns)
+        except Exception as e:
+            step.failed("Attempting to activate install id '{id}' "
+                        "failed. Error: {e}"
+                        .format(id=operation_id, e=str(e)))
+
+    with steps.start("Reconnecting to '{dev}'".format(
+            dev=device.name)) as step:
+
+        timeout = Timeout(reload_timeout, 60)
+        while timeout.iterate():
+            timeout.sleep()
+            device.destroy()
+
+            try:
+                device.connect(learn_hostname=True)
+            except Exception as e:
+                connection_error = e
+                log.info("Could not connect to {dev}"
+                         .format(dev=device.hostname))
+            else:
+                step.passed("Connected to {dev}"
+                            .format(dev=device.hostname))
+
+        step.failed("Could not connect to {dev}. Error: {e}"
+                    .format(dev=device.hostname, e=str(connection_error)))
+
+    with steps.start("Completing install") as step:
+
+        try:
+            device.execute("install commit")
+
+            device.expect(
+                [successful_operation_string],
+                trim_buffer=False,
+                timeout=install_timeout)
+        except Exception as e:
+            step.failed("The command 'install commit' failed. Reason: {}".format(str(e)))
 

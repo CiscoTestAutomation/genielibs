@@ -2376,3 +2376,211 @@ def disable_clear_traffic(section, clear_stats_time=10):
              "for enabling check the trigger YAML")
 
     return
+
+def delete_configuration(section, devices, templates_dir=None, template_name=None, jinja2_parameters=None, exclude_devices=None):
+    
+    '''
+    Delete configuration on device as processors. 
+    Will removing configuration by passing arguments in Jinja2 template
+ 
+    Can be controlled via sections parameters which is provided by the datafile
+
+    Example:
+        sections:
+            Setup:
+                processors:
+                    pre:
+                        delete_configuration:
+                            method: genie.libs.sdk.libs.abstracted_libs.processors.delete_configuration
+                                parameters:
+                                    templates_dir: Directory path where Jinja2 template is saved
+                                    template_name: Template name in templates_dir directory
+                                    jinja2_parameters:
+                                        learn_interface: 'interface_list' # Key is flag to check learn interface. Value is the variable name in template
+                                        host_name: Hostname # Optional or any other arguments required in Jinja2 template
+                                    devices: Optional -> When none, will try to fetch all devices from testbed yaml file.
+                                        all: # In case need to apply configuration on all devices
+                                            templates_dir: Directory path where Jinja2 template is saved
+                                            template_name: Template name in templates_dir directory
+                                            jinja2_parameters: # Passing Jinja2 parameters
+                                                learn_interface: 'interface_list' # Key is flag to check learn interface. Value is the variable name in template
+                                                host_name: Hostname # Optional or any other arguments required in Jinja2 template
+                                        GenieRouter: # Device
+                                            templates_dir: Directory path where Jinja2 template is saved
+                                            template_name: Template name in templates_dir directory
+                                            jinja2_parameters: # Passing Jinja2 parameters
+                                                learn_interface: 'interface_list' # Key is flag to check learn interface. Value is the variable name in template
+                                                host_name: Hostname # Optional or any other arguments required in Jinja2 template
+    Args:
+        section (`obj`) : Aetest Subsection object.
+        Parameters: Parameters passed from trigger data file.
+            devices:
+                templates_dir: Directory path where Jinja2 template is saved
+                template_name: Template name in templates_dir directory
+                jinja2_parameters:
+                    learn_interface: 'interface_list' # Key is flag to check learn interface. Value is the variable name in template
+                    host_name: Hostname # Optional or any other arguments required in Jinja2 template
+
+    Returns:
+        AETEST results
+
+    Raises:
+        None
+    '''
+
+    log.info(banner("processor: 'delete_configuration'"))
+
+    # Initialize testbed object
+    testbed = section.parameters['testbed']
+    
+    device_config = {}
+    for name, dev in devices.items():
+        if name == 'all':
+            for testbed_device in list(testbed.devices.keys()):
+                device_dict = device_config.setdefault(testbed_device, {})
+                templates_dir_local = dev.get('templates_dir', templates_dir)
+                template_name_local = dev.get('template_name', template_name)
+                jinja2_parameters_local = dev.get('jinja2_parameters', {} if not jinja2_parameters else jinja2_parameters)
+                device_dict.update({'templates_dir': templates_dir_local})
+                device_dict.update({'template_name': template_name_local})
+                device_dict.update({'jinja2_parameters': jinja2_parameters_local})
+        else:
+            device_dict = device_config.setdefault(name, {})
+            templates_dir_local = dev.get('templates_dir', templates_dir)
+            template_name_local = dev.get('template_name', template_name)
+            jinja2_parameters_local = dev.get('jinja2_parameters', {} if not jinja2_parameters else jinja2_parameters)
+            device_dict.update({'templates_dir': templates_dir_local})
+            device_dict.update({'template_name': template_name_local})
+            device_dict.update({'jinja2_parameters': jinja2_parameters_local})
+
+    # Loop each devices passed in datafile with it's parameters
+    for name, dev in device_config.items():
+        
+        if exclude_devices and name in exclude_devices:
+            log.info("{dev} is excluded".format(dev=name))
+            continue
+        
+        log.info("Executing 'delete_configuration' processor on '{dev}'"
+                 .format(dev=name))
+
+        if name not in testbed.devices:
+            log.warning("Skipping '{dev}' as it does not exist in the testbed"
+                        .format(dev=name))
+            continue
+        
+        # Find device from testbed yaml file based on device name
+        device = testbed.devices[name]
+
+        # Check if device is connected
+        if not device.is_connected():
+            log.warning("Skipping '{dev}' as it is not connected"
+                        .format(dev=name))
+            continue
+
+        try:
+            # Check if templates_dir and template_name is passed, else fail the section
+            templates_dir_local = dev.get('templates_dir', templates_dir)
+            template_name_local = dev.get('template_name', template_name)
+            log.info("loading config file {}/{}".format(templates_dir_local,template_name_local))
+            
+            # Initialize Jinja2 parameters
+            jinja2_parameters_local = dev.get('jinja2_parameters', {} if not jinja2_parameters else jinja2_parameters).copy()
+            jinja2_parameters_local.update({'templates_dir': templates_dir_local})
+            jinja2_parameters_local.update({'template_name': template_name_local})
+            
+            # Check if need to learn interfaces from yaml file
+            interface_learn_name = jinja2_parameters_local.pop('interface_learn', False)
+            if interface_learn_name:
+                interface_list = []
+                for interface in device.interfaces:
+                    interface_list.append(interface)
+                jinja2_parameters_local.update({interface_learn_name: interface_list})
+                log.info('Interfaces found on device {}: {}'.format(
+                    device.name, interface_list))
+            device.api.configure_by_jinja2(**jinja2_parameters_local)
+        except Exception as e:
+            section.failed(
+                "Failed to configure the device {} with the error: {}".format(
+                    device.name, str(e)))
+    
+def configure_replace(section, devices, timeout=60):
+    '''
+    Configure replace device as processors. Will replace device configuration based on file_name and file_location
+    provided.
+ 
+    Can be controlled via sections parameters which is provided by the datafile
+
+    Example:
+        sections:
+            Cleanup:
+                processors:
+                    post: # Can set pre/post based on requirement
+                        configure_replace:
+                            method: genie.libs.sdk.libs.abstracted_libs.processors.configure_replace
+                            parameters:
+                                timeout: 60. Default timeout value for all devices.
+                                devices:
+                                    GenieRouter: # Device
+                                        file_location: Config file location
+                                        file_name: Config file name
+                                        timeout: 300. Timeout value for particular device.
+    Args:
+        section (`obj`) : Aetest Subsection object.
+        devices (`list`): List of devices from sections
+        timeout (`int`): Timeout values for all devices. Default is 60. 
+
+    Returns:
+        AETEST results
+
+    Raises:
+        None
+    '''
+
+    log.info(banner("processor: 'configure_replace'"))
+
+    # Initialize testbed object
+    testbed = section.parameters['testbed']
+
+    # Loop each devices passed in datafile with it's parameters
+    for name, dev in devices.items():
+        log.info("Executing 'configure_replace' processor on '{dev}'"
+                 .format(dev=name))
+        
+        if name not in testbed.devices:
+            log.warning("Skipping '{dev}' as it does not exist in the testbed"
+                        .format(dev=name))
+            continue
+        
+        # Find device from testbed yaml file based on device name
+        device = testbed.devices[name]
+
+        # Check if device is connected
+        if not device.is_connected():
+            log.warning("Skipping '{dev}' as it is not connected"
+                        .format(dev=name))
+            continue
+
+        try:
+            file_name = None
+            file_location = None
+            lookup = Lookup.from_device(device)
+            if 'file_location' in dev:
+                file_location = dev['file_location']
+            else:
+                file_location = lookup.sdk.libs.\
+                    abstracted_libs.subsection.get_default_dir(
+                        device=device)
+                if 'file_name' not in dev:
+                    log.error('Missing file_name for device {}'.format(name))
+                    continue
+            if 'file_name' in dev:
+                file_name = dev['file_name']
+            
+            # Call configure_replace method based on device os
+            lookup.sdk.libs.abstracted_libs.subsection.configure_replace(
+                device, file_location, timeout=dev.get(
+                    'timeout', timeout), file_name=file_name)
+                    
+        except Exception as e:
+            section.failed("Failed to replace config : {}".format(str(e)))
+        log.info("Configure replace is done for device {}".format(name))

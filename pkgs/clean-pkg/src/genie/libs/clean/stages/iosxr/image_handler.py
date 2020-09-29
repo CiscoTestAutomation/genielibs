@@ -8,3 +8,11 @@ class ImageHandler(IosxeImageHandler):
 
     def __init__(self, device, images, *args, **kwargs):
         super().__init__(device, images, *args, **kwargs)
+
+    def update_install_image_and_packages(self):
+        ''' Update clean stage 'install_image_and_packages' with
+            package information
+        '''
+        install_packages = self.device.clean.setdefault('install_image_and_packages', {})
+        install_packages.update({'image': self.images})
+        install_packages.update({'packages': self.packages})

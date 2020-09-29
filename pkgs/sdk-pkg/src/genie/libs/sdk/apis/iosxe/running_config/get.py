@@ -184,3 +184,61 @@ def get_config_commands_from_running_config(
             config_commands.append(line)
 
     return config_commands
+
+def get_valid_config_from_running_config(device, exclude=None, begin='version'):
+    """ Returns a configuration from 'show running-config | begin version'.
+        The API will exclude any configuration and sub configuration that
+        matches regex from exclude. The returned string can be used to
+        configure a device.
+
+        Args:
+            device ('obj'): Device to run on
+            exclude ('str'): Regex of config to exclude
+            begin ('str'): Begin command for show run
+
+        Returns:
+            String of configuration
+    """
+    # Check if regex is valid before running command because show run is slow
+    if exclude:
+        try:
+            exclude = re.compile(exclude)
+        except Exception:
+            log.warning("'{}' is not a valid regex".format(exclude))
+            return None
+
+    if begin:
+        cmd = "show running-config | begin {}".format(begin)
+    else:
+        cmd = "show running-config"
+    out = device.execute(cmd)
+
+    new_out = ''
+    excluded_indent = None
+
+    # Remove any noise from show run command
+    out = out.split('Building configuration...')[-1]
+
+    for line in out.splitlines():
+        if not line or line.strip() == 'end':
+            continue
+
+        if exclude:
+            current_indent = len(line) - len(line.lstrip(' '))
+
+            if excluded_indent is not None:
+                if current_indent > excluded_indent:
+                    continue
+                else:
+                    excluded_indent = None
+
+            if exclude.match(line):
+                # Get current indentation so we can remove config
+                # that is a sub configuration (indented more)
+                excluded_indent = len(line) - len(line.lstrip(' '))
+                continue
+
+        new_out += line + '\n'
+
+    return new_out
+

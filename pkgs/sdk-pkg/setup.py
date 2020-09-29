@@ -47,7 +47,7 @@ def version_info(*paths):
 # compute version range
 version = find_version('src', 'genie', 'libs', 'sdk', '__init__.py')
 
-install_requires = []
+install_requires = ['ruamel.yaml']
 
 # launch setup
 setup(
@@ -126,8 +126,7 @@ setup(
                 'Sphinx',
                 'sphinxcontrib-napoleon',
                 'sphinx-rtd-theme',
-                'xmltodict',
-                'ruamel.yaml'],
+                'xmltodict'],
     },
 
     # external modules

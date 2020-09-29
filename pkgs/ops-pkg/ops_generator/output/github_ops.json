@@ -615,6 +615,13 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/ios/platform.py#L6"
     },
     "iosxe": {
+      "asr900": {
+        "class_name": "Platform",
+        "doc": "Platform Ops Object",
+        "module_name": "platform.platform",
+        "uid": "platform",
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/asr900/platform.py#L13"
+      },
       "c9500": {
         "class_name": "Platform",
         "doc": "Platform Ops Object",
@@ -812,6 +819,7 @@
     "asr1k",
     "c3850",
     "junos",
+    "asr900",
     "c9500"
   ],
   "vlan": {

@@ -79,7 +79,8 @@ def verify_num_images_provided(image_list, expected_images=1):
         return True
 
 
-def _apply_configuration(device, configuration=None, file=None, timeout=60):
+def _apply_configuration(device, configuration=None, configuration_from_file=None,
+                         file=None, timeout=60):
 
     # It is currently needed as hostname can be changed while applying
     # configuration. Unicon will add an enhnacement to learn hostname
@@ -87,7 +88,11 @@ def _apply_configuration(device, configuration=None, file=None, timeout=60):
 
     # Apply raw configuration strings or copy file provided to running-config
     try:
-        if configuration and not file:
+        if configuration or configuration_from_file and not file:
+            if configuration_from_file:
+                with open(configuration_from_file, 'r') as f:
+                    configuration = f.read()
+
             log.info("Apply raw configuration provided to device {}".\
                      format(device.name))
 
@@ -324,7 +329,11 @@ def validate_clean(clean_dict, testbed_dict):
                       "the testbed file.")
         )
 
-    clean_json = load_clean_json()
+    try:
+        clean_json = load_clean_json()
+    except Exception as e:
+        exceptions.append(e)
+
     from genie.libs.clean.stages.recovery import recovery_processor
 
     for dev in clean_dict.get('devices', {}):
@@ -337,7 +346,7 @@ def validate_clean(clean_dict, testbed_dict):
 
         try:
             dev = loaded_tb.devices[dev]
-        except KeyError as e:
+        except Exception as e:
             warnings.append(
                 "The device {dev} specified in the clean yaml does "
                 "not exist in the testbed.".format(dev=e))
@@ -348,13 +357,20 @@ def validate_clean(clean_dict, testbed_dict):
         # update stages with image
         if clean_data.get('images'):
             setattr(dev, 'clean', clean_data)
-            # Get abstracted ImageHandler class
-            abstract = Lookup.from_device(dev, packages={'clean': clean})
-            ImageHandler = abstract.clean.stages.image_handler.ImageHandler
+            try:
+                # Get abstracted ImageHandler class
+                abstract = Lookup.from_device(dev, packages={'clean': clean})
+                ImageHandler = abstract.clean.stages.image_handler.ImageHandler
+                image_handler = ImageHandler(dev, dev.clean['images'])
+                initialize_clean_sections(image_handler, clean_data['order'])
+            except Exception as e:
+                # If the device does not have custom.abstraction defined
+                # then we cannot load the correct stages to test the
+                # correct schema. Skip this device.
+                exceptions.append(Exception(dev.name+': '+str(e)))
+                schema.update({Any(): Any()})
+                continue
 
-            # Image handler
-            image_handler = ImageHandler(dev, dev.clean['images'])
-            initialize_clean_sections(image_handler, clean_data['order'])
 
         for section in clean_data:
             # ignore sections that aren't true stages
@@ -372,10 +388,18 @@ def validate_clean(clean_dict, testbed_dict):
 
             # Load it up so we can grab the schema from the stage
             # If source isnt provided then check if it is inside the clean json
-            if 'source' not in clean_data:
-                task = get_clean_function(section, clean_json, dev)
-            else:
-                task = load_class(clean_data, dev)
+            try:
+                if 'source' not in clean_data:
+                    task = get_clean_function(section, clean_json, dev)
+                else:
+                    task = load_class(clean_data, dev)
+            except Exception as e:
+                # Stage cannot be found. Allow any schema to prevent schema error
+                # and skip this stage
+                exceptions.append(str(e))
+                schema.update({section: Any()})
+                continue
+
 
             # Add the stage schema to the base schema
             if hasattr(task, 'schema'):
@@ -405,4 +429,3 @@ def remove_string_from_image(images, string):
     regex = re.compile(r'.*{}.*'.format(string))
 
     return [item.replace(string, "") if regex.match(item) else item for item in images]
-

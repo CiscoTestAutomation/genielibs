@@ -33,11 +33,13 @@ from genie.conf.base import Device
 from genie.harness._commons_internal import _error_patterns
 from genie.utils import Dq
 from genie.libs.sdk.libs.utils.normalize import merge_dict
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # unicon
 from unicon.eal.dialogs import Dialog, Statement
 from unicon.core.errors import ConnectionError
 from unicon.plugins.generic.statements import default_statement_list
+from unicon import Connection
 
 log = logging.getLogger(__name__)
 
@@ -635,6 +637,66 @@ def analyze_rate(rate):
     else:
         raise Exception("The provided rate is not in the correct "
                         "format in the trigger data file")
+
+def unit_convert(value, unit=None):
+    """ Get value with given corresponding unit.
+        If not unit is given, value will be converted to value without unit
+
+        Args:
+            value (`str`): value with unit like `10M`
+            unit (`str`): unit type like `K`, `M`, `G`
+
+        Returns:
+            new_value (`float`): value after converting to given unit
+
+        Examples:
+            >>> dev.api.unit_convert('123K', 'M')
+            0.123
+
+            >>> dev.api.unit_convert('100M', 'K')
+            100000.0
+
+            >>> dev.api.unit_convert('100M')
+            100000000.0
+    """
+
+    if unit not in ['K', 'M', 'G'] and unit is not None:
+        raise Exception('Provided unit `{u}` is incorrect. Please provide either `K`, `M` or `G`.'.format(u=unit))
+
+    parse = re.compile(
+        r"^(?P<original_value>[0-9\.]+)(?P<original_unit>[A-Za-z]+)?$")
+    m = parse.match(value)
+    if m:
+        parsed_rate = m.groupdict()["original_value"]
+        try:
+            original_value = int(parsed_rate)
+        except BaseException:
+            original_value = float(parsed_rate)
+
+        new_value = None
+        if m.groupdict()["original_unit"]:
+            value_unit = m.groupdict()["original_unit"]
+            if value_unit not in ['K', 'M', 'G']:
+                raise Exception('Unit with value `{v}` is incorrect. Please provide either `K`, `M` or `G`.'.format(v=value_unit))
+            if "M" == value_unit:
+                new_value = original_value * 1000000
+            elif "K" == value_unit:
+                new_value = original_value * 1000
+            elif "G" == value_unit:
+                new_value = original_value * 1000000000
+
+        if new_value:
+            if "M" == unit:
+                new_value = new_value / 1000000
+            elif "K" == unit:
+                new_value = new_value / 1000
+            elif "G" == unit:
+                new_value = new_value / 1000000000
+
+        return float(new_value)
+    else:
+        raise Exception("The provided value `{v}` is incorrect "
+                        "format. Please make sure the value is like `10M`.".format(v=value))
 
 
 def reconnect_device_with_new_credentials(
@@ -2410,3 +2472,149 @@ def verify_pcap_packet(pcap_location, expected_src_address=None, expected_dst_ad
             return True
 
     return False
+
+def verify_login_with_credentials(device,
+                                  hostname,
+                                  username,
+                                  password,
+                                  start_cmd,
+                                  learn_hostname=False,
+                                  proxy_connections=None,
+                                  invert=False):
+    """
+        Verify device is logged in with correct credentials and
+        can not be logged in with wrong credentials when start command is given.
+
+        Args:
+            device('obj'): device to use
+            hostname('str') : hostname
+            username('str') : username
+            password('str'): password
+            start_cmd('list'): list of commands to execute
+            learn_hostname('bool', optional): learn hostname. Default to False.
+            proxy_connections('str', optional): proxy_connections. Default to None.
+            invert ('bool', optional): True if device can't be logged in with wrong credentials. Default to False.
+
+        Returns:
+            Boolean
+        Raises:
+            N/A
+    """
+
+    op = operator.eq if not invert else operator.ne
+
+    try:
+        terminal = Connection(hostname=hostname, learn_hostname=learn_hostname,
+                              start=start_cmd,
+                              credentials={'default': {'username': username, 'password': password}},
+                              os=device.os, timeout=300, prompt_recovery=True, proxy_connections=proxy_connections)
+        terminal.connect()
+    except Exception as ex:
+        log.warning(f"Executing {start_cmd} with {username}(username) and {password}(password) "
+                    f"failed with error {ex}")
+
+    return op(terminal.connected, True)
+
+def get_connection(device,
+                      hostname,
+                      username,
+                      password,
+                      start_cmd,
+                      learn_hostname=False,
+                      proxy_connections=None):
+    """
+        Get connection object.
+
+        Args:
+            device('obj'): device to use
+            hostname('str') : hostname
+            username('str') : username
+            password('str'): password
+            start_cmd('list'): list of commands to execute
+            learn_hostname('bool', optional): learn hostname. Default to False.
+            proxy_connections('str', optional): proxy_connections. Default to None.
+
+        Returns:
+            Connection object
+        Raises:
+            N/A
+    """
+
+    try:
+        terminal = Connection(hostname=hostname, learn_hostname=learn_hostname,
+                              start=start_cmd,
+                              credentials={'default': {'username': username, 'password': password}},
+                              os=device.os, timeout=300, prompt_recovery=True, proxy_connections=proxy_connections)
+    except Exception as ex:
+        log.warning(f"Get connection object for {start_cmd} with {username}(username) and {password}(password) "
+                    f"failed with error {ex}")
+
+    return terminal
+
+def get_system_users(device):
+    """ Get list of users via show system user
+
+        Args:
+            device ('obj'): Device object
+
+        Returns:
+            result (`list`): Get list of username and ip address pairs
+
+        Raises:
+            N/A
+    """
+    user_list = []
+
+    try:
+        output = device.parse('show system users')
+    except SchemaEmptyParserError:
+        return user_list
+
+    # schema = {
+    #     "user-table": {
+    #         "user-entry": [
+    #             {
+    #                 "command": str,
+    #                 "from": str,
+    #                  ...
+
+    user_table = Dq(output).get_values('user-entry')
+    if user_table:
+        for user in user_table:
+            user_list.append({user['user']: user['from']})
+    return user_list
+
+def get_system_connections_sessions(device):
+    """ Get list of system connections via show system connections
+
+        Args:
+            device ('obj'): Device object
+
+        Returns:
+            result (`list`): Get list of system connection sessions
+
+        Raises:
+            N/A
+    """
+    connections = []
+
+    try:
+        output = device.parse('show system connections')
+    except SchemaEmptyParserError:
+        return connections
+
+    # "output": {
+    #     "connections-table": [
+    #         {
+    #             "proto": str,
+    #             "recv-Q": str,
+    #             "send-Q": str,
+    #             "local-address": str,
+    #             "foreign-address": str,
+    #             "state": str,
+    #         }
+    #         ...
+
+    connections = Dq(output).get_values('connections-table')
+    return connections
+

@@ -157,9 +157,15 @@ def _connectivity(device, console_activity_pattern=None, break_count=10,
         abstract = Lookup.from_device(device, packages={'clean': clean})
         # Item is needed to be able to know in which parallel child
         # we are
+
+        if device.is_ha and hasattr(device, 'subconnections'):
+            start = [i.start[0] for i in device.subconnections]
+        else:
+            start = device.start
+
         result = pcall(abstract.clean.stages.recovery.recovery_worker,
-                       start=device.start,
-                       ikwargs = [{'item': i} for i, _ in enumerate(device.start)],
+                       start=start,
+                       ikwargs = [{'item': i} for i, _ in enumerate(start)],
                        ckwargs = \
                             {'device': device,
                              'console_activity_pattern': console_activity_pattern,

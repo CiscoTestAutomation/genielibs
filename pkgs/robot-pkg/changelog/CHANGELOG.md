@@ -1,5 +1,6 @@
 # 2020
 
+* [September](2020/SEPTEMBER.md)
 * [August](2020/AUGUST.md)
 * [July](2020/JULY.md)
 * [June](2020/JUNE.md)
@@ -7,6 +8,7 @@
 * [April](2020/APRIL.md)
 * [February](2020/FEBRUARY.md)
 * [January](2020/JANUARY.md)
+
 # 2019
 
 * [December](2019/DECEMBER.md)
@@ -19,7 +21,6 @@
 * [March](2019/MARCH.md)
 * [February](2019/FEBRUARY.md)
 * [January](2019/JANUARY.md)
-
 
 # 2018
 
