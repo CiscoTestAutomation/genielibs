@@ -92,13 +92,13 @@ class Interface(genie.libs.conf.interface.Interface):
             self = super().__new__(factory_cls, *args, **kwargs)
         return self
 
-    
+
 
     switchport = managedattribute(
         name='switchport',
         default=None,
         type=(None, managedattribute.test_istype(bool)),
-        doc='Configure switchport')    
+        doc='Configure switchport')
 
     sw_trunk_allowed_vlan = managedattribute(
         name='sw_trunk_allowed_vlan',
@@ -193,7 +193,7 @@ class Interface(genie.libs.conf.interface.Interface):
         if attributes.value('vrf_downstream'):
             configurations.append_line(
                 attributes.format('vrf forwarding {vrf.name}'
-                                  ' downstream {vrf_downstream}'))            
+                                  ' downstream {vrf_downstream}'))
         else:
             configurations.append_line(
                 attributes.format('vrf forwarding {vrf.name}'))
@@ -208,7 +208,7 @@ class Interface(genie.libs.conf.interface.Interface):
         # iosxe: interface {name} / bandwidth <0-4294967295>
         configurations.append_line(attributes.format('bandwidth {bandwidth}'))
 
-        # iosxe: interface {name} / ip address 1.1.1.1 255.255.255.255 
+        # iosxe: interface {name} / ip address 1.1.1.1 255.255.255.255
         configurations.append_line(
             attributes.format('ip address {ipv4.ip} {ipv4.netmask}'))
 
@@ -351,7 +351,7 @@ class Interface(genie.libs.conf.interface.Interface):
                     configurations.append_line(
                         attributes.format('no switchport'),
                         unconfig_cmd='switchport')
-        
+
             #  location might be reconsidered
             # iosxe: interface {name} / switchport mode trunk
             switchport = attributes.value('switchport_mode')
@@ -430,7 +430,7 @@ class PhysicalInterface(Interface, genie.libs.conf.interface.PhysicalInterface):
             configurations.submode_unconfig()
 
         super()._build_config_interface_submode(configurations, attributes, unconfig)
-        
+
         # ----- LagMemberInterface configure ---------#
 
         # channel-group <lag_bundle_id> mode auto [non-silent]
@@ -563,14 +563,20 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
         'FastEthernet',
         'gigabitethernet',
         'GigabitEthernet',
+        'tengige',
+        'TenGigE',
         'tengigabitethernet',
         'TenGigabitEthernet',
+        'twentyfivegige',
+        'TwentyFiveGigE',
         'twentyfivegigabitethernet',
         'TwentyFiveGigabitEthernet',
         'hundredgige',
         'HundredGigE',
         'hundredgigabitethernet',
         'HundredGigabitEthernet',
+        'fortygige',
+        'FortyGigE',
         'fortygigabitethernet',
         'FortyGigabitEthernet',
         'fourhundredgige',
@@ -588,7 +594,7 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
         attributes = AttributesHelper(self, attributes)
         configurations = CliConfigBuilder(unconfig=unconfig)
 
-        
+
         configurations.append_block(super().build_config(apply=False,
                                                          attributes=attributes,
                                                          unconfig=unconfig,
@@ -602,7 +608,7 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
                              cli_config=configurations)
 
     def build_unconfig(self, apply=True, attributes=None, **kwargs):
-    
+
         # physical interfaces unconfigured
         attributes_unconfig = AttributesHelper(self, attributes)
         if attributes_unconfig.iswildcard:
@@ -976,7 +982,7 @@ class TunnelTeInterface(TunnelInterface, genie.libs.conf.interface.TunnelTeInter
         # iosxe: interface tunnel1 / tunnel destination 1.2.3.4
         configurations.append_line(attributes.format('tunnel destination {destination}'))
 
-        # iosxe: interface tunnel1 / tunnel mpls traffic-eng autoroute announce 
+        # iosxe: interface tunnel1 / tunnel mpls traffic-eng autoroute announce
         if attributes.value('autoroute_announce'):
             configurations.append_line('tunnel mpls traffic-eng autoroute announce')
 
