@@ -22,12 +22,17 @@ def change_configuration_using_jinja_templates(device, template, **kwargs):
         Raises:
             SubCommandFailure: Failed configuring device
     """
-
+    timeout = kwargs.pop('timeout', None)
     out = [x.lstrip() for x in template.render(**kwargs).splitlines()]
 
     try:
-        device.configure(out)
-    except SubCommandFailure as e:
+        if timeout:
+            log.info('{} timeout value used for device: {}'.format(
+                timeout, device.name))
+            device.configure(out, timeout=timeout)
+        else:
+            device.configure(out)
+    except SubCommandFailure as e: 
         raise SubCommandFailure(
             "Failed in applying the following "
             "configuration:\n{config}, error:\n{e}".format(config=out, e=e)

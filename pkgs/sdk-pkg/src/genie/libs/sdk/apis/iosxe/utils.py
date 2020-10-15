@@ -341,3 +341,90 @@ def set_clock(device, datetime):
         device.execute("clock set {}".format(datetime))
     except Exception as e:
         raise Exception("{}".format(e))
+
+
+def scp(device,
+        local_path,
+        remote_path,
+        remote_device,
+        remote_user=None,
+        remote_pass=None,
+        remote_via=None,
+        vrf=None):
+    """ copy files from local device to remote device via scp
+
+        Args:
+            device (`obj`) : Device object (local device)
+            local_path (`str`): path with file on local device
+            remote_device (`str`): remote device name
+            remote_path (`str`): path with/without file on remote device
+            remote_user (`str`): use given username to scp
+                                 Default to None
+            remote_pass (`str`): use given password to scp
+                                 Default to None
+            remote_via (`str`) : specify connection to get ip
+                                 Default to None
+            vrf (`str`): use vrf where scp find route to remote device
+                                 Default to None
+        Returns:
+            result (`bool`): True if scp successfully done 
+    """
+    # convert from device name to device object
+    remote_device = device.testbed.devices[remote_device]
+    # set credential for remote device
+    username, password = remote_device.api.get_username_password()
+    if remote_user:
+        username = remote_user
+    if remote_pass:
+        password = remote_pass
+
+    # find ip for remote server from testbed yaml
+    if remote_via:
+        remote_device_ip = str(remote_device.connections[remote_via]['ip'])
+    else:
+        remote_device_ip = str(
+            remote_device.connections[remote_device.via]['ip'])
+
+    # complete remote_path with credential and ip
+    if remote_path[-1] != '/':
+        remote_path += '/'
+    remote_path = "scp://{id}@{ip}/{rp}".format(id=username,
+                                                ip=remote_device_ip,
+                                                rp=remote_path)
+
+    s1 = Statement(pattern=r".*Address or name of remote host",
+                   action="sendline()",
+                   args=None,
+                   loop_continue=True,
+                   continue_timer=False)
+    s2 = Statement(pattern=r".*Destination username",
+                   action="sendline()",
+                   args=None,
+                   loop_continue=True,
+                   continue_timer=False)
+    s3 = Statement(pattern=r".*Destination filename",
+                   action="sendline()",
+                   args=None,
+                   loop_continue=True,
+                   continue_timer=False)
+    s4 = Statement(pattern=r".*Password:",
+                   action="sendline({pw})".format(pw=password),
+                   args=None,
+                   loop_continue=True,
+                   continue_timer=False)
+    dialog = Dialog([s1, s2, s3, s4])
+
+    try:
+        if vrf:
+            out = device.execute("copy {lp} {rp} vrf {vrf}".format(
+                lp=local_path, rp=remote_path, vrf=vrf),
+                                 reply=dialog)
+        else:
+            out = device.execute("copy {lp} {rp}".format(lp=local_path,
+                                                         rp=remote_path),
+                                 reply=dialog)
+    except Exception as e:
+        raise Exception("{}".format(e))
+
+    # return True/False depending on result
+    return 'bytes copied in' in out

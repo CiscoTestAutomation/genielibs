@@ -1,0 +1,6 @@
+--------------------------------------------------------------------------------
+                                Fix
+--------------------------------------------------------------------------------
+* Junos
+    * Modified get_rsvp_hello_sent
+        * Returns a dictionary with last_changed_time and hello_sent value

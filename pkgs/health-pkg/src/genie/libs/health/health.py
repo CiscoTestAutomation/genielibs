@@ -8,6 +8,7 @@ from pyats.aetest.steps import Steps
 
 # Genie
 from genie.utils import Dq
+from genie.conf.utils.converter import Converter
 from genie.libs.sdk.triggers.blitz.blitz import Blitz
 from genie.libs.parser.utils.common import format_output
 
@@ -99,46 +100,7 @@ class Health(Blitz):
                     new_data.append(dq_item)
         return new_data
 
-    def _check_processor_tag(self, data):
-        """
-        check `processor` key in all action in section.
-        sectionA:
-          actionA:
-            processor: pre
-          actionB:
-            processor: post
-        ATTN: above is not allowed. in the same section, `processor` should be 
-        same among actions in same section
-
-        Arguments:
-            data (`list`) : data of section
-
-        Returns:
-            data_dict (`dict`) : one of action in section from data
-            processor_flag (`str`) : processor value like `pre` for above data_dict
-        """
-        # initialize
-        data_dict = {}
-        processor_flag = ''
-
-        for item in data:
-            data_dict.update(item)
-            for api_data in item.values():
-                if 'processor' in api_data:
-                    if processor_flag:
-                        # check if no inconsistency for `processor` among actions
-                        if processor_flag != api_data['processor']:
-                            raise Exception(
-                                "All pyATS Health Check action must be executed at the same time; either all `pre`, `post`, `both` or `post_if_pre_execute` defined in the processor key"
-                            )
-                    else:
-                        processor_flag = api_data['processor']
-                # if no `processor` in health yaml, default is `both`
-                else:
-                    processor_flag = 'both'
-        return data_dict, processor_flag
-
-    def _check_all_devices_connected(self, testbed, data_dict_dq):
+    def _check_all_devices_connected(self, testbed, data):
         """
         Check if all the targeted devices are connected.
         each device will be checked. if one of devices is not connected,
@@ -146,23 +108,73 @@ class Health(Blitz):
 
         Arguments:
             testbed (`obj`) : testbed object
-            data_dict (`obj`) : Dq object for data (actions for section)
+            data   (`dict`) : data of section
         
         Returns:
-            (`bool`): True : All devices in actions are connected
-                      False : one of devices is not connected
+            dev_list (`list`): device list which is connected
 
         """
-        for dev in data_dict_dq.get_values('device'):
-            # check if device object, or not
-            if hasattr(dev, 'name'):
-                dev = dev.name
-            # check if device exists in testbed and if connected
-            if dev in testbed.devices and not testbed.devices[
-                    dev].is_connected():
-                return False
-        # all devices are connected
-        return True
+        dev_list = []
+        for each_data in data:
+            for dev in Dq(each_data).get_values('device'):
+                # check if device object, or not
+                if hasattr(dev, 'name'):
+                    dev = dev.name
+                # check if device exists in testbed and if connected
+                if dev in testbed.devices and testbed.devices[
+                        dev].is_connected():
+                    dev_list.append(dev)
+
+        return dev_list
+
+    def _find_search_target(self, section, arg_name, search_keyword,
+                            search_keywords):
+        """
+        find search target depending on arg_name (health_uids/health_groups/health_sections)
+        for `health_groups`, this function get `groups` from the triggers.
+
+        Arguments:
+            section (`obj`) : Aetest Subsection object.
+            arg_name (`str`) : `health_sections`, `health_uids` or 
+                               `health_groups`
+            search_keyword (`str`): a keyword to search
+            search_keywords (`list`): list of search keywords
+        
+        Returns:
+            search_target (`str`) : found search target depending on arg_name
+        """
+        search_target = ''
+        if arg_name == 'health_groups':
+            search_target = getattr(section, 'groups', '')
+            if not search_target:
+                search_target = getattr(section.parent, 'groups', '')
+            # add string in case section.parent.groups is None
+            # for later regex search
+            if search_target is None:
+                search_target = ''
+            if isinstance(search_target, list):
+                for st_item in search_target:
+                    search_target = st_item if re.search(
+                        search_keyword, st_item) else ''
+                    log.debug("health_groups/search_target: {uid}".format(
+                        uid=search_target))
+        elif arg_name == 'health_sections':
+            search_target = section.uid
+            log.debug("health_sections/search_target: {uid}".format(
+                uid=search_target))
+        elif arg_name == 'health_uids':
+            for kw in search_keywords:
+                if re.search(kw, section.uid):
+                    search_target = section.uid.split('.')[0]
+                    log.debug(
+                        "health_uids/search_target(section.uid): {uid}".format(
+                            uid=section.uid))
+                elif re.search(kw, section.parent.uid):
+                    search_target = section.parent.uid.split('.')[0]
+                    log.debug(
+                        "health_uids/search_target(section.parent.uid): {uid}".
+                        format(uid=section.parent.uid))
+        return search_target
 
     def _find_search_target(self, section, arg_name, search_keyword,
                             search_keywords):
@@ -220,7 +232,6 @@ class Health(Blitz):
                              data,
                              name,
                              devices_connected,
-                             processor_flag,
                              processor_targets,
                              processor_type,
                              pre_processor_result=Passed):
@@ -233,8 +244,7 @@ class Health(Blitz):
             section (`obj`): Aetest Section object
             data (`list`) : data of section
             name (`str`) : name of section in health yaml
-            devices_connected (`bool`) : if devices are connected, or not
-            processor_flag (`str`) : `pre`, `post`, `both` and etc
+            devices_connected (`list`) : list of connected devices
             processor_targets (`list`) : list of `processor_flag which ones 
                                          will be run as pre/post processors
             processor_type (`str`) : processor type `pre` or `post`
@@ -327,81 +337,96 @@ class Health(Blitz):
                     data2.append(new_data_dict[key][idx].pop())
                 data = data2
         else:
-            # remove report based on conditions
-            # - no found data based on search
-            # - devices are not connected
-            # - number of given arguments and found data are not equal
-            # - number of given arguments is not 0
-            if (not new_data_dict or not devices_connected
-                    or len(set(list_of_args)) != len(new_data_dict)) and len(
-                        set(list_of_args)) != 0:
-                processor.reporter.remove_section(id_list=processor.uid.list)
             if (not new_data_dict or len(set(list_of_args)) !=
                     len(new_data_dict)) and len(set(list_of_args)) != 0:
                 data = []
-            # if devices are not connected, delete processor from reporter
-            if not devices_connected and data:
-                processor.reporter.remove_section(id_list=processor.uid.list)
 
         # processor start message
         log.debug('{type}-processor {name} started'.format(
             name=name, type=processor_type.capitalize()))
         pre_processor_run = True
 
-        # check `processor` to control
-        if processor_flag in processor_targets:
-            # if any device is not connected, processor will be skipped
-            if devices_connected:
-                # instantiate Steps() to reset step number
-                steps = Steps()
-                result = self.dispatcher(steps, testbed, section, data, name)
 
-                log.debug('Blitz section return:\n{result}'.format(
-                    result=format_output(result)))
-                # check section result
-                log.debug('section result: {section_result}'.format(
-                    section_result=section.result.name))
-                log.debug('steps result: {steps_result}'.format(
-                    steps_result=steps.result.name))
-                if processor_type == 'pre' and steps.result != Passed and steps.result != Passx:
-                    log.info(
-                        "Pre-processor pyATS Health {name} was failed, but continue section and Post-processor"
-                        .format(name=name))
-                    # save pre-processor result
-                    pre_processor_result = steps.result
-                    return pre_processor_run, pre_processor_result
-                elif processor_type == 'post':
-                    # refrect result to section
-                    getattr(
-                        section,
-                        str(steps.result + steps.result +
-                            self.pre_processor_result))()
-                    return pre_processor_run, pre_processor_result
+        # check if `processor` tag matches processor_targets and 
+        # if device for action is connected
+        # create data2 with matched actions and override data by data2
+        data2 = []
+        for each_data in data:
+            for key in each_data.keys():
+                if each_data[key].get('processor', 'both') in processor_targets:
+                    # check if device for action is connected
+                    uut = Dq(each_data).get_values('device', 0)
+                    if uut:
+                        if isinstance(uut, str):
+                            if (testbed.devices[uut].name in devices_connected) or (testbed.devices[uut].alias in devices_connected):
+                                data2.append(each_data)
+                        else:
+                            if (uut.name in devices_connected) or (uut.alias in devices_connected):
+                                data2.append(each_data)
+                    # for action which doesn't have device
+                    else:
+                        data2.append(each_data)
+        data = data2
+        # remove section if no data
+        if not data:
+            processor.reporter.remove_section(id_list=processor.uid.list)
+        elif not new_data_flag:
+            # remove report based on conditions
+            # - no found data based on search
+            # - number of given arguments and found data are not equal
+            # - number of given arguments is not 0
+            if (not new_data_dict 
+                    or len(set(list_of_args)) != len(new_data_dict)) and len(
+                        set(list_of_args)) != 0:
+                processor.reporter.remove_section(id_list=processor.uid.list)
 
-            else:
-                if processor_type == 'pre':
-                    pre_processor_run = False
-                    # processor is skipped. but call passed to move forward     for this case
-                    log.info(
-                        "Pre-processor pyATS Health '{name}' is skipped because devices are not connected."
-                        .format(name=name))
-                    return pre_processor_run, pre_processor_result
-                elif processor_type == 'post':
-                    # for the case only pre-processors runs
-                    if section.result == pre_processor_result:
-                        log.info(
-                            'Only Pre-processor runs. Section result and Pre-processor result are different. Reflecting Post-processor result to Section.'
-                        )
-                        getattr(section,
-                                str(section.result + pre_processor_result))()
-                    log.info(
-                        "Post-processor pyATS Health '{name}' was skipped because devices are not connected."
-                        .format(name=name))
-                    return pre_processor_run, pre_processor_result
+
+        # if any device is not connected, processor will be skipped
+        if devices_connected:
+            # instantiate Steps() to reset step number
+            steps = Steps()
+            result = self.dispatcher(steps, testbed, section, data, name)
+            log.debug('Blitz section return:\n{result}'.format(
+                result=format_output(result)))
+            # check section result
+            log.debug('section result: {section_result}'.format(
+                section_result=section.result.name))
+            log.debug('steps result: {steps_result}'.format(
+                steps_result=steps.result.name))
+            if processor_type == 'pre' and steps.result != Passed and steps.result != Passx:
+                log.info(
+                    "Pre-processor pyATS Health {name} was failed, but continue section and Post-processor"
+                    .format(name=name))
+                # save pre-processor result
+                pre_processor_result = steps.result
+                return pre_processor_run, pre_processor_result
+            elif processor_type == 'post':
+                # refrect result to section
+                getattr(
+                    section,
+                    str(steps.result + steps.result +
+                        self.pre_processor_result))()
+                return pre_processor_run, pre_processor_result
         else:
-            log.info('Skipped because {name} is not {type}-processor'.format(
-                name=name, type=processor_type.capitalize()))
-            return pre_processor_run, pre_processor_result
+            if processor_type == 'pre':
+                pre_processor_run = False
+                # processor is skipped. but call passed to move forward     for this case
+                log.info(
+                    "Pre-processor pyATS Health '{name}' is skipped because devices are not connected."
+                    .format(name=name))
+                return pre_processor_run, pre_processor_result
+            elif processor_type == 'post':
+                # for the case only pre-processors runs
+                if section.result == pre_processor_result:
+                    log.info(
+                        'Only Pre-processor runs. Section result and Pre-processor result are different.Reflecting Post-processor result to Section.'
+                    )
+                    getattr(section,
+                            str(section.result + pre_processor_result))()
+                log.info(
+                    "Post-processor pyATS Health '{name}' was skipped because devices are not connected."
+                    .format(name=name))
+                return pre_processor_run, pre_processor_result
 
         return pre_processor_run, pre_processor_result
 
@@ -456,18 +481,17 @@ class Health(Blitz):
         Returns:
             None
         """
+        if 'genie' not in testbed.__module__:
+            # convert testbed from pyATS to Genie
+            testbed = Converter.convert_tb(runtime.testbed)
 
         # ---------------------
         # pre-context processor
         # ---------------------
 
-        data_dict, processor_flag = self._check_processor_tag(data=data)
-        log.debug('processor_flag: {flag}'.format(flag=processor_flag))
-
-        # check if all devices are connected
-        data_dict_dq = Dq(data_dict)
+        # get connected devices list
         devices_connected = self._check_all_devices_connected(
-            testbed, data_dict_dq)
+            testbed, data)
 
         # execute pre-processor and received result in self.pre_processor_result
         self.pre_processor_run, self.pre_processor_result = self._pre_post_processors(
@@ -477,7 +501,6 @@ class Health(Blitz):
             data,
             name,
             devices_connected,
-            processor_flag,
             processor_targets=['pre', 'both'],
             processor_type='pre')
 
@@ -491,17 +514,25 @@ class Health(Blitz):
         # post-context processor
         # ----------------------
 
+        post_if_pre_execute_flag = True
         # check `post_if_pre_execute` and if pre-processor is executed
-        if (data_dict_dq.get_values('processor', 0) == 'post_if_pre_execute'
-                and not self.pre_processor_run):
-            log.info(
-                "Post-processor pyATS Health '{name}' was skipped because required Pre-processor was not executed."
-                .format(name=name))
+        for each_data in data:
+            if Dq(each_data).get_values('processor', 0) == 'post_if_pre_execute' and not self.pre_processor_run:
+                post_if_pre_execute_flag = False
+
+        if not post_if_pre_execute_flag:
+            log.info("Post-processor pyATS Health '{name}' was skipped because required Pre-processor was not executed.".format(name=name))
+
         else:
-            # check if all devices are connected
-            data_dict_dq = Dq(data_dict)
+            if 'genie' not in testbed.__module__:
+                # convert testbed from pyATS to Genie
+                # need to convert to bring latest status from runtime again 
+                # for the case devices are connected after pre-processor
+                testbed = Converter.convert_tb(runtime.testbed)
+
+            # get connected devices list
             devices_connected = self._check_all_devices_connected(
-                testbed, data_dict_dq)
+                testbed, data)
 
             # execute post-processor
             self._pre_post_processors(
@@ -511,7 +542,6 @@ class Health(Blitz):
                 data,
                 name,
                 devices_connected,
-                processor_flag,
                 processor_targets=['post', 'post_if_pre_execute', 'both'],
                 processor_type='post',
                 pre_processor_result=self.pre_processor_result)

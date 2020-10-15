@@ -16,7 +16,6 @@ from unicon.eal.dialogs import Statement, Dialog
 # module logger
 log = logging.getLogger(__name__)
 
-
 class HA(HA_nxos):
 
     def get_debug_plugin(self, debug_plugin):
@@ -53,10 +52,17 @@ class HA(HA_nxos):
         return to_URL
 
     def _copy_temp_debug_plugin(self, debug_plugin):
+        dialog = Dialog([
+            Statement(pattern = r'^Warning\: +There +is +already +a +file +existing +with '
+                r'+this +name\. +Do +you +want +to +overwrite +\(y\/n\)\?\[n\].*$',
+                      action='sendline(y)')
+        ])
         self.device.execute('copy {dp} bootflash:debug_plugin.tmp'.format(\
-                                                              dp=debug_plugin))
+                                                              dp=debug_plugin),
+                            reply=dialog)
 
-    def load_debug_plugin(self, debug_plugin):
+
+    def load_debug_plugin(self, debug_plugin, timeout=5):
         try:
             self._copy_temp_debug_plugin(debug_plugin)
         except:
@@ -65,7 +71,15 @@ class HA(HA_nxos):
 
         self.device.state_machine.get_state('enable').add_state_pattern(
             [r'^(.*)Linux\(debug\)#\s?$'])
-        self.device.execute('load bootflash:debug_plugin.tmp', timeout=5)
+
+        output='Good'
+        
+        output = self.device.execute('load bootflash:debug_plugin.tmp', timeout=timeout)
+        
+        if 'Incompatible' in output:
+            raise Exception("Incompatible debug plugin image\n")
+        else:
+            return output
 
     def _reconnect(self, steps, timeout, sleep_disconnect=30):
         """Disconnect and reconnect to router within given timeout.

@@ -201,18 +201,12 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
             Connect
     '''
 
-    log.info("Section steps:\n1- Verify global recovery has not recovered device"
-             "\n2- Set config-register to 0x1820"
-             "\n3- Bring device down to rommon> prompt prior to TFTP boot"
-             "\n4- Begin TFTP boot"
-             "\n5- Reconnect to device after TFTP boot"
-             "\n6- Reset config-register to 0x1922")
-
-    # If the tftp boot has already ran - recovery
-    # Then do not run it again and skip this section
-    if section.parameters['common_data'].get('device_tftp_booted'):
-        section.skipped('The device recovery has already booted the device with'
-                        ' the provided tftp image - no need to do it again')
+    log.info("Section steps:"
+             "\n1- Set config-register to 0x1820"
+             "\n2- Bring device down to rommon> prompt prior to TFTP boot"
+             "\n3- Begin TFTP boot"
+             "\n4- Reconnect to device after TFTP boot"
+             "\n5- Reset config-register to 0x1922")
 
     # Set config-register to 0x1820
     with steps.start("Set config-register to 0x1820 on {}".\
@@ -429,15 +423,20 @@ def install_image_and_packages(section, steps, device, image, packages,
             Statement(pattern='.*This install operation will reload the '
                               'system\, continue\?.*\[yes\:no\]\:\[yes\].*',
                       action='sendline(yes)',
-                      loop_continue=True,
+                      loop_continue=False,
                       continue_timer=False)])
 
         try:
-            device.execute(
-                cmd,
-                reply=install_activate_dialog,
-                timeout=reload_timeout,
-                error_pattern=error_patterns)
+            # send the install cmd
+            device.sendline(cmd)
+
+            # Process the dialog that appears
+            install_activate_dialog.process(device.spawn)
+
+            # Wait for successful output
+            device.expect(
+                [successful_operation_string],
+                timeout=install_timeout)
         except Exception as e:
             step.failed("Attempting to activate install id '{id}' "
                         "failed. Error: {e}"

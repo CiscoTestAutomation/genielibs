@@ -4,10 +4,14 @@ import time
 
 from .snmp_client import SNMPClient
 
+# Unicon
+from unicon.eal.dialogs import Statement, Dialog
+
 log = logging.getLogger(__name__)
 
 
 class PowerCyclerMeta(type):
+
     def __new__(cls, name, bases, attrs):
 
         obj = super().__new__(cls, name, bases, attrs)
@@ -40,9 +44,7 @@ class PowerCycler(metaclass=PowerCyclerMeta):
 
         return super().__new__(cls)
 
-    def __init__(self,
-                 host, type, connection_type,
-                 pc_delay=0.5,
+    def __init__(self, host, type, connection_type, pc_delay=0.5,
                  log=log, *args, **kwargs):
 
         self.host = host
@@ -65,16 +67,15 @@ class PowerCycler(metaclass=PowerCyclerMeta):
 
 
 class BaseSNMPPowerCycler(PowerCycler):
+
     def __init__(self,
-                 host,
-                 type, connection_type,
                  write_community='private',
                  read_community='public',
                  snmp_version='2c',
                  snmp_port=161,
                  **kwargs):
 
-        super().__init__(host, type, connection_type, **kwargs)
+        super().__init__(**kwargs)
         self.write_community = write_community
         self.read_community = read_community
         self.version = snmp_version
@@ -132,3 +133,54 @@ class BaseSNMPPowerCycler(PowerCycler):
         for outlet in outlets:
             outlet_ids.append('.'.join([self.oid, str(outlet)]))
         return self.snmp_client.snmp_get(*outlet_ids)
+
+
+class BaseCyberSwitchingPowerCycler(PowerCycler):
+
+    def __init__(self, testbed, **kwargs):
+        super().__init__(**kwargs)
+        self.testbed = testbed
+        self.connect()
+
+    def connect(self):
+        if self.host not in self.testbed.devices:
+            raise Exception("The device '{}' does not exist in the testbed"
+                            .format(self.host))
+
+        self.host = self.testbed.devices[self.host]
+
+        self.host.connect(learn_hostname=True)
+
+    def off(self, *outlets, after=None):
+        if isinstance(after, int):
+            raise TypeError('"after" should be an int')
+
+        if after:
+            time.sleep(after)
+
+        clear_line_dialog = Dialog([
+            Statement(pattern='.*\[confirm\]',
+                      action='sendline()',
+                      loop_continue=True,
+                      continue_timer=False)])
+
+        for outlet in outlets:
+            try:
+                self.host.execute('clear line {}'.format(outlet),
+                                  reply=clear_line_dialog)
+
+                self.host.configure(['line {}'.format(outlet),
+                                     'modem dtr-active'])
+            except Exception as e:
+                raise Exception("Turning off outlet '{}' on the powercycler "
+                                "failed. Error: {}".format(outlet, str(e)))
+
+    def on(self, *outlets):
+        for outlet in outlets:
+            try:
+                self.host.configure(['line {}'.format(outlet),
+                                     'no modem dtr-active'])
+            except Exception as e:
+                raise Exception("Turning on outlet '{}' on the powercycler "
+                                "failed. Error: {}".format(outlet, str(e)))
+

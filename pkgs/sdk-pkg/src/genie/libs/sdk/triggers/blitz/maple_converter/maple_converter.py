@@ -8,18 +8,22 @@ import string
 import ruamel.yaml
 from ats.easypy import runtime
 
+from genie.testbed import load
 from genie.libs.sdk.triggers.blitz.maple_converter.cmds_converter import CMDS_Converter
 from genie.libs.sdk.triggers.blitz.maple_converter.legacy_maple_converter import Internal_Converter
 from genie.libs.sdk.triggers.blitz.maple_converter.legacy_dme_converter import Legacy_DME_Converter
 from genie.libs.sdk.triggers.blitz.maple_converter.legacy_smartman_converter import Legacy_Smartman_Converter
 
 class Converter(object):
-    def __init__(self, maple_file, new_yaml=None, testbed=None):
+
+    def __init__(self, maple_file, new_yaml=None, testbed=None, testcase_control=None, teststep_control=None):
 
         self.maple_file = maple_file
         self.new_yaml = new_yaml
         self.uids = []
-        self.testbed = runtime.testbed
+        self.testbed = load(testbed) if testbed else runtime.testbed
+        self.testcase_control = testcase_control
+        self.teststep_control = teststep_control
 
     def convert(self):
 
@@ -53,8 +57,7 @@ class Converter(object):
             # The list will be returned to job file so it would used as trigger uids
             self.uids.append(testcase_name)
 
-        blitz_file_name = self.blitz_file.replace('/','')
-        with open(blitz_file_name, 'w') as blitz_file_dumped:
+        with open(self.blitz_file, 'w') as blitz_file_dumped:
             blitz_file_dumped.write(ruamel.yaml.round_trip_dump(blitz_dict))
 
         return self.uids
@@ -97,13 +100,28 @@ class Converter(object):
         log_processor = maple_testcase_data.pop('log', None)
 
         # setting continue value for each section in blitz
-        section_continue = maple_testcase_data.pop('testcase_control', None)
-        
+        # the value can be assigned from testsuite using testcase_control keyword
+        if self.testcase_control:
+            section_continue = self.testcase_control
+
+        # if not specified there look for the equivalent in the testcase,
+        # otherwise None
+        else:
+            section_continue = maple_testcase_data.pop('testcase_control', None)
+
         # setting  continue value for each action in blitz
         # since in maple this value is generated in the step level
         # The value should be passed out further to other function that creates
         # blitz actions to add the keyword to their dictionary 
-        action_continue = maple_testcase_data.pop('teststep_control', None)
+        # the value can be assigned from testsuite using teststep_control keyword
+        if self.teststep_control:
+            action_continue = self.teststep_control
+
+        # if not specified there look for the equivalent in the testcase,
+        # otherwise None
+        else:
+            action_continue = maple_testcase_data.pop('teststep_control', None)
+
 
         # Extracting log collection data and translating it into processor
         if log_processor:
@@ -120,7 +138,14 @@ class Converter(object):
         # Major actions in maple are confirm, apply and unapply,
         # which translates to various actions in blitz.
         if 'test-steps' not in maple_testcase_data:
-            raise Exception('No test-steps provided')
+
+            if  'confirm' in maple_testcase_data.keys() or\
+                'apply' in maple_testcase_data.keys() or\
+                'unapply' in maple_testcase_data.keys() :
+
+                maple_testcase_data = {'test-steps': {'step-1':maple_testcase_data}}
+            else:
+                maple_testcase_data = {'test-steps': maple_testcase_data}
 
         # A maple testcase can have multiple sections and each section can have
         # up to 3 different action apply, confirm unapply
@@ -262,12 +287,23 @@ class Converter(object):
             sys.path.append(os.environ['MAPLE_PATH'])
 
     @property
+    def testbed_file(self):
+        return  os.path.abspath(self.testbed.testbed_file)
+
+    @property
     def blitz_file(self):
 
+        maple_script_full_path = os.path.abspath(self.maple_file)
+        maple_script_path_splited = os.path.split(maple_script_full_path)
+        blitz_script_file_name = maple_script_path_splited[1]
+        dir_name = maple_script_path_splited[0]
+        
         if not self.new_yaml:
-            return '/blitz_{}'.format(self.maple_file)
+            blitz_file_name = 'blitz_{}'.format(blitz_script_file_name)
         else:
-            return '/{}'.format(self.new_yaml)
+            blitz_file_name = self.new_yaml
+
+        return '{}/{}'.format(dir_name, blitz_file_name)
 
     def _get_value_to_replace(self, key, obj):
 

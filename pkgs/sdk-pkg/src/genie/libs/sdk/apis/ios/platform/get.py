@@ -97,6 +97,8 @@ def get_platform_logging(device,
         pass
 
     return parsed.setdefault('logs', [])
+
+    
 def get_platform_cpu_load(device,
                           command='show processes cpu',
                           processes=None,
@@ -209,3 +211,170 @@ def get_platform_cpu_load_detail(device,
                 })
 
     return cpu_load_dict
+
+
+def get_platform_memory_usage(device,
+                              command='show processes memory',
+                              processes=None,
+                              check_key='processor_pool',
+                              output=None):
+    '''Get memory usage on device
+
+        Args:
+            device         (`obj`): Device object
+            command        (`str`): Override show command
+                                    Default to `show processes memory`
+            processes     (`list`): List of processes to check
+                                    If both processes and check_key are given,
+                                    processes are preferred.
+            check_key      (`str`): Key to check in parsed output
+                                    Default to `processor_pool`
+            output         (`str`): Output of show command
+        Returns:
+            memory_usage (`float`): memory usage on the device (percentage)
+                                    If multiple processes are given, returns average.
+    '''
+
+    memory_usage = 0
+
+    try:
+        parsed = device.parse(command, output=output)
+    except SchemaEmptyParserError as e:
+        log.error("Command '{cmd}' did not return any output\n{msg}".\
+                  format(cmd=command, msg=str(e)))
+        return None
+
+    if processes:
+        count = 0
+        memory_holding = 0
+        for ps_item in processes:
+            # To get process id based on check_key
+            # {
+            #   "processor_pool": {
+            #     "total": 735981852,
+            #     "used": 272743032,
+            #     "free": 463238820
+            #   },
+            #   (snip)
+            #   "pid": {
+            #     "0": {
+            #       "index": {
+            #         "1": {
+            #           "pid": 0,
+            #           "tty": 0,
+            #           "allocated": 256940960,
+            #           "freed": 73576632,
+            #           "holding": 158001024,
+            #           "getbufs": 392,
+            #           "retbufs": 12905093,
+            #           "process": "*Init*"
+            #         },
+            pids = parsed.q.contains_key_value(
+                'process', ps_item, value_regex=True).get_values('pid')
+            count = len(pids)
+            for pid in pids:
+                # use `sum` because it's possible one pid returns multiple `holding`
+                memory_holding += sum(
+                    parsed.q.contains_key_value('pid',
+                                                pid).get_values('holding'))
+        if parsed.get(check_key, {}).get('total', 0) == 0:
+            memory_usage = 0
+        else:
+            memory_usage = memory_holding / parsed[check_key]['total']
+    else:
+        if parsed.get(check_key, {}).get('total', 0) == 0:
+            memory_usage = 0
+        else:
+            memory_usage = parsed[check_key]['used'] / parsed[check_key][
+                'total']
+
+    return memory_usage * 100
+
+
+def get_platform_memory_usage_detail(device,
+                                     command='show processes memory',
+                                     processes=None,
+                                     check_key='processor_pool',
+                                     output=None):
+    '''Get memory usage on device
+
+        Args:
+            device         (`obj`): Device object
+            command        (`str`): Override show command
+                                    Default to `show processes memory`
+            processes     (`list`): List of processes to check
+                                    If both processes and check_key are given,
+                                    processes are preferred.
+            check_key      (`str`): Key to check in parsed output
+                                    Default to `processor_pool`
+            output         (`str`): Output of show command
+        Returns:
+            memory_usage_dict (`dict`): memory usage dict on the device (percentage)
+                                        example:
+                                        {
+                                            'OMP': 0.0012294695662956926,
+                                            'NAT-ROUTE': 0.0012294695662956926,
+                                        }
+    '''
+
+    regex_items = []
+    memory_usage_dict = {}
+
+    try:
+        parsed = device.parse(command, output=output)
+    except SchemaEmptyParserError as e:
+        log.error("Command '{cmd}' did not return any output\n{msg}".\
+                  format(cmd=command, msg=str(e)))
+        return None
+
+    all_processes = parsed.q.get_values('process')
+
+    if isinstance(processes, list):
+        for item in processes:
+            regex_items += parsed.q.contains_key_value('process', item, value_regex=True).get_values('process')
+
+    if regex_items:
+        processes = regex_items
+
+    if processes or all_processes:
+        for ps_item in processes or all_processes:
+            # To get process id based on check_key
+            # {
+            #   "processor_pool": {
+            #     "total": 735981852,
+            #     "used": 272743032,
+            #     "free": 463238820
+            #   },
+            #   (snip)
+            #   "pid": {
+            #     "0": {
+            #       "index": {
+            #         "1": {
+            #           "pid": 0,
+            #           "tty": 0,
+            #           "allocated": 256940960,
+            #           "freed": 73576632,
+            #           "holding": 158001024,
+            #           "getbufs": 392,
+            #           "retbufs": 12905093,
+            #           "process": "*Init*"
+            #         },
+            
+            pids = parsed.q.contains_key_value(
+            'process', ps_item, value_regex=True, escape_special_chars_value=['*']).get_values('pid')
+
+            memory_holding = 0
+            for pid in pids:
+                # use `sum` because it's possible one pid returns multiple `holding`
+                memory_holding += sum(
+                    parsed.q.contains_key_value('pid',
+                                                pid).get_values('holding'))
+
+            if parsed.get(check_key, {}).get('total', 0) == 0:
+                memory_usage = 0
+            else:
+                memory_usage = memory_holding / parsed[check_key]['total']
+
+            memory_usage_dict.update({ps_item: memory_usage * 100})
+
+    return memory_usage_dict

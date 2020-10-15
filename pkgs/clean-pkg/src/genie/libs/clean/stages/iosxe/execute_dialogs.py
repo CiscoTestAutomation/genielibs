@@ -1,6 +1,7 @@
 '''IOSXE specific Dialogs'''
 
 # Python
+import re
 import time
 import logging
 
@@ -111,6 +112,7 @@ class RommonDialog(CommonRommonDialog):
         # spawn.sendline('set')
         # Boot device with BOOT var image
         spawn.sendline('boot {}'.format(boot_image))
+        time.sleep(0.5)
 
 
     # Time taken to reboot after reload
@@ -123,34 +125,69 @@ class RommonDialog(CommonRommonDialog):
             spawn.send('\r')
             count += 1
 
+        time.sleep(0.5)
+
 
     # Password:
     @statement_decorator(r'^.*[Pp]assword( for )?(\\S+)?: ?$', loop_continue=True, continue_timer=False)
     def send_password(spawn, session, context):
         # Send password to teh device when prompted
-        time.sleep(0.5)
         spawn.sendline('{}'.format(context['password']))
+        time.sleep(0.5)
 
 
     # grub>
     @statement_decorator(r'.*grub *>.*', loop_continue=True, continue_timer=False)
     def grub_boot_device(spawn, session, context):
-        # Keep sending ESC until table found
-        count = 1
-        while count <= context['break_count']:
-            spawn.sendline('\033')
-            time.sleep(0.5)
-            count += 1
+        # '\033' == <ESC>
+        spawn.send('\033')
+        time.sleep(0.5)
 
 
+    # Use the UP and DOWN arrow keys to select which entry is highlighted.
     # Use the ^ and v keys to select which entry is highlighted.
+    @statement_decorator(r'.*Use the UP and DOWN arrow keys to select.*', loop_continue=True, continue_timer=False)
     @statement_decorator(r'.*Use the \^ and v keys to select.*', loop_continue=True, continue_timer=False)
     def grub_select_image(spawn, session, context):
-        # Send down arrow to reach GOLDEN IMAGE on CSR1000v boot
-        spawn.sendline('\80')
+
+        lines = re.split(r'\s{4,}', spawn.buffer)
+
+        selected_line = None
+        desired_line = None
+
+        # Get index for selected_line and desired_line
+        for index, line in enumerate(lines):
+            if '*' in line:
+                selected_line = index
+            if context['boot_image'] in line:
+                desired_line = index
+
+        if not selected_line or not desired_line:
+            raise Exception("Cannot figure out which image to select! "
+                            "Debug info:\n"
+                            "selected_line: {}\n"
+                            "desired_line: {}\n"
+                            "lines: {}"
+                            .format(selected_line, desired_line, lines))
+
+        num_lines_to_move = desired_line - selected_line
+
+        # If positive we want to move down the list.
+        # If negative we want to move up the list.
+        if num_lines_to_move >= 0:
+            # '\x1B[B' == <down arrow key>
+            key = '\x1B[B'
+        else:
+            # '\x1B[A' == <up arrow key>
+            key = '\x1B[A'
+
+        for _ in range(abs(num_lines_to_move)):
+            spawn.send(key)
+            time.sleep(0.5)
+
+        spawn.sendline()
         time.sleep(0.5)
-        # Hit enter to select the last image in the list
-        spawn.send('\r')
+
 
 class TftpRommonDialog(RommonDialog):
     def hostname_statement(self, hostname):

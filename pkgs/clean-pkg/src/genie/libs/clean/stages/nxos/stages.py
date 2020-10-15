@@ -189,12 +189,6 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
             Connect
     '''
 
-    # If the tftp boot has already ran - recovery
-    # Then do not run it again and skip this section
-    if section.parameters['common_data'].get('device_tftp_booted'):
-        section.skipped('The global recovery has already booted the device with'
-                        ' the provided tftp image - no need to do it again')
-
     device.api.execute_write_erase_boot()
     # Using sendline, as we dont want unicon boot to kick in and send "boot" to
     # the device

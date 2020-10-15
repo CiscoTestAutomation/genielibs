@@ -1126,7 +1126,9 @@ def reload(section, steps, device, reload_service_args=None, check_modules=None)
     # Reconnect to device
     with steps.start("Reconnect to '{dev}'".format(dev=device.name)) as step:
         try:
-            device.connect(learn_hostname=True)
+            device.connect(
+                learn_hostname=True,
+                prompt_recovery=reload_service_args['prompt_recovery'])
         except Exception as e:
             step.failed("Could not reconnect to '{dev}':\nError: {e}"
                         .format(dev=device.name, e=str(e)))
@@ -1159,6 +1161,7 @@ def reload(section, steps, device, reload_service_args=None, check_modules=None)
     Optional('configuration'): str,
     Optional('configuration_from_file'): str,
     Optional('file'): str,
+    Optional('apply_configuration'): bool,
     Optional('config_timeout'): int,
     Optional('config_stable_time'): int,
     Optional('copy_vdc_all'): bool,
@@ -1169,7 +1172,7 @@ def reload(section, steps, device, reload_service_args=None, check_modules=None)
 def apply_configuration(section, steps, device, configuration=None,
     configuration_from_file=None, file=None, config_timeout=60,
     config_stable_time=10, copy_vdc_all=False, max_time=300,
-    check_interval=60):
+    check_interval=60, configure_replace=False):
 
     '''
     Apply configuration on the device, either by providing a file and/or
@@ -1183,6 +1186,7 @@ def apply_configuration(section, steps, device, configuration=None,
           configuration: <Configuration block to be applied, 'str'> (Optional)
           configuration_from_file: <File that contains a configuration to apply, 'str'> (Optional)
           file: <Configuration file for config replace> (Optional)
+          configure_replace: <Use configure replace instead of copy 'bool'> (Optional)
           config_timeout: <Timeout in seconds, 'int'> (Optional)
           config_stable_time: <Time for configuration stability in seconds, 'int'> (Optional)
           copy_vdc_all: <To copy on all VDCs or not, 'bool'> (Optional)
@@ -1198,6 +1202,7 @@ def apply_configuration(section, steps, device, configuration=None,
             interface ethernet2/1
               no shutdown
           file: bootflash:/ISSUCleanGolden.cfg
+          configure_replace: True
           config_timeout: 600
           config_stable_time: 10
           copy_vdc_all: True
@@ -1222,14 +1227,14 @@ def apply_configuration(section, steps, device, configuration=None,
         try:
             _apply_configuration(device=device, configuration=configuration,
                                  configuration_from_file=configuration_from_file,
-                                 file=file, timeout=config_timeout)
+                                 file=file, configure_replace=configure_replace,
+                                 timeout=config_timeout)
         except Exception as e:
             step.failed("Error while applying configuration to device "
-                            "{} after reload\n{}".format(device.name, str(e)),
-                            )
+                        "{}\n{}".format(device.name, str(e)))
         else:
             step.passed("Successfully applied configuration to device {} "
-                        "after reload".format(device.name))
+                        .format(device.name))
 
     # Copy running-config to startup-config
     with steps.start("Copy running-config to startup-config on device {}".\

@@ -1,4 +1,5 @@
 import re
+import ast 
 import logging
 import operator
 import xmltodict
@@ -48,10 +49,17 @@ def parse_handler(self,
                   max_time=None,
                   check_interval=None,
                   continue_=True,
+                  arguments=None,
                   action='parse'):
+    
     # handeling parse command
     try:
-        output = device.parse(command)
+        if arguments:
+            log.info('Arguments passed:\n{}'.format('\n'.join(
+                '{}:\n{}'.format(k,v) for k,v in arguments.items())))
+            output = device.parse(command, **arguments)
+        else:
+            output = device.parse(command)
     # check if the parser is empty then return an empty dictionary
     except SchemaEmptyParserError:
         if include or exclude or (max_time and check_interval):
@@ -84,6 +92,7 @@ def execute_handler(self,
     if 'reply' in kwargs:
         kwargs.update({'reply': _prompt_handler(kwargs['reply'])})
 
+    output = ''
     # handeling execute command
     try:
         output = device.execute(command, **kwargs)
@@ -91,8 +100,7 @@ def execute_handler(self,
         if not expected_failure:
             step.failed("Step failed because of this error: {e}".format(e=e))
         else:
-            log.info('Execute failed as expected, the step test result is set as passed')
-            output = ''
+            step.passed('Execute failed as expected, the step test result is set as passed')
 
     return _output_query_template(self,
                                   output,
@@ -121,7 +129,8 @@ def learn_handler(self,
                   action='learn'):
 
     # Save the to_dict learn output,
-    output = device.learn(command).to_dict()
+    learned_value = device.learn(command)
+    output = learned_value if isinstance(learned_value, dict) else learned_value.to_dict()
     return _output_query_template(self, output, step, device, command, include,
                                   exclude, max_time, check_interval, continue_,
                                   action, expected_failure=expected_failure)
@@ -308,7 +317,7 @@ def _output_query_template(self,
     keys = _include_exclude_list(include, exclude)
     max_time, check_interval = _get_timeout_from_ratios(
         device=device, max_time=max_time, check_interval=check_interval)
-
+    
     timeout = Timeout(max_time, check_interval)
     for query, style in keys:
         # dict that would be sent with various data for inclusion/exclusion check
@@ -318,6 +327,7 @@ def _output_query_template(self,
         with steps.start("Verify that '{query}' is {style} in the output".\
                     format(query=query, style=style), continue_=continue_) as substep:
 
+            
             while True:
 
                 if send_cmd:
@@ -355,20 +365,25 @@ def _output_query_template(self,
                 # Function would return (pass | fail | error)
                 step_result, message = _verify_include_exclude(**kwargs)
 
-                if step_result == Passed:
+                if expected_failure and step_result == Failed:
                     substep.passed(message)
-
+                if not expected_failure and step_result == Passed:
+                    substep.passed(message)
                 send_cmd = True
                 timeout.sleep()
                 if not timeout.iterate():
                     break
-
+            
             # failing logic in case of timeout
-            if not expected_failure:
+            if not expected_failure and step_result == Failed:
+                substep.failed(message)
+            elif expected_failure and step_result == Passed:
                 substep.failed(message)
             else:
                 log.info('{} failed as expected, the step test result is set as passed'.format(action))
-
+    
+    if expected_failure:
+        steps.failed('{} did not failed as expected, the step test result is set as failed'.format(action))
     return output
 
 def _send_command(command,
@@ -574,53 +589,54 @@ def _get_output_from_query_validators(output, query):
 
     return ret_dict
 
-
 def _condition_validator(items):
 
     # Checking condition useful for both condition work itself and action compare.
     pattern = re.compile(
         r"(?P<right_hand_value>[^>=<!]+)(?P<ops_and_left_hand_value>[\S\s]+)")
 
-    # split on and|or on each item
-    # 12 > 11 and 'sia' == 'sia' --> [12>11, 'sia'=='sia']
-    items_list = re.split(r"and|or", items)
-    ret_dict = {}
+    # split on \(\) for cases with "%VARIABLES{name} == 22 and (%VARIABLES{nam} == 12 or %VARIABLES{am} == 32)" 
+    items_splitted_on_bracket = re.split(r"\(|\)", items)
 
-    for item in items_list:
+    for each_item_in_bracket in items_splitted_on_bracket:
 
-        m = pattern.match(item)
-        if not m:
-            raise Exception('Wrong input')
+        # split on and|or on each item
+        # 12 > 11 and 'sia' == 'sia' --> [12>11, 'sia'=='sia']
+        items_list = re.split(r"\s+and\s+|\s+or\s+", each_item_in_bracket)
+        for item in items_list:
 
-        group = m.groupdict()
-        right_hand_value = group['right_hand_value'].strip()
-        ops_and_left_hand_value = group['ops_and_left_hand_value'].strip()
+            if not item.strip():
+                continue
 
-        try:
-            right_hand_value = float(right_hand_value)
-        except ValueError:
-            pass
+            m = pattern.match(item)
+            if not m:
+                raise Exception('Wrong input')
 
-        # Extracting right hand, left hand and operator for each comparision
-        output = _string_query_validator(right_hand_value,
-                                         ops_and_left_hand_value)
-        right_hand = output['right_hand_value']
-        operation = output['operation']
-        left_hand = output['left_hand_value']
-        result = _evaluate_operator(right_hand,
-                                    operation=operation,
-                                    value=left_hand)
-        items = items.replace(item, ' ' + str(result) + ' ')
+            group = m.groupdict()
+            right_hand_value = group['right_hand_value']
+            ops_and_left_hand_value = group['ops_and_left_hand_value']
 
-    ret_dict.update({
-        'right_hand': right_hand,
-        'left_hand': left_hand,
-        'operation': operation,
-        'condition_output': eval(items)
-    })
+            try:
+                right_hand_value = float(right_hand_value)
+            except ValueError:
+                pass
 
-    return ret_dict
+            # Extracting right hand, left hand and operator for each comparision
+            output = _string_query_validator(right_hand_value,
+                                             ops_and_left_hand_value)
+            
+            right_hand = output['right_hand_value']
+            right_hand = right_hand if isinstance(right_hand, (float, int)) else right_hand.strip()
+            operation = output['operation'].strip()
+            left_hand = output['left_hand_value']
+            left_hand = left_hand if isinstance(left_hand, (float, int)) else left_hand.strip()
 
+            result = _evaluate_operator(right_hand,
+                                        operation=operation,
+                                        value=left_hand)
+            items = items.replace(item, ' ' + str(result) + ' ')
+
+    return ast.literal_eval(items)
 
 def _string_query_validator(right_hand_value, query):
 
@@ -644,12 +660,14 @@ def _string_query_validator(right_hand_value, query):
     ret_dict = {}
     p = re.compile(r'(?P<operation>[>=<!\s]*)(?P<left_hand_value>[\S\s]+)')
 
-    if '&&' in query:
+    # making sure that we are checking in string,
+    # otherwise it would have exploded
+    if '&&' in str(query):
         # if range return the value of this function
         return _string_query_range_validator(right_hand_value, query)
 
-    # striping the query from spaces
-    m = p.match(query)
+    # making sure that we are matching string
+    m = p.match(str(query))
     if not m:
         # raising error if query is not inputted as per instructions
         raise ValueError(
@@ -660,8 +678,12 @@ def _string_query_validator(right_hand_value, query):
 
     right_hand_value_type = type(right_hand_value)
     try:
-        # cast the input value to result value
-        left_hand_value = right_hand_value_type(left_hand_value)
+        # Checking if the type of the input is bool
+        if right_hand_value_type == bool and isinstance(query, bool):
+            left_hand_value = ast.literal_eval(left_hand_value)
+        else:
+            # cast the input value to result value
+            left_hand_value = right_hand_value_type(left_hand_value)
     except Exception:
         pass
     finally:
@@ -672,7 +694,6 @@ def _string_query_validator(right_hand_value, query):
         })
 
     return ret_dict
-
 
 def _string_query_range_validator(output, query):
     # validating users queries like (>= 1200 && <=2000)

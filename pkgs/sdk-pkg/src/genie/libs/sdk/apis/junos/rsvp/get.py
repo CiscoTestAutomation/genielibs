@@ -2,6 +2,7 @@
 
 # Python
 import re
+import time
 import logging
 
 # Genie
@@ -29,7 +30,7 @@ def get_rsvp_hello_sent(
     """
     # Parse IPv4 address
     ipv4_address = ipv4_address.split("/")[0]
-        
+
     try:
         output = device.parse("show rsvp neighbor detail")
     except SchemaEmptyParserError:
@@ -44,6 +45,7 @@ def get_rsvp_hello_sent(
     #             {
     #                 "rsvp-neighbor-address": str,
     #                 "hellos-sent": str,
+    #                 "last-changed-time": str,
     #                       ...
     #             }
     #         ]
@@ -57,8 +59,21 @@ def get_rsvp_hello_sent(
         if neighbor.get("rsvp-neighbor-address") == ipv4_address:
             
             # Case when user wants to check Hello: sent value
-            if sent_count_flag and neighbor.get("hellos-sent"):
-                return neighbor.get("hellos-sent")
-            break
-    
+            if sent_count_flag and neighbor.get("hellos-sent") and \
+                neighbor.get("last-changed-time"):
+                
+                # Convert last_changed_time string ("2:20") to seconds
+                if ':' in neighbor.get("last-changed-time"):
+                    minutes, seconds = neighbor.get("last-changed-time").split(":")
+                    return { 
+                        "hello_sent": neighbor.get("hellos-sent"),
+                        "last_changed_time": int(minutes) * 60 + int(seconds)
+                    }
+                else:
+                    seconds = neighbor.get("last-changed-time")
+                    return { 
+                        "hello_sent": neighbor.get("hellos-sent"),
+                        "last_changed_time": int(seconds)
+                    }
+            break    
     return None

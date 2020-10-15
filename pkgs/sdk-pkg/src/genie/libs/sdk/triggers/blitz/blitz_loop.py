@@ -35,8 +35,21 @@ def loop(self, steps, testbed, section, name, action_item):
 
     return {'loop_output': loop_list}
 
-
 def _loop(self, steps, testbed, section, action_item, ret_list, name):
+
+    # actions that would be looped over
+    # why Popping this one instead of only using get?
+    # Because of saved variables, for actions it will be replaced 
+    # below, before calling the action
+    try:
+        actions = action_item.pop('actions')
+    except KeyError:
+        raise Exception ("There has to be at least one action to loop over.")
+
+    # Sending to get_variable to replace saved items.
+    action_item.update({'self': self})
+    action_item = get_variable(**action_item)
+    action_item.pop('self')
 
     # The name of the iterable that carries, list item, or range number
     # that could be reused within the loop
@@ -47,9 +60,6 @@ def _loop(self, steps, testbed, section, action_item, ret_list, name):
 
     # a list or a dictionary to loop over
     iterator_ = action_item.get('value')
-
-    # actions that would be looped over
-    actions = action_item.get('actions')
 
     # if it is maple
     maple = action_item.get('maple')
@@ -212,13 +222,12 @@ def _loop_helper(self,
             # parse through list
             else:
                 value = loop_list[iterator_index]
-
             save_variable(self, iterable_name, value)
 
         # running all the actions and adding the outputs of those actions to return list
         if actions:
             ret_list.extend(list(_loop_action_parser(self, steps, testbed, section, actions)))
-        # if terminating condtion is set with key do_until run the actions at least once then check for the condition
+        # if terminating condition is set with key do_until run the actions at least once then check for the condition
         if do_until:
             until = blitz_control(self, do_until, 'do_until')
 

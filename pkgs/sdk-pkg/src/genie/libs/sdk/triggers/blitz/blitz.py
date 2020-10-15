@@ -270,7 +270,7 @@ class Blitz(Trigger):
                                      'alias': action_alias,
                                      'saved_vars': {}})
 
-                    # filtering and saving process, ablity of saving multiple vars
+                    # filtering and saving process, ability of saving multiple vars
                     for item in save:
 
                         # Filtering the action output and saving the output

@@ -88,14 +88,14 @@ def execute_power_cycle_device(device, delay=30):
         raise Exception("Powercycler information is not provided in the "
                         "testbed YAML file for device '{}'\nUnable to "
                         "powercycle device".format(device.name))
-    else:
-        pc = PowerCycler(**pc_dict)
 
     if not pc_dict.get('outlets'):
         raise Exception("Powercycler 'outlets' have not been provided for "
                         "device '{}'".format(device.name))
     else:
         pc_outlets = pc_dict['outlets']
+
+    pc_dict['testbed'] = device.testbed
 
     # Init powercycler
     pc = PowerCycler(**pc_dict)

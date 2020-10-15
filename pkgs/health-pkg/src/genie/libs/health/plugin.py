@@ -10,7 +10,6 @@ import functools
 
 # pyats
 from pyats.easypy import runtime
-from pyats.aetest.steps import Steps
 from pyats.easypy.plugins.bases import BasePlugin
 from pyats.aetest.processors.decorator import ProcessorDecorator
 
@@ -29,7 +28,7 @@ class HealthCheckPlugin(BasePlugin):
     name = 'pyATSHealth'
 
     @classmethod
-    def configure_parser(cls, parser, legacy_cli=False):
+    def configure_parser(cls, parser, legacy_cli=True):
         '''
         plugin parser configurations
 
@@ -40,22 +39,34 @@ class HealthCheckPlugin(BasePlugin):
         '''
         pyats_health_grp = parser.add_argument_group('pyATS Health')
 
-        pyats_health_grp.add_argument('--health-file',
+        if legacy_cli:
+            health_file = ['-health_file']
+            health_sections = ['-health_sections']
+            health_uids = ['-health_uids']
+            health_groups = ['-health_groups']
+        else:
+            health_file = ['--health-file']
+            health_sections = ['--health-sections']
+            health_uids = ['--health-uids']
+            health_groups = ['--health-groups']
+        
+
+        pyats_health_grp.add_argument(*health_file,
                                       dest='health_file',
                                       default=None,
                                       help='Specify health yaml file')
 
-        pyats_health_grp.add_argument('--health-sections',
+        pyats_health_grp.add_argument(*health_sections,
                                       dest='health_sections',
                                       default=None,
                                       help='Specify sections where want to run pyATS Health Check. Regex is supported.')
 
-        pyats_health_grp.add_argument('--health-uids',
+        pyats_health_grp.add_argument(*health_uids,
                                       dest='health_uids',
                                       default=None,
                                       help='Specify triggers uids where want to run pyATS Health Check. Regex is supported')
 
-        pyats_health_grp.add_argument('--health-groups',
+        pyats_health_grp.add_argument(*health_groups,
                                       dest='health_groups',
                                       default=None,
                                       help='Specify groups where want to run pyATS Health Check. Regex is supported')

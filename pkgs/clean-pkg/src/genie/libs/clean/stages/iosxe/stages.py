@@ -289,19 +289,13 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
             Connect
     '''
 
-    log.info("Section steps:\n1- Verify global recovery has not recovered device"
-             "\n2- Set config-register to 0x0"
-             "\n3- Bring device down to rommon> prompt prior to TFTP boot"
-             "\n4- Begin TFTP boot"
-             "\n5- Reconnect to device after TFTP boot"
-             "\n6- Reset config-register to 0x2101"
-             "\n7- Execute 'write memory'")
-
-    # If the tftp boot has already ran - recovery
-    # Then do not run it again and skip this section
-    if section.parameters['common_data'].get('device_tftp_booted'):
-        section.skipped('The global recovery has already booted the device with'
-                        ' the provided tftp image - no need to do it again')
+    log.info("Section steps:"
+             "\n1- Set config-register to 0x0"
+             "\n2- Bring device down to rommon> prompt prior to TFTP boot"
+             "\n3- Begin TFTP boot"
+             "\n4- Reconnect to device after TFTP boot"
+             "\n5- Reset config-register to 0x2101"
+             "\n6- Execute 'write memory'")
 
     # Set config-register to 0x0
     with steps.start("Set config-register to 0x0 on {}".format(device.name)) as step:
@@ -503,7 +497,7 @@ def install_image(section, steps, device, images, save_system_config=False,
                       loop_continue=True,
                       continue_timer=False),
             Statement(pattern=r".*Please confirm you have changed boot config "
-                              r"to flash\:packages\.conf \[y\/n\]",
+                              r"to \S+ \[y\/n\]",
                       action='sendline(y)',
                       loop_continue=True,
                       continue_timer=False),
@@ -578,7 +572,7 @@ def install_packages(section, steps, device, packages, save_system_config=False,
                   loop_continue=True,
                   continue_timer=False),
         Statement(pattern=r".*Please confirm you have changed boot config "
-                          r"to flash\:packages\.conf \[y\/n\]",
+                          r"to \S+ \[y\/n\]",
                   action='sendline(y)',
                   loop_continue=True,
                   continue_timer=False),

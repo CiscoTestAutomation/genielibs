@@ -69,4 +69,4 @@ Now you should be able to develop the files and see it reflected in your runs.
 * [ops](pkgs/ops-pkg/changelog/CHANGELOG.md)
 * [robot](pkgs/robot-pkg/changelog/CHANGELOG.md)
 
-> Copyright (c) 2018 Cisco Systems, Inc. and/or its affiliates
+> Copyright (c) 2020 Cisco Systems, Inc. and/or its affiliates

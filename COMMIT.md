@@ -4,12 +4,15 @@ Depending on what you want to do with Genie, here are the steps to take:
 
 #### GenieLibs
 
-GenieLibs have four modules (conf, ops, sdk and robot).
+GenieLibs have seven modules (conf, ops, sdk, robot, clean, health and filetransferutils).
 
 * conf  - The features conf objects built as per the IETF/open-config standards
 * ops   - The features ops objects built as per the IETF/open-config standards
 * robot - Libraries related to the robot framework
 * sdk   - Libraries and Datafiles deriving the tests (Triggers and Verifications)
+* clean - Libraries for performing device image cleaning operations
+* health - Libraries for performing device health and status checks
+* filetransferutils - Libraries for performing device file transfer actions
 
 To contribute to the any of the above four modules you need to do the following;
 
@@ -17,7 +20,7 @@ To contribute to the any of the above four modules you need to do the following;
 
 ```bash
     git clone <this repo>
-    pip uninstall genie.libs.conf genie.libs.ops genie.libs.sdk genie.libs.robot
+    pip uninstall -y genie.libs.conf genie.libs.ops genie.libs.sdk genie.libs.robot genie.libs.clean genie.libs.health genie.libs.filetransferutils
 ```
 
 2 - Activate the [develop mode] to start the commit process.

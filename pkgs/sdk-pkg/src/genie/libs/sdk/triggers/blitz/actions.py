@@ -151,7 +151,8 @@ def parse(self,
     output = {}
     with steps.start("Parsing '{c}' on '{d}'".\
                     format(c=command, d=device.name), continue_=continue_) as step:
-
+        
+        arguments = kwargs.get('arguments', None)
         output = parse_handler(self,
                                step,
                                device,
@@ -161,7 +162,8 @@ def parse(self,
                                max_time=max_time,
                                check_interval=check_interval,
                                continue_=continue_,
-                               expected_failure=expected_failure)
+                               expected_failure=expected_failure,
+                               arguments=arguments)
 
     notify_wait(steps, device)
 
@@ -310,19 +312,9 @@ def compare(self,
         with steps.start("Verifying the following comparison request {}"\
                         .format(comp_item), continue_=continue_) as step:
 
-            condition_validator_dict = _condition_validator(comp_item)
-
-            condition = condition_validator_dict['condition_output']
-            right_hand = condition_validator_dict['right_hand']
-            operation = condition_validator_dict['operation']
-            left_hand = condition_validator_dict['left_hand']
-
-            if condition:
-                step.passed('{} is {} {}'.format(right_hand, operation,
-                                                 left_hand))
-            else:
-                step.failed('{} is not {} {}'.format(right_hand, operation,
-                                                     left_hand))
+            condition = _condition_validator(comp_item)
+            result = 'passed' if condition else 'failed'
+            getattr(step, result)('The following arithmetic statement {} is {}'.format(comp_item,condition))
 
 
 @add_result_as_extra

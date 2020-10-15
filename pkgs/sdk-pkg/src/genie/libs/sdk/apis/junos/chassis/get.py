@@ -58,3 +58,39 @@ def get_chassis_cpu_util(device, cpu_idle_section = 'cpu-idle-5sec'):
         return None
 
     return out.q.get_values(cpu_idle_section, 0)
+
+def get_routing_engines_states(device,
+                       max_time=30,
+                       check_interval=10,):
+    """ Get state of routing engines
+
+        Args:
+            device (`obj`): Device object
+            max_time (`int`): Max time, default: 60 seconds
+            check_interval (`int`): Check interval, default: 10 seconds
+        Returns:
+            result (`list`): list of states of routing engines
+        Raises:
+            N/A
+    """
+    routing_engine_states = []
+    try:
+        output = device.parse('show chassis routing-engine')
+    except SchemaEmptyParserError:
+        return routing_engine_states
+
+    # Sample output
+    # "route-engine-information": {
+    #             "route-engine": [{
+    #                   "mastership-state": "Master",
+    #                    ...
+    #              },
+    #              {
+    #                   "mastership-state": "Backup",
+    #              }]
+
+    route_engines = output.q.get_values('route-engine')
+    route_engine_states = [route_engine['mastership-state']
+                           for route_engine in route_engines if route_engine.get('mastership-state', None)]
+
+    return route_engine_states

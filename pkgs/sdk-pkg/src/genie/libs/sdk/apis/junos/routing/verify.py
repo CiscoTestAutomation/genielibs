@@ -1031,10 +1031,12 @@ def verify_route_is_advertised_or_received(
         else:
             # support Example 1 and Example 3
             for item in destinations:
-                if expected_route in item:
+                if not(invert) and expected_route in item:
                     return True 
         
         timeout.sleep()
+    if invert:
+        return True 
 
     return False                       
 

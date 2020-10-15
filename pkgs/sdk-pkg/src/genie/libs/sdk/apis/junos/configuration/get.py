@@ -75,3 +75,38 @@ def get_configuration_mpls_paths(device, path):
         return None
 
     return out.q.get_values('name') or None
+
+def get_configuration_interface_family_bridge_vlan_id(device, interface,
+    unit):
+    """ Get vlan-di from 
+        show configuration interface {interface} unit {unit} family bridge vlan-id
+
+    Args:
+        device (obj): Device object
+        interface (str): Interface name
+        unit (str): Unit value
+
+    Returns:
+        str: vlan-id
+    """
+
+    try:
+        out = device.parse('show configuration interface {interface} unit {unit} family bridge vlan-id'.format(
+            interface=interface,
+            unit=unit
+        ))
+    except SchemaEmptyParserError:
+        return None
+    # Example dict
+    # 'configuration': {
+    #             'interfaces': {
+    #                 'interface': {
+    #                     'name': 'ge-0/0/1',
+    #                     'unit': {
+    #                         'family': {
+    #                             'bridge': {
+    #                                 'vlan-id': '10'
+    #                                 }
+    vlan_id = out.q.get_values('vlan-id', 0)
+    
+    return vlan_id if vlan_id else None

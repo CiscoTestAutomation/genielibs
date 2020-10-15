@@ -10,7 +10,6 @@ from genie.libs.sdk.triggers.template.processrestart import \
                        TriggerProcessRestart as ProcessRestartTemplate
 
 log = logging.getLogger(__name__)
-
 class TriggerProcessRestart(ProcessRestartTemplate):
     '''Trigger class for ProcessCliRestart action'''
 
@@ -68,8 +67,11 @@ class TriggerProcessRestart(ProcessRestartTemplate):
 
         try:
             if self.method == 'crash':
-                if hasattr (self.lib, "crash_restart"):
-                    output = self.lib.crash_restart()
+                if hasattr(self.lib, "crash_restart"):
+                    try:
+                        self.lib.crash_restart()
+                    except Exception as e:
+                        self.failed("{e}".format(e=e),goto=['next_tc'])
                 else:
                     self.skipped("ProcessCrashRestart is not supported on "
                                  "the device type: '{p}'".format(p=uut.type))

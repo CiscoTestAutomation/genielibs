@@ -75,7 +75,6 @@ def control(self, steps, testbed, section, name, action_item):
     ret_dict.update({'control_output': ret_list})
     return ret_dict
 
-
 def blitz_control(self, condition, key):
 
     condition_dict = {}
@@ -85,5 +84,4 @@ def blitz_control(self, condition, key):
     condition_dict = get_variable(**condition_dict)
     log.info(condition_dict)
     # function that validates conditions
-    ret_dict = _condition_validator(condition_dict[key])
-    return ret_dict['condition_output']
+    return _condition_validator(condition_dict[key])

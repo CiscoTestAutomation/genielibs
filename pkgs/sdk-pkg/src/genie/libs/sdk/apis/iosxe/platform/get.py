@@ -309,7 +309,12 @@ def get_platform_default_dir(device, output=None):
 
     return output.setdefault('dir', {}).get('dir', '').replace('/', '')
 
-def get_platform_core(device, default_dir, output=None, keyword=['.core.gz']):
+
+def get_platform_core(device,
+                      default_dir,
+                      output=None,
+                      keyword=['.core.gz'],
+                      num_of_cores=False):
     '''Get the default directory of this device
 
         Args:
@@ -317,8 +322,11 @@ def get_platform_core(device, default_dir, output=None, keyword=['.core.gz']):
             default_dir (`str`) : default directory on device
             output      (`str`) : Output of `dir` command
             keyword     (`list`): List of keywords to search
+            num_of_cores (`bool`): flag to return number of core files
+                                   Default to False
         Returns:
-            corefiles (`list`): List of found core files
+            corefiles (`list`, `int`): List of found core files
+                                       or number of core files if num_of_cores=True
     '''
 
     cmd = "dir {default_dir}/core/".format(default_dir=default_dir)
@@ -341,6 +349,8 @@ def get_platform_core(device, default_dir, output=None, keyword=['.core.gz']):
                 if kw in file:
                     corefiles.append('file')
 
+    if num_of_cores:
+        return len(corefiles)
     return corefiles
 
 
@@ -348,7 +358,8 @@ def get_platform_logging(device,
                          command='show logging',
                          files=None,
                          keywords=None,
-                         output=None):
+                         output=None,
+                         num_of_logs=False):
     '''Get logging messages
 
         Args:
@@ -357,8 +368,11 @@ def get_platform_logging(device,
             files    (`list`): Not applicable on this platform
             keywords (`list`): List of keywords to match
             output    (`str`): Output of show command
+            num_of_logs (`bool`): flag to return number of log messages
+                                  Default to False
         Returns:
-            logs     (`list`): list of logging messages
+            logs     (`list` or `int`): list of logging messages
+                                        OR or number of core files if num_of_logs=True
     '''
 
     # check keywords and create strings for `include` option
@@ -379,8 +393,10 @@ def get_platform_logging(device,
         # empty is possible. so pass instead of exception
         pass
 
-    return parsed.setdefault('logs', [])
-
+    logs = parsed.setdefault('logs', [])
+    if num_of_logs:
+        return len(logs)
+    return logs
 
 def get_platform_cpu_load(device,
                           command='show processes cpu',
@@ -640,8 +656,10 @@ def get_platform_memory_usage_detail(device,
             #           "retbufs": 12905093,
             #           "process": "*Init*"
             #         },
+
             pids = parsed.q.contains_key_value(
-                'process', ps_item, value_regex=True).get_values('pid')
+            'process', ps_item, value_regex=True, escape_special_chars_value=['*']).get_values('pid')
+            
             memory_holding = 0
             for pid in pids:
                 # use `sum` because it's possible one pid returns multiple `holding`

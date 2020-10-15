@@ -2377,7 +2377,7 @@ def disable_clear_traffic(section, clear_stats_time=10):
 
     return
 
-def delete_configuration(section, devices, templates_dir=None, template_name=None, jinja2_parameters=None, exclude_devices=None):
+def delete_configuration(section, devices, templates_dir=None, template_name=None, jinja2_parameters=None, exclude_devices=None, timeout=60):
     
     '''
     Delete configuration on device as processors. 
@@ -2402,12 +2402,14 @@ def delete_configuration(section, devices, templates_dir=None, template_name=Non
                                         all: # In case need to apply configuration on all devices
                                             templates_dir: Directory path where Jinja2 template is saved
                                             template_name: Template name in templates_dir directory
+                                            timeout: Timeout value for delete configuration
                                             jinja2_parameters: # Passing Jinja2 parameters
                                                 learn_interface: 'interface_list' # Key is flag to check learn interface. Value is the variable name in template
                                                 host_name: Hostname # Optional or any other arguments required in Jinja2 template
                                         GenieRouter: # Device
                                             templates_dir: Directory path where Jinja2 template is saved
                                             template_name: Template name in templates_dir directory
+                                            timeout: Timeout value for delete configuration
                                             jinja2_parameters: # Passing Jinja2 parameters
                                                 learn_interface: 'interface_list' # Key is flag to check learn interface. Value is the variable name in template
                                                 host_name: Hostname # Optional or any other arguments required in Jinja2 template
@@ -2417,6 +2419,7 @@ def delete_configuration(section, devices, templates_dir=None, template_name=Non
             devices:
                 templates_dir: Directory path where Jinja2 template is saved
                 template_name: Template name in templates_dir directory
+                timeout: Timeout value for delete configuration. Default to 60.
                 jinja2_parameters:
                     learn_interface: 'interface_list' # Key is flag to check learn interface. Value is the variable name in template
                     host_name: Hostname # Optional or any other arguments required in Jinja2 template
@@ -2440,19 +2443,23 @@ def delete_configuration(section, devices, templates_dir=None, template_name=Non
                 device_dict = device_config.setdefault(testbed_device, {})
                 templates_dir_local = dev.get('templates_dir', templates_dir)
                 template_name_local = dev.get('template_name', template_name)
+                timeout_local = dev.get('timeout', timeout)
                 jinja2_parameters_local = dev.get('jinja2_parameters', {} if not jinja2_parameters else jinja2_parameters)
                 device_dict.update({'templates_dir': templates_dir_local})
                 device_dict.update({'template_name': template_name_local})
                 device_dict.update({'jinja2_parameters': jinja2_parameters_local})
+                device_dict.update({'timeout': timeout_local})
         else:
             device_dict = device_config.setdefault(name, {})
             templates_dir_local = dev.get('templates_dir', templates_dir)
             template_name_local = dev.get('template_name', template_name)
+            timeout_local = dev.get('timeout', timeout)
             jinja2_parameters_local = dev.get('jinja2_parameters', {} if not jinja2_parameters else jinja2_parameters)
             device_dict.update({'templates_dir': templates_dir_local})
             device_dict.update({'template_name': template_name_local})
             device_dict.update({'jinja2_parameters': jinja2_parameters_local})
-
+            device_dict.update({'timeout': timeout_local})
+    
     # Loop each devices passed in datafile with it's parameters
     for name, dev in device_config.items():
         
@@ -2481,12 +2488,14 @@ def delete_configuration(section, devices, templates_dir=None, template_name=Non
             # Check if templates_dir and template_name is passed, else fail the section
             templates_dir_local = dev.get('templates_dir', templates_dir)
             template_name_local = dev.get('template_name', template_name)
+            timeout_local = dev.get('timeout', timeout)
             log.info("loading config file {}/{}".format(templates_dir_local,template_name_local))
             
             # Initialize Jinja2 parameters
             jinja2_parameters_local = dev.get('jinja2_parameters', {} if not jinja2_parameters else jinja2_parameters).copy()
             jinja2_parameters_local.update({'templates_dir': templates_dir_local})
             jinja2_parameters_local.update({'template_name': template_name_local})
+            jinja2_parameters_local.update({'timeout': timeout_local})
             
             # Check if need to learn interfaces from yaml file
             interface_learn_name = jinja2_parameters_local.pop('interface_learn', False)

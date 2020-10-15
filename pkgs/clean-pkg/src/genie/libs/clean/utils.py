@@ -80,63 +80,106 @@ def verify_num_images_provided(image_list, expected_images=1):
 
 
 def _apply_configuration(device, configuration=None, configuration_from_file=None,
-                         file=None, timeout=60):
+                         file=None, configure_replace=False, timeout=60):
 
-    # It is currently needed as hostname can be changed while applying
-    # configuration. Unicon will add an enhnacement to learn hostname
-    # at configuration service but until then, this is it.
+    if configuration or configuration_from_file and not file:
+        # Apply raw configuration using configure service
 
-    # Apply raw configuration strings or copy file provided to running-config
-    try:
-        if configuration or configuration_from_file and not file:
-            if configuration_from_file:
-                with open(configuration_from_file, 'r') as f:
-                    configuration = f.read()
+        if configuration_from_file:
+            log.info("Reading configuration from '{}'"
+                     .format(configuration_from_file))
 
-            log.info("Apply raw configuration provided to device {}".\
-                     format(device.name))
+            with open(configuration_from_file, 'r') as f:
+                configuration = f.read()
 
-            # Apply raw config strings
+        log.info("Applying configuration on '{}'".format(device.name))
+
+        try:
             device.configure(configuration, timeout=timeout)
+        except Exception as e:
+            if isinstance(e, StateMachineError):
+                # StateMachineError is expected as the hostname could change after
+                # applying config. Reconnect to the device and learn new hostname.
 
-        elif file and not configuration:
-            log.info("Copy configuration file '{}' to running-config on "
-                     "device {}".format(file, device.name))
+                log.warning("Device hostname might have changed. Attempting to "
+                            "recover...")
 
-            # Copy file to running-config
-            device.api.\
-                execute_copy_to_running_config(file=file,
-                                               copy_config_timeout=timeout)
-    except Exception as e:
-        # Check if StateMachineError (expected) else fail
-        if not isinstance(e, StateMachineError):
-            # Something else went wrong, destroy and attempt reconnect
-            log.error(str(e))
-            log.error("Error while applying configuration to {} after reload".\
-                      format(device.name))
-            log.info("Destroying connecting and attempting reconnection...")
+                try:
+                    device.destroy()
+                except Exception:
+                    pass # This is fine as long as we can reconnect
+
+                try:
+                    device.connect(learn_hostname=True)
+                except Exception as e:
+                    # Cannot reconnect, stop clean
+                    log.error("Failed to reconnect to device after applying "
+                              "configuration on {}".format(device.name))
+                    raise e from None
+
+            else:
+                # Something else went wrong, stop clean
+                raise e
+
+    elif file and not configuration:
+        # Apply configuration from file
+
+        try:
+            if configure_replace:
+                log.info("Applying configuration from '{}' via "
+                         "'configure replace'".format(file))
+                device.api.restore_running_config(
+                    path='', file=file, timeout=timeout)
+            else:
+                log.info("Applying configuration from '{}' via "
+                         "'copy to running-config'".format(file))
+                device.api.execute_copy_to_running_config(
+                    file=file, copy_config_timeout=timeout)
+        except Exception:
+            # Best effort, until Unicon supports 'learn_hostname' in configure
+            # and execute services.
+            # ----------------------------------------------------------------
+
+            # If the configuration API fails, we dont know if it timed out
+            # due to hostname change or if the configuration failed to apply.
+            # This is because the exception raised for either is the same
+            # type of exception
+
+            log.warning("The device hostname changed or the configuration "
+                        "failed to apply. Attempting to recover...")
+
             try:
                 device.destroy()
+            except Exception:
+                pass # This is fine as long as we can reconnect
+
+            try:
                 device.connect(learn_hostname=True)
             except Exception as e:
-                log.error("Error while reconnecting to device {} after "
-                          "applying configuration".format(device.name))
-                raise e from None
-            else:
-                raise Exception("Error while applying configuration to device "
-                                "{}".format(device.name))
+                log.error("Error while reconnecting to device '{}'"
+                          .format(device.name))
+                raise e
 
-        # StateMachineError is expected as the hostname would change after
-        # applying config. Reconnect to the device and learn new hostname
-        log.info("Device hostname might have changed - Attempting reconnect")
-        try:
-            device.destroy()
-            device.connect(learn_hostname=True)
-        except Exception as e:
-            # Okay, cannot reconnect, fail, stop clean
-            log.error("Failed to reconnect to device after applying "
-                      "configuration on {}".format(device.name))
-            raise e from None
+            # Reapply the configuration. If it passes, we know that it was
+            # a hostname change that caused the exception. If it fails, we
+            # know the configuration failed to apply.
+
+            log.info("Reapplying the configuration to verify the cause of failure")
+
+            try:
+                if configure_replace:
+                    device.api.restore_running_config(
+                        path='', file=file, timeout=timeout)
+                else:
+                    device.api.execute_copy_to_running_config(
+                        file=file, copy_config_timeout=timeout)
+            except Exception as e:
+                log.error("Configuration failed to apply on '{}'"
+                          .format(device.name))
+                raise e
+
+            log.info("The configuration caused the hostname to change. "
+                     "Continuing clean.")
 
 
 def initialize_clean_sections(image_handler, order):

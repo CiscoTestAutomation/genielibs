@@ -188,7 +188,7 @@
       "doc": " Compare the metric of best path and non best path\n\n        Args:\n            device ('obj'): Device object\n            ip_address ('str'): IP address in show command.\n            invert(bool, optional): Inverts from equals to not equals. Defaults to False.\n            max_time ('int', optional): Max time, default: 60 seconds\n            check_interval ('int', optional): Check interval, default: 10 seconds\n\n        Returns:\n            result (`bool`): Verified result\n\n        Raises:\n            N/A\n    ",
       "module_name": "routing.verify",
       "uid": "compare_metric_of_route",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2638"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2640"
     }
   },
   "compared_with_running_config": {
@@ -1769,6 +1769,14 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxr/platform/get.py#L64"
     }
   },
+  "get_configuration_interface_family_bridge_vlan_id": {
+    "junos": {
+      "doc": " Get vlan-di from \n        show configuration interface {interface} unit {unit} family bridge vlan-id\n\n    Args:\n        device (obj): Device object\n        interface (str): Interface name\n        unit (str): Unit value\n\n    Returns:\n        str: vlan-id\n    ",
+      "module_name": "configuration.get",
+      "uid": "get_configuration_interface_family_bridge_vlan_id",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/configuration/get.py#L79"
+    }
+  },
   "get_configuration_mpls_label_switched_path_name": {
     "junos": {
       "doc": " Get path name from show configuration protocols mpls label-switched-path {path}\n\n    Args:\n        device (obj): Device object\n        path (str): File to check\n\n    Returns:\n        str or None: Configured primary name\n    ",
@@ -1823,6 +1831,14 @@
       "module_name": "utils",
       "uid": "get_delta_time_from_outputs",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L570"
+    }
+  },
+  "get_devices": {
+    "com": {
+      "doc": " Get devices from testbed object\n        Args:\n            testbed (`obj`): testbed object\n            os (`str`): specify os to choose\n            regex (`str`): regex to chose devices based against regex_key\n            regex_key (`str`): specify key in testbed yaml where use regex\n                               default to `os`\n            pick_type (`str`) : specify how to pick up\n                                default to `all`\n                                choices:\n                                  `all`: pick up all devices\n                                         return device names as list\n                                  `first_one`: pick up first one device\n                                               return device name as string\n                                  `random_one`: pick up one device randomly\n                                                return device name as string\n                                  `random_order`: randomize order of devices\n                                                  return device names as list\n\n        Raise:\n            Exception\n        Returns:\n            picked_devices (`list` or `str`): list of device names\n                                              device name as string in case of\n                                              `first_one` or `random_one`\n\n        Example:\n\n        >>> dev.api.get_devices(testbed)\n        ['terminal_server',\n         'internet-rtr01',\n         'internet-host01',\n         'edge-firewall01',\n         'core-rtr01',\n         'core-rtr02',\n         'dist-rtr01',\n         'dist-rtr02',\n         'dist-sw01',\n         'dist-sw02',\n         'inside-host01',\n         'edge-sw01',\n         'inside-host02']\n\n        >>> dev.api.get_devices(testbed, os='iosxe')\n        ['internet-rtr01', 'dist-rtr01', 'dist-rtr02']\n\n        >>> dev.api.get_devices(testbed, regex='iosxe')\n        ['internet-rtr01', 'dist-rtr01', 'dist-rtr02']\n\n        >>> dev.api.get_devices(testbed, regex='ios.*')\n        ['internet-rtr01',\n         'core-rtr01',\n         'core-rtr02',\n         'dist-rtr01',\n         'dist-rtr02',\n         'edge-sw01']\n\n        >>> dev.api.get_devices(testbed, regex='iosxrv', regex_key='series')\n        ['core-rtr01', 'core-rtr02']\n\n        >>> dev.api.get_devices(testbed, os='iosxe', regex='.*n0.*', regex_key='command')\n        ['internet-rtr01']\n\n        >>> dev.api.get_devices(testbed, pick_type='first_one')\n        'terminal_server'\n\n        >>> dev.api.get_devices(testbed, os='nxos', pick_type='random_one')\n        'dist-sw02'\n\n        >>> dev.api.get_devices(testbed, os='iosxe', pick_type='random_order')\n        ['internet-rtr01', 'dist-rtr01', 'dist-rtr02']\n\n    ",
+      "module_name": "utils",
+      "uid": "get_devices",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2556"
     }
   },
   "get_dict_items": {
@@ -2945,10 +2961,10 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L29"
     },
     "iosxe": {
-      "doc": "Get the default directory of this device\n\n        Args:\n            device      (`obj`) : Device object\n            default_dir (`str`) : default directory on device\n            output      (`str`) : Output of `dir` command\n            keyword     (`list`): List of keywords to search\n        Returns:\n            corefiles (`list`): List of found core files\n    ",
+      "doc": "Get the default directory of this device\n\n        Args:\n            device      (`obj`) : Device object\n            default_dir (`str`) : default directory on device\n            output      (`str`) : Output of `dir` command\n            keyword     (`list`): List of keywords to search\n            num_of_cores (`bool`): flag to return number of core files\n                                   Default to False\n        Returns:\n            corefiles (`list`, `int`): List of found core files\n                                       or number of core files if num_of_cores=True\n    ",
       "module_name": "platform.get",
       "uid": "get_platform_core",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L312"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L313"
     },
     "iosxr": {
       "doc": "Get the default directory of this device\n\n        Args:\n            device      (`obj`) : Device object\n            default_dir (`str`) : default directory on device\n            output      (`str`) : Output of `dir` command\n            keyword     (`list`): List of keywords to search\n        Returns:\n            corefiles (`list`): List of found core files\n    ",
@@ -2968,13 +2984,13 @@
       "doc": "Get cpu load on device\n        Args:\n            device     (`obj`): Device object\n            command    (`str`): Override show command\n                                Default to `show processes cpu`\n            processes (`list`): List of processes to check\n            check_key  (`str`): Key to check in parsed output\n                                Default to `five_sec_cpu`\n            output     (`str`): Output of show command\n        Returns:\n            cpu_load   (`int`): Cpu load (5 secs average by default) on the device (percentage)\n                                If multiple processes are given, returns average.\n    ",
       "module_name": "platform.get",
       "uid": "get_platform_cpu_load",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L100"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L102"
     },
     "iosxe": {
       "doc": "Get cpu load on device\n\n        Args:\n            device     (`obj`): Device object\n            command    (`str`): Override show command\n                                Default to `show processes cpu`\n            processes (`list`): List of processes to check\n            check_key  (`str`): Key to check in parsed output\n                                Default to `five_sec_cpu`\n            output     (`str`): Output of show command\n        Returns:\n            cpu_load   (`int`): Cpu load (5 secs average by default) on the device (percentage)\n                                If multiple processes are given, returns average.\n    ",
       "module_name": "platform.get",
       "uid": "get_platform_cpu_load",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L385"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L401"
     },
     "iosxr": {
       "doc": "Get cpu load on device\n\n        Args:\n            device     (`obj`): Device object\n            command    (`str`): Override show command\n                                Default to `show processes cpu`\n            processes (`list`): List of processes to check\n                                Default to None\n            check_key  (`str`): Key to check in parsed output\n                                Default to `one_min_cpu`\n            output     (`str`): Output of show command\n                                Default to None\n        Returns:\n            cpu_load   (`int`): Cpu load (5 mins average by default) on the device (percentage)\n                                If multiple processes are given, returns average.\n    ",
@@ -2994,13 +3010,13 @@
       "doc": "Get cpu load on device\n\n        Args:\n            device     (`obj`): Device object\n            command    (`str`): Override show command\n                                Default to `show processes cpu`\n            processes (`list`): List of processes to check\n            check_key  (`str`): Key to check in parsed output\n                                Default to `five_sec_cpu_total`\n            output     (`str`): Output of show command\n        Returns:\n            cpu_load_dict  (`dict`): Cpu load dictionary on the device\n                                     example:\n                                     {\n                                         'OMP': 0.0,\n                                         'NAT-ROUTE': 0.0,\n                                     }\n    ",
       "module_name": "platform.get",
       "uid": "get_platform_cpu_load_detail",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L156"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L158"
     },
     "iosxe": {
       "doc": "Get cpu load on device\n\n        Args:\n            device     (`obj`): Device object\n            command    (`str`): Override show command\n                                Default to `show processes cpu`\n            processes (`list`): List of processes to check\n            check_key  (`str`): Key to check in parsed output\n                                Default to `five_sec_cpu_total`\n            output     (`str`): Output of show command\n        Returns:\n            cpu_load_dict  (`dict`): Cpu load dictionary on the device\n                                     example:\n                                     {\n                                         'OMP': 0.0,\n                                         'NAT-ROUTE': 0.0,\n                                     }\n    ",
       "module_name": "platform.get",
       "uid": "get_platform_cpu_load_detail",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L442"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L458"
     },
     "iosxr": {
       "doc": "Get cpu load on device\n\n        Args:\n            device     (`obj`): Device object\n            command    (`str`): Override show command\n                                Default to `show processes cpu`\n            processes (`list`): List of processes to check\n                                Default to None\n            check_key  (`str`): Key to check in parsed output\n                                Default to `one_min_cpu`\n            output     (`str`): Output of show command\n                                Default to None\n        Returns:\n            cpu_load_dict  (`dict`): Cpu load dictionary on the device\n                                     example:\n                                     {\n                                         'netconf': 0.0,\n                                         'bgp': 0.0,\n                                     }\n    ",
@@ -3055,10 +3071,10 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L64"
     },
     "iosxe": {
-      "doc": "Get logging messages\n\n        Args:\n            device    (`obj`): Device object\n            command   (`str`): Override show command\n            files    (`list`): Not applicable on this platform\n            keywords (`list`): List of keywords to match\n            output    (`str`): Output of show command\n        Returns:\n            logs     (`list`): list of logging messages\n    ",
+      "doc": "Get logging messages\n\n        Args:\n            device    (`obj`): Device object\n            command   (`str`): Override show command\n            files    (`list`): Not applicable on this platform\n            keywords (`list`): List of keywords to match\n            output    (`str`): Output of show command\n            num_of_logs (`bool`): flag to return number of log messages\n                                  Default to False\n        Returns:\n            logs     (`list` or `int`): list of logging messages\n                                        OR or number of core files if num_of_logs=True\n    ",
       "module_name": "platform.get",
       "uid": "get_platform_logging",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L347"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L357"
     },
     "linux": {
       "doc": "Get logging messages\n\n        Args:\n            device          (`obj`): Device object\n            command         (`str`): Override show command\n            files          (`list`): List of syslog files\n            keywords       (`list`): List of keywords to match\n            timeout         (`int`): timeout (default: 300 secs)\n            output          (`str`): Not Available on this platform\n            prompt_pattern  (`str`): Prompt pattern\n            error_patterns (`list`): Error patterns. if not specified, [](empty) is default.\n        Returns:\n            logs           (`list`): list of logging messages\n    ",
@@ -3068,11 +3084,17 @@
     }
   },
   "get_platform_memory_usage": {
+    "ios": {
+      "doc": "Get memory usage on device\n\n        Args:\n            device         (`obj`): Device object\n            command        (`str`): Override show command\n                                    Default to `show processes memory`\n            processes     (`list`): List of processes to check\n                                    If both processes and check_key are given,\n                                    processes are preferred.\n            check_key      (`str`): Key to check in parsed output\n                                    Default to `processor_pool`\n            output         (`str`): Output of show command\n        Returns:\n            memory_usage (`float`): memory usage on the device (percentage)\n                                    If multiple processes are given, returns average.\n    ",
+      "module_name": "platform.get",
+      "uid": "get_platform_memory_usage",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L216"
+    },
     "iosxe": {
       "doc": "Get memory usage on device\n\n        Args:\n            device         (`obj`): Device object\n            command        (`str`): Override show command\n                                    Default to `show processes memory`\n            processes     (`list`): List of processes to check\n                                    If both processes and check_key are given,\n                                    processes are preferred.\n            check_key      (`str`): Key to check in parsed output\n                                    Default to `processor_pool`\n            output         (`str`): Output of show command\n        Returns:\n            memory_usage (`float`): memory usage on the device (percentage)\n                                    If multiple processes are given, returns average.\n    ",
       "module_name": "platform.get",
       "uid": "get_platform_memory_usage",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L500"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L516"
     },
     "iosxr": {
       "doc": "Get memory usage on device\n\n        Args:\n            device         (`obj`): Device object\n            command        (`str`): Override show command\n                                    Default to `show processes memory`\n            processes     (`list`): List of processes to check\n                                    If both processes and check_key are given,\n                                    processes are preferred.\n                                    Default to None\n            check_key      (`str`): Key to check in parsed output\n                                    Default to 'dynamic'\n            output         (`str`): Output of show command\n                                    Default to None\n        Returns:\n            memory_usage (`float`): memory usage on the device (percentage)\n                                    If multiple processes are given, returns average.\n    ",
@@ -3088,11 +3110,17 @@
     }
   },
   "get_platform_memory_usage_detail": {
+    "ios": {
+      "doc": "Get memory usage on device\n\n        Args:\n            device         (`obj`): Device object\n            command        (`str`): Override show command\n                                    Default to `show processes memory`\n            processes     (`list`): List of processes to check\n                                    If both processes and check_key are given,\n                                    processes are preferred.\n            check_key      (`str`): Key to check in parsed output\n                                    Default to `processor_pool`\n            output         (`str`): Output of show command\n        Returns:\n            memory_usage_dict (`dict`): memory usage dict on the device (percentage)\n                                        example:\n                                        {\n                                            'OMP': 0.0012294695662956926,\n                                            'NAT-ROUTE': 0.0012294695662956926,\n                                        }\n    ",
+      "module_name": "platform.get",
+      "uid": "get_platform_memory_usage_detail",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L294"
+    },
     "iosxe": {
       "doc": "Get memory usage on device\n\n        Args:\n            device         (`obj`): Device object\n            command        (`str`): Override show command\n                                    Default to `show processes memory`\n            processes     (`list`): List of processes to check\n                                    If both processes and check_key are given,\n                                    processes are preferred.\n            check_key      (`str`): Key to check in parsed output\n                                    Default to `processor_pool`\n            output         (`str`): Output of show command\n        Returns:\n            memory_usage_dict (`dict`): memory usage dict on the device (percentage)\n                                        example:\n                                        {\n                                            'OMP': 0.0012294695662956926,\n                                            'NAT-ROUTE': 0.0012294695662956926,\n                                        }\n    ",
       "module_name": "platform.get",
       "uid": "get_platform_memory_usage_detail",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L577"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L593"
     },
     "iosxr": {
       "doc": "Get memory usage on device\n\n        Args:\n            device         (`obj`): Device object\n            command        (`str`): Override show command\n                                    Default to `show processes memory`\n            processes     (`list`): List of processes to check\n                                    If both processes and check_key are given,\n                                    processes are preferred.\n                                    Default to None\n            check_key      (`str`): Key to check in parsed output\n                                    Default to `dynamic`\n            output         (`str`): Output of show command\n                                    Deault to None\n        Returns:\n            memory_usage_dict (`dict`): memory usage dict on the device (percentage)\n                                        example:\n                                        {\n                                            'OMP': 0.0012294695662956926,\n                                            'NAT-ROUTE': 0.0012294695662956926,\n                                        }\n    ",
@@ -3275,6 +3303,14 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/get.py#L214"
     }
   },
+  "get_routing_engines_states": {
+    "junos": {
+      "doc": " Get state of routing engines\n\n        Args:\n            device (`obj`): Device object\n            max_time (`int`): Max time, default: 60 seconds\n            check_interval (`int`): Check interval, default: 10 seconds\n        Returns:\n            result (`list`): list of states of routing engines\n        Raises:\n            N/A\n    ",
+      "module_name": "chassis.get",
+      "uid": "get_routing_engines_states",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/chassis/get.py#L62"
+    }
+  },
   "get_routing_metric": {
     "junos": {
       "doc": "Get OSPF metric\n\n    Args:\n        device (obj): Device object\n        protocol (str): Protocol name. Default is None.\n        ip_address (str): IP address name. Default is None.\n        extensive (bool): Run with extensive command.\n        expected_metric_2 (bool): Flag for checking metric2\n    ",
@@ -3352,7 +3388,7 @@
       "doc": " Verify lsp state is up for neighbor\n    \n        Args:\n            device ('obj'): device to use\n            ipv4_address ('str'): IPv4 address to check neighbor node\n            sent_count_flag ('bool'): Flag for getting Hello: sent value\n        \n        Returns:\n            sent_count: Value obtained from the Hello: send value\n        \n        Raises:\n            N/A\n    ",
       "module_name": "rsvp.get",
       "uid": "get_rsvp_hello_sent",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/rsvp/get.py#L12"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/rsvp/get.py#L13"
     }
   },
   "get_running_config": {
@@ -3577,6 +3613,14 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/snmp/get.py#L49"
     }
   },
+  "get_snmp_information": {
+    "junos": {
+      "doc": " Get snmp information\n\n        Args:\n            device (`obj`): Device object\n        Returns:\n            result (`list`): list of snmp information\n    ",
+      "module_name": "snmp.get",
+      "uid": "get_snmp_information",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/snmp/get.py#L12"
+    }
+  },
   "get_snmp_snmpwalk": {
     "iosxe": {
       "doc": " Get snmpwalk output from SNMP device\n\n        Args:\n            device (`obj`): SNMP device\n            community (`str`): Community name\n            ip_address (`str`): IP address\n            oid (`str`): Oid code\n            version (`str`): SNMP version\n            option (`str`): Optional command\n        Returns:\n            out (`str`): Executed output of SNMP command\n        Raises:\n            None\n    ",
@@ -3682,11 +3726,11 @@
     }
   },
   "get_system_connections_sessions": {
-    "com": {
+    "junos": {
       "doc": " Get list of system connections via show system connections\n\n        Args:\n            device ('obj'): Device object\n\n        Returns:\n            result (`list`): Get list of system connection sessions\n\n        Raises:\n            N/A\n    ",
       "module_name": "utils",
       "uid": "get_system_connections_sessions",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2587"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/utils.py#L271"
     }
   },
   "get_system_current_time": {
@@ -3706,11 +3750,11 @@
     }
   },
   "get_system_users": {
-    "com": {
+    "junos": {
       "doc": " Get list of users via show system user\n\n        Args:\n            device ('obj'): Device object\n\n        Returns:\n            result (`list`): Get list of username and ip address pairs\n\n        Raises:\n            N/A\n    ",
       "module_name": "utils",
       "uid": "get_system_users",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2554"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/utils.py#L238"
     }
   },
   "get_time_source_from_output": {
@@ -4622,13 +4666,13 @@
       "doc": " Remove running configuration starting with passed keyword from device\n\n        Args:\n            device ('obj')        : Device object to modify configuration\n            remove_config ('str') : Configuration to be removed from device\n\n        Returns:\n            None\n    ",
       "module_name": "running_config.configure",
       "uid": "remove_running_config",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/running_config/configure.py#L107"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/running_config/configure.py#L109"
     },
     "iosxe": {
       "doc": " Remove running configuration starting with passed keyword from device\n\n        Args:\n            device ('obj')        : Device object to modify configuration\n            remove_config ('str') : Configuration to be removed from device\n\n        Returns:\n            None\n    ",
       "module_name": "running_config.configure",
       "uid": "remove_running_config",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/running_config/configure.py#L107"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/running_config/configure.py#L109"
     }
   },
   "remove_subscriber": {
@@ -4644,13 +4688,13 @@
       "doc": " Remove tacacs server configuration from device\n\n        Args:\n            device ('obj')        : Device object to modify configuration\n            remove_config ('list') : Configuration to be removed from device\n            keyword ('str') : keyword the configuration should start with \n\n        Returns:\n            None\n    ",
       "module_name": "running_config.configure",
       "uid": "remove_tacacs_server",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/running_config/configure.py#L133"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/running_config/configure.py#L135"
     },
     "iosxe": {
       "doc": " Remove tacacs server configuration from device\n\n        Args:\n            device ('obj')        : Device object to modify configuration\n            remove_config ('list') : Configuration to be removed from device\n            keyword ('str') : keyword the configuration should start with \n\n        Returns:\n            None\n    ",
       "module_name": "running_config.configure",
       "uid": "remove_tacacs_server",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/running_config/configure.py#L133"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/running_config/configure.py#L135"
     }
   },
   "repeat_command_save_output": {
@@ -4695,13 +4739,13 @@
   },
   "restore_running_config": {
     "ios": {
-      "doc": " Restore config from local file\n\n        Args:\n            device (`obj`): Device object\n            path (`str`): directory\n            file (`str`): file name\n        Returns:\n            None\n    ",
+      "doc": " Restore config from local file\n\n        Args:\n            device (`obj`): Device object\n            path (`str`): directory\n            file (`str`): file name\n            timeout (`int`): Timeout for applying config\n        Returns:\n            None\n    ",
       "module_name": "running_config.configure",
       "uid": "restore_running_config",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/running_config/configure.py#L75"
     },
     "iosxe": {
-      "doc": " Restore config from local file\n\n        Args:\n            device (`obj`): Device object\n            path (`str`): directory\n            file (`str`): file name\n        Returns:\n            None\n    ",
+      "doc": " Restore config from local file\n\n        Args:\n            device (`obj`): Device object\n            path (`str`): directory\n            file (`str`): file name\n            timeout (`int`): Timeout for applying config\n        Returns:\n            None\n    ",
       "module_name": "running_config.configure",
       "uid": "restore_running_config",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/running_config/configure.py#L75"
@@ -4743,6 +4787,14 @@
       "module_name": "utils",
       "uid": "save_running_config_configuration",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/utils.py#L313"
+    }
+  },
+  "scp": {
+    "iosxe": {
+      "doc": " copy files from local device to remote device via scp\n\n        Args:\n            device (`obj`) : Device object (local device)\n            local_path (`str`): path with file on local device\n            remote_device (`str`): remote device name\n            remote_path (`str`): path with/without file on remote device\n            remote_user (`str`): use given username to scp\n                                 Default to None\n            remote_pass (`str`): use given password to scp\n                                 Default to None\n            remote_via (`str`) : specify connection to get ip\n                                 Default to None\n            vrf (`str`): use vrf where scp find route to remote device\n                                 Default to None\n        Returns:\n            result (`bool`): True if scp successfully done \n    ",
+      "module_name": "utils",
+      "uid": "scp",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/utils.py#L346"
     }
   },
   "search_running_config": {
@@ -5074,7 +5126,7 @@
       "doc": "Verify best path towards to given interface\n\n        Args:\n            device ('obj'): Device to use\n            route ('str'): Route name. Default to None.\n            protocol ('str'): Protocol name. Default to None.\n            expected_ip_address ('str'): Expected IP address. Default to None.\n            expected_target_route ('str'): Expected target route. Default to None.\n            expected_via ('str'): Expected via interface. Default to None.\n            max_time ('int', optional): Maximum time to keep checking. Default to 60.\n            check_interval ('int', optional): How often to check. Default to 10.\n\n        Returns:\n            True/False\n\n        Raises:\n            N/A\n    ",
       "module_name": "routing.verify",
       "uid": "verify_best_path_is_towards_to_interface",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2463"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2465"
     }
   },
   "verify_bfd_configuration": {
@@ -5437,6 +5489,22 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/verify.py#L62"
     }
   },
+  "verify_chassis_fpc_slot_state": {
+    "junos": {
+      "doc": " Verifies slot state via show chassis fpc\n\n    Args:\n        device (obj): Device object\n        expected_slot (bool): Expected slot to check.\n        expected_state (str): Expected state of that slot.\n        max_time (int, optional): Maximum timeout time. Defaults to 60.\n        check_interval (int, optional): Check interval. Defaults to 10.\n\n    Returns:\n        True/False\n    ",
+      "module_name": "chassis.verify",
+      "uid": "verify_chassis_fpc_slot_state",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/chassis/verify.py#L14"
+    }
+  },
+  "verify_chassis_re_state": {
+    "junos": {
+      "doc": " Verify output of show chassis routing-engine ends as expected state\n\n        Args:\n            device (`obj`): Device object\n            expected_re_state (`str`): Expected end of output state\n            max_time (`int`): Max time, default: 60 seconds\n            check_interval (`int`): Check interval, default: 10 seconds\n        Returns:\n            result (`bool`): Verified result\n        Raises:\n            N/A\n    ",
+      "module_name": "chassis.verify",
+      "uid": "verify_chassis_re_state",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/chassis/verify.py#L56"
+    }
+  },
   "verify_class_of_service_interface": {
     "junos": {
       "doc": " Verify interfaces terse\n\n        Args:\n            device (`obj`): Device object\n            interface (`str`): Interface name\n            expected_object_type (`str`, optional): Expected object type. Defaults to None\n            expected_object_name (`str`, optional): Expected object name. Defaults to None\n            max_time (`int`, optional): Maximum time to keep checking. Defaults to 60\n            check_interval (`int`, optional): How often to check. Defaults to 10\n        Returns:\n            result (`bool`): Verified result\n        Raises:\n            N/A\n    ",
@@ -5466,7 +5534,7 @@
       "doc": "Verifies cluster exists in route\n\n    Args:\n        device ('obj'): device to use\n        address ('str'): IP address for show command\n        protocol ('str'): Protocol to use in show command\n        cluster_value('str'): Cluster value in show route\n        max_time ('int', optional): Maximum time to keep checking. Default to 60 seconds.\n        check_interval ('int', optional): How often to check. Default to 10 seconds.\n\n    Returns:\n        True/False\n\n    Raises:\n        N/A\n    ",
       "module_name": "routing.verify",
       "uid": "verify_cluster_exists_in_route",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L3355"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L3357"
     }
   },
   "verify_cluster_list_length_of_path": {
@@ -5474,7 +5542,7 @@
       "doc": "Verify length of cluster list of path (best or non-best)\n\n    Args:\n        target_route ('str'): Route to check\n        cluster_list_length ('int'): Length of cluster list\n        best_route ('bool'): Whether to use best or non-best path\n        max_time ('int', optional): Maximum time to keep checking. Default to 60.\n        check_interval ('int', optional): How often to check. Default to 10.\n\n    Raise: None\n\n    Returns: Boolean\n\n    ",
       "module_name": "routing.verify",
       "uid": "verify_cluster_list_length_of_path",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1142"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1144"
     }
   },
   "verify_coherentDSP_in_state": {
@@ -5490,7 +5558,7 @@
       "doc": "Verify communities exist in show route\n\n    Args:\n        route ('str'): Route to check\n        expected_community ('str'): Expected community in route\n\n    Raise: None\n\n    Returns: Boolean\n\n    ",
       "module_name": "routing.verify",
       "uid": "verify_communities_in_route",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2314"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2316"
     }
   },
   "verify_config_exists_in_routing_options": {
@@ -6132,7 +6200,7 @@
       "doc": "Verifies learned protocol and next hop agianst 'show route {address} extensive'\n\n    Args:\n        device ('obj'): device to use\n        address ('str'): IP address for show command\n        next_hop ('str'): next hop ip address\n        learn_protocol('str'): Learned protocol\n        cluster_value('str'): Cluster value in show route\n        max_time ('int', optional): Maximum time to keep checking. Default to 60 seconds.\n        check_interval ('int', optional): How often to check. Default to 10 seconds.\n\n    Returns:\n        True/False\n\n    Raises:\n        N/A\n    ",
       "module_name": "routing.verify",
       "uid": "verify_learned_protocol",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1255"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1257"
     }
   },
   "verify_lldp_in_state": {
@@ -6198,7 +6266,7 @@
       "doc": " Verify the metric of best path and non best path\n\n        Args:\n            device ('obj'): Device object\n            expected_metric ('int'): Expected metric number\n            ip_address ('str'): IP address in show command.\n            active_tag (bool, optional): True if needs to verify metric of best path. Default to False.\n            max_time ('int', optional): Max time, default: 60 seconds\n            check_interval ('int', optional): Check interval, default: 10 seconds\n\n        Returns:\n            result (`bool`): Verified result\n\n        Raises:\n            N/A\n    ",
       "module_name": "routing.verify",
       "uid": "verify_metric_of_route",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2584"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2586"
     }
   },
   "verify_module_serial_num": {
@@ -6288,7 +6356,7 @@
       "doc": "Verify next hop in route\n\n        Args:\n            device ('obj'): Device to use\n            route ('str'): IP address in show command\n            expected_next_hop ('str'): Next Hop address\n            protocol ('str', optional): Protocol name that passed in command. Default to None.\n            protocol_type ('str', optional): Protocol type in show command, e.g., advertising-protocol\n                                             or receive-protocol. Default to None.\n            active_tag (bool, optional): True if needs to verify next hop of best path. Default to False.\n            max_time ('int', optional): Maximum time to keep checking. Default to 60.\n            check_interval ('int', optional): How often to check. Default to 10.\n\n        Returns:\n            True/False\n\n        Raises:\n            N/A\n    ",
       "module_name": "routing.verify",
       "uid": "verify_next_hop_in_route",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1764"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1766"
     }
   },
   "verify_no_interface_ip_route_connected": {
@@ -6942,7 +7010,7 @@
       "doc": " Verify routing interface preference\n\n        Args:\n            device ('str'): Device str\n            address ('str'): address to be ued in show command\n            preference ('int'): Preference name\n            max_time (`int`): Max time, defaults to 60 seconds\n            check_interval (`int`): Check interval, defaults to 10 seconds\n        Returns:\n            True / False\n        Raises:\n            None\n\n    ",
       "module_name": "routing.verify",
       "uid": "verify_preference_show_route",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L3293"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L3295"
     }
   },
   "verify_protocol_next_hop_in_route": {
@@ -6950,7 +7018,7 @@
       "doc": "Verify protocol next hop in route\n\n        Args:\n            device ('obj'): Device to use\n            route ('str'): IP address in show command\n            expected_protocol_next_hop ('str'): Protocol next Hop address\n            max_time ('int', optional): Maximum time to keep checking. Default to 60.\n            check_interval ('int', optional): How often to check. Default to 10.\n\n        Returns:\n            True/False\n\n        Raises:\n            N/A\n    ",
       "module_name": "routing.verify",
       "uid": "verify_protocol_next_hop_in_route",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1849"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1851"
     }
   },
   "verify_push_present_in_show_route": {
@@ -6958,7 +7026,7 @@
       "doc": "Verify if Push value is present in 'show route {address} extensive'\n\n        Args:\n            device ('obj'): Device to use\n            address ('str'): IP address for show command\n            push_value ('str'): Push value in show route {address} extensive command\n            max_time ('int', optional): Maximum time to keep checking. Default to 60 seconds.\n            check_interval ('int', optional): How often to check. Default to 10 seconds.\n\n        Returns:\n            True/False\n\n        Raises:\n            N/A\n    ",
       "module_name": "routing.verify",
       "uid": "verify_push_present_in_show_route",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1331"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1333"
     }
   },
   "verify_rib_fib_lfib_consistency": {
@@ -6982,7 +7050,7 @@
       "doc": "Verifies the as path length of all paths\n\n    Args:\n        device (object): Device object\n        route (str): Route to check path lengths of\n        expected_path_as_length (str): Expected AS path length\n        excluded_paths (list, optional): Paths to exclude from the count. Defaults to [].\n        max_time (int, optional): Max timeout time. Defaults to 60.\n        check_interval (int, optional): Check interval. Defaults to 10.\n\n    Returns:\n        bool: True/False\n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_all_as_length",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2844"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2846"
     }
   },
   "verify_route_as_length": {
@@ -6990,7 +7058,7 @@
       "doc": " Verify the length as-path of best path and non best path\n\n        Args:\n            device (`obj`): Device object\n            route('str'): Target route address\n            expected_bestpath_as_length (`int`): Expected best path as length\n            expected_nonbestpath_as_length (`int`): Expected non best path as length, default: None\n            max_time (`int`, optional): Max time, default: 60 seconds\n            check_interval (`int`, optional): Check interval, default: 10 seconds\n\n        Returns:\n            result (`bool`): Verified result\n\n        Raises:\n            N/A\n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_as_length",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2386"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2388"
     }
   },
   "verify_route_as_path_count": {
@@ -6998,7 +7066,7 @@
       "doc": "Verify route as path count\n\n    Args:\n        device (object): Device object\n        route (str): Route to check\n        expected_count (int): Expected count to check against\n        excluded_paths (list, optional): Paths to exclude. Defaults to [].\n        best_path (bool, optional): Check the best path or the next, non-best path. Defaults to True.\n        max_time (int, optional): Maximum timeout time. Defaults to 60.\n        check_internval (int, optional): Check interval. Defaults to 10.\n\n    Returns:\n        bool: True/False\n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_as_path_count",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2766"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2768"
     }
   },
   "verify_route_best_path": {
@@ -7006,7 +7074,7 @@
       "doc": " Verify Best path is toward $ip_address or with preference $preference\n\n        Args:\n            device (`obj`): Device object\n            target_route (`str`): Target route to check\n            ip_address (`str`): IP Address to verify is best path, default: None\n            preference (`int`): Preference of best path, default: None\n            active_tag (`str`, optional): Active tag to check, default: '*' (best path)\n            interface (`str`, optional): IP address in show command. Defaults to None. \n            extensive (`bool`, optional): 'extensive' added in the show command. Defaults to None.\n            expected_to (`str`, optional): Expected address that be towarded to. Defaults to None.\n            expected_med (`str`, optional): Expected med that be towarded to. Defaults to None.\n            max_time (`int`, optional): Max time, default: 60 seconds\n            check_interval (`int`, optional): Check interval, default: 10 seconds\n        \n        Returns:\n            result (`bool`): Verified result\n        \n        Raises:\n            N/A \n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_best_path",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1383"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1385"
     }
   },
   "verify_route_best_path_counter": {
@@ -7014,7 +7082,7 @@
       "doc": " Verify best path counter\n\n        Args:\n            device ('str'): Device str\n            expected_count ('int'): Expected best path count\n            protocol ('str'): Protocol name. Default to None\n            ip_address ('str'): IP address. Default to None.\n            max_time (`int`, optional): Max time, defaults to 60 seconds\n            check_interval (`int`, optional): Check interval, defaults to 10 seconds\n        Returns:\n            True / False\n        Raises:\n            None\n\n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_best_path_counter",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L3407"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L3409"
     }
   },
   "verify_route_best_path_metric": {
@@ -7022,7 +7090,7 @@
       "doc": " Verify the metric of best path\n\n        Args:\n            device (`obj`): Device object\n            expected_metric (`int`): Expected metric number \n            ip_address (`str`): IP address in show command. \n            metric2(`bool`, optional): Flag used to distinguish 'metric' and 'metric2', default: False\n            max_time (`int`, optional): Max time, default: 60 seconds\n            check_interval (`int`, optional): Check interval, default: 10 seconds\n        \n        Returns:\n            result (`bool`): Verified result\n        \n        Raises:\n            N/A \n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_best_path_metric",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1519"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1521"
     }
   },
   "verify_route_exists": {
@@ -7030,7 +7098,7 @@
       "doc": " Verifies route exists via show route protocol bgp\n\n    Args:\n        device (obj): Device object\n        expected_route (str): Expected route\n        invert (bool): Default to False. Set to True if verify route doesn't exist.\n        max_time (int, optional): Maximum sleep time. Defaults to 60.\n        check_interval (int, optional): Check interval. Defaults to 10.    \n    Returns:\n        bool\n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_exists",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L3250"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L3252"
     }
   },
   "verify_route_flag": {
@@ -7038,7 +7106,7 @@
       "doc": " Verify the IGP/EGP flag\n\n        Args:\n            device (`obj`): Device object\n            target_route ('str'): Route to check\n            expected_flag (`str`): Expected IGP flag\n            active_tag (`str`): Flag for 'best path'. Defaults to '*'.\n            max_time (`int`, optional): Max time, default: 60 seconds\n            check_interval (`int`, optional): Check interval, default: 10 seconds\n\n        Returns:\n            result (`bool`): Verified result\n\n        Raises:\n            N/A\n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_flag",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1907"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1909"
     }
   },
   "verify_route_forwarding_table": {
@@ -7046,7 +7114,7 @@
       "doc": " Verifies route-forwarding type given a label\n\n    Args:\n        device (obj): Device object\n        label (str): Label to check\n        expected_type (str): Expected type\n        expected_nh_index (str): Expected nh-index. Defaults to None\n        expected_netif (str): Expected netif. Defaults to None\n        max_time (int, optional): Maximum sleep time. Defaults to 60.\n        check_interval (int, optional): Check interval. Defaults to 10.\n\n    Returns:\n        str or None: mpls out label\n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_forwarding_table",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L3017"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L3019"
     }
   },
   "verify_route_forwarding_type": {
@@ -7054,7 +7122,7 @@
       "doc": " Verifies route-forwarding type given a label\n\n    Args:\n        device (obj): Device object\n        label (str): Label to check\n        expected_type (str): Expected type\n        max_time (int, optional): Maximum sleep time. Defaults to 60.\n        check_interval (int, optional): Check interval. Defaults to 10.\n\n    Returns:\n        str or None: mpls out label\n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_forwarding_type",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1041"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1043"
     }
   },
   "verify_route_has_as_path": {
@@ -7062,7 +7130,7 @@
       "doc": "Verifies a BGP route has an AS path\n\n    Args:\n        device (object): Device object\n        target_route (str): Target route to check\n        expected_as_path (str): Expected AS path\n        max_time (int, optional): Maximum time to keep checking. Default to 60 seconds.\n        check_interval (int, optional): How often to check. Default to 10 seconds.\n        invert (bool, optional): Inverts to check if AS path doesn't exist. Defaults to False.\n        extensive (bool, optional): True if show command ends with 'extensive'. Defaults to False.\n        protocol_type ('str', optional): Protocol type in show command, e.g., advertising-protocol\n                                             or receive-protocol. Default to None.\n        peer_addrress ('str', optional): Address used in show command. Defaults to None. \n    Returns:\n        bool: True/False\n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_has_as_path",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2105"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2107"
     }
   },
   "verify_route_has_as_path_length": {
@@ -7070,7 +7138,7 @@
       "doc": "Verifies a BGP route has an AS path\n\n    Args:\n        device (object): Device object\n        expected_as_path_length (int): Expected AS path length\n        protocol_type (str, optional): Protocol type in show command, e.g., advertising-protocol\n                                        or receive-protocol. Defaults to 'receive'.\n        peer_address (str, optional): Peer address used in show command. Defaults to None.\n        target_address (str, optional): Target address used in show command. Defaults to None.\n        max_time (int, optional): Maximum time to keep checking. Default to 60 seconds.\n        check_interval (int, optional): How often to check. Default to 10 seconds.\n    Returns:\n        bool: True/False\n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_has_as_path_length",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2198"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2200"
     }
   },
   "verify_route_has_no_output": {
@@ -7078,7 +7146,7 @@
       "doc": "Verify route has no output\n\n    Args:\n        target_route ('str'): Route to check\n        max_time ('int', optional): Maximum time to keep checking. Default to 60.\n        check_interval ('int', optional): How often to check. Default to 10.\n        protocol ('str', optional): Protocol to check. Defaults to None.\n        invert ('bool', optional): Invert the operation. Defaults to False\n        protocol_type ('str', optional): Protocol type in show command, e.g., advertising-protocol\n                                         or receive-protocol. Default to None.\n        peer_address ('str', optional): Address used in command. Defaults to None. \n        target_address ('str', optional): Address used in command. Defaults to None. \n\n    Raise: None\n\n    Returns: Boolean\n\n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_has_no_output",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1697"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1699"
     }
   },
   "verify_route_is_advertised_or_received": {
@@ -7102,7 +7170,7 @@
       "doc": " Verify the metric of non best path\n\n        Args:\n            device (`obj`): Device object\n            non_expected_metric (`int`): Not expected metric number \n            ip_address (`str`): IP address in show command. \n            metric2(`bool`, optional): Flag used to distinguish 'metric' and 'metric2', default: False\n            max_time (`int`, optional): Max time, default: 60 seconds\n            check_interval (`int`, optional): Check interval, default: 10 seconds\n        \n        Returns:\n            result (`bool`): Verified result\n        \n        Raises:\n            N/A \n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_non_best_path_metric",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1609"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1611"
     }
   },
   "verify_route_peer_as": {
@@ -7110,7 +7178,7 @@
       "doc": "Verify a BGP route's peer as\n\n    Args:\n        device (object): Device object\n        route (str): Route to check\n        expected_peer_as (str): Expected peer as to check for\n        best_path (bool, optional): Whether to check the best route or not. Defaults to True.\n        max_time (int, optional): Maximum timeout time. Defaults to 60.\n        check_interval (int, optional): Checkout interval. Defaults to 10.\n\n    Returns:\n        bool: True/False\n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_peer_as",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L3086"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L3088"
     }
   },
   "verify_route_push_label": {
@@ -7118,7 +7186,7 @@
       "doc": " Verifies there is Push expected_label in the table_name via show route ip_address\n\n    Args:\n        device (obj): Device object\n        table_name (str): Given table name\n        expected_label (str): Expected label\n        ip_address (str): IP address used in show command\n        max_time (int, optional): Maximum sleep time. Defaults to 60 seconds.\n        check_interval (int, optional): Check interval. Defaults to 10 seconds.\n\n    Returns:\n        bool\n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_push_label",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L3143"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L3145"
     }
   },
   "verify_route_same_as_peer_local": {
@@ -7126,7 +7194,7 @@
       "doc": "Verifies a route's Peer AS and Local AS are the same\n\n    Args:\n        device (object): Device object\n        target_route (str): Target route to check\n        best_path (bool): Whether to check the best path or not\n        invert (bool, optional): Invert to check if they're different. Defaults to False.\n        max_time (int, optional): Maximum timeout time. Defaults to 60.\n        check_interval (int, optional): Check interval. Defaults to 10.\n\n    Returns:\n        bool: True/False\n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_same_as_peer_local",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2908"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2910"
     }
   },
   "verify_route_table_label": {
@@ -7134,7 +7202,7 @@
       "doc": " Verify the out label\n\n        Args:\n            device (`obj`): Device object\n            label (`str`): show route label. Defaults to None.\n            php_label (`str`): php label. Defaults to None.\n            max_time ('int', optional): Maximum time to keep checking. Default to 60 seconds.\n            check_interval ('int', optional): How often to check. Default to 10 seconds.\n        Returns:\n            result (`bool`): Verified result\n        Raises:\n            N/A\n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_table_label",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1210"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1212"
     }
   },
   "verify_route_table_label_output": {
@@ -7142,7 +7210,7 @@
       "doc": " Verifies there is path via show route table table_name label label_name\n\n    Args:\n        device (obj): Device object\n        table_name (str): Table name used in show command. Defaults to 'mpls.0'\n        label_name (str): Given label used in show command\n        max_time (int, optional): Maximum sleep time. Defaults to 60 seconds.\n        check_interval (int, optional): Check interval. Defaults to 10 seconds.\n\n    Returns:\n        bool\n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_table_label_output",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L3196"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L3198"
     }
   },
   "verify_route_table_mpls_label": {
@@ -7150,7 +7218,7 @@
       "doc": "Verifies mpls label based on table name\n\n    Args:\n        device ('str'): Device object\n        table ('str'): Table name\n        label ('bool'): label for show command\n        expected_mpls_label('str'): Expected MPLS label\n        max_time ('int', optional): Maximum time to keep checking. Default to 60 seconds.\n        check_interval ('int', optional): How often to check. Default to 10 seconds.\n\n    Raise: None\n\n    Returns: Boolean\n\n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_table_mpls_label",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2023"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2025"
     }
   },
   "verify_route_table_output_interface": {
@@ -7158,7 +7226,7 @@
       "doc": " Verify the route table output interface\n\n        Args:\n            device (`obj`): Device object\n            label (`str`): show route label\n            table (`str`): Table name, Default mpls.0\n            output_interface (`str`): Output interface. Defaults to None.\n            max_time ('int', optional): Maximum time to keep checking. Default to 60 seconds.\n            check_interval ('int', optional): How often to check. Default to 10 seconds.\n        Returns:\n            result (`bool`): Verified result\n        Raises:\n            N/A\n    ",
       "module_name": "routing.verify",
       "uid": "verify_route_table_output_interface",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2970"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2972"
     }
   },
   "verify_routing_accepted_message": {
@@ -7166,7 +7234,7 @@
       "doc": "Verify accepted message of route\n\n    Args:\n        device (object): Device object\n        route (str): Route to check\n        expected_message (str): Expected message to verify against\n        max_time (int, optional): Maximum timeout time. Defaults to 60.\n        check_interval (int, optional): Check interval. Defaults to 10.\n\n    Returns:\n        bool: True/False\n    ",
       "module_name": "routing.verify",
       "uid": "verify_routing_accepted_message",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2269"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2271"
     }
   },
   "verify_routing_interface_preference": {
@@ -7292,7 +7360,7 @@
       "doc": "Verify rt destination\n\n        Args:\n            device ('obj'): Device to use\n            target_route ('str'): target route address\n            invert(bool, optional): Inverts from equals to not equals. Defaults to False.\n            max_time ('int', optional): Maximum time to keep checking. Default to 60 seconds.\n            check_interval ('int', optional): How often to check. Default to 10 seconds.\n            interface ('str', optional): expected interface address. Default to None.\n            extensive(bool, optional): True if show command has extensive. Defaults to False.\n            protocol ('str', optional): Protocol name that passed in command. Default to None.\n            protocol_type ('str', optional): Protocol type in show command, e.g., advertising-protocol\n                                             or receive-protocol. Default to None.\n\n        Returns:\n            True/False\n\n        Raises:\n            N/A\n    ",
       "module_name": "routing.verify",
       "uid": "verify_rt_destination",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2693"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L2695"
     }
   },
   "verify_segment_routing_dynamic_metric_type": {
@@ -7467,12 +7535,28 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxr/ntp/verify.py#L17"
     }
   },
+  "verify_snmp_statistics": {
+    "junos": {
+      "doc": " Verify snmp statistics\n\n        Args:\n            device (`obj`): Device object\n            expected_output_counter (`str`): Expected output counter\n            max_time (`int`): Max time, default: 60 seconds\n            check_interval (`int`): Check interval, default: 10 seconds\n        Returns:\n            result (`bool`): Verified result\n        Raises:\n            N/A\n    ",
+      "module_name": "snmp.verify",
+      "uid": "verify_snmp_statistics",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/snmp/verify.py#L52"
+    }
+  },
+  "verify_snmp_target": {
+    "junos": {
+      "doc": " Verify snmp target\n\n        Args:\n            device (`obj`): Device object\n            expected_target (`str`): Expected target IP\n            max_time (`int`): Max time, default: 60 seconds\n            check_interval (`int`): Check interval, default: 10 seconds\n        Returns:\n            result (`bool`): Verified result\n        Raises:\n            N/A\n    ",
+      "module_name": "snmp.verify",
+      "uid": "verify_snmp_target",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/snmp/verify.py#L12"
+    }
+  },
   "verify_source_of_best_path": {
     "junos": {
       "doc": "Verify the source of the best path\n\n    Args:\n        target_route ('str'): Route to check\n        expected_best_path ('str'): Best path address\n        max_time ('int', optional): Maximum time to keep checking. Default to 60.\n        check_interval ('int', optional): How often to check. Default to 10.\n\n    Raise: None\n\n    Returns: Boolean\n\n    ",
       "module_name": "routing.verify",
       "uid": "verify_source_of_best_path",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1087"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L1089"
     }
   },
   "verify_specific_route": {

@@ -110,7 +110,7 @@ class UpdateLearntDatabase(object):
                 'not learned before on device {d}, Skip updating local'
                 .format(v=self.update_ver_list, d=self.device.name))
         return False
-
+    
     @property
     def is_global_ver_enabled(self):
         '''To check if global verifications need to be udpated.'''
@@ -125,13 +125,14 @@ class UpdateLearntDatabase(object):
             log.info('No verifications imported')
             return False
 
-        if not self.obj.parent.verf:
-            self.global_summary.add_message(
-              '* No global verifications executed')
-            self.global_summary.add_subtitle_line()
-            log.info('No global verifications executed')
-            return False
-
+        if hasattr('self.obj.parent', 'verf'):
+            if not self.obj.parent.verf:
+                self.global_summary.add_message(
+                '* No global verifications executed')
+                self.global_summary.add_subtitle_line()
+                log.info('No global verifications executed')
+                return False
+           
         if not self.update_ver_list:
             self.global_summary.add_message(
               '* No verifications defined to be updated')
@@ -140,10 +141,11 @@ class UpdateLearntDatabase(object):
             return False
 
         for ver in self.update_ver_list:
-            if self.device.name in self.obj.parent.verf and \
-               self.obj.parent.verf[self.device.name] and \
-               ver in self.obj.parent.verf[self.device.name]:
-                return True
+            if hasattr('self.obj.parent', 'verf'):
+                if self.device.name in self.obj.parent.verf and \
+                self.obj.parent.verf[self.device.name] and \
+                ver in self.obj.parent.verf[self.device.name]:
+                    return True
 
         # add seperate line
         self.global_summary.add_sep_line()

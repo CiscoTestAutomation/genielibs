@@ -163,7 +163,7 @@ class ProcessRestartLib(object):
         if self.process in self.switchover:
             # Do switchover
             # urib uses `kill -6 <pid>` already restarted the switchover
-            # therefore, no longer need the this manual process
+            # therefore, no longer need this manual process
             if 'urib' in self.process:
                 pass
             else:
@@ -187,7 +187,7 @@ class ProcessRestartLib(object):
                              continue_=True) as step:
                 filetransfer = self.device.filetransfer if hasattr(self.device, 'filetransfer') else None
                 ha = self.abstract.sdk.libs.abstracted_libs.ha.HA(
-                    device=device, filetransfer=filetransfer)
+                    device=self.device, filetransfer=filetransfer)
                 cores = None
                 exception = None
                 while timeout.iterate():
@@ -223,11 +223,11 @@ class ProcessRestartLib(object):
                 with steps.start('Verify information has been printed to log',
                                  continue_=True) as step:
 
-                    msg = device.execute("show logging logfile | i '(core "
+                    msg = self.device.execute("show logging logfile | i '(core "
                                          "will be saved)' | i '(PID {pid})' |"
                                          "count".format(pid=self.previous_pid))
 
-                    msg2 = device.execute("show logging logfile | "
+                    msg2 = self.device.execute("show logging logfile | "
                                           "i 'SYSMGR-2-SERVICE_CRASHED:' |"
                                           "i '(PID {pid})' | count".format(
                                           pid=self.previous_pid))
@@ -390,18 +390,17 @@ class ProcessRestartLib(object):
     def _reconnect(self, steps, timeout):
         '''Reconnect to the device if needed'''
         if self.process in self.reconnect:
+ 
             ha = self.abstract.sdk.libs.abstracted_libs.ha.HA(
                 device=self.device)
             with steps.start('The device is reloading when restarting this process',
                              continue_=True) as step:
-                
                 # Waiting 4-7 mins for switchover to complete 
                 log.info("Waiting for a maximum of 7 minutes for device switchover to completess")
                 check_time = Timeout(max_time = 700, interval = 20)
                 while check_time.iterate():
                     check_time.sleep()
                     continue
-
                 self.device.destroy()
                 time.sleep(30)
 

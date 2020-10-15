@@ -72,13 +72,14 @@ def copy_file_to_running_config(device, path, file):
         )
 
 
-def restore_running_config(device, path, file):
+def restore_running_config(device, path, file, timeout=60):
     """ Restore config from local file
 
         Args:
             device (`obj`): Device object
             path (`str`): directory
             file (`str`): file name
+            timeout (`int`): Timeout for applying config
         Returns:
             None
     """
@@ -96,11 +97,12 @@ def restore_running_config(device, path, file):
         device.execute(
             "configure replace {path}{file}".format(path=path, file=file),
             reply=dialog,
+            timeout=timeout
         )
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not replace saved configuration on "
-            "device {device}".format(device=device.name)
+            "device {device}\nError: {e}".format(device=device.name, e=str(e))
         )
 
 

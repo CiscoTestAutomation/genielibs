@@ -234,3 +234,70 @@ def get_file_timestamp(device, root_path, file):
                             .replace(year=datetime.datetime.now().year)
 
     return None
+
+def get_system_users(device):
+    """ Get list of users via show system user
+
+        Args:
+            device ('obj'): Device object
+
+        Returns:
+            result (`list`): Get list of username and ip address pairs
+
+        Raises:
+            N/A
+    """
+    user_list = []
+
+    try:
+        output = device.parse('show system users')
+    except SchemaEmptyParserError:
+        return user_list
+
+    # schema = {
+    #     "user-table": {
+    #         "user-entry": [
+    #             {
+    #                 "command": str,
+    #                 "from": str,
+    #                  ...
+
+    user_table = Dq(output).get_values('user-entry')
+    if user_table:
+        for user in user_table:
+            user_list.append({user['user']: user['from']})
+    return user_list
+
+def get_system_connections_sessions(device):
+    """ Get list of system connections via show system connections
+
+        Args:
+            device ('obj'): Device object
+
+        Returns:
+            result (`list`): Get list of system connection sessions
+
+        Raises:
+            N/A
+    """
+    connections = []
+
+    try:
+        output = device.parse('show system connections')
+    except SchemaEmptyParserError:
+        return connections
+
+    # "output": {
+    #     "connections-table": [
+    #         {
+    #             "proto": str,
+    #             "recv-Q": str,
+    #             "send-Q": str,
+    #             "local-address": str,
+    #             "foreign-address": str,
+    #             "state": str,
+    #         }
+    #         ...
+
+    connections = Dq(output).get_values('connections-table')
+    return connections

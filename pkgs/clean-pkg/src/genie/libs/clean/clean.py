@@ -333,3 +333,8 @@ class DeviceClean(BaseCleaner):
             if not result:
                 raise Exception("Clean {result}.".format(result=str(result)))
 
+
+class PyatsDeviceClean(DeviceClean):
+
+    def clean(self, device, reporter, *args, **kwargs):
+        super().clean(device, reporter, *args, **kwargs)

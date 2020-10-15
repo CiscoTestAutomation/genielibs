@@ -1689,7 +1689,7 @@ def get_interfaces(device, link_name=None, opposite=False, phy=False, num=0):
     #                         type: ethernet
     if link_name:
         try:
-            link = device.testbed.find_links(interfaces__device__name=device.name, 
+            link = device.testbed.find_links(interfaces__device__name=device.name,
                 name=link_name).pop()
         except Exception as e:
             log.error(str(e))
@@ -1924,7 +1924,7 @@ def get_tolerance_min_max(value, expected_tolerance):
     """
     # Convert it to int
     value = int(value)
-    
+
     # Expected tolerance %
     tolerance = (value * expected_tolerance) / 100
 
@@ -1968,8 +1968,8 @@ def verify_mpls_experimental_bits(pcap_location, expected_dst_address, expected_
                     return expected_bit_value == packet[MPLS].cos
 
     return False
-    
-def verify_pcap_dscp_bits(pcap_location, expected_bits, position=0, expected_protocol=None, 
+
+def verify_pcap_dscp_bits(pcap_location, expected_bits, position=0, expected_protocol=None,
                           expected_dst_port_number=None, expected_src_address=None, check_all=False,
                           expected_src_port_number=None, port_and_or='and'):
     """Verifies the dscp bits of packets in a capture file
@@ -2056,7 +2056,7 @@ def verify_pcap_dscp_bits(pcap_location, expected_bits, position=0, expected_pro
         if str(expected_protocol).lower() == 'tcp' and TCP not in packet:
             continue
 
-        
+
 
         # Handles port numbers
         if expected_dst_port_number and expected_src_port_number:
@@ -2080,7 +2080,7 @@ def verify_pcap_dscp_bits(pcap_location, expected_bits, position=0, expected_pro
 
         if bits_ and bits_.startswith(str(expected_bits)):
             return True
-        
+
         if not check_all:
             break
 
@@ -2109,10 +2109,10 @@ def verify_pcap_packet_type(pcap_location, expected_type, position=0):
     pcap_object = rdpcap(pcap_location)
     packet = pcap_object[position]
     target_type_ = packet[IP].version
-    
+
     if expected_type == target_type_:
         return True
-    
+
     return False
 
 def verify_pcap_packet_protocol(pcap_location, expected_protocol, position=0):
@@ -2138,10 +2138,10 @@ def verify_pcap_packet_protocol(pcap_location, expected_protocol, position=0):
     pcap_object = rdpcap(pcap_location)
     packet = pcap_object[position]
     protocol_ = packet[IP].proto
-    
+
     if expected_protocol == protocol_:
         return True
-    
+
     return False
 
 def verify_pcap_packet_source_port(pcap_location, expected_source_port, position=0):
@@ -2167,10 +2167,10 @@ def verify_pcap_packet_source_port(pcap_location, expected_source_port, position
     pcap_object = rdpcap(pcap_location)
     packet = pcap_object[position]
     src_port_ = packet[IP].sport
-    
+
     if expected_source_port == src_port_:
         return True
-    
+
     return False
 
 def verify_pcap_packet_destination_port(pcap_location, expected_destination_port, position=0):
@@ -2196,13 +2196,13 @@ def verify_pcap_packet_destination_port(pcap_location, expected_destination_port
     pcap_object = rdpcap(pcap_location)
     packet = pcap_object[position]
     dst_port_ = packet[IP].dport
-    
+
     if expected_destination_port == dst_port_:
         return True
-    
+
     return False
 
-def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_dst_address=None, 
+def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_dst_address=None,
     expected_inner_exp_bits=None, expected_outer_exp_bits=None, expected_tos=None,
     expected_mpls_label=None, check_all=False):
     """ Verify pcap mpls packets values
@@ -2232,10 +2232,10 @@ def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_d
 
     pcap_object = rdpcap(pcap_location)
 
-    
+
     for packet in pcap_object:
         if IP in packet or MPLS in packet:
-                
+
             ip_packet = packet.getlayer(IP)
 
             if expected_dst_address:
@@ -2243,12 +2243,12 @@ def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_d
                 dst = ip_packet.dst
                 if dst != expected_dst_address:
                     continue
-            
+
             if expected_src_address:
                 src = ip_packet.src
                 if src != expected_src_address:
                     continue
-                
+
             if expected_outer_exp_bits:
                 if not packet.haslayer(MPLS):
                     continue
@@ -2257,10 +2257,10 @@ def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_d
                 mpls_outer_cos = mpls_outer.cos
                 if bin(mpls_outer_cos) != bin(expected_outer_exp_bits):
                     if check_all:
-                        return False 
+                        return False
                     continue
 
-            
+
             if expected_mpls_label:
                 if not packet.haslayer(MPLS):
                     continue
@@ -2269,9 +2269,9 @@ def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_d
                 mpls_outer_label = mpls_outer.label
                 if bin(mpls_outer_label) != bin(expected_mpls_label):
                     if check_all:
-                        return False 
+                        return False
                     continue
-            
+
             if expected_inner_exp_bits:
                 if not packet.haslayer(MPLS):
                     continue
@@ -2280,14 +2280,14 @@ def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_d
                 mpls_inner_cos = mpls_inner.cos
                 if bin(mpls_inner_cos) != bin(expected_inner_exp_bits):
                     if check_all:
-                        return False 
+                        return False
                     continue
 
             if expected_tos is not None:
                 ip_tos = ip_packet.tos
                 if not bin(ip_tos).startswith(bin(expected_tos)):
                     if check_all:
-                        return False 
+                        return False
                     continue
 
             return True
@@ -2317,7 +2317,7 @@ def verify_no_mpls_header(pcap_location, expected_dst_address=None):
     pcap_object = rdpcap(pcap_location)
     for packet in pcap_object:
         if IP in packet:
-                
+
             ip_packet = packet.getlayer(IP)
 
             if expected_dst_address:
@@ -2396,7 +2396,7 @@ def load_dict_from_json_file(filename):
 
     return output
 
-def verify_pcap_packet(pcap_location, expected_src_address=None, expected_dst_address=None, 
+def verify_pcap_packet(pcap_location, expected_src_address=None, expected_dst_address=None,
     expected_protocol=None, expected_dst_port_number=None, expected_tos=None,
     expected_src_port_number=None, expected_traffic_class=None, check_all=False):
     """ Verify pcap mpls packets values
@@ -2426,9 +2426,9 @@ def verify_pcap_packet(pcap_location, expected_src_address=None, expected_dst_ad
             'pip install scapy') from None
 
     pcap_object = rdpcap(pcap_location)
-    
+
     for packet in pcap_object:
-        
+
         if IP in packet or IPv6 in packet:
             ip_packet = packet.getlayer(IP) if IP in packet else packet.getlayer(IPv6)
 
@@ -2437,7 +2437,7 @@ def verify_pcap_packet(pcap_location, expected_src_address=None, expected_dst_ad
                 dst = ip_packet.dst
                 if dst != expected_dst_address:
                     continue
-            
+
             if expected_src_address:
                 src = ip_packet.src
                 if src != expected_src_address:
@@ -2449,23 +2449,23 @@ def verify_pcap_packet(pcap_location, expected_src_address=None, expected_dst_ad
 
                 if not bin(ip_tos).startswith(bin(expected_tos)):
                     if check_all:
-                        return False 
+                        return False
                     continue
-                
+
             if expected_protocol and expected_protocol.lower() == 'tcp' and TCP not in packet:
                 continue
 
             if expected_protocol and expected_protocol.lower() == 'udp' and UDP not in packet:
                 continue
-            
+
             if expected_dst_port_number and expected_dst_port_number != packet.dport:
                 continue
-            
+
             if expected_src_port_number and expected_src_port_number != packet.sport:
                 continue
-            
+
             if expected_traffic_class is not None:
-                
+
                 if IPv6 in packet and ip_packet.tc != expected_traffic_class:
                     continue
 
@@ -2551,70 +2551,107 @@ def get_connection(device,
 
     return terminal
 
-def get_system_users(device):
-    """ Get list of users via show system user
 
+
+def get_devices(testbed, os=None, regex=None, regex_key='os', pick_type='all'):
+    """ Get devices from testbed object
         Args:
-            device ('obj'): Device object
+            testbed (`obj`): testbed object
+            os (`str`): specify os to choose
+            regex (`str`): regex to chose devices based against regex_key
+            regex_key (`str`): specify key in testbed yaml where use regex
+                               default to `os`
+            pick_type (`str`) : specify how to pick up
+                                default to `all`
+                                choices:
+                                  `all`: pick up all devices
+                                         return device names as list
+                                  `first_one`: pick up first one device
+                                               return device name as string
+                                  `random_one`: pick up one device randomly
+                                                return device name as string
+                                  `random_order`: randomize order of devices
+                                                  return device names as list
 
+        Raise:
+            Exception
         Returns:
-            result (`list`): Get list of username and ip address pairs
+            picked_devices (`list` or `str`): list of device names
+                                              device name as string in case of
+                                              `first_one` or `random_one`
 
-        Raises:
-            N/A
+        Example:
+
+        >>> dev.api.get_devices(testbed)
+        ['terminal_server',
+         'internet-rtr01',
+         'internet-host01',
+         'edge-firewall01',
+         'core-rtr01',
+         'core-rtr02',
+         'dist-rtr01',
+         'dist-rtr02',
+         'dist-sw01',
+         'dist-sw02',
+         'inside-host01',
+         'edge-sw01',
+         'inside-host02']
+
+        >>> dev.api.get_devices(testbed, os='iosxe')
+        ['internet-rtr01', 'dist-rtr01', 'dist-rtr02']
+
+        >>> dev.api.get_devices(testbed, regex='iosxe')
+        ['internet-rtr01', 'dist-rtr01', 'dist-rtr02']
+
+        >>> dev.api.get_devices(testbed, regex='ios.*')
+        ['internet-rtr01',
+         'core-rtr01',
+         'core-rtr02',
+         'dist-rtr01',
+         'dist-rtr02',
+         'edge-sw01']
+
+        >>> dev.api.get_devices(testbed, regex='iosxrv', regex_key='series')
+        ['core-rtr01', 'core-rtr02']
+
+        >>> dev.api.get_devices(testbed, os='iosxe', regex='.*n0.*', regex_key='command')
+        ['internet-rtr01']
+
+        >>> dev.api.get_devices(testbed, pick_type='first_one')
+        'terminal_server'
+
+        >>> dev.api.get_devices(testbed, os='nxos', pick_type='random_one')
+        'dist-sw02'
+
+        >>> dev.api.get_devices(testbed, os='iosxe', pick_type='random_order')
+        ['internet-rtr01', 'dist-rtr01', 'dist-rtr02']
+
     """
-    user_list = []
+    picked_devices = None
+    if os:
+        if regex and regex_key:
+            picked_devices = Dq(testbed.raw_config).contains(
+                os, level=-1).contains_key_value(
+                    regex_key, regex, value_regex=True).get_values('devices')
+        else:
+            picked_devices = Dq(testbed.raw_config).contains_key_value(
+                'os', os).get_values('devices')
+    else:
+        if regex and regex_key:
+            picked_devices = Dq(testbed.raw_config).contains_key_value(
+                regex_key, regex, value_regex=True).get_values('devices')
+        else:
+            picked_devices = Dq(testbed.raw_config).get_values('devices')
 
-    try:
-        output = device.parse('show system users')
-    except SchemaEmptyParserError:
-        return user_list
-
-    # schema = {
-    #     "user-table": {
-    #         "user-entry": [
-    #             {
-    #                 "command": str,
-    #                 "from": str,
-    #                  ...
-
-    user_table = Dq(output).get_values('user-entry')
-    if user_table:
-        for user in user_table:
-            user_list.append({user['user']: user['from']})
-    return user_list
-
-def get_system_connections_sessions(device):
-    """ Get list of system connections via show system connections
-
-        Args:
-            device ('obj'): Device object
-
-        Returns:
-            result (`list`): Get list of system connection sessions
-
-        Raises:
-            N/A
-    """
-    connections = []
-
-    try:
-        output = device.parse('show system connections')
-    except SchemaEmptyParserError:
-        return connections
-
-    # "output": {
-    #     "connections-table": [
-    #         {
-    #             "proto": str,
-    #             "recv-Q": str,
-    #             "send-Q": str,
-    #             "local-address": str,
-    #             "foreign-address": str,
-    #             "state": str,
-    #         }
-    #         ...
-
-    connections = Dq(output).get_values('connections-table')
-    return connections
-
+    if picked_devices:
+        if pick_type == 'first_one':
+            return picked_devices[0]
+        elif pick_type == 'random_one':
+            return random.choice(picked_devices)
+        elif pick_type == 'random_order':
+            random.shuffle(picked_devices)
+            return picked_devices
+        else:
+            return picked_devices
+    else:
+        raise Exception("Couldn't find any device from testbed object.")

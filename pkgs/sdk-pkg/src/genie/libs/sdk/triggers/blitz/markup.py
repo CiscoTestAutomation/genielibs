@@ -42,7 +42,7 @@ def get_variable(**kwargs):
     return _kwargs
 
 def _find_saved_variable(**kwargs):
-    # Rotating throught the key:value pairs, either returning the dictionary
+    # Rotating through the key:value pairs, either returning the dictionary
     # OR sending it to load_saved_variable to replace vairables.
     self = kwargs.pop('self')
 
@@ -91,7 +91,7 @@ def _load_saved_variable(self, val, key=None):
         var_name = item.groupdict()['var_name']
         group.update({markup_string : var_name})
     for blitz_key, blitz_val in group.items():
-        #  Access object properties, list index, or dictinary value using key
+        #  Access object properties, list index, or dictionary value using key
         # '%VARIABLE{interface[0].name}'
         # '%VARIABLE{interface.name}'
         # '%VARIABLE{interface['name']}'
@@ -111,7 +111,7 @@ def _load_saved_variable(self, val, key=None):
                 except TypeError:
                     last_parameter = getattr(last_parameter, split_val)
                 except KeyError:
-                    if split_val == '_keys' or split_val == '_values':
+                    if split_val in ['_keys', '_values']:
                         temp_value_holder = getattr(last_parameter, split_val.replace('_', ''))()
                         last_parameter = next(iter(temp_value_holder))
                     else:
@@ -121,11 +121,7 @@ def _load_saved_variable(self, val, key=None):
         else:
             var_value = self.parameters['save_variable_name'][blitz_val]
 
-        if blitz_key == val:
-            val = var_value
-        else:
-            val = val.replace(blitz_key, str(var_value))
-
+        val = var_value if blitz_key == val else val.replace(blitz_key, str(var_value))
     return key, val
 
 def save_variable(self, save_variable_name, output=None, append=None, append_in_list=None):
@@ -149,11 +145,12 @@ def save_variable(self, save_variable_name, output=None, append=None, append_in_
                 log.info('Appended {} to list variable {}'.format(str(output), save_variable_name))
 
         else: 
-            saved_vars.update({save_variable_name:output})
+            saved_vars.update({save_variable_name:output if output else ''})
+            log.info('Saved {} in variable {}'.format(str(output), save_variable_name))
     else:
         if append_in_list:
             saved_vars.update({save_variable_name:[output]})
             log.info('Saved {} in list variable {}'.format(str(output), save_variable_name))
         else:
-            saved_vars.update({save_variable_name:output})
+            saved_vars.update({save_variable_name:output if output else ''})
             log.info('Saved {} in variable {}'.format(str(output), save_variable_name))

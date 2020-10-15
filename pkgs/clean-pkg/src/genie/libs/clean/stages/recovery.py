@@ -133,7 +133,6 @@ def _connectivity(device, console_activity_pattern=None, break_count=10,
                      format(device.name))
 
     # Step-4: Boot device with given golden image
-
     if golden_image:
         log.info(banner("Booting device '{}' with the Golden images".\
                         format(device.name)))
@@ -193,8 +192,6 @@ def _connectivity(device, console_activity_pattern=None, break_count=10,
     else:
         log.info("Success - Have recovered and reconnected to device '{}'".\
                  format(device.name))
-        if tftp_boot:
-            section.parameters['common_data']['device_tftp_booted'] = True
 
 
 @clean_schema({

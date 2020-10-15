@@ -1,15 +1,14 @@
 '''NXOS N9K Specific implementation of Restart process restart'''
 
 import time
-from datetime import datetime
 import logging
 
 from pyats import aetest
 
 from genie.utils.diff import Diff
+from unicon.statemachine import State
 from genie.utils.timeout import TempResult
 from genie.harness.utils import connect_device, disconnect_device
-from unicon.statemachine import State
 
 from ..processrestart import \
                       ProcessRestartLib as ProcessRestartLibNxos
@@ -42,11 +41,15 @@ class ProcessRestartLib(ProcessRestartLibNxos):
         State('config', r'Linux')
         State('exec', r'Linux')
 
-        ha.load_debug_plugin(self.device.custom.debug_plugin)
+        output = ha.load_debug_plugin(self.device.custom.debug_plugin)
+
+        if 'Incompatible' in output:
+            raise Exception("Incompatible debug plugin image\n")
+
         try:
             self.device.execute('kill -{cm} {p}\n'.\
-                                  format(p=self.previous_pid,
-                                         cm=self.obj.crash_method),
+                                format(p=self.previous_pid,
+                                        cm=self.obj.crash_method),
                                 timeout=10)
         except Exception as e:
             log.info('Exception raised is expected when running trigger '\
