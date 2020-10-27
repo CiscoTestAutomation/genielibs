@@ -196,8 +196,8 @@ class Internal_Converter(object):
 
 
         # XX is used to save/replace variables in command!
-        pattern_XX = re.compile(r'XX\(([^X]+)\)XX')
-        matches_XX = re.finditer(pattern_XX, val)
+        pattern_XX = re.compile(r'XX\(([\S\s]+?)\)XX')
+        matches_XX = re.finditer(pattern_XX, str(val))
 
         for match in matches_XX:
             variable_name = match.group(1)
@@ -214,10 +214,10 @@ class Internal_Converter(object):
     def _XR_pattern_matching(val):
 
         # XR used to replace values in cmds=patterns::: only! 
-        pattern_XR = re.compile(r'XR\(([^XR]+)\)XR')
-        matches_XR = re.findall(pattern_XR, val)
+        pattern_XR = re.compile(r'XR\(([\S\s]+?)\)XR')
+        matches_XR = re.findall(pattern_XR, str(val))
         if matches_XR:
-            val = re.sub(r'\bXR\b', 'XX', val)
+            val = re.sub(r'\bXR\b', 'XX', str(val))
             return Internal_Converter._XX_pattern_matching(val, 'replace')
 
         return val

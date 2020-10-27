@@ -188,9 +188,9 @@ def execute_install_package(device, image_dir, image, save_system_config=True,
         device.execute(cmd, reply=dialog, timeout=install_timeout)
     except StateMachineError:
         # this will be raised after 'Return to get started' is seen
-        device.destroy()
         timeout = Timeout(reconnect_max_time, reconnect_interval)
         while timeout.iterate():
+            device.destroy()
             try:
                 connect_device(device)
             except Exception as e:

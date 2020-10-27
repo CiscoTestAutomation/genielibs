@@ -630,13 +630,12 @@ def _condition_validator(items):
             operation = output['operation'].strip()
             left_hand = output['left_hand_value']
             left_hand = left_hand if isinstance(left_hand, (float, int)) else left_hand.strip()
-
             result = _evaluate_operator(right_hand,
                                         operation=operation,
                                         value=left_hand)
             items = items.replace(item, ' ' + str(result) + ' ')
 
-    return ast.literal_eval(items)
+    return _true_false_eval(items)
 
 def _string_query_validator(right_hand_value, query):
 
@@ -680,7 +679,7 @@ def _string_query_validator(right_hand_value, query):
     try:
         # Checking if the type of the input is bool
         if right_hand_value_type == bool and isinstance(query, bool):
-            left_hand_value = ast.literal_eval(left_hand_value)
+            left_hand_value = _true_false_eval(left_hand_value)
         else:
             # cast the input value to result value
             left_hand_value = right_hand_value_type(left_hand_value)
@@ -763,7 +762,6 @@ def _string_query_range_validator(output, query):
 
     return ret_dict
 
-
 def _evaluate_operator(result, operation=None, value=None):
     # used to evaluate the operation results
 
@@ -799,6 +797,77 @@ def _evaluate_operator(result, operation=None, value=None):
 
     return dict_of_ops[operation](result, value)
 
+def _true_false_eval(bool_exp):
+
+    '''
+    This function is an alternative to eval
+    Type of input that works with function are:
+
+    e.g:
+        _true_false_eval("True or False and (True or False)") == True
+        _true_false_eval("True and False") == False
+        _true_false_eval("True") == True
+        _true_false_eval("True and (True and (True or False))") == True
+    '''
+    
+    dict_of_ops = {'or': operator.or_, 'and': operator.and_}
+    dict_of_bools = {'True': True, 'False': False}
+
+    p = re.compile(r"\(([a-zA-Z\s]+)\)")
+
+    # loop while bool_exp is not a boolean,
+    # stop looping when its a boolean
+    while isinstance(bool_exp, str):
+
+        m = p.search(bool_exp)
+        if m:
+
+            # Recursively find out each boolean expression inside brackets 
+            # and evaluate each expression to its boolean equivalent (True/False) and replace until
+            # no brackets left
+            bool_exp = bool_exp.replace(m.group(0), str(_true_false_eval(m.group(1))))
+            continue
+
+        # list of True and False  ['True', 'False']
+        bool_exp_list = re.split(r"\s+and\s+|\s+or\s+", bool_exp)
+
+        # if after splitting on and/or this list contains anything 
+        # other than True/False raise Exception, because bool_exp
+        # only contains True/False
+        for item in bool_exp_list:
+            if item.strip() not in list(dict_of_bools.keys()):
+                raise Exception("{} is an invalid boolean expression. "
+                                "A boolean expression only contains of True/False".format(bool_exp))
+
+        # list of and/or ['or']
+        and_or_list = re.split(r"\s*True\s*|\s*False\s*", bool_exp)
+        and_or_list = [item for item in and_or_list if item.strip()]
+
+        # When collecting and/or if for any reason a value other than
+        # and/or is picked up by this list raise Exception
+        for item in and_or_list:
+            if item.strip() not in list(dict_of_ops.keys()):
+                raise Exception("{} is an invalid boolean expression. "
+                                "A boolean expression only contains of True/False".format(bool_exp))
+
+        # all the and/or together + 1 == all of the True/False
+        # Always the case
+        if len(and_or_list) +1 != len(bool_exp_list):
+            raise Exception("{} is an invalid boolean expression".format(bool_exp))
+
+        # check bool expression until we have one final True/False
+        while len(bool_exp_list) > 1:
+
+            right_hand_val = dict_of_bools[bool_exp_list.pop(0).strip()]
+            left_hand_val = dict_of_bools[bool_exp_list.pop(0).strip()]
+            ops = and_or_list.pop(0)
+
+            bool_exp_list.insert(0, 
+                            str(dict_of_ops[ops.strip()](right_hand_val, left_hand_val)))
+
+        bool_exp = dict_of_bools[bool_exp_list[0].strip()]
+
+    return bool_exp
 
 def _get_exclude(command, device):
     exclude = None

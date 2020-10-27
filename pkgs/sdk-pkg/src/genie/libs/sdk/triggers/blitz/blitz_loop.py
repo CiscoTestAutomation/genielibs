@@ -11,6 +11,10 @@ from genie.utils.timeout import Timeout
 from .blitz_control import blitz_control
 from .markup import get_variable, save_variable
 
+from pyats.aetest.steps import Steps
+from pyats.results import Passed, Failed, Errored, Skipped,\
+                          Aborted, Passx, Blocked
+
 log = logging.getLogger()
 
 
@@ -18,22 +22,54 @@ def loop(self, steps, testbed, section, name, action_item):
 
     ret_list = []
 
+    loop_until = action_item.get('loop_until')
+
+    if loop_until:
+        msg = "Executing actions in a loop with loop_until: '{l}'".format(l=loop_until)
+    else:
+        msg = 'Executing actions in a loop'
+
     # Since loop shows up in action level, it has to be treated as an action and step
-    with steps.start('Executing actions in a loop', continue_=True) as step:
+    with steps.start(msg, continue_=True) as step:
         # _loop function actually as a dispatcher between blitz loop and
-        loop_list = _loop(self, step, testbed, section, action_item, ret_list,
-                          name)
+        loop_return_items = _loop(self, step, testbed, section, action_item, ret_list,
+                                  name)
 
         # Each loop is treated as one action.
         # Actions within a loop are considered as substep.
-        # As a result if a condition is met. The function will be applied on
-        # The loop action itself, which in turns applies to all the substeps.
-        if loop_list and 'loop_conditioned' in loop_list[0]:
-            getattr(steps, loop_list[0]['loop_conditioned'])(
-                'condition is met, the loop step result is set to {f}'.format(
-                    f=loop_list[0]['loop_conditioned']))
+        if loop_return_items: 
 
-    return {'loop_output': loop_list}
+            # As a result if a condition is met. The function will be applied on
+            # The loop action itself, which in turns applies to all the substeps.
+            if 'loop_conditioned' in loop_return_items[0]:
+                getattr(step, loop_return_items[0]['loop_conditioned'])(
+                    'condition is met, the loop step result is set to {f}'.format(
+                        f=loop_return_items[0]['loop_conditioned']))
+
+            # if loop_until is set to passed/failed, then the goal is to
+            # loop until pass/fail
+            elif loop_until:
+
+                prev_loop_result  = loop_return_items[-1]['step_result']
+
+                if loop_until.lower() == str(prev_loop_result):
+                    loop_return_items = [{'step_result': 'passed', 'device': None,
+                                          'description': 'loop with loop_until', 'action': 'loop'}]
+
+                    getattr(step, 'passed')(
+                        "The loop_until was set to '{a}' and last attempted action in the loop"
+                        " had the same result. Hence the loop_output is set to passed".\
+                        format(a=loop_until))
+                else:
+                    loop_return_items = [{'step_result': 'failed', 'device': None, 
+                                          'description': 'loop with loop_until', 'action': 'loop'}]
+
+                    getattr(step, 'failed')(
+                        "The loop_until was set to '{a}' and last attempted action in the loop did "
+                        " not have the same result. Hence the loop_output is set to failed".\
+                        format(a=loop_until))
+
+    return {'loop_output': loop_return_items}
 
 def _loop(self, steps, testbed, section, action_item, ret_list, name):
 
@@ -91,6 +127,10 @@ def _loop(self, steps, testbed, section, action_item, ret_list, name):
     # the interval is entirely optional, number of pauses for rerunning the same loop
     check_interval = action_item.get('check_interval', 0) if max_time else None
 
+    # If provided, (passed/failed) , check if last iteration is passed/failed
+    # and come out of the loop
+    loop_until = action_item.get('loop_until')
+
     # Checking if the loop is of type blitz or it is a maple loop
     if maple:
         _maple_loop_helper(self,
@@ -108,6 +148,7 @@ def _loop(self, steps, testbed, section, action_item, ret_list, name):
                             name,
                             iterable_name,
                             ret_list,
+                            loop_until=loop_until,
                             max_time=max_time,
                             check_interval=check_interval,
                             until=until,
@@ -125,6 +166,7 @@ def _loop_helper(self,
                  name,
                  iterable_name,
                  ret_list,
+                 loop_until=False,
                  max_time=None,
                  check_interval=None,
                  until=None,
@@ -165,10 +207,10 @@ def _loop_helper(self,
         raise Exception('You can only have one iterable item per each loop')
 
     # need to at least have
-    if (not range_ and not iterator_) and not until and not do_until:
+    if (not range_ and not iterator_) and not until and not do_until and not loop_until:
         raise Exception('At least on iterable item or terminating condition')
 
-    # timeout if until and do_until are looping through infinity
+    # timeout if until or do_until or loop_until are looping through infinity
     timeout = Timeout(max_time, check_interval)
 
     loop_list = None
@@ -226,7 +268,23 @@ def _loop_helper(self,
 
         # running all the actions and adding the outputs of those actions to return list
         if actions:
-            ret_list.extend(list(_loop_action_parser(self, steps, testbed, section, actions)))
+
+            ret_list.extend(list(_loop_action_parser(self, steps, testbed, section, actions, loop_until=loop_until)))
+
+        if loop_until:
+            # Considering that multiple actions might be looped over this
+            # looks for the first pass/fail of the actions and check if it
+            # equals loop_until then break the loop
+            loop_until_met = False
+            for index_ in range(len(ret_list)):
+                if str(ret_list[index_]['step_result']) == loop_until.lower():
+                    loop_until_met = True
+                    break
+
+            if loop_until_met:
+                ret_list = ret_list[index_:index_+1]
+                break
+
         # if terminating condition is set with key do_until run the actions at least once then check for the condition
         if do_until:
             until = blitz_control(self, do_until, 'do_until')
@@ -240,7 +298,7 @@ def _loop_helper(self,
         log.debug('Action end time: {}'.format(str(loop_end_time)))
         loop_duration = loop_end_time - loop_start_time
         loop_duration_in_seconds = loop_duration.total_seconds()
-    
+
         # if every_seconds specified, calculate the waiting time
         if every_seconds:
             if every_seconds > loop_duration_in_seconds:
@@ -320,10 +378,9 @@ def _maple_loop_helper(self,
         else:
             break
 
-def _loop_action_parser(self, steps, testbed, section, actions):
+def _loop_action_parser(self, steps, testbed, section, actions, loop_until=None):
 
     # parsing the actions in loop and passing the action keyword args to the self.dispatcher
-
     for action_item in actions:
         for action, action_kwargs in action_item.items():
 
@@ -341,6 +398,9 @@ def _loop_action_parser(self, steps, testbed, section, actions):
                     action_kwargs = get_variable(**action_kwargs)
                     action_kwargs.pop('self')
 
+            if loop_until:
+                steps = Steps()
+
             kwargs = {
                 'steps': steps,
                 'testbed': testbed,
@@ -352,6 +412,7 @@ def _loop_action_parser(self, steps, testbed, section, actions):
 
             # getting the output of the action
             yield self.dispatcher(**kwargs)
+
 
 
 def _maple_loop_configure(self, testbed, section_):

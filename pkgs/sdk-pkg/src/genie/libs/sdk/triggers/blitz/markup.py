@@ -126,7 +126,6 @@ def _load_saved_variable(self, val, key=None):
 
 def save_variable(self, save_variable_name, output=None, append=None, append_in_list=None):
     # Save output variable
-
     self.parameters.setdefault('save_variable_name',{})
     saved_vars = self.parameters['save_variable_name']
 

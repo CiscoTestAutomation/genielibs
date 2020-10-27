@@ -6,6 +6,7 @@ import json
 import random
 import string
 import ruamel.yaml
+
 from ats.easypy import runtime
 
 from genie.testbed import load
@@ -15,7 +16,6 @@ from genie.libs.sdk.triggers.blitz.maple_converter.legacy_dme_converter import L
 from genie.libs.sdk.triggers.blitz.maple_converter.legacy_smartman_converter import Legacy_Smartman_Converter
 
 class Converter(object):
-
     def __init__(self, maple_file, new_yaml=None, testbed=None, testcase_control=None, teststep_control=None):
 
         self.maple_file = maple_file
@@ -56,7 +56,6 @@ class Converter(object):
             # Adding the testcasename to a list 
             # The list will be returned to job file so it would used as trigger uids
             self.uids.append(testcase_name)
-
         with open(self.blitz_file, 'w') as blitz_file_dumped:
             blitz_file_dumped.write(ruamel.yaml.round_trip_dump(blitz_dict))
 
@@ -99,6 +98,9 @@ class Converter(object):
         # For blitz - it is a post-processor
         log_processor = maple_testcase_data.pop('log', None)
 
+        # logical id that is used to store testcase result into TIMS
+        tims_logical_id = maple_testcase_data.pop('logical_id', None)
+
         # setting continue value for each section in blitz
         # the value can be assigned from testsuite using testcase_control keyword
         if self.testcase_control:
@@ -108,7 +110,7 @@ class Converter(object):
         # otherwise None
         else:
             section_continue = maple_testcase_data.pop('testcase_control', None)
-
+        
         # setting  continue value for each action in blitz
         # since in maple this value is generated in the step level
         # The value should be passed out further to other function that creates
@@ -122,7 +124,6 @@ class Converter(object):
         else:
             action_continue = maple_testcase_data.pop('teststep_control', None)
 
-
         # Extracting log collection data and translating it into processor
         if log_processor:
             blitz_testcase_data.update(self._log_converter(log_processor))
@@ -133,12 +134,14 @@ class Converter(object):
                             'class': 'triggers.blitz.blitz.Blitz'},
                             'test_sections' : blitz_sections_list})
 
+        if tims_logical_id:
+            blitz_testcase_data.update({'tims': {'logical_id': tims_logical_id}})
+
         # Maple steps are technically sections in blitz. 
         # In blitz section are build on various actions,
         # Major actions in maple are confirm, apply and unapply,
         # which translates to various actions in blitz.
         if 'test-steps' not in maple_testcase_data:
-
             if  'confirm' in maple_testcase_data.keys() or\
                 'apply' in maple_testcase_data.keys() or\
                 'unapply' in maple_testcase_data.keys() :
@@ -285,6 +288,15 @@ class Converter(object):
 
         if os.environ['MAPLE_PATH'] not in sys.path:
             sys.path.append(os.environ['MAPLE_PATH'])
+    
+    @property
+    def testbed_file(self):
+
+        return  os.path.abspath(self.testbed.testbed_file)
+
+    @property
+    def testbed_file(self):
+        return  os.path.abspath(self.testbed.testbed_file)
 
     @property
     def testbed_file(self):
@@ -645,7 +657,6 @@ class Converter(object):
                     # and the dictionary representation of the action and its arguments
                     blitz_action_dict, action = self._maple_command_to_blitz_action_converter(rule_data['type'],
                                                             command, dev, 'confirm', rule_id)
-
                     if rule_data.get('match') or rule_data.get('unmatch'):
 
                         search = True
@@ -653,10 +664,15 @@ class Converter(object):
                         # single confirm action (Yet never seen its example)
                         # if loop and because of the mentioned limitation, there is always one command to be queried
                         # Hence no need to append
-                        if loop:
-                            blitz_action_dict[action].update({'save': [{'variable_name': val_to_search}]})
-                        else:
-                            blitz_action_dict[action].update({'save': [{'variable_name': val_to_search, 'append': True}]})
+                        save_list = [{'variable_name': val_to_search}]
+                        if not loop:
+                            save_list[0].update({'append': True})
+
+                        try:
+                            blitz_action_dict[action].update({'save': save_list})
+                        except KeyError:
+                            if "specifically_patterns" in blitz_action_dict:
+                                pass
 
                     if not action_continue or action_continue != 'continue-on-failure':
                         try:
@@ -687,12 +703,18 @@ class Converter(object):
                 # in case match/unmatch exist, a map should be constructed
                 # between match/unmatch to include/exclude
                 # and the blitz action dictionary will be updated
-                # match/unmatch might not always map to include exclude,
+                # match/unmatch might not always map to include exclude
                 # they can be mapped to an equivalent action in blitz
                 if search:
-                    blitz_action_dict = self._match_unmatch_dispatcher(blitz_action_dict, 'maple_search', rule_data['type'],
-                                               rule_id, device=dev, match=rule_data.get('match'),
-                                               unmatch=rule_data.get('unmatch'), val_to_search=val_to_search)
+                    if "specifically_patterns" in blitz_action_dict:
+                        for action_dict in blitz_action_dict['specifically_patterns']:
+                            action_dict = self._match_unmatch_dispatcher(action_dict, 'maple_search', rule_data['type'],
+                                                       rule_id, device=dev, match=rule_data.get('match'),
+                                                       unmatch=rule_data.get('unmatch'), val_to_search=val_to_search)
+                    else:
+                        blitz_action_dict = self._match_unmatch_dispatcher(blitz_action_dict, 'maple_search', rule_data['type'],
+                           rule_id, device=dev, match=rule_data.get('match'),
+                           unmatch=rule_data.get('unmatch'), val_to_search=val_to_search)
 
         return blitz_action_list
 
@@ -795,11 +817,14 @@ class Converter(object):
                 # There are two exceptions when translating cmds= commands to plugins cmds=patterns and cmds=eval
                 # if the cmds=patterns (cmds= of type "patterns") then instead of translating it into a maple_plugins
                 # we directly convert cmds=patterns into a dictionary containing a list of blitz actions
-                # if maple action type is matcher and if cmds=pattrns
+                # if maple action type is matcher and if cmds=pattrens
                 if maple_action_type == 'matcher' and command.get('type') == 'patterns':
                     return cmds_converter.cmds_patterns_to_blitz_action_converter(command['data'], device), 'execute'
+                
+                if command.get('type') == 'groups':
+                    return cmds_converter.cmds_groups_command_to_blitz_action_converter(command['data'], device), 'execute'
 
-            # Whether if it is plugins commands the follwoing function would convert it into a blitz action
+            # Whether if it is plugins commands the following function would convert it into a blitz action
             # if cmds= commands (with exception of two) they are already translated in maple plugins above
             # all of them now will be converted as maple plugin into an blitz action
             return self._plugin_to_blitz_action_converter(command, maple_action_type, device=device, maple_action=maple_action,
@@ -881,8 +906,8 @@ class Converter(object):
                 type(dict): containing the equivalent blitz action of the plugin command that is in the input
         '''
         # Plugins are translated into a blitz action called maple
-        # specfically designed to handle maple plugins
-        # the input of the maple are the json data representating
+        # specifically designed to handle maple plugins
+        # the input of the maple are the json data representing
         # the maple section from the device to match/unmatch
         blitz_action_dict = {}
 
@@ -1015,7 +1040,7 @@ class Converter(object):
                 2)If the match/unmatch is confirm plugins, the input would convert into a blitz maple action to call the plugins 
                   from the blitz code
 
-                3)If the input is a cmds=eval then an arithmatic/logical statment is in the input. Blitz action compare is 
+                3)If the input is a cmds=eval then an arithmetic/logical statement is in the input. Blitz action compare is 
                   the equivalent of this cmds= command 
 
             EX-1)
@@ -1137,7 +1162,7 @@ class Converter(object):
         # val_to_search has priority over val_to_search_apply
         # that means if val_to_search is there val_to_search_apply will be ignored
         # val_to_search_apply for checking the include/exclude for outputs of the apply section (could be equivalent of multiple actions in blitz)
-        # This only applies when confirm section doesnt exist
+        # This only applies when confirm section doesn't exist
         if val_to_search:
             blitz_action_dict.update({'maple_search':{'search_string': "%VARIABLES{}".format('{'+val_to_search+'}'), 'device': device}})
         elif val_to_search_apply:
@@ -1157,7 +1182,12 @@ class Converter(object):
                     command =  cmds_converter.cmds_to_maple_plugin_converter()
 
                     # if cmds= then it is surely cmds=eval and it is a compare scenario
-                    plugin_dict = cmds_converter.cmds_eval_to_blitz_action_converter(command['data'])
+                    if command.get('type') == 'eval':
+                        plugin_dict = cmds_converter.cmds_eval_to_blitz_action_converter(command['data'])
+
+                    elif command.get('type') == 'groups':
+                        plugin_dict = cmds_converter.cmds_groups_match_to_blitz_action(command['data'])
+
                     blitz_action_dict.update(plugin_dict)
                 else:
                     # if it is a plugin it would ba confirm plugin_type which will be a maple action
@@ -1171,9 +1201,11 @@ class Converter(object):
 
                     blitz_action_dict.update(plugin_dict)
             else:
-                # In case of having a maple_search adding include/exclude to it
-                item = Internal_Converter._XX_pattern_matching(item, 'replace')
-                storage_list.append(item)
+                # This variable will put all the item whether int/boolean/str
+                # in the double quote, which is necessary to not face any issue 
+                # in Blitz
+                double_quote = ruamel.yaml.scalarstring.DoubleQuotedScalarString
+                storage_list.append(double_quote(item))
                 blitz_action_dict['maple_search'].update({style: storage_list})
 
         # if include/exclude added to maple_search there is no point of having the maple_search in the output
@@ -1188,7 +1220,7 @@ class Converter(object):
 # SIMPLY CALL THE CONVERTOR FUNCTION WITH 
 # THE NAME OF YOUR TESTSCRIPT AS AN ARGS
 
-# converter = Converter('urib_hw_tests_acorn_vrf_leak_9k.yaml')
+# converter = Converter('groups.yaml')
 # # converter = Converter('anycast_testcase.yaml')
 
 # trigger_uids = converter.convert()

@@ -292,14 +292,18 @@ def nxapi_method_restconf(device, action, commands,
         raise Exception("'{action}' is an invalid action for RESTCONF (Yang)"
                         .format(action=action))
 
+    rest_kwargs = {
+        'dn': dn,
+        'timeout': timeout,
+        'headers': headers,
+        'expected_return_code': expected_return_code
+    }
+
+    if rest_method.lower() != 'delete':
+        rest_kwargs.update({'payload': payload})
+
     try:
-        output = getattr(rest, rest_method.lower())(
-            dn=dn,
-            payload=payload,
-            timeout=timeout,
-            headers=headers,
-            expected_return_code=expected_return_code
-        )
+        output = getattr(rest, rest_method.lower())(**rest_kwargs)
     except AttributeError as e:
         raise Exception("The rest_method '{rest_method}' does not exist "
                         "in the connector with the alias '{alias}'."

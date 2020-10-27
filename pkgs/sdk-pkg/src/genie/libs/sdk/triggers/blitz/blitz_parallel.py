@@ -61,8 +61,7 @@ def parallel(self, steps, testbed, section, name, data):
                 pcall_payloads.append(kwargs)
 
         pcall_returns = pcall(self.dispatcher, ikwargs=pcall_payloads)
-        _parallel(self, pcall_returns, steps)
-
+        return _parallel(self, pcall_returns, steps)
 
 def _parallel(self, pcall_returns, step):
 
@@ -100,8 +99,11 @@ def _parallel(self, pcall_returns, step):
             msg = 'Executed action {action} on {device} in parallel'.format(
                 action=each_return['action'], device=each_return['device'])
         else:
+
             msg = 'Executed action {action} in parallel'.format(
                 action=each_return['action'])
+            if each_return['action'] == 'loop':
+                msg = 'Executed actions in loop with loop_until in parallel'
 
         with step.start(msg,
                         continue_=True,
@@ -109,17 +111,21 @@ def _parallel(self, pcall_returns, step):
             log.info('Check above for detailed action report')
             getattr(report_step, str(each_return['step_result']))()
 
+    return {'action': 'parallel', 'step_result': step.result}
 
 def pcall_return_trim(self, ret, steps, trim_value):
-
+    
+    # recursively check for actions that are running under condition in parallel
     if trim_value == 'control_output':
         with steps.start('Checking the condition in parallel',
                          continue_=True) as step:
             ret = ret['control_output']
             _parallel(self, ret, step)
 
+    # recursively check for actions that are running under loop in parallel
     elif trim_value == 'loop_output':
-        with steps.start('Executing actions in loop in parallel',
+
+            with steps.start('Executing actions in loop in parallel',
                          continue_=True) as step:
-            ret = ret['loop_output']
-            _parallel(self, ret, step)
+                ret = ret['loop_output']
+                _parallel(self, ret, step)

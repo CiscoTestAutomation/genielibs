@@ -3,7 +3,6 @@ IOSXE specific clean stages
 '''
 
 # Python
-import time
 import logging
 
 # pyATS
@@ -11,25 +10,19 @@ from pyats import aetest
 from pyats.async_ import pcall
 
 # Genie
-from genie.libs import clean
 from genie.abstract import Lookup
-from ..recovery import _disconnect_reconnect
-from genie.utils.timeout import Timeout
+from genie.libs import clean
 from genie.libs.clean.utils import clean_schema
+from genie.libs.clean.recovery.recovery import _disconnect_reconnect
+from genie.metaparser.util.schemaengine import Optional
+from genie.utils.timeout import Timeout
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
 
-# MetaParser
-from genie.metaparser.util.schemaengine import Optional
-
 # Logger
 log = logging.getLogger(__name__)
 
-
-#===============================================================================
-#                       stage: change_boot_variable
-#===============================================================================
 
 @clean_schema({
     Optional('images'): list,
@@ -43,45 +36,38 @@ log = logging.getLogger(__name__)
 def change_boot_variable(section, steps, device, images, timeout=300,
     max_time=300, check_interval=30, config_register='0x2102',
     write_memory=False):
+    """ This stage configures the boot variables to the provided image in
+    preparation for the next device reload.
 
-    '''
-    Clean yaml file schema:
-    -----------------------
-    devices:
-      <device>:
-        change_boot_variable:
-          images ('list'): List of images to copy (Mandatory)
-          timeout ('int'): Execute timeout in seconds
-                           Default 300 (Optional)
-          max_time ('int'): Maximum time to wait while saving running-config
-                            to startup-config in seconds.
-                            Default 300 (Optional)
-          check_interval ('int'): Time interval while checking save running
-                                  config to startup-config completed in seconds.
-                                  Default 30 (Optional)
-          write_memory ('bool'): Execute 'write memory' after setting BOOT var
-                                 Default False (Optional)
-          config_register ('str'): Value to set config-register for reload
-                                   Default '0x2102' (Optional)
+    Stage Schema
+    ------------
+    change_boot_variable:
+        images (list): Images to copy
 
-    Example:
-    --------
-    devices:
-      N95_1:
-        change_boot_variable:
-          images:
+        timeout (int, optional): Execute timeout in seconds. Defaults to 300.
+
+        max_time (int, optional): Maximum time to wait while saving
+            running-config to startup-config in seconds. Defaults to 300.
+
+        check_interval (int, optional): Time interval while checking save
+            running config to startup-config completed in seconds. Defaults to 30.
+
+        write_memory (bool, optional): Execute 'write memory' after
+            setting BOOT var. Defaults to False.
+
+        config_register (str, optional): Value to set config-register for
+            reload. Defaults to 0x2102.
+
+    Example
+    -------
+    change_boot_variable:
+        images:
             - harddisk:/Genie-12351822-iedge-asr-uut
-          timeout: 150
-          max_time: 300
-          check_interval: 20
+        timeout: 150
+        max_time: 300
+        check_interval: 20
 
-    Flow:
-    -----
-    before:
-      copy_to_device (Optional, If images to set as boot variable is not already on device)
-    after:
-      write_erase (Optional, user wants to reload with current running configuration or not)
-    '''
+    """
 
     log.info("Section steps:\n1- Delete any previously configured boot variables"
              "\n2- (Optional) Write to memory"
@@ -227,12 +213,6 @@ def change_boot_variable(section, steps, device, images, timeout=300,
             section.passed("Verified config-register is correctly set on {}".\
                            format(device.name))
 
-
-#===============================================================================
-#                       stage: tftp_boot
-#===============================================================================
-
-
 @clean_schema({
     'image': list,
     'ip_address': list,
@@ -243,29 +223,42 @@ def change_boot_variable(section, steps, device, images, timeout=300,
     Optional('save_system_config'): bool,
     Optional('timeout'): int,
     Optional('config_reg_timeout'): int,
-    Optional('device_reload_sleep'): int,
 })
 @aetest.test
 def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
               tftp_server, image, recovery_password=None, save_system_config=True, timeout=600,
-              config_reg_timeout=30, device_reload_sleep=20):
-    '''
-    Clean yaml file schema:
-    -----------------------
-        tftp_boot:
-            image: <Image to boot with `str`> (Mandatory)
-            ip_address: <Management ip address to configure to reach to the TFTP server `str`> (Mandatory)
-            subnet_mask: <Management subnet mask `str`> (Mandatory)
-            gateway: <Management gateway `str`> (Mandatory)
-            tftp_server: <tftp server is reachable with management interface `str`> (Mandatory)
-            recovery_password: <Enable password for device required after bootup `str`> (Optional, Default None)
-            save_system_config: <Whether or not to save the system config if it was modified `bool`> (Optional) Default: True
-            timeout: <Max time during which TFTP boot must complete `int`> (Optional, Default 600 seconds)
-            config_reg_timeout: <Max time to set config-register `int`> (Optional, Default 30 seconds)
-            device_reload_sleep: <Max time to wait after reloading device with config-register 0x0 `int`> (Optional, Default 20 seconds)
+              config_reg_timeout=30):
+    """ This stage boots a new image onto your device using the tftp booting
+    method.
 
-    Example:
-    --------
+    Stage Schema
+    ------------
+    tftp_boot:
+        image (list): Image to boot with
+
+        ip_address (list): Management ip address to configure to reach to the
+            tftp server
+
+        subnet_mask (str): Management subnet mask
+
+        gateway (str): Management gateway
+
+        tftp_server (str): Tftp server that is reachable with management interface
+
+        recovery_password (str, optional): Enable password for device
+            required after bootup. Defaults to None.
+
+        save_system_config (bool, optional): Whether or not to save the
+            system config if it was modified. Defaults to True.
+
+        timeout (int, optional): Max time during which tftp boot must
+            complete. Defaults to 600.
+
+        config_reg_timeout (int, optional): Max time to set config-register.
+            Defaults to 30.
+
+    Example
+    -------
     tftp_boot:
         image:
           - /auto/some-location/that-this/image/stay-isr-image.bin
@@ -277,17 +270,10 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
         save_system_config: False
         timeout: 600
         config_reg_timeout: 10
-        device_reload_sleep: 30
 
     There is more than one ip address, one for each supervisor.
 
-    Flow:
-    -----
-        Before:
-            Any
-        After:
-            Connect
-    '''
+    """
 
     log.info("Section steps:"
              "\n1- Set config-register to 0x0"
@@ -310,18 +296,37 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
     with steps.start("Bring device {} down to rommon> prompt prior to TFTP boot".\
                         format(device.name)) as step:
 
+        reload_dialog = Dialog([
+        Statement(pattern=r".*System configuration has been modified\. Save\? \[yes\/no\].*",
+                  action='sendline(yes)' if save_system_config else 'sendline(no)',
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r".*Proceed with reload\? \[confirm\].*",
+                  action='sendline()',
+                  loop_continue=False,
+                  continue_timer=False),
+        ])
+
         # Using sendline, as we dont want unicon boot to kick in and send "boot"
         # to the device. Cannot use device.reload() directly as in case of HA,
         # we need both sup to do the commands
         device.sendline('reload')
-        device.sendline('yes') if save_system_config else device.sendline('no')
-        device.sendline()
+        reload_dialog.process(device.spawn)
 
-        # We now want to overwrite the statemachine
+        if device.is_ha:
+            def reload_check(device, target):
+                device.expect(['.*Initializing Hardware.*'],
+                              target=target, timeout=60)
+
+            pcall(reload_check,
+                  ckwargs={'device': device},
+                  ikwargs=[{'target': 'active'},
+                           {'target': 'standby'}])
+        else:
+            device.expect(['.*Initializing Hardware.*'], timeout=60)
+
+        log.info("Device is reloading")
         device.destroy_all()
-
-        # Sleep to make sure the device is reloading
-        time.sleep(device_reload_sleep)
 
     # Begin TFTP boot of device
     with steps.start("Begin TFTP boot of device {}".format(device.name)) as step:
@@ -346,7 +351,7 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
             else:
                 start = device.start
 
-            result = pcall(abstract.clean.stages.recovery.recovery_worker,
+            result = pcall(abstract.clean.recovery.recovery.recovery_worker,
                            start=start,
                            ikwargs = [{'item': i} for i, _ in enumerate(start)],
                            ckwargs = \
@@ -402,6 +407,44 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
                             format(device.name))
 
 @clean_schema({
+    Optional('timeout'): int
+})
+@aetest.test
+def install_remove_inactive(section, steps, device, timeout=180):
+    """ This stage removes partially installed packages/images left
+    on the device. If a super package is left partially installed,
+    we cannot attempt to install another until it is removed.
+
+    Stage Schema
+    ------------
+    install_image:
+        timeout (int, optional): Maximum time to wait for remove process to
+            finish. Defaults to 180.
+
+    Example
+    -------
+    install_remove_inactive:
+        timeout: 180
+
+    """
+
+    with steps.start("Removing inactive packages") as step:
+
+        install_remove_inactive_dialog = Dialog([
+            Statement(pattern=r".*Do you want to remove the above files\? \[y\/n\]",
+                      action='sendline(y)',
+                      loop_continue=False,
+                      continue_timer=False),
+        ])
+
+        try:
+            device.execute('install remove inactive',
+                           reply=install_remove_inactive_dialog,
+                           timeout=timeout)
+        except Exception as e:
+            step.failed("Remove inactive packages failed. Error: {e}".format(e=str(e)))
+
+@clean_schema({
     Optional('images'): list,
     Optional('save_system_config'): bool,
     Optional('install_timeout'): int,
@@ -410,17 +453,26 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
 @aetest.test
 def install_image(section, steps, device, images, save_system_config=False,
                   install_timeout=500, reload_timeout=800):
-    """
-    Clean yaml file schema:
-    -----------------------
-    install_image:
-        images: <Image to install `list`> (Mandatory)
-        save_system_config: <Whether or not to save the system config if it was modified `bool`> (Optional) Default: False
-        install_timeout: <Maximum time to wait for install process to finish `int`> (Optional) Default: 500
-        reload_timeout: <Maximum time to wait for reload process to finish `int`> (Optional) Default: 800
+    """ This stage installs a provided image onto the device using the install
+    CLI. It also handles the automatic reloading of your device after the
+    install is complete.
 
-    Example:
-    --------
+    Stage Schema
+    ------------
+    install_image:
+        images (list): Image to install
+
+        save_system_config (bool, optional): Whether or not to save the system
+            config if it was modified. Defaults to False.
+
+        install_timeout (int, optional): Maximum time to wait for install
+            process to finish. Defaults to 500.
+
+        reload_timeout (int, optional): Maximum time to wait for reload process
+            to finish. Defaults to 800.
+
+    Example
+    -------
     install_image:
         images:
           - /auto/some-location/that-this/image/stay-isr-image.bin
@@ -537,7 +589,6 @@ def install_image(section, steps, device, images, save_system_config=False,
         'image_mapping', {})
     image_mapping.update({images[0]: new_boot_var})
 
-
 @clean_schema({
     'packages': list,
     Optional('save_system_config'): bool,
@@ -546,16 +597,21 @@ def install_image(section, steps, device, images, save_system_config=False,
 @aetest.test
 def install_packages(section, steps, device, packages, save_system_config=False,
                      install_timeout=300):
-    """
-    Clean yaml file schema:
-    -----------------------
-    install_packages:
-        packages: <Packages to install `list`> (Mandatory)
-        save_system_config: <Whether or not to save the system config if it was modified `bool`> (Optional) Default: False
-        install_timeout: <Maximum time to wait for install process to finish `int`> (Optional) Default: 300
+    """ This stage installs the provided packages using the install CLI.
 
-    Example:
-    --------
+    Stage Schema
+    ------------
+    install_packages:
+        packages (list): Packages to install.
+
+        save_system_config (bool, optional): Whether or not to save the system
+            config if it was modified. Defaults to False.
+
+        install_timeout (int, optional): Maximum time to wait for install
+            process to finish. Defaults to 300.
+
+    Example
+    -------
     install_image:
         images:
           - /auto/some-location/that-this/image/stay-isr-image.bin

@@ -3,26 +3,12 @@
 # Python
 import logging
 import re
-import jinja2
-import shlex, subprocess
-import time
-from time import strptime
-from datetime import datetime
-
-# pyATS
-from pyats.easypy import runtime
 
 # Genie
-from genie.utils.config import Config
-from genie.utils.diff import Diff
-from genie.libs.parser.utils.common import Common
-from genie.utils.timeout import Timeout
-from genie.libs.sdk.apis.utils import _cli, get_config_dict
+from genie.libs.sdk.apis.utils import get_config_dict
 
 # unicon
 from unicon.eal.dialogs import Dialog, Statement
-from unicon.core.errors import ConnectionError
-from unicon.plugins.generic.statements import default_statement_list
 from unicon.core.errors import SubCommandFailure
 
 log = logging.getLogger(__name__)
@@ -71,9 +57,7 @@ def get_config_from_file(device, disk, filename):
         )
         return None
 
-    config_dict = get_config_dict(config)
-
-    return config_dict
+    return get_config_dict(config)
 
 
 def start_packet_capture(
@@ -170,7 +154,7 @@ def export_packet_capture(device, testbed, filename, capture_name, protocol='tft
             testbed (`obj`): Testbed object
             filename (`str`): Filename to save
             capture_name (`str`): Packet capture name
-            protocol (`str`): Protocal name
+            protocol (`str`): Protocol name
             path (`str`): Path to export
             username (`str`): user name
             password (`str`): password
@@ -190,13 +174,13 @@ def export_packet_capture(device, testbed, filename, capture_name, protocol='tft
 
     pcap_file_name = filename.replace(".", "_") + ".pcap"
 
-    credetial = ''
+    credential = ''
     if username and password:
-        credetial = '{}:{}@'.format(username, password)
+        credential = '{}:{}@'.format(username, password)
 
-    export_to = '{pro}://{credetial}{server}/{path}/{pcap_file_name}'.format(
+    export_to = '{pro}://{credential}{server}/{path}/{pcap_file_name}'.format(
                 pro=protocol, path=path,
-                credetial=credetial,
+                credential=credential,
                 server=execution_server,
                 pcap_file_name=pcap_file_name)
 

@@ -10,6 +10,7 @@ from genie.utils.diff import Diff
 from genie.utils.timeout import TempResult, Timeout
 from genie.harness.utils import connect_device, disconnect_device
 
+
 log = logging.getLogger(__name__)
 
 class ProcessRestartLib(object):
@@ -190,7 +191,9 @@ class ProcessRestartLib(object):
                     device=self.device, filetransfer=filetransfer)
                 cores = None
                 exception = None
-                while timeout.iterate():
+                # reset timeout value
+                check_core_time = Timeout(max_time=120, interval=20)
+                while check_core_time.iterate():
                     try:
                         cores = ha.check_cores()
                     except Exception as e:
@@ -201,7 +204,7 @@ class ProcessRestartLib(object):
                         if int(core['pid']) == self.previous_pid:
                             break
                     else:
-                        timeout.sleep()
+                        check_core_time.sleep()
                         # Didn't find, so keep going
                         continue
 
@@ -265,8 +268,8 @@ class ProcessRestartLib(object):
 
         with steps.start('Verify process has restarted correctly') as step:
             temp = TempResult(container=step)
-
-            while timeout.iterate():
+            verify_timeout = Timeout(max_time=120, interval=60)
+            while verify_timeout.iterate():
                 output = self.abstract.parser.show_system.\
                              ShowSystemInternalSysmgrServiceName(device=\
                                         device).parse(process=self.process)
@@ -274,7 +277,7 @@ class ProcessRestartLib(object):
                 if 'instance' not in output:
                     temp.failed("No output for 'show system internal sysmgr "
                                "service name {p}'".format(p=self.process))
-                    timeout.sleep()
+                    verify_timeout.sleep()
                     continue
 
                 # Check the if the process has changed pid
@@ -294,7 +297,7 @@ class ProcessRestartLib(object):
                 if not self.last_restart_time < last_restart_time:
                     temp.failed("The restart time has not changed for "
                                 "process '{p}'".format(p=self.process))
-                    timeout.sleep()
+                    verify_timeout.sleep()
                     continue
               
                 # Make sure the pid has changed
@@ -305,7 +308,7 @@ class ProcessRestartLib(object):
                                 "{cp}".format(p=self.process,
                                               pp=self.previous_pid,
                                               cp=pid))
-                    timeout.sleep()
+                    verify_timeout.sleep()
                     continue
 
                 # Verify the restart_count has increased
@@ -316,7 +319,7 @@ class ProcessRestartLib(object):
                                 '\ncurrent count: {cc}'.format(rr=repeat_restart,
                                                                pc=self.previous_restart_count,
                                                                cc=restart_count))
-                    timeout.sleep()
+                    verify_timeout.sleep()
                     continue
 
                 # exclude sap when the value is not in range [0, 1023]
@@ -336,7 +339,7 @@ class ProcessRestartLib(object):
                 if diff.diffs:
                     temp.failed("The device output has changed in an unexpected "
                                 "way\n{d}".format(d=str(diff.diffs)))
-                    timeout.sleep()
+                    verify_timeout.sleep()
                     continue
                 break
             else:
@@ -395,23 +398,48 @@ class ProcessRestartLib(object):
                 device=self.device)
             with steps.start('The device is reloading when restarting this process',
                              continue_=True) as step:
-                # Waiting 4-7 mins for switchover to complete 
-                log.info("Waiting for a maximum of 7 minutes for device switchover to completess")
-                check_time = Timeout(max_time = 700, interval = 20)
-                while check_time.iterate():
-                    check_time.sleep()
+                # Have to sleep for some time for 1 RP to become active
+                # Pass scenario:
+                # This supervisor (sup-1)
+                # -----------------------
+                #     Redundancy state:   Active
+                #     Supervisor state:   Active
+                #       Internal state:   Active with no standby
+
+                # Other supervisor (sup-2)
+                # ------------------------
+                #     Redundancy state:   Offline
+
+                # Fail scenario:
+                # This supervisor (sup-1)
+                # -----------------------
+                #     Redundancy state:   Offline
+                #     Supervisor state:   Offline
+                #       Internal state:   Other
+
+                # Other supervisor (sup-2)
+                # ------------------------
+                #     Redundancy state:   Standby
+
+                active_wait = Timeout(max_time = 50, interval = 20)
+                log.info("Swap consoles standby to active")
+                self.device.swap_roles()
+                while active_wait.iterate():
+                    log.info("Checking redundancy offline status")
+                    self.device.execute('show system redundancy status')
+                    active_wait.sleep()
                     continue
-                self.device.destroy()
-                time.sleep(30)
 
                 temp = TempResult(container=step)
-                while timeout.iterate():
+                log.info("\n\nTrying to connect to consoles")
+                connect_timeout = Timeout(max_time=300, interval=60)
+                while connect_timeout.iterate():
                     try:
                         self.device.connect(prompt_recovery=True)
                     except Exception as e:
                         temp.failed('Could not reconnect to the device',
                                     from_exception=e)
-                        timeout.sleep()
+                        connect_timeout.sleep()
                         continue
                     temp.passed('Reconnected to the device')
                     break
@@ -421,7 +449,8 @@ class ProcessRestartLib(object):
             with steps.start('Check module status after reconnection',
                              continue_=True) as step:
                 temp = TempResult(container=step)
-                while timeout.iterate():
+                module_time = Timeout(max_time=1200, interval=60)
+                while module_time.iterate():
                     try:
                         ha.check_module()
                     except AttributeError as e:
@@ -430,7 +459,7 @@ class ProcessRestartLib(object):
                         continue
                     except AssertionError as e:
                         temp.failed('Modules are not ready', from_exception=e)
-                        timeout.sleep()
+                        module_time.sleep()
                         continue
 
                     temp.passed('Modules are ready')

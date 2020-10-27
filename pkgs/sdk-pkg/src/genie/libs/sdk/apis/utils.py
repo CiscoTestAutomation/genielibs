@@ -2,6 +2,7 @@
 
 # Python
 import os
+import ast
 import logging
 import re
 import json
@@ -2655,3 +2656,31 @@ def get_devices(testbed, os=None, regex=None, regex_key='os', pick_type='all'):
             return picked_devices
     else:
         raise Exception("Couldn't find any device from testbed object.")
+
+
+def get_interface_from_yaml(local, remote, number, *args, **kwargs):
+    # Put it back as a dictionary
+    topology = ast.literal_eval(','.join(args).lstrip())
+    data = Dq(topology)
+
+    # Get all the links for local
+    local_links = data.contains(local.strip()).get_values('link')
+    # Get all the links for remote
+    remote_links = data.contains(remote.strip()).get_values('link')
+    # Now find the one connected to the remote
+    common_links = sorted(set(local_links).intersection(set(remote_links)))
+    try:
+        chosen_link =  common_links[int(number)]
+    except Exception as e:
+        raise Exception("Link '{n}' between '{l}' and "
+                        "'{r}' does not exists; there is only '{m}' links "
+                        "between them".format(n=number,
+                                              l=local,
+                                              r=remote,
+                                              m=len(common_links)))
+
+    # Get interface related to it
+    interface = data.contains(chosen_link).contains(local.strip()).get_values('_name', 0)
+    if not interface:
+        raise Exception("Could not find an interface for device '{d}'".format(d=local))
+    return interface

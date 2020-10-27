@@ -141,3 +141,24 @@ def get_peer_restart_flags_received(device, neighbor_address=None):
     peer_restart_flags = out.q.get_values('peer-restart-flags-received')
     
     return peer_restart_flags
+
+"""Common verification functions for BFD"""
+
+def get_bgp_summary_neighbor_state_count(device, expected_neighbor_state='Establ', max_time=60, check_interval=10):
+    """ Get bgp summary peer-state count
+
+    Args:
+        device (obj): Device object
+        expected_neighbor_state (str): Expected neighbor state. Defaults to 'Establ'.
+        max_time (int, optional): Maximum timeout time. Defaults to 60 seconds.
+        check_interval (int, optional): Check interval. Defaults to 10 seconds.
+    """
+    try:
+        out = device.parse('show bgp summary')
+    except SchemaEmptyParserError:
+        return None
+
+    state_count = out.q.contains_key_value('peer-state', 
+        expected_neighbor_state).count()
+
+    return state_count

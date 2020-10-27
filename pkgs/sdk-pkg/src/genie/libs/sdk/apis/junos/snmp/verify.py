@@ -31,7 +31,8 @@ def verify_snmp_target(device,
         try:
             output = device.parse('show configuration snmp')
         except SchemaEmptyParserError:
-            return None
+            timeout.sleep()
+            continue
 
         # Example output
         # "configuration": {
@@ -52,7 +53,8 @@ def verify_snmp_target(device,
 def verify_snmp_statistics(device,
                        expected_output_counter,
                        max_time=30,
-                       check_interval=10,):
+                       check_interval=10,
+                       invert=False):
     """ Verify snmp statistics
 
         Args:
@@ -60,18 +62,24 @@ def verify_snmp_statistics(device,
             expected_output_counter (`str`): Expected output counter
             max_time (`int`): Max time, default: 60 seconds
             check_interval (`int`): Check interval, default: 10 seconds
+            invert('bool'): True if negative scenario to verify
         Returns:
             result (`bool`): Verified result
         Raises:
             N/A
     """
 
+    op = operator.contains
+    if invert:
+        op = lambda data, check: operator.not_(operator.contains(data, check))
+
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
         try:
             output = device.parse('show snmp statistics')
         except SchemaEmptyParserError:
-            return None
+            timeout.sleep()
+            continue
 
         # Example output
         # "snmp-statistics": {
@@ -79,7 +87,7 @@ def verify_snmp_statistics(device,
         #         "traps": "0"
 
         traps = Dq(output).contains('snmp-output-statistics').get_values('traps')
-        if traps and expected_output_counter in traps:
+        if traps and op(traps, expected_output_counter):
             return True
 
         timeout.sleep()

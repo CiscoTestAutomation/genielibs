@@ -19,10 +19,6 @@ from genie.metaparser.util.schemaengine import Optional
 log = logging.getLogger(__name__)
 
 
-#===============================================================================
-#                       stage: change_boot_variable
-#===============================================================================
-
 @clean_schema({
     Optional('images'): list,
     Optional('timeout'): int,
@@ -33,43 +29,35 @@ log = logging.getLogger(__name__)
 @aetest.test
 def change_boot_variable(section, steps, device, images, timeout=300,
     max_time=300, check_interval=30, write_memory=False):
+    """ This stage configures the boot variables to the provided image in
+    preparation for the next device reload.
 
-    '''
-    Clean yaml file schema:
-    -----------------------
-    devices:
-      <device>:
-        change_boot_variable:
-          images ('list'): List of images to copy (Mandatory)
-          timeout ('int'): Execute timeout in seconds
-                           Default 300 (Optional)
-          max_time ('int'): Maximum time to wait while saving running-config
-                            to startup-config in seconds.
-                            Default 300 (Optional)
-          check_interval ('int'): Time interval while checking save running
-                                  config to startup-config completed in seconds.
-                                  Default 30 (Optional)
-          write_memory ('bool'): Execute 'write memory' after setting BOOT var
-                                 Default False (Optional)
+    Stage Schema
+    ------------
+    change_boot_variable:
+        images (list): Images to copy
 
-    Example:
-    --------
-    devices:
-      N95_1:
-        change_boot_variable:
-          images:
+        timeout (int, optional): Execute timeout in seconds. Defaults to 300.
+
+        max_time (int, optional): Maximum time to wait while saving
+            running-config to startup-config in seconds. Defaults to 300.
+
+        check_interval (int, optional): Time interval while checking save
+            running-config to startup-config completed in seconds. Defaults to 30.
+
+        write_memory (bool, optional): Execute 'write memory' after setting
+            BOOT var. Defaults to False.
+
+    Example
+    -------
+    change_boot_variable:
+        images:
             - harddisk:/Genie-12351822-iedge-asr-uut
-          timeout: 150
-          max_time: 300
-          check_interval: 20
+        timeout: 150
+        max_time: 300
+        check_interval: 20
 
-    Flow:
-    -----
-    before:
-      copy_to_device (Optional, If images to set as boot variable is not already on device)
-    after:
-      write_erase (Optional, user wants to reload with current running configuration or not)
-    '''
+    """
 
     log.info("Section steps:\n1- Delete any previously configured boot variables"
              "\n2- (Optional) Write to memory"

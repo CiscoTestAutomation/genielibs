@@ -77,3 +77,22 @@ def get_rsvp_hello_sent(
                     }
             break    
     return None
+
+def get_rsvp_session_state_count(device, expected_lsp_state='Up', max_time=60, check_interval=10):
+    """ Get show ldp session count
+
+    Args:
+        device (obj): Device object
+        expected_lsp_state (str): Expected session state. Defaults to 'Up'.
+        max_time (int, optional): Maximum timeout time. Defaults to 60 seconds.
+        check_interval (int, optional): Check interval. Defaults to 10 seconds.
+    """
+    try:
+        out = device.parse('show rsvp session transit')
+    except SchemaEmptyParserError:
+        return None
+
+    state_count = out.q.contains_key_value('lsp-state', 
+        expected_lsp_state).count()
+
+    return state_count

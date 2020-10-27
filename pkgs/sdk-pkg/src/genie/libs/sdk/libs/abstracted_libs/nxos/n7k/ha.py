@@ -7,11 +7,12 @@ import logging
 from datetime import datetime
 
 # genie
-from genie.utils.timeout import TempResult
+from genie.utils.timeout import TempResult, Timeout
 from genie.harness.utils import connect_device, disconnect_device
 
 from ..ha import HA as HA_nxos
 from unicon.eal.dialogs import Statement, Dialog
+
 
 # module logger
 log = logging.getLogger(__name__)
@@ -127,7 +128,8 @@ class HA(HA_nxos):
             with steps.start('Reconnecting to device {}'.format(device.name),
                              continue_=True) as step:
                 temp = TempResult(container=step)
-                while timeout.iterate():
+                reconnect_time =  Timeout(max_time=120, interval=60)
+                while reconnect_time.iterate():
                     try:
                         connect_device(device)
                     except Exception as e:
@@ -139,7 +141,7 @@ class HA(HA_nxos):
                             disconnect_device(device)
                         except:
                             pass
-                        timeout.sleep()
+                        reconnect_time.sleep()
                         continue
                     temp.passed('Reconnected to the device')
                     break

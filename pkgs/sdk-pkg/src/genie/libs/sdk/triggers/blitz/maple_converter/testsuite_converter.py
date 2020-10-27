@@ -121,7 +121,6 @@ class Testsuite_Converter(object):
 
         with open(additionals_dir+ '/mapping_datafile.yaml', 'w') as mapping_file_dumped:
             mapping_file_dumped.write(ruamel.yaml.round_trip_dump(mapping_dict))
-    
         return additionals_dir+ '/mapping_datafile.yaml'
 
     def _get_dir_for_additional_datafile(self):

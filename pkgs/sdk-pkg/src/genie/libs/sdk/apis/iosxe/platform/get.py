@@ -4,6 +4,7 @@ import re
 import logging
 
 # pyATS
+from pyats.easypy import runtime
 from pyats.utils.objects import R, find
 
 # Genie
@@ -314,7 +315,15 @@ def get_platform_core(device,
                       default_dir,
                       output=None,
                       keyword=['.core.gz'],
-                      num_of_cores=False):
+                      num_of_cores=False,
+                      decode=False,
+                      decode_timeout=300,
+                      remote_device=None,
+                      remote_path=None,
+                      remote_via=None,
+                      vrf=None,
+                      archive=False,
+                      delete_core=False):
     '''Get the default directory of this device
 
         Args:
@@ -324,11 +333,33 @@ def get_platform_core(device,
             keyword     (`list`): List of keywords to search
             num_of_cores (`bool`): flag to return number of core files
                                    Default to False
+            remote_device (`str`): remote device in testbed yaml
+                                   Default to None
+            remote_path (`str`): path with/without file on remote device
+                                 Default to None
+            remote_via (`str`) : specify connection to get ip
+                                 Default to None
+            vrf (`str`): use vrf where scp find route to remote device
+                                 Default to None
+            archive     (`bool`): flag to save the decode output as file in archive
+                                  Defaults to False
+            delete_core (`bool`): flag to delete core files
+                                  Defaults to False
+
+            ### CISCO INTERNAL ###
+            decode      (`bool`): flag to enable for decoding core
+                                  copy core file to remote_server and decode on remote_server
+            decode_timeout (`int`): timeout to execute decode script
+                                    Default to 300
+
         Returns:
             corefiles (`list`, `int`): List of found core files
                                        or number of core files if num_of_cores=True
     '''
 
+    # if missing, adding `:`. bootflash -> bootflash:
+    if default_dir[-1] != ':':
+        default_dir += ':'
     cmd = "dir {default_dir}/core/".format(default_dir=default_dir)
 
     try:
@@ -347,7 +378,52 @@ def get_platform_core(device,
         for file in output.q.get_values('files'):
             for kw in keyword:
                 if kw in file:
-                    corefiles.append('file')
+                    corefiles.append(file)
+
+    # convert from device name to device object
+    if remote_device in device.testbed.devices:
+        remote_device = device.testbed.devices[remote_device]
+    else:
+        raise Exception(
+            'remote device {rd} was not found.'.format(rd=remote_device))
+    # copy core file to remote device
+    for corefile in corefiles:
+        if not (remote_device and remote_path):
+            raise Exception('`remote_device` or/and `remote_path` are missing')
+        local_path = "{lp}core/{fn}".format(lp=default_dir, fn=corefile)
+        if not device.api.scp(local_path=local_path,
+                              remote_path=remote_path,
+                              remote_device=remote_device.name,
+                              remote_via=remote_via,
+                              vrf=vrf):
+            raise Exception(
+                'SCP has failed to copy core file to remote device {rd}'.
+                format(rd=remote_device.name))
+        # decode core file
+        if decode:
+            decode_output = remote_device.api.decode_core(
+                corefile="{rp}/{cf}".format(rp=remote_path, cf=corefile),
+                timeout=decode_timeout)
+            # archive decode output
+            if archive:
+                with open(
+                        '{folder}/{fn}'.format(
+                            folder=runtime.directory,
+                            fn='core_decode_{file}'.format(file=corefile)),
+                        'w') as f:
+                    print(decode_output, file=f)
+                    log.info(
+                        'Saved decode output as archive: {folder}/{fn}'.format(
+                            folder=runtime.directory,
+                            fn='core_decode_{file}'.format(file=corefile)))
+            # delete core files
+            if delete_core:
+                try:
+                    device.execute(
+                        'delete /force {default_dir}core/*core*.gz'.format(
+                            default_dir=default_dir))
+                except Exception as e:
+                    raise Exception('deleting core files failed. {}'.format(e))
 
     if num_of_cores:
         return len(corefiles)
@@ -659,7 +735,6 @@ def get_platform_memory_usage_detail(device,
 
             pids = parsed.q.contains_key_value(
             'process', ps_item, value_regex=True, escape_special_chars_value=['*']).get_values('pid')
-            
             memory_holding = 0
             for pid in pids:
                 # use `sum` because it's possible one pid returns multiple `holding`

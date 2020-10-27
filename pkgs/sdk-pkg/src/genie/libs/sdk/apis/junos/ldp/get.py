@@ -99,3 +99,22 @@ def get_ldp_database_session_label(device, address, expected_ldp_prefix,
                 return ldp_label
     
     return None
+
+def get_ldp_session_state_count(device, expected_session_state='Operational', max_time=60, check_interval=10):
+    """ Get show ldp session count
+
+    Args:
+        device (obj): Device object
+        expected_session_state (str): Expected session state. Defaults to 'Operational'.
+        max_time (int, optional): Maximum timeout time. Defaults to 60 seconds.
+        check_interval (int, optional): Check interval. Defaults to 10 seconds.
+    """
+    try:
+        out = device.parse('show ldp session')
+    except SchemaEmptyParserError:
+        return None
+
+    state_count = out.q.contains_key_value('ldp-session-state', 
+        expected_session_state).count()
+
+    return state_count

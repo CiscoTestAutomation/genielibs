@@ -28,7 +28,7 @@ from genie.harness.utils import load_class
 from genie.harness.discovery import copy_func
 from genie.libs.clean.utils import initialize_clean_sections
 from genie.metaparser.util.schemaengine import Schema
-from genie.libs.clean.stages.recovery import recovery_processor, block_section
+from genie.libs.clean.recovery import recovery_processor, block_section
 from genie.metaparser.util.exceptions import SchemaMissingKeyError,\
                                              SchemaTypeError,\
                                              SchemaUnsupportedKeyError

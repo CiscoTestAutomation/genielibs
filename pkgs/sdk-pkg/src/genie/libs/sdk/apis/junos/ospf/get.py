@@ -144,3 +144,21 @@ def get_ospf_router_id(device):
         log.info("Error retrieving router ID: {e}".format(e=e))    
     return None
     
+def get_ospf_neighbors_instance_state_count(device, expected_neighbor_state='Full', max_time=60, check_interval=10):
+    """ Get ospf neighbors instance state count
+
+    Args:
+        device (obj): Device object
+        expected_neighbor_state (str): Expected neighbor state. Defaults to 'Full'. 
+        max_time (int, optional): Maximum timeout time. Defaults to 60 seconds.
+        check_interval (int, optional): Check interval. Defaults to 10 seconds.
+    """
+    try:
+        out = device.parse('show ospf neighbor instance all')
+    except SchemaEmptyParserError:
+        return None
+
+    state_count = out.q.contains_key_value('ospf-neighbor-state', 
+        expected_neighbor_state).count()
+
+    return state_count
