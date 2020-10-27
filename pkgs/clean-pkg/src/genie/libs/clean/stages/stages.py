@@ -9,12 +9,17 @@ import logging
 # pyATS
 from pyats import aetest
 from pyats.utils.fileutils import FileUtils
+try:
+    from ats.datastructures.logic import Or
+except ImportError:
+    from pyats.datastructures.logic import Or
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
 from unicon.core.errors import SubCommandFailure
 
 # Genie
+from genie.utils.timeout import Timeout
 from genie.libs.clean.utils import clean_schema
 from genie.libs.clean.utils import (_apply_configuration,
                                     find_clean_variable,
@@ -34,56 +39,68 @@ log = logging.getLogger(__name__)
 #===============================================================================
 
 @clean_schema({
-    Optional('timeout'): str,
+    Optional('timeout'): Or(str, int),
+    Optional('max_timeout'): Or(str, int, float),
+    Optional('interval'): Or(str, int, float),
 })
 @aetest.test
-def connect(section, device, timeout=200, **kwargs):
-    '''
-    Clean yaml file schema:
-    -----------------------
-        devices:
-            <device>:
-                connect:
-    Example:
-    --------
-        devices:
-            N95_1:
-                connect:
-                  timeout: 60
+def connect(section, device, timeout=200, retry_timeout=0, retry_interval=0, **kwargs):
+    """ This stage connects to the device that is being cleaned.
 
-    Flow:
-    -----
-        before:
-            All stages
-        after:
-            N/A
-    '''
+    Stage Schema
+    ------------
+    connect:
+        timeout (int, optional): Connection timeout. Defaults to 200.
+        retry_timeout (int, optional): Overall timeout for retry mechanism. Defaults to 0 which means no retry.
+        retry_interval (int, optional): Interval for retry mechanism. Defaults to 0 which means no retry.
 
-    log.info('Checking connection to device : %s' % device.name)
+    Example
+    -------
+    connect:
+        timeout: 60
 
-    # If the device is in rommon, just raise an exception
-    device.instantiate(timeout=timeout, learn_hostname=True, prompt_recovery=True)
-    rommon = Statement(pattern=r'^(.*)(rommon(.*)|loader(.*))+>.*$',
-                       #action=lambda section: section.failed('Device is in rommon'),
-                       action=handle_rommon_exception,
-                       loop_continue=False,
-                       continue_timer=False)
-    device.connect_reply.append(rommon)
+    """
 
-    try:
-        device.connect()
-    except Exception as err:
-        log.error('Connection to the device failed, with error {e}'.\
-                  format(e=str(err)))
-        device.destroy_all()
-        section.failed("Could not connect to '{d}'".format(d=device.name))
-    else:
-        section.passed("Successfully connected to '{}'".format(device.name))
-    finally:
+    log.info('Checking connection to device: %s' % device.name)
+
+    # Create a timeout that will loop
+    retry_timeout = Timeout(float(retry_timeout), float(retry_interval))
+    retry_timeout.one_more_time = True
+    while retry_timeout.iterate():
+
+        # If the device is in rommon, just raise an exception
+        device.instantiate(
+            connection_timeout=timeout,
+            learn_hostname=True,
+            prompt_recovery=True)
+
+        rommon = Statement(pattern=r'^(.*)(rommon(.*)|loader(.*))+>.*$',
+                        #action=lambda section: section.failed('Device is in rommon'),
+                        action=handle_rommon_exception,
+                        loop_continue=False,
+                        continue_timer=False)
+
+        device.connect_reply.append(rommon)
+    
         try:
-            device.connect_reply.remove(rommon)
-        except Exception:
-            pass
+            device.connect()
+        except Exception as err:
+            log.error('Connection to the device failed, with error {e}'.\
+                    format(e=str(err)))
+            device.destroy_all()
+            # Loop
+        else:
+            section.passed("Successfully connected to '{}'".format(device.name))
+            # Don't loop
+        finally:
+            try:
+                device.connect_reply.remove(rommon)
+            except Exception:
+                pass
+
+        retry_timeout.sleep()
+    
+    section.failed("Could not connect to '{d}'".format(d=device.name))
 
 #===============================================================================
 #                       stage: ping_server
@@ -100,38 +117,29 @@ def connect(section, device, timeout=200, **kwargs):
 @aetest.test
 def ping_server(section, steps, device, server, vrf=None, timeout=60,
     min_success_rate=60, max_attempts=5, interval=30):
-    '''
-    Clean yaml file schema:
-    -----------------------
-        devices:
-            <device>:
-                ping_server:
-                  server: <Hostname or address of the server to ping `str`> (Mandatory)
-                  vrf: <Vrf used in ping `str`> (Optional)
-                  timeout: <timeout for ping command. Default 60 seconds `int`> (Optional)
-                  min_success_rate: <minimum ping success rate to mark seciton as passed. Default 60 % `int`> (Optional)
-                  max_attempts: <maximum number of attempts to check minimum ping success rate. Default 5 `int`> (Optional)
-                  interval: <time between re-attempts to check minimum ping success rate. Default 30 seconds `int`> (Optional)
+    """ This stage pings a server from a device to ensure connectivity.
 
-    Example:
-    --------
-        devices:
-            N95_1:
-                ping_server:
-                  server: server-1
-                  vrf: management
-                  timeout: 120
-                  min_success_rate: 75
-                  max_attempts: 3
-                  interval: 60
+    Stage Schema
+    ------------
+    ping_server:
+        server: <Hostname or address of the server to ping `str`> (Mandatory)
+        vrf: <Vrf used in ping `str`> (Optional)
+        timeout: <timeout for ping command. Default 60 seconds `int`> (Optional)
+        min_success_rate: <minimum ping success rate to mark seciton as passed. Default 60 % `int`> (Optional)
+        max_attempts: <maximum number of attempts to check minimum ping success rate. Default 5 `int`> (Optional)
+        interval: <time between re-attempts to check minimum ping success rate. Default 30 seconds `int`> (Optional)
 
-    Flow:
-    -----
-        before:
-            copy_to_device (Optional, checks if server is reachable before trying to copy)
-        after:
-            None
-    '''
+    Example
+    -------
+    ping_server:
+        server: server-1
+        vrf: management
+        timeout: 120
+        min_success_rate: 75
+        max_attempts: 3
+        interval: 60
+
+    """
 
     with steps.start("Checking connectivity between device and file server") as step:
 
@@ -231,58 +239,49 @@ def copy_to_linux(section, steps, device, origin, destination, protocol='sftp',
     append_hostname=False, image_length_limit=63, copy_attempts=1,
     check_file_stability=False, unique_file_name=False, unique_number=None,
     rename_images=None):
+    """ This stage copies an image to a location on a linux device. It can keep
+    the original name or modify the name as required.
 
-    '''
-    Clean yaml file schema:
-    -----------------------
-        devices:
-            <device>:
-                copy_to_linux:
-                    origin:
-                        files: <File location on remote server or local disk, 'list'> (Mandatory)
-                        hostname: <Hostname or address of the server, if not provided the file will be treated as local. 'str'> (Optional)
-                    destination:
-                        directory: <Location on the file server, 'str'> (Mandatory)
-                        hostname: <Hostname or address of the file server, if not provided the directory will be treated as local.
-                                    This value is optional only when the hostname under origin is also optional. 'str'> (Optional)
-                    protocol: <Protocol used for copy operation, 'str', default sftp> (Optional)
-                    overwrite: <overwrite the file if the same file already exists, 'bool', default False> (Optional)
-                    timeout: <Copy operation timeout in seconds, default 300 'int'> (Optional)
-                    check_image_length: <check if image length exceeds certain limit 'bool', default False> (Optional)
-                    image_length_limit: <custom image length limit, defaults 63, 'int'>  (Optional)
-                    append_hostname: <append device hostname to the end of image while copying 'bool', default False> (Optional)
-                    copy_attempts: <number of times to retry if copy failed, default 1 (no retry) 'int'> (Optional)
-                    check_file_stability: <Verify if the files are still being copied on the file server, 'bool' default False> (Optional)
-                    unique_file_name: <Enable/Disable appending six-digit random number to the end of file name to make it unique, 'bool', default False> (Optional)
-                    unique_number: <User provided six-digit random number to append to the end of file name to make it unique, 'int', default None> (Optional)
-                    rename_images: <User provided new file name. If multiple files exist then we append an incrementing number 'str'> (Optional)
+    Stage Schema
+    ------------
+    copy_to_linux:
+        origin:
+            files: <File location on remote server or local disk, 'list'> (Mandatory)
+            hostname: <Hostname or address of the server, if not provided the file will be treated as local. 'str'> (Optional)
+        destination:
+            directory: <Location on the file server, 'str'> (Mandatory)
+            hostname: <Hostname or address of the file server, if not provided the directory will be treated as local.
+                        This value is optional only when the hostname under origin is also optional. 'str'> (Optional)
+        protocol: <Protocol used for copy operation, 'str', default sftp> (Optional)
+        overwrite: <overwrite the file if the same file already exists, 'bool', default False> (Optional)
+        timeout: <Copy operation timeout in seconds, default 300 'int'> (Optional)
+        check_image_length: <check if image length exceeds certain limit 'bool', default False> (Optional)
+        image_length_limit: <custom image length limit, defaults 63, 'int'>  (Optional)
+        append_hostname: <append device hostname to the end of image while copying 'bool', default False> (Optional)
+        copy_attempts: <number of times to retry if copy failed, default 1 (no retry) 'int'> (Optional)
+        check_file_stability: <Verify if the files are still being copied on the file server, 'bool' default False> (Optional)
+        unique_file_name: <Enable/Disable appending six-digit random number to the end of file name to make it unique, 'bool', default False> (Optional)
+        unique_number: <User provided six-digit random number to append to the end of file name to make it unique, 'int', default None> (Optional)
+        rename_images: <User provided new file name. If multiple files exist then we append an incrementing number 'str'> (Optional)
 
-    Example:
-    --------
-        devices:
-            N95_1:
-                copy_to_linux:
-                    protocol: sftp
-                    origin:
-                        hostname: server-1
-                        files:
-                        - /home/cisco/kickstart.bin
-                        - /home/cisco/system.bin
-                    timeout: 300
-                    destination:
-                        hostname: file-server
-                        directory: /auto/tftp-ssr/
-                    copy_attempts: 2
-                    check_file_stability: True
-                    unique_file_name: True
+    Example
+    -------
+    copy_to_linux:
+        protocol: sftp
+        origin:
+            hostname: server-1
+            files:
+            - /home/cisco/kickstart.bin
+            - /home/cisco/system.bin
+        timeout: 300
+        destination:
+            hostname: file-server
+            directory: /auto/tftp-ssr/
+        copy_attempts: 2
+        check_file_stability: True
+        unique_file_name: True
 
-    Flow:
-    -----
-        before:
-            None
-        after:
-            None
-    '''
+    """
 
     if not hasattr(device.testbed, 'servers'):
         section.failed("Cannot find any servers in the testbed")
@@ -582,78 +581,68 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
     overwrite=False, skip_deletion=False, copy_attempts=1,
     check_file_stability=False, stability_check_tries=3,
     stability_check_delay=2, min_free_space_percent=None, **kwargs):
+    """ This stage will copy an image to a device from a networked location.
 
-    '''
-    Clean yaml file schema:
-    -----------------------
-    devices:
-      <device>:
-        copy_to_device:
-          origin:
+    Stage Schema
+    ------------
+    copy_to_device:
+        origin:
             files ('list'): Image files location on the server (Mandatory)
             hostname ('str'): Hostname or address of the server (Mandatory)
-          destination:
+        destination:
             directory ('str'): Location on the device to copy images (Mandatory)
-          protocol ('str'): Protocol used for copy operation (Mandatory)
-          verify_num_images ('bool'): Verify number of images provided by user
-                                      for clean is correct
-                                      Default True (Optional)
-          expected_num_images ('int'): Number of images expected to be provided
-                                       by user for clean
-                                       Default 1 (Optional)
-          vrf ('str'): Vrf name if applicable
-                       Default None (Optional)
-          timeout ('int'): Copy operation timeout in seconds
-                           Default 300 (Optional)
-          compact ('bool'): Compact copy mode if supported by the device
-                            Default False (Optional)
-          protected_files ('list'): File patterns that shouldn't be deleted
-                                    Default None (Optional)
-          overwrite ('bool'): If image file already exists on device,
-                              still copy the file to the device
+        protocol ('str'): Protocol used for copy operation (Mandatory)
+        verify_num_images ('bool'): Verify number of images provided by user
+                                  for clean is correct
+                                  Default True (Optional)
+        expected_num_images ('int'): Number of images expected to be provided
+                                   by user for clean
+                                   Default 1 (Optional)
+        vrf ('str'): Vrf name if applicable
+                   Default None (Optional)
+        timeout ('int'): Copy operation timeout in seconds
+                       Default 300 (Optional)
+        compact ('bool'): Compact copy mode if supported by the device
+                        Default False (Optional)
+        protected_files ('list'): File patterns that shouldn't be deleted
+                                Default None (Optional)
+        overwrite ('bool'): If image file already exists on device,
+                          still copy the file to the device
+                          Default False (Optional)
+        skip_deletion ('bool'): Do not delete any files even if there isn't
+                              any space on device
                               Default False (Optional)
-          skip_deletion ('bool'): Do not delete any files even if there isn't
-                                  any space on device
-                                  Default False (Optional)
-          copy_attempts ('int'): Number of times to attempt copying image files
-                                 Default 1 (no retry) (Optional)
-          check_file_stability ('bool'): Verify if the files are still being
-                                         copied on the file server
-                                         Default False (Optional)
-          stability_check_tries ('int'): Max number of checks that can be done
-                                         when checking file stability
-                                         Default 3 (Optional)
-          stability_check_delay ('int'): Delay between tries when checking file
-                                         stability in seconds
-                                         Default 2 (Optional)
-          min_free_space_percent ('int') : Minimum acceptable free disk space
-                                           percentage trying to reach by
-                                           deleting unprotected files
-                                           Default None (Optional)
-          use_kstack ('bool'): Use faster version of copy with limited options
-                               Default False (Optional)
+        copy_attempts ('int'): Number of times to attempt copying image files
+                             Default 1 (no retry) (Optional)
+        check_file_stability ('bool'): Verify if the files are still being
+                                     copied on the file server
+                                     Default False (Optional)
+        stability_check_tries ('int'): Max number of checks that can be done
+                                     when checking file stability
+                                     Default 3 (Optional)
+        stability_check_delay ('int'): Delay between tries when checking file
+                                     stability in seconds
+                                     Default 2 (Optional)
+        min_free_space_percent ('int') : Minimum acceptable free disk space
+                                       percentage trying to reach by
+                                       deleting unprotected files
+                                       Default None (Optional)
+        use_kstack ('bool'): Use faster version of copy with limited options
+                           Default False (Optional)
 
-    Example:
-    --------
-    devices:
-      ASR1_1:
-        copy_to_device:
-          protocol: sftp
-          origin:
+    Example
+    -------
+    copy_to_device:
+        origin:
             hostname: server-1
             files:
-            - /home/cisco/asr1k.bin
-          timeout: 300
-          destination:
-              directory: harddisk:/
+                - /home/cisco/asr1k.bin
+        destination:
+            directory: harddisk:/
+        protocol: sftp
+        timeout: 300
 
-    Flow:
-    -----
-    before:
-      None
-    after:
-      None
-    '''
+    """
 
     log.info("Section steps:\n1- Verify correct number of images provided"
              "\n2- Get filesize of image files on remote server"
@@ -981,28 +970,19 @@ def copy_to_device(section, steps, device, origin, destination, protocol,
 })
 @aetest.test
 def write_erase(section, steps, device, timeout=300):
+    """ This stage executes 'write erase' on the device
 
-    '''
-    Clean yaml file schema:
-    -----------------------
-    devices:
-      <device>:
-        write_erase:
+    Stage Schema
+    ------------
+    write_erase:
+        timeout (int, optional): Max time allowed for command to complete. Defaults to 300 seconds.
 
-    Example:
-    --------
-    devices:
-      N95_1:
-        write_erase:
+    Example
+    -------
+    write_erase:
+        timeout: 100
 
-    Flow:
-    -----
-    before:
-      backup_file_on_device (Optional, Backup configuration file then perform write erase)
-    after:
-      delete_backup_from_device (Optional, Delete the backed up configuration file)
-      apply_golden_config (Optional, user wants to apply golden config or not)
-    '''
+    """
 
     log.info('''Section steps:\n1 - Execute write erase on the device''')
 
@@ -1036,46 +1016,35 @@ def write_erase(section, steps, device, timeout=300):
 })
 @aetest.test
 def reload(section, steps, device, reload_service_args=None, check_modules=None):
-    """
-    Clean yaml file schema:
-    -----------------------
-    devices:
-      <device>:
-        reload:
-          reload_service_args: (Optional, if not specified defaults below are used)
+    """ This stage reloads the device.
+
+    Stage Schema
+    ------------
+    reload:
+        reload_service_args: (Optional, if not specified defaults below are used)
             timeout: <reload timeout value, default 800 seconds. 'int'> (Optional)
             reload_creds: <Credential name defined in the testbed yaml file to be used during reload, default 'default'. 'str'> (Optional)
             prompt_recovery: <Enable/Disable prompt recovery feature, 'bool'> (Optional)
             <Key>: <Value> (Any other key:value pairs that the unicon reload service allows for)
 
-          check_modules:
+        check_modules:
             check: <Enable/Disable checking of modules after reload, default 'True'. 'bool'> (Optional)>
             timeout: <timeout value to verify modules are in stable state, default 180 seconds. 'int'> (Optional)
             interval: <interval value between checks for verifying module status, default 30 seconds. 'int'> (Optional)
 
 
-    Example:
-    --------
-    devices:
-      N95_1:
-        reload:
-          reload_service_args:
+    Example
+    -------
+    reload:
+        reload_service_args:
             timeout: 600
             reload_creds: clean_reload_creds
             prompt_recovery: True
             reconnect_sleep: 200 (Unicon NXOS reload service argument)
 
-          check_modules:
+        check_modules:
             check: False
 
-
-    Flow:
-    -----
-    before:
-      change_boot_variable (Mandatory)
-      apply_golden_config (Optional, configure device to come up with specific startup configs)
-    after:
-      change_boot_variable (Optional, to verify current boot variable and set next)
     """
 
     # Initialize 'reload_service_args' defaults if not defined by user
@@ -1167,6 +1136,7 @@ def reload(section, steps, device, reload_service_args=None, check_modules=None)
     Optional('copy_vdc_all'): bool,
     Optional('max_time'): int,
     Optional('check_interval'): int,
+    Optional('configure_replace'): bool,
 })
 @aetest.test
 def apply_configuration(section, steps, device, configuration=None,
@@ -1174,48 +1144,37 @@ def apply_configuration(section, steps, device, configuration=None,
     config_stable_time=10, copy_vdc_all=False, max_time=300,
     check_interval=60, configure_replace=False):
 
-    '''
-    Apply configuration on the device, either by providing a file and/or
-    straight configuration
+    """ Apply configuration on the device, either by providing a file and/or
+    raw configuration.
 
-    Clean yaml file schema:
-    -----------------------
-    devices:
-      <device>:
-        apply_configuration:
-          configuration: <Configuration block to be applied, 'str'> (Optional)
-          configuration_from_file: <File that contains a configuration to apply, 'str'> (Optional)
-          file: <Configuration file for config replace> (Optional)
-          configure_replace: <Use configure replace instead of copy 'bool'> (Optional)
-          config_timeout: <Timeout in seconds, 'int'> (Optional)
-          config_stable_time: <Time for configuration stability in seconds, 'int'> (Optional)
-          copy_vdc_all: <To copy on all VDCs or not, 'bool'> (Optional)
-          max_time: <Maximum time section will take for checks in seconds, 'int'> (Optional)
-          check_interval: <Time interval, 'int'> (Optional)
+    Stage Schema
+    ------------
+    apply_configuration:
+        configuration: <Configuration block to be applied, 'str'> (Optional)
+        configuration_from_file: <File that contains a configuration to apply, 'str'> (Optional)
+        file: <Configuration file for config replace> (Optional)
+        configure_replace: <Use configure replace instead of copy 'bool'> (Optional)
+        config_timeout: <Timeout in seconds, 'int'> (Optional)
+        config_stable_time: <Time for configuration stability in seconds, 'int'> (Optional)
+        copy_vdc_all: <To copy on all VDCs or not, 'bool'> (Optional)
+        max_time: <Maximum time section will take for checks in seconds, 'int'> (Optional)
+        check_interval: <Time interval, 'int'> (Optional)
 
-    Example:
-    --------
-    devices:
-      N95_1:
-        apply_configuration:
-          configuration: |
+    Example
+    -------
+    apply_configuration:
+        configuration: |
             interface ethernet2/1
-              no shutdown
-          file: bootflash:/ISSUCleanGolden.cfg
-          configure_replace: True
-          config_timeout: 600
-          config_stable_time: 10
-          copy_vdc_all: True
-          max_time: 300
-          check_interval: 20
+            no shutdown
+        file: bootflash:/ISSUCleanGolden.cfg
+        configure_replace: True
+        config_timeout: 600
+        config_stable_time: 10
+        copy_vdc_all: True
+        max_time: 300
+        check_interval: 20
 
-    Flow:
-    -----
-    before:
-      None
-    after:
-      None
-    '''
+    """
 
     log.info("Section steps:\n1- Copy/Apply configuration to/on the device"
              "\n2- Copy running-config to startup-config"
@@ -1269,30 +1228,20 @@ def apply_configuration(section, steps, device, configuration=None,
 })
 @aetest.test
 def verify_running_image(section, steps, device, images):
+    """ This stage verifies the currently running image is the expected image.
 
-    '''
-    Clean yaml file schema:
-    -----------------------
-    devices:
-      <device>:
-        verify_running_image:
-          images: <Images reloaded on the device, 'list'> (Mandatory)
+    Stage Schema
+    ------------
+    verify_running_image:
+        images: <Images reloaded on the device, 'list'> (Mandatory)
 
-    Example:
-    --------
-    devices:
-      N95_1:
-        verify_running_image:
-          images:
-          - test_image.gbin
+    Example
+    -------
+    verify_running_image:
+        images:
+            - test_image.gbin
 
-    Flow:
-    -----
-    before:
-      reload (Mandatory, Reload device first then verify it)
-    after:
-      None
-    '''
+    """
 
     log.info("Section steps:\n1- Verify the running image on the device")
 
@@ -1322,33 +1271,24 @@ def verify_running_image(section, steps, device, images):
 @aetest.test
 def backup_file_on_device(section, steps, device, copy_dir, copy_file,
     overwrite=True, timeout=300):
+    """ This stage copies an existing file on the device and prepends 'backup_'
+    to the start of the file name.
 
-    '''
-    Clean yaml file schema:
-    -----------------------
-    devices:
-      <device>:
-        backup_file_on_device:
-          copy_dir ('str'): Directory containing file to be backed up (Mandatory)
-          copy_file ('str'): File to be backed up (Mandatory)
-          overwrite ('bool'): Overwrite the file if exists. Default value is True (Optional)
-          timeout ('int'): Copy timeout in second. Default value is 300 (Optional)
+    Stage Schema
+    ------------
+    backup_file_on_device:
+        copy_dir ('str'): Directory containing file to be backed up (Mandatory)
+        copy_file ('str'): File to be backed up (Mandatory)
+        overwrite ('bool'): Overwrite the file if exists. Default value is True (Optional)
+        timeout ('int'): Copy timeout in second. Default value is 300 (Optional)
 
-    Example:
-    --------
-    devices:
-      PE1:
-        backup_file_on_device:
-          copy_dir: bootflash:
-          copy_file: ISSUCleanGolden.cfg
+    Example
+    -------
+    backup_file_on_device:
+        copy_dir: bootflash:
+        copy_file: ISSUCleanGolden.cfg
 
-    Flow:
-    -----
-    before:
-      None
-    after:
-      write_erase (Optional, Backup configuration file then perform write erase)
-    '''
+    """
 
     log.info("Section steps:\n1- Backup file on the device")
 
@@ -1409,37 +1349,28 @@ def backup_file_on_device(section, steps, device, copy_dir, copy_file,
 @aetest.test
 def delete_backup_from_device(section, steps, device, delete_dir, delete_file,
     restore_from_backup=False, overwrite=True, timeout=300):
+    """ This stage removes a backed up file from the device. It can optionally
+    replace the original file with the one that was backed up.
 
-    '''
-    Clean yaml file schema:
-    -----------------------
-    devices:
-      <device>:
-        delete_backup_from_device:
-          delete_dir ('str'): Directory containing file to be deleted (Mandatory)
-          delete_dir_stby ('str'): Directory containing file to be deleted for standby (Optional)
-          delete_file ('str'): File to be deleted up (Mandatory)
-          restore_from_backup ('bool'): Restore the file from backup file.
-                                        Default value is False (Optional)
-          overwrite ('bool'): Overwrite the file if exists. Default value is True (Optional)
-          timeout ('int'): Copy/Execute timeout in second. Default value is 300 (Optional)
+    Stage Schema
+    ------------
+    delete_backup_from_device:
+        delete_dir ('str'): Directory containing file to be deleted (Mandatory)
+        delete_dir_stby ('str'): Directory containing file to be deleted for standby (Optional)
+        delete_file ('str'): File to be deleted up (Mandatory)
+        restore_from_backup ('bool'): Restore the file from backup file.
+                                    Default value is False (Optional)
+        overwrite ('bool'): Overwrite the file if exists. Default value is True (Optional)
+        timeout ('int'): Copy/Execute timeout in second. Default value is 300 (Optional)
 
-    Example:
-    --------
-    devices:
-      PE1:
-        delete_backup_from_device:
-          delete_dir: 'bootflash:'
-          delete_dir_stby: 'bootflash-stby:'
-          delete_file: ISSUCleanGolden.cfg_backup
+    Example
+    -------
+    delete_backup_from_device:
+        delete_dir: 'bootflash:'
+        delete_dir_stby: 'bootflash-stby:'
+        delete_file: ISSUCleanGolden.cfg_backup
 
-    Flow:
-    -----
-    before:
-      write_erase (Optional, Perform write erase then delete the backed up file)
-    after:
-      None
-    '''
+    """
 
     log.info("Section steps:\n1- Delete the targeted file")
 
@@ -1525,32 +1456,23 @@ def delete_backup_from_device(section, steps, device, delete_dir, delete_file,
 @aetest.test
 def delete_files_from_server(section, steps, device, server=None, files=None,
     protocol='sftp'):
-    """ delete images from server
-        Clean yaml file schema:
-    -----------------------
-        devices:
-            <device>:
-                delete_files_from_server:
-                  server ('str'): <Hostname or address of the server> (optional)
-                  files ('list'): <list of images to delete> (Optional)
-                  protocol ('str'): <protocol used for deletion, Default value is sftp> (Optional)
+    """ This stage deletes files from a server.
 
-    Example:
-    --------
-        devices:
-            N95_1:
-                delete_files_from_server:
-                    server: 1.1.1.1
-                    files:
-                    - /home/cisco/kickstart.bin
-                    protocol: sftp
+    Stage Schema
+    ------------
+    delete_files_from_server:
+        server ('str'): <Hostname or address of the server> (optional)
+        files ('list'): <list of images to delete> (Optional)
+        protocol ('str'): <protocol used for deletion, Default value is sftp> (Optional)
 
-    Flow:
-    -----
-        before:
-            None
-        after:
-            copy_to_device (optional, delete the image from server to save space after copy is done)
+    Example
+    -------
+    delete_files_from_server:
+        server: 1.1.1.1
+        files:
+            - /home/cisco/kickstart.bin
+        protocol: sftp
+
     """
 
     # pyats FU only support sftp or ftp delete
@@ -1591,3 +1513,348 @@ def delete_files_from_server(section, steps, device, server=None, files=None,
                     substep.passx('Failed to delete image "{}" due '
                                'to :{}'.format(file, str(e)))
 
+
+
+#===============================================================================
+#                       stage: revert_vm_snapshot
+#===============================================================================
+@clean_schema({
+    'esxi_server': str,
+    'recovery_snapshot_name': str,
+    Optional('vm_hostname'): str,
+    Optional('max_recovery_attempts'): int,
+    Optional('sleep_time_after_powering_off'): int,
+    Optional('sleep_time_after_powering_on'): int,
+    Optional('sleep_time_stabilize_device'): int
+})
+@aetest.test
+def revert_vm_snapshot(section, steps, device, esxi_server, 
+                       recovery_snapshot_name, max_recovery_attempts=2,
+                       vm_hostname="",
+                       sleep_time_after_powering_off=60, 
+                       sleep_time_stabilize_device=300, 
+                       sleep_time_after_powering_on=600):
+    """ This stage reverts the virtual device to the provided snapshot
+    
+        Stage schema
+        ------------
+        revert_snapshot:
+            
+            vm_hostname (str, optional): Name of the VM that is on the ESXi 
+                server, if not provided, it will be set as the device name.
+            
+            esxi_server (str): ESXI Server which holds the vm to revert the 
+                snapshot.
+                  
+            recovery_snapshot_name (str): Name of the snapshot to have VM 
+                reverted back to.
+                  
+            max_recovery_attempts (int, optional): Maximum number of recovery 
+                attempts. Defaults to 2.
+            
+            sleep_after_powering_off (int, optional): Wait time after powering 
+                off devices. Default value is 60 seconds.
+            
+            sleep_time_stabilize_device (int, optional): Wait time before 
+                finishing revert snapshot stage. Defaults to 300.
+                  
+            sleep_time_after_powering_on (int, optional): Wait time after 
+                powering on devices to reach steady state. Defaults to 600.
+      
+        Example
+        -------
+        revert_vm_snapshot:
+            esxi_server: ssr-ucs2
+            vm_hostname: P1-4
+            max_recovery_attempts: 2
+            sleep_after_powering_off: 60
+            sleep_time_after_powering_on: 600
+            sleep_time_stabilize_device: 300
+            recovery_snapshot_name: golden
+    """
+    tb = device.testbed
+    
+    # If vm_hostname is not provided, set it as the device name
+    if not vm_hostname:
+        vm_hostname = device.name
+    
+    with steps.start("Check if {server} exists in the testbed YAML file".\
+        format(server=esxi_server)) as step:
+        
+        # Check if esxi_server device is provided
+        if esxi_server not in tb.devices:
+            step.failed("{} device is not found in testbed YAML file".\
+                format(esxi_server))
+        else:
+            server = tb.devices[esxi_server]
+            step.passed("Verified that {esxi_server} is specified in testbed "
+                        "YAML file".format(esxi_server=server.name))
+    
+    # Start snapshot recovery
+    with steps.start("Launching snapshot recovery on server: {server}".\
+        format(server=server.name)) as step:
+        
+        # Try reverting snapshot for max_recovery_attempts of times
+        for attempt in range(1, max_recovery_attempts + 1):
+            log.info("Attempt {n}: Starting recovery of device {dev}".\
+                format(n=attempt, dev=device.name))
+            
+            # String to store error message to print out if substep step failed 
+            # in max_recovery_attempt
+            error_msg = ""
+            
+            # Boolean flag indicating the connection to the ESXi server
+            connected_to_esxi_server = True
+            with step.start("Connecting to ESXi server {server}...".\
+                format(server=server.name), continue_=True) as substep:
+                try:
+                    # Connect to the esxi server
+                    server.connect()
+                except Exception as err:
+                    connected_to_esxi_server = False
+                    error_msg = str(err)
+                    substep.failed("Could not connect to ESXi server "
+                                       "{server} due to error: {err}".\
+                                           format(server=server.name,
+                                                  err=str(err)))
+
+                substep.passed(
+                    "Successfully connected to ESXi server {server}".\
+                        format(server=server.name))
+                
+            if not connected_to_esxi_server and attempt == max_recovery_attempts + 1:
+                step.failed("Failed to connect to ESXi server {server} with "
+                            "error: {err}".format(server=server.name,
+                                                  err=error_msg))
+            elif not connected_to_esxi_server:
+                continue
+
+            with step.start("Get VM on ESXI server {server}".\
+                format(server=server.name), continue_=True) as substep:
+
+                # Get VM instance
+                server_vm = server.api.\
+                    get_server_vm(vm_hostname=vm_hostname)
+                
+                if not server_vm:
+                    # Destroy session
+                    server.destroy()
+                    substep.failed("Could not get VM {vm} on ESXi server "
+                                   "{server}".format(vm=vm_hostname,
+                                                     server=server.name))
+                
+                substep.passed("Successfully obtained VM instance {vm} on ESXi "
+                               "server {server}".format(vm=vm_hostname,
+                                                        server=server.name))
+                
+            if not server_vm and attempt == max_recovery_attempts + 1:
+                step.failed("Failed to get VM {vm} on ESXi server {server}".\
+                    format(vm=vm_hostname,
+                           server=server.name))
+            elif not server_vm:
+                continue
+
+            # Boolean flag to indicating whether we caught any erros when 
+            # switching power of the VM
+            power_switch_errored = False
+            with step.start("Checking the power state of the VM {vm}".\
+                format(vm=vm_hostname), continue_=True) as substep:
+
+                # Check power state of the VM
+                dev_power_state = server.api.\
+                    get_vm_power_state(vm_name=vm_hostname, 
+                                       vm_id=server_vm.get(vm_hostname)\
+                                           .get('vmid'))
+                if not dev_power_state:
+                    # Destroy session
+                    server.destroy()
+                    substep.failed("Failed to get power state of VM {vm}".\
+                            format(vm=vm_hostname))
+                
+                if dev_power_state == 'ON':        
+                    # Power off device
+                    log.info('Powering off device {dev}'.\
+                        format(dev=vm_hostname))    
+                    
+                    try:
+                        server.api.switch_vm_power(
+                            vm_id=server_vm.get(vm_hostname).get('vmid'),
+                            state='off')
+                    except Exception as err:
+                        server.destroy()
+                        power_switch_errored = True
+                        error_msg = str(err)
+                        substep.failed("Could not power {state} VM {vm} "
+                                       "with error: {err}".\
+                                           format(state='off',
+                                                  vm=vm_hostname,
+                                                  err=str(err)))
+                
+                    # Wait $sleep_time second after powering off device
+                    log.info('Waiting {sec} seconds after powering '
+                            'off device {dev}'.\
+                                format(dev=vm_hostname, 
+                                       sec=sleep_time_after_powering_off))
+                    time.sleep(sleep_time_after_powering_off)
+                else:
+                    log.info("Device {dev} is already off".\
+                        format(dev=vm_hostname))
+                    
+                substep.passed("Device {dev} was powered off".\
+                            format(dev=vm_hostname))
+                
+            if not dev_power_state and attempt == max_recovery_attempts + 1:
+                step.failed("Failed to get power state of VM {vm}".\
+                    format(vm=vm_hostname))
+            elif power_switch_errored and attempt == max_recovery_attempts + 1:
+                step.failed("Failed to power {state} of VM {vm} with error: "
+                            "{err}".format(state='off',
+                                           vm=vm_hostname,
+                                           err=error_msg))
+            elif not dev_power_state or power_switch_errored:
+                continue
+
+            with step.start(
+                "Get device snapshot ID", continue_=True) as substep:
+                # Get device snapshot id
+                vmid = server_vm.get(vm_hostname).get('vmid')
+                vm_snapshot_id = server.api.get_vm_snapshot(
+                    vm_name=vm_hostname,
+                    vm_id=vmid,
+                    snapshot_name=recovery_snapshot_name)
+                
+                if not vm_snapshot_id:
+                    # Destroy session
+                    server.destroy()
+                    substep.failed("Failed to get snapshot {snapshot} on VM"
+                                   " {vm}".\
+                                       format(snapshot=recovery_snapshot_name,
+                                              vm=vm_hostname))
+                
+                substep.passed("Successfully obtained snpashot id {id} for "
+                               "snapshot {snapshot} on VM {vm}".\
+                                   format(id=vm_snapshot_id,
+                                          snapshot=recovery_snapshot_name,
+                                          vm=vm_hostname))
+            
+            if not vm_snapshot_id and attempt == max_recovery_attempts + 1:
+                step.failed("Failed to get snapshot {snapshot} on VM {vm}".\
+                    format(snapshot=recovery_snapshot_name,
+                           vm=vm_hostname))
+            elif not vm_snapshot_id:
+                continue
+            
+            # Boolean flag to indicate whether VM has been reverted to given snapshot
+            reverted_to_snapshot = True
+            with step.start('Revert to snapshot {snapshot} for instance {dev}'.\
+                format(snapshot=recovery_snapshot_name,
+                       dev=vm_hostname), continue_=True) as substep:
+                try:
+                    # Revert to snapshot
+                    server.api.revert_vm_snapshot(vm_name=vm_hostname,
+                                                  vm_id=vmid,
+                                                  vm_snapshot_id=vm_snapshot_id,
+                                                  snapshot_name=recovery_snapshot_name)
+                except Exception as err:
+                    # Destroy session
+                    server.destroy()
+                    reverted_to_snapshot = False
+                    error_msg = str(err)
+                    substep.failed("Failed to revert back to snapshot "
+                                   "{snapshot} on VM {vm} with error: {err}".\
+                                       format(snapshot=recovery_snapshot_name,
+                                              vm=vm_hostname,
+                                              err=str(err)))
+
+                substep.passed("Successfully reverted to snapshot {snapshot} on"
+                               "VM {vm}".format(snapshot=recovery_snapshot_name,
+                                                vm=vm_hostname))
+                
+            if not reverted_to_snapshot and attempt == max_recovery_attempts + 1:
+                step.failed("Failed to revert back to snapshot")
+            elif not reverted_to_snapshot:
+                continue
+
+            power_switch_errored = False
+            with step.start("Powering on device {dev}".\
+                format(dev=vm_hostname), continue_=True) as substep:
+                try:
+                    # Power on device
+                    server.api.switch_vm_power(
+                        vm_id=server_vm.get(vm_hostname).get('vmid'),
+                        state='on')
+                    
+                except Exception as err:
+                    # Destroy session
+                    server.destroy()
+                    power_switch_errored = True
+                    error_msg = str(err)
+                    substep.failed("Could not power {state} VM {vm} with "
+                                       "error: {err}".format(state='on',
+                                                             vm=vm_hostname,
+                                                             err=str(err)))
+                
+                substep.passed("Successfully powered on device {dev}".\
+                    format(dev=vm_hostname))
+                
+            if power_switch_errored and attempt == max_recovery_attempts + 1:
+                step.failed("Failed to power {state} VM {vm} with error: {err}".\
+                    format(state='on',
+                           vm=vm_hostname,
+                           err=error_msg))
+            elif power_switch_errored:
+                continue
+            
+            # Wait $sleep_after_powering_on seconds after powering on device
+            log.info('Waiting {sec} seconds after powering on device to'
+                     ' reach steady state'.\
+                         format(sec=sleep_time_after_powering_on))
+            time.sleep(sleep_time_after_powering_on)
+            
+            # Boolean flag to check the connection to VM
+            connected_to_dev = True
+            with step.start("Attempting to connect to {dev} after power on".\
+                format(dev=vm_hostname), continue_=True) as substep:
+                try: 
+                    # Connect to device to make sure device is powered on successfully
+                    device.connect(learn_hostname=True)
+                except Exception as err:
+                    connected_to_dev = False
+                    error_msg = str(err)
+                    substep.failed('Could not connect to {dev} after '
+                                   'recovery: {err}'.format(dev=device.name,
+                                                            err=str(err)))
+                
+                # Disconnect from device
+                log.info("Disconnect from {dev}".format(dev=device.name))
+                try:
+                    device.destroy()
+                except Exception:
+                    # Do nothing as we dont care if the destroy fails as long as
+                    #  we can connect
+                    pass
+                
+                substep.passed("Successfully connected to and disconnected from"
+                               " device {dev}".format(dev=device.name))
+                
+            if not connected_to_dev and attempt == max_recovery_attempts + 1:
+                step.failed("Failed to connect to device {dev}")
+            elif not connected_to_dev:
+                continue
+                
+            # Wait for $sleep_stabilize_device for VM to stablize
+            log.info('Waiting {sec} seconds to reach steady state'.\
+                format(sec=sleep_time_stabilize_device))
+            time.sleep(sleep_time_stabilize_device)
+            
+            # Destroy session at the end
+            server.destroy()
+            step.passed("Successfully reverted {dev} to snapshot {snapshot}".\
+                format(dev=device.name,
+                       snapshot=recovery_snapshot_name))
+                
+        else:
+            if server:
+                server.destroy()
+            step.failed('Recovery failed after {n} attempts '.\
+                format(n=max_recovery_attempts))

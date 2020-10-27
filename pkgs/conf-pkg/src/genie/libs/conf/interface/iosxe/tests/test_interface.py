@@ -120,6 +120,24 @@ class test_interface(TestCase):
             ' exit',
         ]))
 
+        # FiftyGig interface
+        intf2 = Interface(device=dev1, name='FiftyGigE6/0/1')
+        intf2.ipv4 = '10.20.30.40/24'
+        intf2.shutdown = False
+        cfg = intf2.build_config(apply=False)
+        self.assertMultiLineEqual(str(cfg), '\n'.join([
+            'interface FiftyGigE6/0/1',
+            ' ip address 10.20.30.40 255.255.255.0',
+            ' no shutdown',
+            ' exit'
+        ]))
+        uncfg = intf2.build_unconfig(apply=False)
+        self.assertMultiLineEqual(str(uncfg), '\n'.join([
+            'default interface FiftyGigE6/0/1',
+            'interface FiftyGigE6/0/1',
+            'shutdown'
+        ]))
+
 
     def test_EthernetSubInterface(self):
         """Test subinterface support without usage of service_instance"""

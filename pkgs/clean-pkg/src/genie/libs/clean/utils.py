@@ -60,12 +60,12 @@ def find_clean_variable(section, key):
     return list(found)
 
 
-def print_message(spawn, message, status=1):
-    if status:
-        spawn.log.info(message)
-    else:
+def print_message(spawn, message, raise_exception=False):
+    if raise_exception:
         spawn.log.error(message)
         raise Exception(message)
+    else:
+        spawn.log.info(message)
 
 
 def verify_num_images_provided(image_list, expected_images=1):
@@ -377,7 +377,7 @@ def validate_clean(clean_dict, testbed_dict):
     except Exception as e:
         exceptions.append(e)
 
-    from genie.libs.clean.stages.recovery import recovery_processor
+    from genie.libs.clean.recovery import recovery_processor
 
     for dev in clean_dict.get('devices', {}):
         schema = base_schema.setdefault('devices', {}).setdefault(dev, {})

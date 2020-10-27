@@ -26,6 +26,7 @@ class HealthCheckPlugin(BasePlugin):
 
     # plugin name
     name = 'pyATSHealth'
+    parameters = {}
 
     @classmethod
     def configure_parser(cls, parser, legacy_cli=True):
@@ -115,10 +116,21 @@ class HealthCheckPlugin(BasePlugin):
                     rundir=self.runtime.directory), 'w') as f:
             yaml.dump(health_loaded, f)
 
+
         # get `source` for pyATS Health processors and instantiate class
         source = health_loaded.get('pyats_health_processors',
                                    {}).get('source', {})
-        if source:
+
+        # check `reconnect` flag/parameters
+        if 'reconnect' in health_loaded.setdefault('pyats_health_processors', {}):
+            reconnect = health_loaded['pyats_health_processors']['reconnect']
+            if reconnect is None:
+                # `reconnect` in yaml, but no params. pass empty dict
+                reconnect = {}
+        else:
+            reconnect = None
+
+        if source:            
             # get class name of testcase in health yaml
             pkg_name = source.get('pkg', '')
             class_name = source.get('class', '')
@@ -137,7 +149,6 @@ class HealthCheckPlugin(BasePlugin):
                 # loop by health items (sections)
                 for section in section_names:
                     for section_name, section_data in section.items():
-
                         # add processors to pyATS
                         processor_decorator = ProcessorDecorator()
                         processor_method = processor_decorator.context(
@@ -150,6 +161,7 @@ class HealthCheckPlugin(BasePlugin):
                             report = True,
                             # params for health dispatcher
                             parameters={
+                                'reconnect': reconnect,
                                 'name': section_name,
                                 'data': section_data
                             }

@@ -74,7 +74,6 @@ def maple(self, steps, device, maple_plugin_input, maple_action=None, output=Non
     # cast the maple_plugin_input input into json_data
     # maple_plugin_input keyword of the yaml file is dictionary casted as string
     maple_plugin_input = json.loads(maple_plugin_input, object_pairs_hook=OrderedDict)
-
     plugin_extract = re.compile(r'(?P<plugin_type>\w+):{(?P<plugin_data>[\S\s]+)}')
 
     # extracting 'commands' keyword in maple_plugin_input and match it with above regex
@@ -83,8 +82,9 @@ def maple(self, steps, device, maple_plugin_input, maple_action=None, output=Non
     m = plugin_extract.match(Dq(maple_plugin_input).get_values('commands', index=0))
     matched_group = m.groupdict()
     json_data_str = "{{{}}}".format(matched_group['plugin_data'])
-    # plugin_data = json.loads('{'+matched_group['plugin_data']+'}')
     plugin_data = json.loads(json_data_str)
+
+
 
     # package extracted form plugin_data, containing the package that contains maple plugin
     package = plugin_data.pop('package', None)
@@ -183,7 +183,7 @@ def _maple_plugins_input(self, steps, device, plugin_data, maple_action,
             if _class:
                 plugin_source = getattr(plugin_source, _class)
         except Exception:
-            raise ("package provided {} is not a valid package".format())
+            raise ("package provided {} is not a valid package".format(package))
 
     # if no package provided
     # default package is plugins.system.Commands
@@ -219,23 +219,12 @@ def _maple_plugins_input(self, steps, device, plugin_data, maple_action,
             objects.update({'output': output})
     
     # further adjustments are necessary for ixianative
-    if device.os == 'ixianative':
+    if device.type == 'ixia':
         objects = _ixia_add_on(self, objects, device)
 
     return objects, plugin_source
 
 def _ixia_add_on(self, objects, device):
-
-    # disconnecting the device for ixia, incase user didint put subsection datafile
-    if device.type == 'tgn' and device.is_connected():
-        device.type = 'ixia'
-        device.disconnect()
-
-    # transforming tgn input in testbed to hltapi
-    device.connections['hltapi'] = AttrDict({'protocol': 'hltapi', 'ip': device.connections.tgn.ixia_chassis_ip, 
-                                    'tcl_server': device.connections.tgn.ixia_chassis_ip,
-                                    'ixnetwork_tcl_server': device.connections.tgn.ixnetwork_api_server_ip+ ':'+ str(device.connections.tgn.ixnetwork_tcl_port),
-                                    'ixia_port_list':device.connections.tgn.ixia_port_list})
 
     # saving the ixia saved variables (that is different than normal saved variables)
     # into the objects that would be the input to the plugin
@@ -257,7 +246,7 @@ def _ixia_add_on(self, objects, device):
 
     return objects
 
-def maple_search(self, steps, search_string, device, continue_=True, include=None, exclude=None):
+def maple_search(self, steps, search_string, device, continue_=True, include=None, exclude=None, **kwargs):
 
     log.info(search_string)
     return _output_query_template(self, search_string, steps, device, command=None,

@@ -15,7 +15,7 @@ from pyats.utils.fileutils import FileUtils
 # Genie
 from genie.libs import clean
 from genie.abstract import Lookup
-from ..recovery import _disconnect_reconnect
+from genie.libs.clean.recovery.recovery import _disconnect_reconnect
 from genie.libs.clean.utils import clean_schema
 
 # MetaParser
@@ -42,48 +42,39 @@ log = logging.getLogger(__name__)
 def change_boot_variable(section, steps, device, images, copy_vdc_all=False,
     timeout=300, max_time=300, check_interval=60, stabilize_time=100,
     standby_copy_max_time=300, standby_copy_check_interval=20):
+    """ This stage configures the boot variables to the provided image in
+    preparation for the next device reload.
 
-    '''
-    Clean yaml file schema:
-    -----------------------
-    devices:
-        <device>:
-            change_boot_variable:
-                images:
-                    kickstart: [<kickstart image>] (Optional)
-                    system: [<system image>] (Mandatory)
-                copy_vdc_all: <Copy on all VDCs, 'Boolean'> (Optional)
-                timeout: <Execute timeout in seconds, 'int'> (Optional)
-                max_time: <Maximum time section will take for checks in seconds, 'int'> (Optional)
-                check_interval: <Time interval, 'int'> (Optional)
-                stabilize_time: <Time in seconds till boot variables stabilization, 'int'> (Optional)
-                standby_copy_max_time: <Maximum time section will take for checks in seconds, 'int'> (Optional)
-                standby_copy_check_interval: <Time interval, 'int'> (Optional)
+    Stage Schema
+    ------------
+    change_boot_variable:
+        images:
+            kickstart: [<kickstart image>] (Optional)
+            system: [<system image>] (Mandatory)
+        copy_vdc_all: <Copy on all VDCs, 'Boolean'> (Optional)
+        timeout: <Execute timeout in seconds, 'int'> (Optional)
+        max_time: <Maximum time section will take for checks in seconds, 'int'> (Optional)
+        check_interval: <Time interval, 'int'> (Optional)
+        stabilize_time: <Time in seconds till boot variables stabilization, 'int'> (Optional)
+        standby_copy_max_time: <Maximum time section will take for checks in seconds, 'int'> (Optional)
+        standby_copy_check_interval: <Time interval, 'int'> (Optional)
 
 
-    Example:
-    --------
-    devices:
-        N95_1:
-            change_boot_variable:
-                images:
-                    kickstart: bootflash:/kisckstart.gbin
-                    system: bootflash:/system.gbin
-                copy_vdc_all: True
-                timeout: 150
-                max_time: 300
-                check_interval: 20
-                stabilize_time: 100
-                standby_copy_max_time: 100
-                standby_copy_check_interval: 10
+    Example
+    -------
+    change_boot_variable:
+        images:
+            kickstart: bootflash:/kisckstart.gbin
+            system: bootflash:/system.gbin
+        copy_vdc_all: True
+        timeout: 150
+        max_time: 300
+        check_interval: 20
+        stabilize_time: 100
+        standby_copy_max_time: 100
+        standby_copy_check_interval: 10
 
-    Flow:
-    -----
-    before:
-        copy_to_device (Optional, If images to set as boot variable is not already on device)
-    after:
-        write_erase (Optional, user wants to reload with current running configuration or not)
-    '''
+    """
 
     log.info("Section steps:\n1- Execute changing the boot variables"
              "\n2- Save running configuration to startup configuration"
@@ -156,18 +147,20 @@ def change_boot_variable(section, steps, device, images, copy_vdc_all=False,
 def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
               tftp_server, image, timeout, reconnect_delay=60,
               reboot_delay=20):
-    '''
-    Clean yaml file schema:
-    -----------------------
-        tftp_boot:
-            image: <Image to boot with `str`> (Mandatory)
-            ip_address: <Management ip address to configure to reach to the TFTP server `str`> (Mandatory)
-            subnet_mask: <Management subnet mask `str`> (Mandatory)
-            gateway: <Management gateway `str`> (Mandatory)
-            tftp_server: <tftp server is reachable with management interface> (Mandatory)
-            timeout: <Maximum time for tftp boot `int`> (Mandatory)
-            reboot_delay: <Maximum time for tftp boot `int`> (Optional)
-            reconnect_delay: <Once device recovered, delay before final reconnect>, 'int'> (Default: 60)
+    """ This stage boots a new image onto your device using the tftp booting
+    method.
+
+    Stage Schema
+    ------------
+    tftp_boot:
+        image: <Image to boot with `str`> (Mandatory)
+        ip_address: <Management ip address to configure to reach to the TFTP server `str`> (Mandatory)
+        subnet_mask: <Management subnet mask `str`> (Mandatory)
+        gateway: <Management gateway `str`> (Mandatory)
+        tftp_server: <tftp server is reachable with management interface> (Mandatory)
+        timeout: <Maximum time for tftp boot `int`> (Mandatory)
+        reboot_delay: <Maximum time for tftp boot `int`> (Optional)
+        reconnect_delay: <Once device recovered, delay before final reconnect>, 'int'> (Default: 60)
 
     Example:
     --------
@@ -181,13 +174,7 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
 
     There is more than one ip address, one for each supervisor.
 
-    Flow:
-    -----
-        Before:
-            Any
-        After:
-            Connect
-    '''
+    """
 
     device.api.execute_write_erase_boot()
     # Using sendline, as we dont want unicon boot to kick in and send "boot" to
@@ -224,7 +211,7 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
         else:
             start = device.start
 
-        result = pcall(abstract.clean.stages.recovery.recovery_worker,
+        result = pcall(abstract.clean.recovery.recovery.recovery_worker,
                        start=start,
                        ikwargs = [{'item': i} for i, _ in enumerate(start)],
                        ckwargs = \

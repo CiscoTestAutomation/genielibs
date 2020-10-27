@@ -16,7 +16,7 @@ from pyats.log.utils import banner
 # Genie
 from genie.libs import clean
 from genie.abstract import Lookup
-from ..recovery import _disconnect_reconnect
+from genie.libs.clean.recovery.recovery import _disconnect_reconnect
 from genie.libs.clean.utils import clean_schema
 from genie.utils.timeout import Timeout
 
@@ -46,50 +46,40 @@ log = logging.getLogger()
 @aetest.test
 def load_pies(section, steps, device, files, server=None, prompt_level='none',
     synchronous=True, install_timeout=600, max_time=300, check_interval=60):
+    """ This stage installs provided pies onto the device.
 
-    '''
-    Clean yaml file schema:
-    -----------------------
-    devices:
-      <device>:
-        load_pies:
-          files ('list'): List of XR pies to install
-          server('str'): Hostname or IP address of server to use for install command
-                         Default None (testbed YAML reverse lookup for TFTP server)
-          prompt_level('str'): Prompt-level argument for install command
-                               Default 'none' (Optional)
-          synchronous ('bool'): Synchronous option for install command
-                                Default True (Optional)
-          install_timeout ('int'): Maximum time required for install command execution to complete
-                                   Default 600 seconds (Optional)
-          max_time ('int'): Maximum time to wait while checking for pies installed
-                            Default 300 seconds (Optional)
-          check_interval ('int'): Time interval while checking for pies installed
-                                  Default 30 seconds (Optional)
+    Stage Schema
+    ------------
+    load_pies:
+        files ('list'): List of XR pies to install
+        server('str'): Hostname or IP address of server to use for install command
+                     Default None (testbed YAML reverse lookup for TFTP server)
+        prompt_level('str'): Prompt-level argument for install command
+                           Default 'none' (Optional)
+        synchronous ('bool'): Synchronous option for install command
+                            Default True (Optional)
+        install_timeout ('int'): Maximum time required for install command execution to complete
+                               Default 600 seconds (Optional)
+        max_time ('int'): Maximum time to wait while checking for pies installed
+                        Default 300 seconds (Optional)
+        check_interval ('int'): Time interval while checking for pies installed
+                              Default 30 seconds (Optional)
 
-    Example:
-    --------
-    devices:
-      PE1:
-        load_pies:
-          files:
+    Example
+    -------
+    load_pies:
+        files:
             - /auto/path/to/image/asr9k-mcast-px.pie-7.3.1.08I
             - /auto/path/to/image/asr9k-mgbl-px.pie-7.3.1.08I
             - /auto/path/to/image/asr9k-mpls-px.pie-7.3.1.08I
-          server: 10.1.6.244
-          prompt_level: 'all'
-          synchronous: True
-          timeout: 150
-          max_time: 300
-          check_interval: 20
+        server: 10.1.6.244
+        prompt_level: 'all'
+        synchronous: True
+        timeout: 150
+        max_time: 300
+        check_interval: 20
 
-    Flow:
-    -----
-    before:
-      apply_configuration (Optional, user wants to boot device without PIE or SMU files)
-    after:
-      tftp_boot (Optional, user wants to boot device without PIE or SMU files)
-    '''
+    """
 
     log.info("Section steps:\n1- Install and activate pie files provided"
              "\n2- Verify installed pie files are activated")
@@ -161,26 +151,28 @@ def load_pies(section, steps, device, files, server=None, prompt_level='none',
 def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
     tftp_server, image, timeout=600, config_reg_timeout=30,
     device_reload_sleep=20, recovery_username=None, recovery_password=None):
-    '''
-    Clean yaml file schema:
-    -----------------------
-        tftp_boot:
-            image: <Image to boot with `str`> (Mandatory)
-            ip_address: <Management ip address to configure to reach to the TFTP server `str`> (Mandatory)
-            subnet_mask: <Management subnet mask `str`> (Mandatory)
-            gateway: <Management gateway `str`> (Mandatory)
-            tftp_server: <tftp server is reachable with management interface `str`> (Mandatory)
-            timeout: <Maximum time during which TFTP boot process must complete `int`> (Optional, Default 600 seconds)
-            config_reg_timeout: <Time to wait after setting config-register `int`> (Optional, Default 30 seconds)
-            device_reload_sleep: <Time to wait after reloading device `int`> (Optional, Default 20 seconds)
-            recovery_username: <Enable username for device required after bootup `str`> (Optional, Default None)
-            recovery_password: <Enable password for device required after bootup `str`> (Optional, Default None)
+    """ This stage boots a new image onto your device using the tftp booting
+    method.
 
-    Example:
-    --------
+    Stage Schema
+    ------------
+    tftp_boot:
+        image: <Image to boot with `list`> (Mandatory)
+        ip_address: <Management ip address to configure to reach to the TFTP server `str`> (Mandatory)
+        subnet_mask: <Management subnet mask `str`> (Mandatory)
+        gateway: <Management gateway `str`> (Mandatory)
+        tftp_server: <tftp server is reachable with management interface `str`> (Mandatory)
+        timeout: <Maximum time during which TFTP boot process must complete `int`> (Optional, Default 600 seconds)
+        config_reg_timeout: <Time to wait after setting config-register `int`> (Optional, Default 30 seconds)
+        device_reload_sleep: <Time to wait after reloading device `int`> (Optional, Default 20 seconds)
+        recovery_username: <Enable username for device required after bootup `str`> (Optional, Default None)
+        recovery_password: <Enable password for device required after bootup `str`> (Optional, Default None)
+
+    Example
+    -------
     tftp_boot:
         image:
-          - /auto/some-location/that-this/image/asr9k-mini-px.vm
+            - /auto/some-location/that-this/image/asr9k-mini-px.vm
         ip_address: [10.1.7.126, 10.1.7.127]
         gateway: 10.1.7.1
         subnet_mask: 255.255.255.0
@@ -193,13 +185,7 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
 
     Note: There is more than one ip address, one for each supervisor.
 
-    Flow:
-    -----
-        Before:
-            Any
-        After:
-            Connect
-    '''
+    """
 
     log.info("Section steps:"
              "\n1- Set config-register to 0x1820"
@@ -259,7 +245,7 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
             else:
                 start = device.start
 
-            result = pcall(abstract.clean.stages.recovery.recovery_worker,
+            result = pcall(abstract.clean.recovery.recovery.recovery_worker,
                            start=start,
                            ikwargs = [{'item': i} for i, _ in enumerate(start)],
                            ckwargs = \
@@ -313,9 +299,12 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
 @aetest.test
 def install_image_and_packages(section, steps, device, image, packages,
                            install_timeout=300, reload_timeout=900):
-    """
-    Clean yaml file schema:
-    -----------------------
+    """ This stage installs the provided image and optional packages onto
+    your device using the install CLI. The stage will also handle the
+    automatic reload.
+
+    Stage Schema
+    ------------
     install_image_and_packages:
         image:
             - <image to install> (Mandatory)
@@ -326,20 +315,14 @@ def install_image_and_packages(section, steps, device, image, packages,
         reload_timeout: <timeout used for device reloads, 'int', Default 900> (Optional)
 
 
-    Example:
-    --------
+    Example
+    -------
     install_image_and_packages:
         image:
             - flash:image.iso
         packages:
             - flash:package.rpm
 
-    Flow:
-    -----
-        Before:
-            Any
-        After:
-            copy_to_device
     """
 
     # Commonly used patterns
@@ -431,7 +414,8 @@ def install_image_and_packages(section, steps, device, image, packages,
             device.sendline(cmd)
 
             # Process the dialog that appears
-            install_activate_dialog.process(device.spawn)
+            install_activate_dialog.process(
+                device.spawn, timeout=install_timeout)
 
             # Wait for successful output
             device.expect(

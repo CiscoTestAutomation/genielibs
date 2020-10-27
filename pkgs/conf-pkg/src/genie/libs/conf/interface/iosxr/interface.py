@@ -182,9 +182,9 @@ class Interface(genie.libs.conf.interface.Interface):
 
     @bundle.setter
     def bundle(self, bundle):
-        if not isinstance(bundle, BundleInterface):
+        if bundle and not isinstance(bundle, BundleInterface):
             raise ValueError('%r is not a bundle interface' % (bundle,))
-        if bundle.device is not self.device:
+        if bundle and bundle.device is not self.device:
             raise ValueError('%r cannot be a member of %r' % (self, bundle))
         self._bundle = bundle
 

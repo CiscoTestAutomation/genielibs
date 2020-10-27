@@ -256,6 +256,8 @@ changelogs:
 	@echo ""
 	@python "./tools/changelog_script.py" "./pkgs/clean-pkg/changelog/undistributed" --output "./pkgs/clean-pkg/changelog/undistributed.rst"
 	@echo "clean-pkg changelog done..."
+	@python "./tools/changelog_script.py" "./pkgs/health-pkg/changelog/undistributed" --output "./pkgs/health-pkg/changelog/undistributed.rst"
+	@echo "health-pkg changelog done..."
 	@python "./tools/changelog_script.py" "./pkgs/conf-pkg/changelog/undistributed" --output "./pkgs/conf-pkg/changelog/undistributed.rst"
 	@echo "conf-pkg changelog done..."
 	@python "./tools/changelog_script.py" "./pkgs/filetransferutils-pkg/changelog/undistributed" --output "./pkgs/filetransferutils-pkg/changelog/undistributed.rst"

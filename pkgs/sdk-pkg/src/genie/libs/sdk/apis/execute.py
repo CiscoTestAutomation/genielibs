@@ -64,7 +64,7 @@ def execute_clear_line(device, alias='cli'):
     # Disconnect from terminal server
     log.info("Disconnecting from terminal server...")
     for item in connected:
-        item.disconnect()
+        item.destroy()
 
     # Disconnect from actual device now that line has been successfully cleared
     log.info("Disconnecting from {} as line was cleared successfully".\

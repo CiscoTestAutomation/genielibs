@@ -91,11 +91,15 @@ class Blitz(Trigger):
 
         ret_dict = {}
         section_continue = True
+        data = deepcopy(data)
         if not data:
             log.info('Nothing to execute, ending section')
             return
 
         for action_item in data:
+
+            if not action_item or not isinstance(action_item, dict):
+                raise Exception("{} is an invalid input".format(str(action_item)))
 
             if 'run_condition' in action_item:
                 ret_dict = control(self, steps, testbed, section, name,
@@ -108,10 +112,9 @@ class Blitz(Trigger):
                 continue
 
             if 'parallel' in action_item:
-                parallel(self, steps, testbed, section, name,
-                         action_item['parallel'])
+                ret_dict = parallel(self, steps, testbed, section, name,
+                                    action_item['parallel'])
                 continue
-
             for action, kwargs in action_item.items():
 
                 if not kwargs and not isinstance(kwargs, bool):
@@ -252,8 +255,8 @@ class Blitz(Trigger):
                             action_output = getattr(self, action)(**kwargs)
                         except AttributeError:
                             raise Exception(
-                                "'{action}' is not a valid action "
-                                "or custom action".format(action=action))
+                                "'{action}' is not a valid action. Actions should be one of {actions} "
+                                "or it should be a custom action.".format(action=action, actions=list(actions.keys())))
 
                         kwargs['self'] = _self
 

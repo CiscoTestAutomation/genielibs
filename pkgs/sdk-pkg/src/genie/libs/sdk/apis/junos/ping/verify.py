@@ -103,3 +103,54 @@ def verify_ping(device,
             return True
         timeout.sleep()
     return False
+
+def verify_ping_packet_transmission(device,
+                address,
+                count,
+                expected_transmitted_rate,
+                max_time=30,
+                check_interval=10):
+    """ Verify ping loss rate on ip address provided
+
+        Args:
+            device ('obj'): Device object
+            address ('str'): Address
+            count ('int'): Count value for ping command
+            expected_transmitted_rate ('int'): Expected transmitted rate
+            max_time (`int`, Optional): Max time, default: 30 seconds
+            check_interval (`int`, Optional): Check interval, default: 10 seconds
+        Returns:
+            Boolean
+        Raises:
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            cmd = 'ping {address} count {count}'.format(address=address,
+                                                        count=int(count))
+
+            out = device.parse(cmd)
+        except SchemaEmptyParserError as e:
+            timeout.sleep()
+            continue
+        # Example dictionary structure:
+        #     {
+        #         "ping": {
+        #             "address": "10.189.5.94",
+        #             "statistics": {
+        #                 "received": 1,
+        #                 "send": 1
+
+        number_of_transmitted_packets = Dq(out).get_values("send", 0)
+        try:
+            transmitted_rate = int((number_of_transmitted_packets * 100)/count)
+        except:
+            transmitted_rate = 0
+
+        if transmitted_rate == int(expected_transmitted_rate):
+            return True
+
+        timeout.sleep()
+    return False

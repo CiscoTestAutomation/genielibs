@@ -29,7 +29,7 @@ class CMDS_Converter(Internal_Converter):
         pattern = re.compile(r'cmds=(?P<type>[\w\s]+):{1,3}(?P<data>[\S\s]+)?')
         m = pattern.match(self.command.strip(' '))
         group = m.groupdict()
-        if group['type'].strip() == 'patterns' or group['type'].strip() == 'eval' :
+        if group['type'].strip() == 'patterns' or group['type'].strip() == 'eval' or group['type'].strip() == 'groups':
             return group
 
         else:
@@ -68,7 +68,7 @@ class CMDS_Converter(Internal_Converter):
         args_list= []
 
         args_list.append('{{"command":"{}"}},\n'.format(_type))
-        args_list.append('{"use_https": "False"},\n')
+        # args_list.append('{"use_https": "False"},\n')
 
         if _type == 'trafficstats':
             args_list[0] = '{{"command":"{}"}},\n'.format('gettrafficstats')
@@ -162,7 +162,6 @@ class CMDS_Converter(Internal_Converter):
                     ]}}]}
 
         '''
-
         cmds_dict = {}
         blitz_action_list = []
         for cmd in cmd_pattern.split('\n'):
@@ -201,13 +200,126 @@ class CMDS_Converter(Internal_Converter):
         # hacky :-(
         return {'specifically_patterns': blitz_action_list}
 
+    def cmds_groups_command_to_blitz_action_converter(self, cmd_groups, device):
+
+        # groups legacy commands, it should be originally changed into matcher in all the other maple scripts
+
+        '''
+            step-5:
+                confirm:
+                    devices:
+                        NX2:                                        
+                          rule-1:
+                            type: cli
+                            commands: |
+                                #@# cmds=groups:::
+                                [ping6 77:77:77::2 vrf vrf_2_7_8 count 5,,\d+ packets transmitted, \d+ packets received, ([0-9.]+)% packet loss]
+                                #@# 
+                            match: |
+                                #@# cmds=groups:::1.1 <= 1.0 #@#                              
+                          rule-2:
+                            type: cli
+                            commands: |
+                                #@# cmds=groups:::
+                                [sh int ethernet 1/6/1 counters detailed | section Rx | begin Packets,,Rx Packets:\s+(\d+)]
+                                #@# 
+                            match: |
+                                #@# cmds=groups:::1.1 > 1000 #@#  
+
+        =====================================================================
+
+            - step-5:
+              - execute:
+                  device: NX2
+                  command: ping6 77:77:77::2 vrf vrf_2_7_8 count 5
+                  save:
+                  - filter: \d+ packets transmitted, \d+ packets received, (?P<name1_1>[0-9.]+)%
+                      packet loss
+                    regex: true
+                  continue: false
+                compare:
+                  items:
+                  - '%VARIABLES{name1_1} <= 1.0'
+              - execute:
+                  device: NX2
+                  command: sh int ethernet 1/6/1 counters detailed | section Rx | begin Packets
+                  save:
+                  - filter: Rx Packets:\s+(?P<name1_1>\d+)
+                    regex: true
+                  continue: false
+                compare:
+                  items:
+                  - '%VARIABLES{name1_1} > 1000'
+        '''
+
+        pattern = re.compile(r"\(([\S\s]+?)\)")
+        cmds_dict = {}
+        blitz_action_list = []
+        cmds_group_list = cmd_groups.split('\n')
+        cmds_group_list = [cmd for cmd in cmds_group_list if cmd]
+        for cmd in cmds_group_list:
+
+            name_index = cmds_group_list.index(cmd) + 1
+            cmds_list = cmd.strip('[]').split(',,')
+            matches = list(re.finditer(pattern, cmds_list[1].strip()))
+
+            for match in matches:  
+                regex_index = matches.index(match) + 1
+                save_var_name_regx = '?P<{}>'.format('name'+str(name_index)+'_'+str(regex_index))
+                cmds_list[1] = cmds_list[1].replace(match.group(1), '{}'.format(save_var_name_regx+match.group(1)))
+
+            if cmds_list[0] not in cmds_dict:
+                cmds_dict.update({cmds_list[0]: [cmds_list[1].strip()]})
+            else:
+                cmds_dict[cmds_list[0]].append(cmds_list[1].strip())
+
+        for key, value in cmds_dict.items():
+            blitz_action_dict = {}
+            blitz_action_dict.update({'execute':{'device': device, 'command': key}})
+            value_list = []
+            for val in value:
+                val = Internal_Converter._XX_pattern_matching(val, 'save') 
+                val = Internal_Converter._XR_pattern_matching(val)
+                value_list.append({'filter': val, 'regex': True})
+                blitz_action_dict['execute'].update({'save':value_list})
+
+            blitz_action_list.append(blitz_action_dict)
+
+        return {'specifically_patterns': blitz_action_list}
+
+    def cmds_groups_match_to_blitz_action(self, cmd_groups):
+
+        pattern = re.compile(r'(?P<left_hand>\d+.\d+)\s*(?P<ops>[><=]+)\s*(?P<right_hand>[\S\s]+)')
+        compare_item_list = []
+        blitz_action_dict = {}
+
+        for cmd in cmd_groups.splitlines():
+            cmd = cmd.strip()
+            if not cmd:
+                continue
+            cmds_groups_list = re.split(r"and|or", cmd)
+
+            for itm in cmds_groups_list:
+                itm = itm.strip()
+                m = pattern.match(itm)
+                group = m.groupdict()
+                left_hnd_val = group['left_hand'].replace('.','_')
+                left_hnd_val = 'name' + left_hnd_val
+                left_hnd_val = '%VARIABLES{}'.format('{'+left_hnd_val+'}')
+                cmd = cmd.replace(group['left_hand'], left_hnd_val)
+
+            compare_item_list.append(cmd)
+            blitz_action_dict.update({'compare':{'items':compare_item_list}})
+
+        return blitz_action_dict
+
     def cmds_eval_to_blitz_action_converter(self, cmd_eval):
 
         #changing cmds=eval to compare action in blitz
         blitz_action_dict = {}
         compare_item_list = []
         for cmd in cmd_eval.split('\n'):
-            cmd = cmd.strip(' ')
+            cmd = cmd.strip()
             if not cmd:
                 continue
             cmd = Internal_Converter._XX_pattern_matching(cmd, 'replace')
@@ -314,6 +426,9 @@ class CMDS_Converter(Internal_Converter):
                 #@# cmds=reload: #@#
         '''
 
+        if not args_:
+            return []
+
         args_splited = args_.split(',')
         if _type == 'reload':
             args_splited[0] = '{{"sleep":"{}"}},\n'.format(args_splited[0])
@@ -385,8 +500,7 @@ class CMDS_Converter(Internal_Converter):
         '''
 
         args_splited = args_.split(',,')
-
-        args_splited[0] = '{{"command":"{}"}},\n'.format(args_splited[0].replace('\n', '\\n'))
+        args_splited[0] = '{{"command":"{}"}},\n'.format(args_splited[0].replace('\n', '\\n').replace('"', '\\"'))
         args_splited[1] = '{{"match":"{}"}},\n'.format(args_splited[1])
         args_splited[2] = '{{"timeout":"{}"}},\n'.format(args_splited[2])
 

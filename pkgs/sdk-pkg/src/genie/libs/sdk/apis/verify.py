@@ -2,11 +2,18 @@
 
 # Python
 import os
+from os import device_encoding
 import time
 import logging
 
 # pyATS
 from pyats.utils.fileutils import FileUtils
+
+# Genie
+from genie.utils.timeout import Timeout
+
+# Unicon
+from unicon.core.errors import StateMachineError
 
 # Logger
 log = logging.getLogger(__name__)
@@ -359,3 +366,61 @@ def verify_enough_disk_space(device, required_size, directory='', dir_output=Non
              available_space if available_space > -1 else 'Unknown'))
 
     return available_space > int(required_size)
+
+
+def verify_device_connection_state(device,
+                        reconnect=False,
+                        reconnect_max_time=900,
+                        reconnect_interval=60):
+    '''Verify device's Unicon machine state
+        Args:
+            device ('obj'): Device Object
+            reconnect ('bool'): flag to reconnect in case state cannot be detected
+            reconnect_max_time ('int'): maximum time to reconnect
+                                        Default to 900 secs
+            reconnect_interval ('int'): interval of sleep after state detection issue
+                            if not provided, executes the cmd on device
+    Returns:
+        (`str` or None) : Return Unicon machine state
+                          if could not detected, return None
+    '''
+
+    # check if state can be confirmed
+    device.spawn.match = None
+    try:
+        # get state machine state on device to check device reachability
+        # need to get state to detect if device reloading or
+        # any other condition which cannot respond
+        device.state_machine.detect_state(device.spawn)
+    except StateMachineError as e:
+        # reconnect = None means `reconnect` is defined
+        # raise StateMachineError instead of reconnecting
+        if reconnect:
+            timeout = Timeout(max_time=reconnect_max_time,
+                              interval=reconnect_interval)
+            while timeout.iterate():
+                log.info('could not detect machine state for {d}'.format(
+                    d=device))
+
+                # save via info for current connection
+                via = device.via
+                log.info('disconnecting {d}'.format(d=device))
+                # disconnect(destroy) device
+                device.destroy()
+                # reconnect to device
+                log.info('reconnecting device {d}'.format(d=device))
+                try:
+                    if via:
+                        device.connect(via=via)
+                    else:
+                        device.connect()
+                except Exception as e:
+                    log.info('could not login to {d}'.format(d=device))
+                    timeout.sleep()
+                else:
+                    return device.state_machine.current_state
+
+        # couldn't detect state even after reconnecting
+        return None
+    else:
+        return device.state_machine.current_state

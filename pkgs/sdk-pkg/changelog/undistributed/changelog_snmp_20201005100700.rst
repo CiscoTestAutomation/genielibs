@@ -1,8 +1,0 @@
---------------------------------------------------------------------------------
-                                New
---------------------------------------------------------------------------------
-* JUNOS
-    * Added get_routing_engines_states
-    * Added verify_chassis_re_state
-    * Added verify_snmp_target
-    * Added verify_snmp_statistics

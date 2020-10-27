@@ -311,3 +311,84 @@ def verify_interfaces_queue_packets(device, interface, queue, expected_packets,
         
         timeout.sleep()
     return False
+
+
+def verify_interface_errors(device,
+                            interface,
+                            expected_error_dict,
+                            input=False,
+                            output=False,
+                            all=True,
+                            max_time=30,
+                            check_interval=10):
+    """ Verify interface input and output errors
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Pass interface in show command
+            expected_error_dict (`dict`): Expected errors dict
+            input (`bool`, Optional): True if input errors to verify. Default to False.
+            output (`bool`, Optional): True if output errors to verify. Default to False.
+            all (`bool`, Optional): False if single output error to verify. Default to True.
+            max_time (`int`, Optional): Max time, default: 60 seconds
+            check_interval (`int`, Optional): Check interval, default: 10 seconds
+
+        Returns:
+            result (`bool`): Verified result
+        Raises:
+            N/A
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            cmd = 'show interfaces extensive {interface}'.format(interface=interface)
+            out = device.parse(cmd)
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # Sample output
+        # {"interface-information": {
+        #     "physical-interface": [
+        #         {
+        #             "input-error-list": {
+        #                 "framing-errors": "0",
+        #                 "input-discards": "0",
+        #                 "input-drops": "0",
+        #                 "input-errors": "0",
+        #                 "input-fifo-errors": "0",
+        #                 "input-l2-channel-errors": "0",
+        #                 "input-l2-mismatch-timeouts": "0",
+        #                 "input-l3-incompletes": "0",
+        #                 "input-resource-errors": "0",
+        #                 "input-runts": "0"
+        #             },
+        #             "output-error-list": {
+        #                 "aged-packets": "0",
+        #                 "carrier-transitions": "0",
+        #                 "hs-link-crc-errors": "0",
+        #                 "mtu-errors": "0",
+        #                 "output-collisions": "0",
+        #                 "output-drops": "0",
+        #                 "output-errors": "0",
+        #                 "output-fifo-errors": "0",
+        #                 "output-resource-errors": "0"
+        #             },
+        #             ...
+
+        physical_interface_list = out.q.get_values("physical-interface")
+        for physical_interface in physical_interface_list:
+            if input:
+                input_errors = physical_interface.get("input-error-list", {})
+                if all and input_errors == expected_error_dict:
+                    return True
+            if output:
+                output_errors = physical_interface.get("output-error-list", {})
+                if all and output_errors == expected_error_dict:
+                    return True
+
+        timeout.sleep()
+        continue
+
+    return False

@@ -24,7 +24,7 @@ from .actions_helper import configure_handler, api_handler, learn_handler,\
 log = logging.getLogger(__name__)
 
 
-# decorator for pyATS health
+# decorator for pyATS Health Check
 # result with data will be added to pyATS extra field
 def add_result_as_extra(func):
     def wrapper(*args, **kwargs):
@@ -251,6 +251,7 @@ def api(self,
 
     notify_wait(steps, device)
 
+    log.debug('api return value: {o}'.format(o=output))
     return output
 
 @add_result_as_extra
@@ -315,7 +316,6 @@ def compare(self,
             condition = _condition_validator(comp_item)
             result = 'passed' if condition else 'failed'
             getattr(step, result)('The following arithmetic statement {} is {}'.format(comp_item,condition))
-
 
 @add_result_as_extra
 def sleep(self,
