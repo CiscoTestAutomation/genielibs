@@ -56,7 +56,7 @@ def get_chassis_cpu_util(device, cpu_idle_section = 'cpu-idle-5sec'):
         out = device.parse('show chassis routing-engine')
     except SchemaEmptyParserError:
         return None
-
+        
     return out.q.get_values(cpu_idle_section, 0)
 
 def get_routing_engines_states(device,

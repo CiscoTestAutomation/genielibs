@@ -12,7 +12,7 @@
       "doc": " This stage copies an existing file on the device and prepends 'backup_'\n    to the start of the file name.\n\n    Stage Schema\n    ------------\n    backup_file_on_device:\n        copy_dir ('str'): Directory containing file to be backed up (Mandatory)\n        copy_file ('str'): File to be backed up (Mandatory)\n        overwrite ('bool'): Overwrite the file if exists. Default value is True (Optional)\n        timeout ('int'): Copy timeout in second. Default value is 300 (Optional)\n\n    Example\n    -------\n    backup_file_on_device:\n        copy_dir: bootflash:\n        copy_file: ISSUCleanGolden.cfg\n\n    ",
       "module_name": "stages.stages",
       "uid": "backup_file_on_device",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1265"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1264"
     }
   },
   "change_boot_variable": {
@@ -70,7 +70,7 @@
       "doc": " This stage removes a backed up file from the device. It can optionally\n    replace the original file with the one that was backed up.\n\n    Stage Schema\n    ------------\n    delete_backup_from_device:\n        delete_dir ('str'): Directory containing file to be deleted (Mandatory)\n        delete_dir_stby ('str'): Directory containing file to be deleted for standby (Optional)\n        delete_file ('str'): File to be deleted up (Mandatory)\n        restore_from_backup ('bool'): Restore the file from backup file.\n                                    Default value is False (Optional)\n        overwrite ('bool'): Overwrite the file if exists. Default value is True (Optional)\n        timeout ('int'): Copy/Execute timeout in second. Default value is 300 (Optional)\n\n    Example\n    -------\n    delete_backup_from_device:\n        delete_dir: 'bootflash:'\n        delete_dir_stby: 'bootflash-stby:'\n        delete_file: ISSUCleanGolden.cfg_backup\n\n    ",
       "module_name": "stages.stages",
       "uid": "delete_backup_from_device",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1341"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1340"
     }
   },
   "delete_files_from_server": {
@@ -78,7 +78,7 @@
       "doc": " This stage deletes files from a server.\n\n    Stage Schema\n    ------------\n    delete_files_from_server:\n        server ('str'): <Hostname or address of the server> (optional)\n        files ('list'): <list of images to delete> (Optional)\n        protocol ('str'): <protocol used for deletion, Default value is sftp> (Optional)\n\n    Example\n    -------\n    delete_files_from_server:\n        server: 1.1.1.1\n        files:\n            - /home/cisco/kickstart.bin\n        protocol: sftp\n\n    ",
       "module_name": "stages.stages",
       "uid": "delete_files_from_server",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1451"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1448"
     }
   },
   "install_image": {
@@ -142,7 +142,7 @@
       "doc": " This stage reverts the virtual device to the provided snapshot\n    \n        Stage schema\n        ------------\n        revert_snapshot:\n            \n            vm_hostname (str, optional): Name of the VM that is on the ESXi \n                server, if not provided, it will be set as the device name.\n            \n            esxi_server (str): ESXI Server which holds the vm to revert the \n                snapshot.\n                  \n            recovery_snapshot_name (str): Name of the snapshot to have VM \n                reverted back to.\n                  \n            max_recovery_attempts (int, optional): Maximum number of recovery \n                attempts. Defaults to 2.\n            \n            sleep_after_powering_off (int, optional): Wait time after powering \n                off devices. Default value is 60 seconds.\n            \n            sleep_time_stabilize_device (int, optional): Wait time before \n                finishing revert snapshot stage. Defaults to 300.\n                  \n            sleep_time_after_powering_on (int, optional): Wait time after \n                powering on devices to reach steady state. Defaults to 600.\n      \n        Example\n        -------\n        revert_vm_snapshot:\n            esxi_server: ssr-ucs2\n            vm_hostname: P1-4\n            max_recovery_attempts: 2\n            sleep_after_powering_off: 60\n            sleep_time_after_powering_on: 600\n            sleep_time_stabilize_device: 300\n            recovery_snapshot_name: golden\n    ",
       "module_name": "stages.stages",
       "uid": "revert_vm_snapshot",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1521"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1518"
     }
   },
   "tftp_boot": {
@@ -166,19 +166,19 @@
     }
   },
   "tokens": [
-    "iosxr",
-    "nxos",
     "com",
     "iosxe",
     "cat9500",
-    "cat9k"
+    "cat9k",
+    "iosxr",
+    "nxos"
   ],
   "verify_running_image": {
     "com": {
       "doc": " This stage verifies the currently running image is the expected image.\n\n    Stage Schema\n    ------------\n    verify_running_image:\n        images: <Images reloaded on the device, 'list'> (Mandatory)\n\n    Example\n    -------\n    verify_running_image:\n        images:\n            - test_image.gbin\n\n    ",
       "module_name": "stages.stages",
       "uid": "verify_running_image",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1226"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1225"
     }
   },
   "write_erase": {

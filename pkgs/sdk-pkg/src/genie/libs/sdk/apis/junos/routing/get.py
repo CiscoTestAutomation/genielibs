@@ -556,3 +556,29 @@ def get_route_as_path(device, target_route):
         return as_path
     
     return None
+
+def get_route_summary_table_total_route_count(device):
+    """
+    Get total route count for each table via 'show route target_route extensive'
+
+    Args:
+        device (obj): Device object
+    
+    Returns:
+        dict: Table name as key, total route count as value.
+    """
+    try:
+        out = device.parse('show route summary')
+    except SchemaEmptyParserError:
+        return None
+
+    total_route_count = {}
+    for route_dict in out.q.contains(
+        'table-name|total-route-count', 
+        regex=True).get_values('route-table'):
+        table_name = route_dict.get('table-name', None)
+        total_route = route_dict.get('total-route-count', None)
+        if table_name and total_route:
+            total_route_count.update({table_name: total_route})
+    
+    return total_route_count

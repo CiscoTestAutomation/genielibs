@@ -1,0 +1,12 @@
+--------------------------------------------------------------------------------
+                                New
+--------------------------------------------------------------------------------
+* JUNOS
+    * Added verify_chassis_slots_present
+        * Executes 'show chassis routing-engine' and verifies the given slots are present
+    * Added verify_chassis_slot_state
+        * Executes 'show chassis routing-engine' and verifies the given slots' states
+    * Added verify_configuration_hostname
+        * Runs 'show configuration system host-name' and verifies that the hostname
+    * Added get_hostname
+        * Runs 'show version' and checks the Hostname

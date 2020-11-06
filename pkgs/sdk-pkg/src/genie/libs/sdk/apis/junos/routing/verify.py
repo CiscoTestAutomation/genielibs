@@ -3458,3 +3458,40 @@ def verify_route_best_path_counter(device, expected_count, protocol=None, ip_add
             return True
         
     return False
+
+def verify_route_logical_system_has_no_output(device,
+                         logical_name,
+                         max_time=60,
+                         check_interval=10,
+                         invert=False
+                         ):
+    """Verify route logical system has no output
+
+    Args:
+        logical_name ('str'): Logical system name
+        max_time ('int', optional): Maximum time to keep checking. Default to 60.
+        check_interval ('int', optional): How often to check. Default to 10.
+        invert ('bool', optional): Invert the operation. Defaults to False
+
+    Raise: None
+
+    Returns: Boolean
+
+    """
+
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            device.parse(
+                "show route logical-system {logical_name}".format(logical_name=logical_name))
+        except SchemaEmptyParserError:
+            if invert:
+                timeout.sleep()
+                continue
+            return True
+
+        if invert:
+            return True
+        timeout.sleep()
+    return False

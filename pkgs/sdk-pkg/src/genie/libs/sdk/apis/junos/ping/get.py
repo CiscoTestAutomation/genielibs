@@ -14,6 +14,7 @@ def get_ping_message(
     address,
     source,
     size,
+    count,
     ):
     """ Get ntp peer information
 
@@ -23,6 +24,7 @@ def get_ping_message(
             address (`str`): Interface used in command
             source (`str`): Interface used in command
             size (`int`): Size value used in command
+            count (`int`): Count value used in command
         Returns:
             result (`str`): message
         Raises:
@@ -31,10 +33,11 @@ def get_ping_message(
     
     try:
         output = device.parse('\
-            ping {address} source {source} size {size} do-not-fragment'.format(
+            ping {address} source {source} size {size} do-not-fragment count {count}'.format(
                 address=address,
                 source=source,
                 size=size,
+                count=count,
             ))
     except SchemaEmptyParserError as e:
         raise Exception("Failed to parse output with error.") from e
@@ -50,7 +53,7 @@ def get_ping_message(
     #                 'message': 'expected message',
     # ...
 
-    rout=output.contains(f'message|{interface}',regex=True).reconstruct()
+    rout=output.q.contains(f'message|{interface}',regex=True).reconstruct()
 
     # {'ping': {'address': '1.1.1.1',
     #   'result': [{'message': '...', 'from': 'interface'},

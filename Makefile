@@ -119,12 +119,16 @@ compile:
 	@$(CYTHON_CMD) --exclude *iosxe/ip_precedence/verify.py *iosxe/udp/get.py
 	@echo "Done Compiling"
 	@echo ""
+	@echo "Done."
+	@echo ""
 
 coverage_all:
 	@echo ""
 	@echo "Running code coverage on all unittests"
 	@echo ---------------------------------------
 	@$(TESTCMD) --path tests/ --coverage --no-refresh
+	@echo ""
+	@echo "Done."
 	@echo ""
 
 pylint_all:
@@ -133,6 +137,8 @@ pylint_all:
 	@echo "-----------------------------"
 	@$(PYLINT_CMD)
 	@echo "Done linting"
+	@echo ""
+	@echo "Done."
 	@echo ""
 
 devnet: all
@@ -159,6 +165,7 @@ clean:
 	@find . -type f -name "*.c" | xargs rm -vrf
 	@find . -type d -name "__pycache__" | xargs rm -vrf
 	@find . -type d -name "build" | xargs rm -vrf
+	@echo ""
 	@echo "Done."
 	@echo ""
 
@@ -216,6 +223,8 @@ $(ALL_PKGS):
 
 	@echo "Completed building: $@"
 	@echo ""
+	@echo "Done."
+	@echo ""
 
 test:
 	@echo ""
@@ -227,6 +236,8 @@ test:
 
 	@echo "Completed unit testing"
 	@echo ""
+	@echo "Done."
+	@echo ""
 
 check:
 	@echo ""
@@ -236,7 +247,7 @@ check:
 
 	@$(foreach dir,$(ALL_PKGS),(cd pkgs/$(dir) && python setup.py check) &&) :
 
-	@echo "Done"
+	@echo "Done."
 	@echo ""
 
 json:

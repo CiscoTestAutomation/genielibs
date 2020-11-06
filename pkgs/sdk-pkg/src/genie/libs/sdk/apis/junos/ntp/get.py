@@ -39,3 +39,33 @@ def get_ntp_peer_information(device, expected_mode=None):
         peer_list = output.q.get_values('peer')
     return peer_list
 
+def get_ntp_system_config_source_address(device):
+    """ Get ntp system configuration source address
+
+        Args:
+            device (`obj`): Device object
+        Returns:
+            result (`str`):  ntp system configuration source address
+        Raises:
+            N/A
+    """
+
+    source_address = None
+    try:
+        output = device.parse('show configuration system ntp')
+    except SchemaEmptyParserError:
+        return source_address
+
+    # Example output
+    # "configuration": {
+    #             "system": {
+    #                 "ntp": {
+    #                     "server": {
+    #                         "name": str
+    #                     },
+    #                     "source-address": {
+    #                         "name": str
+
+    source_address = output.q.contains('source-address').get_values('name', 0)
+    return source_address
+

@@ -40,17 +40,17 @@ class TopologyFileLoader(Loader):
                          markupprocessor=TopologyMarkupProcessor(),
                          postprocessor=self.create_topology)
 
-    def load(self, obj, in_place=None):
+    def load(self, obj, in_place=None, locations=None):
         self.in_place = in_place
         try:
-            return super().load(obj)
+            return super().load(obj, locations=locations)
         finally:
             self.in_place = None
 
-    def load_arbitrary(self, loadable):
+    def load_arbitrary(self, loadable, locations=None):
         # call generic YAML loader
         # ------------------------
-        config = super().load_arbitrary(loadable)
+        config = super().load_arbitrary(loadable, locations=locations)
 
         # apply defaults
         # --------------

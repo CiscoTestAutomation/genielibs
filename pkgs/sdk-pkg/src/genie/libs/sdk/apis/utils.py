@@ -2045,11 +2045,8 @@ def verify_pcap_dscp_bits(pcap_location, expected_bits, position=0, expected_pro
         except Exception:
             pass
 
-        try:
-            if str(expected_protocol).lower() == 'rsvp' and RSVP not in RSVP(packet[Raw]):
-                continue
-        except Exception:
-            pass
+        if str(expected_protocol).lower() == 'rsvp' and RSVP not in packet:
+            continue
 
         if str(expected_protocol).lower() == 'udp' and UDP not in packet:
             continue

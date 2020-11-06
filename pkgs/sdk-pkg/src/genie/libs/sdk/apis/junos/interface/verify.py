@@ -315,7 +315,8 @@ def verify_interfaces_queue_packets(device, interface, queue, expected_packets,
 
 def verify_interface_errors(device,
                             interface,
-                            expected_error_dict,
+                            expected_error_dict=None,
+                            expected_value=None,
                             input=False,
                             output=False,
                             all=True,
@@ -326,7 +327,8 @@ def verify_interface_errors(device,
         Args:
             device (`obj`): Device object
             interface (`str`): Pass interface in show command
-            expected_error_dict (`dict`): Expected errors dict
+            expected_error_dict (`dict`, Optional): Expected errors dict. Defaults to None
+            expected_value (`int`, Optional): Expected errors values. Defaults to None
             input (`bool`, Optional): True if input errors to verify. Default to False.
             output (`bool`, Optional): True if output errors to verify. Default to False.
             all (`bool`, Optional): False if single output error to verify. Default to True.
@@ -383,9 +385,19 @@ def verify_interface_errors(device,
                 input_errors = physical_interface.get("input-error-list", {})
                 if all and input_errors == expected_error_dict:
                     return True
+                else:
+                    for k,v in input_errors.items():
+                        if int(v) != expected_value:
+                            return False
+                    return True
             if output:
                 output_errors = physical_interface.get("output-error-list", {})
                 if all and output_errors == expected_error_dict:
+                    return True
+                else:
+                    for k,v in output_errors.items():
+                        if int(v) != expected_value:
+                            return False
                     return True
 
         timeout.sleep()

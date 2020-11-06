@@ -1,0 +1,15 @@
+--------------------------------------------------------------------------------
+                                New
+--------------------------------------------------------------------------------
+* JUNOS
+    * Added verify_traceroute_final_hop
+      * Verify the final hop is expected_final_hop
+    * Added verify_traceroute_intermediate_hop
+      * Verify the intermediate hop is expected_intermediate_hop      
+
+--------------------------------------------------------------------------------
+                                Fix
+--------------------------------------------------------------------------------
+* JUNOS
+    * Modified verify_interface_errors:
+      * Added an optional argument 'expected_value'

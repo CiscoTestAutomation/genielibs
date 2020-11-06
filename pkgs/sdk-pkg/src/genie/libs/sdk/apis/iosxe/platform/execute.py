@@ -209,7 +209,7 @@ def execute_install_package(device, image_dir, image, save_system_config=True,
             dir=image_dir, image=image
         )
 
-    device.execute(cmd)
+    device.execute(cmd, timeout=install_timeout)
 
     try:
         out = device.parse("show install summary")

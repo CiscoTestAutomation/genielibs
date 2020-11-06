@@ -38,15 +38,9 @@ class TcpDump(object):
             cmd = '{c} -w {pf}'.format(c=cmd, pf=self.pcap_file)
         self.device.send(cmd+'\n')
 
-    def stop(self, buffer=True):
+    def stop(self):
         # Get buffer
-        if buffer:
-            try:
-                output = self.device.expect(".*")
-            except:
-                output = ''
-        else:
-            output = ''
+        output = self.device.expect(".*")
 
         # send cntrl+c
         self.device.send('\x03')

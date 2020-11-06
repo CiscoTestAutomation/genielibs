@@ -1130,7 +1130,6 @@ def reload(section, steps, device, reload_service_args=None, check_modules=None)
     Optional('configuration'): str,
     Optional('configuration_from_file'): str,
     Optional('file'): str,
-    Optional('apply_configuration'): bool,
     Optional('config_timeout'): int,
     Optional('config_stable_time'): int,
     Optional('copy_vdc_all'): bool,
@@ -1348,7 +1347,7 @@ def backup_file_on_device(section, steps, device, copy_dir, copy_file,
 })
 @aetest.test
 def delete_backup_from_device(section, steps, device, delete_dir, delete_file,
-    restore_from_backup=False, overwrite=True, timeout=300):
+    restore_from_backup=False, overwrite=True, delete_dir_stby=None, timeout=300):
     """ This stage removes a backed up file from the device. It can optionally
     replace the original file with the one that was backed up.
 
@@ -1405,7 +1404,7 @@ def delete_backup_from_device(section, steps, device, delete_dir, delete_file,
                                delete_dir, delete_file, device.name),
                                )
 
-        device.execute.error_pattern.extend(['.*%Error.*', '.*No such file.*'])
+        device.execute.error_pattern.extend(['.*%Error.*'])
         try:
             # Delete the golden backup file
             device.execute('delete {}{}'.format(delete_dir, delete_file),
@@ -1420,29 +1419,27 @@ def delete_backup_from_device(section, steps, device, delete_dir, delete_file,
                                 format(delete_dir, delete_file, device.name))
 
             # Delete file from on standby
-            if device.is_ha:
+            if device.is_ha and delete_dir_stby:
                 # Make sure standby directory is provided
-                if device.clean.delete_backup_from_device.get('delete_dir_stby'):
-                    delete_dir_stby = device.clean.delete_backup_from_device.get('delete_dir_stby')
 
-                    # Delete the golden backup file
-                    log.info("Successfully deleted '{}/{}' from device {}".
-                                format(delete_dir, delete_file, device.name))
-                    log.info("Deleting '{}/{}' on standby from device{}".
-                                format(delete_dir_stby,delete_file, device.name))
-                    try:
-                        device.execute('delete {}{}'.format(delete_dir_stby, delete_file),
-                                        reply=Dialog([delete_backup]))
-                    except Exception as e:
-                        log.error(e)
-                        log.error("*** Cannot delete from standby ***")
-                        step.failed("Unable to delete '{}/{} from device {}".format(
-                                    delete_dir_stby, delete_file, device.name))
-                    else:
-                        step.passed("Successfully deleted from standby '{}/{}' from device {}".\
-                                    format(delete_dir_stby, delete_file, device.name))
+                # Delete the golden backup file
+                log.info("Successfully deleted '{}/{}' from device {}".
+                            format(delete_dir, delete_file, device.name))
+                log.info("Deleting '{}/{}' on standby from device{}".
+                            format(delete_dir_stby,delete_file, device.name))
+                try:
+                    device.execute('delete {}{}'.format(delete_dir_stby, delete_file),
+                                    reply=Dialog([delete_backup]))
+                except Exception as e:
+                    log.error(e)
+                    log.error("*** Cannot delete from standby ***")
+                    step.failed("Unable to delete '{}/{} from device {}".format(
+                                delete_dir_stby, delete_file, device.name))
                 else:
-                    step.failed("*** HA device, but no standby device provided ***")
+                    step.passed("Successfully deleted from standby '{}/{}' from device {}".\
+                                format(delete_dir_stby, delete_file, device.name))
+            else:
+                step.failed("*** HA device, but no standby device provided ***")
 
 #===============================================================================
 #                       stage: delete_files_from_server

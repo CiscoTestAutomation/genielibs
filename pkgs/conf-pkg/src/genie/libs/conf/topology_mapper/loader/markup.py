@@ -1,4 +1,4 @@
-from pyats.utils import objects
+from pyats.utils import utils
 try:
     from pyats.utils.yaml.markup import Processor, REFERENCE_PATTERN
 except Exception:
@@ -8,7 +8,7 @@ from pyats.utils.yaml.exceptions import MarkupError
 
 class TopologyMarkupProcessor(Processor):
 
-    def _process_str(self, data, index):
+    def _process_str(self, data, index, locations=None):
         # overload the string processor to support %{self}
 
         while True:
@@ -28,7 +28,7 @@ class TopologyMarkupProcessor(Processor):
                                 "Keyword 'self' can only be used within "
                                 "'devices' section:\n"
                                 "Index: %s\n"
-                                "Markup: %s" % ('.'.join(index), 
+                                "Markup: %s" % ('.'.join(index),
                                                 match.group(0)))
 
             if match.group(2) == 'self':
@@ -48,7 +48,7 @@ class TopologyMarkupProcessor(Processor):
 
                 # collect the corresponding value
                 try:
-                    value = objects.chainget(self.original, match_list)
+                    value = utils.chainget(self.original, match_list)
 
                 except KeyError as e:
                     raise MarkupError(
@@ -61,15 +61,15 @@ class TopologyMarkupProcessor(Processor):
                     # test for recursion
                     # warning: doesn't test if list item refers to list's self
                     #          or dict's item doesn't refer to dict's self
-                    if value ==  objects.chainget(self.original, index):
+                    if value ==  utils.chainget(self.original, index):
                         raise MarkupError('Detected recursion markup: \n'
                                           "Index: %s\n"
                                           "Markup: %s\n"
                                           %  ('.'.join(index), match.group(0)))
-        
+
                 # do replacement
                 data = data.replace(data[slice(*match.span(0))], str(value))
-                
+
         return data
 
 
@@ -78,7 +78,7 @@ class TopologyMarkupProcessor(Processor):
     # def process_markup(self, content, index = None, original = None):
     #     '''Process Markup Function
 
-    #     Helper API. Used to process markup languages within the topology yaml 
+    #     Helper API. Used to process markup languages within the topology yaml
     #     file into concrete content. This is a functionality outside of YAML
     #     standard, and is intended to mimic variablelizing YAML content.
 
@@ -105,20 +105,20 @@ class TopologyMarkupProcessor(Processor):
     #                              "'devices' section:\n"
     #                              "Index: %s\n"
     #                              "Markup: %s" % ('.'.join(index), content))
-                
+
     #             try:
     #                 if match == 'self':
     #                         content = re.sub('%%{ *%s *}' % match, index[1] , content)
     #                 elif match.startswith('self.'):
     #                     match_list = index[0:2] + match.split('.')[1:]
 
-    #                     content = re.sub('%%{ *%s *}' % match, 
-    #                                   str(self.chain_get(match_list, original)), 
+    #                     content = re.sub('%%{ *%s *}' % match,
+    #                                   str(self.chain_get(match_list, original)),
     #                                   content)
     #                 else:
-    #                     content = re.sub('%%{ *%s *}' % match, 
+    #                     content = re.sub('%%{ *%s *}' % match,
     #                                   str(self.chain_get(match.split('.'),
-    #                                                      original)), 
+    #                                                      original)),
     #                                   content)
     #             except Exception as e:
     #                 raise MarkupError(
