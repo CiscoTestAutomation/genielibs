@@ -1136,13 +1136,13 @@ def reload(section, steps, device, reload_service_args=None, check_modules=None)
     Optional('max_time'): int,
     Optional('check_interval'): int,
     Optional('configure_replace'): bool,
-    Optional('copy_run_start'): bool,
+    Optional('skip_copy_run_start'): bool,
 })
 @aetest.test
 def apply_configuration(section, steps, device, configuration=None,
     configuration_from_file=None, file=None, config_timeout=60,
     config_stable_time=10, copy_vdc_all=False, max_time=300,
-    check_interval=60, configure_replace=False, copy_run_start=True):
+    check_interval=60, configure_replace=False, skip_copy_run_start=False):
 
     """ Apply configuration on the device, either by providing a file and/or
     raw configuration.
@@ -1159,7 +1159,7 @@ def apply_configuration(section, steps, device, configuration=None,
         copy_vdc_all: <To copy on all VDCs or not, 'bool'> (Optional)
         max_time: <Maximum time section will take for checks in seconds, 'int'> (Optional)
         check_interval: <Time interval, 'int'> (Optional)
-        copy_run_start: <Option to save running configuration. Default True. 'bool'> (Optional)
+        skip_copy_run_start: <Option to skip copy run start. Default False. 'bool'> (Optional)
 
     Example
     -------
@@ -1197,7 +1197,9 @@ def apply_configuration(section, steps, device, configuration=None,
                         .format(device.name))
 
     # Copy running-config to startup-config
-    if copy_run_start:
+    if skip_copy_run_start:
+        pass
+    else:
         with steps.start("Copy running-config to startup-config on device {}".\
                         format(device.name)) as step:
             try:
