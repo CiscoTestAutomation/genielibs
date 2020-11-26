@@ -1197,9 +1197,7 @@ def apply_configuration(section, steps, device, configuration=None,
                         .format(device.name))
 
     # Copy running-config to startup-config
-    if skip_copy_run_start:
-        pass
-    else:
+    if not skip_copy_run_start:
         with steps.start("Copy running-config to startup-config on device {}".\
                         format(device.name)) as step:
             try:
