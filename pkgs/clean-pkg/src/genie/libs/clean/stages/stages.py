@@ -1136,12 +1136,13 @@ def reload(section, steps, device, reload_service_args=None, check_modules=None)
     Optional('max_time'): int,
     Optional('check_interval'): int,
     Optional('configure_replace'): bool,
+    Optional('skip_copy_run_start'): bool,
 })
 @aetest.test
 def apply_configuration(section, steps, device, configuration=None,
     configuration_from_file=None, file=None, config_timeout=60,
     config_stable_time=10, copy_vdc_all=False, max_time=300,
-    check_interval=60, configure_replace=False):
+    check_interval=60, configure_replace=False, skip_copy_run_start=False):
 
     """ Apply configuration on the device, either by providing a file and/or
     raw configuration.
@@ -1158,6 +1159,7 @@ def apply_configuration(section, steps, device, configuration=None,
         copy_vdc_all: <To copy on all VDCs or not, 'bool'> (Optional)
         max_time: <Maximum time section will take for checks in seconds, 'int'> (Optional)
         check_interval: <Time interval, 'int'> (Optional)
+        skip_copy_run_start: <Option to skip copy run start. Default False. 'bool'> (Optional)
 
     Example
     -------
@@ -1195,19 +1197,20 @@ def apply_configuration(section, steps, device, configuration=None,
                         .format(device.name))
 
     # Copy running-config to startup-config
-    with steps.start("Copy running-config to startup-config on device {}".\
-                     format(device.name)) as step:
-        try:
-            device.api.execute_copy_run_to_start(command_timeout=config_timeout,
-                                                 max_time=max_time,
-                                                 check_interval=check_interval,
-                                                 copy_vdc_all=copy_vdc_all)
-        except Exception as e:
-            step.failed("Failed to copy running-config to startup-config on "
-                           "{}\n{}".format(device.name, str(e)))
-        else:
-            step.passed("Successfully copied running-config to startup-config "
-                        "on {}".format(device.name))
+    if not skip_copy_run_start:
+        with steps.start("Copy running-config to startup-config on device {}".\
+                        format(device.name)) as step:
+            try:
+                device.api.execute_copy_run_to_start(command_timeout=config_timeout,
+                                                    max_time=max_time,
+                                                    check_interval=check_interval,
+                                                    copy_vdc_all=copy_vdc_all)
+            except Exception as e:
+                step.failed("Failed to copy running-config to startup-config on "
+                               "{}\n{}".format(device.name, str(e)))
+            else:
+                step.passed("Successfully copied running-config to startup-config "
+                            "on {}".format(device.name))
 
     # Allow configuration to stabilize
     with steps.start("Allow configuration to stabilize on device {}".\
