@@ -10,7 +10,6 @@ from genie.utils.diff import Diff
 from genie.utils.timeout import TempResult, Timeout
 from genie.harness.utils import connect_device, disconnect_device
 
-
 log = logging.getLogger(__name__)
 
 class ProcessRestartLib(object):
@@ -422,8 +421,15 @@ class ProcessRestartLib(object):
                 #     Redundancy state:   Standby
 
                 active_wait = Timeout(max_time = 50, interval = 20)
-                log.info("Swap consoles standby to active")
-                self.device.swap_roles()
+                
+                if 'vty' == self.device.connectionmgr.connections.cli.via:
+                    log.info("\nDestroy and reconnect vty console\n")
+                    self.device.destroy()
+                    self.device.connect(via='vty')
+                else:
+                    log.info("Swap consoles standby to active")
+                    self.device.swap_roles()
+
                 while active_wait.iterate():
                     log.info("Checking redundancy offline status")
                     self.device.execute('show system redundancy status')

@@ -330,6 +330,13 @@ class DeviceClean(BaseCleaner):
             # 1. Figure out what section to run
             # 2. Run them
             result = clean_testcase()
+
+            # Disconnect the device
+            try:
+                device.destroy_all()
+            except Exception:
+                pass
+
             if not result:
                 raise Exception("Clean {result}.".format(result=str(result)))
 

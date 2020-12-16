@@ -75,15 +75,19 @@ def rommon_raise_exception():
     log.error('Device is in rommon')
     raise Exception('Device is in rommon')
 
-def _connectivity(device, console_activity_pattern=None, break_count=10,
+def _connectivity(device, console_activity_pattern=None, console_breakboot_char=None,
+                  grub_activity_pattern=None, grub_breakboot_char=None, break_count=10,
                   timeout=None, golden_image=None, tftp_boot=None,
                   recovery_password=None, clear_line=True, powercycler=True,
                   powercycler_delay=30, section=None, reconnect_delay=60):
 
-    '''Powercylce the device and start the recovery process
+    '''Powercycle the device and start the recovery process
        Args:
            device ('obj'): Device object
-           console_activity_pattern ('str'): Pattern to send the break at
+           console_activity_pattern: <Break pattern on the device for normal boot mode, 'str'>
+           console_breakboot_char: <Character to send when console_activity_pattern is matched, 'str'>
+           grub_activity_pattern: <Break pattern on the device for grub boot mode, 'str'>
+           grub_breakboot_char: <Character to send when grub_activity_pattern is matched, 'str'>
            break_count ('int'): Number of sending break times
            timeout ('int'): Recovery process timeout
            golden_image ('dict'): information to load golden image on the device
@@ -121,7 +125,7 @@ def _connectivity(device, console_activity_pattern=None, break_count=10,
 
     # Step-3: Powercycle device
     if powercycler:
-        log.info(banner("Powercycling  device '{}'".format(device.name)))
+        log.info(banner("Powercycling device '{}'".format(device.name)))
 
         try:
             device.api.execute_power_cycle_device(delay=powercycler_delay)
@@ -162,17 +166,22 @@ def _connectivity(device, console_activity_pattern=None, break_count=10,
         else:
             start = device.start
 
-        result = pcall(abstract.clean.recovery.recovery.recovery_worker,
-                       start=start,
-                       ikwargs = [{'item': i} for i, _ in enumerate(start)],
-                       ckwargs = \
-                            {'device': device,
-                             'console_activity_pattern': console_activity_pattern,
-                             'break_count': break_count,
-                             'timeout': timeout,
-                             'golden_image': golden_image,
-                             'tftp_boot': tftp_boot,
-                             'recovery_password': recovery_password})
+        pcall(
+            abstract.clean.recovery.recovery.recovery_worker,
+            start=start,
+            ikwargs = [{'item': i} for i, _ in enumerate(start)],
+            ckwargs = {
+                'device': device,
+                'console_activity_pattern': console_activity_pattern,
+                'console_breakboot_char': console_breakboot_char,
+                'grub_activity_pattern': grub_activity_pattern,
+                'grub_breakboot_char': grub_breakboot_char,
+                'break_count': break_count,
+                'timeout': timeout,
+                'golden_image': golden_image,
+                'tftp_boot': tftp_boot,
+                'recovery_password': recovery_password}
+        )
     except Exception as e:
         log.error(str(e))
         raise Exception("Failed to recover the device '{}'".\
@@ -196,6 +205,9 @@ def _connectivity(device, console_activity_pattern=None, break_count=10,
 
 @clean_schema({
     Optional('console_activity_pattern'): str,
+    Optional('console_breakboot_char'): str,
+    Optional('grub_activity_pattern'): str,
+    Optional('grub_breakboot_char'): str,
     Optional('break_count'): int,
     Optional('timeout'): int,
     Optional('golden_image'): Or(list, {
@@ -216,10 +228,22 @@ def _connectivity(device, console_activity_pattern=None, break_count=10,
     Optional('reconnect_delay'): int,
     Optional('post_recovery_configuration'): str,
 })
-def recovery_processor(section, console_activity_pattern=None, break_count=None,
-    timeout=None, golden_image=None, tftp_boot=None, recovery_password=None,
-    clear_line=True, powercycler=False, powercycler_delay=30, reconnect_delay=60,
-    post_recovery_configuration=None):
+def recovery_processor(
+        section,
+        console_activity_pattern=None,
+        console_breakboot_char='\x03', # '\x03' == <ctrl>+C
+        grub_activity_pattern=None,
+        grub_breakboot_char='c',
+        break_count=None,
+        timeout=None,
+        golden_image=None,
+        tftp_boot=None,
+        recovery_password=None,
+        clear_line=True,
+        powercycler=True,
+        powercycler_delay=30,
+        reconnect_delay=60,
+        post_recovery_configuration=None):
 
     '''
     Clean yaml file schema:
@@ -228,7 +252,10 @@ def recovery_processor(section, console_activity_pattern=None, break_count=None,
       <device>:
         device_recovery:
           break_count: <Send break count, 'int'>
-          console_activity_pattern: <Break pattern on the device, 'str'>
+          console_activity_pattern: <Break pattern on the device for normal boot mode, 'str'>
+          console_breakboot_char: <Character to send when console_activity_pattern is matched, 'str'>
+          grub_activity_pattern: <Break pattern on the device for grub boot mode, 'str'>
+          grub_breakboot_char: <Character to send when grub_activity_pattern is matched, 'str'>
           timeout: <Timeout in seconds to recover the device, 'int'>
           recovery_password: <Device password after coming up, 'str'>
           powercycler: <Should powercycler execute, 'bool'> (Default: True)
@@ -312,7 +339,7 @@ def recovery_processor(section, console_activity_pattern=None, break_count=None,
         # All good!
         log.info("Success - Device '{}' is still connected - "
                  "No need to recover the device".format(device.name))
-        return True
+        section.passed('Device {} is connected'.format(device.name))
     else:
         # Not good! Lets attempt recovery
         log.warning("Device '{}' is unreachable - attempting recovery".\
@@ -329,7 +356,8 @@ Recovery Steps:
 5. From rommon, boot the device with golden image TFTP boot or type boot''')
 
     try:
-        _connectivity(device, console_activity_pattern, break_count, timeout,
+        _connectivity(device, console_activity_pattern, console_breakboot_char,
+                      grub_activity_pattern, grub_breakboot_char, break_count, timeout,
                       golden_image, tftp_boot, recovery_password, clear_line, powercycler,
                       powercycler_delay, section, reconnect_delay)
     except Exception as e:

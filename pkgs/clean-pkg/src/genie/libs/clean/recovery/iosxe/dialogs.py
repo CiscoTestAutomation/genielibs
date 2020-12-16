@@ -26,6 +26,12 @@ class BreakBootDialog(TelnetDialog):
                                      args={'message': 'Device reached rommon prompt in break boot stage'},
                                      trim_buffer=False))
 
+        # grub>
+        self.add_statement(Statement(pattern=r'.*grub *>.*',
+                                     action=print_message,
+                                     args={'message': 'Device reached grub prompt in break boot stage'},
+                                     trim_buffer=False))
+
         # Login prompt
         self.add_statement(Statement(pattern=r'^.*(Username|login): ?$',
                                      action=print_message,

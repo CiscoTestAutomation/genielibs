@@ -1,56 +1,111 @@
 '''NXOS N9K: Image Handler Class'''
 
-# Genie
+import yaml
+
 from genie.libs.clean.stages.image_handler import BaseImageHandler
 
+from pyats.utils.schemaengine import Schema, ListOf
 
-class ImageHandler(BaseImageHandler):
 
-    EXPECTED_IMAGE_STRUCTURE_MSG = """
------------------------------------------------------------------------
+class ImageLoader(object):
+
+    EXPECTED_IMAGE_STRUCTURE_MSG = """\
 Expected one of the following structures for 'images' in the clean yaml
------------------------------------------------------------------------
+
+Structure #1
+------------
 images:
 - /path/to/image.bin
 
+Structure #2
+------------
 images:
   system:
   - /path/to/image.bin
 
+Structure #3
+------------
 images:
   system:
     file:
     - /path/to/image.bin
       
--------------------------
-Images structure provided
--------------------------
+But got the following structure
+-------------------------------
 {}"""
+
+    def load(self, images):
+        if (not self.valid_structure_1(images) and
+                not self.valid_structure_2(images) and
+                not self.valid_structure_3(images)):
+
+            raise Exception(self.EXPECTED_IMAGE_STRUCTURE_MSG.format(
+                yaml.dump({'images': images})))
+
+    def valid_structure_1(self, images):
+
+        schema = ListOf(str)
+
+        try:
+            Schema(schema).validate(images)
+        except Exception:
+            return False
+
+        if len(images) == 1:
+            setattr(self, 'system', images)
+            return True
+        else:
+            return False
+
+    def valid_structure_2(self, images):
+
+        schema = {
+            'system': ListOf(str)
+        }
+
+        try:
+            Schema(schema).validate(images)
+        except Exception:
+            return False
+
+        if len(images['system']) == 1:
+            setattr(self, 'system', images['system'])
+            return True
+        else:
+            return False
+
+    def valid_structure_3(self, images):
+
+        schema = {
+            'system': {
+                'file': ListOf(str)
+            }
+        }
+
+        try:
+            Schema(schema).validate(images)
+        except Exception:
+            return False
+
+        if len(images['system']['file']) == 1:
+            setattr(self, 'system', images['system']['file'])
+            return True
+        else:
+            return False
+
+
+class ImageHandler(BaseImageHandler, ImageLoader):
 
     def __init__(self, device, images, *args, **kwargs):
 
-        if isinstance(images, list) and len(images) >= 1:
-            setattr(self, 'system', [images[0]])
-
-        elif isinstance(images, dict):
-            try:
-                if isinstance(images['system'], list):
-                    images = images['system']
-                else:
-                    images = images['system']['file']
-
-                setattr(self, 'system', [images[0]])
-            except KeyError:
-                self.exception = {'images': images}
-        else:
-            self.exception = {'images': images}
-
-        # Raises an exception if the 'images' structure is invalid
-        # otherwise initializes common variables
-        super().__init__(device, *args, **kwargs)
+        # Check if images is one of the valid structures and
+        # load into a consolidated structure
+        ImageLoader.load(self, images)
 
         # Temp workaround for XPRESSO
         self.system = [self.system[0].replace('file://', '')]
+
+        super().__init__(device, *args, **kwargs)
 
     def update_image_references(self, section):
         # section.parameters['image_mapping'] shall be saved in any

@@ -3,7 +3,7 @@
 # Python
 import re
 import logging
-import re
+import time
 
 # pyATS
 from pyats.utils.fileutils import FileUtils
@@ -136,7 +136,7 @@ def execute_write_memory(device, timeout=300):
 
 def execute_install_package(device, image_dir, image, save_system_config=True,
                             install_timeout=660, reconnect_max_time=120,
-                            reconnect_interval=30, _install=True):
+                            reconnect_interval=30, _install=True, install_commit_sleep_time=None):
     """ Installs package
         Args:
             device ("obj"): Device object
@@ -146,7 +146,7 @@ def execute_install_package(device, image_dir, image, save_system_config=True,
             install_timeout ("int"): Maximum time for install. Default 660
             reconnect_max_time ("int"): Maximum time for reconnect. Default 120
             reconnect_interval ("int"): Time between reconnect attempts. Default 30
-
+            install_commit_sleep_time ("int"): Sleep time before install commit command
             _install ("bool"): True to install, False to uninstall.
                 Not meant to be changed manually.
 
@@ -208,7 +208,8 @@ def execute_install_package(device, image_dir, image, save_system_config=True,
         install remove file {dir}{image}""".format(
             dir=image_dir, image=image
         )
-
+    if install_commit_sleep_time:
+        time.sleep(install_commit_sleep_time)
     device.execute(cmd, timeout=install_timeout)
 
     try:
@@ -250,7 +251,12 @@ def execute_uninstall_package(device, image_dir, image, save_system_config=True,
     return execute_install_package(
         device, image_dir, image, save_system_config, timeout, _install=False)
 
-def delete_unprotected_files(device, directory, protected, files_to_delete=None, dir_output=None):
+
+def delete_unprotected_files(device,
+                             directory,
+                             protected,
+                             files_to_delete=None,
+                             dir_output=None):
     """delete all files not matching regex in the protected list
         Args:
             device ('obj'): Device object
@@ -265,7 +271,9 @@ def delete_unprotected_files(device, directory, protected, files_to_delete=None,
 
     protected_set = set()
     fu_device = FileUtils.from_device(device)
-    file_set = set(Dq(device.parse('dir {}'.format(directory), output=dir_output)).get_values('files'))
+    file_set = set(
+        Dq(device.parse('dir {}'.format(directory),
+                        output=dir_output)).get_values('files'))
 
     if isinstance(protected, str):
         protected = [protected]
@@ -296,8 +304,9 @@ def delete_unprotected_files(device, directory, protected, files_to_delete=None,
             '\n'.join(not_protected)))
         dont_delete_list = protected_set.intersection(files_to_delete)
         if dont_delete_list:
-            log.info("The following files will not be deleted because they are protected:\n{}".format(
-                '\n'.join(dont_delete_list)))
+            log.info(
+                "The following files will not be deleted because they are protected:\n{}"
+                .format('\n'.join(dont_delete_list)))
         for file in not_protected:
             # it's a directory, dont delete
             if file.endswith('/'):
@@ -311,5 +320,6 @@ def delete_unprotected_files(device, directory, protected, files_to_delete=None,
         if error_messages:
             raise Exception('\n'.join(error_messages))
     else:
-        log.info("No files will be deleted, the following files are protected:\n{}".format(
-            '\n'.join(protected_set)))
+        log.info(
+            "No files will be deleted, the following files are protected:\n{}".
+            format('\n'.join(protected_set)))

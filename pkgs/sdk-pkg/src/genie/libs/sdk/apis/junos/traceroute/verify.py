@@ -108,10 +108,25 @@ def verify_traceroute_final_hop(device,
         #                 'to': {'address': '11.0.0.1', 'domain': '11.0.0.1'}}}  
 
         hops = out.q.get_values("hops")  
-        final_hop = hops[-1]
+        if hops:
+            final_hop = hops[-1]
+            if final_hop['address'] == expected_final_hop:
+                return True
+        else:
+            # Special case:
+            # {
+            # 'traceroute': {
+            #     'max-hops': '64',
+            #     'packet-size': '12',
+            #     'to': {
+            #         'address': '2001::2', <----------
+            #         'domain': '2001::2'
+            #         }
+            #     }
+            # }
 
-        if final_hop['address'] == expected_final_hop:
-            return True
+            if out.q.get_values('address', 0) == expected_final_hop:
+                return True
 
         timeout.sleep()
 

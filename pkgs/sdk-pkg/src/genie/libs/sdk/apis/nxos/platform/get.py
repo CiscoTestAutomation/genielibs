@@ -6,6 +6,10 @@ import logging
 
 # pyATS
 from genie.metaparser.util.exceptions import SchemaEmptyParserError, SchemaMissingKeyError
+from genie.utils import Dq
+
+# Unicon
+from unicon.core.errors import SubCommandFailure
 
 log = logging.getLogger(__name__)
 
@@ -402,3 +406,77 @@ def get_platform_memory_usage_detail(device,
             memory_usage_dict.update({ps_item: memory_usage*100})
  
     return memory_usage_dict
+
+
+def get_slot_model(device):
+    """Gets the model name of all modules
+
+    Args:
+        device (obj): Device object
+        slot (str, optional): Module slot to get. Defaults to None.
+
+    Returns:
+        dict: Dictionary mapped from slot number to model
+    """
+
+    try:
+        out = device.parse('show module')
+    except SubCommandFailure as e:
+        log.info('Failed to get slot model: {e}'.format(e=e))
+        return None
+      
+    return {key: Dq(val).get_values('model', 0) for key, val in out.get('slot', {}).get('rp', {}).items()}
+
+def get_chassis_type(device):
+    """Get the chassis type of the device
+
+    Args:
+        device (obj): Device object
+
+    Return:
+        str: Device chassis
+    """
+
+    try:
+        out = device.parse('show version')
+    except SubCommandFailure:
+        log.info('Could not get device version information')
+        return None
+    
+    return out.q.get_values('chassis', 0)
+
+def get_chassis_sn(device):
+    """Get the chassis SN of the device
+
+    Args:
+        device (obj): Device object
+
+    Return:
+        str: Device chassis SN
+    """
+
+    try:
+        out = device.parse('show version')
+    except SubCommandFailure:
+        log.info('Could not get device version information')
+        return None
+    
+    return out.q.get_values('chassis_sn', 0)
+
+def get_platform_type(device):
+    """Get platform type of device
+
+    Args:
+        device (obj): Device object
+
+    Return:
+        str: Device platform type
+    """
+
+    try:
+        out = device.parse('show version')
+    except SubCommandFailure:
+        log.info('Could not get device version information')
+        return None
+    
+    return out.q.get_values('platform', 0)

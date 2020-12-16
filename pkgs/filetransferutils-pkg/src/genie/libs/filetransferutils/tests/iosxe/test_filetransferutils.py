@@ -47,8 +47,8 @@ class test_filetransferutils(unittest.TestCase):
     # Mock device output
     raw1 = '''
         copy flash:/memleak.tcl ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl
-        Address or name of remote host [1.1.1.1]? 
-        Destination filename [/auto/tftp-ssr/memleak.tcl]? 
+        Address or name of remote host [1.1.1.1]?
+        Destination filename [/auto/tftp-ssr/memleak.tcl]?
         !!
         104260 bytes copied in 0.396 secs (263283 bytes/sec)
     '''
@@ -84,18 +84,18 @@ class test_filetransferutils(unittest.TestCase):
 
     raw3 ='''
         delete flash:memleak.tcl
-        Delete filename [memleak.tcl]? 
+        Delete filename [memleak.tcl]?
         Delete flash:/memleak.tcl? [confirm]
     '''
 
     raw4 = '''
         rename flash:memleak.tcl new_file.tcl
-        Destination filename [new_file.tcl]? 
+        Destination filename [new_file.tcl]?
     '''
 
     raw5 = '''
         show clock | redirect ftp://1.1.1.1//auto/tftp-ssr/show_clock
-        Writing /auto/tftp-ssr/show_clock 
+        Writing /auto/tftp-ssr/show_clock
     '''
 
     raw6 = {'futlinux.check_file.return_value': '',
@@ -103,15 +103,16 @@ class test_filetransferutils(unittest.TestCase):
 
     raw7 = '''
          copy running-config tftp://10.1.7.250//auto/tftp-ssr/test_config.py
-        Address or name of remote host [10.1.7.250]? 
-        Destination filename [/auto/tftp-ssr/test_config.py]? 
+        Address or name of remote host [10.1.7.250]?
+        Destination filename [/auto/tftp-ssr/test_config.py]?
         !!
         27092 bytes copied in 6.764 secs (4005 bytes/sec)
     '''
 
     outputs = {}
-    outputs['copy flash:/memleak.tcl ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl']\
-      = raw1
+    outputs['copy flash:/memleak.tcl '
+            'ftp://myuser:mypw@1.1.1.1//auto/tftp-ssr/memleak.tcl']\
+            = raw1
     outputs['dir'] = raw2
     outputs['delete flash:memleak.tcl'] = raw3
     outputs['rename flash:memleak.tcl new_file.tcl'] = raw4

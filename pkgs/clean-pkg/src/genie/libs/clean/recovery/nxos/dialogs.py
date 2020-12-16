@@ -23,7 +23,8 @@ class BreakBootDialog(CommonBreakBootDialog):
                                      action=print_message,
                                      args={'message':"Device reached loader prompt"},
                                      loop_continue=False,
-                                     continue_timer=False))
+                                     continue_timer=False,
+                                     trim_buffer=False))
 
         self.add_statement(Statement(pattern=r'^.*(Username|login): ?$',
                                      action=print_message,
@@ -32,7 +33,7 @@ class BreakBootDialog(CommonBreakBootDialog):
                                      loop_continue=False,
                                      continue_timer=False))
 
-        self.add_statement(Statement(pattern='^[^\n]*#\s?$',
+        self.add_statement(Statement(pattern=r'^[^\n]*#\s?$',
                                      action=print_message,
                                      args={'message': "Device reached enable mode before loader prompt",
                                            'raise_exception': True},
@@ -114,7 +115,7 @@ class RommonDialog(CommonRommonDialog):
                                      loop_continue=False,
                                      continue_timer=False))
 
-        self.add_statement(Statement(pattern='^[^\n]*#\s?$',
+        self.add_statement(Statement(pattern=r'^[^\n]*#\s?$',
                                      action=None,
                                      args=None,
                                      loop_continue=False,

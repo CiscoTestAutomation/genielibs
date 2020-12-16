@@ -72,6 +72,7 @@ def control(self, steps, testbed, section, name, action_item):
     # if actions actually ran the output list of outputs
     # should be added to this dict to return
     # mainly useful to be unpacked in parallel
+    
     ret_dict.update({'control_output': ret_list})
     return ret_dict
 

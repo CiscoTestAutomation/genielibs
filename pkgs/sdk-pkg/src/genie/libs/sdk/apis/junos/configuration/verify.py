@@ -30,7 +30,7 @@ def verify_configuration_hostname(device, expected_hostname, max_time=60, check_
         out = None
         try:
             out = device.execute('show configuration system host-name')
-        except SchemaEmptyParserError:
+        except Exception as e:
             timeout.sleep()
             continue
 
@@ -44,4 +44,33 @@ def verify_configuration_hostname(device, expected_hostname, max_time=60, check_
 
         timeout.sleep()
         
+    return False
+
+
+
+def verify_configuration_ddos_protection_no_output(device, max_time=60, check_interval=10):
+    """ Verifies there is no otuput via show configuration system ddos-protection
+
+    Args:
+        device (obj): Device object
+        max_time (int, optional): Maximum timeout time. Defaults to 60 seconds.
+        check_interval (int, optional): Check interval. Defaults to 10 seconds.
+
+    Returns:
+        True/False
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        out = None
+        try:
+            out = device.execute('show configuration system ddos-protection')
+        except Exception as e:
+            timeout.sleep()
+            continue
+        
+        if out == '' or '{master}':
+            return True
+        timeout.sleep()
+
     return False

@@ -1,6 +1,8 @@
 """ File utils base class for filetransferutils package. """
 
 import logging
+import contextlib
+import time
 from functools import lru_cache
 
 # Urlparse
@@ -17,12 +19,16 @@ except ImportError:
     # For apidoc building only
     from unittest.mock import Mock; FileUtilsBase=Mock
 
+# Abstract lookup for config restore
+from genie.abstract import Lookup
+from genie.libs import sdk, parser
+
 logger = logging.getLogger(__name__)
 
 # Error patterns to be caught when executing cli on device
 FAIL_MSG = ['failed to copy', 'Unable to find', 'Error opening', 'Error', 'operation failed',
             'Compaction is not supported', 'Copy failed', 'No route to host', 'Connection timed out', 'not found', 'No space',
-            'not a remote file']
+            'not a remote file', 'Could not resolve']
 
 class FileUtils(FileUtilsBase):
 
@@ -68,14 +74,10 @@ class FileUtils(FileUtilsBase):
 
         # Extract device from the keyword arguments, if not passed raise an
         # AttributeError
-        if 'device' in kwargs:
-            device = kwargs['device']
-        else:
+        device = kwargs.get('device') or getattr(self, 'device', None)
+        if not device:
             raise AttributeError("Device object is missing, can't proceed with"
-                             " execution")
-
-        # Extracting protocol to get the corresponding authentication info
-        protocol = kwargs['protocol'] if 'protocol' in kwargs else ''
+                                 " execution")
 
         # Extracting username and password to be used during device calls
         if used_server:
@@ -84,7 +86,8 @@ class FileUtils(FileUtilsBase):
 
             if 'username' in kwargs and kwargs['username'] and kwargs['username'] in used_server:
                 used_server = used_server.split('@')[1]
-            username, password = self.get_auth(used_server, protocol=protocol)
+            username, password = self.get_auth(used_server,
+                                               protocol=kwargs.get('protocol'))
         else:
             username = None
             password = None
@@ -188,6 +191,87 @@ class FileUtils(FileUtilsBase):
 
         return output
 
+    @contextlib.contextmanager
+    def file_transfer_config(self, server, **kwargs):
+        """ Context manager to try configuring a device for an upcoming file
+            transfer. Saves a configuration checkpoint, applies configuration,
+            and upon exit reverts the configuration. Requires the device to have
+            custom values for `default_gateway` and `file_transfer_interface`.
+
+            Arguments
+            ---------
+            server: `str`
+                The server address to copy files to or from.
+
+        """
+
+        device = kwargs.get('device') or getattr(self, 'device', None)
+        if not device:
+            raise AttributeError("Device object is missing, can't proceed with"
+                                 " configuration")
+        # device might be a connection, get actual device
+        device = device.device
+        # get genie abstract for this device OS
+        abstract = Lookup.from_device(device,
+                                      packages={'sdk': sdk,
+                                                'parser': parser},
+                                      default_tokens=['os'])
+        vrf = kwargs.get('vrf')
+        # Retrieve correct config template for this OS
+        if vrf:
+            copy_config = getattr(self, 'COPY_CONFIG_VRF_TEMPLATE', None)
+        else:
+            copy_config = getattr(self, 'COPY_CONFIG_TEMPLATE', None)
+        default_gateway = device.custom.get('default_gateway')
+        interface = device.custom.get('file_transfer_interface')
+        if default_gateway and interface and copy_config:
+            copy_config = copy_config.format(
+                vrf=vrf,
+                server=server,
+                default_gateway=default_gateway,
+                interface=interface)
+        else:
+            copy_config = None
+
+        config_restore = None
+        if copy_config:
+            try:
+                # Save config checkpoint
+                config_restore = abstract.sdk.libs.abstracted_libs.\
+                    restore.Restore()
+                default_dir = abstract.sdk.libs.abstracted_libs.\
+                    subsection.get_default_dir(device=device)
+                config_restore.save_configuration(device, 'checkpoint',
+                                                  abstract, default_dir)
+                # Configure device for file copy
+                device.configure(copy_config)
+            except Exception:
+                logger.warning(
+                    'Failed to apply configuration on %s' % str(device),
+                    exc_info=True)
+                config_restore = None
+
+        try:
+            # Inside context manager
+            yield
+
+        finally:
+            if config_restore:
+                try:
+                    # Restore configuration on device
+                    config_restore.restore_configuration(device,
+                                                         'checkpoint',
+                                                         abstract)
+                    # If specified, wait for a period of time after restoring
+                    # configuration to let it settle
+                    wait_time = kwargs.get('wait_after_restore', 1)
+                    time.sleep(wait_time)
+                except Exception:
+                    logger.warning(
+                        'Failed to restore configuration on %s' % str(device),
+                        exc_info=True)
+
+
     def parse_url(self, url):
         """ Parse the given url
 
@@ -248,81 +332,12 @@ class FileUtils(FileUtilsBase):
         except SubCommandFailure:
             return False
 
-    def is_valid_ip(self, ip, device, vrf=None, cache_ip=True):
+    def is_valid_ip(self, ip, device=None, vrf=None, cache_ip=True):
+        device = device or getattr(self, 'device')
         if cache_ip:
             return self.is_valid_ip_cache(ip, device, vrf)
         else:
             return self.is_valid_ip_no_cache(ip, device, vrf)
-
-    def get_hostname(self, server_name_or_ip, device, vrf=None, cache_ip=True):
-        """ Get host name or address to connect to.
-            (inherited from pyats FileUtils with support for device connection)
-        Returns
-        -------
-            DNS name or IP address of server to connect to.
-
-            If IP address (single or list) specified in server block:
-            Return first reachable address (plugin determines reachability).
-
-            If no address specified, or if no address reachable:
-            Server name, if specified in server block, is next preferred.
-            If neither address nor server keys are present in server block,
-            or if the server could not be found in the testbed,
-            return the user-specified server name or IP address.
-
-        Raises
-        ------
-        Exception
-            if server details not found in testbed.
-
-        """
-        server_block = self.get_server_block(
-            server_name_or_ip = server_name_or_ip)
-
-        if server_block:
-            address = server_block.get('address', None)
-
-            if address:
-                if type(address) in (tuple, list):
-                    # a list of ips were provided - use the first valid one
-                    # that we can reach
-                    for addr in address:
-                        if self.is_valid_ip(addr, device, vrf=vrf, cache_ip=cache_ip):
-                            return addr
-                else:
-                    # not a list - return it
-                    return address
-
-            # no reachable address, or no address specified,
-            # default to server dns name or alias, or originally specified
-            # hostname if all server block lookups fail.
-            return server_block.get('server', server_name_or_ip)
-        else:
-            msg = "No details found in testbed for hostname {}.".\
-                format(server_name_or_ip)
-            if server_name_or_ip is not None:
-                logger.warning(msg)
-            else:
-                logger.debug(msg)
-
-        # Server block lookup has failed, return originally specified hostname
-        # (garbage in, garbage out).
-        return server_name_or_ip
-
-    def validate_and_update_url(self, url, device, vrf=None, cache_ip=True):
-        """Validate the url and replace the hostname/address with a
-            reachable address from the testbed"""
-        parsed_url = urlparse(url)
-
-        # if there is a host name, this means the address is remote
-        if parsed_url.hostname:
-            hostname = self.get_hostname(parsed_url.hostname, device, vrf=vrf, cache_ip=cache_ip)
-            return url.replace(parsed_url.hostname, hostname)
-
-        # just return url if it's local
-        else:
-            return url
-
 
     def get_server(self, source, destination=None):
         """ Get the server address from the provided URLs
@@ -366,16 +381,9 @@ class FileUtils(FileUtilsBase):
         for item in new_list:
             parsed = self.parse_url(item)
             # Validate parsed address is a valid IP address
-            if parsed.netloc:
-                # remove any username:password before the @addr
-                if '@' in parsed.netloc:
-                    netloc = parsed.netloc.split('@')[1]
-                else:
-                    netloc = parsed.netloc
-
-                # remove any trailing colon
-                netloc = netloc.split(':')[0]
-                used_server = netloc
+            if parsed.hostname:
+                # only include address, no port or credentials
+                used_server = parsed.hostname
                 break
 
         if not used_server:

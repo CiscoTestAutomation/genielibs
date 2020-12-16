@@ -109,9 +109,9 @@ class PositiveStages(unittest.TestCase):
         self.device.api.verify_file_size_stable_on_server = Mock(return_value=True)
 
         # Execute stage: copy_to_device
-        with self.assertRaises(AEtestPassedSignal):
-            copy_to_device(self.section, self.steps, self.device,
-                           **self.device.clean.copy_to_device)
+        copy_to_device(self.section, self.steps, self.device,
+                       **self.device.clean.copy_to_device)
+        self.assertEqual('passed', self.section.result.name)
 
 
     def test_stage_change_boot_variable(self):

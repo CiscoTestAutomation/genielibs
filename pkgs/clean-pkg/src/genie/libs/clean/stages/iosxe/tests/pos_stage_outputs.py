@@ -38,7 +38,7 @@ class StageOutputs:
 
         Proceed with reload? [confirm]
 
-        Feb  2 16:00:34.751 R0/0: %PMAN-5-EXITACTION: Process manager is exiting: process exit with reload chassis code 
+        Feb  2 16:00:34.751 R0/0: %PMAN-5-EXITACTION: Process manager is exiting: process exit with reload chassis code
 
 
         Initializing Hardware ...
@@ -60,7 +60,7 @@ class StageOutputs:
 
         File size is 0x1adbc5a0
 
-        Located genie-iedge-asr-uut 
+        Located genie-iedge-asr-uut
 
         Image size 450610592 inode num 15, bks cnt 110013 blk size 8*512
 
@@ -227,12 +227,12 @@ class StageOutputs:
 
         'show version': '''\
             PE1# show version
- 
+
             Cisco IOS Software, IOS-XE Software (X86_64_LINUX_IOSD-ADVENTERPRISEK9-M), Version 15.2(1)S, RELEASE SOFTWARE (fc1)
             Technical Support: http://www.cisco.com/techsupport
             Copyright (c) 1986-2011 by Cisco Systems, Inc.
             Compiled Sun 27-Nov-11 21:19 by mcpre
-             
+
             Cisco IOS-XE software, Copyright (c) 2005-2011 by cisco Systems, Inc.
             All rights reserved. Certain components of Cisco IOS-XE software are
             licensed under the GNU General Public License ("GPL") Version 2.0. The
@@ -242,17 +242,17 @@ class StageOutputs:
             documentation or "License Notice" file accompanying the IOS-XE software,
             or the applicable URL provided on the flyer accompanying the IOS-XE
             software.
-             
-             
+
+
             ROM: IOS-XE ROMMON
-             
+
             PE1 uptime is 1 minute
             Uptime for this control processor is 3 minutes
             System returned to ROM by reload
             System restarted at 22:07:05 UTC Sun Nov 27 2011
             System image file is "tftp:/auto/tftp-smoke2/mcpdt-rp2-14/vmlinux"
             Last reload reason: PowerOn
-             
+
             This product contains cryptographic features and is subject to United
             States and local country laws governing import, export, transfer and
             use. Delivery of Cisco cryptographic products does not imply
@@ -261,13 +261,13 @@ class StageOutputs:
             compliance with U.S. and local country laws. By using this product you
             agree to comply with applicable laws and regulations. If you are unable
             to comply with U.S. and local laws, return this product immediately.
-             
+
             A summary of U.S. laws governing Cisco cryptographic products may be found at:
             http://www.cisco.com/wwl/export/crypto/tool/stqrg.html
-             
+
             If you require further assistance please contact us by sending email to
             export@cisco.com.
-             
+
             cisco ASR1006 (RP2) processor with 4252282K/6147K bytes of memory.
             5 Gigabit Ethernet interfaces
             2 Channelized T3 ports
@@ -275,7 +275,7 @@ class StageOutputs:
             8388608K bytes of physical memory.
             1925119K bytes of eUSB flash at bootflash:.
             78085207K bytes of SATA hard disk at harddisk:.
-             
+
             Configuration register is 0x2102
         ''',
 
@@ -336,7 +336,7 @@ class StageOutputs:
             78704144384 bytes total (72358244352 bytes free)
         ''',
 
-        'copy ftp://20.1.1.1/vmlinux_PE1.bin harddisk:/vmlinux_PE1.bin': '''\
+        'copy ftp://rcpuser:password@20.1.1.1/vmlinux_PE1.bin harddisk:/vmlinux_PE1.bin': '''\
             PE1#copy ftp://20.1.1.1/vmlinux_PE1.bin harddisk:/vmlinux_PE1.bin
             Destination filename [vmlinux_PE1.bin]?
             Accessing ftp://20.1.1.1/vmlinux_PE1.bin...!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -348,60 +348,60 @@ class StageOutputs:
 
     parsed_outputs = {
         'show platform': {
-            'main': 
+            'main':
                 {'chassis': 'ASR1006'},
-                'slot': 
-                    {'0': 
-                        {'lc': 
-                            {'ASR1000-SIP40': 
+                'slot':
+                    {'0':
+                        {'lc':
+                            {'ASR1000-SIP40':
                                 {'cpld_ver': '00200900',
                                 'fw_ver': '16.2(1r)',
                                 'insert_time': '00:32:18',
                                 'name': 'ASR1000-SIP40',
                                 'slot': '0',
                                 'state': 'ok',
-                                'subslot': 
-                                    {'0': 
-                                        {'SPA-8X1GE-V2': 
+                                'subslot':
+                                    {'0':
+                                        {'SPA-8X1GE-V2':
                                             {'insert_time': '00:30:32',
                                             'name': 'SPA-8X1GE-V2',
                                             'state': 'ok',
                                             'subslot': '0'}}}}}},
-                    'F0': 
-                        {'other': 
-                            {'ASR1000-ESP20': 
+                    'F0':
+                        {'other':
+                            {'ASR1000-ESP20':
                                 {'cpld_ver': '08041102',
                                 'fw_ver': '16.2(1r)',
                                 'insert_time': '00:32:18',
                                 'name': 'ASR1000-ESP20',
                                 'slot': 'F0',
                                 'state': 'ok, active'}}},
-                    'P0': 
-                        {'other': 
-                            {'ASR1006-PWR-AC': 
+                    'P0':
+                        {'other':
+                            {'ASR1006-PWR-AC':
                                 {'insert_time': '00:31:22',
                                 'name': 'ASR1006-PWR-AC',
                                 'slot': 'P0',
                                 'state': 'ps, ok'}}},
-                    'P1': 
-                        {'other': 
-                            {'ASR1006-PWR-AC': 
+                    'P1':
+                        {'other':
+                            {'ASR1006-PWR-AC':
                                 {'insert_time': '00:31:21',
                                 'name': 'ASR1006-PWR-AC',
                                 'slot': 'P1',
                                 'state': 'ok'}}},
-                    'R0': 
-                        {'rp': 
-                            {'ASR1000-RP2': 
+                    'R0':
+                        {'rp':
+                            {'ASR1000-RP2':
                                 {'cpld_ver': '10021901',
                                 'fw_ver': '16.9(4r)',
                                 'insert_time': '00:32:18',
                                 'name': 'ASR1000-RP2',
                                 'slot': 'R0',
                                 'state': 'ok, active'}}},
-                    'R1': 
-                        {'other': 
-                            {'': 
+                    'R1':
+                        {'other':
+                            {'':
                                 {'cpld_ver': 'N/A',
                                 'fw_ver': 'N/A',
                                 'insert_time': '00:32:18',
@@ -410,20 +410,20 @@ class StageOutputs:
                                 'state': 'standby'}}}}},
 
         'show version': {
-            'version': 
+            'version':
                 {'chassis': 'ASR1006',
                 'chassis_sn': 'FOX1444GPWD',
                 'compiled_by': 'mcpre',
                 'compiled_date': 'Thu 30-Jan-20 18:53',
                 'curr_config_register': '0x2102',
-                'disks': 
-                    {'bootflash:.': 
+                'disks':
+                    {'bootflash:.':
                         {'disk_size': '1933311',
                         'type_of_disk': 'eUSB flash'},
-                    'harddisk:.': 
+                    'harddisk:.':
                         {'disk_size': '78085207',
                         'type_of_disk': 'SATA hard disk'},
-                    'webui:.': 
+                    'webui:.':
                         {'disk_size': '0',
                         'type_of_disk': 'WebUI ODM Files'}},
                 'hostname': 'PE1',
@@ -450,7 +450,7 @@ class StageOutputs:
                 'version_short': '16.9'}},
 
         'show bootvar': {
-            'active': 
+            'active':
                 {'boot_variable': 'harddisk:/vmlinux_PE1.bin,12',
                 'configuration_register': '0x2102'},
             'next_reload_boot_variable': 'harddisk:/vmlinux_PE1.bin,12'},

@@ -43,8 +43,8 @@ class test_filetransferutils(unittest.TestCase):
     # Mock device output
     raw1 = '''
         copy disk0:/memleak.tcl ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl
-        Address or name of remote host [1.1.1.1]? 
-        Destination filename [/auto/tftp-ssr/memleak.tcl]? 
+        Address or name of remote host [1.1.1.1]?
+        Destination filename [/auto/tftp-ssr/memleak.tcl]?
         !!
         104260 bytes copied in 0.396 secs (263283 bytes/sec)
     '''
@@ -79,7 +79,7 @@ class test_filetransferutils(unittest.TestCase):
 
     raw4 = '''
         show clock | redirect ftp://1.1.1.1//auto/tftp-ssr/show_clock
-        Writing /auto/tftp-ssr/show_clock 
+        Writing /auto/tftp-ssr/show_clock
     '''
 
     raw5 = {'futlinux.check_file.return_value': '',
@@ -89,7 +89,7 @@ class test_filetransferutils(unittest.TestCase):
         copy running-config ftp://10.1.6.242//auto/tftp-ssr/fake_config_2.tcl
         Host name or IP address (control-c to abort): [10.1.6.242;default]?
         Destination username: []?rcpuser
-        Destination password: 
+        Destination password:
         Destination file name (control-c to abort): [/auto/tftp-ssr/fake_config_2.tcl]?
         Building configuration.
         349 lines built in 1 second
@@ -100,7 +100,7 @@ class test_filetransferutils(unittest.TestCase):
             sftp running-config myuser@1.1.1.1:/home/virl vrf management
             Thu Oct 10 15:45:18.989 UTC
             Connecting to 172.16.1.250...
-            Password: 
+            Password:
 
             /misc/disk1/running-config
               Overwrite /home/virl/running-config on host 172.16.1.250, continu? [
@@ -110,7 +110,7 @@ class test_filetransferutils(unittest.TestCase):
     '''
     outputs = {}
     outputs['copy disk0:/fake_config_2.tcl '
-        'ftp://1.1.1.1//auto/tftp-ssr/fake_config_2.tcl'] = raw1
+        'ftp://myuser:mypw@1.1.1.1//auto/tftp-ssr/fake_config_2.tcl'] = raw1
     outputs['dir'] = raw2
     outputs['delete disk0:fake_config.tcl'] = raw3
     outputs['show clock | redirect ftp://1.1.1.1//auto/tftp-ssr/show_clock'] = \

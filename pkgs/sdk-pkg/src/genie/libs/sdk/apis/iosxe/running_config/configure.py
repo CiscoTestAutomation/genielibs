@@ -102,7 +102,7 @@ def restore_running_config(device, path, file, timeout=60):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not replace saved configuration on "
-            "device {device}".format(device=device.name)
+            "device {device}\nError: {e}".format(device=device.name, e=str(e))
         )
 
 

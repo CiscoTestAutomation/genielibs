@@ -50,4 +50,3 @@ def get_valid_config_from_running_config(device, exclude=None, begin=None):
             String of configuration
     """
     return base_get_valid_config_from_running_config(device, exclude, begin)
-

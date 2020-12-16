@@ -241,4 +241,3 @@ def get_valid_config_from_running_config(device, exclude=None, begin='version'):
         new_out += line + '\n'
 
     return new_out
-

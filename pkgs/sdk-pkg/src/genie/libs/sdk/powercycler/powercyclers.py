@@ -1,5 +1,6 @@
 from .base import (BaseSNMPPowerCycler,
-                   BaseCyberSwitchingPowerCycler)
+                   BaseCyberSwitchingPowerCycler,
+                   BaseEsxiPowerCycler)
 
 
 class RaritanSnmpPX(BaseSNMPPowerCycler):
@@ -45,3 +46,7 @@ class DualCommSnmpPDU(BaseSNMPPowerCycler):
 class CyberSwitching(BaseCyberSwitchingPowerCycler):
     type = 'cyberswitching'
     connection_type = 'telnet'
+
+class Esxi(BaseEsxiPowerCycler):
+    type = 'esxi'
+    connection_type = 'ssh'

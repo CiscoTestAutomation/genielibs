@@ -418,6 +418,7 @@ def _included_excluded(caps, returns=[]):
 def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs):
     """Form NETCONF message and send to testbed."""
     log.debug('NETCONF MESSAGE')
+    result = True
     try:
         device.raise_mode = RaiseMode.NONE
     except NameError:
@@ -429,14 +430,28 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
         log.error('The "lxml" library is required for NETCONF testing')
         return False
 
+    format = kwargs.get('format', {})
+    if 'auto_validate' in format:
+        auto_validate = format.get('auto_validate')
+    else:
+        auto_validate = format.get('auto-validate', True)
+    if 'negative_test' in format:
+        negative_test = format.get('negative_test')
+    else:
+        negative_test = format.get('negative-test', False)
+    timeout = format.get('timeout', None)
+    pause = format.get('pause', 0)
+
     if operation == 'capabilities':
         if not returns:
             log.error(banner('No NETCONF data to compare capability.'))
             return False
-        return in_capabilities(
-            list(device.server_capabilities),
-            returns
-        )
+        else:
+            result = in_capabilities(
+                list(device.server_capabilities),
+                returns
+            )
+        return negative_test != result
 
     rpc_verify = RpcVerify(
         log=log,
@@ -447,6 +462,14 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
         log.error('NETCONF message data not present')
         return False
 
+    if 'report-all' in rpc_verify.with_defaults:
+        for node in rpc_data.get('nodes', []):
+            if node.get('edit-op', '') == 'create' and node.get('default', ''):
+                log.info(
+                    'Skipping CREATE; RFC 6243 "report-all" and default exists'
+                )
+                return True
+
     if not datastore:
         log.warning('"datastore" variables not set so choosing:\n'
                     'datastore:\n  type: running\n  lock: True\n  retry: 10\n')
@@ -455,23 +478,6 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
     ds = datastore.get('type', '')
     lock = datastore.get('lock', True)
     retry = datastore.get('retry', 10)
-    format = kwargs.get('format', {})
-    auto_validate = format.get('auto-validate', True)
-    negative_test = format.get('negative-test', False)
-    timeout = format.get('timeout', None)
-    pause = format.get('pause', 0)
-
-    if pause:
-        if isinstance(pause, string_types):
-            try:
-                sleep(int(pause))
-            except ValueError:
-                try:
-                    pause = sleep(float(pause))
-                except ValueError:
-                    log.error('Invalid "pause" type {0}'.format(type(pause)))
-        else:
-            sleep(pause)
 
     if timeout:
         if isinstance(timeout, string_types):
@@ -496,7 +502,15 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
     rpc_data['operation'] = operation
 
     if operation == 'rpc':
-        # Custom RPC represented in raw string form
+        # Custom RPC represented in raw string form so check syntax
+        try:
+            et.fromstring(rpc_data['rpc'])
+        except et.XMLSyntaxError as exc:
+            log.error('Custom RPC has invalid XML:\n  {0}:'.format(str(exc)))
+            log.error('{0}'.format(str(rpc_data['rpc'])))
+            log.error(banner('NETCONF FAILED'))
+            return False
+
         result = netconf_send(
             device,
             [('rpc', {'rpc': rpc_data['rpc']})],
@@ -516,6 +530,8 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
 
     try:
         for op, reply in result:
+            if op == 'traceback':
+                break
             log.info(
                 et.tostring(
                     et.fromstring(
@@ -530,6 +546,18 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
     except Exception as exc:
         log.info('Pretty print failed: {0}'.format(str(exc)))
 
+    if pause:
+        if isinstance(pause, string_types):
+            try:
+                sleep(int(pause))
+            except ValueError:
+                try:
+                    pause = sleep(float(pause))
+                except ValueError:
+                    log.error('Invalid "pause" type {0}'.format(type(pause)))
+        else:
+            sleep(pause)
+
     # rpc-reply should show up in NETCONF log
     if not result:
         log.error(banner('NETCONF rpc-reply NOT RECIEVED'))
@@ -540,12 +568,12 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
         if '<rpc-error>' in res:
             errors.append(res)
         elif op == 'traceback':
+            log.error('TRACEBACK: {0}'.format(str(res)))
             errors.append(res)
 
     if errors:
         log.error(banner('NETCONF MESSAGE ERRORED'))
-        if not negative_test:
-            return False
+        return negative_test != False
 
     if rpc_data['operation'] == 'edit-config' and auto_validate:
         # Verify the get-config TODO: what do we do with custom rpc's?
@@ -564,7 +592,9 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
             lock=False
         )
         resp_elements = rpc_verify.process_rpc_reply(resp_xml)
-        return rpc_verify.verify_rpc_data_reply(resp_elements, rpc_data)
+        result = rpc_verify.verify_rpc_data_reply(resp_elements, rpc_data)
+        return negative_test != result
+
     elif rpc_data['operation'] in ['get', 'get-config']:
         if not returns:
             log.error(banner('No NETCONF data to compare rpc-reply to.'))
@@ -573,9 +603,10 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
         if len(result) >= 1:
             op, resp_xml = result[0]
             resp_elements = rpc_verify.process_rpc_reply(resp_xml)
-            return rpc_verify.process_operational_state(
+            verify_result = rpc_verify.process_operational_state(
                 resp_elements, returns
             )
+            return negative_test != verify_result
         else:
             log.error(banner('NO XML RESPONSE'))
             return False
@@ -585,7 +616,7 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
     elif rpc_data['operation'] == 'subscribe':
         log.info(banner('Subscribed to {0}'.format('TODO: device name')))
 
-    return True
+    return negative_test != True
 
 
 def run_gnmi(operation, device, steps,

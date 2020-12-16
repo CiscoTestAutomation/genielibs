@@ -134,7 +134,10 @@ def delete_unprotected_files(device, directory, protected, files_to_delete=None,
 
     not_protected = file_set - protected_set
     error_messages = []
-
+    log.debug("protected patterns : {}".format(protected))
+    log.debug("found files : {}".format(file_set))
+    log.debug("protected files : {}".format(protected_set))
+    log.debug("non-protected files : {}".format(not_protected))
     if not_protected:
         log.info("The following files will be deleted:\n{}".format(
             '\n'.join(not_protected)))
@@ -148,7 +151,7 @@ def delete_unprotected_files(device, directory, protected, files_to_delete=None,
                 continue
             log.info('Deleting the unprotected file "{}"'.format(file))
             try:
-                fu_device.deletefile(file, device=device)
+                fu_device.deletefile(directory+file, device=device)
             except Exception as e:
                 error_messages.append('Failed to delete file "{}" due '
                                       'to :{}'.format(file, str(e)))

@@ -21,6 +21,7 @@ log = logging.getLogger()
 def loop(self, steps, testbed, section, name, action_item):
 
     ret_list = []
+    loop_return_items = []
 
     loop_until = action_item.get('loop_until')
 
@@ -34,7 +35,6 @@ def loop(self, steps, testbed, section, name, action_item):
         # _loop function actually as a dispatcher between blitz loop and
         loop_return_items = _loop(self, step, testbed, section, action_item, ret_list,
                                   name)
-
         # Each loop is treated as one action.
         # Actions within a loop are considered as substep.
         if loop_return_items: 
@@ -82,6 +82,16 @@ def _loop(self, steps, testbed, section, action_item, ret_list, name):
     except KeyError:
         raise Exception ("There has to be at least one action to loop over.")
 
+    # until keyword that works just like while
+    # It allows user to loop while a certain condition is met
+    until = action_item.pop('until', None)
+
+    # do_until keyword that works just like do-while
+    # It allows user to run the loop once and then for
+    # every run after that the condition will be checked for each loop run
+    # the first run would happen no matter if condition is met or not
+    do_until = action_item.pop('do_until', None)
+
     # Sending to get_variable to replace saved items.
     action_item.update({'self': self})
     action_item = get_variable(**action_item)
@@ -105,16 +115,6 @@ def _loop(self, steps, testbed, section, action_item, ret_list, name):
 
     # this item would be added to kwargs of the loop (loop is behaving as an action)
     control = action_item.get('run_condition')
-
-    # until keyword that works just like while
-    # It allows user to loop while a certain condition is met
-    until = action_item.get('until')
-
-    # do_until keyword that works just like do-while
-    # It allows user to run the loop once and then for
-    # every run after that the condition will be checked for each loop run
-    # the first run would happen no matter if condition is met or not
-    do_until = action_item.get('do_until')
 
     # every_seconds to synchronize the run so each action within a loop
     # run within a bracket of time, so if action ended before this value
@@ -176,8 +176,13 @@ def _loop_helper(self,
                  iterator_=None,
                  control=None,
                  every_seconds=None):
-    conditioned = False
 
+    
+    # TODO bug with having both until and iterator
+    # TODO cant save vars in loop, enhancement needed
+
+    conditioned = False
+    
     # if condition is true, need to add the condition result to the return list
     # since the ret_list is empty at first it would surely go to the start of the list
     # conditioned keyword is set True so no looping would happens.
@@ -207,7 +212,10 @@ def _loop_helper(self,
         raise Exception('You can only have one iterable item per each loop')
 
     # need to at least have
-    if (not range_ and not iterator_) and not until and not do_until and not loop_until:
+    if (not range_ and not iterator_) \
+        and not until \
+        and not do_until \
+        and not loop_until:
         raise Exception('At least on iterable item or terminating condition')
 
     # timeout if until or do_until or loop_until are looping through infinity
@@ -229,11 +237,12 @@ def _loop_helper(self,
 
     # until condition would be sent to blitz_control
     # in order to evaluate and see if the condition is true or not
+    until_condition = None
     if until:
-        until = blitz_control(self, until, 'until')
+        until_condition = blitz_control(self, until, 'until')
 
     while not conditioned:
-
+        
         # capturing the start time of the action to calculate 
         # the duration of the action
         loop_start_time =  datetime.now()
@@ -244,7 +253,7 @@ def _loop_helper(self,
                 'The loop finished because the iterable item is parsed to the end'
             )
             break
-        if until:
+        if until_condition:
             log.info(
                 'Loop terminating condition is met, going out of this loop.')
             break
@@ -268,9 +277,8 @@ def _loop_helper(self,
 
         # running all the actions and adding the outputs of those actions to return list
         if actions:
-
+            
             ret_list.extend(list(_loop_action_parser(self, steps, testbed, section, actions, loop_until=loop_until)))
-
         if loop_until:
             # Considering that multiple actions might be looped over this
             # looks for the first pass/fail of the actions and check if it
@@ -285,9 +293,12 @@ def _loop_helper(self,
                 ret_list = ret_list[index_:index_+1]
                 break
 
-        # if terminating condition is set with key do_until run the actions at least once then check for the condition
-        if do_until:
-            until = blitz_control(self, do_until, 'do_until')
+        # if terminating condition is set with key do_until/until
+        # if condtion met update the flag to terminate the loop
+        if until:
+            until_condition = blitz_control(self, until, 'until')
+        elif do_until:
+            until_condition = blitz_control(self, do_until, 'do_until')
 
         # increase the iterator_index until it hits the iterator_len it would break then
         if iterator_len:
@@ -412,8 +423,6 @@ def _loop_action_parser(self, steps, testbed, section, actions, loop_until=None)
 
             # getting the output of the action
             yield self.dispatcher(**kwargs)
-
-
 
 def _maple_loop_configure(self, testbed, section_):
 

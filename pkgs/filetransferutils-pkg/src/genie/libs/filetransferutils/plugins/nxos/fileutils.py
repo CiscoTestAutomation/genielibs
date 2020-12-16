@@ -12,6 +12,16 @@ except ImportError:
 
 
 class FileUtils(FileUtilsDeviceBase):
+    COPY_CONFIG_TEMPLATE = '''\
+ip route {server}/32 {default_gateway}
+ip tftp source-interface {interface}
+ip ftp source-interface {interface}'''
+
+    COPY_CONFIG_VRF_TEMPLATE = '''\
+vrf context {vrf}
+  ip route {server}}/32 {default_gateway}
+ip tftp source-interface {interface} vrf {vrf}
+ip ftp source-interface {interface} vrf {vrf}'''
 
     def copyfile(self, source, destination, timeout_seconds=300,
         vrf='management', compact=False, use_kstack=False, *args, **kwargs):
@@ -69,25 +79,57 @@ class FileUtils(FileUtilsDeviceBase):
                 ...     timeout_seconds='300', device=device)
 
         """
+        # use a device passed as an argument, or the device saved as an
+        # attribute
+        device = kwargs.get('device') or getattr(self, 'device', None)
+
         # update source and destination with the valid address from testbed
-        source = self.validate_and_update_url(source, device=kwargs.get('device'),
+        source = self.validate_and_update_url(source,
+                                              device=device,
                                               vrf=vrf,
-                                              cache_ip=kwargs.get('cache_ip', True))
+                                              cache_ip=kwargs.get(
+                                                  'cache_ip', True))
         destination = self.validate_and_update_url(destination,
-                                                   device=kwargs.get('device'), vrf=vrf,
-                                                   cache_ip=kwargs.get('cache_ip', True))
-        # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl vrf management
-        if vrf:
-            # for n9k only
-            if compact:
-                cmd = 'copy {f} {t} compact vrf {vrf}'.format(f=source, t=destination, vrf=vrf)
+                                                   device=device,
+                                                   vrf=vrf,
+                                                   cache_ip=kwargs.get(
+                                                       'cache_ip', True))
+
+        p = self.get_protocol(source, destination)
+        if p == 'scp':
+            # scp flash:/memleak.tcl 10.1.0.213:/auto/tftp-ssr/memleak.tcl
+            s = source.replace('{}://'.format(p), '').replace('//', ':/')
+            d = destination.replace('{}://'.format(p), '').replace('//', ':/')
+            if vrf:
+                if compact:
+                    cmd = '{p} {s} {d} compact vrf {vrf_value}'.format(
+                        p=p, s=s, d=d, vrf_value=vrf)
+                else:
+                    cmd = '{p} {s} {d} vrf {vrf_value}'.format(p=p,
+                                                               s=s,
+                                                               d=d,
+                                                               vrf_value=vrf)
             else:
-                cmd = 'copy {f} {t} vrf {vrf}'.format(f=source, t=destination, vrf=vrf)
+                if compact:
+                    cmd = '{p} {s} {d} compact'.format(p=p, s=s, d=d)
+                else:
+                    cmd = '{p} {s} {d}'.format(p=p, s=s, d=d)
         else:
-            if compact:
-                cmd = 'copy {f} {t} compact'.format(f=source, t=destination)
+            # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl vrf managemen
+            if vrf:
+                # for n9k only
+                if compact:
+                    cmd = 'copy {f} {t} compact vrf {vrf}'.format(
+                        f=source, t=destination, vrf=vrf)
+                else:
+                    cmd = 'copy {f} {t} vrf {vrf}'.format(f=source,
+                                                          t=destination,
+                                                          vrf=vrf)
             else:
-                cmd = 'copy {f} {t}'.format(f=source, t=destination)
+                if compact:
+                    cmd = 'copy {f} {t} compact'.format(f=source, t=destination)
+                else:
+                    cmd = 'copy {f} {t}'.format(f=source, t=destination)
 
         # for n9k only
         if use_kstack:
@@ -98,7 +140,7 @@ class FileUtils(FileUtilsDeviceBase):
 
         super().copyfile(source=source, destination=destination,
             timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,
-            *args, **kwargs)
+            vrf=vrf, *args, **kwargs)
 
     def dir(self, target, timeout_seconds=300, *args, **kwargs):
         """ Retrieve filenames contained in a directory.
@@ -299,7 +341,7 @@ class FileUtils(FileUtilsDeviceBase):
         # move bootflash:memleak.tcl memleak_j.tcl
         cmd = 'move {f} {u}'.format(f=source, u=destination)
 
-        super().renamefile(source, destination, timeout_seconds, cmd, 
+        super().renamefile(source, destination, timeout_seconds, cmd,
             *args, **kwargs)
 
     def chmod(self, target, mode, timeout_seconds=300, *args, **kwargs):
@@ -447,7 +489,7 @@ class FileUtils(FileUtilsDeviceBase):
             cmd = 'copy {f} {t} vrf {vrf}'.format(f=source, t=destination,
                 vrf=vrf)
         else:
-            cmd = 'copy {f} {t}'.format(f=source, t=destination)     
+            cmd = 'copy {f} {t}'.format(f=source, t=destination)
 
         super().copyconfiguration(source=source, destination=destination,
             timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,

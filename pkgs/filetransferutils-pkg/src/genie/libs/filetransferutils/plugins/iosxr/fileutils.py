@@ -15,6 +15,20 @@ from unicon.core.errors import SubCommandFailure
 
 
 class FileUtils(FileUtilsDeviceBase):
+    COPY_CONFIG_TEMPLATE = '''\
+router static
+  address-family ipv4 unicast
+    {server}/32 {default_gateway}
+tftp client source-interface {interface}
+ftp client source-interface {interface}'''
+
+    COPY_CONFIG_VRF_TEMPLATE = '''\
+router static
+  vrf {vrf}
+    address-family ipv4 unicast
+      {server}/32 {default_gateway}
+tftp client vrf {vrf} source-interface {interface}
+ftp client vrf {vrf} source-interface {interface}'''
 
     def copyfile(self, source, destination, timeout_seconds=300,
         vrf=None, *args, **kwargs):
@@ -70,48 +84,49 @@ class FileUtils(FileUtilsDeviceBase):
                 ...     destination='running-config',
                 ...     timeout_seconds='300', device=device)
         """
+        # use a device passed as an argument, or the device saved as an
+        # attribute
+        device = kwargs.get('device') or getattr(self, 'device', None)
 
         # update source and destination with the valid address from testbed
-        source = self.validate_and_update_url(source, device=kwargs.get('device'),
+        source = self.validate_and_update_url(source,
+                                              device=device,
                                               vrf=vrf,
-                                              cache_ip=kwargs.get('cache_ip', True))
+                                              cache_ip=kwargs.get(
+                                                  'cache_ip', True))
         destination = self.validate_and_update_url(destination,
-                                                   device=kwargs.get('device'), vrf=vrf,
-                                                   cache_ip=kwargs.get('cache_ip', True))
+                                                   device=device,
+                                                   vrf=vrf,
+                                                   cache_ip=kwargs.get(
+                                                       'cache_ip', True))
 
         # Extract the server address to be used later for authentication
         used_server = self.get_server(source, destination)
-        username, _ = self.get_auth(used_server)
         ssh_protocol = {'scp', 'sftp'}
 
         # if protocol is scp or sftp
-        for p in ssh_protocol:
-            if '{}:'.format(p) in source or '{}:'.format(p) in destination:
-                # scp requires username in the address
-                if '{}:'.format(p) in source:
-                    source = username + '@' + source
-                elif '{}:'.format(p) in destination:
-                    destination = username + '@' + destination
-
-                if vrf:
-                    cmd = '{p} {s} {d} vrf {vrf_value}'.format(p=p, s=source.replace('{}://'.format(p), '').replace('//', ':/'),
-                                                               d=destination.replace('{}://'.format(p), '').replace('//', ':/'),
-                                                               vrf_value=vrf)
-                else:
-                    cmd = '{p} {s} {d}'.format(p=p, s=source.replace('{}://'.format(p), '').replace('//', ':/'),
-                                               d=destination.replace('{}://'.format(p), '').replace('//', ':/'))
-                break
-
+        p = self.get_protocol(source, destination)
+        if p in ssh_protocol:
+            s = source.replace('{}://'.format(p), '').replace('//', ':/')
+            d = destination.replace('{}://'.format(p), '').replace('//', ':/')
+            if vrf:
+                cmd = '{p} {s} {d} vrf {vrf_value}'.format(p=p,
+                                                           s=s,
+                                                           d=d,
+                                                           vrf_value=vrf)
+            else:
+                cmd = '{p} {s} {d}'.format(p=p, s=s, d=d)
         else:
             if vrf:
                 cmd = 'copy {f} {t} vrf {vrf_value}'.format(f=source,
-                    t=destination, vrf_value=vrf)
+                                                            t=destination,
+                                                            vrf_value=vrf)
             else:
                 cmd = 'copy {f} {t}'.format(f=source, t=destination)
 
         super().copyfile(source=source, destination=destination,
             timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,
-            *args, **kwargs)
+            vrf=vrf, *args, **kwargs)
 
     def dir(self, target, timeout_seconds=300, *args, **kwargs):
         """ Retrieve filenames contained in a directory.
@@ -474,4 +489,3 @@ class FileUtils(FileUtilsDeviceBase):
                 raise SubCommandFailure('File was not successfully copied')
         else:
             return output
-

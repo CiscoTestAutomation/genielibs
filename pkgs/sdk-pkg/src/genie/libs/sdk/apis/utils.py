@@ -427,6 +427,7 @@ def _copy_to_server(protocol,
                     fu_session=None,
                     quiet=False):
     remote = "{p}://{s}/{f}".format(p=protocol, s=server, f=remote_path)
+    remote = fu_session.validate_and_update_url(remote)
 
     log.info("Copying {local_path} to {remote_path}".format(
         local_path=local_path, remote_path=remote))
@@ -851,8 +852,7 @@ def copy_to_device(device,
                    timeout=300,
                    compact=False,
                    use_kstack=False,
-                   username=None,
-                   password=None,
+                   fu=None,
                    **kwargs):
     """
     Copy file from linux server to device
@@ -865,22 +865,23 @@ def copy_to_device(device,
             vrf ('str'): vrf to use (optional)
             timeout('int'): timeout value in seconds, default 300
             compact('bool'): compress image option for n9k, defaults False
-            username('str'): Username to be used during copy operation
-            password('str'): Password to be used during copy operation
+            fu('obj'): FileUtils object to use instead of creating one. Defaults to None.
             use_kstack('bool'): Use faster version of copy, defaults False
                                 Not supported with a file transfer protocol
                                 prompting for a username and password
         Returns:
             None
     """
-    fu = FileUtils.from_device(device)
+    if not fu:
+        fu = FileUtils.from_device(device)
 
-    if username:
-        # build the source address
-        source = '{p}://{u}@{s}/{f}'.format(p=protocol, u=username, s=server, f=remote_path)
+    if vrf:
+        server = fu.get_hostname(server, device, vrf=vrf)
     else:
-        # build the source address
-        source = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
+        server = fu.get_hostname(server, device)
+
+    # build the source address
+    source = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
     try:
         if vrf:
             fu.copyfile(source=source,
@@ -1005,6 +1006,7 @@ def _get_file_size_from_server(server,
              integer representation of file size in bytes
         """
     url = '{p}://{s}/{f}'.format(p=protocol, s=server, f=path)
+    url = fu_session.validate_and_update_url(url)
 
     # get file size, and if failed, raise an exception
     try:
@@ -1171,6 +1173,7 @@ def _delete_file_on_server(server,
                            fu_session=None):
 
     url = '{p}://{s}/{f}'.format(p=protocol, s=server, f=path)
+    url = fu_session.validate_and_update_url(url)
 
     try:
         return fu_session.deletefile(target=url, timeout_seconds=timeout)
@@ -1888,7 +1891,7 @@ def send_email(from_email,
                html_email=False,
                html_body=''):
     """
-        Send an email from execution server where pyATS runs. 
+        Send an email from execution server where pyATS runs.
         Plain or HTML email can be sent.
 
         Args:
@@ -2214,7 +2217,7 @@ def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_d
         expected_tos (int): Expected tos value
         expected_mpls_label (str): Expected mpls label
         check_all (bool): Check all matching packets
-    
+
     Returns:
         bool: True or False
     """
@@ -2229,7 +2232,6 @@ def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_d
             'pip install scapy') from None
 
     pcap_object = rdpcap(pcap_location)
-
 
     for packet in pcap_object:
         if IP in packet or MPLS in packet:
@@ -2299,7 +2301,7 @@ def verify_no_mpls_header(pcap_location, expected_dst_address=None):
     Args:
         pcap_location (obj): PCAP file location
         expected_dst_address (str): Destination IP address to search for
-    
+
     Returns:
         bool: True or False
     """
@@ -2329,7 +2331,7 @@ def verify_no_mpls_header(pcap_location, expected_dst_address=None):
 def save_dict_to_json_file(data, filename):
     """ merge a list of Python dictionaries into one dictionary
         and save the dictionary to a JSON file
-        If same key exists in data(dicts) which will be merged, 
+        If same key exists in data(dicts) which will be merged,
         the key will be overridden.
 
         Args:
@@ -2409,7 +2411,7 @@ def verify_pcap_packet(pcap_location, expected_src_address=None, expected_dst_ad
         expected_tos (int): Expected tos value
         expected_traffic_class (str): Expected traffic class
         check_all (bool): Check all matching packets
-    
+
     Returns:
         bool: True or False
     """
@@ -2681,3 +2683,262 @@ def get_interface_from_yaml(local, remote, number, *args, **kwargs):
     if not interface:
         raise Exception("Could not find an interface for device '{d}'".format(d=local))
     return interface
+
+def get_device_connections_info(device):
+    """ Get connection information of a device from testbed file.
+            Args:
+                device (`obj`): device object
+            Returns:
+                device.connections (`dict`)
+    """
+
+    return device.connections
+
+def get_running_config_all(device):
+    """ Return raw running configuration
+
+        Args:
+            device ('obj')  : Device object to extract configuration
+        Returns:
+            Raw output
+    """
+    if device.os == 'junos':
+        return device.execute("show configuration")
+
+    try:
+        return device.execute("show running-config all")
+    except Exception:
+        pass
+    log.info("Device doesn't have 'show running-config all'...")
+    return device.execute("show running-config")
+
+def verify_pcap_as_path(
+        pcap_location,
+        layer,
+        expected_as_path,
+    ):
+    """ Verify pcap AS path values
+    Args:
+        pcap_location (obj): PCAP file location
+        layer (str): Given target route address
+        expected_as_path (str): Expected AS path value
+
+    Returns:
+        bool: True of False
+    """
+
+    try:
+        from scapy.all import rdpcap, IP, IPv6
+        from scapy.contrib.bgp import BGPPathAttr, BGP
+    except ImportError:
+        log.info('scapy is not installed, please install it by running: '
+            'pip install scapy')
+        return False
+
+    pcap_packets = rdpcap(pcap_location)
+
+    for i in range(len(pcap_packets)):
+        packet = pcap_packets[i]
+
+        # Determine IPv4 or IPv6
+        if ':' in layer:
+            try:
+                packet_26 = IPv6(packet.load[26:])
+                packet_36 = IPv6(packet.load[36:])
+                log.info(f"IPv6(packet.load[26:]) is \n {packet_26.show()}\n\n")
+                log.info(f"IPv6(packet.load[36:]) is \n {packet_36.show()}\n\n")
+            except IndexError:
+                log.info('Failed to load packets in IndexError')
+                continue
+        else:
+            packet_26 = IP(packet.load[26:])
+            packet_36 = IP(packet.load[36:])
+
+            log.info(f"IP(packet.load[26:]) is \n {packet_26.show()}\n\n")
+            log.info(f"IP(packet.load[36:]) is \n {packet_36.show()}\n\n")
+
+        if BGPPathAttr in packet_26 or BGPPathAttr in packet_36:
+
+            # ###[ UPDATE ]###
+            #    withdrawn_routes_len= 0
+            #    \withdrawn_routes\
+            #    ...
+            #    \nlri      \
+            #     |###[ IPv4 NLRI ]###
+            #     |  prefix    = 123.123.123.0/32 <------------
+            try:
+                # IPv6:
+                # (Pdb) IPv6(pcap_packets[54].load[36:]).path_attr[-1].attribute.nlri[0].prefix
+                # '2001:123::/64'
+                if ':' in layer:
+
+                    path_attr_lists_26 = packet_26.path_attr
+                    for path_attr_item in path_attr_lists_26:
+                        try:
+                            if path_attr_item.attribute.nlri[0].prefix == layer:
+                                if (expected_as_path).to_bytes(4, byteorder='big') in pcap_packets[i].load:
+                                    return True
+                        except AttributeError:
+                            continue
+
+                    path_attr_lists_36 = packet_36.path_attr
+                    for path_attr_item in path_attr_lists_36:
+                        try:
+                            if path_attr_item.attribute.nlri[0].prefix == layer:
+                                if (expected_as_path).to_bytes(4, byteorder='big') in pcap_packets[i].load:
+                                    return True
+                        except AttributeError:
+                            continue
+                # IPv4
+                else:
+                    if packet_26.nlri[0].prefix or packet_36.nlri[0].prefix:
+                        if packet_26.nlri[0].prefix == layer or packet_36.nlri[0].prefix == layer:
+                            if (expected_as_path).to_bytes(4, byteorder='big') in pcap_packets[i].load:
+                                return True
+
+            except AttributeError:
+                continue
+
+    return False
+
+
+def verify_pcap_capability(
+        pcap_location,
+        source,
+        destination,
+        expected_capability,
+    ):
+    """ Verify pcap AS path values
+    Args:
+        pcap_location (obj): PCAP file location
+        source (str): Source address
+        destination (str): Destination address
+        expected_capability (str or int): Expected capability in string or integer
+
+    Returns:
+        bool: True of False
+    """
+    # verify code or name
+    # reference: https://www.iana.org/assignments/capability-codes/capability-codes.xhtml
+    capabilities_dict = {
+        '0': 'Reserved',
+        '1': 'Multiprotocol Extensions for BGP-4',
+        '10-63': 'Unassigned',
+        '128': 'Prestandard Route Refresh (deprecated)',
+        '129': 'Prestandard Outbound Route Filtering (deprecated), prestandard '
+                'Routing Policy Distribution (deprecated)',
+        '130': 'Prestandard Outbound Route Filtering (deprecated)',
+        '131': 'Prestandard Multisession (deprecated)',
+        '132-183': 'Unassigned',
+        '184': 'Prestandard FQDN (deprecated)',
+        '185': 'Prestandard OPERATIONAL message (deprecated)',
+        '186-238': 'Unassigned',
+        '2': 'Route Refresh Capability for BGP-4',
+        '239-254': 'Reserved for Experimental Use',
+        '255': 'Reserved',
+        '3': 'Outbound Route Filtering Capability',
+        '4': 'Multiple routes to a destination capability (deprecated)',
+        '5': 'Extended Next Hop Encoding',
+        '6': 'BGP Extended Message',
+        '64': 'Graceful Restart Capability',
+        '65': 'Support for 4-octet AS number capability',
+        '66': 'Deprecated (2003-03-06)',
+        '67': 'Support for Dynamic Capability (capability specific)',
+        '68': 'Multisession BGP Capability',
+        '69': 'ADD-PATH Capability',
+        '7': 'BGPsec Capability',
+        '70': 'Enhanced Route Refresh Capability',
+        '71': 'Long-Lived Graceful Restart (LLGR) Capability',
+        '72': 'Routing Policy Distribution',
+        '73': 'FQDN Capability',
+        '74-127': 'Unassigned',
+        '8': 'Multiple Labels Capability',
+        '9': 'BGP Role (TEMPORARY - registered 2018-03-29, extension registered '
+            '2020-03-20, expires 2021-03-29)'}
+
+    try:
+        from scapy.all import rdpcap, IP, IPv6
+        from scapy.contrib.bgp import BGPPathAttr, BGP
+    except ImportError:
+        log.info('scapy is not installed, please install it by running: '
+            'pip install scapy')
+        return False
+
+    # read pcap file
+    pcap_packets = rdpcap(pcap_location)
+
+    for packet in pcap_packets:
+
+        #    ###[ OPEN ]###
+        #    version   = 4
+        #    my_as     = 1
+        #    hold_time = 90
+        #    bgp_id    = 1.1.1.1
+        #    opt_param_len= 30
+        #    \opt_params\
+        #     |###[ Optional parameter ]###
+        #         |  param_type= Capabilities
+        #         |  param_length= 6
+        #         |  \param_value\
+        #         |   |###[ Support for 4-octet AS number capability ]###
+        #         |   |  code      = Support for 4-octet AS number capability
+        #         |   |  length    = 4
+        #         |   |  asn       = 1
+
+        if ':' in source:
+            try:
+                packet_26 = IPv6(packet.load[26:])
+                packet_36 = IPv6(packet.load[36:])
+                log.info(f"IPv6(packet.load[26:]) is \n {packet_26.show()}\n\n")
+                log.info(f"IPv6(packet.load[36:]) is \n {packet_36.show()}\n\n")
+            except IndexError:
+                continue
+        else:
+            packet_26 = IP(packet.load[26:])
+            packet_36 = IP(packet.load[36:])
+
+            log.info(f"IP(packet.load[26:]) is \n {packet_26.show()}\n\n")
+            log.info(f"IP(packet.load[36:]) is \n {packet_36.show()}\n\n")
+
+        try:
+            # IPv6
+            # (Pdb) IPv6(pcap_packets[449].load[36:]).show()
+            if ':' in source:
+                opt_params_lst = packet_26[IPv6].opt_params or packet_36[IPv6].opt_params
+
+            # IPv4:
+            else:
+                opt_params_lst = packet_26[IP].opt_params or packet_36[IP].opt_params
+
+            for opt_param in opt_params_lst:
+
+                # Given capability code, find its context
+                if type(expected_capability) == int:
+                    expected_capability = capabilities_dict[str(expected_capability)]
+
+                # packet_26[IP].opt_params[0].param_value.name
+                # -> 'Multiprotocol Extensions for BGP-4'
+                if opt_param.param_value.name == expected_capability:
+                    return True
+
+        except AttributeError:
+            continue
+
+    return False
+
+def get_connected_alias(device):
+    """ Get connected alias from device object
+
+        Args:
+            device ('obj')  : Device object
+        Returns:
+            aliases (`dict`) : dict with alias key with value
+                               which contains all related info
+                               for the connection
+    """
+    aliases = {}
+    connections = device.connectionmgr.connections
+
+    for alias in connections.keys():
+        aliases.setdefault(alias, connections[alias].__dict__)
+    return aliases

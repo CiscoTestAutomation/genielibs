@@ -27,7 +27,7 @@ from genie.metaparser.util.schemaengine import Optional
 from unicon.eal.dialogs import Statement, Dialog
 
 # Logger
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 #===============================================================================

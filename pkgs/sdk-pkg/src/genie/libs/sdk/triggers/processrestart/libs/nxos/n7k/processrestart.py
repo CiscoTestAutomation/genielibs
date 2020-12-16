@@ -58,7 +58,13 @@ class ProcessRestartLib(ProcessRestartLibNxos):
             restore_state = State(name='config', pattern=r'^.(%N\(config\))#\s?')
             return
 
-        self.device.execute('exit', timeout=10)
+        self.device.instantiate()
+        if 'vty' == self.device.connectionmgr.connections.cli.via:
+            time.sleep(60)
+            self.device.destroy()
+            self.device.connect(via='vty')
+        else:
+            self.device.execute('exit', timeout=10)
 
         # Set pattern
         restore_state = State(name='config', pattern=r'^.(%N\(config\))#\s?')

@@ -6,8 +6,8 @@ import os.path
 import lxml.etree as et
 
 sys.path = ['.', '..'] + sys.path
-from blitz.rpcverify import RpcVerify
-from blitz.rpcbuilder import YSNetconfRPCBuilder, RpcInputError
+from genie.libs.sdk.triggers.blitz.rpcverify import RpcVerify
+from genie.libs.sdk.triggers.blitz.rpcbuilder import YSNetconfRPCBuilder, RpcInputError
 
 
 # TODO: Needs to be part of genielibs test run

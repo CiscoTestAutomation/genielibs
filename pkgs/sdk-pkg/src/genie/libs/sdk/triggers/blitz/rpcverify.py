@@ -26,6 +26,7 @@ class EvalDatatype:
     def __init__(self, value, field):
         """Usage: EvalDatatype(opfield).evalute()"""
         self.min_max_failed = False
+        self.bool_failed = False
         self.value = value
         self.field = field
 
@@ -68,7 +69,27 @@ class EvalDatatype:
             if self.value < self.min or self.value > self.max:
                 self.min_max_failed = True
         elif datatype == 'boolean':
-            self.fval = bool(field.get('value'))
+            if field.get('op') not in ['==', '!=']:
+                self.bool_failed = True
+            if self.value in [1, '1', 'true']:
+                self.value = 'true'
+            elif self.value in [0, '0', 'false']:
+                self.value = 'false'
+            else:
+                self.bool_failed = True
+            if str(field.get('value')).lower() in ['1', 'true']:
+                self.fval = 'true'
+            elif str(field.get('value')).lower() in ['0', 'false']:
+                self.fval = 'false'
+            else:
+                self.bool_failed = True
+        elif datatype == 'identityref':
+            # TODO: basetype is string so might not get identityref.
+            # strip prefix from values
+            val = field.get('value')
+            self.fval = val[val.find(':') + 1:]
+            val = self.value
+            self.value = val[val.find(':') + 1:]
         else:
             self.fval = field.get('value')
         self.op = field.get('op')
@@ -82,17 +103,15 @@ class EvalDatatype:
             return False
         if self.min_max_failed:
             return False
+        if self.bool_failed:
+            return False
         if self.datatype == 'pattern':
             self.value = re.findall(self.fval, self.value)
             if self.value:
                 self.fval = self.value
         if self.op == '==':
-            if self.datatype == 'boolean':
-                return bool(self.value) == bool(self.fval)
             return self.value == self.fval
         elif self.op == '!=':
-            if self.datatype == 'boolean':
-                return bool(self.value) == bool(self.fval)
             return self.value != self.fval
         elif self.op == '<':
             return self.value < self.fval
@@ -500,6 +519,8 @@ class RpcVerify():
                             failed_type = '"{0}" MIN-MAX FAILED'.format(
                                 evaldt.datatype
                             )
+                        elif evaldt.bool_failed:
+                            failed_type = 'BOOLEAN FAILED'
                         log.error(log_msg.format(
                                 field['xpath'], str(value),
                                 field['op'], str(field['value']),
@@ -518,7 +539,7 @@ class RpcVerify():
 
         return True
 
-    def process_operational_state(self, response, opfields):
+    def process_operational_state(self, response, returns):
         """Test NETCONF or GNMI operational state response.
 
         Args:
@@ -530,6 +551,8 @@ class RpcVerify():
           bool: True if successful.
         """
         result = True
+        list_entry_found = []
+        opfields = returns
 
         if not opfields:
             log.error(
@@ -542,26 +565,41 @@ class RpcVerify():
             )
             return False
 
-        for reply, reply_xpath in response:
-            if self.et.iselement(reply):
-                # NETCONF response
-                value_state = self._process_values(reply, '')
-                value = value_state.get('reply_val', 'empty')
-                name = self.et.QName(reply).localname
-            else:
-                # GNMI response
-                value = reply
-                name = reply_xpath[reply_xpath.rfind('/') + 1:]
+        if isinstance(response[0], tuple):
+            # yang.connector only returned one list of fields
+            response = [response]
+
+        for resp in response:
+            for reply, reply_xpath in resp:
+                if self.et.iselement(reply):
+                    # NETCONF response
+                    value_state = self._process_values(reply, '')
+                    value = value_state.get('reply_val', 'empty')
+                    name = self.et.QName(reply).localname
+                else:
+                    # GNMI response
+                    value = reply
+                    name = reply_xpath[reply_xpath.rfind('/') + 1:]
+                for field in opfields:
+                    if field.get('selected', True) is False:
+                        opfields.remove(field)
+                        continue
+                    if 'xpath' in field and field['xpath'] == reply_xpath and \
+                            name == field['name']:
+                        if not self.check_opfield(value, field):
+                            result = False
+                        opfields.remove(field)
+                        list_entry_found.append(field)
+                        break
+
+            # reset for next entry
+            opfields = returns
+
+        for entry in list_entry_found:
+            # Now see how many fields were found
             for field in opfields:
-                if field.get('selected', True) is False:
+                if field == entry:
                     opfields.remove(field)
-                    continue
-                if 'xpath' in field and field['xpath'] == reply_xpath and \
-                        name == field['name']:
-                    if not self.check_opfield(value, field):
-                        result = False
-                    opfields.remove(field)
-                    break
 
         if opfields:
             # Missing fields in rpc-reply
@@ -695,7 +733,15 @@ class RpcVerify():
     # Pattern to detect prefix in the key name
     RE_FIND_KEY_PREFIX = re.compile(r'\[.*?:')
 
-    def verify_rpc_data_reply(self, response, rpc_data, opfields=[]):
+    def verify_rpc_data_reply(self, response, rpc_data):
+        """Construct a GET based off an edit message and verify results.
+
+        Args:
+          response (tuple): Value, Xpath value is associated with.
+          rpc_data (dict): Xpaths and values associated to edit message.
+        Returns
+          bool: True = passed, False = failed.
+        """
         nodes = []
         par_xp = ''
         del_parent = False
@@ -710,7 +756,6 @@ class RpcVerify():
             log.info('WITH DEFAULTS - NOT SUPPORTED')
 
         for node in rpc_data.get('nodes', []):
-            list_rpc = False
             edit_op = node.get('edit-op')
             default = node.get('default')
             xpath = re.sub(self.RE_FIND_KEYS, '', node.get('xpath', ''))

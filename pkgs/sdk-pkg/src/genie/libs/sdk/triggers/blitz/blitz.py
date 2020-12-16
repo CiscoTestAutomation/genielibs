@@ -22,7 +22,7 @@ from .actions import actions
 from .blitz_loop import loop
 from .blitz_parallel import parallel
 from .blitz_control import blitz_control, control
-from .markup import get_variable, apply_dictionary_filter, apply_regex_filter, save_variable
+from .markup import get_variable, filter_dispatcher, save_variable
 
 log = logging.getLogger(__name__)
 
@@ -30,8 +30,8 @@ log = logging.getLogger(__name__)
 class Blitz(Trigger):
     '''Apply some configuration, validate some keys and remove configuration'''
     def __iter__(self, *args, **kwargs):
-
         for section in self._discover():
+            
             if loopable(section):
                 for iteration in get_iterations(section):
                     new_section = section.__testcls__(
@@ -39,6 +39,7 @@ class Blitz(Trigger):
                         uid=iteration.uid,
                         parameters=iteration.parameters,
                         parent=self)
+                    
                     yield new_section
             else:
                 new_section = section.__testcls__(section, parent=self)
@@ -97,7 +98,7 @@ class Blitz(Trigger):
             return
 
         for action_item in data:
-
+            
             if not action_item or not isinstance(action_item, dict):
                 raise Exception("{} is an invalid input".format(str(action_item)))
 
@@ -193,8 +194,9 @@ class Blitz(Trigger):
                 save_variable(self, 'section', section)
                 save_variable(self, 'runtime', runtime)
                 save_variable(self, 'testscript.name', self.uid.split('.')[0])
-                save_variable(self, 'task.id', runtime.tasks._tasks[len(runtime.tasks._tasks) -1].taskid)
+                save_variable(self, 'task.id', runtime.tasks._tasks[-1].taskid)
 
+                # Action starts.
                 with steps.start(step_msg,
                                  continue_=continue_,
                                  description=description) as step:
@@ -244,9 +246,10 @@ class Blitz(Trigger):
                     kwargs['section'] = section
                     kwargs['name'] = name
 
+                    
                     if action in actions:
                         # Call the action with all the arguments
-                        action_output = actions[action](**kwargs)
+                        action_output = actions[action](**kwargs) 
                     else:
                         # Call custom action
                         _self = kwargs.pop('self')
@@ -260,62 +263,28 @@ class Blitz(Trigger):
 
                         kwargs['self'] = _self
 
-                    # step.result will be stored in action_alias for future use
-                    if action_alias:
-                        save_variable(self, action_alias, step.result)
-
-
                     # saving actions and outputs and their results in vars
-                    # storing all the necessary return values in a dict to be saved later in reporting parallel actions
+                    # storing all the necessary return values in a dict to be
+                    # saved later in reporting parallel actions
                     ret_dict.update({'action': action,
                                      'description': description,
                                      'step_result': step.result,
                                      'alias': action_alias,
                                      'saved_vars': {}})
 
-                    # filtering and saving process, ability of saving multiple vars
-                    for item in save:
+                    # step.result will be stored in action_alias for future use
+                    if action_alias:
+                        save_variable(self, action_alias, str(step.result))
+                        ret_dict['saved_vars'].update({action_alias: str(step.result)})
 
-                        # Filtering the action output and saving the output
-                        # Saving the variable in self.parameters
-                        filters = item.get('filter')
-                        save_dict = {}
+                    # Apply proper filter  (regex filter, dq filter, list filter) on an output
+                    # Then save the filtered output in the value
+                    filter_dispatcher(self, ret_dict, save, action_output)
 
-                        # specify regex true if want to apply regex to an action execute output and extract values
-                        if item.get('regex'):
-                            output = apply_regex_filter(self,
-                                                        action_output,
-                                                        filters=filters)
-                            save_dict = output
-
-                        # saving non regex variables, using usual save_variable
-                        else:
-                            save_variable_name = item.get('variable_name')
-                            output = apply_dictionary_filter(self,
-                                                             action_output,
-                                                             filters=filters)
-                            save_dict.update({save_variable_name: output})
-
-                        for save_variable_name, output in save_dict.items():
-                            save_variable(self, save_variable_name, output,
-                                          item.get('append'),
-                                          item.get('append_in_list'))
-
-                        if filters:
-                            log.info(
-                                'Applied filter: {} to the action {} output'.
-                                format(filters, action))
-                            ret_dict.update({'filters': filters})
-                            # updating the return dictionary with the saved value
-                        ret_dict['saved_vars'].update(save_dict)
-
-        # Storing section results
-        save_variable(self, section.uid, str(section.result))
         # strictly because of use in maple
         save_variable(self,
                       self.uid.split('.')[0] + '.' + section.uid,
                       str(section.result))
-            
 
         # if continue == false ...
         if not section_continue and section.result != Passed:
@@ -325,16 +294,13 @@ class Blitz(Trigger):
 
         return ret_dict
 
-
 @aetest.setup
 def setup_section(self, steps, testbed, section=None, data=None):
     return self.dispatcher(steps, testbed, section, data)
 
-
 @aetest.test
 def test_section(self, steps, testbed, section=None, data=None):
     return self.dispatcher(steps, testbed, section, data)
-
 
 @aetest.cleanup
 def cleanup_section(self, steps, testbed, section=None, data=None):

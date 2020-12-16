@@ -95,6 +95,6 @@ def configure_interfaces_unshutdown(device, interfaces):
     for interface in interfaces:
         config_cmd = ["interface {interface}".format(interface=interface), "no shutdown"]
     try:
-        device.configure(config_cmd)
+        device.configure(config_cmd, prompt_recovery=True)
     except SubCommandFailure as e:
         log.error('Failed to enable interfaces on device {}: {}'.format(device.name, e))

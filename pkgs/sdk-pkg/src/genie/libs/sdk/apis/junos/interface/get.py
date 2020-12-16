@@ -202,11 +202,11 @@ def get_interface_speed(device, interface, bit_size='gbps'):
             continue
 
         if 'kbps' in speed_:
-            speed_ = int(re.sub(r'[a-z,]', '', speed_)) / speed_matrix['kbps'][bit_size]
+            speed_ = int(re.sub(r'[a-zA-Z,]', '', speed_)) / speed_matrix['kbps'][bit_size]
         elif 'mbps' in speed_:
-            speed_ = int(re.sub(r'[a-z,]', '', speed_)) / speed_matrix['mbps'][bit_size]
+            speed_ = int(re.sub(r'[a-zA-Z,]', '', speed_)) / speed_matrix['mbps'][bit_size]
         else:
-            speed_ = int(re.sub(r'[a-z,]', '', speed_)) / speed_matrix['gbps'][bit_size]
+            speed_ = int(re.sub(r'[a-zA-Z,]', '', speed_)) / speed_matrix['gbps'][bit_size]
         return speed_
 
 def get_interface_output_error_drops(device, interface):
@@ -594,3 +594,43 @@ def get_interface_queue_counters_transmitted_byte_rate(device, interface, expect
     if not transmitted_byte_rate:
         return None
     return transmitted_byte_rate
+
+def get_interfaces_description(device, interface=None):
+    """Get the description of given interface via 'show interfaces descriptions {interface}'
+        Args:
+            device ('obj'): Device object
+            interface('str'): Interface name, default: None
+
+        Returns:
+            Boolean
+
+        Raises:
+            None
+    """
+
+    try:
+        out = device.parse('show interfaces descriptions {interface}'.format(
+            interface=interface
+        ))
+    except SchemaEmptyParserError as e:
+        return None
+
+    # Sample output
+    # {
+    # "interface-information": {
+    #     "physical-interface": [
+    #         {
+    #             "admin-status": "up",
+    #             "description": "none/100G/in/hktGCS002_ge-0/0/0", <------------ 
+    #             "name": "ge-0/0/0", <---- Given interface
+    #             "oper-status": "up",
+    #         },  
+    # ...
+    
+    physical_interface_list = out.q.get_values('physical-interface', None)
+
+    for intf in physical_interface_list:
+        if intf['name'] == interface:
+            return intf['description']
+
+    return None

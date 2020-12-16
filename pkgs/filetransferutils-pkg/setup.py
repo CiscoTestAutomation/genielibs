@@ -24,7 +24,7 @@ def find_version(*paths):
     raise RuntimeError("Unable to find version string.")
 
 # generate package dependencies
-install_requires=['unicon']
+install_requires=['unicon', 'pyftpdlib', 'tftpy']
 
 entry_points = {
     'pyats.utils.fileutils.plugins' : [
@@ -35,12 +35,16 @@ entry_points = {
         'junos = genie.libs.filetransferutils.plugins.junos',
         'linux = genie.libs.filetransferutils.plugins.linux',
     ],
+    'pyats.easypy.plugins': [
+        'fileserver = genie.libs.filetransferutils.fileserver.plugin:'
+        'fileserver_plugin'
+    ]
 }
 
 # launch setup
 setup(
     name = 'genie.libs.filetransferutils',
-    version = find_version('src', 'genie', 'libs', 
+    version = find_version('src', 'genie', 'libs',
                            'filetransferutils', '__init__.py'),
 
     # descriptions

@@ -34,17 +34,20 @@ class FileUtils(FileUtilsDeviceBase):
         parsed_source = self.parse_url(source)
         parsed_dest = self.parse_url(destination)
         used_server = self.get_server(source, destination)
-        username, _ = self.get_auth(used_server)
+        username, passwd = self.get_auth(used_server)
+        if passwd:
+            auth = '%s:%s' % (username, passwd)
+        else:
+            auth = username
 
-        # for junos we need to put username in the address.. so reconstruct it here
-        if parsed_dest.netloc:
-            destination = ''.join(
-                [parsed_dest.scheme, '://', username, '@', parsed_dest.netloc,
-                 parsed_dest.path])
-        if parsed_source.netloc:
-            source = ''.join(
-                [parsed_source.scheme, '://', username, '@', parsed_source.netloc,
-                 parsed_source.path])
+        # for junos we need to put only the username in the address, reconstruct
+        # here
+        if parsed_dest.netloc and '@' in destination:
+            # Remove any password in destination
+            destination = destination.replace(auth, username, 1)
+        if parsed_source.netloc and '@' in source:
+            # Remove any password in source
+            source = source.replace(auth, username, 1)
         cmd = 'file copy {s} {d}'.format(s=source, d=destination)
 
         super().copyfile(source=source, destination=destination,
@@ -60,7 +63,7 @@ class FileUtils(FileUtilsDeviceBase):
 
         # Check if file exists
         output = self.device.parse('file list {}'.format(target))
-        
+
         # Create list
         for directory in output['dir']:
             if 'files' in output['dir'][directory]:
@@ -79,7 +82,7 @@ class FileUtils(FileUtilsDeviceBase):
 
         # Check if file exists
         output = self.device.parse('file list {}'.format(target))
-        
+
         # Create list
         for directory in output['dir']:
             if 'files' in output['dir'][directory]:

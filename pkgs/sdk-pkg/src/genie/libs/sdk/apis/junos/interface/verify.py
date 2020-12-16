@@ -80,6 +80,8 @@ def verify_interface_load_balance(device,
     load_balance_interfaces,
     interface=None,
     zero_bps_interfaces=None,
+    traffic_upper_limit_interfaces=None,
+    traffic_upper_limit=None,
     expected_tolerance=10,
     max_time=30, check_interval=10,
     extensive=False):
@@ -90,6 +92,8 @@ def verify_interface_load_balance(device,
             load_balance_interfaces (`list`): List of interfaces to check load balance
             interface (`str`): Pass interface in show command
             zero_bps_interfaces (`list`): List of interfaces to check zero as bps value
+            traffic_upper_limit_interfaces (`list`): List of interfaces to check upper limit value
+            traffic_upper_limit (`int`): Upper limit bps value
             expected_tolerance (`int`): Expected tolerance in load balance of interfaces
             max_time (`int`): Max time, default: 60
             check_interval (`int`): Check interval, default: 10
@@ -176,7 +180,29 @@ def verify_interface_load_balance(device,
                     ))
                     result = False
                     break
+        
+        if traffic_upper_limit_interfaces and traffic_upper_limit:
+            log.info('Load balance of interfaces {traffic_upper_limit_interfaces}'
+                ' should be less than or equal to "{traffic_upper_limit}" bps'.format(
+                    traffic_upper_limit_interfaces=traffic_upper_limit_interfaces,
+                    traffic_upper_limit=traffic_upper_limit
+                ))
 
+            for logical_intf in traffic_upper_limit_interfaces:
+                intf_output_bps = device.api.get_interface_logical_output_bps(
+                    interface=interface,
+                    logical_interface=logical_intf,
+                    extensive=True,
+                    output_dict=out)
+
+                if not intf_output_bps or int(intf_output_bps) > int(traffic_upper_limit):
+                    log.info('Interface {logical_intf} is not "{traffic_upper_limit}" bps'.format(
+                        logical_intf=logical_intf,
+                        traffic_upper_limit=traffic_upper_limit
+                    ))
+                    result = False
+                    break
+        
         if result:
             return True
         
@@ -402,5 +428,179 @@ def verify_interface_errors(device,
 
         timeout.sleep()
         continue
+
+    return False
+
+def verify_interface_total_queue_counters_dropped_packets(device, interface, expected_queue_packet_count, 
+    extensive=False, max_time=60, check_interval=10):
+    """ Veirfy queue counters dropped based on interfaces queue
+
+        Args:
+            device ('obj'): Device object
+            interface('str'): Interface name
+            expected_queue_packet_count ('dict'): Queue number as key and expected count as value
+            extensive ('str'): Flag to check extensive in command
+            max_time (`int`, Optional): Max time, default: 60 seconds
+            check_interval (`int`, Optional): Check interval, default: 10 seconds
+        Returns:
+            Boolean
+
+        Raises:
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            if extensive:
+                out = device.parse('show interfaces extensive {interface}'.format(
+                    interface=interface.split('.')[0]
+                ))
+            else:
+                out = device.parse('show interfaces {interface}'.format(
+                    interface=interface.split('.')[0]
+                ))
+        except SchemaEmptyParserError as e:
+            timeout.sleep()
+            continue
+        result = True
+        for expected_queue_number in expected_queue_packet_count:
+            expected_count = str(expected_queue_packet_count[expected_queue_number])
+            current_count = out.q.get_values('queue-counters-total-drop-packets', int(expected_queue_number))
+            if expected_count != current_count:
+                log.info('Expected count is {expected_count} for queue {expected_queue_number} '
+                    'but found {current_count}'.format(
+                        expected_count=expected_count,
+                        expected_queue_number=expected_queue_number,
+                        current_count=current_count
+                    ))
+                result = False
+                break
+        if result:
+            return True
+        timeout.sleep()
+    return False
+
+def verify_traffic_statistics_data(device, interface, expected_input_packet=None, expected_output_packet=None,
+                                   max_time=60, check_interval=10):
+    """ Verify queue counters dropped based on interfaces queue
+
+        Args:
+            device ('obj'): Device object
+            interface('str'): Interface name
+            expected_input_packet ('str'): input packet
+            expected_output_packet ('str'): output packet
+            max_time (`int`, Optional): Max time, default: 60 seconds
+            check_interval (`int`, Optional): Check interval, default: 10 seconds
+        Returns:
+            Boolean
+
+        Raises:
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse('show interfaces extensive {interface}'.format(
+                interface=interface
+            ))
+        except SchemaEmptyParserError as e:
+            timeout.sleep()
+            continue
+        
+        #"traffic-statistics": {
+        #                        "input-bytes": "19732539397",
+        #                        "input-packets": "133726363",
+        #                       }
+        actual_input_packet_list = Dq(out).contains('traffic-statistics').get_values('input-packets')
+        actual_output_packet_list = Dq(out).contains('traffic-statistics').get_values('output-packets')
+
+        if expected_input_packet and str(expected_input_packet) in actual_input_packet_list:
+            return True
+
+        if expected_output_packet and str(expected_output_packet) in actual_output_packet_list:
+            return True
+        
+        timeout.sleep()
+
+    return False
+
+def verify_no_interface_errors(device,
+                               interface,
+                               type=None,
+                               max_time=30,
+                               check_interval=10):
+    """ Verify interface input and output errors
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Pass interface in show command
+            type (`str`, Optional): Error type to check. Options are 'input', 'output', and None
+            max_time (`int`, Optional): Max time, default: 60 seconds
+            check_interval (`int`, Optional): Check interval, default: 10 seconds
+
+        Returns:
+            result (`bool`): Verified result
+        Raises:
+            N/A
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse(
+                'show interfaces extensive {interface}'.format(interface=interface))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # Sample output
+        # {"interface-information": {
+        #     "physical-interface": [
+        #         {
+        #             "input-error-list": {
+        #                 "framing-errors": "0",
+        #                 "input-discards": "0",
+        #                 "input-drops": "0",
+        #                 "input-errors": "0",
+        #                 "input-fifo-errors": "0",
+        #                 "input-l2-channel-errors": "0",
+        #                 "input-l2-mismatch-timeouts": "0",
+        #                 "input-l3-incompletes": "0",
+        #                 "input-resource-errors": "0",
+        #                 "input-runts": "0"
+        #             },
+        #             "output-error-list": {
+        #                 "aged-packets": "0",
+        #                 "carrier-transitions": "0",
+        #                 "hs-link-crc-errors": "0",
+        #                 "mtu-errors": "0",
+        #                 "output-collisions": "0",
+        #                 "output-drops": "0",
+        #                 "output-errors": "0",
+        #                 "output-fifo-errors": "0",
+        #                 "output-resource-errors": "0"
+        #             },
+        #             ...
+
+        if type and type.lower() == 'input':
+            errors = ['input']
+        elif type and type.lower() == 'output':
+            errors = ['output']
+        elif type == None:
+            errors = ['input', 'output']
+        else:
+            raise ValueError('Valid types are "input", "output" and None')
+
+        con = False
+        for error in errors:
+            err_data = out.q.contains("{}-error-list".format(error))
+            if any([int(e.value) for e in err_data]):
+                con = True
+        
+        if con:
+            timeout.sleep()
+            continue
+
+        return True
 
     return False

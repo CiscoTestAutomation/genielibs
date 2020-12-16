@@ -118,13 +118,11 @@ def configure(self,
     output = None
     with steps.start("Configuring '{device}'".\
                     format(device=device.name), continue_=continue_) as step:
-
-        output = configure_handler(self, step, device, command, expected_failure, **kwargs)
+        output = configure_handler(step, device, command, expected_failure, **kwargs)
 
     notify_wait(steps, device)
 
     return output
-
 
 @add_result_as_extra
 def parse(self,
@@ -153,8 +151,7 @@ def parse(self,
                     format(c=command, d=device.name), continue_=continue_) as step:
         
         arguments = kwargs.get('arguments', None)
-        output = parse_handler(self,
-                               step,
+        output = parse_handler(step,
                                device,
                                command,
                                include=include,
@@ -195,8 +192,7 @@ def execute(self,
     with steps.start("Executing '{c}' on '{d}'".\
                     format(c=command, d=device.name), continue_=continue_) as step:
 
-        output = execute_handler(self,
-                                 step,
+        output = execute_handler(step,
                                  device,
                                  command,
                                  include=include,
@@ -237,8 +233,7 @@ def api(self,
     with steps.start("Calling API '{f}' on '{d}'".\
                     format(f=function, d=device.name), continue_=continue_) as step:
 
-        output = api_handler(self,
-                             step,
+        output = api_handler(step,
                              device,
                              function,
                              include=include,
@@ -274,20 +269,20 @@ def learn(self,
           health_sections=None):
 
     # action learn
+    output = None
     with steps.start("Learning '{f}' on '{d}'".\
                     format(f=feature, d=device.name), continue_=continue_) as step:
 
         output = learn_handler(
-            self,
-            step,
-            device,
-            feature,
-            include=include,
-            exclude=exclude,
-            max_time=max_time,
-            check_interval=check_interval,
-            continue_=continue_,
-            expected_failure=expected_failure
+                                step,
+                                device,
+                                feature,
+                                include=include,
+                                exclude=exclude,
+                                max_time=max_time,
+                                check_interval=check_interval,
+                                continue_=continue_,
+                                expected_failure=expected_failure
         )
 
     return output
@@ -307,6 +302,7 @@ def compare(self,
 
     # action compare
     if not items:
+
         steps.failed('No item is provided for comparision')
 
     for comp_item in items:
@@ -333,7 +329,6 @@ def sleep(self,
     log.info('Sleeping for {s} seconds'.format(s=sleep_time))
     time.sleep(float(sleep_time))
 
-
 @add_result_as_extra
 def rest(self,
          device,
@@ -356,22 +351,22 @@ def rest(self,
          **kwargs):
 
     # action rest
+    output = None
     with steps.start("Submitting a '{m}' call to a REST API on '{d}'".\
                     format(m=method, d=device.name), continue_=continue_) as step:
 
-        output = rest_handler(self,
-                            device,
-                            method,
-                            step,
-                            expected_failure=expected_failure,
-                            continue_=continue_,
-                            include=include,
-                            exclude=exclude,
-                            max_time=max_time,
-                            check_interval=check_interval,
-                            connection_alias=connection_alias,
-                            *args,
-                            **kwargs)
+        output = rest_handler(device,
+                              method,
+                              step,
+                              expected_failure=expected_failure,
+                              continue_=continue_,
+                              include=include,
+                              exclude=exclude,
+                              max_time=max_time,
+                              check_interval=check_interval,
+                              connection_alias=connection_alias,
+                              *args,
+                              **kwargs)
 
     return output
 
@@ -428,7 +423,6 @@ def yang(self,
         notify_wait(steps, device)
 
     return result
-
 
 @add_result_as_extra
 def configure_replace(self,
@@ -501,7 +495,6 @@ def save_config_snapshot(self,
     # To keep track of snapshots (whether they are deleted or not)
     self.restore[device].snapshot_deleted = False
 
-
 @add_result_as_extra
 def restore_config_snapshot(self,
                             device,
@@ -562,11 +555,11 @@ def bash_console(self,
                  **kwargs):
 
     # action bash_console
+    output = None
     with steps.start("Executing bash commands on '{d}'".\
                     format(d=device.name), continue_=continue_) as step:
 
-        output = bash_console_handler(self,
-                                      device,
+        output = bash_console_handler(device,
                                       step,
                                       commands,
                                       expected_failure=expected_failure,
@@ -605,7 +598,7 @@ def genie_sdk(self,
 
 
 @add_result_as_extra
-def print(self,
+def print_(self,
           steps,
           section,
           name,
@@ -697,7 +690,7 @@ actions = {
     'sleep': sleep,
     'yang': yang,
     'learn': learn,
-    'print': print,
+    'print': print_,
     'rest': rest,
     'configure_replace': configure_replace,
     'save_config_snapshot': save_config_snapshot,

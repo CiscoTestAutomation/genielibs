@@ -26,7 +26,7 @@ def parallel(self, steps, testbed, section, name, data):
                 getattr(
                     steps, run_condition['function']
                 )('Condition is met the parallel block step result is set to {f}'
-                  .format(run_condition['function']))
+                  .format(f=run_condition['function']))
             else:
                 data.pop(0)
 
@@ -81,7 +81,7 @@ def _parallel(self, pcall_returns, step):
 
         if each_return.get('alias'):
             save_variable(self, each_return['alias'],
-                          each_return['step_result'])
+                          str(each_return['step_result']))
 
         if each_return.get('saved_vars'):
             for saved_var_name, saved_var_data in each_return.get(

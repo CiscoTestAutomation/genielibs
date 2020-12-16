@@ -14,5 +14,5 @@ class ImageHandler(IosxeImageHandler):
             package information
         '''
         install_packages = self.device.clean.setdefault('install_image_and_packages', {})
-        install_packages.update({'image': self.images})
+        install_packages.update({'image': self.image})
         install_packages.update({'packages': self.packages})

@@ -32,5 +32,3 @@ def get_running_config_dict(device, option=None):
 
     config_dict = get_config_dict(out)
     return config_dict
-
-

@@ -45,6 +45,7 @@ from genie.libs import ops
 from genie.libs import sdk
 from genie.libs import parser
 from genie.libs.sdk.libs.utils.normalize import GroupKeys
+from genie.utils import Dq
 
 # 3rd party
 import requests
@@ -2377,7 +2378,9 @@ def disable_clear_traffic(section, clear_stats_time=10):
 
     return
 
-def delete_configuration(section, devices, templates_dir=None, template_name=None, jinja2_parameters=None, exclude_devices=None, timeout=60):
+def delete_configuration(section, devices, include_os=None, exclude_os=None, 
+    templates_dir=None, template_name=None, jinja2_parameters=None, 
+    exclude_devices=None, include_devices=None, timeout=60):
     
     '''
     Delete configuration on device as processors. 
@@ -2433,6 +2436,22 @@ def delete_configuration(section, devices, templates_dir=None, template_name=Non
 
     log.info(banner("processor: 'delete_configuration'"))
 
+    if exclude_devices:
+        log.info("Excluded devices by exclude_devices: {exclude_devices}".format(
+            exclude_devices=exclude_devices))
+    
+    if include_devices:
+        log.info("Included devices by include_devices: {include_devices}".format(
+            include_devices=include_devices))
+    
+    if include_os:
+        log.info("Included OS by include_os: {include_os}"
+                    .format(include_os=include_os))
+
+    if exclude_os:
+        log.info("Excluded OS by exclude_os: {exclude_os}"
+                    .format(exclude_os=exclude_os))
+
     # Initialize testbed object
     testbed = section.parameters['testbed']
     
@@ -2464,11 +2483,10 @@ def delete_configuration(section, devices, templates_dir=None, template_name=Non
     for name, dev in device_config.items():
         
         if exclude_devices and name in exclude_devices:
-            log.info("{dev} is excluded".format(dev=name))
             continue
         
-        log.info("Executing 'delete_configuration' processor on '{dev}'"
-                 .format(dev=name))
+        if include_devices and name not in include_devices:
+            continue
 
         if name not in testbed.devices:
             log.warning("Skipping '{dev}' as it does not exist in the testbed"
@@ -2478,12 +2496,21 @@ def delete_configuration(section, devices, templates_dir=None, template_name=Non
         # Find device from testbed yaml file based on device name
         device = testbed.devices[name]
 
+        if include_os and device.os not in include_os:
+            continue
+        
+        if exclude_os and device.os in exclude_os:
+            continue
+
         # Check if device is connected
         if not device.is_connected():
             log.warning("Skipping '{dev}' as it is not connected"
                         .format(dev=name))
             continue
-
+        
+        log.info("Executing 'delete_configuration' processor on '{dev}'"
+                 .format(dev=name))
+                 
         try:
             # Check if templates_dir and template_name is passed, else fail the section
             templates_dir_local = dev.get('templates_dir', templates_dir)
@@ -2593,3 +2620,148 @@ def configure_replace(section, devices, timeout=60):
         except Exception as e:
             section.failed("Failed to replace config : {}".format(str(e)))
         log.info("Configure replace is done for device {}".format(name))
+
+def reconnect(section, devices, include_os=None, exclude_os=None, 
+    exclude_devices=None, include_devices=None):
+    
+    '''
+    Reconnect devices as processors. 
+    Will removing configuration by passing arguments in Jinja2 template
+ 
+    Can be controlled via sections parameters which is provided by the datafile
+
+    Example:
+        sections:
+            Setup:
+                processors:
+                    post:
+                        reconnect:
+                            method: genie.libs.sdk.libs.abstracted_libs.processors.reconnect
+                            parameters:
+                                include_os: List of os to be included
+                                exclude_os: List of os to be excluded
+                                exclude_devices: List of devices to be excluded
+                                include_devices: List of devices to be excluded
+                                devices: Optional -> When none, will try to fetch all devices from testbed yaml file.
+                                    all: # In case need to apply configuration on all devices
+                                        max_time: Maximum time to retry connection
+                                        check_interval: Repeat after intervale
+                                        sleep_disconnect: Sleep after disconnect
+                                        connect_parameters:
+                                            <key>: <value>
+                                    GenieRouter: # Device
+                                        max_time: Maximum time to retry connection
+                                        check_interval: Repeat after intervale
+                                        sleep_disconnect: Sleep after disconnect
+                                        connect_parameters:
+                                            <key>: <value>
+    Args:
+        section (`obj`) : Aetest Subsection object.
+        Parameters: Parameters passed from trigger data file.
+            include_os: List of os to be included
+            exclude_os: List of os to be excluded
+            exclude_devices: List of devices to be excluded
+            include_devices: List of devices to be excluded
+            devices:
+                GenieRouter: # Device
+                    max_time: Maximum time to retry connection
+                    check_interval: Repeat after intervale
+                    sleep_disconnect: Sleep after disconnect
+                    connect_parameters:
+                        <key>: <value>
+    Returns:
+        AETEST results
+
+    Raises:
+        None
+    '''
+
+    log.info(banner("processor: 'reconnect'"))
+
+    if exclude_devices:
+        log.info("Excluded devices by exclude_devices: {exclude_devices}".format(
+            exclude_devices=exclude_devices))
+    
+    if include_devices:
+        log.info("Included devices by include_devices: {include_devices}".format(
+            include_devices=include_devices))
+    
+    if include_os:
+        log.info("Included OS by include_os: {include_os}"
+                    .format(include_os=include_os))
+
+    if exclude_os:
+        log.info("Excluded OS by exclude_os: {exclude_os}"
+                    .format(exclude_os=exclude_os))
+
+    # Initialize testbed object
+    testbed = section.parameters['testbed']
+    
+    device_config = {}
+    for name, dev in devices.items():
+        if name == 'all':
+            for testbed_device in list(testbed.devices.keys()):
+                device_dict = device_config.setdefault(testbed_device, {})
+                sleep_disconnect_local = dev.get('sleep_disconnect', 60)
+                connect_parameters_local = dev.get('connect_parameters', {})
+                device_dict.update({'sleep_disconnect': sleep_disconnect_local})
+                device_dict.update({'connect_parameters': connect_parameters_local})
+        else:
+            device_dict = device_config.setdefault(name, {})
+            sleep_disconnect_local = dev.get('sleep_disconnect', 60)
+            connect_parameters_local = dev.get('connect_parameters', {})
+            device_dict.update({'sleep_disconnect': sleep_disconnect_local})
+            device_dict.update({'connect_parameters': connect_parameters_local})
+    
+    # Loop each devices passed in datafile with it's parameters
+    for name, dev in device_config.items():
+        
+        if exclude_devices and name in exclude_devices:
+            continue
+        
+        if include_devices and name not in include_devices:
+            continue
+
+        if name not in testbed.devices:
+            log.warning("Skipping '{dev}' as it does not exist in the testbed"
+                        .format(dev=name))
+            continue
+        
+        # Find device from testbed yaml file based on device name
+        device = testbed.devices[name]
+
+        if include_os and device.os not in include_os:
+            continue
+        
+        if exclude_os and device.os in exclude_os:
+            continue
+
+        # Check if device is connected
+        if not device.connected:
+            log.warning("Skipping '{dev}' as it is not connected"
+                        .format(dev=name))
+            continue
+        
+        log.info("Executing 'reconnect' processor on '{dev}'"
+                 .format(dev=name))
+                 
+        try:
+            # Check if templates_dir and template_name is passed, else fail the section
+            sleep_disconnect_local = dev.get('sleep_disconnect', None)
+            connect_parameters_local = dev.get('connect_parameters', {})
+
+            log.info("Destroying current connection")
+            device.destroy_all()
+            log.info("Connection destroyed")
+            via_local = connect_parameters_local.pop('via', None)
+            if not via_local:
+                via_local = Dq(device.connections).contains('defaults').get_values('via', 0)
+            if via_local:
+                dev['connect_parameters'].update({'via': via_local})
+            
+            device.connect(**connect_parameters_local)
+
+        except Exception as e:
+            section.failed(
+                "Failed to configure the device {} with the error: {}".format(
+                    device.name, str(e)))

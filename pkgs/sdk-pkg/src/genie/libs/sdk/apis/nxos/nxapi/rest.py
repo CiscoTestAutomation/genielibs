@@ -113,12 +113,7 @@ def nxapi_method_nxapi_rest(device, action, commands='', input_type='cli',
     if action in convert_option_mapper:
         # from the response get the dictionary with a result
         if isinstance(output, list):
-            for item in output:
-                result = item.get('result')
-                if not result:
-                    continue
-                output = item
-                break
+            output = output[-1]
 
         output = output.get('result', {}).get('msg')
 

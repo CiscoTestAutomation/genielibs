@@ -5,7 +5,7 @@ import logging
 
 # pyATS
 from pyats.easypy import runtime
-from pyats.results import Passed, Passx
+from pyats.results import Passed, Passx, Errored
 from pyats.aetest.steps import Steps
 
 # Genie
@@ -346,7 +346,9 @@ class Health(Blitz):
                         #     health_sections: section1
                         # - api:               # all sections
                         #     function: func2
-                        if args_in_yaml_flag and arg_name == 'health_sections':
+                        if (args_in_yaml_flag and arg_name == 'health_sections'
+                            ) and (not Dq(item).get_values('health_sections')
+                                   and not Dq(item).get_values('health_uids')):
                             search_keywords = ['.*']
                         else:
                             search_keywords = None
@@ -385,7 +387,7 @@ class Health(Blitz):
                                 if len(new_data_dict) == 1:
                                     new_data_flag = True
         else:
-            new_data_flag = True
+            new_data_flag = bool(new_data_dict)
 
         log.debug('new_data_flag: {f}'.format(f=new_data_flag))
 
@@ -420,6 +422,8 @@ class Health(Blitz):
 
         for each_data in self._get_actions(data):
             for key in each_data:
+                log.debug('processor_targets: {pt}'.format(pt=processor_targets))
+                log.debug('processor: {p}'.format(p=each_data[key].get('processor','both')))
                 if each_data[key].get('processor',
                                       'both') in processor_targets:
                     # check if device for action is connected
@@ -471,6 +475,8 @@ class Health(Blitz):
                     data = [data]
                 else:
                     data = []
+            else:
+                data = temp_data
         else:
             data = temp_data
         # remove section if no data
@@ -502,11 +508,10 @@ class Health(Blitz):
                 pre_processor_result = steps.result
                 return pre_processor_run, pre_processor_result
             elif processor_type == 'post':
-                # refrect result to section
-                getattr(
-                    section,
-                    str(steps.result + steps.result +
-                        self.pre_processor_result))()
+                # refrect processor results to section
+                processor.result += steps.result
+                section.result = section.result + processor.result + self.pre_processor_result
+
                 return pre_processor_run, pre_processor_result
         else:
             if processor_type == 'pre':
@@ -524,8 +529,8 @@ class Health(Blitz):
                         'Pre-processor result are different.Reflecting '
                         'Post-processor result to Section.'
                     )
-                    getattr(section,
-                            str(section.result + pre_processor_result))()
+                    # reflect processor results to section
+                    section.result = section.result + processor.result + self.pre_processor_result
                 log.info(
                     "Post-processor pyATS Health '{name}' was skipped because devices are not connected."
                     .format(name=name))
@@ -591,6 +596,7 @@ class Health(Blitz):
         Returns:
             None
         """
+
         if 'genie' not in testbed.__module__:
             # convert testbed from pyATS to Genie
             testbed = Converter.convert_tb(runtime.testbed)
@@ -621,8 +627,9 @@ class Health(Blitz):
         try:
             yield
         except Exception as e:
-            # for case section gets Exception
-            section.errored(e)
+            # make section Errored when exception happens
+            section.result = Errored.clone('Caught exception in %s' % str(section),
+                               data = {'traceback': e})
 
         # ----------------------
         # post-context processor

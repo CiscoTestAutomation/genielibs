@@ -186,6 +186,7 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
     # Get available free space on device
     available_space = device.api.get_available_space(directory=destination,
                                                  output=dir_out)
+    log.debug('available_space: {avs}'.format(avs=available_space))
 
     # Check if available space is sufficient
     if min_free_space_percent:
@@ -232,6 +233,7 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
         log.info("Sending 'show version' to learn the current running images")
 
         image = device.api.get_running_image()
+        log.info("Adding running image '{image}' to the protected files list".format(image=image))
         if isinstance(image, list):
             protected_files.extend([os.path.basename(i) for i in image])
         else:
@@ -247,23 +249,29 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
         for file in dq.get_values('files'):
             file_list.append((file, int(dq.contains(file).get_values('size')[0])))
         file_list.sort(key=lambda x: x[1], reverse=True)
+        log.debug('file_list: {fl}'.format(fl=file_list))
 
-        # append files to delete list until the deleted file sizes reaches the target,
+        # append files to delete list and check if it could create available space
+        available_space_flag = False
         to_delete = []
         remaining_size = required_size
         for file, size in file_list:
-
-            # break if we reach the target
+            # check if we reach the target
             if remaining_size < available_space:
+                available_space_flag = True
+                log.info('Found enough files that can be deleted in order to create enough free space.')
                 break
             # if the file is protected, move skip and check next one in the list
             elif file in protected_files:
                 continue
 
             to_delete.append(file)
+            log.debug('adding {f} to to_delete list'.format(f=file))
             remaining_size -= size
+            log.debug('updated remaining_size: {rs}'.format(rs=remaining_size))
+
         # if target can not be reached, aka loop is not broken, fail
-        else:
+        if not available_space_flag and file_list:
             if min_free_space_percent:
                 log.error(
                     'It is not possible to reach the target free space percentage after deleting all '
@@ -412,3 +420,24 @@ def execute_copy_run_to_start(device, command_timeout=300, max_time=120,
         # No break
         raise Exception('Failed to save running-config to startup-config')
 
+def execute(device, *args, **kwargs):
+    ''' execute command to device
+        Args:
+            device (`obj`): Device object
+        Return:
+            output (`str`): output from command on device
+    '''
+    output = ''
+    # get connected aliases
+    connected_aliases = device.api.get_connected_alias()
+
+    for alias, connection_dict in connected_aliases.items():
+        # check if CLI(Unicon), or not
+        if 'unicon' in connection_dict['connection_provider'].__module__:
+            output = getattr(device, alias).execute(*args, **kwargs)
+            return output
+
+    if connected_aliases:
+        raise Exception('Found aliases {a}, but not CLI(Unicon).'.format(a=connected_aliases.keys()))
+    else:
+        raise Exception('No connected alias found.')

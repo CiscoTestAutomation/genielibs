@@ -289,7 +289,7 @@ class StageOutputs:
             http://www.opensource.org/licenses/gpl-2.0.php and
             http://opensource.org/licenses/gpl-3.0.html and
             http://www.opensource.org/licenses/lgpl-2.1.php and
-            http://www.gnu.org/licenses/old-licenses/library.txt.          
+            http://www.gnu.org/licenses/old-licenses/library.txt.
 
             Software
               BIOS: version 08.26
@@ -305,16 +305,16 @@ class StageOutputs:
 
               Device name: switch
               bootflash:   20971520 kB
-            Kernel uptime is 0 day(s), 0 hour(s), 8 minute(s), 13 second(s)           
+            Kernel uptime is 0 day(s), 0 hour(s), 8 minute(s), 13 second(s)
 
-            Last reset at 235176 usecs after  Thu Mar  3 04:40:48 2016            
+            Last reset at 235176 usecs after  Thu Mar  3 04:40:48 2016
 
               Reason: Reset due to upgrade
               System version: 7.0(3)I1(2)
-              Service:           
+              Service:
 
             plugin
-              Core Plugin, Ethernet Plugin            
+              Core Plugin, Ethernet Plugin
 
             Active Package(s):
         ''',
@@ -406,7 +406,7 @@ class StageOutputs:
             51770306560 bytes total
         ''',
 
-        'copy ftp://20.1.1.1/nxos.9.3.1_N95.bin bootflash:/nxos.9.3.1_N95.bin vrf management': '''\
+        'copy ftp://rcpuser:password@20.1.1.1/nxos.9.3.1_N95.bin bootflash:/nxos.9.3.1_N95.bin vrf management': '''\
             N95#copy ftp://20.1.1.1/nxos.9.3.1.bin bootflash:nxos.9.3.1_N95.bin vrf management
                 ***** Transfer of file Completed Successfully *****
             Copy complete, now saving to disk (please wait)...
@@ -430,7 +430,7 @@ class StageOutputs:
                             'software': '9.3(1)IIC9(0.4)',
                             'status': 'ok'}},
                     '22':
-                        {'Fabric Module': 
+                        {'Fabric Module':
                             {'hardware': '1.2',
                             'mac_address': 'NA',
                             'model': 'N9K-C9504-FM',
@@ -498,8 +498,8 @@ class StageOutputs:
                             'status': 'active'}}}}},
 
         'show version': {
-            'platform': 
-                {'hardware': 
+            'platform':
+                {'hardware':
                     {'bootflash': '20971520 kB',
                     'chassis': 'Nexus9000 C9516',
                     'cpu': 'Intel(R) Xeon(R) CPU E5-2403 0 @ 1.80GHz',
@@ -517,7 +517,7 @@ class StageOutputs:
                 'name': 'Nexus',
                 'os': 'NX-OS',
                 'reason': 'Reset due to upgrade',
-                'software': 
+                'software':
                     {'bios_compile_time': '06/12/2016',
                     'bios_version': '08.26',
                     'system_compile_time': '2/8/2016 20:00:00 [02/09/2016 05:18:17]',
@@ -526,7 +526,7 @@ class StageOutputs:
 
         'show boot': {
             'current_boot_variable':
-                {'sup_number': 
+                {'sup_number':
                     {'sup-1':
                         {'boot_poap': 'Disabled',
                         'system_variable': 'bootflash:nxos.9.3.1_N95.bin'}}},
@@ -580,7 +580,7 @@ class StageOutputs:
                     {'date': 'Apr 27 2020',
                     'size': '52',
                     'time': '06:51:59'},
-                'test_copy_N95.txt':  
+                'test_copy_N95.txt':
                     {'date': 'Apr 27 2020',
                     'size': '52',
                     'time': '06:47:22'},

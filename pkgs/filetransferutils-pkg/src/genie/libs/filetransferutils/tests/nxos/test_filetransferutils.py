@@ -45,7 +45,7 @@ class test_filetransferutils(unittest.TestCase):
     raw1 = '''
         copy bootflash:/virtual-instance.conf ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf vrf management
         Enter username: rcpuser
-        Password: 
+        Password:
         ***** Transfer of file Completed Successfully *****
         Copy complete.
     '''
@@ -70,7 +70,7 @@ class test_filetransferutils(unittest.TestCase):
 
     raw3 = '''
         delete bootflash:new_file.tcl
-        Do you want to delete "/new_file.tcl" ? (yes/no/abort)   [y] 
+        Do you want to delete "/new_file.tcl" ? (yes/no/abort)   [y]
     '''
 
     raw4 =  '''
@@ -80,7 +80,7 @@ class test_filetransferutils(unittest.TestCase):
     raw5 = '''
         show clock > ftp://10.1.7.250//auto/tftp-ssr/show_clock vrf management
         Enter username: rcpuser
-        Password: 
+        Password:
         ***** Transfer of file Completed Successfully *****
     '''
 
@@ -105,12 +105,12 @@ class test_filetransferutils(unittest.TestCase):
         Warning: Permanently added '1.1.1.1' (ECDSA) to the list of known hosts.
         Outbound-ReKey for 1.1.1.1:22
         Inbound-ReKey for 1.1.1.1:22
-        myuser@1.1.1.1's password: 
+        myuser@1.1.1.1's password:
         Connected to 1.1.1.1.
-        sftp> put  /var/tmp/vsh/R3_nx-running-config  /home/virl 
+        sftp> put  /var/tmp/vsh/R3_nx-running-config  /home/virl
         Uploading /var/tmp/vsh/R3_nx-running-config to /home/virl/R3_nx-running-config
-        /var/tmp/vsh/R3_nx-running-config                                               
-                                                                                                                                                                                                                                                                                                                                    /var/tmp/vsh/R3_nx-running-config                                                                                                                                                                                                                                                                                                                                                                                                                                                            100%   14KB 355.1KB/s   00:00    
+        /var/tmp/vsh/R3_nx-running-config
+                                                                                                                                                                                                                                                                                                                                    /var/tmp/vsh/R3_nx-running-config                                                                                                                                                                                                                                                                                                                                                                                                                                                            100%   14KB 355.1KB/s   00:00
     '''
     raw9 = '''
         copy bootflash:/virtual-instance.conf ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf vrf management
@@ -131,7 +131,7 @@ class test_filetransferutils(unittest.TestCase):
     outputs['move bootflash:mem_leak.tcl new_file.tcl'] = raw4
     outputs['show clock > ftp://1.1.1.1//auto/tftp-ssr/show_clock vrf management'] = raw5
     outputs['copy running-config tftp://10.1.7.250//auto/tftp-ssr/test_config.py vrf management'] = raw7
-    outputs['copy running-config sftp://1.1.1.1//home/virl vrf management'] = raw8
+    outputs['copy running-config sftp://myuser@1.1.1.1//home/virl vrf management'] = raw8
     outputs['copy bootflash:/virtual-instance.conf '
         'ftp://10.1.0.214//auto/tftp-ssr/virtual-instance.conf vrf management']\
          = raw9
@@ -184,9 +184,9 @@ class test_filetransferutils(unittest.TestCase):
                                                                 device=self.device)
         servername_url = self.fu_device.validate_and_update_url('sftp://server_name//home/virl',
                                                                 device=self.device)
-        self.assertEqual(not_reachable_url, 'sftp://1.1.1.1//home/virl')
-        self.assertEqual(reachable_url, 'sftp://1.1.1.1//home/virl')
-        self.assertEqual(servername_url, 'sftp://1.1.1.1//home/virl')
+        self.assertEqual(not_reachable_url, 'sftp://myuser@1.1.1.1//home/virl')
+        self.assertEqual(reachable_url, 'sftp://myuser@1.1.1.1//home/virl')
+        self.assertEqual(servername_url, 'sftp://myuser@1.1.1.1//home/virl')
         self.device.testbed.servers.server_name['address'] = '1.1.1.1'
 
 

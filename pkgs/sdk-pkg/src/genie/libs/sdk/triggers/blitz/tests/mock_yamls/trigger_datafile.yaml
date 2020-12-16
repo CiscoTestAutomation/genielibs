@@ -1,0 +1,12 @@
+test: 
+    groups: ['test']
+    description: Modifying the testcase description 
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.blitz.blitz.Blitz
+    devices: ['PE1']
+    test_sections:
+        - section:
+            - execute:
+                device: PE1
+                command: show version

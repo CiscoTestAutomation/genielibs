@@ -12,6 +12,17 @@ except ImportError:
 
 
 class FileUtils(FileUtilsDeviceBase):
+    COPY_CONFIG_TEMPLATE = '''\
+ip route {server} 255.255.255.255 {default_gateway}
+ip ftp source-interface {interface}
+ip tftp source-interface {interface}
+ip tftp blocksize 8192'''
+
+    COPY_CONFIG_VRF_TEMPLATE = '''\
+ip route vrf {vrf} {server} 255.255.255.255 {default_gateway}
+ip ftp source-interface {interface}
+ip tftp source-interface {interface}
+ip tftp blocksize 8192'''
 
     def copyfile(self, source, destination, timeout_seconds=300,
         vrf=None, *args, **kwargs):
@@ -67,27 +78,48 @@ class FileUtils(FileUtilsDeviceBase):
                 ...     destination='running-config',
                 ...     timeout_seconds='300', device=device)
         """
-        # update source and destination with the valid address from testbed
-        source = self.validate_and_update_url(source, device=kwargs.get('device'),
-                                              vrf=vrf,
-                                              cache_ip=kwargs.get('cache_ip', True))
-        destination = self.validate_and_update_url(destination,
-                                                   device=kwargs.get('device'), vrf=vrf,
-                                                   cache_ip=kwargs.get('cache_ip', True))
+        # use a device passed as an argument, or the device saved as an
+        # attribute
+        device = kwargs.get('device') or getattr(self, 'device', None)
 
-        # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
-        if vrf:
-            cmd = 'copy {f} {t} vrf {vrf_value}'.format(f=source,
-                t=destination, vrf_value=vrf)
+        # update source and destination with the valid address from testbed
+        source = self.validate_and_update_url(source,
+                                              device=device,
+                                              vrf=vrf,
+                                              cache_ip=kwargs.get(
+                                                  'cache_ip', True))
+        destination = self.validate_and_update_url(destination,
+                                                   device=device,
+                                                   vrf=vrf,
+                                                   cache_ip=kwargs.get(
+                                                       'cache_ip', True))
+
+        p = self.get_protocol(source, destination)
+        if p == 'scp':
+            # scp flash:/memleak.tcl 10.1.0.213:/auto/tftp-ssr/memleak.tcl
+            s = source.replace('{}://'.format(p), '').replace('//', ':/')
+            d = destination.replace('{}://'.format(p), '').replace('//', ':/')
+            if vrf:
+                cmd = '{p} {s} {d} vrf {vrf_value}'.format(p=p,
+                                                           s=s,
+                                                           d=d,
+                                                           vrf_value=vrf)
+            else:
+                cmd = '{p} {s} {d}'.format(p=p, s=s, d=d)
         else:
-            cmd = 'copy {f} {t}'.format(f=source, t=destination)
+            # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
+            if vrf:
+                cmd = 'copy {f} {t} vrf {vrf_value}'.format(f=source,
+                    t=destination, vrf_value=vrf)
+            else:
+                cmd = 'copy {f} {t}'.format(f=source, t=destination)
 
         # Extract the server address to be used later for authentication
         used_server = self.get_server(source, destination)
 
         super().copyfile(source=source, destination=destination,
             timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,
-            *args, **kwargs)
+            vrf=vrf, *args, **kwargs)
 
     def dir(self, target, timeout_seconds=300, *args, **kwargs):
         """ Retrieve filenames contained in a directory.
@@ -296,7 +328,7 @@ class FileUtils(FileUtilsDeviceBase):
         # rename bootflash:memleak.tcl memleak_j.tcl
         cmd = 'rename {f} {u}'.format(f=source, u=destination)
 
-        super().renamefile(source, destination, timeout_seconds, cmd, 
+        super().renamefile(source, destination, timeout_seconds, cmd,
             *args, **kwargs)
 
     def chmod(self, target, mode, timeout_seconds=300, *args, **kwargs):

@@ -297,14 +297,14 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
                         format(device.name)) as step:
 
         reload_dialog = Dialog([
-        Statement(pattern=r".*System configuration has been modified\. Save\? \[yes\/no\].*",
-                  action='sendline(yes)' if save_system_config else 'sendline(no)',
-                  loop_continue=True,
-                  continue_timer=False),
-        Statement(pattern=r".*Proceed with reload\? \[confirm\].*",
-                  action='sendline()',
-                  loop_continue=False,
-                  continue_timer=False),
+            Statement(pattern=r".*System configuration has been modified\. Save\? \[yes\/no\].*",
+                      action='sendline(yes)' if save_system_config else 'sendline(no)',
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r".*Proceed with reload\? \[confirm\].*",
+                      action='sendline()',
+                      loop_continue=False,
+                      continue_timer=False),
         ])
 
         # Using sendline, as we dont want unicon boot to kick in and send "boot"

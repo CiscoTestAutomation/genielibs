@@ -2,8 +2,12 @@
 import sys
 import unittest
 import logging
+from time import time
+
 sys.path = ['.', '..'] + sys.path
-from blitz.rpcverify import RpcVerify
+
+from  genie.libs.sdk.triggers.blitz import yangexec
+from  genie.libs.sdk.triggers.blitz.rpcverify import RpcVerify
 
 
 # TODO: Needs to be part of genielibs test run
@@ -285,6 +289,220 @@ basic-mode=explicit&also-supported=report-all-tagged']
         resp = self.rpcv.process_rpc_reply(oper)
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
+
+    def test_operational_state_boolean_datatype(self):
+        """Check opfields with boolean 1, true, 0, and false."""
+        oper = self.operstate.replace('5', 'true')
+        oper = oper.replace('330', '1')
+        oper = oper.replace('17', 'false')
+        oper = oper.replace('16', '0')
+        opfields = [
+            {'selected': 'true',
+             'name': 'in-unicast-pkts',
+             'xpath': '/interfaces-state/interface/statistics/in-unicast-pkts',
+             'value': 'TRUE',
+             'datatype': 'boolean',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'in-octets',
+             'xpath': '/interfaces-state/interface/statistics/in-octets',
+             'value': 'true',
+             'datatype': 'boolean',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'out-discards',
+             'xpath': '/interfaces-state/interface/statistics/out-discards',
+             'value': '0',
+             'datatype': 'boolean',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'out-errors',
+             'xpath': '/interfaces-state/interface/statistics/out-errors',
+             'value': 'False',
+             'datatype': 'boolean',
+             'op': '=='}]
+
+        resp = self.rpcv.process_rpc_reply(oper)
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
+    def test_operational_state_identityref_datatype(self):
+        """Check opfields identityref values."""
+        oper = self.operstate.replace('5', 'oc-policy-types:L2VPN')
+        oper = oper.replace('330', 'openconfig-policy-types:L2VPN')
+        oper = oper.replace('17', 'L2VPN')
+        oper = oper.replace('16', 'oc-policy-types:L2VPN')
+        opfields = [
+            {'selected': 'true',
+             'name': 'in-unicast-pkts',
+             'xpath': '/interfaces-state/interface/statistics/in-unicast-pkts',
+             'value': 'openconfig-policy-types:L2VPN',
+             'datatype': 'identityref',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'in-octets',
+             'xpath': '/interfaces-state/interface/statistics/in-octets',
+             'value': 'oc-policy-types:L2VPN',
+             'datatype': 'identityref',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'out-discards',
+             'xpath': '/interfaces-state/interface/statistics/out-discards',
+             'value': 'openconfig-policy-types:L2VPN',
+             'datatype': 'identityref',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'out-errors',
+             'xpath': '/interfaces-state/interface/statistics/out-errors',
+             'value': 'L2VPN',
+             'datatype': 'identityref',
+             'op': '=='}]
+
+        resp = self.rpcv.process_rpc_reply(oper)
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
+
+class Device:
+    server_capabilities = []
+
+
+def netconf_send(*args, **kwargs):
+    global operstate
+    return [('rpc', operstate)]
+
+
+class TestRpcRun(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.log = log
+        cls.cap = ['urn:ietf:params:netconf:capability:with-defaults:1.0?\
+basic-mode=explicit&also-supported=report-all-tagged']
+
+    def setUp(self):
+        self.format = {
+            'auto_validate': True,
+            'negative_test': False,
+            'pause': 0,
+            'timeout': 30
+        }
+        self.rpc_data = {
+            'datastore': 'running',
+            'namespace': {'ios': 'http://cisco.com/ns/yang/Cisco-IOS-XE-native',
+                        'ios-bgp': 'http://cisco.com/ns/yang/Cisco-IOS-XE-bgp'},
+            'nodes': [
+                {'datatype': '',
+                'edit-op': 'create',
+                'nodetype': 'list',
+                'xpath': '/ios:native/ios:router/ios-bgp:bgp[ios-bgp:id="100"]/ios-bgp:address-family/ios-bgp:no-vrf/ios-bgp:ipv4[ios-bgp:af-name="unicast"]'}
+            ],
+            'operation': 'edit-config'
+        }
+        self.device = Device()
+        self.device.server_capabilities = self.cap
+        self.returns = [{
+            'id': 1,
+            'name': 'name',
+            'op': '==',
+            'selected': True,
+            'value': 'genericstring',
+            'xpath': '/acl/acl-sets/acl-set/state/name',
+        }]
+        self.rpc = {'rpc': '<rpc><bad-rpc/></rpc>'}
+
+    def test_auto_validate_off(self):
+        """Check if auto_validate False does not try validation."""
+        self.format['auto_validate'] = False
+        yangexec.netconf_send = netconf_send
+
+        result = yangexec.run_netconf(
+            'edit-config',
+            self.device,
+            None,  # steps
+            {},  # datastore
+            self.rpc_data,
+            self.returns[0],
+            format=self.format
+        )
+        self.assertTrue(result)
+
+    def test_auto_validate_on(self):
+        """Check if auto_validate True will try validation."""
+        yangexec.netconf_send = netconf_send
+        result = yangexec.run_netconf(
+            'edit-config',
+            self.device,
+            None,  # steps
+            {},  # datastore
+            self.rpc_data,
+            self.returns[0],
+            format=self.format
+        )
+        self.assertFalse(result)
+
+    def test_edit_config_negative_test_on(self):
+        """Check if edit-config test will pass with failure."""
+        self.format['negative_test'] = True
+        yangexec.netconf_send = netconf_send
+        result = yangexec.run_netconf(
+            'edit-config',
+            self.device,
+            None,  # steps
+            {},  # datastore
+            self.rpc_data,
+            self.returns,
+            format=self.format
+        )
+        self.assertTrue(result)
+
+    def test_get_negative_test_on(self):
+        """Check if GET test will pass with failure."""
+        self.format['negative_test'] = True
+        yangexec.netconf_send = netconf_send
+        result = yangexec.run_netconf(
+            'get',
+            self.device,
+            None,  # steps
+            {},  # datastore
+            self.rpc_data,
+            self.returns,
+            format=self.format
+        )
+        self.assertTrue(result)
+
+    def test_pause_on(self):
+        """Check if pause 5 seconds operates correctly."""
+        self.format['pause'] = 5
+        yangexec.netconf_send = netconf_send
+        n1 = time()
+        log.info('Pausing 5 seconds...')
+        yangexec.run_netconf(
+            'edit-config',
+            self.device,
+            None,  # steps
+            {},  # datastore
+            self.rpc_data,
+            self.returns[0],
+            format=self.format
+        )
+        self.assertGreater(time() - n1, 4)
+
+    def test_custom_rpc_bad_xml(self):
+        """Send invalid custom RPC and make sure it fails."""
+        self.rpc_data['operation'] = 'rpc'
+        self.rpc_data['rpc'] = '<top><next>odusrej></next></top>'
+        yangexec.netconf_send = netconf_send
+        result = yangexec.run_netconf(
+            'edit-config',
+            self.device,
+            None,  # steps
+            {},  # datastore
+            self.rpc_data,
+            self.returns[0],
+            format=self.format
+        )
+        self.assertFalse(result)
 
 
 if __name__ == '__main__':

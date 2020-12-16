@@ -1,0 +1,51 @@
+
+devices:
+  PE1:
+    alias: uut
+    connections:
+      cli:
+        ip: 1.1.1.1
+        port: 10
+        protocol: telnet
+      defaults:
+        via: cli
+    credentials:
+      default:
+        password: password
+        username: username
+      enable:
+        password: username
+    custom:
+      abstraction:
+        order:
+        - os
+        - platform
+    os: iosxe
+    platform: iosxe
+    type: CSR1000v
+  PE2:
+    connections:
+      cli:
+        ip: 1.1.1.1
+        port: 20
+        protocol: telnet
+      defaults:
+        via: cli
+    credentials:
+      default:
+        password: password
+        username: username
+      enable:
+        password: username
+    custom:
+      abstraction:
+        order:
+        - os
+        - platform
+    os: iosxe
+    platform: iosxe
+    type: CSR1000v
+testbed:
+  name: cisco_live_mgmt-FHjmKu
+
+

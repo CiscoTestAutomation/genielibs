@@ -1,4 +1,6 @@
 # 2020
 
-* [Sept](2020/SEPT.md)
-* [Aug](2020/AUG.md)
+* [December](2020/DECEMBER.md)
+* [October](2020/OCTOBER.md)
+* [September](2020/SEPTEMBER.md)
+* [August](2020/AUGUST.md)

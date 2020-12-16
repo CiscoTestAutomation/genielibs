@@ -1031,3 +1031,24 @@ def get_interface_ipv4_address(device, interface):
     if ip_dict:
         ip = list(ip_dict)[0]
     return ip
+
+def get_interface_names(device):
+    """Gets the names of all interfaces on the device
+
+    Args:
+        device (obj): Device object
+
+    Returns:
+        list: List of interface names
+    """
+
+    try:
+        out = device.parse('show ip interface brief').get('interface', {})
+    except Exception:
+        try:
+            out = device.parse('show interfaces')
+        except SchemaEmptyParserError as e:
+            log.error('No interface information found')
+            return None
+
+    return [name for name in out.keys()]

@@ -89,9 +89,12 @@ class FileUtils(FileUtilsCommonDeviceBase):
                 ...     timeout_seconds='300', device=device)
         """
 
+        with self.file_transfer_config(used_server, **kwargs):
+            self.send_cli_to_device(cli=cmd,
+                                    timeout_seconds=timeout_seconds,
+                                    used_server=used_server,
+                                    **kwargs)
 
-        self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds,
-            used_server=used_server, **kwargs)
 
 
     def parsed_dir(self, target, timeout_seconds, dir_output, *args, **kwargs):
@@ -144,11 +147,11 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
         # Extract device from the keyword arguments, if not passed raise an
         # AttributeError
-        if 'device' in kwargs:
-            device = kwargs['device']
-        else:
+
+        device = kwargs.get('device') or getattr(self, 'device', None)
+        if not device:
             raise AttributeError("Device object is missing, can't proceed with"
-                             " execution")
+                                 " execution")
 
         # Call the parser
 
@@ -205,9 +208,10 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
         # Extract device from the keyword arguments, if not passed raise an
         # AttributeError
-        if 'device' not in kwargs:
-            raise AttributeError("Devisce object is missing, can't proceed with"
-                             " execution")
+        device = kwargs.get('device') or getattr(self, 'device', None)
+        if not device:
+            raise AttributeError("Device object is missing, can't proceed with"
+                                 " execution")
 
         parsed_output = self.parsed_dir(target=target,
             timeout_seconds=timeout_seconds, dir_output=dir_output, **kwargs)
@@ -338,8 +342,8 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
             Parameters
             ----------
-                cmd (`str`):  Command to be executed on the device 
-                target (`str`):  File path including the protocol, server and 
+                cmd (`str`):  Command to be executed on the device
+                target (`str`):  File path including the protocol, server and
                     file location.
                 timeout_seconds: `str`
                     The number of seconds to wait before aborting the operation.

@@ -5,13 +5,64 @@ from genie.utils.dq import Dq
 
 log = logging.getLogger(__name__)
 
+
+def filter_dispatcher(self, ret_dict, save, action_output):
+
+    # filtering and saving process, ability of saving multiple vars
+    for item in save:
+        # Filtering the action output and saving the output
+        # Saving the variable in self.parameters
+        filter_ = item.get('filter')
+        save_dict = {}
+
+        # specify regex true if want to apply regex to an action execute
+        # output and extract values
+        if item.get('regex'):
+
+            # applying regex_filter to string output
+            output = apply_regex_filter(self,
+                                        action_output,
+                                        filters=filter_)
+            save_dict = output
+
+        # saving non regex variables, using usual save_variable
+        else:
+            save_variable_name = item.get('variable_name')
+
+            # If list 
+            if isinstance(action_output, (list, tuple)):
+                output = apply_list_filter(self,
+                                    action_output,
+                                    list_index=item.get('list_index'),
+                                    filters=filter_)
+
+            # If dictionary with dq filter
+            else:
+                output = apply_dictionary_filter(self,
+                                                 action_output,
+                                                 filters=filter_)
+
+            save_dict.update({save_variable_name: output})
+
+        for save_variable_name, output in save_dict.items():
+            save_variable(self, save_variable_name, output,
+                          item.get('append'),
+                          item.get('append_in_list'))
+        if filter_:
+            log.info(
+                'Applied filter: {} to the action {} output'.
+                format(filter_, ret_dict['action']))
+            ret_dict.update({'filters': filter_})
+
+            # updating the return dictionary with the saved value
+        ret_dict['saved_vars'].update(save_dict)
+
 def apply_dictionary_filter(self, output, filters=None):
     #filtering the action output
-    if not filters:
+    if not filters or \
+       not isinstance(output, dict) or \
+       not Dq.query_validator(filters):
         return output
-
-    if not isinstance(output, dict) or not Dq.query_validator(filters):
-        return output 
 
     return Dq.str_to_dq_query(output, filters)
 
@@ -20,12 +71,68 @@ def apply_regex_filter(self, output, filters=None):
     if not filters:
         return output
 
+    if not isinstance (output, str):
+        raise Exception("regex filter can be applied only to string output.")
+
     pattern = re.compile(filters)
     match = re.search(pattern, output)
     if match:
        return match.groupdict()
     else:
         return {}
+
+def apply_list_filter(self, output, list_index=None, filters=None):
+
+    if not list_index and not filters:
+        return output
+
+    # If the index of the value that wants to be saved is known
+    if isinstance(list_index, int):
+        try:
+            output = output[list_index]
+        except IndexError as e:
+            raise IndexError(e)
+        else:
+            return output
+
+    # For slicing : "[1:9]"
+    elif isinstance(list_index, str):
+        slice_indices = list_index.strip('][').split(':')
+
+        # in case of "[2]" raise exception
+        if len(slice_indices) !=2:
+            raise Exception("Please check input {input}".format(input=list_index))
+
+        # in case input is like [:8]
+        if not slice_indices[0]:
+            slice_indices[0] = 0
+
+        # in case input is like [2:]
+        if not slice_indices[1]:
+            slice_indices[1] = len(output)
+
+        try:
+            sliced_output = output[int(slice_indices[0]) : int(slice_indices[1])]
+        except ValueError as e:
+            raise ValueError(e)
+        else:
+            if not sliced_output:
+                log.warning("The sliced outputs are empty.")
+
+            return sliced_output
+
+    # if checking if a value or a regex to a value exist
+    # match those items, and return a list of items
+    list_of_matches = []
+    for item in output:
+        pattern = re.compile(str(filters))
+        match = re.fullmatch(pattern, str(item))
+        if match:
+            list_of_matches.append(item)
+
+    # if only one item in the list of matches, just get that output,
+    # else get the entire list
+    return list_of_matches
 
 def get_variable(**kwargs):
     # Get the variable that will be replaced/unload

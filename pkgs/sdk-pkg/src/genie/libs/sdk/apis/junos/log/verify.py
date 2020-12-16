@@ -85,9 +85,11 @@ def verify_log_exists(device, file_name, expected_log,
     while timeout.iterate():
         try:
             if match:
-                log_output = device.parse('show log {file_name} | match {match}'.format(
+                cmd = 'show log {file_name} | match "{match}"'.format(
                     file_name=file_name,
-                    match=match))
+                    match=match)
+                output = device.execute(cmd)
+                log_output = device.parse(cmd, output=output)
             else:
                 log_output = device.parse('show log {file_name}'.format(
                     file_name=file_name))
@@ -102,4 +104,47 @@ def verify_log_exists(device, file_name, expected_log,
             return True
 
         timeout.sleep()
-    return False  
+    return False    
+
+
+def verify_no_log_output(device, file_name,max_time=60, 
+                         check_interval=10, invert=False, match=None):
+    """
+    Verify no log exists
+
+    Args:
+        device('obj'): device to use  
+        file_name('str') : File name to check log
+        max_time ('int'): Maximum time to keep checking
+        check_interval ('int'): How often to check
+        invert ('bool', 'optional'): Inverts to check if it doesn't exist
+        match ('str', 'optional'): used in show log command to specify output
+
+    Returns:  
+        Boolean       
+    Raises:
+        N/A    
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            if match:
+                cmd = 'show log {file_name} | match "{match}"'.format(
+                    file_name=file_name,
+                    match=match)
+                output = device.execute(cmd)
+                log_output = device.parse(cmd, output=output)
+            else:
+                log_output = device.parse('show log {file_name}'.format(
+                    file_name=file_name))
+        except SchemaEmptyParserError:
+            return True
+        
+        if not log_output:
+            return True
+
+        timeout.sleep()
+        continue
+
+    return False

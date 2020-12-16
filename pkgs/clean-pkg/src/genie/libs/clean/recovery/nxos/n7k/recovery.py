@@ -24,7 +24,7 @@ def recovery_worker(*args, **kwargs):
 
 def device_recovery(start, device, console_activity_pattern, golden_image=None,
                            break_count=10, timeout=600, recovery_password=None,
-                           tftp_boot=None, item=None):
+                           tftp_boot=None, item=None, **kwargs):
 
     ''' A method for starting Spawns and handling the device statements during recovery
         Args:
@@ -39,14 +39,6 @@ def device_recovery(start, device, console_activity_pattern, golden_image=None,
             None
     '''
 
-
-    break_dialog = BreakBootDialog()
-    break_dialog.add_statement(Statement(pattern=console_activity_pattern,
-                                         action=sendbrk_handler,
-                                         args={'break_count':break_count},
-                                         loop_continue=True,
-                                         continue_timer=False), pos=0)
-
     # Set a target for each recovery session
     # so it's easier to distinguish expect debug logs on the console.
     device.instantiate(connection_timeout=timeout)
@@ -59,24 +51,32 @@ def device_recovery(start, device, console_activity_pattern, golden_image=None,
     # Set target
     target = "{}_{}".format(device.hostname, last_word_in_start)
 
-    if len(log.handlers) >=2:
-        logfile= log.handlers[1].logfile
-    else:
-        logfile = None
-
+    logfile = log.handlers[1].logfile if len(log.handlers) >=2 else None
     spawn = Spawn(start,
                   settings=device.cli.settings,
                   target=target,
                   log=log,
                   logfile=logfile)
 
+    break_dialog = BreakBootDialog()
+    break_dialog.add_statement(Statement(pattern=console_activity_pattern,
+                                         action=sendbrk_handler,
+                                         args={'break_count': break_count},
+                                         loop_continue=True,
+                                         continue_timer=False),
+                               pos=0)
+    break_dialog.dialog.process(spawn, timeout=timeout)
+
     if 'kickstart' not in golden_image or 'system' not in golden_image:
         raise Exception("Either Kickstart or System image has not been provided "
                         "in the 'device_recovery' section of clean YAML")
 
     dialog = RommonDialog()
-    dialog.dialog.process(spawn, context={'kick':golden_image.get('kickstart'),
-                                          'sys':golden_image.get('system'),
-                                          'password':recovery_password},
+    dialog.dialog.process(spawn,
+                          context={
+                              'kick': golden_image.get('kickstart'),
+                              'sys': golden_image.get('system'),
+                              'password': recovery_password
+                          },
                           timeout=timeout)
     spawn.close()

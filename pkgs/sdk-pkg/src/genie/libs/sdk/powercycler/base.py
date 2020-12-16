@@ -184,3 +184,40 @@ class BaseCyberSwitchingPowerCycler(PowerCycler):
                 raise Exception("Turning on outlet '{}' on the powercycler "
                                 "failed. Error: {}".format(outlet, str(e)))
 
+class BaseEsxiPowerCycler(PowerCycler):
+
+    def __init__(self, testbed, **kwargs):
+        super().__init__(**kwargs)
+        self.testbed=testbed
+        self.connect()
+
+    def connect(self):
+        if self.host not in self.testbed.devices:
+            raise Exception("The device '{}' does not exist in the testbed"
+                            .format(self.host))
+
+        self.host = self.testbed.devices[self.host]
+
+        self.host.connect(learn_hostname=True)
+
+    def off(self, *outlets, after=None):
+        if isinstance(after, int):
+            raise TypeError('"after" should be an int')
+
+        if after:
+            time.sleep(after)
+
+        for outlet in outlets:
+            try:
+                self.host.api.switch_vm_power(vm_id=outlet, state='off')
+            except Exception as e:
+                raise Exception("Turning off outlet '{}' on the powercycler "
+                                "failed. Error: {}".format(outlet, str(e)))
+
+    def on(self, *outlets):
+        for outlet in outlets:
+            try:
+                self.host.api.switch_vm_power(vm_id=outlet, state='on')
+            except Exception as e:
+                raise Exception("Turning off outlet '{}' on the powercycler "
+                                "failed. Error: {}".format(outlet, str(e)))

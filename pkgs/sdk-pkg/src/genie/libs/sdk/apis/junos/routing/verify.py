@@ -1417,7 +1417,8 @@ def verify_route_best_path(device,
     """    
     timeout = Timeout(max_time, check_interval)
     
-    preference = str(preference)
+    if preference:
+        preference = str(preference)
     
     while timeout.iterate():
         try:
@@ -1507,12 +1508,13 @@ def verify_route_best_path(device,
                                             return True 
 
                         # Verify best path IP address or Preference to best path
-                        if (
-                            rt_entry.get('learned-from') == ip_address
-                            or rt_entry.get('local-preference') == preference
-                            or rt_entry.get('med') == expected_med
-                        ):
-                            return True
+                        if ip_address or preference or expected_med:
+                            if (
+                                rt_entry.get('learned-from') == ip_address
+                                or rt_entry.get('local-preference') == preference
+                                or rt_entry.get('med') == expected_med
+                            ):
+                                return True
                     
         timeout.sleep()
     return False 
@@ -2190,9 +2192,10 @@ def verify_route_has_as_path(
                 if op(as_paths_, str(expected_as_path)):
                     return True
 
-                expected_as_path_list = "AS path: {}".format(str(expected_as_path)).split()
-                if op1(as_paths_, expected_as_path_list):
-                    return True
+                if 'AS' in as_paths_:
+                    expected_as_path_list = "AS path: {}".format(str(expected_as_path)).split()
+                    if op1(as_paths_, expected_as_path_list):
+                        return True
 
         timeout.sleep()
     return False
@@ -3459,6 +3462,7 @@ def verify_route_best_path_counter(device, expected_count, protocol=None, ip_add
         
     return False
 
+
 def verify_route_logical_system_has_no_output(device,
                          logical_name,
                          max_time=60,
@@ -3480,7 +3484,7 @@ def verify_route_logical_system_has_no_output(device,
     """
 
     timeout = Timeout(max_time, check_interval)
-
+    
     while timeout.iterate():
         try:
             device.parse(
@@ -3495,3 +3499,65 @@ def verify_route_logical_system_has_no_output(device,
             return True
         timeout.sleep()
     return False
+
+def verify_route_four_byte_as(device, expected_as_path, peer_address, target_address=None, 
+                              protocol_type=None, protocol='bgp', no_protocol_type=False,
+                              max_time=60, check_interval=10):
+    """ Verify best path counter
+
+        Args:
+            device ('str'): Device str
+            expected_as_path ('int'): Expected 4byte as path
+            peer_address ('str'): IP address.
+            target_address ('str', optional): IP address. Default to None
+            protocol_type ('str', optional): Protocol type. 'receive' or 'advertising'. Default to None
+            protocol ('str', optional): Protocol in command. Defaults to 'bgp'
+            no_protocol_type ('bool', optional): Used to differentiate show commands. Default to False
+            max_time (`int`, optional): Max time, defaults to 60 seconds
+            check_interval (`int`, optional): Check interval, defaults to 10 seconds
+        Returns:
+            True / False
+        Raises:
+            None    
+    """
+
+    timeout = Timeout(max_time, check_interval)            
+    while timeout.iterate():
+        try:
+            if no_protocol_type:
+                out = device.parse('show route {peer_address}'.format(peer_address=peer_address))
+            else:
+                # ShowRouteAdvertisingProtocol
+                out = device.parse('show route {protocol_type}-protocol {protocol} {peer_address} {target_address}'.format(
+                    protocol_type=protocol_type,
+                    protocol=protocol,
+                    peer_address=peer_address,
+                    target_address=target_address,
+                ))
+        except Exception as e:
+            timeout.sleep()
+            continue
+        
+        # Example:
+        # {
+        # 'route-information': {
+        #     'route-table': {
+        #         'rt': [{
+        #             'rt-destination': '0.0.0.0/0',
+        #             'rt-entry': {
+        #                 'active-tag': '*',
+        #                 'as-path': ' 1234 [5] I',<------ compared value is 1234
+
+        p = re.compile(r'(?P<four_byte_as>\d+)[\s\S]+$')
+
+        rt_list = out.q.get_values('rt')
+
+        for rt in rt_list:
+            as_path = Dq(rt).get_values('as-path', 0).strip()
+            m = p.match(as_path)
+            if m:
+                if expected_as_path == int(m.groupdict()['four_byte_as']):
+                    return True
+                
+        timeout.sleep()    
+    return False        

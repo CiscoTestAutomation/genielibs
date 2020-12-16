@@ -2,7 +2,10 @@
 
 # Python
 import time
+import logging
 
+# Logger
+log = logging.getLogger(__name__)
 
 # Power Cycler handlers
 def sendbrk_handler(spawn, break_count):
@@ -16,6 +19,8 @@ def sendbrk_handler(spawn, break_count):
 
     count = 1
     while count < break_count:
-        spawn.sendline("\003")
-        time.sleep(.002)
+        log.debug('Sending break')
+        # `\x03` is Ctrl-C 
+        spawn.sendline("\x03")
+        time.sleep(1)
         count += 1

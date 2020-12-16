@@ -84,6 +84,7 @@ def _verify_enough_server_disk_space(device, protocol, fu_session, server=None,
         url = directory
     else:
         url = '{p}://{s}/{d}'.format(p=protocol, s=server, d=directory)
+        url = fu_session.validate_and_update_url(url)
     try:
         avail_space = fu_session.getspace(target=url, timeout_seconds=timeout)
     except NotImplementedError:
@@ -160,7 +161,7 @@ def _verify_file_exists_on_server(device, protocol, file, server=None,size=None,
 
     else:
         url = '{p}://{s}/{f}'.format(p=protocol, s=server, f=file)
-
+        url = fu_session.validate_and_update_url(url)
         try:
             fu_session.checkfile(target=url, max_tries=max_tries, timeout_seconds=timeout)
         except NotImplementedError:
@@ -246,6 +247,7 @@ def _verify_file_size_stable_on_server(device, protocol, file, server=None, max_
     if not server:
         return _verify_local_file_size_stable(file, max_tries=max_tries, delay_seconds=delay)
     url = '{p}://{s}/{f}'.format(p=protocol, s=server, f=file)
+    url = fu_session.validate_and_update_url(url)
     try:
         fu_session.checkfile(target=url, timeout_seconds=timeout, max_tries=max_tries,
                              delay_seconds=delay, check_stability=True)
@@ -386,12 +388,17 @@ def verify_device_connection_state(device,
     '''
 
     # check if state can be confirmed
-    device.spawn.match = None
     try:
         # get state machine state on device to check device reachability
         # need to get state to detect if device reloading or
         # any other condition which cannot respond
-        device.state_machine.detect_state(device.spawn)
+        if device.is_ha:
+            for con in device.subconnections:
+                device.spawn.match = None
+                con.device.state_machine.detect_state(device.spawn)
+        else:
+            device.spawn.match = None
+            device.state_machine.detect_state(device.spawn)
     except StateMachineError as e:
         # reconnect = None means `reconnect` is defined
         # raise StateMachineError instead of reconnecting

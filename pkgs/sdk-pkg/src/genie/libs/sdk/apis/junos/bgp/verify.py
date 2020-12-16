@@ -590,10 +590,12 @@ def verify_bgp_updown_time(device, given_seconds, invert=False, max_time=60, che
 
             # compare current up/dwn time with given time
             if op(elapsed_time, given_seconds):
+                timeout.sleep()
                 return False
 
-        timeout.sleep()
-    return True
+        return True
+        
+    return False
 
 def get_bgp_neighbor_prefixes_count(device, interface, max_time=60, check_interval=10):
     """

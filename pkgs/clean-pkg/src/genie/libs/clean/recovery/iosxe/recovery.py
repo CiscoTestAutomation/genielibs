@@ -18,14 +18,19 @@ from genie.libs.clean.recovery.iosxe.dialogs import (BreakBootDialog,
 # Logger
 log = logging.getLogger(__name__)
 
-def recovery_worker(start, device, console_activity_pattern, break_count=10,
-                    timeout=600, *args, **kwargs):
+def recovery_worker(start, device, console_activity_pattern,
+                    console_breakboot_char, grub_activity_pattern,
+                    grub_breakboot_char, break_count=10, timeout=600,
+                    *args, **kwargs):
     """ Starts a Spawn and processes device dialogs during recovery of a device
 
         Args:
             start (obj): Start method under device object
             device (obj): Device object
             console_activity_pattern (str): Pattern to send the break at
+            console_breakboot_char (str): Character to send when console_activity_pattern is matched
+            grub_activity_pattern (str): Break pattern on the device for grub boot mode
+            grub_breakboot_char (str): Character to send when grub_activity_pattern is matched
             break_count (int, optional): Number of break commands to send. Defaults to 10.
             timeout (int, optional): Recovery process timeout. Defaults to 600.
 
@@ -33,24 +38,40 @@ def recovery_worker(start, device, console_activity_pattern, break_count=10,
             None
     """
 
-    def breakboot(spawn, break_count):
+    def console_breakboot(spawn, break_count, break_char):
         """ Breaks the booting process on a device
 
             Args:
                 spawn (obj): Spawn connection object
                 break_count (int): Number of break commands to send
+                break_char (str): Char to send
 
             Returns:
                 None
         """
 
         log.info("Found the console_activity_pattern! "
-                 "Breaking the boot process")
+                 "Breaking the boot process by sending '{}'".format(break_char))
 
         for _ in range(break_count):
-            # '\x03' == <ctrl>+C
-            spawn.send("\x03")
+            spawn.send(break_char)
             time.sleep(1)
+
+    def grub_breakboot(spawn, break_char):
+        """ Breaks the booting process on a device
+
+            Args:
+                spawn (obj): Spawn connection object
+                break_char (str): Char to send
+
+            Returns:
+                None
+        """
+
+        log.info("Found the grub_activity_pattern! "
+                 "Breaking the boot process by sending '{}'".format(break_char))
+
+        spawn.send(break_char)
 
     # Set a target for each recovery session
     # so it's easier to distinguish expect debug logs on the console.
@@ -79,10 +100,18 @@ def recovery_worker(start, device, console_activity_pattern, break_count=10,
     break_dialog = BreakBootDialog()
     break_dialog.add_statement(
         Statement(pattern=console_activity_pattern,
-                  action=breakboot,
-                  args={'break_count': break_count},
+                  action=console_breakboot,
+                  args={'break_count': break_count,
+                        'break_char': console_breakboot_char},
                   loop_continue=True,
                   continue_timer=False), pos=0)
+    break_dialog.add_statement(
+        Statement(pattern=grub_activity_pattern,
+                  action=grub_breakboot,
+                  args={'break_char': grub_breakboot_char},
+                  loop_continue=True,
+                  continue_timer=False), pos=0)
+
     break_dialog.dialog.process(spawn, timeout=timeout)
 
     # Recover the device using the specified method
