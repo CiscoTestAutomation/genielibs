@@ -1,6 +1,7 @@
 '''Common execute functions'''
 
 # Python
+import re
 import os
 import time
 import logging
@@ -169,11 +170,6 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
     Returns:
          True if there is enough space after the operation, False otherwise
     '''
-    # Check correct arguments provided
-    if (min_free_space_percent is None and required_size is None):
-        raise ValueError("Either 'required_size' or 'min_free_space_percent' "
-                         "must be provided to perform disk space verification")
-
     # For n9k compact copy:
     # observationally, depending on release, the compacted image is 36-48% the
     # size of the original image. For now we'll use 60% as a conservative estimate.
@@ -184,16 +180,17 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
     dir_out = dir_output or device.execute('dir {}'.format(destination))
 
     # Get available free space on device
-    available_space = device.api.get_available_space(directory=destination,
-                                                 output=dir_out)
+    available_space = device.api.get_available_space(
+        directory=destination, output=dir_out)
+
     log.debug('available_space: {avs}'.format(avs=available_space))
 
     # Check if available space is sufficient
     if min_free_space_percent:
 
         # Get total space
-        total_space = device.api.get_total_space(directory=destination,
-                                                 output=dir_out)
+        total_space = device.api.get_total_space(
+            directory=destination, output=dir_out)
 
         # Get current available space in %
         avail_percent = available_space / total_space * 100
@@ -204,16 +201,11 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
                         avail_percent < min_free_space_percent else 'greater',
                         target=min_free_space_percent))
 
-        # calculate the required free space in bytes relative to the total disk 
-        # space based on given percentage if required size is also provided,
-        # take the larger value of the two
-        if required_size:
-            required_size = round(max(required_size,
-                                min_free_space_percent * .01 * total_space))
-        else:
-            required_size = round(min_free_space_percent * .01 * total_space)
+        # get bigger of required_space or min_free_space_percent
+        required_size = round(
+            max(required_size, min_free_space_percent * .01 * total_space))
 
-    # If there're not enough space, delete non-protected files
+    # If there's not enough space, delete non-protected files
     if device.api.verify_enough_disk_space(required_size=required_size,
                                            directory=destination,
                                            dir_output=dir_out):
@@ -230,86 +222,53 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
         return False
     else:
         log.info("Deleting unprotected files to free up some space")
-        log.info("Sending 'show version' to learn the current running images")
 
-        image = device.api.get_running_image()
-        log.info("Adding running image '{image}' to the protected files list".format(image=image))
-        if isinstance(image, list):
-            protected_files.extend([os.path.basename(i) for i in image])
+        running_images = []
+        log.info("Sending 'show version' to learn the current running images")
+        running_image = device.api.get_running_image()
+        if isinstance(running_image, list):
+            for image in running_image:
+                running_images.append(os.path.basename(image))
         else:
-            protected_files.extend([os.path.basename(image)])
+            running_images.append(os.path.basename(running_image))
 
         # convert to set for O(1) lookup
         protected_files = set(protected_files)
         parsed_dir_out = device.parse('dir {}'.format(destination), output=dir_out)
         dq = Dq(parsed_dir_out)
+
         # turn parsed dir output to a list of files for sorting
         # Large files are given priority when deleting
         file_list = []
+        running_image_list = []
         for file in dq.get_values('files'):
-            file_list.append((file, int(dq.contains(file).get_values('size')[0])))
+            # separate running image from other files
+            if any(file in image for image in running_images):
+                running_image_list.append((file, int(dq.contains(file).get_values('size')[0])))
+            else:
+                file_list.append((file, int(dq.contains(file).get_values('size')[0])))
+
         file_list.sort(key=lambda x: x[1], reverse=True)
+
+        # add running images to the end so they are deleted as a last resort
+        file_list.extend(running_image_list)
         log.debug('file_list: {fl}'.format(fl=file_list))
 
-        # append files to delete list and check if it could create available space
-        available_space_flag = False
-        to_delete = []
-        remaining_size = required_size
         for file, size in file_list:
-            # check if we reach the target
-            if remaining_size < available_space:
-                available_space_flag = True
-                log.info('Found enough files that can be deleted in order to create enough free space.')
-                break
-            # if the file is protected, move skip and check next one in the list
-            elif file in protected_files:
-                continue
+            device.api.delete_unprotected_files(directory=destination,
+                                                protected=protected_files,
+                                                files_to_delete=[file],
+                                                dir_output=dir_out)
 
-            to_delete.append(file)
-            log.debug('adding {f} to to_delete list'.format(f=file))
-            remaining_size -= size
-            log.debug('updated remaining_size: {rs}'.format(rs=remaining_size))
+            if device.api.verify_enough_disk_space(required_size, destination):
+                log.info("Verified there is enough space on the device after "
+                         "deleting unprotected files.")
+                return True
 
-        # if target can not be reached, aka loop is not broken, fail
-        if not available_space_flag and file_list:
-            if min_free_space_percent:
-                log.error(
-                    'It is not possible to reach the target free space percentage after deleting all '
-                    'unprotected files. Operation will be aborted and no file has been deleted.')
-                return False
-
-        device.api.delete_unprotected_files(directory=destination,
-                                            protected=protected_files,
-                                            files_to_delete=to_delete,
-                                            dir_output=dir_out)
-        # after deletion verify again fail if still not enough space,
-        # execute dir again since files are changed
-        dir_out_after = device.execute('dir {}'.format(destination))
-        if min_free_space_percent:
-            available_space = device.api.get_available_space(directory=destination,
-                                                             output=dir_out_after)
-            total_space = device.api.get_total_space(directory=destination,
-                                                     output=dir_out_after)
-
-            available_percent = available_space / total_space * 100
-            log.info(
-                "There are {available}% of free space on the disk, which is {compare} than "
-                "the target of {target}%.".format(available=round(available_percent, 2),
-                                                  compare='less' if available_percent <
-                                                                    min_free_space_percent else 'greater',
-                                                  target=min_free_space_percent))
-
-        if not device.api.verify_enough_disk_space(required_size, destination, dir_output=dir_out_after):
-            log.error(
-                'There is still not enough space on the device after deleting '
-                'unprotected files.')
-            return False
-        else:
-            log.info(
-                "Verified there is enough space on the device after deleting "
-                "unprotected files.")
-            return True
-
+        # Exhausted list of files - still not enough space
+        log.error('There is still not enough space on the device after '
+                  'deleting unprotected files.')
+        return False
 
 def execute_reload(device, prompt_recovery, reload_creds, sleep_after_reload=120,
     timeout=800):
@@ -355,8 +314,9 @@ def execute_copy_to_running_config(device, file, copy_config_timeout=60):
         raise Exception("Failed to apply config file {} to running-config\n{}".\
                         format(file, str(e)))
     else:
-        if '0 bytes copied' in output:
-            raise Exception("Config file {} not applied to running-config".\
+        if re.search('^0 bytes.*', output):
+            raise Exception("Config file {} not applied to "\
+                            "running-config - 0 bytes was copied".\
                             format(file))
 
 

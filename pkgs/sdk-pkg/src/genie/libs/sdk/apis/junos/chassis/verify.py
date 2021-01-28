@@ -258,6 +258,7 @@ def verify_chassis_slot_state(device,
 
 def verify_chassis_fan_tray_present(device,
                                     fan_tray_list,
+                                    invert=False,
                                     max_time=60,
                                     check_interval=10,):
     """ Verify fan_tray_list is present in 'show chassis hardware'
@@ -265,6 +266,7 @@ def verify_chassis_fan_tray_present(device,
         Args:
             device (`obj`): Device object
             fan_tray_list (`list`): Given fan tray list
+            invert (`bool',optional): Check fan tray not present. Defaults to False
             max_time (`int`): Max time, default: 60 seconds
             check_interval (`int`): Check interval, default: 10 seconds
         Returns:
@@ -274,6 +276,7 @@ def verify_chassis_fan_tray_present(device,
     """
 
     timeout = Timeout(max_time, check_interval)
+    
     while timeout.iterate():
         try:
             output = device.parse('show chassis hardware')
@@ -303,13 +306,18 @@ def verify_chassis_fan_tray_present(device,
         # >>> all(i in l2 for i in l1)
         # True
         # >>> all(i in l1 for i in l2)
-        # False       
-         
-        if all(i in names for i in fan_tray_list):
-            return True
+        # False    
+
+        if invert:
+            # verify all items in fan_tray_list are not in names
+            if (set(names)-set(fan_tray_list)) == set(names):
+                return True
         else:
-            timeout.sleep()
-            continue
+            if all(i in names for i in fan_tray_list):
+                return True
+        
+        timeout.sleep()
+        continue
         
     return False    
 
@@ -337,13 +345,8 @@ def verify_chassis_environment_present(device,
         try:
             output = device.parse('show chassis environment')
         except SchemaEmptyParserError:
-            return None
-
-        # fan_tray_list:
-        #     - Fan Tray 0
-        #     - Fan Tray 1
-        #     - Fan Tray 2
-        #     - Fan Tray 3        
+            timeout.sleep()
+            continue       
 
         # Sample output:
         # {'environment-information': {'environment-item': [
@@ -357,6 +360,9 @@ def verify_chassis_environment_present(device,
         #                                            'status': 'OK'},]}}
         environment_items_list = output.q.get_values('environment-item', None)
 
+        # Create a {name:status} dictionary
+        name_status_dict = {}
+
         if environment_items_list:
             for item in environment_items_list:
                 
@@ -365,14 +371,37 @@ def verify_chassis_environment_present(device,
                 # >>> m=re.search('(.+?) +Fan +\d+',name).group(1)
                 # >>> m
                 # 'Fan Tray 0'   
-                head_of_string = re.search('(.+?) +Fan +\d+',item['name']).group(1)  
+                res = re.search('(.+?) +Fan +\d+',item['name'])
+                if not res:
+                    continue
+                name = res.group(1)  
 
-                if head_of_string in fan_tray_list:
-                    if item['status'] != expected_status:
-                        return False
+                name_status_dict[name] = item['status']
 
+
+            # fan_tray_list = ['Fan Tray 0', 'Fan Tray 1', 'Fan Tray 2', 'Fan Tray 3']
+            # 
+            # name_status_dict = {'Fan Tray 0': 'OK',
+            #                     'Fan Tray 1': 'OK',
+            #                     'Fan Tray 2': 'Not OK',
+            #                     'Fan Tray 3': 'OK'
+            #                     }
+
+            # Group all names that have expected_status into a list
+            names_list = []
+            for name, status in name_status_dict.items():
+                if status == expected_status:
+                    names_list.append(name)
+
+            # names_list = ['Fan Tray 0', 'Fan Tray 1', 'Fan Tray 3']
+
+            # Compare if all fan tray item in fan_tray_list appear in the list
+            if all(i in names_list for i in fan_tray_list):
+                return True 
+        
         timeout.sleep()
-    return True      
+        
+    return False      
 
 def verify_chassis_no_alarms(device, 
                              max_time=60, 
@@ -397,13 +426,16 @@ def verify_chassis_no_alarms(device,
             timeout.sleep()
             continue
 
-        try:
-            output = device.execute('show chassis alarms')
-            if 'No alarms currently active' in output:
-                return True
-        except Exception:
-            timeout.sleep()
-            continue
+        # {
+        # "alarm-information": {
+        #     "alarm-summary": {
+        #         "no-active-alarms": True
+        #         }
+        #     },
+        # }
+        if output.q.get_values("no-active-alarms",0) == True:
+            return True
+
         timeout.sleep()
     return False
 
@@ -467,6 +499,7 @@ def verify_chassis_routing_engine(device,
 
 def verify_chassis_hardware_item_present(device,
                             expected_item,
+                            invert=False,
                             max_time=60,
                             check_interval=10):
     """ Verify fan_tray_list is present in 'show chassis hardware'
@@ -474,6 +507,7 @@ def verify_chassis_hardware_item_present(device,
         Args:
             device (`obj`): Device object
             expected_item (`list`): Item name
+            invert ('bool'): Invert function
             max_time (`int`): Max time, default: 60 seconds
             check_interval (`int`): Check interval, default: 10 seconds
         Returns:
@@ -504,9 +538,17 @@ def verify_chassis_hardware_item_present(device,
         #                         "name": "Routing Engine 0"
 
         item_list = output.q.contains(expected_item).get_values('name')
-        if expected_item in item_list:
-            return True
+
+        if not invert:
+            if expected_item in item_list:
+                return True
+            
+        else:
+            if expected_item not in item_list:
+                return True
+        
         timeout.sleep()
+
     return False
 
 
@@ -539,6 +581,8 @@ def verify_chassis_environment_component_present(device,
             ))
         except SchemaEmptyParserError:
             result = False
+            timeout.sleep()
+            continue
 
         # fan_tray_list:
         #     - Fan Tray 0
@@ -598,8 +642,10 @@ def verify_chassis_power_item_present(device,
             output = device.parse('show chassis power')
         except SchemaEmptyParserError:
             result = False
+            timeout.sleep()
+            continue
 
-        power_usage_item_list = output.contains('{}|name'.format(
+        power_usage_item_list = output.q.contains('{}|name'.format(
             expected_status, 
         ), regex=True).get_values('power-usage-item')
         
@@ -706,17 +752,19 @@ def verify_chassis_alarm_output(device,
         #    "alarm-summary": {
         #        "active-alarm-count": "1"
         #    }
-        
-        alarm_description = output.q.get_values('alarm-description', {})
+        # ['PSM 15 Not OK']
+        alarm_description = output.q.get_values('alarm-description', None)
 
         if not invert:
-            if message_topic in alarm_description:
-                return True
-            timeout.sleep()
+            for single_description in alarm_description:
+                if message_topic in single_description:
+                    return True
+                timeout.sleep()
         else:
-            if message_topic not in alarm_description:
-                return True
-            timeout.sleep()
+            for single_description in alarm_description:
+                if message_topic not in alarm_description:
+                    return True
+                timeout.sleep()
 
     return False
 
@@ -766,7 +814,7 @@ def verify_chassis_usb_flag_exists(device,
         #                                                 'product-number': '0',
         #                                                 'vendor': 'Intel'}]}
         
-        chassis_module_list = out.q.get_values("chassis-module", 0)
+        chassis_module_list = out.q.get_values("chassis-module", None)
 
 
         for module in chassis_module_list:
@@ -792,10 +840,10 @@ def verify_chassis_usb_flag_exists(device,
                         timeout.sleep()
                         continue
             timeout.sleep()
-        if invert:
-            return True
-        else:
-            return False            
+    if invert:
+        return True
+    else:
+        return False            
 
 
 def verify_chassis_alarms_no_error(device, 
@@ -827,7 +875,7 @@ def verify_chassis_alarms_no_error(device,
         # Sample output
         #     {
         #     "alarm-information": {
-        #         "alarm-detail": {
+        #         "alarm-detail": [{
         #             "alarm-class": "Major",
         #             "alarm-description": "FPC 15 Not OK", <--------------------------
         #             "alarm-short-description": "FPC 15 Not OK",
@@ -835,7 +883,7 @@ def verify_chassis_alarms_no_error(device,
         #                 "#text": "2020-07-16 13:38:21 EST",
         #             },
         #             "alarm-type": "Chassis"
-        #         },
+        #         }],
         #         "alarm-summary": {
         #             "active-alarm-count": "1"
         #         }
@@ -844,8 +892,9 @@ def verify_chassis_alarms_no_error(device,
 
         description = output.q.get_values('alarm-description', None)
 
-        if errored_pattern.match(description):
-            return True
+        for d in description:
+            if errored_pattern.match(d):
+                return True
 
         timeout.sleep()
     return False
@@ -1023,12 +1072,12 @@ def verify_chassis_pic_exists_under_mic(device,
         #                 {
         #                     "chassis-sub-module": [
         #                         {
-        #                             "chassis-sub-sub-module": {
+        #                             "chassis-sub-sub-module": [{
         #                                 "description": "Virtual",
         #                                 "name": "PIC 0",   <------------------------------------- PIC exists
         #                                 "part-number": "BUILTIN",
         #                                 "serial-number": "BUILTIN",
-        #                             },
+        #                             },],
         #                             "description": "Virtual",
         #                             "name": "MIC 0", <-------------------------------------------- mic
         #                         },
@@ -1049,23 +1098,44 @@ def verify_chassis_pic_exists_under_mic(device,
         for chassis_module in chassis_module_list:
             # "name": "FPC 0"
             if chassis_module['name'] == 'FPC '+str(fpc):
-                chassis_sub_module_list = chassis_module.q.get_values('chassis-sub-module', None)
+                chassis_sub_module_list = Dq(chassis_module).get_values('chassis-sub-module', None)
 
                 for sub in chassis_sub_module_list:
                     # "name": "MIC 0"
                     if sub['name'] == 'MIC '+str(mic):
-
+                        
+                        # "chassis-sub-sub-module": [{
+                        #     "description": "Virtual",
+                        #     "name": "PIC 0",
+                        #     "part-number": "BUILTIN",
+                        #     "serial-number": "BUILTIN",
+                        # },],                        
                         if 'chassis-sub-sub-module' in sub:
-                            if 'PIC' in sub['chassis-sub-sub-module']['name']:
-                                if invert:
-                                    return False 
-                                else:
+
+                            # >>> d1={'name':'aa'}
+                            # >>> d2={'name':'bb'}
+                            # >>> l=[d1,d2]
+                            # >>> names=[i['name'] for i in l]
+                            # >>> names
+                            # ['aa', 'bb']
+                            # >>>                            
+                            names_list = [i['name'] for i in sub['chassis-sub-sub-module']]
+                            
+                            # >>> l=['PIC 0', 'ABC']
+                            # >>> ['PIC' in i for i in l]
+                            # [True, False]
+                            # >>>                            
+                            if invert:
+                                if not(True in ['PIC' in i for i in names_list]):
                                     return True 
+                            else:
+                                if True in ['PIC' in i for i in names_list]:
+                                    return True 
+                        else:
+                            if invert:
+                                return True
         timeout.sleep()
-    if invert:
-        return True 
-    else:
-        return False
+    return False
 
 
 def verify_chassis_mic_exists_under_fpc(device, 
@@ -1127,20 +1197,25 @@ def verify_chassis_mic_exists_under_fpc(device,
         for chassis_module in chassis_module_list:
             # "name": "FPC 0"
             if chassis_module['name'] == 'FPC '+str(fpc):
-                chassis_sub_module_list = chassis_module.q.get_values('chassis-sub-module', None)
+                chassis_sub_module_list = Dq(chassis_module).get_values('chassis-sub-module', None)
 
-                for sub in chassis_sub_module_list:
-                    # "name": "MIC 0"
-                    if sub['name'] == 'MIC '+str(mic):
-                        if invert:
-                            return False 
-                        else:
-                            return True 
+                if invert and chassis_sub_module_list==[]:
+                    return True
+
+                # find all names in chassis-sub-module
+                names_list = [sub['name'] for sub in chassis_sub_module_list]
+
+                # "name": "MIC 0"
+                current_name = 'MIC '+str(mic)
+
+                if invert:
+                    if current_name not in names_list:
+                        return True
+                else:
+                    if current_name in names_list:
+                        return True                 
         timeout.sleep()
-    if invert:
-        return True 
-    else:
-        return False            
+    return False            
 
 
 def verify_chassis_no_error_fpc_mic(device, 
@@ -1173,7 +1248,7 @@ def verify_chassis_no_error_fpc_mic(device,
         # Sample output
         #     {
         #     "alarm-information": {
-        #         "alarm-detail": {
+        #         "alarm-detail": [{
         #             "alarm-class": "Major",
         #             "alarm-description": "PSM 15 Not OK", <------------------
         #             "alarm-short-description": "PSM 15 Not OK",
@@ -1181,7 +1256,7 @@ def verify_chassis_no_error_fpc_mic(device,
         #                 "#text": "2020-07-16 13:38:21 EST",
         #             },
         #             "alarm-type": "Chassis"
-        #         },
+        #         }],
         #         "alarm-summary": {
         #             "active-alarm-count": "1"
         #         }
@@ -1192,8 +1267,287 @@ def verify_chassis_no_error_fpc_mic(device,
 
         description = out.q.get_values("alarm-description", None)
 
-        if errored_pattern.match(description):
-            return False 
+        for d in description:
+            if errored_pattern.match(d):
+                return False 
 
+        timeout.sleep()
+    return True
+
+
+def verify_chassis_environment_multiple_status(device,
+                                               expected_item,
+                                               expected_status,
+                                               max_time=60, 
+                                               check_interval=10):
+    """ Verify specific items status in 'show chassis environment'
+
+        Args:
+            device (`obj`): Device object
+            expected_item (`str`): Hardware inventory item expected
+            expected_status (`str`): Expected status
+            max_time (`int`): Max time, default: 60 seconds
+            check_interval (`int`): Check interval, default: 10 seconds
+        Returns:
+            result (`bool`): Verified result
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            output = device.parse('show chassis environment')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue      
+
+        # Sample output:
+        # {'environment-information': {'environment-item': [
+        #                                          {'class': 'Fans',
+        #                                            'comment': '2760 RPM',
+        #                                            'name': 'Fan Tray 0 Fan 1', <---------------
+        #                                            'status': 'OK'}, <--------------------------
+        #                                           {'class': 'Fans',
+        #                                            'comment': '2520 RPM',
+        #                                            'name': 'Fan Tray 0 Fan 2',
+        #                                            'status': 'OK'},]}}
+        environment_items_list = output.q.get_values('environment-item', None)
+
+        if environment_items_list:
+            for item in environment_items_list:
+                if re.search(r"{} +([\S\s]+)".format(expected_item), item['name']) and item['status'] == expected_status:
+                    return True
+        timeout.sleep()
+    return False
+
+
+def verify_chassis_fabric_summary_status(device,
+                                         expected_item,
+                                         expected_status,
+                                         max_time=60, 
+                                         check_interval=10):
+    """ Verify specific items status in 'show chassis fabric summary'
+
+        Args:
+            device (`obj`): Device object
+            expected_item (`list`): chassis fabric item expected
+            expected_status (`str`): Expected status
+            max_time (`int`): Max time, default: 60 seconds
+            check_interval (`int`): Check interval, default: 10 seconds
+        Returns:
+            result (`bool`): Verified result
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            output = device.parse('show chassis fabric summary')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue     
+
+        # Sample output:
+        # "fm-state-item": [
+        #        {
+        #            "plane-slot": "0",
+        #            "state": "Online",
+        #            "up-time": "34 days, 18 hours, 43 minutes, 48 seconds"
+        #        },
+        #        {
+        #            "plane-slot": "1",
+        #            "state": "Online",
+        #            "up-time": "34 days, 18 hours, 43 minutes, 47 seconds"
+        #        }
+        fm_state_item = output.q.get_values('fm-state-item', None)
+
+        if fm_state_item:
+            for item in fm_state_item:
+                if str(item['plane-slot']) == str(expected_item) and item['state'].lower() == expected_status.lower():
+                    return True
+        timeout.sleep()
+
+    return False
+
+
+def verify_chassis_fabric_plane_status(device,
+                                       expected_item,
+                                       expected_status,
+                                       max_time=60, 
+                                       check_interval=10):
+    """ Verify specific items status in 'show chassis fabric plane'
+
+        Args:
+            device (`obj`): Device object
+            expected_item (`list`): Chassis fabric items expected
+            expected_status (`str`): Expected status
+            max_time (`int`): Max time, default: 60 seconds
+            check_interval (`int`): Check interval, default: 10 seconds
+        Returns:
+            result (`bool`): Verified result
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            output = device.parse('show chassis fabric plane')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue      
+
+        # Sample output:
+        # "fmp-plane": [
+        #        {
+        #            "fru-name": [
+        #                "FPC",
+        #                "FPC"
+        #            ],
+        #            "fru-slot": [
+        #                "0",
+        #                "1"
+        #            ],
+        #            "pfe-link-status": [
+        #                "Links ok",
+        #                "Links ok",
+        #                "Links ok",
+        #                "Links ok"
+        #            ],
+        #            "pfe-slot": [
+        #                "0",
+        #                "1",
+        #                "0",
+        #                "1"
+        #            ],
+        #            "slot": "0",
+        #            "state": "ACTIVE"
+        #        }
+        fm_state_item = output.q.get_values('fmp-plane', None)
+
+        if fm_state_item:
+            for item in fm_state_item:
+                if item and item['slot'] == expected_item and item['state'].lower() == expected_status.lower():
+                    return True
+        timeout.sleep()
+    
+    return False
+
+
+def verify_chassis_environment_item(device,
+                                    expected_item,
+                                    invert=False,
+                                    max_time=60,
+                                    check_interval=10):
+    """ Verify specific item in show chassis environment exists or doesn't exist
+
+        Args:
+            device (`obj`): Device object
+            expected_item (`str`): Hardware inventory item expected
+            invert ('bool', 'optional'): Inverts to check if it doesn't exist
+            max_time (`int`): Max time, default: 60 seconds
+            check_interval (`int`): Check interval, default: 10 seconds
+        Returns:
+            result (`bool`): Verified result
+        Raises:
+            N/A
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            output = device.parse('show chassis environment')
+        except SchemaEmptyParserError:
+            if invert:
+                return True
+            timeout.sleep()
+            continue      
+
+        # Sample output:
+        # {'environment-information': {'environment-item': [
+        #                                          {'class': 'Fans',
+        #                                            'comment': '2760 RPM',
+        #                                            'name': 'Fan Tray 0 Fan 1', <---------------
+        #                                            'status': 'OK'}, <--------------------------
+        #                                           {'class': 'Fans',
+        #                                            'comment': '2520 RPM',
+        #                                            'name': 'Fan Tray 0 Fan 2',
+        #                                            'status': 'OK'},]}}
+        environment_items_list = output.q.get_values('name', None)
+
+        if environment_items_list:
+            if not invert:
+                if expected_item in environment_items_list :
+                    return True
+
+            else:
+                if expected_item not in environment_items_list :
+                    return True
+        
+        timeout.sleep()
+
+    return False
+
+
+def verify_chassis_fabric_plane_exists(device,
+                                       expected_item,
+                                       invert=False,
+                                       max_time=60,
+                                       check_interval=10):
+    """ Verify specific items status in 'show chassis fabric summary'
+
+        Args:
+            device (`obj`): Device object
+            expected_item (`list`): Chassis fabric items expected
+            invert ('bool', 'optional'): Inverts to check if it doesn't exist
+            max_time (`int`): Max time, default: 60 seconds
+            check_interval (`int`): Check interval, default: 10 seconds
+        Returns:
+            result (`bool`): Verified result
+        Raises:
+            N/A
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            output = device.parse('show chassis fabric plane')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue     
+
+        # Sample output:
+        # "fmp-plane": [
+        #        {
+        #            "fru-name": [
+        #                "FPC",
+        #                "FPC"
+        #            ],
+        #            "fru-slot": [
+        #                "0",
+        #                "1"
+        #            ],
+        #            "pfe-link-status": [
+        #                "Links ok",
+        #                "Links ok",
+        #                "Links ok",
+        #                "Links ok"
+        #            ],
+        #            "pfe-slot": [
+        #                "0",
+        #                "1",
+        #                "0",
+        #                "1"
+        #            ],
+        #            "slot": "0",
+        #            "state": "ACTIVE"
+        #        }
+        fm_state_item = output.q.get_values('slot', None)
+
+        if not invert:
+            if expected_item in fm_state_item:
+                return True
+        else:
+            if expected_item not in fm_state_item:
+                return True
         timeout.sleep()
     return True

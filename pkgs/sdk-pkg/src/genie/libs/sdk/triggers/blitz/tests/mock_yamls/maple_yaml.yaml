@@ -1,0 +1,262 @@
+tests: 
+    confirm_and_search:
+        logical_id: nxos:ngoam_testbed:1:N9K:Irvine
+        teststep_control: continue-on-failure
+        testcase_control: abort-on-failure
+        test-steps:
+            step-1:
+                confirm:
+                    devices:
+                        N93_3:
+                            rule-1:
+                                type: cli
+                                commands: |
+                                    show vdc
+                                match: |
+                                    .*
+                                    UP
+                                    \d
+            step-2:
+                confirm:
+                    devices:
+                        N93_3:
+                            rule-1:
+                                type: cli
+                                commands: |
+                                    show vlan
+                                    show vrf 
+                                    show nxapi
+                                    #@# cmds=waitfor:::show module,,Up,,10 #@#
+                                    #@# cmds=waitfor:::show srte policy | grep -A 5 -B 5 "Color: 806",,UP,,60 #@#
+                                    #@# cmds=waitfor:::show srte policy | grep -A 5 -B 5 "Color: 704",,UP,,60 #@#
+                                match: |
+                                    .*
+                                    port 80
+                                    active
+                                    %{devices.device{testbed.custom.devices.deviceA}}
+                                    Eth
+            step-3:
+                confirm:
+                    devices:
+                        N93_3:
+                            matcher_populate:
+                                type: matcher
+                                commands: |
+                                    #@# cmds=patterns:::
+                                    [show version,,BIOS:\s+version\s+XX(bios)XX([0-9A-Za-z()./]+).*]
+                                    [show version,,bootflash:\s+XX(bootflash)XX([0-9A-Za-z()./]+)\s+XX(measure)XX(\w+).*]
+                                    [show vrf,,default\s+XX(default)XX([0-9/]+)\s+XX(up_down)XX(Up|Down).*]
+                                    #@#
+                            rule-2:
+                                type: cli
+                                match: |
+                                    #@# cmds=eval::: 'XX(bios)XX' == '07.33' and XX(bootflash)XX >=120000 #@#
+    plugin_call:
+        test-steps:
+            step-1:
+                confirm:
+                    devices:
+                        N93_3:
+                            rule-1:
+                                type: matcher
+                                commands: |
+                                    #@# matcher:{
+                                        "package":"maple.plugins.user.MatcherPlugins",
+                                        "method":"populateObjects",
+                                        "command":"show version",
+                                        "type":"cli"
+                                        }    
+                                    #@#
+                            rule-2:
+                                type: cli
+                                match: |
+                                    #@# cmds=eval:::'XX(dummy_key_name)XX' == '192.168.0.4' #@#
+
+            step-2:
+                confirm:
+                    devices:
+                        N93_3:
+                            rule-1:
+                                type: cli
+                                commands: |
+                                    show module
+                                match: |
+                                    #@# confirm:{
+                                        "package":"maple.plugins.user.ConfirmPlugins",
+                                        "method":"checkIfPresent",
+                                        "options":[
+                                            {"count":"1"},
+                                            {"check1": "XX(dummy_key_name)XX"}
+                                        ]}
+                                    #@#
+    helloworld_dme_test:
+        testcase_control: abort-on-failure
+        test-steps:
+            step-1-post:                 
+                apply:
+                    devices:
+                        N93_3:
+                            type: dmerest
+                            commands: |
+                                #@# command:{
+                                    "method":"processdme",
+                                    "options":[
+                                        {"method":"POST"},
+                                        {"url":"http://acjain-laas:8001/api/node/mo/sys/ldp.json"},
+                                        {"payload":"dme_post.json"},
+                                        {"ignore_error":"True"}
+                                    ]} 
+                                #@# 
+            step-2-get:                 
+                confirm:
+                    devices:
+                        N93_3:
+                            rule-1:
+                                type: dmerest
+                                commands: |
+                                    #@# command:{
+                                        "method":"processdme",
+                                        "options":[
+                                            {"method":"GET"},
+                                            {"url":"http://acjain-laas:8001/api/node/mo/sys/ldp.json"}
+                                        ]} 
+                                    #@#
+                                match: |
+                                    #@# cmds=eval:::'XX(adminSt)XX' == 'enabled' #@# 
+    helloworld_loop_simple:
+        teststep_control: continue-on-failure    
+        test-steps:       
+            step-1:
+                loop: |
+                    {
+                        "package":"maple.plugins.user.LoopPlugins",
+                        "method":"simpleloop",
+                        "options":[
+                            {"total_iterations": "2"}
+                        ]
+                    }
+                confirm:
+                    devices:
+                        N93_3:
+                            rule-1:
+                                type: cli
+                                commands: |
+                                    show XX(vrf_name)XX 
+                                match: | 
+                                    a
+                                             
+    helloworld_single_iterable_loop:
+        teststep_control: continue-on-failure    
+        test-steps:
+            step-1:
+                loop: |
+                    {
+                    "package":"maple.plugins.user.LoopPlugins",
+                    "method":"single_iterable_loop",
+                    "options":[
+                        {"iterable_name": "front_ports"},
+                        {"start": "0"},
+                        {"stop": "1"},
+                        {"step": "1"}
+                        ]
+                    }
+                confirm:
+                   devices:
+                       N93_3:
+                           rule-1:
+                                type: cli
+                                commands: |
+                                    show interface ethernet 1/XX(front_ports)XX
+                                match: |
+                                    a
+            step-2:
+                loop: |
+                    {
+                        "package":"maple.plugins.user.LoopPlugins",
+                        "method":"single_iterable_loop_custom_list",
+                        "options":[
+                            {"iterable_name": "front_port"},
+                            {"value_list": "['inventory', 'module', 'version']"}
+                        ]
+                    }
+                confirm:
+                    devices:
+                       N93_3:
+                          rule-1:
+                            type: cli
+                            commands: |
+                                show XX(front_port)XX
+                            match: |
+                                a
+                                b
+                                c
+
+            step-3:
+                flowcontrol: |
+                    {
+                        "action": "skip",
+                        "condition": "'XX(front_port)XX' == 'version'"
+                    }             
+                confirm:
+                    devices:
+                        N93_3:
+                            rule-1:
+                                type: cli
+                                commands: |
+                                    show version
+                                match: | 
+                                    .*
+            step-4:           
+                confirm:
+                    devices:
+                        N93_3:
+                            rule-1:
+                                type: cli
+                                commands: |
+                                    show version
+                                match: | 
+                                    a
+
+    bfd_test_static:
+        test-steps:
+            step-1:
+                apply:
+                    devices:
+                        device{testbed.custom.devices.deviceA}:
+                            type: cli
+                            commands: |
+                                conf t
+                                feature bfd
+                                #@# cmds=waitfor:::show vlan,,Up,,9 #@#
+                                #@# cmds=switchback: #@#
+                                #@# cmds=switchto:N93_3 #@#  
+                                #@# cmds=novpc:22 #@#   
+    bfd_test_static_no_step:
+                apply:
+                    devices:
+                        device{testbed.custom.devices.deviceA}:
+                            type: cli
+                            commands: |
+                                conf t
+                                feature bfd
+                                #@# cmds=waitfor:::show vlan,,Up,,9 #@#
+                                #@# cmds=switchback: #@#
+                                #@# cmds=switchto:N93_3 #@#  
+                                #@# cmds=novpc:22 #@#   
+    log_collection_test:
+      log: 
+        sections: apply
+        states: passed, failed
+        devices: PE1,PE2
+        server: scp,scp,/ws/mziabari-ott/development,management
+        commands: |
+            show version
+            show interface
+      test-steps:
+        step-1:
+            apply:
+                devices:
+                    PE1:
+                        type: cli
+                        commands: |
+                            #@# cmds=sleep:1 #@#

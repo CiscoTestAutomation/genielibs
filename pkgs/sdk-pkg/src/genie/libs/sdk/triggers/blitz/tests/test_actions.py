@@ -22,13 +22,14 @@ from genie.libs.sdk.triggers.blitz.actions import compare, rest, sleep, \
                                                   api, learn, bash_console,\
                                                   parse, execute, configure,\
                                                   print_, configure_replace,\
-                                                  save_config_snapshot, diff
+                                                  save_config_snapshot, diff,\
+                                                  configure_dual
 
 from genie.libs.sdk.triggers.blitz.actions_helper import _send_command,\
                                                          _prompt_handler, \
                                                          _condition_validator, \
                                                          _output_query_template
-                                                         
+
 
 
 from unicon import Connection
@@ -61,7 +62,7 @@ class TestActions(unittest.TestCase):
                'reason': 'Reset Requested by CLI command reload',
                'system_version': '9.3(3)'}}
 
-    execute_output = """ 
+    execute_output = """
         2020-11-24 12:25:43,769: %UNICON-INFO: +++ N93_3: executing command 'show version' +++
         show version
         Cisco Nexus Operating System (NX-OS) Software
@@ -319,7 +320,7 @@ class TestActions(unittest.TestCase):
     def setUp(self):
 
         dir_name = os.path.dirname(os.path.abspath(__file__))
-        
+
         self.testbed = load(os.path.join(dir_name, 'mock_testbeds/testbed.yaml'))
         Blitz.parameters = ParameterMap()
         Blitz.uid = 'test.dev'
@@ -329,9 +330,10 @@ class TestActions(unittest.TestCase):
         self.dev.custom = {'abstraction': {'order': ['os']}}
         self.blitz_obj.parameters['test_sections'] = [{'section1': [{'action': {'command': 'a'}}]}]
         sections = self.blitz_obj._discover()
-        self.kwargs = {'self': self.blitz_obj, 
+        self.kwargs = {'self': self.blitz_obj,
                        'section': sections[0],
                        'name': ''}
+
 
     def test_configure(self):
 
@@ -345,7 +347,7 @@ class TestActions(unittest.TestCase):
         self.assertEqual(steps.result, Passed)
 
     def test_configure_with_exception(self):
-    
+
         self.dev.configure = Mock(side_effect = Exception)
         steps =  Steps()
         self.kwargs.update({'device': self.dev,
@@ -381,6 +383,31 @@ class TestActions(unittest.TestCase):
 
         configure(**self.kwargs)
         self.assertEqual(steps.result, Passed)
+
+    def test_configure_dual_pass(self):
+
+        self.dev.configure_dual = Mock(side_effect=['passing cmd'])
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'action': 'configure_dual',
+                            'command': 'conf t\ncommit'})
+
+        configure_dual(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+
+    def test_configure_dual_failure(self):
+
+        self.dev.configure_dual = Mock(side_effect=Exception)
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'action': 'configure_dual',
+                            'command': 'conf t\ncommit'
+                            })
+
+        configure_dual(**self.kwargs)
+        self.assertEqual(steps.result, Failed)
 
     def test_parse(self):
 
@@ -564,7 +591,7 @@ class TestActions(unittest.TestCase):
 
       execute(**self.kwargs)
       self.assertEqual(steps.result, Passed)
-      
+
     def test_execute_expected_failure_fail(self):
 
       self.dev.execute = Mock(side_effect = [self.execute_output])
@@ -656,6 +683,47 @@ class TestActions(unittest.TestCase):
       api(**self.kwargs)
       self.assertEqual(steps.result, Errored)
 
+    def test_api_no_device_common_api(self):
+
+      arguments = {'testbed': self.testbed}
+      steps =  Steps()
+      self.kwargs.update({'steps': steps,
+                          'function': 'get_devices',
+                          'common_api': True,
+                          'arguments': arguments})
+
+      api(**self.kwargs)
+      self.assertEqual(steps.result, Passed)
+
+    def test_api_device_in_args_fail(self):
+
+      self.dev.api = Mock()
+      self.dev.testbed = self.testbed
+      self.dev.api.function.return_value = 'api output'
+      arguments = {'a': 1, 'b': [1,2,34], 'device': 'R3_NX'}
+      steps =  Steps()
+      self.kwargs.update({'steps': steps,
+                          'function': 'function',
+                          'arguments': arguments})
+
+      api(**self.kwargs)
+      self.assertEqual(steps.result, Errored)
+
+    def test_api_no_device_in_args(self):
+
+      self.dev.api = Mock()
+      self.dev.testbed = self.testbed
+      self.dev.api.function.return_value = 'api output'
+      arguments = {'a': 1, 'b': [1,2,34]}
+      steps =  Steps()
+      self.kwargs.update({'device': self.dev,
+                          'steps': steps,
+                          'function': 'function',
+                          'arguments': arguments})
+
+      api(**self.kwargs)
+      self.assertEqual(steps.result, Passed)
+
     def test_api_expected_failure(self):
 
       self.dev.api = Mock()
@@ -715,7 +783,7 @@ class TestActions(unittest.TestCase):
       self.kwargs.update({'device': dev,
                           'steps': steps,
                           'commands': commands})
-      
+
       output = bash_console(**self.kwargs)
       self.assertEqual(steps.result, Passed)
       self.assertEqual(output, {'cd ../common/': 'new_state: bash_dir_console',
@@ -733,10 +801,10 @@ class TestActions(unittest.TestCase):
                           'dn': '/api/mo/sys/bgp/inst/dom-default/af-ipv4-mvpn.json',
                           'payload': {}
                           })
-      
+
       out = rest(**self.kwargs)
       self.assertEqual(steps.result, Passed)
- 
+
     def test_rest_expected_failure(self):
 
       steps = Steps()
@@ -763,7 +831,7 @@ class TestActions(unittest.TestCase):
                           'post': {'a': 1, 'b':3}})
       diff(**self.kwargs)
       self.assertEqual(steps.result, Passed)
-    
+
     def test_diff_fail(self):
 
       steps = Steps()
@@ -793,7 +861,7 @@ class TestActions(unittest.TestCase):
                           'steps': Steps(),
                           'device': self.dev
       })
-      
+
       with patch(
                  "genie.libs.sdk.libs.abstracted_libs.restore.Restore.restore_configuration"
                  ) as func:
@@ -815,7 +883,7 @@ class TestActions(unittest.TestCase):
       with patch(
            "genie.libs.sdk.libs.abstracted_libs.restore.Restore.save_configuration"
            ) as func:
-        
+
         save_config_snapshot(**self.kwargs)
         func.assert_called_once()
         self.assertEqual(steps.result, Passed)
@@ -835,7 +903,7 @@ class TestActions(unittest.TestCase):
       with patch(
            "genie.libs.sdk.libs.abstracted_libs.restore.Restore.save_configuration"
            ) as func:
-        
+
         save_config_snapshot(**self.kwargs)
         func.assert_called_once()
         self.assertEqual(steps.result, Passed)
@@ -853,7 +921,7 @@ class TestActions(unittest.TestCase):
         self.kwargs.update({'steps': step,
                             'device': self.dev})
         restore_config_snapshot(**self.kwargs)
-      
+
       self.assertEqual(steps.result, Errored)
 
     def test_restore_config_snapshot_error_2(self):
@@ -861,7 +929,7 @@ class TestActions(unittest.TestCase):
       test_module = importlib.import_module('genie.harness.genie_testscript')
       script = TestScript(test_module)
       self.blitz_obj.parent = script
-      
+
       self.blitz_obj.restore = {
                                 self.dev: sdk.libs.abstracted_libs.restore.Restore(
                                 device=self.dev)}
@@ -869,7 +937,7 @@ class TestActions(unittest.TestCase):
       steps = Steps()
 
       with steps.start("Starting action", continue_=True) as step:
-  
+
         self.kwargs.update({'steps': step,
                             'device': self.dev})
         restore_config_snapshot(**self.kwargs)
@@ -881,7 +949,7 @@ class TestActions(unittest.TestCase):
       test_module = importlib.import_module('genie.harness.genie_testscript')
       script = TestScript(test_module)
       self.blitz_obj.parent = script
-      
+
       self.blitz_obj.restore = {
                                 self.dev: sdk.libs.abstracted_libs.restore.Restore(
                                 device=self.dev)}
@@ -903,7 +971,7 @@ class TestActions(unittest.TestCase):
       test_module = importlib.import_module('genie.harness.genie_testscript')
       script = TestScript(test_module)
       self.blitz_obj.parent = script
-      
+
       self.blitz_obj.restore = {
                                 self.dev: sdk.libs.abstracted_libs.restore.Restore(
                                 device=self.dev)}
@@ -952,14 +1020,14 @@ class TestActions(unittest.TestCase):
         self.assertEqual(substep.result, Passed)
 
     def test_dq_query_include_fail(self):
-    
+
       steps = Steps()
       kwargs = {'output': self.parser_output,
                 'steps': steps,
                 'device': self.dev,
                 'command': 'command',
                 'include': ["contains('software', regex=True)",
-                            "get_values('s_verasadsad')", 
+                            "get_values('s_verasadsad')",
                             "contains('hardware')"],
                 'exclude': None,
                 'continue_': True,
@@ -1132,7 +1200,7 @@ class TestActions(unittest.TestCase):
       # include = [{'we': 'are', 'testing': 'if', 'dict': ['input', 'works']}]
       # steps = Steps()
       # output = include
-      
+
       # _output_query_template(self.blitz_obj,
       #                        output,
       #                        steps,
@@ -1168,9 +1236,9 @@ class TestActions(unittest.TestCase):
     def test_string_query_list_output_include_1(self):
 
       steps = Steps()
-      output = [{'a': 1}, 
-                {'d': {'c': 'name1'}}, 
-                [1, 2, 34], 
+      output = [{'a': 1},
+                {'d': {'c': 'name1'}},
+                [1, 2, 34],
                 {'e': ['a', 'b', 'c']}]
 
       kwargs = {'output': output,
@@ -1190,9 +1258,9 @@ class TestActions(unittest.TestCase):
     def test_string_query_list_output_include_2(self):
 
       steps = Steps()
-      output = [{'a': 1}, 
-                {'d': {'c': 'name1'}}, 
-                [1, 2, 34], 
+      output = [{'a': 1},
+                {'d': {'c': 'name1'}},
+                [1, 2, 34],
                 {'e': ['a', 'b', 'c']}]
 
       kwargs = {'output': output,
@@ -1248,9 +1316,9 @@ class TestActions(unittest.TestCase):
     def test_string_query_list_output_exclude_2(self):
 
       steps = Steps()
-      output = [{'a': 1}, 
-                {'d': {'c': 'name1'}}, 
-                [1, 2, 34], 
+      output = [{'a': 1},
+                {'d': {'c': 'name1'}},
+                [1, 2, 34],
                 {'e': ['a', 'b', 'c']}]
 
       kwargs = {'output': output,
@@ -1270,9 +1338,9 @@ class TestActions(unittest.TestCase):
     def test_string_query_list_output_exclude_3(self):
 
       steps = Steps()
-      output = [{'a': 1}, 
-                {'d': {'c': 'name1'}}, 
-                [1, 2, 34], 
+      output = [{'a': 1},
+                {'d': {'c': 'name1'}},
+                [1, 2, 34],
                 {'e': ['a', 'b', 'c']}]
 
       kwargs = {'output': output,
@@ -1389,7 +1457,7 @@ class TestActions(unittest.TestCase):
          "'default' == 'default' and '10.0.0.0/8' == '10.0.0.0/8' and '20.20.8.2/32' == '20.20.8.2/32' and 'static' == 'static' and '20.20.8.2' == '20.20.8.2'",
          "'default' == 'default' and '2.2.2.2/32' == '2.2.2.2/32' and '3' == '3' and ('10.0.0.2' == '10.0.0.2' and '10.0.0.2' == '10.0.1.2' and '10.0.0.2' == '10.0.2.2') and 'ospf-1' == 'ospf-1' and ('Eth1/1' == 'Eth1/1' or 'Eth1/1' == 'Eth1/4' or 'Eth1/1' == 'Eth1/16') and 'intra' == 'intra' and ('10.0.1.2' == '10.0.0.2' or '10.0.1.2' == '10.0.1.2' or '10.0.1.2' == '10.0.2.2') and 'ospf-1' == 'ospf-1' and ('Eth1/4' == 'Eth1/1' or 'Eth1/4' == 'Eth1/4' or 'Eth1/4' == 'Eth1/16') and 'intra' == 'intra' and ('10.0.2.2' == '10.0.2.2' or '10.0.2.2' == '10.0.0.2' or '10.0.2.2' == '10.0.1.2') and 'ospf-1' == 'ospf-1' and ('Eth1/16' == 'Eth1/1' or 'Eth1/16' == 'Eth1/4' or 'Eth1/16' == 'Eth1/16') and 'intra' == 'intra'"
      ]
-      list_of_results = [Passed, Passed, Passed, 
+      list_of_results = [Passed, Passed, Passed,
                         Failed,Passed, Passed, Passed,
                         Passed, Passed, Failed]
 
@@ -1410,7 +1478,7 @@ class TestActions(unittest.TestCase):
         self.assertEqual(step.result, Failed)
 
     def test_sleep(self):
-      
+
       steps = Steps()
 
       with steps.start("Starting action") as step:
@@ -1422,7 +1490,7 @@ class TestActions(unittest.TestCase):
     def test_print(self):
 
       steps = Steps()
-      print_dict = {'name1': {'value': 'print any', 'type': 'banner'}, 
+      print_dict = {'name1': {'value': 'print any', 'type': 'banner'},
                     'name2': {'value': 'print any without banner'},
                     'steps': steps}
 

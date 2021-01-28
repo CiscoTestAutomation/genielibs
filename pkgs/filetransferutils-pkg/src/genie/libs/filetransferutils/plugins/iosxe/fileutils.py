@@ -94,18 +94,11 @@ ip tftp blocksize 8192'''
                                                    cache_ip=kwargs.get(
                                                        'cache_ip', True))
 
-        p = self.get_protocol(source, destination)
-        if p == 'scp':
-            # scp flash:/memleak.tcl 10.1.0.213:/auto/tftp-ssr/memleak.tcl
-            s = source.replace('{}://'.format(p), '').replace('//', ':/')
-            d = destination.replace('{}://'.format(p), '').replace('//', ':/')
-            if vrf:
-                cmd = '{p} {s} {d} vrf {vrf_value}'.format(p=p,
-                                                           s=s,
-                                                           d=d,
-                                                           vrf_value=vrf)
-            else:
-                cmd = '{p} {s} {d}'.format(p=p, s=s, d=d)
+        # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
+        if vrf:
+            cmd = 'copy {f} {t} vrf {vrf_value}'.format(f=source,
+                                                        t=destination,
+                                                        vrf_value=vrf)
         else:
             # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
             if vrf:

@@ -406,8 +406,8 @@ class StageOutputs:
             51770306560 bytes total
         ''',
 
-        'copy ftp://rcpuser:password@20.1.1.1/nxos.9.3.1_N95.bin bootflash:/nxos.9.3.1_N95.bin vrf management': '''\
-            N95#copy ftp://20.1.1.1/nxos.9.3.1.bin bootflash:nxos.9.3.1_N95.bin vrf management
+        'copy ftp://rcpuser:password@20.1.1.1/nxos.9.3.1_N95.bin bootflash:/nxos.9.3.1_N95.bin': '''\
+            N95#copy ftp://20.1.1.1/nxos.9.3.1.bin bootflash:nxos.9.3.1_N95.bin
                 ***** Transfer of file Completed Successfully *****
             Copy complete, now saving to disk (please wait)...
             Copy complete.

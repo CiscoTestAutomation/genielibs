@@ -28,6 +28,7 @@ install_requires=['unicon', 'pyftpdlib', 'tftpy']
 
 entry_points = {
     'pyats.utils.fileutils.plugins' : [
+        'apic = genie.libs.filetransferutils.plugins.apic',
         'ios = genie.libs.filetransferutils.plugins.ios',
         'iosxe = genie.libs.filetransferutils.plugins.iosxe',
         'nxos = genie.libs.filetransferutils.plugins.nxos',

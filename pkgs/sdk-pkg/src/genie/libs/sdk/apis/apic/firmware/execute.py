@@ -1,4 +1,4 @@
-""" Execute type APIs for NXOS ACI """
+""" Execute type APIs for APIC """
 
 import time
 import logging
@@ -157,7 +157,9 @@ def execute_install_switch_group_firmware(
         error_patterns=None,
         switch_upgrade_max_time=2700,
         switch_upgrade_check_interval=60,
-        stabilize_switch_group_config_sleep=120
+        stabilize_switch_group_config_sleep=120,
+        controller_reconnect_max_time=900,
+        controller_reconnect_check_interval=60,
 ):
     """ Installs the switch image on the switch(s) and then verifies the install
     completed.
@@ -189,6 +191,13 @@ def execute_install_switch_group_firmware(
 
         stabilize_switch_group_config_sleep (int, optional): How long in seconds
             to sleep after configuring switch-group. Defaults to 120.
+
+        controller_reconnect_max_time (int optional): Max time in seconds allowed
+            for reconnecting to controller if the connection is lost. Defaults
+            to 900.
+
+        controller_reconnect_check_interval (int, optional): How often in
+            seconds to attempt reconnect. Defaults to 60.
 
     Returns:
         True if install succeeds
@@ -228,10 +237,44 @@ def execute_install_switch_group_firmware(
         log.error("Firmware upgrade command failed: {}".format(str(e)))
         return False
 
-    result = device.api.verify_firmware_upgrade_status(
-        status='success',
-        firmware_group='switch-group {}'.format(switch_group_name),
-        max_time=switch_upgrade_max_time,
-        check_interval=switch_upgrade_check_interval)
+    try:
+        result = device.api.verify_firmware_upgrade_status(
+            status='success',
+            firmware_group='switch-group {}'.format(switch_group_name),
+            max_time=switch_upgrade_max_time,
+            check_interval=switch_upgrade_check_interval)
+    except Exception as e:
+        # An exception can be raised if the controller does not respond to
+        # the 'show firmware upgrade status' command. Disconnect and reconnect
+        # to ensure the controller is ready for commands to be issued.
+        log.info("Reattempting connection as the device '{dev}' returned "
+                 "nothing after executing a command.\nError: {e}".
+                 format(dev=device.hostname, e=str(e)))
+
+        # Attempt device reconnection
+        timeout = Timeout(controller_reconnect_max_time,
+                          controller_reconnect_check_interval)
+
+        while timeout.iterate():
+            timeout.sleep()
+            device.destroy()
+            try:
+                device.connect(learn_hostname=True)
+            except Exception:
+                log.info("Cannot connect to {dev}".format(
+                    dev=device.hostname))
+            else:
+                break
+
+        # If not connected after timeout, fail
+        if not device.connected:
+            return False
+
+        # Reconnected, so check firmware upgrade status
+        result = device.api.verify_firmware_upgrade_status(
+            status='success',
+            firmware_group='switch-group {}'.format(switch_group_name),
+            max_time=switch_upgrade_max_time,
+            check_interval=switch_upgrade_check_interval)
 
     return result

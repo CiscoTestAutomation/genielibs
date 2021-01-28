@@ -1026,6 +1026,9 @@ def get_interface_ipv4_address(device, interface):
     except SchemaEmptyParserError as e:
         log.error('No interface information found for {}: {}'.format(interface, e))
         return None
+    
+    interface = Common.convert_intf_name(interface)
+
     ip_dict = data[interface].get('ipv4')
     ip = None
     if ip_dict:
@@ -1052,3 +1055,77 @@ def get_interface_names(device):
             return None
 
     return [name for name in out.keys()]
+
+def get_ipv6_interface_ip_address(device, interface, link_local=False):
+    """ Get interface ip address from device
+
+        Args:
+            interface('str'): Interface to get address
+            device ('obj'): Device object
+            link_local ('bool'): Link local address Default: False
+        Returns:
+            None
+            ip_address ('str'): If has multiple addresses
+                                will return the first one.
+
+        Raises:
+            None
+    """
+    try:
+        if '.' in interface and interface.split('.')[1]=='0':
+            interface = interface.split('.')[0]
+        out=device.parse('show ipv6 interface {interface}'.format(interface=interface))
+    except SchemaEmptyParserError as e:
+        log.error('No interface information found for {}: {}'.format(interface, e))
+        return None
+
+    # Example output
+    # {
+    #     'GigabitEthernet2': {
+    #         'joined_group_addresses': ['FF02::1', 'FF02::1:FF00:1', 'FF02::1:FF8D:EF3D'],
+    #         'oper_status': 'up',
+    #         'mtu': 1500,
+    #         'enabled': True,
+    #         'ipv6': {
+    #             'nd': {
+    #                 'dad_attempts': 1,
+    #                 'using_time': 30000,
+    #                 'suppress': False,
+    #                 'dad_enabled': True,
+    #                 'ns_retransmit_interval': 1000,
+    #                 'reachable_time': 30000,
+    #             },
+    #             '2001:111::1/64': {
+    #                 'status': 'valid',
+    #                 'ip': '2001:111::1',
+    #                 'prefix_length': '64',
+    #             },
+    #             'icmp': {
+    #                 'unreachables': 'sent',
+    #                 'redirects': True,
+    #                 'error_messages_limited': 100,
+    #             },
+    #             'enabled': True,
+    #             'FE80::250:56FF:FE8D:EF3D': {
+    #                 'origin': 'link_layer',
+    #                 'ip': 'FE80::250:56FF:FE8D:EF3D', <------------ link local ip address
+    #                 'status': 'valid',
+    #             },
+    #         },
+    #     },
+    # }    
+
+    # get the interface
+    intf = list(out.keys())[0]
+
+    for sub_key, sub_value in out[intf]['ipv6'].items():
+
+        # 'enabled': True,
+        if type(sub_value) == dict:
+            sub_value_keys = list(sub_value.keys())
+            if link_local and 'origin' in sub_value_keys:
+                return sub_value['ip']
+
+            if 'origin' not in sub_value_keys and 'ip' in sub_value_keys:
+                return sub_value['ip']
+    return None    

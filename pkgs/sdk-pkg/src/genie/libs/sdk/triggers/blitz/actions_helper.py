@@ -1,5 +1,5 @@
 import re
-import ast 
+import ast
 import logging
 import operator
 import xmltodict
@@ -7,6 +7,7 @@ import xml.etree.ElementTree as ET
 
 # from genie
 from genie.utils.dq import Dq
+from genie.conf.base import Device
 from genie.conf.base.utils import QDict
 from genie.utils.timeout import Timeout
 from genie.ops.utils import get_ops_exclude
@@ -22,18 +23,30 @@ from unicon.eal.dialogs import Statement, Dialog
 
 log = logging.getLogger(__name__)
 
+
 def configure_handler(step, device, command, expected_failure=False, **kwargs):
 
-    if 'reply' in kwargs:
-        kwargs.update({'reply': _prompt_handler(kwargs['reply'])})
+    # checking to see if action is 'configure' or 'configure_handler'
+    action = kwargs.pop('action', 'configure')
 
+    # configure dual commands should be entered as a list
+    if action == 'configure_dual':
+        command = command.splitlines()
+
+    if 'reply' in kwargs:
+
+        kwargs.update({'reply': _prompt_handler(kwargs['reply'])})
     try:
-        output = device.configure(command, **kwargs)
+        output = getattr(device, action)(command, **kwargs)
+
     except Exception as e:
+        if 'maple' in kwargs:
+            step.passx("Invalid config command executed")
         if not expected_failure:
-            step.failed('Configure failed {}'.format(str(e)))
+            step.failed('{} failed {}'.format(action, str(e)))
         else:
-            step.passed('Configure failed as expected, the step test result is set as passed')
+            step.passed(
+                '{} failed as expected, the step test result is set as passed'.format(action))
 
     return output
 
@@ -46,9 +59,7 @@ def parse_handler(step,
                   max_time=None,
                   check_interval=None,
                   continue_=True,
-                  arguments=None,
-                  action='parse'):
-
+                  arguments=None):
 
     if not arguments:
         arguments = {}
@@ -56,6 +67,16 @@ def parse_handler(step,
         log.info('Arguments passed:\n{}'.format('\n'.join(
             '{}:\n{}'.format(k,v) for k,v in arguments.items())))
 
+    kwargs = {'steps': step,
+              'device': device,
+              'command': command,
+              'include': include,
+              'exclude': exclude,
+              'max_time': max_time,
+              'check_interval': check_interval,
+              'continue_': continue_,
+              'action': 'parse',
+              'expected_failure': expected_failure}
     # handeling parse command
     try:
 
@@ -64,22 +85,18 @@ def parse_handler(step,
     # check if the parser is empty then return an empty dictionary
     except SchemaEmptyParserError:
         if include or exclude or (max_time and check_interval):
-            output = ''
-            return _output_query_template(output, step, device, command,
-                                          include, exclude, max_time,
-                                          check_interval, continue_, action)
+            kwargs.update({'output': ''})
+            return _output_query_template(**kwargs)
         else:
             step.passed('The result of this command is an empty parser.')
 
     else:
         # go through the include/exclude process
-        return _output_query_template(output, step, device, command,
-                                      include, exclude, max_time,
-                                      check_interval, continue_, action, 
-                                      expected_failure=expected_failure)
+        kwargs.update({'output': output})
+        return _output_query_template(**kwargs)
 
 def execute_handler(step,
-                    device, 
+                    device,
                     command,
                     expected_failure=False,
                     include=None,
@@ -87,34 +104,35 @@ def execute_handler(step,
                     max_time=None,
                     check_interval=None,
                     continue_=True,
-                    action='execute',
-                    **kwargs):
+                    **extra_kwargs):
 
-    if 'reply' in kwargs:
-        kwargs.update({'reply': _prompt_handler(kwargs['reply'])})
+    if 'reply' in extra_kwargs:
+        extra_kwargs.update({'reply': _prompt_handler(extra_kwargs['reply'])})
 
     output = ''
     # handeling execute command
     try:
-        output = device.execute(command, **kwargs)
+        output = device.execute(command, **extra_kwargs)
     except Exception as e:
         if not expected_failure:
             step.failed("Step failed because of this error: {e}".format(e=e))
         else:
             step.passed('Execute failed as expected, the step test result is set as passed')
 
-    return _output_query_template(output,
-                                  step,
-                                  device,
-                                  command,
-                                  include,
-                                  exclude,
-                                  max_time,
-                                  check_interval,
-                                  continue_,
-                                  action,
-                                  expected_failure=expected_failure,
-                                  extra_kwargs=kwargs)
+    kwargs = {'output': output,
+              'steps': step,
+              'device': device,
+              'command': command,
+              'include': include,
+              'exclude': exclude,
+              'max_time': max_time,
+              'check_interval': check_interval,
+              'continue_': continue_,
+              'action': 'execute',
+              'expected_failure': expected_failure,
+              'extra_kwargs': extra_kwargs}
+
+    return _output_query_template(**kwargs)
 
 def learn_handler(step,
                   device,
@@ -124,21 +142,30 @@ def learn_handler(step,
                   exclude=None,
                   max_time=None,
                   check_interval=None,
-                  continue_=True,
-                  action='learn'):
+                  continue_=True):
 
     # Save the to_dict learn output,
     learned_value = device.learn(command)
     output = \
         learned_value if isinstance(learned_value, dict) else learned_value.to_dict()
-    return _output_query_template(output, step, device, command, include,
-                                  exclude, max_time, check_interval, continue_,
-                                  action, expected_failure=expected_failure)
 
+    kwargs = {'output': output,
+              'steps': step,
+              'device': device,
+              'command': command,
+              'include': include,
+              'exclude': exclude,
+              'max_time': max_time,
+              'check_interval': check_interval,
+              'continue_': continue_,
+              'action': 'learn',
+              'expected_failure': expected_failure}
+
+    return _output_query_template(**kwargs)
 
 def api_handler(step,
-                device,
                 command,
+                device=None,
                 expected_failure=False,
                 include=None,
                 exclude=None,
@@ -146,54 +173,102 @@ def api_handler(step,
                 check_interval=None,
                 continue_=True,
                 arguments=None,
-                action='api'):
+                action='api',
+                **kwargs):
+
     #handeling api command
     output = None
     # if no arguments send an empty argument list to api function
     if not arguments:
         arguments = {}
 
+    common_api = kwargs.get('common_api')
+    testbed = kwargs['blitz_obj'].parameters['testbed']
+
+    # updating the device object
+    device = _api_device_update(arguments,
+                                testbed,
+                                step,
+                                command,
+                                device=device,
+                                common_api=common_api)
     # check the os and decide how to call the api_function
     # will be changed when we figure out the use of device.type for more general use
     api_function = device if device.os == 'ixianative' else device.api
 
-    if arguments.get('device'):
-        # if device does not exist error
-        try:
-            arg_device = device.testbed.devices[arguments['device']]
-        except KeyError as e:
-            step.errored('Cannot find device {} in testbed'.format(
-                arguments['device']))
-        else:
-            arguments['device'] = arg_device
-
     try:
         output = getattr(api_function, command)(**arguments)
-    except (AttributeError, TypeError
-            ) as e:  # if could not find api or the kwargs is wrong for api
+    except (AttributeError, TypeError) as e:
+        # if could not find api or the kwargs is wrong for api
         if not expected_failure:
-            step.errored(str(e))
+            step.errored("Could not find api {c} under device os"
+                         " or in the list of common apis".format(c=command))
         else:
             step.passed('API failed as expected, the step test result is set as passed')
-            
-    except Exception as e:  # anything else
+
+    except Exception as e:
+        # anything else
         if not expected_failure:
             step.failed(str(e))
         else:
             step.passed('API failed as expected, the step test result is set as passed')
 
-    return _output_query_template(output,
-                                  step,
-                                  device,
-                                  command,
-                                  include,
-                                  exclude,
-                                  max_time,
-                                  check_interval,
-                                  continue_,
-                                  action,
-                                  expected_failure=expected_failure,
-                                  arguments=arguments)
+    kwargs = {'output': output,
+              'steps': step,
+              'device': device,
+              'command': command,
+              'include': include,
+              'exclude': exclude,
+              'max_time': max_time,
+              'check_interval': check_interval,
+              'continue_': continue_,
+              'action': 'api',
+              'expected_failure': expected_failure,
+              'arguments':arguments}
+
+    return _output_query_template(**kwargs)
+
+def _api_device_update(arguments, testbed, step, command, device=None, common_api=None):
+    """
+        Updating the device obj with regards to the user input
+        1) Allow user to both provide device in the body and arguments of the action
+        2) Allow user to provide device value in either body or arguments of the action
+        3) Allow user to provide no device for api's that are common utils
+    """
+
+    # if api and arguments both contains device, need to make sure
+    # that the device in the arguments is as same as the one in api
+    if arguments.get('device') and device:
+
+        if arguments.get('device') != device.name and\
+           arguments.get('device') != device.alias:
+
+            step.errored('Device provided in the arguments {} '
+                         'is not as same as the one provided in api {}'
+                         .format(arguments['device'], device))
+    if device:
+
+        return device
+
+    # if not device in api and arguments contains device need to make sure
+    # that device is a valid one and exist in the testbed
+    if arguments.get('device'):
+
+        try:
+            arg_device = testbed.devices[arguments['device']]
+        except KeyError as e:
+            step.errored('Cannot find device {} in testbed'.format(
+                arguments['device']))
+
+        arguments['device'] = arg_device
+        return arg_device
+
+    # if common api
+    if common_api:
+        return Device(name='a', os='', custom={'abstraction':{'order': ['os']}})
+
+    step.errored("No device is provided and the api '{}'"
+                 "is not a common api".format(command))
 
 def bash_console_handler(device,
                          step,
@@ -204,30 +279,31 @@ def bash_console_handler(device,
                          max_time=None,
                          check_interval=None,
                          continue_=True,
-                         action='bash_console',
-                         **kwargs):
+                         **extra_kwargs):
 
     output_dict = {}
-    with device.bash_console(**kwargs) as bash:
+    with device.bash_console(**extra_kwargs) as bash:
         for command in commands:
-            bash_command_output = bash.execute(command, **kwargs)
+            bash_command_output = bash.execute(command, **extra_kwargs)
             if isinstance(bash_command_output, dict):
                 output_dict.update(bash_command_output)
             else:
                 output_dict.update({command:bash_command_output})
 
-    return _output_query_template(output_dict,
-                                  step,
-                                  device,
-                                  commands,
-                                  include,
-                                  exclude,
-                                  max_time,
-                                  check_interval,
-                                  continue_,
-                                  action,
-                                  expected_failure=expected_failure,
-                                  extra_kwargs=kwargs)
+    kwargs = {'output': output_dict,
+              'steps': step,
+              'device': device,
+              'command': command,
+              'include': include,
+              'exclude': exclude,
+              'max_time': max_time,
+              'check_interval': check_interval,
+              'continue_': continue_,
+              'action': 'bash_console',
+              'expected_failure': expected_failure,
+              'extra_kwargs':extra_kwargs}
+
+    return _output_query_template(**kwargs)
 
 def rest_handler(device,
                  method,
@@ -238,10 +314,8 @@ def rest_handler(device,
                  exclude=None,
                  max_time=None,
                  check_interval=None,
-                 action='rest',
                  connection_alias='rest',
-                 *args,
-                 **kwargs):
+                 **extra_kwargs):
     output = ''
 
     # Checking the connection alias
@@ -253,11 +327,11 @@ def rest_handler(device,
                             dev=device.name, alias=connection_alias)) from e
     # Calling the http protocol
     try:
-        output = getattr(device_alias, method)(**kwargs)
+        output = getattr(device_alias, method)(**extra_kwargs)
     except Exception as e:
         if not expected_failure:
             step.failed("REST method '{}' failed. Error: {}".format(method, e))
-        else:               
+        else:
             step.passed('Rest failed as expected, the step test result is set as passed')
 
     # if xml convert it to json
@@ -266,26 +340,27 @@ def rest_handler(device,
 
     log.info(output)
 
-    return _output_query_template(output,
-                                  step,
-                                  device,
-                                  method,
-                                  include,
-                                  exclude,
-                                  max_time,
-                                  check_interval,
-                                  continue_,
-                                  action,
-                                  rest_device_alias=device_alias,
-                                  expected_failure=expected_failure,
-                                  extra_kwargs=kwargs)
+    kwargs = {'output': output,
+              'steps': step,
+              'device': device,
+              'command': method,
+              'include': include,
+              'exclude': exclude,
+              'max_time': max_time,
+              'check_interval': check_interval,
+              'continue_': continue_,
+              'action': 'rest',
+              'rest_device_alias': device_alias,
+              'expected_failure': expected_failure,
+              'extra_kwargs':extra_kwargs}
+
+    return _output_query_template(**kwargs)
 
 def _prompt_handler(reply):
 
     # handeling the reply for instances that a prompt message would get displayed in the console
     dialog_list = [Statement(**statement) for statement in reply]
     return Dialog(dialog_list)
-
 
 def _output_query_template(output,
                            steps,
@@ -301,7 +376,7 @@ def _output_query_template(output,
                            rest_device_alias=None,
                            expected_failure=False,
                            extra_kwargs=None):
-    
+
     if not extra_kwargs:
         extra_kwargs = {}
 
@@ -322,19 +397,18 @@ def _output_query_template(output,
                 if send_cmd:
                     try:
 
-                        output = _send_command(
-                            command,
-                            device,
-                            action,
-                            arguments=arguments,
-                            rest_device_alias=rest_device_alias,
-                            **extra_kwargs)
+                        output = _send_command(command,
+                                               device,
+                                               action,
+                                               arguments=arguments,
+                                               rest_device_alias=rest_device_alias,
+                                               **extra_kwargs)
 
                     except SchemaEmptyParserError:
                         # add empty to proceed `include`/`exclude`/`max_time`/`check_interval`
                         output = ''
 
-                if action in ['execute', 'maple_search']:
+                if action == 'execute':
                     # validating the inclusion/exclusion of action execute,
                     pattern = re.compile(str(query))
                     found = pattern.search(str(output))
@@ -346,6 +420,7 @@ def _output_query_template(output,
                         'key': query,
                         'query_type': 'execute_query'
                     })
+
                 else:
                     # verifying the inclusion/exclusion of actions : learn, parse and api
                     found = _get_output_from_query_validators(output, query)
@@ -359,6 +434,7 @@ def _output_query_template(output,
                     substep.passed(message)
                 if not expected_failure and step_result == Passed:
                     substep.passed(message)
+
                 send_cmd = True
                 timeout.sleep()
                 if not timeout.iterate():
@@ -370,17 +446,66 @@ def _output_query_template(output,
             elif expected_failure and step_result == Passed:
                 substep.failed(message)
             else:
-                log.info('{} failed as expected, the step test result is set as passed'.format(action))
+                log.info(
+                    '{} failed as expected, the step test result is set as passed'.format(action)
+                )
 
     # If no keys, if expected failure, steps results has to be reversed
     if not keys:
         if expected_failure:
             if steps.result == Passed:
-                steps.failed('{} did not failed as expected, the step test result is set as failed'.format(action))
+                steps.failed(
+                        '{} did not failed as expected, the step test result is set as failed'
+                        .format(action)
+                        )
             else:
-                steps.passed('{} did failed as expected, the step test result is set as passed'.format(action))
+                steps.passed(
+                        '{} did failed as expected, the step test result is set as passed'
+                        .format(action)
+                        )
 
     return output
+
+def _include_exclude_list(include, exclude):
+    """
+    create the list of queries that would be checked for include or exclude
+    """
+    keys = []
+    if include:
+        for item in include:
+            keys.append((item, 'included'))
+    if exclude:
+        for item in exclude:
+            keys.append((item, 'excluded'))
+
+    return keys
+
+def _get_timeout_from_ratios(device, max_time, check_interval):
+    """
+    update timeout from ratios provided in tests
+    """
+    max_time_ratio = device.custom.get('max_time_ratio', None)
+    if max_time and max_time_ratio:
+        try:
+            max_time = int(max_time * float(max_time_ratio))
+        except ValueError:
+            log.error(
+                'The max_time_ratio ({m}) value is not of type float'.format(
+                    m=max_time_ratio))
+
+    check_interval_ratio = device.custom.get('check_interval_ratio', None)
+    if check_interval and check_interval_ratio:
+        try:
+            check_interval = int(check_interval * float(check_interval_ratio))
+        except ValueError:
+            log.error(
+                'The check_interval_ratio ({c}) value is not of type float'.
+                format(c=check_interval_ratio))
+
+    if max_time and not check_interval:
+        check_interval = 0.0
+
+    return max_time, check_interval
 
 def _send_command(command,
                   device,
@@ -388,9 +513,9 @@ def _send_command(command,
                   arguments=None,
                   rest_device_alias=None,
                   **kwargs):
-
-    # sending command to get restarted if max_time
-
+    """
+    sending command to get restarted if max_time and check interval
+    """
     # if api
     if action == 'api':
         if not arguments:
@@ -422,7 +547,7 @@ def _send_command(command,
                     output_dict.update(bash_command_output)
                 else:
                     output_dict.update({cmd:bash_command_output})
-        
+
         return output_dict
 
     # for everything else, just check if reply should get updated
@@ -432,155 +557,10 @@ def _send_command(command,
 
     return getattr(device, action)(command, **kwargs)
 
-def _include_exclude_list(include, exclude):
-    # create the list of queries that would be checked for include or exclude
-    keys = []
-    if include:
-        for item in include:
-            keys.append((item, 'included'))
-    if exclude:
-        for item in exclude:
-            keys.append((item, 'excluded'))
-
-    return keys
-
-
-def _get_timeout_from_ratios(device, max_time, check_interval):
-
-    max_time_ratio = device.custom.get('max_time_ratio', None)
-    if max_time and max_time_ratio:
-        try:
-            max_time = int(max_time * float(max_time_ratio))
-        except ValueError:
-            log.error(
-                'The max_time_ratio ({m}) value is not of type float'.format(
-                    m=max_time_ratio))
-
-    check_interval_ratio = device.custom.get('check_interval_ratio', None)
-    if check_interval and check_interval_ratio:
-        try:
-            check_interval = int(check_interval * float(check_interval_ratio))
-        except ValueError:
-            log.error(
-                'The check_interval_ratio ({c}) value is not of type float'.
-                format(c=check_interval_ratio))
-
-    if max_time and not check_interval:
-        check_interval = 0.0
-
-    return max_time, check_interval
-
-
-def _verify_include_exclude(action_output,
-                            style,
-                            query_type,
-                            operation=None,
-                            expected_value=None,
-                            key=None):
-    # Checking the inclusion or exclusion and verifies result values
-    # With regards to different operations for actions ('api','parse', 'learn')
-    if query_type in ['non_dq_query']:
-        # if a value exist to compare the result
-        return _verify_string_query_include_exclude(action_output,
-                                                    expected_value,
-                                                    style,
-                                                    operation=operation)
-
-    # if results are dictionary and the queries are in dq format ( contains('value'))
-    return _verify_dq_query_and_execute_include_exclude(
-                                                        action_output, style, key)
-
-def _verify_string_query_include_exclude(action_output,
-                                         expected_value,
-                                         style,
-                                         operation=None):
-    # dictionary of log message templates
-    dict_of_log_msg = {
-            'within': "The result '{result}' is '{operation}' the range '{value}'",
-            'contains': "The value '{value}' is '{operation}' in the result '{result}'",
-            'contains_regex': "The pattern '{value}' is {operation} in the result {result}",
-            'others': "The result '{result}' is '{operation}' to '{value}'"
-    }
-
-    # update, operation names based on styles and update 
-    # dictionary of log massages with regards to the styles
-    operation, dict_of_log_msg = \
-         _operation_to_style_map(style, operation, dict_of_log_msg)
-
-    # operation can be operation itself or in case of checking
-    # that if an item exist in a list, be changed to 
-    # include/exclude for logging purposes
-    if operation in ['contains', 'contains_regex',
-                    'not_contains', 'not_contains_regex']:
-        operation_str = style
-
-    else:
-        operation_str = operation
-
-    if _evaluate_operator(result=action_output,
-                          operation=operation,
-                          value=expected_value):
-
-        query_result = Passed
-    else:
-        query_result = Failed
-        operation_str = 'not ' + operation_str
-
-    if operation in dict_of_log_msg:
-        msg = dict_of_log_msg[operation].\
-                            format(result=action_output,
-                                   value=expected_value,
-                                   operation=operation_str)
-    else: 
-        msg = dict_of_log_msg['others'].\
-                            format(result=action_output,
-                                   value=expected_value,
-                                   operation=operation_str)
-
-    return query_result, msg
-
-def _operation_to_style_map(style, operation, dict_of_log_msg):
-
-    # operations must change in case exclusion
-    # if no operation assigned setting a default 
-    # to equal/non_equal depending on inclusion/exclusion
-    if style == 'excluded':
-        if not operation:
-            operation = '!='
-
-        elif operation in ['contains', 'within', 'contains_regex']:
-
-            msg = dict_of_log_msg[operation]
-            operation = "{}{}".format('not_',operation)
-            dict_of_log_msg.update({operation:msg})
-
-    elif style == 'included':
-        if not operation:
-            operation = '=='
-
-    return (operation, dict_of_log_msg)
-
-def _verify_dq_query_and_execute_include_exclude(action_output, style, key):
-
-    # Validating execute include exclude keys and queries that are following dq formats
-
-    # if key is a query of type (contains('status')) then we show the resulted output
-    # otherwise the key itself usually for execute action
-    if not key:
-        key = action_output
-
-    message = "'{k}' is {s} in the output"
-
-    if (style == "included" and action_output
-            or style == 'excluded' and not action_output):
-        return (Passed, message.format(k=key, s=style))
-    else:
-        # change the style if it is not included for reporting
-        return (Failed, message.format(k=key, s='not ' + style))
-
-
 def _get_output_from_query_validators(output, query):
-    # the function determines the type of query and returns the appropriate result
+    """the function determines the type of query and
+       returns the appropriate result"""
+
     ret_dict = {}
     # if it is a valid dq query than apply the query and return the output
     if Dq.query_validator(query):
@@ -590,6 +570,19 @@ def _get_output_from_query_validators(output, query):
             'query_type': 'dq_query',
             'operation': None,
             'expected_value': None
+        })
+    # if the query is itself a dictionary
+    elif isinstance(query, (dict, list)):
+        # output could of of type dict/QDict
+        # NOTE: QDict is the type of the parser output
+        if isinstance(output, QDict):
+            output = dict(output)
+
+        ret_dict.update({
+            'action_output': output,
+            'query_type': 'non_dq_query',
+            'operation': '',
+            'expected_value': query
         })
     else:
         # check for the string query
@@ -606,98 +599,32 @@ def _get_output_from_query_validators(output, query):
 
     return ret_dict
 
-def _condition_validator(items):
-
-    # Checking condition useful for both condition work itself and action compare.
-    pattern = re.compile(
-        r"(?P<right_hand_value>[^>=<!]+)(?P<ops_and_left_hand_value>[\S\s]+)")
-
-    # split on \(\) for cases with "%VARIABLES{name} == 22 and (%VARIABLES{nam} == 12 or %VARIABLES{am} == 32)" 
-    items_splitted_on_bracket = re.split(r"\(|\)", items)
-
-    for each_item_in_bracket in items_splitted_on_bracket:
-
-        # split on and|or on each item
-        # 12 > 11 and 'sia' == 'sia' --> [12>11, 'sia'=='sia']
-        items_list = re.split(r"\s+and\s+|\s+or\s+", each_item_in_bracket)
-        for item in items_list:
-
-            if not item.strip():
-                continue
-
-            m = pattern.match(item)
-            if not m:
-                raise Exception('Wrong input')
-
-            group = m.groupdict()
-            right_hand_value = group['right_hand_value']
-            ops_and_left_hand_value = group['ops_and_left_hand_value']
-
-            try:
-                right_hand_value = float(right_hand_value)
-            except ValueError:
-                pass
- 
-            # Extracting right hand, left hand and operator for each comparision
-            output = _string_query_validator(right_hand_value,
-                                             ops_and_left_hand_value)
-            right_hand = output['right_hand_value']
-            right_hand = right_hand if isinstance(right_hand, (float, int)) else right_hand.strip()
-            operation = output['operation'].strip()
-            left_hand = output['left_hand_value']
-            left_hand = left_hand if isinstance(left_hand, (float, int)) else left_hand.strip()
-            result = _evaluate_operator(right_hand,
-                                        operation=operation,
-                                        value=left_hand)
-            items = items.replace(item, ' ' + str(result) + ' ')
-    
-    try:
-        ret_val = _true_false_eval(items)
-    except Exception as e:
-        log.error("Invalid boolean expression {}.".format(str(e)))
-        ret_val = False
-
-    return ret_val
-
 def _string_query_validator(right_hand_value, query):
-
-    # if the query is of type dictionary or a list
-    # the output of the parsers are of type QDict
-    # hence right_hand_values that are of type
-    # QDict or parsers outputs, needs to be casted to dict
-    if isinstance(query, (dict, list)):
-        if isinstance(right_hand_value, (dict, QDict)):
-            right_hand_value = dict(right_hand_value)
-
-        return {
-            'right_hand_value': right_hand_value,
-            'operation': '',
-            'left_hand_value': query
-        }
-    # Validating users queries like (>=1220), (!= 100), (>= 100 && <= 200), ( == some string)
+    """
+        Validating the queries that are string:
+        e.g: (>=1220), (!= 100),
+             (>= 100 && <= 200), ( == some string)
+    """
     # These queries mostly used for verifying api outputs that are digits or string
     # if the query does not match the expected pattern raise valueerror
     ret_dict = {}
     p = re.compile(r'(?P<operation>[>=<!\s]*)(?P<left_hand_value>[\S\s]+)')
 
-    # making sure that we are checking in string,
-    # otherwise it would have exploded
     if '&&' in str(query):
         # if range return the value of this function
         return _string_query_range_validator(right_hand_value, query)
 
-    # making sure that we are matching string
     m = p.match(str(query))
     if not m:
         # raising error if query is not inputted as per instructions
         raise ValueError(
             "The query: '{}' is not entered properly".format(query))
-    
-    # extract values from include/exclude queries 
+
+    # extract values from include/exclude queries
     # and change their types from string to the proper types
     # accordingly
-    groups_dict = _query_values_type_adjustment(
-                                               right_hand_value, m.groupdict(), query)
+    groups_dict = _query_values_type_update(
+                                            right_hand_value, m.groupdict(), query)
 
     ret_dict.update({
         'right_hand_value': right_hand_value,
@@ -707,54 +634,10 @@ def _string_query_validator(right_hand_value, query):
 
     return ret_dict
 
-def _query_values_type_adjustment(right_hand_value, groups_dict, query):
-    """ 
-    extract values from include/exclude queries 
-    and change their types from string to the proper types
-    accordingly
-    """
-
-    left_hand_value = groups_dict['left_hand_value'].strip()
-    operation = groups_dict['operation'].replace(' ', '')
-    right_hand_value_type = type(right_hand_value)
-
-    # Checking if the type of the query is bool
-    # e.g: include:
-    #         - True
-    if right_hand_value_type == bool and isinstance(query, bool):
-        left_hand_value = _true_false_eval(left_hand_value)
-
-    # if the type of output is list
-    # either apply regex on items of the list and 
-    # match, or check if the entire item exist in 
-    # the list 
-    elif right_hand_value_type == list:
-
-        try:
-            # ast.literal_eval casts string representation of lists/int/dict to the actual values
-            # e.g "[1,2,3]" to [1,2,3]
-            # e.g or "1" to 1 
-            left_hand_value = ast.literal_eval(left_hand_value)
-            operation = 'contains'
-        except (ValueError, SyntaxError):
-            # If errored out then in the input is definitely a string 
-            operation = 'contains_regex'
-
-    else:
-        try:
-            # cast the input value to result value
-            left_hand_value = right_hand_value_type(left_hand_value)
-        except Exception:
-            pass
-
-    groups_dict.update({'left_hand_value': left_hand_value,
-                        'operation': operation})
-
-    return groups_dict
-
 def _string_query_range_validator(output, query):
-    # validating users queries like (>= 1200 && <=2000)
-
+    """
+    validating users queries like (>= 1200 && <=2000)
+    """
     # list of valid operations in case of a range call we don't want = or !=
     list_of_ops = ['>=', '<=', '>', '<']
 
@@ -819,6 +702,156 @@ def _string_query_range_validator(output, query):
 
     return ret_dict
 
+# Do we need a better name?
+def _query_values_type_update(right_hand_value, groups_dict, query):
+    """
+    extract values from include/exclude queries
+    and change their types from string to the proper types
+    accordingly
+    """
+
+    left_hand_value = groups_dict['left_hand_value'].strip()
+    operation = groups_dict['operation'].replace(' ', '')
+    right_hand_value_type = type(right_hand_value)
+
+    # Checking if the type of the query is bool
+    # e.g: include:
+    #         - True
+    if right_hand_value_type == bool and isinstance(query, bool):
+        left_hand_value = _true_false_eval(left_hand_value)
+
+    # if the type of output is list
+    # either apply regex on items of the list and
+    # match, or check if the entire item exist in
+    # the list
+    elif right_hand_value_type == list:
+
+        try:
+            # ast.literal_eval casts string representation of lists/int/dict to the actual values
+            # e.g "[1,2,3]" to [1,2,3]
+            # e.g or "1" to 1
+            left_hand_value = ast.literal_eval(left_hand_value)
+
+            # the include operation is set to contains
+            # checks if a list contains the input value
+            operation = 'contains'
+        except (ValueError, SyntaxError):
+
+            # If errored out then the query is definitely a string
+            # if query is string, check if the string(or regex string)
+            # exist in the output
+            operation = 'contains_regex'
+    else:
+        try:
+            # cast the input value to result value
+            # for arithmetic cases with normal operators (>, =, <)
+            left_hand_value = right_hand_value_type(left_hand_value)
+        except Exception:
+            pass
+
+    groups_dict.update({'left_hand_value': left_hand_value,
+                        'operation': operation})
+
+    return groups_dict
+
+def _verify_include_exclude(action_output,
+                            style,
+                            query_type,
+                            operation=None,
+                            expected_value=None,
+                            key=None):
+    """ Checking the inclusion or exclusion and verifies result values
+        With regards to different operations for actions ('api','parse', 'learn')
+    """
+
+    if query_type in ['non_dq_query']:
+        # if a value exist to compare the result
+        return _verify_string_query_include_exclude(action_output,
+                                                    expected_value,
+                                                    style,
+                                                    operation=operation)
+
+    # if results are dictionary and the queries are in dq format ( contains('value'))
+    return _verify_dq_query_and_execute_include_exclude(
+                                                        action_output, style, key)
+
+def _verify_string_query_include_exclude(action_output,
+                                         expected_value,
+                                         style,
+                                         operation=None):
+
+    # dictionary of log message templates per each action
+    # "within" is for checking range scenario, e.g: 12 > && < 20
+    # "others" is for normal arithmetic cases, e.g: >=12, == 11, < 1
+    dict_of_log_msg = {
+        'within': "The result '{result}' is '{operation}' in the {value}",
+        'contains': "The value '{value}' is '{operation}' in the result '{result}'",
+        'contains_regex': "The pattern '{value}' is {operation} in the result {result}",
+        'others': "The result '{result}' is '{operation}' to '{value}'"
+    }
+
+    # update, operation names based on styles and update
+    # dictionary of log massages with regards to the styles
+    operation, dict_of_log_msg = \
+         _operation_to_style_map(style, operation, dict_of_log_msg)
+
+    # operation can be operation itself or in case of checking
+    # that if an item exist in a list, be changed to
+    # include/exclude for logging purposes
+    if operation in ['contains', 'contains_regex',
+                     'not_contains', 'not_contains_regex',
+                     'within', 'not_within']:
+        operation_str = style
+
+    else:
+        operation_str = operation
+
+    if _evaluate_operator(result=action_output,
+                          operation=operation,
+                          value=expected_value):
+
+        query_result = Passed
+    else:
+        query_result = Failed
+        operation_str = 'not ' + operation_str
+
+    if operation in dict_of_log_msg:
+        msg = dict_of_log_msg[operation].\
+                            format(result=action_output,
+                                   value=expected_value,
+                                   operation=operation_str)
+    else:
+        msg = dict_of_log_msg['others'].\
+                            format(result=action_output,
+                                   value=expected_value,
+                                   operation=operation_str)
+
+    return query_result, msg
+
+def _operation_to_style_map(style, operation, dict_of_log_msg):
+    """
+        Operations need to be updated in cases that:
+        1) no operator is provided and the goal is to == or !=
+        2) the style is exclude yet we are checking for contains/within/not contains
+    """
+
+    if style == 'excluded':
+        if not operation:
+            operation = '!='
+
+        elif operation in ['contains', 'within', 'contains_regex']:
+
+            # create a new operator for exclusion
+            msg = dict_of_log_msg[operation]
+            operation = "{}{}".format('not_',operation)
+            dict_of_log_msg.update({operation:msg})
+
+    elif style == 'included':
+        if not operation:
+            operation = '=='
+
+    return (operation, dict_of_log_msg)
+
 def _evaluate_operator(result, operation=None, value=None):
 
     # used to evaluate the operation results
@@ -837,7 +870,7 @@ def _evaluate_operator(result, operation=None, value=None):
         # just check if the first argument is within the second argument,
         # changing the operands order of contains function (in)
         # e.g: include:
-        #           - > 1220 && < 1800 
+        #           - > 1220 && < 1800
         dict_of_ops = {'within': lambda item, container: item in container,
                        'not_within': lambda item, container: item not in container,}
 
@@ -847,7 +880,8 @@ def _evaluate_operator(result, operation=None, value=None):
         # e.g: result = [1,2,3,4] and wants to see if the output includes 1
         # When matching a pattern or a keyword against items of a list
         # The operation is set to regex/exclude_regex
-        # e.g: result = ['banana1', 'banana2', 'apple'] and wants to see if the output includes 'banana.*'
+        # e.g: result = ['banana1', 'banana2', 'apple'] and wants to see if
+        # the output includes 'banana.*'
         dict_of_ops = {'contains': operator.contains,
                        'not_contains': operator.contains,
                        'contains_regex': _regex_in_list,
@@ -859,7 +893,7 @@ def _evaluate_operator(result, operation=None, value=None):
     elif (type(result) == type(value)) and \
          isinstance(result, str) and isinstance(value, str):
 
-        dict_of_ops = {'==': operator.eq, '!=': operator.ne, 
+        dict_of_ops = {'==': operator.eq, '!=': operator.ne,
                        'contains': operator.contains,
                        'not_contains': operator.contains}
 
@@ -893,6 +927,83 @@ def _regex_in_list(result, value):
 
     return False
 
+def _verify_dq_query_and_execute_include_exclude(action_output, style, key):
+
+    # Validating execute include exclude keys and queries that are following dq formats
+
+    # if key is a query of type (contains('status')) then we show the resulted output
+    # otherwise the key itself usually for execute action
+    if not key:
+        key = action_output
+
+    message = "'{k}' is {s} in the output"
+
+    if (style == "included" and
+        action_output or
+        style == 'excluded' and
+        not action_output):
+
+        return (Passed, message.format(k=key, s=style))
+    else:
+        # change the style if it is not included for reporting
+        return (Failed, message.format(k=key, s='not ' + style))
+
+def _condition_validator(items):
+
+    # Checking condition useful for both condition work itself and action compare.
+    # e.g: 2 > 1 or '%VARIABLES{ball}' == 'nine' and  '%VARIABLES{yall} > 12'
+    pattern = re.compile(
+        r"(?P<right_hand_value>[^>=<!]+)(?P<ops_and_left_hand_value>[\S\s]+)")
+
+    # split on \(\) for cases with "%VARIABLES{name} == 22 and (%VARIABLES{nam} == 12 or %VARIABLES{am} == 32)"
+    items_splitted_on_bracket = re.split(r"\(|\)", items)
+
+    for each_item_in_bracket in items_splitted_on_bracket:
+
+        # split on and|or on each item
+        # 12 > 11 and 'sia' == 'sia' --> [12>11, 'sia'=='sia']
+        items_list = re.split(r"\s+and\s+|\s+or\s+", each_item_in_bracket)
+        for item in items_list:
+
+            if not item.strip():
+                continue
+
+            m = pattern.match(item)
+            if not m:
+                raise Exception('Wrong input')
+
+            group = m.groupdict()
+            right_hand_value = group['right_hand_value']
+            ops_and_left_hand_value = group['ops_and_left_hand_value']
+
+            try:
+                right_hand_value = float(right_hand_value)
+            except ValueError:
+                pass
+
+            # Extracting right hand, left hand and operator for each comparision
+            output = _string_query_validator(right_hand_value,
+                                             ops_and_left_hand_value)
+
+            right_hand = output['right_hand_value']
+            right_hand = right_hand if isinstance(right_hand, (float, int)) else right_hand.strip()
+            operation = output['operation'].strip()
+            left_hand = output['left_hand_value']
+            left_hand = left_hand if isinstance(left_hand, (float, int)) else left_hand.strip()
+
+            result = _evaluate_operator(right_hand,
+                                        operation=operation,
+                                        value=left_hand)
+            items = items.replace(item, ' ' + str(result) + ' ')
+
+    try:
+        ret_val = _true_false_eval(items)
+    except Exception as e:
+        log.error("Invalid boolean expression {}.".format(str(e)))
+        ret_val = False
+
+    return ret_val
+
 def _true_false_eval(bool_exp):
 
     '''
@@ -905,7 +1016,7 @@ def _true_false_eval(bool_exp):
         _true_false_eval("True") == True
         _true_false_eval("True and (True and (True or False))") == True
     '''
-    
+
     dict_of_ops = {'or': operator.or_, 'and': operator.and_}
     dict_of_bools = {'True': True, 'False': False}
 
@@ -917,7 +1028,7 @@ def _true_false_eval(bool_exp):
         m = p.search(bool_exp)
         if m:
 
-            # Recursively find out each boolean expression inside brackets 
+            # Recursively find out each boolean expression inside brackets
             # and evaluate each expression to its boolean equivalent (True/False) and replace until
             # no brackets left
             bool_exp = bool_exp.replace(m.group(0), str(_true_false_eval(m.group(1))))
@@ -926,7 +1037,7 @@ def _true_false_eval(bool_exp):
         # list of True and False  ['True', 'False']
         bool_exp_list = re.split(r"\s+and\s+|\s+or\s+", bool_exp)
 
-        # if after splitting on and/or this list contains anything 
+        # if after splitting on and/or this list contains anything
         # other than True/False raise Exception, because bool_exp
         # only contains True/False
         for item in bool_exp_list:
@@ -957,7 +1068,7 @@ def _true_false_eval(bool_exp):
             left_hand_val = dict_of_bools[bool_exp_list.pop(0).strip()]
             ops = and_or_list.pop(0)
 
-            bool_exp_list.insert(0, 
+            bool_exp_list.insert(0,
                             str(dict_of_ops[ops.strip()](right_hand_val, left_hand_val)))
 
         bool_exp = dict_of_bools[bool_exp_list[0].strip()]
@@ -965,6 +1076,7 @@ def _true_false_eval(bool_exp):
     return bool_exp
 
 def _get_exclude(command, device):
+
     exclude = None
     if command:
         try:

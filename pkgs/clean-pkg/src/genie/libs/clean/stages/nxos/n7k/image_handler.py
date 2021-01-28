@@ -129,45 +129,61 @@ class ImageHandler(BaseImageHandler, ImageLoader):
 
             for index,image in enumerate(self.system):
                 # change the saved image to the new image name/path
-                self.system[index] = section.parameters['image_mapping'].get(image, self.system[index])
+                self.system[index] = section.parameters['image_mapping'].get(image, image)
 
             for index,image in enumerate(self.kickstart):
                 # change the saved image to the new image name/path
-                self.kickstart[index] = section.parameters['image_mapping'].get(image, self.kickstart[index])
+                self.kickstart[index] = section.parameters['image_mapping'].get(image, image)
 
     def update_tftp_boot(self):
         '''Update clean section 'tftp_boot' with image information'''
+        image = self.device.clean.setdefault('tftp_boot', {}).setdefault('image', [])
 
-        tftp_boot = self.device.clean.setdefault('tftp_boot', {})
-        tftp_boot.update({'image': self.kickstart + self.system})
+        # Update the same object id
+        image.clear()
+        image.extend(self.kickstart + self.system)
 
     def update_copy_to_linux(self):
         '''Update clean section 'copy_to_linux' with image information'''
+        files = self.device.clean.setdefault('copy_to_linux', {}).\
+            setdefault('origin', {}).setdefault('files', [])
 
-        # Init 'copy_to_linux' defaults
-        origin = self.device.clean.setdefault('copy_to_linux', {}).\
-                                          setdefault('origin', {})
-        origin.update({'files': self.kickstart + self.system})
+        # Update the same object id
+        files.clear()
+        files.extend(self.kickstart + self.system)
 
     def update_copy_to_device(self):
         '''Update clean stage 'copy_to_device' with image information'''
+        files = self.device.clean.setdefault('copy_to_device', {}).\
+            setdefault('origin', {}).setdefault('files', [])
 
-        origin = self.device.clean.setdefault('copy_to_device', {}).\
-                                   setdefault('origin', {})
-        origin.update({'files': self.kickstart + self.system})
-
+        # Update the same object id
+        files.clear()
+        files.extend(self.kickstart + self.system)
 
     def update_change_boot_variable(self):
         '''Update clean stage 'change_boot_variable' with image information'''
 
         images = self.device.clean.setdefault('change_boot_variable', {}).\
-                          setdefault('images', {})
-        images.update({'kickstart': self.kickstart})
-        images.update({'system': self.system})
+            setdefault('images', {})
+
+        kickstart = images.setdefault('kickstart', [])
+        # Update the same object id
+        kickstart.clear()
+        kickstart.extend(self.kickstart)
+
+        system = images.setdefault('system', [])
+        # Update the same object id
+        system.clear()
+        system.extend(self.kickstart)
 
     def update_verify_running_image(self):
         '''Update clean stage 'verify_running_image' with image information'''
+        images = self.device.clean.setdefault('verify_running_image', {}).\
+            setdefault('images', [])
 
-        verify_running_image = self.device.clean.setdefault('verify_running_image', {})
-        verify_running_image.update({'images': self.kickstart + self.system})
+        # Update the same object id
+        images.clear()
+        images.extend(self.kickstart + self.system)
+
 

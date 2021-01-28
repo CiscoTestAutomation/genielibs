@@ -15,23 +15,17 @@ Expected one of the following structures for 'images' in the clean yaml
 Structure #1
 ------------
 images:
-- /path/to/controller_image.bin
 - /path/to/switch_image.bin
 
 Structure #2
 ------------
 images:
-  controller:
-  - /path/to/controller_image.bin
   switch:
   - /path/to/switch_image.bin
 
 Structure #3
 ------------
 images:
-  controller:
-    file:
-    - /path/to/controller_image.bin
   switch:
     file:
     - /path/to/switch_image.bin
@@ -58,15 +52,7 @@ But got the following structure
             return False
 
         if len(images) == 1:
-            # This is not a bug. It is optional to clean only switches or only
-            # controllers but we do not know what type of image the user
-            # provided if they only provide 1.
-            setattr(self, 'controller', images)
             setattr(self, 'switch', images)
-            return True
-        if len(images) == 2:
-            setattr(self, 'controller', images[:1])
-            setattr(self, 'switch', images[1:])
             return True
         else:
             return False
@@ -74,8 +60,7 @@ But got the following structure
     def valid_structure_2(self, images):
 
         schema = {
-            Optional('controller'): ListOf(str),
-            Optional('switch'): ListOf(str)
+            'switch': ListOf(str)
         }
 
         try:
@@ -83,34 +68,18 @@ But got the following structure
         except Exception:
             return False
 
-        if ('controller' in images and
-                'switch' in images and
-                len(images['controller']) == 1 and
+        if ('switch' in images and
                 len(images['switch']) == 1):
-            setattr(self, 'controller', images['controller'])
+
             setattr(self, 'switch', images['switch'])
             return True
-
-        elif ('controller' in images and
-              len(images['controller']) == 1):
-            setattr(self, 'controller', images['controller'])
-            return True
-
-        elif ('switch' in images and
-                len(images['switch']) == 1):
-            setattr(self, 'switch', images['switch'])
-            return True
-
         else:
             return False
 
     def valid_structure_3(self, images):
 
         schema = {
-            Optional('controller'): {
-                'file': ListOf(str)
-            },
-            Optional('switch'): {
+            'switch': {
                 'file': ListOf(str)
             }
         }
@@ -120,21 +89,9 @@ But got the following structure
         except Exception:
             return False
 
-        if ('controller' in images and
-                'switch' in images and
-                len(images['controller']['file']) == 1 and
+        if ('switch' in images and
                 len(images['switch']['file']) == 1):
-            setattr(self, 'controller', images['controller']['file'])
-            setattr(self, 'switch', images['switch']['file'])
-            return True
 
-        elif ('controller' in images and
-              len(images['controller']['file']) == 1):
-            setattr(self, 'controller', images['controller']['file'])
-            return True
-
-        elif ('switch' in images and
-              len(images['switch']['file']) == 1):
             setattr(self, 'switch', images['switch']['file'])
             return True
         else:
@@ -146,7 +103,6 @@ class ImageHandler(BaseImageHandler, ImageLoader):
     def __init__(self, device, images, *args, **kwargs):
 
         # Set defaults
-        self.controller = []
         self.switch = []
 
         # Check if images is one of the valid structures and
@@ -154,8 +110,6 @@ class ImageHandler(BaseImageHandler, ImageLoader):
         ImageLoader.load(self, images)
 
         # Temp workaround for XPRESSO
-        if self.controller:
-            self.controller = [self.controller[0].replace('file://', '')]
         if self.switch:
             self.switch = [self.switch[0].replace('file://', '')]
 
@@ -164,12 +118,6 @@ class ImageHandler(BaseImageHandler, ImageLoader):
 
     def update_image_references(self, section):
         if 'image_mapping' in section.parameters:
-
-            for index, image in enumerate(self.controller):
-                # change the saved image to the new image name/path
-                self.controller[index] = section.parameters['image_mapping'].get(
-                    image, self.controller[index])
-
             for index, image in enumerate(self.switch):
                 # change the saved image to the new image name/path
                 self.switch[index] = section.parameters['image_mapping'].get(
@@ -181,21 +129,14 @@ class ImageHandler(BaseImageHandler, ImageLoader):
         # Init 'copy_to_linux' defaults
         origin = self.device.clean.setdefault('copy_to_linux', {}).\
                                    setdefault('origin', {})
-        origin.update({'files': self.controller + self.switch})
+        origin.update({'files': self.switch})
 
     def update_copy_to_device(self):
         '''Update clean stage 'copy_to_device' with image information'''
 
         origin = self.device.clean.setdefault('copy_to_device', {}).\
                                    setdefault('origin', {})
-        origin.update({'files': self.controller + self.switch})
-
-    def update_fabric_upgrade(self):
-        '''Update clean stage 'fabric_upgrade' with image information'''
-
-        fabric_upgrade = self.device.clean.setdefault('fabric_upgrade', {})
-        fabric_upgrade.update({'controller_image': self.controller})
-        fabric_upgrade.update({'switch_image': self.switch})
+        origin.update({'files': self.switch})
 
     def update_fabric_clean(self):
         '''Update clean stage 'fabric_clean' with image information '''

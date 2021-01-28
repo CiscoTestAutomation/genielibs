@@ -43,7 +43,7 @@ class test_filetransferutils(unittest.TestCase):
 
     # Mock device output
     raw1 = '''
-        copy bootflash:/virtual-instance.conf ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf vrf management
+        copy bootflash:/virtual-instance.conf ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf
         Enter username: rcpuser
         Password:
         ***** Transfer of file Completed Successfully *****
@@ -113,7 +113,7 @@ class test_filetransferutils(unittest.TestCase):
                                                                                                                                                                                                                                                                                                                                     /var/tmp/vsh/R3_nx-running-config                                                                                                                                                                                                                                                                                                                                                                                                                                                            100%   14KB 355.1KB/s   00:00
     '''
     raw9 = '''
-        copy bootflash:/virtual-instance.conf ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf vrf management
+        copy bootflash:/virtual-instance.conf ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf
         Enter username: rcpuser
         ftp: connect: No route to host
         ***** Transfer of file aborted, server not connected *****
@@ -124,8 +124,7 @@ class test_filetransferutils(unittest.TestCase):
 
     outputs = {}
     outputs['copy bootflash:/virtual-instance.conf '
-        'ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf vrf management']\
-         = raw1
+        'ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf'] = raw1
     outputs['dir'] = raw2
     outputs['delete bootflash:new_file.tcl'] = raw3
     outputs['move bootflash:mem_leak.tcl new_file.tcl'] = raw4
@@ -133,8 +132,7 @@ class test_filetransferutils(unittest.TestCase):
     outputs['copy running-config tftp://10.1.7.250//auto/tftp-ssr/test_config.py vrf management'] = raw7
     outputs['copy running-config sftp://myuser@1.1.1.1//home/virl vrf management'] = raw8
     outputs['copy bootflash:/virtual-instance.conf '
-        'ftp://10.1.0.214//auto/tftp-ssr/virtual-instance.conf vrf management']\
-         = raw9
+        'ftp://10.1.0.214//auto/tftp-ssr/virtual-instance.conf'] = raw9
 
     def mapper(self, key, timeout=None, reply= None, prompt_recovery=False):
         return self.outputs[key]

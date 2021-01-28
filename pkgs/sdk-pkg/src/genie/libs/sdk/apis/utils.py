@@ -1052,7 +1052,7 @@ def modify_filename(device,
             append_hostname ('bool'): option to append hostname to the end of the file
             check_image_length ('bool'): option to check the name length exceeds the limit
             limit ('int'): character limit of the url, default 63
-            unique_file_name（'bool'): append a six digit random number to the end of
+            unique_file_name ('bool'): append a six digit random number to the end of
                                         file name to make it unique
             new_name ('str'): replace original file name with new_name
 
@@ -2205,7 +2205,7 @@ def verify_pcap_packet_destination_port(pcap_location, expected_destination_port
 
 def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_dst_address=None,
     expected_inner_exp_bits=None, expected_outer_exp_bits=None, expected_tos=None,
-    expected_mpls_label=None, check_all=False):
+    expected_mpls_label=None, check_all=False, ipv6_flag=False):
     """ Verify pcap mpls packets values
 
     Args:
@@ -2224,7 +2224,7 @@ def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_d
 
     try:
         from scapy.contrib.mpls import MPLS
-        from scapy.all import rdpcap, IP, load_contrib
+        from scapy.all import rdpcap, IP, IPv6, load_contrib
         load_contrib("mpls")
     except ImportError:
         raise ImportError(
@@ -2232,11 +2232,17 @@ def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_d
             'pip install scapy') from None
 
     pcap_object = rdpcap(pcap_location)
+    supported = [IP, MPLS, IPv6]
 
     for packet in pcap_object:
-        if IP in packet or MPLS in packet:
-
-            ip_packet = packet.getlayer(IP)
+        if any(i for i in supported if i in packet):
+            if not ipv6_flag:
+                ip_packet = packet.getlayer(IP)
+            else:
+                if IPv6 in packet:
+                    ip_packet = packet.getlayer(IPv6)
+                else:
+                    continue
 
             if expected_dst_address:
 
@@ -2284,7 +2290,9 @@ def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_d
                     continue
 
             if expected_tos is not None:
-                ip_tos = ip_packet.tos
+                # If it is an IPv6 packet, use .tc to get tos value
+                # otherwise use .tos 
+                ip_tos = ip_packet.tc if IPv6 in ip_packet else ip_packet.tos
                 if not bin(ip_tos).startswith(bin(expected_tos)):
                     if check_all:
                         return False
@@ -2657,30 +2665,65 @@ def get_devices(testbed, os=None, regex=None, regex_key='os', pick_type='all'):
         raise Exception("Couldn't find any device from testbed object.")
 
 
-def get_interface_from_yaml(local, remote, number, *args, **kwargs):
+def get_interface_from_yaml(local, remote, value, *args, **kwargs):
+    """ Get interface name from the testbed yaml file
+
+        To be used within datafile
+
+        Args:
+            local (`str`): local device to get interface from
+            remote (`str`): Remote device where the interface is connected to
+            value (`str`): Either link name or a number and a link will be randomly chosen
+            args (`args`): testbed.topology
+
+        Raise:
+            Exception
+        Returns:
+            Interface name
+
+        Example:
+
+            interface: "%CALLABLE{genie.libs.sdk.apis.utils.get_interface_from_yaml(uut,helper,0,%{testbed.topology})}"
+
+            interface: "%CALLABLE{genie.libs.sdk.apis.utils.get_interface_from_yaml(uut,helper,r1_r4_1,%{testbed.topology})}"
+
+            interface: "%CALLABLE{genie.libs.sdk.apis.utils.get_interface_from_yaml(alias,helper,0,%{testbed})}"
+    """
     # Put it back as a dictionary
-    topology = ast.literal_eval(','.join(args).lstrip())
+
+    if not isinstance(args[0], dict):
+        topology = ast.literal_eval(','.join(args).lstrip())
+    else:
+        topology = args[0]
     data = Dq(topology)
 
     # Get all the links for local
     local_links = data.contains(local.strip()).get_values('link')
+    if not local_links:
+        local = data.contains(local.strip()).contains('devices')[0].path[1]
+        local_links = data.contains(local.strip()).get_values('link')
     # Get all the links for remote
     remote_links = data.contains(remote.strip()).get_values('link')
+    if not remote_links:
+        remote = data.contains(remote.strip()).contains('devices')[0].path[1]
+        remote_links = data.contains(remote.strip()).get_values('link')
     # Now find the one connected to the remote
     common_links = sorted(set(local_links).intersection(set(remote_links)))
-    try:
-        chosen_link =  common_links[int(number)]
-    except Exception as e:
-        raise Exception("Link '{n}' between '{l}' and "
-                        "'{r}' does not exists; there is only '{m}' links "
-                        "between them".format(n=number,
-                                              l=local,
-                                              r=remote,
-                                              m=len(common_links)))
+    # if value is an int
+    if isinstance(value, int) or value.isnumeric():
+        try:
+            value =  common_links[int(value)]
+        except Exception as e:
+            raise Exception("Link '{n}' between '{l}' and "
+                            "'{r}' does not exists; there is only '{m}' links "
+                            "between them".format(n=value,
+                                                  l=local,
+                                                  r=remote,
+                                                  m=len(common_links)))
 
     # Get interface related to it
-    interface = data.contains(chosen_link).contains(local.strip()).get_values('_name', 0)
-    if not interface:
+    interface = data.contains(value).contains(local.strip()).get_values('interfaces', 0)
+    if isinstance(interface, list):
         raise Exception("Could not find an interface for device '{d}'".format(d=local))
     return interface
 
@@ -2942,3 +2985,55 @@ def get_connected_alias(device):
     for alias in connections.keys():
         aliases.setdefault(alias, connections[alias].__dict__)
     return aliases
+
+
+def verify_keywords_in_output(device,
+                              keywords,
+                              output,
+                              max_time=60,
+                              check_interval=10,
+                              invert=False):
+    """
+    Verify if keywords are in output
+
+    Args:
+        device(`obj`): device to use  
+        max_time (`int`): Maximum time to keep checking. Default to 60 secs
+        check_interval (`int`): How often to check. Default to 10 secs
+        keywords (`list`, `str`): list of keywords to find
+        output (`str`): output of show command. 
+        invert (`bool`): invert result. (check all keywords not in log)
+                         Default to False
+
+    Returns:  
+        Boolean : if True, find the keywords in log
+    Raises:
+        N/A    
+    """
+
+    if not isinstance(keywords, list):
+        keywords = [str(keywords)]
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+
+        # dictionary of information what found with keyword
+        # {
+        #     <keyword>: <the line where the keyword found>
+        #}
+        found = {}
+        for line in output.splitlines():
+            line = line.strip()
+            for kw in keywords:
+                if kw in line or re.match(kw, line):
+                    found[kw] = line
+
+        if not invert and len(found) == len(keywords) or invert and not found:
+            return True
+        elif not invert:
+            timeout.sleep()
+        else:
+            # in case of revert=True, no need to retry
+            return False
+
+    return False

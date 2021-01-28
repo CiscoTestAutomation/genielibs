@@ -948,4 +948,4 @@ def get_platform_type(device):
         log.info('Could not get device version information')
         return None
 
-    return out.q.get_values('platform', 0)
+    return out.q.contains('platform').get_values('name', 0)

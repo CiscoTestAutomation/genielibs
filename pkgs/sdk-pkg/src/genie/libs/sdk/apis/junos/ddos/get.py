@@ -25,7 +25,9 @@ def get_ddos_protection_arrival_rate(device, protocol, expected_protocol_states_
     """
     
     try:
-        out = device.parse('show ddos-protection statistics')
+        out = device.parse('show ddos-protection protocols {protocol}'.format(
+            protocol=protocol
+        ))
     except SchemaEmptyParserError:
         return None
     

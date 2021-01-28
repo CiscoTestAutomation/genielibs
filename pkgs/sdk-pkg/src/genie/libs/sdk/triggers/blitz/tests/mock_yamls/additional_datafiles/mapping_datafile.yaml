@@ -1,0 +1,7 @@
+devices:
+  PE1:
+    mapping:
+      cli: cli
+  PE2:
+    mapping:
+      cli: cli

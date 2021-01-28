@@ -3521,7 +3521,7 @@ def verify_route_four_byte_as(device, expected_as_path, peer_address, target_add
             None    
     """
 
-    timeout = Timeout(max_time, check_interval)            
+    timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
         try:
             if no_protocol_type:

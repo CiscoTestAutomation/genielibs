@@ -1,9 +1,9 @@
 import json
 import random
 import string
-from genie.libs.sdk.triggers.blitz.maple_converter.legacy_maple_converter import Internal_Converter
+from genie.libs.sdk.triggers.blitz.maple_converter.legacy_maple_converter import InternalConverter
 
-class Legacy_Smartman_Converter(Internal_Converter):
+class LegacySmartmanConverter(InternalConverter):
     
     def __init__(self, command):
         super().__init__()

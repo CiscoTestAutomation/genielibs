@@ -774,13 +774,12 @@ def copy_to_device(section,
             else:
                 step.passed("Correct number of images provided")
 
-    # Init
-    success_copy_ha = False
-    files_to_copy = {}
-    unknown_size = False
-
     # Loop over all image files provided by user
     for index, file in enumerate(image_files):
+        # Init
+        files_to_copy = {}
+        unknown_size = False
+
         # Get filesize of image files on remote server
         with steps.start("Get filesize of '{}' on remote server '{}'".\
                         format(file, server)) as step:
@@ -826,27 +825,31 @@ def copy_to_device(section,
                         file=dest_file_path,
                         size=file_size,
                         dir_output=dir_before)
-                    if (not exist) or (exist and overwrite):
-                        # Update list of files to copy
-                        file_copy_info = {
-                            file: {
-                                'size': file_size,
-                                'dest_path': dest_file_path,
-                                'exist': exist
-                            }
-                        }
-                        files_to_copy.update(file_copy_info)
-                        # Print message to user
-                        step.passed("Proceeding with copying image {} to device {}".\
-                                    format(dest_file_path, device.name))
-                    else:
-                        step.passed(
-                            "Image '{}' already exists on device {} {}, "
-                            "skipping copy".format(file, device.name, dest))
                 except Exception as e:
-                    log.warning(str(e))
-                    step.passx("Unable to check if image '{}' exists on device {} {}".\
-                               format(dest_file_path, device.name, dest))
+                    exist = False
+                    log.warning("Unable to check if image '{}' exists on device {} {}."
+                                "Error: {}".format(dest_file_path,
+                                                   device.name,
+                                                   dest,
+                                                   str(e)))
+
+                if (not exist) or (exist and overwrite):
+                    # Update list of files to copy
+                    file_copy_info = {
+                        file: {
+                            'size': file_size,
+                            'dest_path': dest_file_path,
+                            'exist': exist
+                        }
+                    }
+                    files_to_copy.update(file_copy_info)
+                    # Print message to user
+                    step.passed("Proceeding with copying image {} to device {}".\
+                                format(dest_file_path, device.name))
+                else:
+                    step.passed(
+                        "Image '{}' already exists on device {} {}, "
+                        "skipping copy".format(file, device.name, dest))
 
             # Check if any file copy is in progress
             if check_file_stability:
@@ -951,21 +954,13 @@ def copy_to_device(section,
                             "the device {} {}, skipped copying".format(
                                 device.name, dest))
 
-                    if (hasattr(device, 'os') and
-                            device.os == 'nxos' and
-                            hasattr(device, 'platform') and
-                            device.platform == 'aci'):
-                        local_path = file_data['dest_path'].rsplit('/', 1)[0]
-                    else:
-                        local_path = file_data['dest_path']
-
                     for i in range(1, copy_attempts + 1):
                         try:
                             device.api.\
                                 copy_to_device(protocol=protocol,
                                                server=file_utils.get_hostname(server),
                                                remote_path=file,
-                                               local_path=local_path,
+                                               local_path=file_data['dest_path'],
                                                vrf=vrf,
                                                timeout=timeout,
                                                compact=compact,
@@ -996,37 +991,38 @@ def copy_to_device(section,
                                         setdefault('files_copied', {})
                     history.update({file: file_data})
 
-            # If nothing copied don't need to verify, skip
-            if 'files_copied' not in section.history[
-                    'copy_to_device'].parameters:
-                step.passed(
-                    "Image files were not copied for {} {} in previous steps, "
-                    "skipping verification steps".format(device.name, dest))
+            with steps.start("Verify images successfully copied") as step:
+                # If nothing copied don't need to verify, skip
+                if 'files_copied' not in section.history[
+                        'copy_to_device'].parameters:
+                    step.skipped(
+                        "Image files were not copied for {} {} in previous steps, "
+                        "skipping verification steps".format(device.name, dest))
 
-            # Execute 'dir' after copying image files
-            dir_after = device.execute('dir {}'.format(dest))
+                # Execute 'dir' after copying image files
+                dir_after = device.execute('dir {}'.format(dest))
 
-            for name, image_data in section.history['copy_to_device'].\
-                                            parameters['files_copied'].items():
-                with steps.start("Verify image '{}' copied to {} on device {}".\
-                                format(image_data['dest_path'], dest, device.name)) as step:
-                    # if size is -1 it means it failed to get the size
-                    if image_data['size'] != -1:
-                        if not device.api.verify_file_exists(
-                                file=image_data['dest_path'],
-                                size=image_data['size'],
-                                dir_output=dir_after):
-                            step.failed("Size of image file copied to device {} is "
-                                           "not the same as remote server filesize".\
-                                           format(device.name))
+                for name, image_data in section.history['copy_to_device'].\
+                                                parameters['files_copied'].items():
+                    with step.start("Verify image '{}' copied to {} on device {}".\
+                                    format(image_data['dest_path'], dest, device.name)) as substep:
+                        # if size is -1 it means it failed to get the size
+                        if image_data['size'] != -1:
+                            if not device.api.verify_file_exists(
+                                    file=image_data['dest_path'],
+                                    size=image_data['size'],
+                                    dir_output=dir_after):
+                                substep.failed("Size of image file copied to device {} is "
+                                               "not the same as remote server filesize".\
+                                               format(device.name))
+                            else:
+                                substep.passed("Size of image file copied to device {} is "
+                                               "the same as image filesize on remote server".\
+                                               format(device.name))
                         else:
-                            step.passed("Size of image file copied to device {} is "
-                                           "the same as image filesize on remote server".\
-                                           format(device.name))
-                    else:
-                        step.skipped(
-                            "Image file has been copied to device {} correctly"
-                            " but cannot verify file size".format(device.name))
+                            substep.skipped(
+                                "Image file has been copied to device {} correctly"
+                                " but cannot verify file size".format(device.name))
 
 
 #===============================================================================

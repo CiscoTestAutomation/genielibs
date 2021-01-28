@@ -2415,6 +2415,7 @@ def delete_configuration(section, devices, include_os=None, exclude_os=None,
                                             timeout: Timeout value for delete configuration
                                             jinja2_parameters: # Passing Jinja2 parameters
                                                 learn_interface: 'interface_list' # Key is flag to check learn interface. Value is the variable name in template
+                                                ipv4_management_interface_learn: Learn management interface.
                                                 host_name: Hostname # Optional or any other arguments required in Jinja2 template
     Args:
         section (`obj`) : Aetest Subsection object.
@@ -2533,6 +2534,23 @@ def delete_configuration(section, devices, include_os=None, exclude_os=None,
                 jinja2_parameters_local.update({interface_learn_name: interface_list})
                 log.info('Interfaces found on device {}: {}'.format(
                     device.name, interface_list))
+            
+            ipv4_management_interface_learn = jinja2_parameters_local.pop('ipv4_management_interface_learn', None)
+            
+            if ipv4_management_interface_learn:
+                variable_name = ipv4_management_interface_learn.get('variable_name')
+                interface_name = ipv4_management_interface_learn.get('interface_name')
+                ipv4_mgt_int = device.api.get_interface_ip_address(
+                        interface=interface_name,
+                        address_family='ipv4',
+                    )
+                if ipv4_mgt_int:
+                    ipv4_mgt_int = ipv4_mgt_int.split('/')[0]
+                    jinja2_parameters_local.update({variable_name: ipv4_mgt_int})
+                    log.info('IPv4 management interface found on device {}: {}'.format(
+                        device.name, ipv4_mgt_int))
+                else:
+                    log.info('IPv4 management interface not found')
             device.api.configure_by_jinja2(**jinja2_parameters_local)
         except Exception as e:
             section.failed(

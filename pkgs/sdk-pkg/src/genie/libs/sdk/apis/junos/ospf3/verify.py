@@ -63,6 +63,7 @@ def verify_ospf3_interface_type(device,
 def verify_ospf3_neighbor_state(device,
                                 expected_state,
                                 interface,
+                                neighbor_address=None,
                                 extensive=False,
                                 max_time=60,
                                 check_interval=10):
@@ -72,6 +73,7 @@ def verify_ospf3_neighbor_state(device,
             device ('obj'): device to use
             expected_state ('str'): OSPF adjacency state that is expected
             interface ('str'): Name of interface
+            neighbor_address ('str'): Neighbor address
             max_time ('int'): Maximum time to keep checking
             check_interval ('int'): How often to check
 
@@ -98,9 +100,14 @@ def verify_ospf3_neighbor_state(device,
         for neighbor in neighbors:
             #'interface-name': 'ge-0/0/0.0'
             #'ospf-neighbor-state': 'Full'
-            if neighbor.get('interface-name',[]) == interface and \
-               neighbor.get('ospf-neighbor-state',[]).lower() == expected_state.lower():
-                return True
+            if not neighbor_address:
+                if neighbor.get('interface-name',[]) == interface and \
+                neighbor.get('ospf-neighbor-state',[]).lower() == expected_state.lower():
+                    return True
+            else:
+                if neighbor.get('neighbor-address',[]) == neighbor_address and \
+                neighbor.get('ospf-neighbor-state',[]).lower() == expected_state.lower():
+                    return True
 
         timeout.sleep()
 
@@ -921,3 +928,191 @@ def verify_ospfv3_no_router_id(device, expected_id,max_time=60,check_interval=10
             continue
 
     return False             
+
+def verify_ospf3_neighbor_address(device, neighbor_address, 
+    expected_state='Full', max_time=90, check_interval=10, expected_failure=False):
+    """ Verifies ospf3 neighbors address
+        Args:
+            device ('obj'): device to use
+            max_time ('int'): Maximum time to keep checking
+                              Default to 90 secs
+            check_interval ('int'): How often to check
+                                    Default to 10 secs
+            neighbor_address ('str'): neighbor_address
+            expected_state (`str`): expected neighbor state
+                                    Default to `Full`
+            expected_failure (`bool`): make result opposite
+                                       Default to False
+        Returns:
+            True/False
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        out = None
+        try:
+            out = device.parse('show ospf3 neighbor')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # example of out
+        # {
+        #   "ospf3-neighbor-information": {
+        #     "ospf3-neighbor": [ # <-----
+        #       {
+        #         "activity-timer": "35",
+        #         "interface-name": "ge-0/0/0.0",
+        #         "neighbor-address": "fe80::250:56ff:fe8d:53c0",
+        #         "neighbor-id": "10.189.5.253",
+        #         "neighbor-priority": "128",
+        #         "ospf-neighbor-state": "Full"
+        #       },
+
+        ospf_neighbors = out.q.get_values('ospf3-neighbor')
+
+        result = []
+        for neighbor in ospf_neighbors:
+            if (
+                neighbor['neighbor-address'] == neighbor_address
+                and neighbor['ospf-neighbor-state'] == expected_state
+            ):
+                result.append(True)
+            else:
+                continue
+
+        if expected_failure:
+            if False == all(result) or result == []:
+                return True
+        else:
+            if True == all(result):
+                return True
+
+        timeout.sleep()
+
+    return False
+
+def verify_ospf3_route_nexthop(device, route, expected_nexthop, 
+    max_time=90, check_interval=10):
+    """ Verifies nexthop of ospf3 route
+        Args:
+            device (`obj`): device to use
+            route (`str`): target route
+            expected_nexthop (`str`): expected nexthop of ospf3 route
+            max_time (`int`): Maximum time to keep checking
+                              Default to 90 secs
+            check_interval (`int`): How often to check
+                                    Default to 10 secs
+        Returns:
+            True/False
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        out = None
+        try:
+            out = device.parse('show ospf3 route {route}'.format(route=route))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # example of out
+        # {
+        #   "ospf3-route-information": {
+        #     "ospf-topology-route-table": {
+        #       "ospf3-route": {
+        #         "ospf3-route-entry": {
+        #           "address-prefix": "2001:30::/64",
+        #           "interface-cost": "2",
+        #           "next-hop-type": "IP",
+        #           "ospf-next-hop": {
+        #             "next-hop-address": {
+        #               "interface-address": "fe80::250:56ff:fe8d:351d" # <-----
+        #             },
+        #             "next-hop-name": {
+        #               "interface-name": "ge-0/0/4.0"
+        #             }
+        #           },
+        if expected_nexthop in out.q.get_values('interface-address'):
+            return True
+        else:
+            timeout.sleep()
+    return False
+
+def verify_single_ospf3_neighbor_address(device,
+                                        neighbor_address,
+                                        max_time=60,
+                                        check_interval=10):
+    """ Verifies single ospf3 neighbor exists
+
+        Args:
+            device ('obj'): device to use
+            neighbor_address ('str'): ospf neighbor address
+            max_time ('int'): Maximum time to keep checking
+            check_interval ('int'): How often to check
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    
+    while timeout.iterate():
+        try:
+            output = device.parse('show ospf3 neighbor')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        #{'ospf-neighbor-information': {'ospf-neighbor': [{"neighbor-address": "10.189.5.94",
+        #                                                "interface-name": "ge-0/0/0.0",}]}}
+        neighbors = set(output.q.get_values('neighbor-address'))
+
+        if neighbor_address in neighbors and len(neighbors) == 1:
+            return True
+        else:
+            timeout.sleep()
+
+    return False
+
+def verify_all_ospf3_neighbor_states(device,
+                                    expected_state,
+                                    max_time=60,
+                                    check_interval=10):
+    """ Verifies state of ospf3 neighbor
+
+        Args:
+            device ('obj'): device to use
+            expected_state ('str'): OSPF3 adjacency state that is expected
+            max_time ('int'): Maximum time to keep checking
+            check_interval ('int'): How often to check
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            output = device.parse('show ospf3 neighbor')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        #{'ospf-neighbor-information': {'ospf-neighbor': [{"neighbor-address": "10.189.5.94",
+        #                                                "ospf-neighbor-state": "Full",}]}}
+        neighbor_states = set(output.q.get_values('ospf-neighbor-state'))
+
+        if len(neighbor_states) == 1 and expected_state in neighbor_states:
+            return True
+        else:
+            timeout.sleep()
+
+    return False

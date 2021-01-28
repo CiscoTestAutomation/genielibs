@@ -1,0 +1,11 @@
+tasks:
+    task1:
+        testcase_file: genie/libs/sdk/triggers/blitz/tests/mock_yamls/maple_yaml.yaml
+        testbed_file: genie/libs/sdk/triggers/blitz/tests/mock_testbeds/testbed.yaml
+        tims_testplan_folder: Tvm1693064f
+        tims_result_folder: Tvm1693204f
+    task2:
+        testcase_file: genie/libs/sdk/triggers/blitz/tests/mock_yamls/maple_yaml.yaml
+        testbed_file: genie/libs/sdk/triggers/blitz/tests/mock_testbeds/testbed.yaml
+        tims_testplan_folder: Tvm1693064f
+        tims_result_folder: Tvm1693204f

@@ -97,7 +97,6 @@ def add_result_as_extra(func):
 
     return wrapper
 
-
 @add_result_as_extra
 def configure(self,
               device,
@@ -118,7 +117,46 @@ def configure(self,
     output = None
     with steps.start("Configuring '{device}'".\
                     format(device=device.name), continue_=continue_) as step:
-        output = configure_handler(step, device, command, expected_failure, **kwargs)
+
+        kwargs.update({'step': step,
+                       'device': device,
+                       'command': command,
+                       'expected_failure': expected_failure})
+
+        output = configure_handler(**kwargs)
+
+    notify_wait(steps, device)
+
+    return output
+
+@add_result_as_extra
+def configure_dual(self,
+                   device,
+                   steps,
+                   section,
+                   name,
+                   command,
+                   alias=None,
+                   expected_failure=False,
+                   continue_=True,
+                   processor='',
+                   health_uids=None,
+                   health_groups=None,
+                   health_sections=None,
+                   **kwargs):
+
+    # default output set to none in case of an exception
+    output = None
+    with steps.start("Configuring '{device}' in (config-dual-stage) prompt".\
+                    format(device=device.name), continue_=continue_) as step:
+
+        kwargs.update({'step': step,
+                       'device': device,
+                       'command': command,
+                       'action': 'configure_dual',
+                       'expected_failure': expected_failure})
+
+        output = configure_handler(**kwargs)
 
     notify_wait(steps, device)
 
@@ -149,18 +187,20 @@ def parse(self,
     output = {}
     with steps.start("Parsing '{c}' on '{d}'".\
                     format(c=command, d=device.name), continue_=continue_) as step:
-        
+
         arguments = kwargs.get('arguments', None)
-        output = parse_handler(step,
-                               device,
-                               command,
-                               include=include,
-                               exclude=exclude,
-                               max_time=max_time,
-                               check_interval=check_interval,
-                               continue_=continue_,
-                               expected_failure=expected_failure,
-                               arguments=arguments)
+        handler_kwargs = {'step': step,
+                          'device': device,
+                          'command': command,
+                          'include': include,
+                          'exclude': exclude,
+                          'max_time': max_time,
+                          'check_interval': check_interval,
+                          'continue_': continue_,
+                          'expected_failure': expected_failure,
+                          'arguments': arguments}
+
+        output = parse_handler(**handler_kwargs)
 
     notify_wait(steps, device)
 
@@ -192,16 +232,17 @@ def execute(self,
     with steps.start("Executing '{c}' on '{d}'".\
                     format(c=command, d=device.name), continue_=continue_) as step:
 
-        output = execute_handler(step,
-                                 device,
-                                 command,
-                                 include=include,
-                                 exclude=exclude,
-                                 max_time=max_time,
-                                 check_interval=check_interval,
-                                 continue_=continue_,
-                                 expected_failure=expected_failure,
-                                 **kwargs)
+        kwargs.update({'step': step,
+                       'device': device,
+                       'command': command,
+                       'include': include,
+                       'exclude': exclude,
+                       'max_time': max_time,
+                       'check_interval': check_interval,
+                       'continue_': continue_,
+                       'expected_failure': expected_failure})
+
+        output = execute_handler(**kwargs)
 
     notify_wait(steps, device)
 
@@ -210,11 +251,11 @@ def execute(self,
 
 @add_result_as_extra
 def api(self,
-        device,
         steps,
         section,
         name,
         function,
+        device=None,
         expected_failure=False,
         arguments=None,
         include=None,
@@ -226,23 +267,32 @@ def api(self,
         health_uids=None,
         health_groups=None,
         health_sections=None,
-        alias=None):
+        alias=None,
+        **kwargs):
 
     # action api
     output = None
-    with steps.start("Calling API '{f}' on '{d}'".\
-                    format(f=function, d=device.name), continue_=continue_) as step:
 
-        output = api_handler(step,
-                             device,
-                             function,
-                             include=include,
-                             exclude=exclude,
-                             max_time=max_time,
-                             check_interval=check_interval,
-                             continue_=continue_,
-                             arguments=arguments,
-                             expected_failure=expected_failure)
+    if not device:
+        msg = "Calling API {f}".format(f=function)
+    else:
+        msg = "Calling API '{f}' on '{d}'".format(f=function, d=device.name)
+
+    with steps.start(msg, continue_=continue_) as step:
+
+        kwargs.update({'step': step,
+                       'device': device,
+                       'command': function,
+                       'include': include,
+                       'exclude': exclude,
+                       'max_time': max_time,
+                       'check_interval': check_interval,
+                       'continue_': continue_,
+                       'arguments': arguments,
+                       'expected_failure': expected_failure,
+                       'blitz_obj': self})
+
+        output = api_handler(**kwargs)
 
     notify_wait(steps, device)
 
@@ -273,17 +323,17 @@ def learn(self,
     with steps.start("Learning '{f}' on '{d}'".\
                     format(f=feature, d=device.name), continue_=continue_) as step:
 
-        output = learn_handler(
-                                step,
-                                device,
-                                feature,
-                                include=include,
-                                exclude=exclude,
-                                max_time=max_time,
-                                check_interval=check_interval,
-                                continue_=continue_,
-                                expected_failure=expected_failure
-        )
+        kwargs = {'step': step,
+                  'device': device,
+                  'command': feature,
+                  'include': include,
+                  'exclude': exclude,
+                  'max_time': max_time,
+                  'check_interval': check_interval,
+                  'continue_': continue_,
+                  'expected_failure': expected_failure}
+
+        output = learn_handler(**kwargs)
 
     return output
 
@@ -311,7 +361,8 @@ def compare(self,
 
             condition = _condition_validator(comp_item)
             result = 'passed' if condition else 'failed'
-            getattr(step, result)('The following arithmetic statement {} is {}'.format(comp_item,condition))
+            getattr(step, result)('The following arithmetic statement {} is {}'.
+                                   format(comp_item,condition))
 
 @add_result_as_extra
 def sleep(self,
@@ -326,6 +377,7 @@ def sleep(self,
           health_sections=None,
           *args,
           **kwargs):
+
     log.info('Sleeping for {s} seconds'.format(s=sleep_time))
     time.sleep(float(sleep_time))
 
@@ -355,18 +407,18 @@ def rest(self,
     with steps.start("Submitting a '{m}' call to a REST API on '{d}'".\
                     format(m=method, d=device.name), continue_=continue_) as step:
 
-        output = rest_handler(device,
-                              method,
-                              step,
-                              expected_failure=expected_failure,
-                              continue_=continue_,
-                              include=include,
-                              exclude=exclude,
-                              max_time=max_time,
-                              check_interval=check_interval,
-                              connection_alias=connection_alias,
-                              *args,
-                              **kwargs)
+        kwargs.update({'device': device,
+                       'method': method,
+                       'step': step,
+                       'expected_failure':expected_failure,
+                       'continue_':continue_,
+                       'include':include,
+                       'exclude':exclude,
+                       'max_time':max_time,
+                       'check_interval':check_interval,
+                       'connection_alias':connection_alias})
+
+        output = rest_handler(**kwargs)
 
     return output
 
@@ -390,6 +442,7 @@ def yang(self,
          health_sections=None,
          *args,
          **kwargs):
+
     if connection:
         device = getattr(device, connection)
         # Verify that we are connected
@@ -533,7 +586,6 @@ def restore_config_snapshot(self,
     if delete_snapshot:
         self.restore[device].snapshot_deleted = True
 
-
 @add_result_as_extra
 def bash_console(self,
                  device,
@@ -559,17 +611,17 @@ def bash_console(self,
     with steps.start("Executing bash commands on '{d}'".\
                     format(d=device.name), continue_=continue_) as step:
 
-        output = bash_console_handler(device,
-                                      step,
-                                      commands,
-                                      expected_failure=expected_failure,
-                                      include=include,
-                                      exclude=exclude,
-                                      max_time=max_time,
-                                      check_interval=check_interval,
-                                      continue_=True,
-                                      action='bash_console',
-                                      **kwargs)
+        kwargs.update({'step': step,
+                       'device': device,
+                       'commands': commands,
+                       'include': include,
+                       'exclude': exclude,
+                       'max_time': max_time,
+                       'check_interval': check_interval,
+                       'continue_': continue_,
+                       'expected_failure': expected_failure})
+
+        output = bash_console_handler(**kwargs)
 
     return output
 
@@ -595,7 +647,6 @@ def genie_sdk(self,
 
     sdks = list(kwargs.keys())
     run_genie_sdk(self, steps, sdks, uut=uut, parameters=kwargs)
-
 
 @add_result_as_extra
 def print_(self,
@@ -680,9 +731,9 @@ def diff(self,
             step.passed('{pre} and {post} are identical'.format(pre=pre,
                                                                 post=post))
 
-
 actions = {
     'configure': configure,
+    'configure_dual': configure_dual,
     'parse': parse,
     'execute': execute,
     'api': api,

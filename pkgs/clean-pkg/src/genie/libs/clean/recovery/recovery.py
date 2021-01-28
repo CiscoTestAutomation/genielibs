@@ -339,7 +339,7 @@ def recovery_processor(
         # All good!
         log.info("Success - Device '{}' is still connected - "
                  "No need to recover the device".format(device.name))
-        section.passed('Device {} is connected'.format(device.name))
+        return
     else:
         # Not good! Lets attempt recovery
         log.warning("Device '{}' is unreachable - attempting recovery".\

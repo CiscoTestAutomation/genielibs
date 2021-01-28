@@ -1,4 +1,4 @@
-""" Get type APIs for NXOS ACI """
+""" Get type APIs for APIC """
 
 import logging
 

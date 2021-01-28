@@ -18,9 +18,9 @@ from genie.libs.clean.recovery.iosxe.dialogs import (BreakBootDialog,
 # Logger
 log = logging.getLogger(__name__)
 
-def recovery_worker(start, device, console_activity_pattern,
-                    console_breakboot_char, grub_activity_pattern,
-                    grub_breakboot_char, break_count=10, timeout=600,
+def recovery_worker(start, device, console_activity_pattern=None,
+                    console_breakboot_char=None, grub_activity_pattern=None,
+                    grub_breakboot_char=None, break_count=10, timeout=600,
                     *args, **kwargs):
     """ Starts a Spawn and processes device dialogs during recovery of a device
 
@@ -98,19 +98,22 @@ def recovery_worker(start, device, console_activity_pattern,
 
     # Stop the device from booting
     break_dialog = BreakBootDialog()
-    break_dialog.add_statement(
-        Statement(pattern=console_activity_pattern,
-                  action=console_breakboot,
-                  args={'break_count': break_count,
-                        'break_char': console_breakboot_char},
-                  loop_continue=True,
-                  continue_timer=False), pos=0)
-    break_dialog.add_statement(
-        Statement(pattern=grub_activity_pattern,
-                  action=grub_breakboot,
-                  args={'break_char': grub_breakboot_char},
-                  loop_continue=True,
-                  continue_timer=False), pos=0)
+    if console_activity_pattern and console_breakboot_char:
+        break_dialog.add_statement(
+            Statement(pattern=console_activity_pattern,
+                      action=console_breakboot,
+                      args={'break_count': break_count,
+                            'break_char': console_breakboot_char},
+                      loop_continue=True,
+                      continue_timer=False), pos=0)
+
+    if grub_activity_pattern and grub_breakboot_char:
+        break_dialog.add_statement(
+            Statement(pattern=grub_activity_pattern,
+                      action=grub_breakboot,
+                      args={'break_char': grub_breakboot_char},
+                      loop_continue=True,
+                      continue_timer=False), pos=0)
 
     break_dialog.dialog.process(spawn, timeout=timeout)
 

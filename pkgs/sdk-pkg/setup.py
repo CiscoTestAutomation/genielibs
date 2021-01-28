@@ -112,7 +112,9 @@ setup(
     },
 
     # console entry point
-    entry_points = {
+    entry_points={
+        'pyats.easypy.plugins':
+        ['plugin = genie.libs.sdk.triggers.blitz.maple_converter.plugin:maple_clean_plugin']
     },
 
     # package dependencies
