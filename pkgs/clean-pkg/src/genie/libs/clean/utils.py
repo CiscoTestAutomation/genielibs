@@ -9,6 +9,7 @@ import logging
 import json
 import importlib
 from functools import wraps
+from unittest.mock import patch
 
 # Genie
 from genie.libs import clean
@@ -21,6 +22,10 @@ from genie.metaparser.util.exceptions import SchemaMissingKeyError,\
 
 # pyATS
 from pyats.topology.loader import load as testbed_loader
+from pyats.topology.loader.markup import TestbedMarkupProcessor
+from pyats.utils.yaml import Loader
+from pyats.utils.yaml.markup import Processor as MarkupProcessor
+from pyats.utils.schemaengine import Use as PyatsUse
 
 # Unicon
 from unicon.core.errors import (SubCommandFailure, TimeoutError,
@@ -324,13 +329,13 @@ def pretty_schema_exception(e):
         return e
 
 
-def validate_clean(clean_dict, testbed_dict):
+def validate_clean(clean_file, testbed_file):
     """ Validates the clean yaml using device abstraction to collect
         the proper schemas
 
         Args:
-            clean_dict (dict): clean datafile
-            testbed_dict (dict): testbed datafile
+            clean_file (str/dict): clean datafile
+            testbed_file (str/dict): testbed datafile
 
         Returns:
             {
@@ -364,13 +369,41 @@ def validate_clean(clean_dict, testbed_dict):
     }
 
     try:
-        loaded_tb = testbed_loader(testbed_dict)
+        # Load yaml without parsing markup
+        # Mock the use validate to prevent calling functions like
+        # translate_host or import_from_name
+        with patch.object(PyatsUse, 'validate') as mockvalid:
+            # return data on Use.validate
+            mockvalid.side_effect = lambda *x, **y: x[1]
+            loaded_tb = testbed_loader(testbed_file,
+                                       locations={},
+                                       markupprocessor=TestbedMarkupProcessor(
+                                           reference=True,
+                                           callable=False,
+                                           env_var=False,
+                                           include_file=False,
+                                           ask=False,
+                                           encode=False))
     except Exception:
         exceptions.append(
             Exception("Could not load the testbed file. Use "
                       "'pyats validate testbed <file>' to validate "
                       "the testbed file.")
         )
+
+    loader = Loader(enable_extensions=True,
+                    markupprocessor=MarkupProcessor(reference=True,
+                                                    callable=False,
+                                                    env_var=False,
+                                                    include_file=False,
+                                                    ask=False,
+                                                    encode=False))
+
+    try:
+        clean_dict = loader.load(clean_file, locations={})
+    except Exception as e:
+        exceptions.append(e)
+        return validation_results
 
     try:
         clean_json = load_clean_json()

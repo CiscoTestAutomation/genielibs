@@ -89,7 +89,7 @@ class MldOutput(object):
 
     # from: test_show_mld.py -> golden_output2
     ShowMldSummaryInternal_VRF = '''\
-        RP/0/0/CPU0:ios#show mld vrf VRF1 summary internal 
+        RP/0/0/CPU0:ios#show mld vrf VRF1 summary internal
 
         Robustness Value 10
         No. of Group x Interfaces 10

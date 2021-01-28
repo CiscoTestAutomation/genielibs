@@ -8,7 +8,7 @@ devices:
     images:
       - /auto/release/path/vmlinux.bin
 
-    global_recovery:
+    device_recovery:
       break_count: 5
       console_activity_pattern: "\\.\\.\\.\\."
       timeout: 600
@@ -51,11 +51,11 @@ devices:
       verify_num_images: False
 
     change_boot_variable:
-      images: 
+      images:
         - harddisk:/vmlinux_PE1.bin
       timeout: 1
       max_time: 2
-      check_interval: 0.5
+      check_interval: 1
 
     write_erase:
       timeout: 1
@@ -85,7 +85,7 @@ devices:
       config_timeout: 1
       config_stable_time: 1
       max_time: 1
-      check_interval: 0.5
+      check_interval: 1
 
     verify_running_image:
       images:
@@ -96,7 +96,6 @@ devices:
         copy_file: temp_file
 
     delete_backup_from_device:
-        copy_before_delete: True
         delete_dir: 'harddisk:'
         delete_file: backup_temp_file
 
@@ -110,4 +109,3 @@ devices:
       - 'reload'
       - 'apply_configuration'
       - 'verify_running_image'
-  

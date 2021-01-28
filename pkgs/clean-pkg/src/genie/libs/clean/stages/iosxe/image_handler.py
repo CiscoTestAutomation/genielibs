@@ -179,7 +179,6 @@ class ImageHandler(BaseImageHandler, ImageLoader):
 
     def update_verify_running_image(self):
         '''Update clean stage 'verify_running_image' with image information'''
-
         verify_running_image = self.device.clean.setdefault('verify_running_image', {})
         verify_running_image.update({'images': self.image})
 

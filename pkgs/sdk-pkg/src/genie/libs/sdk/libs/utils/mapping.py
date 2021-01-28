@@ -531,7 +531,7 @@ class Mapping(object):
                     # the ops output is empty, the full path won't be populated
                     # it could contain ('(?P<'), in this case pass the step
                     # TODO - will remove expect_empty when find is enhanced
-                    if isinstance(elem, str) and elem.startswith('(?P<') and not expect_empty:
+                    if isinstance(elem, str) and elem.startswith('(?P<') and not expect_empty and not isinstance(elem, NotExists):
                         step.skipped('Could not satisfy all requirement\n{k}'
                                          .format(k=self.keys))
 

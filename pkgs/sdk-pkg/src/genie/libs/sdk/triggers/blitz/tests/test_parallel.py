@@ -12,7 +12,7 @@ from genie.conf.base import Testbed, Device
 from genie.libs.sdk.triggers.blitz.blitz import Blitz
 from genie.libs.sdk.triggers.blitz.actions import actions
 from genie.libs.ops.platform.nxos.platform import Platform
-from genie.libs.sdk.triggers.blitz.blitz_parallel import parallel
+from genie.libs.sdk.triggers.blitz.advanced_actions import parallel
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 from pyats.easypy import Task
@@ -267,12 +267,13 @@ class TestParallel(unittest.TestCase):
       
       # TODO alias and saved_vars wont get stored when under loop/run_condition 
       # self.assertIn('exec_1', self.blitz_obj.parameters['save_variable_name'])
-
       parallel(**self.kwargs)
       self.assertIn('parse_id', self.blitz_obj.parameters['save_variable_name']) 
       self.assertEqual(steps.result, Failed)
       self.assertEqual(steps.details[0].name, 'Executing actions in parallel')
-      self.assertEqual(steps.details[1].name, 'Checking the condition in parallel')
+      self.assertEqual(steps.details[1].name, 
+                       'Condition %VARIABLES{execute_id} == passed is met and '
+                       'the step result is failed')
       self.assertEqual(steps.details[1].result, Failed)
 
 if __name__ == '__main__':

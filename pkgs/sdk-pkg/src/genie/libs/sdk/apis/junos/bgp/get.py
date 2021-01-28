@@ -158,7 +158,10 @@ def get_bgp_summary_neighbor_state_count(device, expected_neighbor_state='Establ
     except SchemaEmptyParserError:
         return None
 
-    state_count = out.q.contains_key_value('peer-state', 
-        expected_neighbor_state).count()
+    if expected_neighbor_state=='Establ':
+        expected_neighbor_state='Establ|[\d\/]+'
+    
+    state_count = out.q.contains('peer-state').contains(expected_neighbor_state, 
+        regex=True).count()
 
     return state_count

@@ -77,6 +77,15 @@ def verify_interface_output_pps(device,
         #     }
         # }
 
+        # when there is no output:
+        # out = '''
+        # 
+        # {master}
+        # '''
+        if out == {'no-output': True}:
+            timeout.sleep()
+            continue
+        
         # Check target interface output pps values
         target_interface_output_pps = out.q.contains(
             '{target_interface}'.format(target_interface=target_interface),

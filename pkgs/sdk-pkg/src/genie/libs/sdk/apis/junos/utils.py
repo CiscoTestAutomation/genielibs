@@ -354,3 +354,39 @@ def request_login_other_re(device):
     except Exception as e:
         return False
     return True
+
+def get_show_output_line_count(device, command, output=None):
+    """ Count number of line from show command output
+
+        Args:
+            device (`obj`): Device object
+            command (`str`): show command
+            output (`str`): output of show command. Default to None
+        
+        Returns:
+            line_count (`int`): number of lines based on show command output
+            
+        Raises:
+            N/A
+    """  
+    out = None
+    try:
+        if output:
+            out = output
+        else:
+            out = device.execute(command+" | count")
+    except SubCommandFailure as e:
+        log.warn("Couldn't get line count properly: {e}".format(e=e))
+        return 0
+
+    p = re.compile(r'^Count:\s+(?P<line_count>\d+)\s+lines')
+
+    for line in out.splitlines():
+        line = line.strip()
+
+        m = p.match(line)
+        if m:
+            return int(m.groupdict()['line_count'])
+
+    log.warn("Couldn't get line count properly.")
+    return 0

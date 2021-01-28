@@ -111,7 +111,7 @@ class GenieRobot(object):
         self._load_genie_datafile()
         if not self.trigger_datafile:
             self.loaded_yamls = False
-            log.warning("Could not load the Datafile correctly")
+            log.warning("Could not load the trigger datafile correctly, did you specify 'uut' device alias?")
 
     # Metaparser
     @keyword('parse "${parser:[^"]+}" on device "${device:[^"]+}"')
@@ -808,7 +808,6 @@ class GenieRobot(object):
     def _load_genie_datafile(self):
         # Load the datafiles
         variables = self.builtin.get_variables()
-        datafiles = []
 
         trigger_datafile = None
         if '${trigger_datafile}' in variables:
@@ -822,12 +821,12 @@ class GenieRobot(object):
         if '${pts_datafile}' in variables:
             pts_datafile = variables['${pts_datafile}']
 
-        self.trigger_datafile, self.verification_datafile, pts_datafile , *_ =\
-             self.testscript._validate_datafiles(self.testbed,
-                                                 trigger_datafile,
-						 verification_datafile,
-						 pts_datafile,
-						 None, None)
+        self.trigger_datafile, self.verification_datafile, pts_datafile, *_ =\
+            self.testscript._validate_datafiles(self.testbed,
+                                                trigger_datafile,
+                                                verification_datafile,
+                                                pts_datafile,
+                                                None, None)
 
         if self.trigger_datafile:
             self.trigger_datafile = self.testscript._load(self.trigger_datafile,

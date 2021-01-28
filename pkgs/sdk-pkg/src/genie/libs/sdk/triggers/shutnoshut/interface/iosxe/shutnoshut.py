@@ -354,7 +354,7 @@ class TriggerShutNoShutLoopbackInterface(TriggerShutNoShut):
     # Also permit to dictate which key to verify
     mapping = Mapping(requirements={'ops.interface.interface.Interface':{
                                        'requirements':[['info', '(?P<interface>(Loopback|Lo|loopback)[0-9]+)', 'oper_status', 'up'],
-                                                       ['info', '(?P<interface>(Loopback|Lo|loopback)[0-9]+)', '(?P<af>ipv4|6)', Not('unnumbered')]
+                                                       ['info', '(?P<interface>(Loopback|Lo|loopback)[0-9]+)', '(?P<af>ipv4|6)', NotExists('unnumbered')]
                                        ],
                                        'exclude': interface_exclude}},
                       config_info={'conf.interface.Interface':{

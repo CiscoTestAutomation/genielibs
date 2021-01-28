@@ -54,10 +54,10 @@ def is_logging_ospf_spf_logged(device, expected_spf_delay=None, ospf_trace_log=N
                     return True
 
         timeout.sleep()
-    return False  
+    return False
 
 def verify_log_exists(device, file_name, expected_log,
-                            max_time=60, check_interval=10, invert=False,
+                            max_time=120, check_interval=10, invert=False,
                             match=None):
     """
     Verify log exists
@@ -99,15 +99,15 @@ def verify_log_exists(device, file_name, expected_log,
 
         log_found = log_output.q.contains(
                     '.*{}.*'.format(expected_log), regex=True)
-        
+
         if op(log_found):
             return True
 
         timeout.sleep()
-    return False    
+    return False
 
 
-def verify_no_log_output(device, file_name,max_time=60, 
+def verify_no_log_output(device, file_name,max_time=60,
                          check_interval=10, invert=False, match=None):
     """
     Verify no log exists
@@ -130,7 +130,7 @@ def verify_no_log_output(device, file_name,max_time=60,
     while timeout.iterate():
         try:
             if match:
-                cmd = 'show log {file_name} | match "{match}"'.format(
+                cmd = 'show log {file_name} | except "show log" | match "{match}"'.format(
                     file_name=file_name,
                     match=match)
                 output = device.execute(cmd)
@@ -140,11 +140,101 @@ def verify_no_log_output(device, file_name,max_time=60,
                     file_name=file_name))
         except SchemaEmptyParserError:
             return True
-        
+
+        #"file-content": [
+        #    "        show log messages",
+        #    "        Mar  5 00:45:00 sr_hktGCS001 newsyslog[89037]: "
+        #    "logfile turned over due to size>1024K",
+        #    "        Mar  5 02:42:53  sr_hktGCS001 sshd[87374]: Received "
+        #    "disconnect from 10.1.0.1 port 46480:11: disconnected by user",
         if not log_output:
+            return True
+
+        # {'file-content': ['', '', '', '', '{master}']}
+        elif set(log_output['file-content']) == {'', '{master}'}:
             return True
 
         timeout.sleep()
         continue
+
+    return False
+
+
+def verify_log_contain_keywords(device,
+                                filename,
+                                keywords,
+                                max_time=60,
+                                check_interval=10,
+                                filter=None,
+                                output=None,
+                                invert=False):
+    """
+    Verify if keywords are in log messages
+
+    Args:
+        device(`obj`): device to use  
+        filename(`str`) : File name to check log
+        max_time (`int`): Maximum time to keep checking
+        check_interval (`int`): How often to check
+        filter (`bool`, optional): flag to use `match` to filter by keywords
+                                   Default to None
+        keywords (`list`, `str`): list of keywords to find
+        output (`str`): output of show command. Default to None
+        invert (`bool`): invert result. (check all keywords not in log)
+                         Default to False
+
+    Returns:  
+        Boolean : if True, find the keywords in log
+    Raises:
+        N/A    
+    """
+
+    if not isinstance(keywords, list):
+        keywords = [str(keywords)]
+
+    # create match keywords which can be passed to show something | match {match_list}
+    match_list = '|'.join(keywords)
+
+    if filter:
+        cmd = 'show log {file_name} | match "{match_list}"'.format(
+            file_name=filename, match_list=match_list)
+    else:
+        cmd = 'show log {filename}'.format(filename=filename)
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse(cmd, output=output)
+        except SchemaEmptyParserError:
+            return bool(invert)
+
+        # example of out
+        # {
+        #   "file-content": [
+        #     "Sep 18 16:14:45  P4 rpd[6962]: RPD_OSPF_NBRDOWN: OSPF neighbor 34.0.0.1 (realm ospf-v2 ge-0/0/0.0 area 0.0.0.0) state changed from Full to Down due to KillNbr (event reason: interface went down)",
+        #     "Sep 18 16:14:45  P4 bfdd[6909]: BFDD_STATE_UP_TO_DOWN: BFD Session 34.0.0.1 (IFL 333) state Up -> Down LD/RD(32/16) Up time:23:52:11 Local diag: AdminDown Remote diag: None Reason: Received Upstream Destroy Session.",
+        #     "Sep 18 16:16:09  P4 rpd[6962]: RPD_BGP_NEIGHBOR_STATE_CHANGED: BGP peer 3.3.3.3 (Internal AS 65000) changed state from Established to Idle (event HoldTime) (instance master)"
+        #   ]
+        # }
+
+        # found : dictionary where storing key/value, keyword/match line
+        # example:
+        # found = {
+        #     'RPD_OSPF_NBRDOWN': 'Sep 18 16:14:45  P4 rpd[6962]: RPD_OSPF_NBRDOWN: OSPF neighbor 34.0.0.1 (realm ospf-v2 ge-0/0/0.0 area 0.0.0.0) state changed from Full to Down due to KillNbr (event reason: interface went down)',
+        # }
+        found = {}
+        for line in out.q.get_values('file-content'):
+            line = line.strip()
+            for kw in keywords:
+                if kw in line or re.match(kw, line):
+                    found[kw] = line
+
+        if not invert and len(found) == len(keywords) or invert and not found:
+            return True
+        elif not invert:
+            timeout.sleep()
+        else:
+            # in case of revert=True, no need to retry
+            return False
 
     return False

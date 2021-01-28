@@ -18,26 +18,6 @@ class ValidStructures(unittest.TestCase):
 
     def test_structure_1(self):
         images = [
-            self.CONTROLLER_IMAGE,
-            self.SWITCH_IMAGE
-        ]
-
-        image_handler = ImageHandler(self.device, images)
-
-        self.assertEqual(image_handler.controller, self.EXPECTED_CONTROLLER)
-        self.assertEqual(image_handler.switch, self.EXPECTED_SWITCH)
-
-    def test_structure_1_only_controller(self):
-        images = [
-            self.CONTROLLER_IMAGE
-        ]
-
-        image_handler = ImageHandler(self.device, images)
-
-        self.assertEqual(image_handler.controller, self.EXPECTED_CONTROLLER)
-
-    def test_structure_1_only_switch(self):
-        images = [
             self.SWITCH_IMAGE
         ]
 
@@ -47,61 +27,14 @@ class ValidStructures(unittest.TestCase):
 
     def test_structure_2(self):
         images = {
-            'controller': [self.CONTROLLER_IMAGE],
-            'switch': [self.SWITCH_IMAGE]
-        }
-
-        image_handler = ImageHandler(self.device, images)
-
-        self.assertEqual(image_handler.controller, self.EXPECTED_CONTROLLER)
-        self.assertEqual(image_handler.switch, self.EXPECTED_SWITCH)
-
-    def test_structure_2_only_controller(self):
-        images = {
-            'controller': [self.CONTROLLER_IMAGE],
-        }
-
-        image_handler = ImageHandler(self.device, images)
-
-        self.assertEqual(image_handler.controller, self.EXPECTED_CONTROLLER)
-
-    def test_structure_2_only_switch(self):
-        images = {
             'switch': [self.SWITCH_IMAGE]
         }
 
         image_handler = ImageHandler(self.device, images)
 
         self.assertEqual(image_handler.switch, self.EXPECTED_SWITCH)
-
 
     def test_structure_3(self):
-        images = {
-            'controller': {
-                'file': [self.CONTROLLER_IMAGE]
-            },
-            'switch': {
-                'file': [self.SWITCH_IMAGE]
-            }
-        }
-
-        image_handler = ImageHandler(self.device, images)
-
-        self.assertEqual(image_handler.controller, self.EXPECTED_CONTROLLER)
-        self.assertEqual(image_handler.switch, self.EXPECTED_SWITCH)
-
-    def test_structure_3_only_controller(self):
-        images = {
-            'controller': {
-                'file': [self.CONTROLLER_IMAGE]
-            }
-        }
-
-        image_handler = ImageHandler(self.device, images)
-
-        self.assertEqual(image_handler.controller, self.EXPECTED_CONTROLLER)
-
-    def test_structure_3_only_switch(self):
         images = {
             'switch': {
                 'file': [self.SWITCH_IMAGE]
@@ -120,7 +53,6 @@ class InvalidStructures(unittest.TestCase):
 
     def test_structure_1_extra_entry(self):
         images = [
-            '/path/to/controller_image.bin',
             '/path/to/switch_image.bin',
             'invalid entry'
         ]
@@ -130,7 +62,6 @@ class InvalidStructures(unittest.TestCase):
 
     def test_structure_2_extra_type(self):
         images = {
-            'controller': ['/path/to/controller_image.bin'],
             'switch': ['/path/to/switch_image.bin'],
             'this shouldnt work': ['/path/to/switch_image.bin']
         }

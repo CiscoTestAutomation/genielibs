@@ -127,6 +127,8 @@ class RommonDialog(TelnetDialog):
     @statement_decorator(r'.*Use the UP and DOWN arrow keys to select.*', loop_continue=True)
     @statement_decorator(r'.*Use the \^ and v keys to select.*', loop_continue=True)
     def grub_select_image(spawn, session, context):
+        log.info("Finding an entry that includes the string '{}'".
+                 format(context['boot_image']))
 
         lines = re.split(r'\s{4,}', spawn.buffer)
 
@@ -147,6 +149,8 @@ class RommonDialog(TelnetDialog):
                             "desired_line: {}\n"
                             "lines: {}"
                             .format(selected_line, desired_line, lines))
+
+        log.info("Selecting the entry '{}' now.".format(lines[desired_line]))
 
         num_lines_to_move = desired_line - selected_line
 

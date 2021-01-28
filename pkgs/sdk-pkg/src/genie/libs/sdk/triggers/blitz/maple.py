@@ -6,26 +6,34 @@ import inspect
 import logging
 import importlib
 
-from os.path import expanduser
 from collections import OrderedDict
 from pyats.datastructures import AttrDict
 
 from genie.utils import Dq
 
 from .markup import save_variable
-from .actions_helper import _output_query_template
+from .actions_helper import _include_exclude_list
 
 log = logging.getLogger()
 
 
-def maple(self, steps, device, maple_plugin_input, maple_action=None, output=None, include=None, exclude=None, continue_=True, **kwargs):
+def maple(self,
+          steps,
+          device,
+          maple_plugin_input,
+          maple_action=None,
+          output=None,
+          include=None,
+          exclude=None,
+          continue_=True,
+          **kwargs):
 
     '''
-        3 types of maple plugins exist: 
+        3 types of maple plugins exist:
             1) confirm
             2) matcher
             3) command
-        
+
         Example of converting maple plugins into equivalent blitz action
         apply:
             devices:
@@ -37,13 +45,13 @@ def maple(self, steps, device, maple_plugin_input, maple_action=None, output=Non
                             "options":[
                                 {"method":"GET"},
                                 {"url":"http://ott-ads-019:8025/api/mo/sys/fm/mplssgmntrtg.json"}
-                            ]} 
+                            ]}
                         #@#
         ==================================================================================
         Blitz equivalent of the abovementioned command maple plugin
         - maple:
-            # maple_plugin_input keyword below is section dict containing all the maple_action information and is input to blitz code  
-            
+            # maple_plugin_input keyword below is section dict containing all the maple_action information and is input to blitz code
+
             maple_plugin_input: '{"type": "dmerest", "commands":   < -- string representation of the dictionary representation of the maple_plugin with maple_action_type and rule_id for use in blitz
                         "command:{\n
                             \"method\":\"processdme\",\n
@@ -51,7 +59,7 @@ def maple(self, steps, device, maple_plugin_input, maple_action=None, output=Non
                                         {\"method\":\"GET\"},\n
                                         {\"url\":\"http://ott-ads-019:8025/api/mo/sys/fm/mplssgmntrtg.json\"}\n
                                         ]}"}'
-            
+
             device: N93_3
             maple_action: apply <-- necessary for blitz
             save:
@@ -73,18 +81,18 @@ def maple(self, steps, device, maple_plugin_input, maple_action=None, output=Non
     '''
     # cast the maple_plugin_input input into json_data
     # maple_plugin_input keyword of the yaml file is dictionary casted as string
-    maple_plugin_input = json.loads(maple_plugin_input, object_pairs_hook=OrderedDict)
+    maple_plugin_input = json.loads(maple_plugin_input,
+                                    object_pairs_hook=OrderedDict)
     plugin_extract = re.compile(r'(?P<plugin_type>\w+):{(?P<plugin_data>[\S\s]+)}')
 
     # extracting 'commands' keyword in maple_plugin_input and match it with above regex
     # Plugin_type == command|matcher|confirm
     # plugin_data == info that'd be used int maple code
     m = plugin_extract.match(Dq(maple_plugin_input).get_values('commands', index=0))
+
     matched_group = m.groupdict()
     json_data_str = "{{{}}}".format(matched_group['plugin_data'])
     plugin_data = json.loads(json_data_str)
-
-
 
     # package extracted form plugin_data, containing the package that contains maple plugin
     package = plugin_data.pop('package', None)
@@ -97,13 +105,13 @@ def maple(self, steps, device, maple_plugin_input, maple_action=None, output=Non
     if not method:
         raise Exception('No method was provided to call')
 
-    # objects == kwargs to the maple plugin method which mostly coming from maple_plugin_input 
+    # objects == kwargs to the maple plugin method which mostly coming from maple_plugin_input
     # plugin_source contains the package that plugin is in (e.g CommandPlugins, MatcherPlugins etc)
     # It is possible that the plugin_source is a class as well
     objects, plugin_source = _maple_plugins_input(self, steps, device, plugin_data, maple_action,
                                                   matched_group, maple_plugin_input, package, method, _class=_class, output=output)
-    
-    # if plugin_source is class create an object of that class 
+
+    # if plugin_source is class create an object of that class
     # store its name in plugin_source_print_str
     if inspect.isclass(plugin_source):
         plugin_source_print_str = plugin_source.__name__
@@ -113,20 +121,21 @@ def maple(self, steps, device, maple_plugin_input, maple_action=None, output=Non
     # Only store its name in plugin_source_print_str
     # replace package name in module name and strip all the "." the name of the module would be stored
     else:
-        plugin_source_print_str = plugin_source.__name__.replace(plugin_source.__package__, '').strip('.')
+        plugin_source_print_str = plugin_source.__name__.replace(
+                                                                 plugin_source.__package__, '').strip('.')
 
     # Calling the maple method
     with steps.start("Calling method '{m}' from maple plugin '{p}' on '{d}'".\
-                      format(m=method, p=plugin_source_print_str, d=device.name), continue_=continue_) as step:
+                      format(m=method, p=plugin_source_print_str, d=device.name),
+                      continue_=continue_) as step:
 
         # calling the function in the plugin
         # receveing the output of the plugin method
         ret_value = getattr(plugin_source, method)(objects)
-
         # matchObjs in maple == save_variable_name in blitz
         # ixiaObjs in maple is saving ixia values in maple
         # still storing as same as save_variable_name
-        # They need to be extracte from ret_value and store 
+        # They need to be extracte from ret_value and store
         # in self.parameters['save_variable_name']
         if 'matchObjs' in ret_value:
             for key, val in ret_value['matchObjs'].items():
@@ -136,7 +145,7 @@ def maple(self, steps, device, maple_plugin_input, maple_action=None, output=Non
                 if val != {}:
                     save_variable(self, key, val)
 
-        # checking if there is a results that needs to be used 
+        # checking if there is a results that needs to be used
         # to pass or fail the action
         if 'result' in ret_value:
             if matched_group['plugin_type'] == 'confirm':
@@ -150,12 +159,21 @@ def maple(self, steps, device, maple_plugin_input, maple_action=None, output=Non
 
     return ret_value.get('output')
 
-def _maple_plugins_input(self, steps, device, plugin_data, maple_action,
-                         matched_group, maple_plugin_input, package, method, _class=None, output=None):
+def _maple_plugins_input(self,
+                         steps,
+                         device,
+                         plugin_data,
+                         maple_action,
+                         matched_group,
+                         maple_plugin_input,
+                         package,
+                         method,
+                         _class=None,
+                         output=None):
 
     # kwargs to the maple plugin method
     objects= {}
-    testbed = self.parameters['testbed'] 
+    testbed = self.parameters['testbed']
     saved_vars = self.parameters.get('save_variable_name', {})
 
     # populating the objects dictionary to be send as inputs to plugins
@@ -191,7 +209,7 @@ def _maple_plugins_input(self, steps, device, plugin_data, maple_action,
         plugin_source = importlib.import_module('plugins.system.Commands')
 
     if not hasattr (plugin_source, method):
-        raise Exception('The method')
+        raise Exception('The method {} is invalid'.format(method))
 
     # Each plugin might have an input tailord to itself
     # adjusting the plugin specific inputs.
@@ -202,7 +220,7 @@ def _maple_plugins_input(self, steps, device, plugin_data, maple_action,
     elif matched_group['plugin_type'] == 'matcher':
 
         # matcher plugins should execute a command
-        # before calling the plugin and plugins should receive that 
+        # before calling the plugin and plugins should receive that
         # show command output as an input
         if 'command' in plugin_data:
             try:
@@ -213,11 +231,10 @@ def _maple_plugins_input(self, steps, device, plugin_data, maple_action,
         else:
             steps.failed('No command provided, action failed')
 
-
     elif matched_group['plugin_type'] == 'confirm':
         if output:
             objects.update({'output': output})
-    
+
     # further adjustments are necessary for ixianative
     if device.type == 'ixia':
         objects = _ixia_add_on(self, objects, device)
@@ -235,20 +252,49 @@ def _ixia_add_on(self, objects, device):
 
     # if an ixiaNet object was provided from previous ixia plugin calls it is stored
     # they should be passed into the plugin as input
-    if 'save_variable_name' in self.parameters and 'ixiaNet' in self.parameters['save_variable_name']:
-        objects['ixiaObjs']['ixiaNet'].update(self.parameters['save_variable_name']['ixiaNet'])
+    if 'save_variable_name' in self.parameters and \
+       'ixiaNet' in self.parameters['save_variable_name']:
+        objects['ixiaObjs']['ixiaNet'].update(
+                                               self.parameters['save_variable_name']['ixiaNet'])
 
-    if 'save_variable_name' in self.parameters and 'ixiaNetSelf' in self.parameters['save_variable_name']:
-        objects['ixiaObjs']['ixiaNetSelf'].update(self.parameters['save_variable_name']['ixiaNetSelf'])
+    if 'save_variable_name' in self.parameters and\
+       'ixiaNetSelf' in self.parameters['save_variable_name']:
+        objects['ixiaObjs']['ixiaNetSelf'].update(
+                                                  self.parameters['save_variable_name']['ixiaNetSelf'])
 
-    if 'save_variable_name' in self.parameters and 'ixiaNetStop' in self.parameters['save_variable_name']:
-        objects['ixiaObjs']['ixiaNetStop'].update(self.parameters['save_variable_name']['ixiaNetStop'])
+    if 'save_variable_name' in self.parameters and\
+       'ixiaNetStop' in self.parameters['save_variable_name']:
+        objects['ixiaObjs']['ixiaNetStop'].update(
+                                                  self.parameters['save_variable_name']['ixiaNetStop'])
 
     return objects
 
 def maple_search(self, steps, search_string, device, continue_=True, include=None, exclude=None, **kwargs):
 
     log.info(search_string)
-    return _output_query_template(self, search_string, steps, device, command=None,
-                                  include=include, exclude=exclude, max_time=None, 
-                                  check_interval=None, continue_=continue_, action='maple_search')
+
+    keys = _include_exclude_list(include, exclude)
+    for query, style in keys:
+        query = query.replace('\b', '\\b')
+        pattern = re.compile(str(query))
+
+        with steps.start("Verifying if pattern {} is {} in output".\
+                         format(query, style), continue_=True) as step:
+            for line in search_string.splitlines():
+
+                line = line.strip()
+                m = pattern.search(line)
+                if m:
+                    break
+            else:
+                msg = "Match not found: {} is not found in the output".format(query)
+                if style == 'included':
+                    step.failed(msg)
+
+                step.passed(msg)
+
+            msg = "Match found: {} found in the output".format(query)
+            if style == 'included':
+                step.passed(msg)
+
+            step.failed(msg)

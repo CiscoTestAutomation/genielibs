@@ -162,3 +162,40 @@ def get_ospf_neighbors_instance_state_count(device, expected_neighbor_state='Ful
         expected_neighbor_state).count()
 
     return state_count
+
+def get_ospf_neighbor_count(device, expected_state=None, output=None, max_time=60, check_interval=10):
+    """ Get ospf neighbors count
+
+    Args:
+        device (`obj`): Device object
+        expected_state (`str`): Expected neighbor state. Defaults to None
+        output (`str`): output of show ospf neighbor. Default to None
+        max_time (`int`, optional): Maximum timeout time. Defaults to 60 seconds.
+        check_interval (`int`, optional): Check interval. Defaults to 10 seconds.
+    """
+    try:
+        if output:
+            out = device.parse('show ospf neighbor', output=output)
+        else:
+            out = device.parse('show ospf neighbor')
+    except SchemaEmptyParserError:
+        return 0
+
+    # example out out
+    # {
+    #   "ospf-neighbor-information": {
+    #     "ospf-neighbor": [
+    #       {
+    #         "activity-timer": "32",
+    #         "interface-name": "ge-0/0/0.0",
+    #         "neighbor-address": "12.0.0.2",
+    #         "neighbor-id": "2.2.2.2",
+    #         "neighbor-priority": "128",
+    #         "ospf-neighbor-state": "Full"
+    #       },
+
+    if expected_state:
+        return len(out.q.contains_key_value('ospf-neighbor-state', expected_state))
+    else:
+        return len(out.q.get_values('ospf-neighbor'))
+

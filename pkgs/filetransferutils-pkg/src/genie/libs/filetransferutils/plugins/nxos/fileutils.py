@@ -24,7 +24,7 @@ ip tftp source-interface {interface} vrf {vrf}
 ip ftp source-interface {interface} vrf {vrf}'''
 
     def copyfile(self, source, destination, timeout_seconds=300,
-        vrf='management', compact=False, use_kstack=False, *args, **kwargs):
+        vrf=None, compact=False, use_kstack=False, *args, **kwargs):
         """ Copy a file to/from NXOS device
 
             Copy any file to/from a device to any location supported on the
@@ -95,25 +95,17 @@ ip ftp source-interface {interface} vrf {vrf}'''
                                                    cache_ip=kwargs.get(
                                                        'cache_ip', True))
 
-        p = self.get_protocol(source, destination)
-        if p == 'scp':
-            # scp flash:/memleak.tcl 10.1.0.213:/auto/tftp-ssr/memleak.tcl
-            s = source.replace('{}://'.format(p), '').replace('//', ':/')
-            d = destination.replace('{}://'.format(p), '').replace('//', ':/')
-            if vrf:
-                if compact:
-                    cmd = '{p} {s} {d} compact vrf {vrf_value}'.format(
-                        p=p, s=s, d=d, vrf_value=vrf)
-                else:
-                    cmd = '{p} {s} {d} vrf {vrf_value}'.format(p=p,
-                                                               s=s,
-                                                               d=d,
-                                                               vrf_value=vrf)
+        # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl vrf managemen
+        if vrf:
+            # for n9k only
+            if compact:
+                cmd = 'copy {f} {t} compact vrf {vrf}'.format(f=source,
+                                                              t=destination,
+                                                              vrf=vrf)
             else:
-                if compact:
-                    cmd = '{p} {s} {d} compact'.format(p=p, s=s, d=d)
-                else:
-                    cmd = '{p} {s} {d}'.format(p=p, s=s, d=d)
+                cmd = 'copy {f} {t} vrf {vrf}'.format(f=source,
+                                                      t=destination,
+                                                      vrf=vrf)
         else:
             # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl vrf managemen
             if vrf:

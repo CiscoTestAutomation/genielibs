@@ -10,11 +10,12 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 log = logging.getLogger(__name__)
 
-def get_chassis_memory_util(device):
+def get_chassis_memory_util(device, expected_slot=None):
     """Returns chassis memory utilization
 
     Args:
         device (obj): Device object
+        expected_slot (int): Expected slot number
 
     Returns:
         str: Memory utilization percentage
@@ -32,6 +33,14 @@ def get_chassis_memory_util(device):
     except SchemaEmptyParserError:
         return None
 
+    if expected_slot:
+        route_engine = out.q.contains('slot', level=-1).get_values('route-engine')
+
+        for route in route_engine:
+            if route.get('slot') != expected_slot:
+                continue
+            return route.get('memory-buffer-utilization', None)
+    
     return out.q.get_values("memory-buffer-utilization", 0)
 
 def get_chassis_cpu_util(device, cpu_idle_section = 'cpu-idle-5sec'):
@@ -59,7 +68,8 @@ def get_chassis_cpu_util(device, cpu_idle_section = 'cpu-idle-5sec'):
         
     return out.q.get_values(cpu_idle_section, 0)
 
-def get_chassis_cpu_util_alternative(device, cpu_idle_section = 'cpu-idle', expected_state='Master'):
+def get_chassis_cpu_util_alternative(device, cpu_idle_section = 'cpu-idle', expected_state='Master', 
+    expected_slot=None):
     """Returns chassis cpu utilization. When show chassis routing-engine
        has the alternative output
 
@@ -67,6 +77,7 @@ def get_chassis_cpu_util_alternative(device, cpu_idle_section = 'cpu-idle', expe
         device (obj): Device object
         cpu_idle_section ('str', optional): cpu utilization, defaults to cpu-idle
         expected_state ('str'): cpu state, defaults to Master
+        expected_slot (int, optional): Expected slot number. default to None. 
 
     Returns:
         str: CPU utilization percentage
@@ -91,9 +102,14 @@ def get_chassis_cpu_util_alternative(device, cpu_idle_section = 'cpu-idle', expe
     except SchemaEmptyParserError:
         return None
     
-    route_engine = out.q.get_values('route-engine')
+    if expected_slot:
+        route_engine = out.q.contains('slot', level=-1).get_values('route-engine')
+    else:
+        route_engine = out.q.get_values('route-engine')
 
     for route in route_engine:
+        if route.get('slot') != expected_slot:
+            continue
         if route.get('mastership-state') == expected_state:
             return route.get(cpu_idle_section)
     return None
@@ -155,3 +171,58 @@ def get_chassis_zone_actual_usage(device,
     actual_usage = output.q.contains('power-usage-zone-information').contains(
         expected_zone, level=-1).get_values('capacity-actual-usage', 0)
     return actual_usage or None
+
+def get_chassis_fpc_slot_numbers(device, expected_state=None):
+    """Returns slot numbers
+    Args:
+        device (obj): Device object
+        expected_state (str): Expected state. Default to None.
+    Returns:
+        list: List of slot numbers 
+    """
+
+    # Example dict
+    # "route-engine-information": {
+    #     "route-engine": {
+    #         "memory-buffer-utilization": str
+    #     }
+    # }
+
+    try:
+        out = device.parse('show chassis fpc')
+    except SchemaEmptyParserError:
+        return None
+
+    if expected_state:
+        return out.q.contains(expected_state, level=-1).get_values('slot') or None
+    return out.q.get_values('slot') or None
+
+def get_chassis_fpc_cpu_util(device, expected_slot):
+    """Returns chassis cpu utilization
+    Args:
+        device (obj): Device object
+        expected_slot: CPU util
+    Returns:
+        str: CPU utilization percentage
+    """
+
+    # Example dict
+    # {'fpc-information': {'fpc': [{'slot': '0',
+    # 'state': 'Online',
+    # 'temperature': {'#text': 'Testing'},
+    # 'cpu-total': '3',
+    # 'cpu-interrupt': '0',
+    # 'cpu-1min-avg': '3',
+    # 'cpu-5min-avg': '3',
+    # 'cpu-15min-avg': '3',
+    # 'memory-dram-size': '511',
+    # 'memory-heap-utilization': '34',
+    # 'memory-buffer-utilization': '0'},
+
+    try:
+        out = device.parse('show chassis fpc')
+    except SchemaEmptyParserError:
+        return None
+
+    slot_ = out.q.get_values('cpu-total', expected_slot)
+    return int(slot_) if slot_ else None

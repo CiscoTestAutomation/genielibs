@@ -11,7 +11,7 @@ from genie.testbed import load
 from genie.conf.base import Testbed, Device
 from genie.libs.sdk.triggers.blitz.blitz import Blitz
 from genie.libs.sdk.triggers.blitz.actions import actions
-from genie.libs.sdk.triggers.blitz.blitz_control import control
+from genie.libs.sdk.triggers.blitz.advanced_actions import run_condition
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 
@@ -212,7 +212,7 @@ class TestCondition(unittest.TestCase):
       self.kwargs.update({'steps': steps, 'action_item': data})
       self.blitz_obj.parameters['save_variable_name'] = {}
       self.blitz_obj.parameters['save_variable_name']['execute_id'] = 'id1'
-      out = control(**self.kwargs)
+      out = run_condition(**self.kwargs)
       self.assertEqual(steps.result, Passed)
 
       func1 = self.testbed.devices['PE1'].configure
@@ -229,7 +229,7 @@ class TestCondition(unittest.TestCase):
       self.kwargs.update({'steps': steps, 'action_item': data})
       self.blitz_obj.parameters['save_variable_name'] = {}
       self.blitz_obj.parameters['save_variable_name']['execute_id'] = 'id1'
-      out = control(**self.kwargs)
+      out = run_condition(**self.kwargs)
       self.assertEqual(steps.result, Passed)
 
 if __name__ == '__main__':

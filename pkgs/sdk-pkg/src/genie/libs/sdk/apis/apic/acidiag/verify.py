@@ -1,4 +1,4 @@
-""" Verify type APIs for NXOS ACI """
+""" Verify type APIs for APIC """
 
 import logging
 

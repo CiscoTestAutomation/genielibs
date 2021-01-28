@@ -29,7 +29,7 @@ def get_active_outgoing_interface(device, destination_address, extensive=False):
             out = device.parse('show route protocol static')
     except SchemaEmptyParserError:
         return None
-    
+
     # Example dictionary structure:
     #         {
     #             "rt": [
@@ -67,10 +67,10 @@ def get_active_outgoing_interface(device, destination_address, extensive=False):
             continue
 
         return via_.pop()
-    
+
     return None
 
-def get_route_destination_address(device, extensive=None, prefix='inet.0', protocol='Direct', 
+def get_route_destination_address(device, extensive=None, prefix='inet.0', protocol='Direct',
                                   interface='ge-0/0/0.0'):
     """Get destination address that matches criteria
 
@@ -92,7 +92,7 @@ def get_route_destination_address(device, extensive=None, prefix='inet.0', proto
             out = device.parse('show route')
     except SchemaEmptyParserError:
         return None
-    
+
     # Example dictionary structure:
     #         {
     #             'rt': [{'rt-destination': '0.0.0.0/0',
@@ -123,7 +123,7 @@ def get_route_destination_address(device, extensive=None, prefix='inet.0', proto
             prefix_ = Dq(route).get_values('table-name', 0)
             if not prefix_.lower().startswith(prefix.lower()):
                 continue
-        
+
         rt_list = Dq(route).get_values('rt')
         for rt_dict in rt_list:
             if protocol:
@@ -137,7 +137,7 @@ def get_route_destination_address(device, extensive=None, prefix='inet.0', proto
                     continue
 
             return Dq(rt_dict).get_values('rt-destination', 0)
-    
+
     return None
 
 def get_route_table_switched_path_destination_address(device, table, name):
@@ -171,7 +171,7 @@ def get_route_table_switched_path_destination_address(device, table, name):
     except SchemaEmptyParserError:
         return None
 
-    
+
 
     return out.q.get_values('rt-destination', 0) or None
 
@@ -184,7 +184,7 @@ def get_ospf_metric(device,
         destination_address (str): Destination address
     """
     out = device.parse('show route')
-    
+
 
     # Example dictionary
 
@@ -242,7 +242,7 @@ def get_routing_best_routes(
     for rt_ in out.q.get_values('rt'):
         if rt_.get('rt-entry').get('active-tag') == active_tag:
             return Dq(rt_).get_values('nh')
-    
+
     return list()
 
 def get_route_advertising_label(device,
@@ -285,10 +285,10 @@ def get_route_advertising_label(device,
     #                                                     'route-label': '17', <------------------
 
     filtered_out = out.q.contains('{table_name}|route-label'.format(table_name=table_name),regex=True).reconstruct()
-    # filtered_out: 
+    # filtered_out:
     # {'route-information': {'route-table': [{'rt-entry': {'route-label': '19'},
     #                                     'table-name': 'inet.3'}]}}
-    
+
     rt_list = Dq(filtered_out).get_values('route-table')
     # rt_list:
     # [{'table-name': 'inet.3', 'rt-entry': {'route-label': '19'}}]
@@ -298,7 +298,7 @@ def get_route_advertising_label(device,
             label = Dq(rt).get_values('route-label', 0)
             if type(label) == str:
                 return int(label)
-            
+
     return None
 def get_route_table_output_interface(device,
     table, route):
@@ -329,16 +329,16 @@ def get_route_table_output_interface(device,
     #                                                    'preference': '9',
     #                                                    'protocol_name': 'LDP'}},
     #                        'total_route_count': 5001}}}
-    
+
     out = device.parse('show route table {table} {route}'.format(
         table=table,
         route=route
     ))
-    
 
-    output_interface = out.q.contains('.*{route}.*'.format(route=route), 
+
+    output_interface = out.q.contains('.*{route}.*'.format(route=route),
         regex=True).get_values('via', 0)
-    
+
     if not output_interface:
         return None
 
@@ -374,16 +374,16 @@ def get_route_table_output_label(device,
     #                                                    'preference': '9',
     #                                                    'protocol_name': 'LDP'}},
     #                        'total_route_count': 5001}}}
-    
+
     out = device.parse('show route table {table} {route}'.format(
         table=table,
         route=route
     ))
-    
 
-    output_label = out.q.contains('.*{route}.*'.format(route=route), 
+
+    output_label = out.q.contains('.*{route}.*'.format(route=route),
         regex=True).get_values('mpls_label', 0)
-    
+
     if not output_label:
         return None
 
@@ -429,7 +429,7 @@ def get_routing_metric(device,
     except SchemaEmptyParserError:
         log.info('Failed to parse. Device output might contain nothing.')
         return None
-    
+
 
     # Example dictionary
 
@@ -478,7 +478,7 @@ def get_routing_best_path_peer_id(device, protocol, ip_address, extensive=False)
             peer_id = rt_entry.get('peer-id', None)
             if peer_id:
                 return peer_id
-    
+
     return None
 
 def get_routing_nonbest_path_peer_id(device, protocol, ip_address, extensive=False):
@@ -510,11 +510,11 @@ def get_routing_nonbest_path_peer_id(device, protocol, ip_address, extensive=Fal
     for rt_entry in rt_entries:
         if rt_entry.get('active-tag', None):
             continue
-        
+
         peer_id = rt_entry.get('peer-id', None)
         if peer_id:
             return peer_id
-    
+
     return None
 
 
@@ -554,7 +554,7 @@ def get_route_as_path(device, target_route):
     if m:
         as_path = m.groupdict()['as_path']
         return as_path
-    
+
     return None
 
 def get_route_summary_table_total_route_count(device):
@@ -574,11 +574,284 @@ def get_route_summary_table_total_route_count(device):
 
     total_route_count = {}
     for route_dict in out.q.contains(
-        'table-name|total-route-count', 
+        'table-name|total-route-count',
         regex=True).get_values('route-table'):
         table_name = route_dict.get('table-name', None)
         total_route = route_dict.get('total-route-count', None)
         if table_name and total_route:
             total_route_count.update({table_name: total_route})
-    
+
     return total_route_count
+
+def get_route_nexthop(device, route, extensive=False, all_nexthops=True, only_best=False, only_non_best=False):
+    """ Get nexthops of route from routing table
+
+        Args:
+            device (`obj`): Device object
+            route (`str`): route in routing table
+            extensive (`bool`): flag to add `extensive` to show command
+                                Default to False
+            all_nexthops (`bool`):  flag to return all nexthops as list or only first one as string
+            only_best (`bool`): only best nexthop
+            only_non_best (`bool`): only non-best nexthop
+        Returns:
+            nexthop address (list or string)
+    """
+    if only_best or only_non_best:
+        log.info("only_best or only_non_best is passed as True, so set all_next_hops as False.")
+        all_nexthops = False
+
+    if only_best and only_non_best:
+        log.warn('only_best and only_non_best, only one of them can be passed as True to api.')
+        return None
+
+    try:
+        if extensive:
+            out = device.parse('show route {route} extensive'.format(route=route))
+        else:
+            out = device.parse('show route {route}'.format(route=route))
+    except SchemaEmptyParserError:
+        return None
+
+    # Example dictionary structure:
+    #         {
+    #             "rt": [
+    #                 {
+    #                     "rt-destination": "10.169.14.240/32",
+    #                     "rt-entry": {
+    #                         "nh": [
+    #                             {
+    #                                 "to": "10.169.14.121",
+    #                                 "via": "ge-0/0/1.0"
+    #                             }
+    #                         ],
+    #                         "rt-tag": "100",
+    #                         "preference": "5",
+    #                         "protocol-name": "Static"
+    #                     }
+    #                 }
+    #             ],
+    #             "table-name": "inet.0",
+    #             "total-route-count": "240"
+    #         },
+
+    if all_nexthops:
+        return out.q.get_values('to')
+    if only_best:
+        routes = out.q.get_values('rt')
+        for route in routes:
+            if route['rt-entry'].get('active-tag', '') == '*':
+                return Dq(route).get_values('to', 0)
+        return None
+    if only_non_best:
+        routes = out.q.get_values('rt')
+        for route in routes:
+            if route['rt-entry'].get('active-tag', '') == '':
+                return Dq(route).get_values('to')
+        return []
+    else:
+        return out.q.get_values('to', 0)
+
+def get_route_count(device, table, protocol, active=True, output=None):
+    """
+    Get total route count for each table via 'show route target_route extensive'
+
+    Args:
+        device (`obj`): Device object
+        table (`str`): Table name such as `inet.0`, `inet6.0`
+        protocol (`str`): Protocol name such as `Direct`, `Static` and etc
+        active (`bool`): get only active route count
+                         Default to True
+        output (`str`): output of show route summary
+
+    
+    Returns:
+        int: return number of route count based on given arguments
+    """
+    try:
+        if output:
+            out = device.parse('show route summary', output=output)
+        else:
+            out = device.parse('show route summary')
+    except SchemaEmptyParserError:
+        return None
+
+    # example of out
+    # {
+    #   "route-summary-information": {
+    #     "as-number": "1",
+    #     "route-table": [
+    #       {
+    #         "protocols": [
+    #           (snip)
+    #           {
+    #             "active-route-count": "20",
+    #             "protocol-name": "Static",
+    #             "protocol-route-count": "20"
+    #           }
+    #         ],
+
+    for each_protocol in out.q.contains(table, level=-1).get_values('protocols'):
+        if each_protocol['protocol-name'] == protocol:
+            if active:
+                return int(each_protocol['active-route-count'])
+            else:
+                return int(each_protocol['protocol-route-count'])
+
+    return 0
+
+def get_route_uptime(device, route, protocol, push=None, output=None):
+    """
+    Get uptime of active route in routing table
+
+    Args:
+        device (`obj`): Device object
+        route (`str`): Route Information such as `192.168.1.0/24`
+        protocol (`str`): Protocol name such as `Direct`, `Static` and etc
+        push (`bool`): flag to check route only with `Push` in route entry
+        output` (`str`): output of show route summary
+
+    
+    Returns:
+        uptime(`int`): return uptime in seconds
+    """
+    try:
+        if output:
+            out = device.parse('show route {route}'.format(route=route), output=output)
+        else:
+            out = device.parse('show route {route}'.format(route=route))
+    except SchemaEmptyParserError:
+        return None
+
+    # example of out
+    # {
+    #   "route-information": {
+    #     "route-table": [
+    #       {
+    #         "active-route-count": "98",
+    #         "destination-count": "98",
+    #         "hidden-route-count": "0",
+    #         "holddown-route-count": "0",
+    #         "rt": [
+    #           {
+    #             "rt-destination": "30.0.0.0/24",
+    #             "rt-entry": {
+    #               "active-tag": "*",
+    #               "age": {
+    #                 "#text": "00:17:42"
+    #               },
+    #               "as-path": " 65002 I",
+    #               "learned-from": "2.2.2.2",
+    #               "local-preference": "100",
+    #               "nh": [
+    #                 {
+    #                   "mpls-label": "Push 300768",
+    #                   "to": "10.0.1.2",
+    #                   "via": "xe-0/1/0.11"
+    #                 }
+    #               ],
+    #               "preference": "170",
+    #               "protocol-name": "BGP",
+    #               "validation-state": "unverified"
+    #             }
+    #           }
+    #         ],
+
+    for rt in out.q.get_values('rt'):
+        if rt['rt-entry']['protocol-name'] == protocol and rt['rt-entry']['active-tag'] == '*':
+            if push:
+                if 'Push' in Dq(rt).get_values('mpls-label', 0):
+                    return device.api.time_to_int(rt['rt-entry']['age']['#text'])
+                else:
+                    return 0
+            else:
+                return device.api.time_to_int(rt['rt-entry']['age']['#text'])
+
+    return 0
+
+
+def get_route_mpls_labels(device,
+                          route,
+                          table_name,
+                          return_list=False,
+                          output=None):
+    """
+    Get mpls labels from routing table
+
+    Args:
+        device (`obj`): Device object
+        route (`str`): Route Information such as `192.168.1.0/24`
+        table_name (`str`): table name
+        return_list (`bool`): if True, mpls labels will be returned as list instead of string
+                              Default to False
+        output` (`str`): output of show route summary
+
+    
+    Returns:
+        mpls label(`str`, `list`): return mpls label info as string by default
+                                   if return_list is True, will return labels as list
+        None: if any issue
+    """
+    try:
+        out = device.parse(
+            'show route table {tb_name}'.format(tb_name=table_name),
+            output=output)
+    except SchemaEmptyParserError:
+        return None
+
+    # {
+    #   "table_name": {
+    #     "TESTVPN.inet.0": {
+    #       "active_route_count": 3,
+    #       "destination_count": 3,
+    #       "hidden_route_count": 0,
+    #       "holddown_route_count": 0,
+    #       "routes": {
+    #         "192.168.51.0/30": {
+    #           "active_tag": "*",
+    #           "age": "00:41:59",
+    #           "next_hop": {
+    #             "next_hop_list": {
+    #               "1": {
+    #                 "to": ">",
+    #                 "via": "xe-1/0/0.0"
+    #               }
+    #             }
+    #           },
+    #           "preference": "0",
+    #           "protocol_name": "Direct"
+    #         },
+    #         "192.168.51.1/32": {
+    #           "active_tag": "*",
+    #           "age": "00:41:59",
+    #           "next_hop": {
+    #             "next_hop_list": {
+    #               "1": {
+    #                 "to": "Local",
+    #                 "via": "xe-1/0/0.0"
+    #               },
+    #               "2": {
+    #                 "best_route": ">",
+    #                 "mpls_label": "Push 16, Push 299792(top)",
+    #                 "to": "27.93.202.49",
+    #                 "via": "xe-2/0/0.0"
+    #               }
+    #             }
+    #           },
+    #           "preference": "0",
+    #           "protocol_name": "Local"
+    #         }
+    #       },
+    #       "total_route_count": 3
+    #     }
+    #   }
+    # }
+    mpls_label = out.q.contains(route).get_values('mpls_label', 0)
+
+    if mpls_label:
+        if return_list:
+            return re.findall('Push (\d+)', mpls_label)
+        else:
+            return mpls_label
+
+    return None

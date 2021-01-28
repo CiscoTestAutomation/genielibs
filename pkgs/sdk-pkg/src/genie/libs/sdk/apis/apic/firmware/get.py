@@ -1,4 +1,4 @@
-""" Get type APIs for NXOS ACI """
+""" Get type APIs for APIC """
 
 import logging
 
@@ -92,7 +92,7 @@ def get_firmware_upgrade_status(device, firmware_group=None):
 
     try:
         output = device.parse(cmd)
-    except (SchemaEmptyParserError, InvalidCommandError):
+    except SchemaEmptyParserError:
         log.warning("'{}' parser returned nothing".format(cmd))
         return []
 

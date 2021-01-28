@@ -2,12 +2,12 @@
                                 New
 --------------------------------------------------------------------------------
 * <OS>
-    * <Added|Removed|Modified> <word>
-      * <Description>
+    * <Added|Removed|Modified>:
+        * <Show command| Command>
 
 --------------------------------------------------------------------------------
                                 Fix
 --------------------------------------------------------------------------------
 * <OS>
-    * <Added|Removed|Modified> <word>:
-      * <Description>
+    * <Added|Removed|Modified>:
+        * <Show command| Command>

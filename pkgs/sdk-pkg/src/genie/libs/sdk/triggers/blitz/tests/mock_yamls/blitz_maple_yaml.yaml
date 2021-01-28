@@ -1,0 +1,338 @@
+confirm_and_search:
+  source:
+    pkg: genie.libs.sdk
+    class: triggers.blitz.blitz.Blitz
+  test_sections:
+  - step-1:
+    - continue: false
+    - execute:
+        device: N93_3
+        command: show vdc
+        save:
+        - variable_name: step-1_rule-1_match_unmatch
+          append: true
+      maple_search:
+        search_string: '%VARIABLES{step-1_rule-1_match_unmatch}'
+        device: N93_3
+        include:
+        - ".*"
+        - "UP"
+        - "\\d"
+  - step-2:
+    - continue: false
+    - execute:
+        device: N93_3
+        command: show vlan
+        save:
+        - variable_name: step-2_rule-1_match_unmatch
+          append: true
+    - execute:
+        device: N93_3
+        command: show vrf
+        save:
+        - variable_name: step-2_rule-1_match_unmatch
+          append: true
+    - execute:
+        device: N93_3
+        command: show nxapi
+        save:
+        - variable_name: step-2_rule-1_match_unmatch
+          append: true
+    - maple:
+        maple_plugin_input: '{"rule-1": {"type": "cli", "commands": "command:{\n                    \"method\":\"waitfor\",\n                    \"options\":[\n                    {\"command\":\"show
+          module\"},\n                    {\"match\":\"Up\"},\n                    {\"timeout\":\"10\"}\n       ]}"}}'
+        device: N93_3
+        maple_action: confirm
+        save:
+        - variable_name: step-2_rule-1_match_unmatch
+          append: true
+    - maple:
+        maple_plugin_input: '{"rule-1": {"type": "cli", "commands": "command:{\n                    \"method\":\"waitfor\",\n                    \"options\":[\n                    {\"command\":\"show
+          srte policy | grep -A 5 -B 5 \\\"Color: 806\\\"\"},\n                    {\"match\":\"UP\"},\n                    {\"timeout\":\"60\"}\n       ]}"}}'
+        device: N93_3
+        maple_action: confirm
+        save:
+        - variable_name: step-2_rule-1_match_unmatch
+          append: true
+    - maple:
+        maple_plugin_input: '{"rule-1": {"type": "cli", "commands": "command:{\n                    \"method\":\"waitfor\",\n                    \"options\":[\n                    {\"command\":\"show
+          srte policy | grep -A 5 -B 5 \\\"Color: 704\\\"\"},\n                    {\"match\":\"UP\"},\n                    {\"timeout\":\"60\"}\n       ]}"}}'
+        device: N93_3
+        maple_action: confirm
+        save:
+        - variable_name: step-2_rule-1_match_unmatch
+          append: true
+      maple_search:
+        search_string: '%VARIABLES{step-2_rule-1_match_unmatch}'
+        device: N93_3
+        include:
+        - ".*"
+        - "port 80"
+        - "active"
+        - "%{devices.device{testbed.custom.devices.deviceA}}"
+        - "Eth"
+  - step-3:
+    - continue: false
+    - execute:
+        device: N93_3
+        command: show version
+        save:
+        - filter: BIOS:\s+version\s+(?P<bios>[0-9A-Za-z()./]+).*
+          regex: true
+        - filter: bootflash:\s+(?P<bootflash>[0-9A-Za-z()./]+)\s+(?P<measure>\w+).*
+          regex: true
+    - execute:
+        device: N93_3
+        command: show vrf
+        save:
+        - filter: default\s+(?P<default>[0-9/]+)\s+(?P<up_down>Up|Down).*
+          regex: true
+    - compare:
+        items:
+        - "'%VARIABLES{bios}' == '07.33' and %VARIABLES{bootflash} >=120000"
+plugin_call:
+  source:
+    pkg: genie.libs.sdk
+    class: triggers.blitz.blitz.Blitz
+  test_sections:
+  - step-1:
+    - maple:
+        maple_plugin_input: '{"rule-1": {"type": "matcher", "commands": "matcher:{\n    \"package\":\"maple.plugins.user.MatcherPlugins\",\n    \"method\":\"populateObjects\",\n    \"command\":\"show
+          version\",\n    \"type\":\"cli\"\n    }"}}'
+        device: N93_3
+        continue: false
+    - compare:
+        items:
+        - "'%VARIABLES{dummy_key_name}' == '192.168.0.4'"
+  - step-2:
+    - execute:
+        device: N93_3
+        command: show module
+        save:
+        - variable_name: step-2_rule-1_match_unmatch
+          append: true
+        continue: false
+      maple:
+        maple_plugin_input: '{"rule-1": {"type": "cli", "commands": "confirm:{\n    \"package\":\"maple.plugins.user.ConfirmPlugins\",\n    \"method\":\"checkIfPresent\",\n    \"options\":[\n        {\"count\":\"1\"},\n        {\"check1\":
+          \"%VARIABLES{dummy_key_name}\"}\n    ]}"}}'
+        device: N93_3
+        output: '%VARIABLES{step-2_rule-1_match_unmatch}'
+helloworld_dme_test:
+  source:
+    pkg: genie.libs.sdk
+    class: triggers.blitz.blitz.Blitz
+  test_sections:
+  - step-1-post:
+    - continue: false
+    - maple:
+        maple_plugin_input: '{"type": "dmerest", "commands": "command:{\n    \"method\":\"processdme\",\n    \"options\":[\n        {\"method\":\"POST\"},\n        {\"url\":\"http://acjain-laas:8001/api/node/mo/sys/ldp.json\"},\n        {\"payload\":\"dme_post.json\"},\n        {\"ignore_error\":\"True\"}\n    ]}"}'
+        device: N93_3
+        maple_action: apply
+        continue: false
+  - step-2-get:
+    - continue: false
+    - maple:
+        maple_plugin_input: '{"rule-1": {"type": "dmerest", "commands": "command:{\n    \"method\":\"processdme\",\n    \"options\":[\n        {\"method\":\"GET\"},\n        {\"url\":\"http://acjain-laas:8001/api/node/mo/sys/ldp.json\"}\n    ]}"}}'
+        device: N93_3
+        maple_action: confirm
+        save:
+        - variable_name: step-2-get_rule-1_match_unmatch
+          append: true
+        continue: false
+      compare:
+        items:
+        - "'%VARIABLES{adminSt}' == 'enabled'"
+helloworld_loop_simple:
+  source:
+    pkg: genie.libs.sdk
+    class: triggers.blitz.blitz.Blitz
+  test_sections:
+  - step-1:
+    - loop:
+        maple: true
+        section: "{\n    \"package\":\"maple.plugins.user.LoopPlugins\",\n    \"method\"\
+          :\"simpleloop\",\n    \"options\":[\n        {\"total_iterations\": \"2\"\
+          }\n    ]\n}"
+        actions:
+        - execute:
+            device: N93_3
+            command: show %VARIABLES{vrf_name}
+            save:
+            - variable_name: step-1_rule-1_match_unmatch
+          maple_search:
+            search_string: '%VARIABLES{step-1_rule-1_match_unmatch}'
+            device: N93_3
+            include:
+            - "a"
+helloworld_single_iterable_loop:
+  source:
+    pkg: genie.libs.sdk
+    class: triggers.blitz.blitz.Blitz
+  test_sections:
+  - step-1:
+    - loop:
+        maple: true
+        section: "{\n\"package\":\"maple.plugins.user.LoopPlugins\",\n\"method\":\"\
+          single_iterable_loop\",\n\"options\":[\n    {\"iterable_name\": \"front_ports\"\
+          },\n    {\"start\": \"0\"},\n    {\"stop\": \"1\"},\n    {\"step\": \"1\"\
+          }\n    ]\n}"
+        actions:
+        - execute:
+            device: N93_3
+            command: show interface ethernet 1/%VARIABLES{front_ports}
+            save:
+            - variable_name: step-1_rule-1_match_unmatch
+          maple_search:
+            search_string: '%VARIABLES{step-1_rule-1_match_unmatch}'
+            device: N93_3
+            include:
+            - "a"
+  - step-2:
+    - loop:
+        maple: true
+        section: "{\n    \"package\":\"maple.plugins.user.LoopPlugins\",\n    \"method\"\
+          :\"single_iterable_loop_custom_list\",\n    \"options\":[\n        {\"iterable_name\"\
+          : \"front_port\"},\n        {\"value_list\": \"['inventory', 'module', 'version']\"\
+          }\n    ]\n}"
+        actions:
+        - execute:
+            device: N93_3
+            command: show %VARIABLES{front_port}
+            save:
+            - variable_name: step-2_rule-1_match_unmatch
+          maple_search:
+            search_string: '%VARIABLES{step-2_rule-1_match_unmatch}'
+            device: N93_3
+            include:
+            - "a"
+            - "b"
+            - "c"
+  - step-3:
+    - section_control:
+        if: "'%VARIABLES{front_port}' == 'version'"
+        function: skipped
+    - execute:
+        device: N93_3
+        command: show version
+        save:
+        - variable_name: step-3_rule-1_match_unmatch
+          append: true
+      maple_search:
+        search_string: '%VARIABLES{step-3_rule-1_match_unmatch}'
+        device: N93_3
+        include:
+        - ".*"
+  - step-4:
+    - execute:
+        device: N93_3
+        command: show version
+        save:
+        - variable_name: step-4_rule-1_match_unmatch
+          append: true
+      maple_search:
+        search_string: '%VARIABLES{step-4_rule-1_match_unmatch}'
+        device: N93_3
+        include:
+        - "a"
+bfd_test_static:
+  source:
+    pkg: genie.libs.sdk
+    class: triggers.blitz.blitz.Blitz
+  test_sections:
+  - step-1:
+    - configure:
+        device: device{testbed.custom.devices.deviceA}
+        command: "conf t\nfeature bfd\n"
+        maple: true
+        save:
+        - variable_name: bfd_test_static_step-1_apply
+          append: true
+        continue: false
+    - maple:
+        maple_plugin_input: '{"type": "cli", "commands": "command:{\n                    \"method\":\"waitfor\",\n                    \"options\":[\n                    {\"command\":\"show
+          vlan\"},\n                    {\"match\":\"Up\"},\n                    {\"timeout\":\"9\"}\n       ]}"}'
+        device: device{testbed.custom.devices.deviceA}
+        maple_action: apply
+        continue: false
+    - maple:
+        maple_plugin_input: '{"type": "cli", "commands": "command:{\n                    \"method\":\"switchback\"\n       }"}'
+        device: device{testbed.custom.devices.deviceA}
+        maple_action: apply
+        continue: false
+    - maple:
+        maple_plugin_input: '{"type": "cli", "commands": "command:{\n                    \"method\":\"switchto\",\n                    \"options\":[\n                    {\"value\":\"N93_3\"}\n       ]}"}'
+        device: device{testbed.custom.devices.deviceA}
+        maple_action: apply
+        continue: false
+    - maple:
+        maple_plugin_input: '{"type": "cli", "commands": "command:{\n                    \"method\":\"novpc\",\n                    \"options\":[\n                    {\"duration\":\"22\"}\n       ]}"}'
+        device: device{testbed.custom.devices.deviceA}
+        maple_action: apply
+        continue: false
+bfd_test_static_no_step:
+  source:
+    pkg: genie.libs.sdk
+    class: triggers.blitz.blitz.Blitz
+  test_sections:
+  - step-1:
+    - configure:
+        device: device{testbed.custom.devices.deviceA}
+        command: "conf t\nfeature bfd\n"
+        maple: true
+        save:
+        - variable_name: bfd_test_static_no_step_step-1_apply
+          append: true
+        continue: false
+    - maple:
+        maple_plugin_input: '{"type": "cli", "commands": "command:{\n                    \"method\":\"waitfor\",\n                    \"options\":[\n                    {\"command\":\"show
+          vlan\"},\n                    {\"match\":\"Up\"},\n                    {\"timeout\":\"9\"}\n       ]}"}'
+        device: device{testbed.custom.devices.deviceA}
+        maple_action: apply
+        continue: false
+    - maple:
+        maple_plugin_input: '{"type": "cli", "commands": "command:{\n                    \"method\":\"switchback\"\n       }"}'
+        device: device{testbed.custom.devices.deviceA}
+        maple_action: apply
+        continue: false
+    - maple:
+        maple_plugin_input: '{"type": "cli", "commands": "command:{\n                    \"method\":\"switchto\",\n                    \"options\":[\n                    {\"value\":\"N93_3\"}\n       ]}"}'
+        device: device{testbed.custom.devices.deviceA}
+        maple_action: apply
+        continue: false
+    - maple:
+        maple_plugin_input: '{"type": "cli", "commands": "command:{\n                    \"method\":\"novpc\",\n                    \"options\":[\n                    {\"duration\":\"22\"}\n       ]}"}'
+        device: device{testbed.custom.devices.deviceA}
+        maple_action: apply
+        continue: false
+log_collection_test:
+  processors:
+    post:
+      post_execute_command:
+        method: genie.libs.sdk.libs.abstracted_libs.post_execute_command
+        parameters:
+          zipped_folder: false
+          save_to_file: per_command
+          valid_section_results:
+          - passed
+          - ' failed'
+          server_to_store:
+            server_in_testbed: scp
+            protocol: scp
+            remote_path: /ws/mziabari-ott/development
+          devices:
+            PE1:
+              cmds: &id001
+              - cmd: show version
+              - cmd: show interface
+            PE2:
+              cmds: *id001
+  source:
+    pkg: genie.libs.sdk
+    class: triggers.blitz.blitz.Blitz
+  test_sections:
+  - step-1:
+    - maple:
+        maple_plugin_input: '{"type": "cli", "commands": "command:{\n                    \"method\":\"sleep\",\n                    \"options\":[\n                    {\"duration\":\"1\"}\n       ]}"}'
+        device: PE1
+        maple_action: apply
+        continue: false

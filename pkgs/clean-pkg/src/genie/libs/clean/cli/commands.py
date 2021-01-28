@@ -31,13 +31,13 @@ class ValidateClean(Subcommand):
         # add clean datafile
         self.parser.add_argument('--clean-file',
                                  metavar='FILE',
-                                 type=argparse.FileType('r'),
+                                 type=str,
                                  help='Clean datafile to validate',
                                  required=True)
         # add testbed datafile
         self.parser.add_argument('--testbed-file',
                                  metavar='FILE',
-                                 type=argparse.FileType('r'),
+                                 type=str,
                                  help='Testbed datafile to validate clean with',
                                  required=True)
         # enable lint
@@ -48,24 +48,10 @@ class ValidateClean(Subcommand):
                                  help = "Do not lint the testbed YAML file")
 
     def run(self, args):
-        loader = Loader(enable_extensions=True)
-
-        try:
-            log.info('-'*70)
-            log.info('Loading clean datafile: %s' % args.clean_file.name)
-            clean = loader.load(args.clean_file)
-
-            log.info('Loading testbed datafile: %s' % args.testbed_file.name)
-            testbed = loader.load(args.testbed_file)
-            log.info('-'*70)
-        except Exception as e:
-            log.error(str(e))
-            return ERROR
-
         if args.lint:
-            do_lint(args.clean_file.name)
+            do_lint(args.clean_file)
 
-        validation_results = validate_clean(clean, testbed)
+        validation_results = validate_clean(args.clean_file, args.testbed_file)
 
         if validation_results['warnings']:
             log.warning('\nWarning Messages')

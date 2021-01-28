@@ -9,6 +9,7 @@ from unicon.core.errors import SubCommandFailure
 
 # Genie
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
+from genie.libs.parser.utils.common import Common
 
 log = logging.getLogger(__name__)
 
@@ -88,8 +89,87 @@ def get_interface_ipv4_address(device, interface):
     except SchemaEmptyParserError as e:
         log.error('No interface information found for {}: {}'.format(interface, e))
         return None
+    interface = Common.convert_intf_name (interface)
     ip_dict = data[interface].get('ipv4')
     ip = None
     if ip_dict:
         ip = list(ip_dict)[0]
     return ip
+
+
+
+def get_ipv6_interface_ip_address(device, interface, link_local=False):
+    """ Get interface ip address from device
+
+        Args:
+            interface('str'): Interface to get address
+            device ('obj'): Device object
+            link_local ('bool'): Link local address. Default: False
+        Returns:
+            None
+            ip_address ('str'): If has multiple addresses
+                                will return the first one.
+
+        Raises:
+            None
+    """
+    try:
+        if '.' in interface and interface.split('.')[1]=='0':
+            interface = interface.split('.')[0]
+        out=device.parse('show ipv6 interface {interface}'.format(interface=interface))
+    except SchemaEmptyParserError as e:
+        log.error('No interface information found for {}: {}'.format(interface, e))
+        return None
+    # Example output
+    # {
+    #     'GigabitEthernet0/0/0/0': {
+    #         'enabled': True,
+    #         'oper_status': 'up',
+    #         'vrf': 'default',
+    #         'int_status': 'up',
+    #         'ipv6': {
+    #             'incomplete_protocol_adj': '0',
+    #             'complete_glean_adj': '0',
+    #             'dropped_protocol_req': '0',
+    #             'dropped_glean_req': '0',
+    #             'nd_router_adv': '1800',
+    #             'complete_protocol_adj': '0',
+    #             'icmp_unreachables': 'enabled',
+    #             'ipv6_link_local': 'fe80::250:56ff:fe8d:8d58',
+    #             'incomplete_glean_adj': '0',
+    #             'nd_adv_duration': '160-240',
+    #             'ipv6_groups': ['ff02::1:ff00:1', 'ff02::1:ff8d:8d58', 'ff02::2', 'ff02::1'],
+    #             'nd_adv_retrans_int': '0',
+    #             'nd_cache_limit': '1000000000',
+    #             'stateless_autoconfig': True,
+    #             'icmp_redirects': 'disabled',
+    #             'dad_attempts': '1',
+    #             'ipv6_mtu': '1514',
+    #             'ipv6_mtu_available': '1500',
+    #             '2001:112::1/64': {
+    #                 'ipv6_subnet': '2001:112::',
+    #                 'ipv6_prefix_length': '64',
+    #                 'ipv6': '2001:112::1',
+    #             },
+    #             'nd_dad': 'enabled',
+    #             'nd_reachable_time': '0',
+    #             'table_id': '0xe0800000',
+    #         },
+    #         'vrf_id': '0x60000000',
+    #         'ipv6_enabled': True,
+    #     },
+    # }
+    # get the interface
+    intf = list(out.keys())[0]
+    intf = Common.convert_intf_name (intf)
+    if link_local:
+        return out[intf]['ipv6']['ipv6_link_local']
+    
+    for sub_key, sub_value in out[intf]['ipv6'].items():
+        
+        if type(sub_value) == dict:
+            sub_value_keys = list(sub_value.keys())
+
+            if 'ipv6' in sub_value_keys:
+                return sub_value['ipv6']
+    return None        

@@ -3,7 +3,8 @@ import logging
 
 # Logger
 log = logging.getLogger(__name__)
-
+# unicon
+from unicon.core.errors import SubCommandFailure
 
 def extract_tar_gz(device, path, files, option='-zxvf'):
     """ extract tar.gz file
@@ -41,3 +42,52 @@ def extract_tar_gz(device, path, files, option='-zxvf'):
                     d=folder_name))
 
     return extracted_files
+
+def execute_by_jinja2(device, templates_dir, template_name, post_commands=None, failure_commands=None, **kwargs):
+    """ Configure using Jinja template
+        Args:
+            device ('obj'): Device object
+            templates_dir ('str'): Template directory
+            template_name ('str'): Template name
+            post_commands ('list'): List of post commands
+            failure_commands ('list'): List of commands required after failure
+            kwargs ('obj'): Keyword arguments
+        Returns:
+            Boolean
+        Raises:
+            None
+    """
+
+    log.info("Configuring {filename} on {device}".format(
+        filename=template_name,
+        device=device.alias))
+    template = device.api.get_jinja_template(
+        templates_dir=templates_dir,
+        template_name=template_name)
+    
+    if not template:
+        raise Exception('Could not get template')
+
+    timeout = kwargs.pop('timeout', None)
+    out = [x.lstrip() for x in template.render(**kwargs).splitlines()]
+
+    if post_commands:
+        out = out + post_commands
+    
+    try:
+        for cmd in out:
+            if timeout:
+                log.info('{} timeout value used for device: {}'.format(
+                    timeout, device.name))
+                device.execute(cmd, timeout=timeout)
+            else:
+                device.execute(cmd)
+    except SubCommandFailure as e:
+        if failure_commands:
+            device.execute(failure_commands)   
+        raise SubCommandFailure(
+            "Failed in applying the following "
+            "configuration:\n{config}, error:\n{e}".format(config=out, e=e)
+        )
+
+    log.info("Successfully changed configuration using the jinja template")

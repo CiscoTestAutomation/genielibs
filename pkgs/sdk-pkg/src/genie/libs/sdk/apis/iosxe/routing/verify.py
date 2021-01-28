@@ -710,8 +710,9 @@ def verify_route_known_via(device, route, known_via, max_time=90, check_interval
         out = None
         try:
             out = device.parse('show ip route {}'.format(route))
-        except SchemaEmptyParserError:
-            out = None
+        except Exception:
+            timeout.sleep()
+            continue
         if not out:
             log.info('Could not get information about show ip route {}'.format(route))
             timeout.sleep()

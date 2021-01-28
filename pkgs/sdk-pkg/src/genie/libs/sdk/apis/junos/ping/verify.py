@@ -23,6 +23,8 @@ def verify_ping(device,
                 ping_size=None,
                 count=None,
                 source=None,
+                rapid=False,
+                do_not_fragment=False,
                 max_time=30,
                 check_interval=10):
     """ Verify ping loss rate on ip address provided
@@ -39,6 +41,8 @@ def verify_ping(device,
             loss_rate ('int'): Expected loss rate value
             count ('int'): Count value for ping command
             source ('str'): Source IP address, default: None
+            rapid ('bool'): Appears in command or not, default: False
+            do_not_fragment ('bool'): Appears in command or not, default: False
             max_time (`int`): Max time, default: 30
             check_interval (`int`): Check interval, default: 10
         Returns:
@@ -57,6 +61,17 @@ def verify_ping(device,
                     count=count,
                     tos=tos
                 )
+        elif do_not_fragment and ping_size and count:
+            cmd = 'ping {address} size {ping_size} count {count} do-not-fragment'.format(
+                    address=address,
+                    ping_size=ping_size,
+                    count=count,
+                )
+        elif address and count and source and rapid:
+            cmd = 'ping {address} source {source} count {count} rapid'.format(
+                    address=address,
+                    source=source,
+                    count=count)
         elif address and count and source:
             cmd = 'ping {address} source {source} count {count}'.format(
                     address=address,

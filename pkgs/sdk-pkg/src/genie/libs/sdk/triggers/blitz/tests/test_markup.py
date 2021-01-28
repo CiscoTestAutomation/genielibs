@@ -13,7 +13,6 @@ from genie.libs.sdk.triggers.blitz.markup import apply_dictionary_filter,\
                                                  apply_regex_filter,\
                                                  get_variable,\
                                                  save_variable,\
-                                                 filter_dispatcher,\
                                                  apply_list_filter
                                                 
 
@@ -117,59 +116,6 @@ class TestMarkup(unittest.TestCase):
                                                   'dict1': {'st': "name"}}
         self.blitz_obj = Blitz()
 
-    def test_dq_filter_dispatcher_dict(self):
-
-        filters = "contains('software')"
-        ret_dict = {'saved_vars': {},
-                    'action': 'any'}
-        save = [{'filter': filters, 'variable_name': 'random'}]
-        filter_dispatcher(self.blitz_obj, 
-                          ret_dict,
-                          save,
-                          self.dict_output)
-        expected=  {
-                      "random":{
-                         "platform":{
-                            "software":{
-                               "bios_version":"07.33",
-                               "system_version":"9.3(3) [build 9.3(3)IDI9(0.509)]",
-                               "bios_compile_time":"08/04/2015",
-                               "system_image_file":"bootflash:///system-image-N93_3-00613722415136",
-                               "system_compile_time":"10/22/2019 10:00:00 [10/22/2019 16:57:31]"
-                            }
-                         }
-                      }
-                   }
-
-        self.assertEqual(ret_dict['saved_vars'], expected)
-
-    def test_dq_filter_dispatcher_regex(self):
-
-        filters = r"Device\s+name:\s+(?P<dev>NO MATCH)"
-        ret_dict = {'saved_vars': {},
-                    'action': 'any'}
-        save = [{'filter': filters, 'regex': True}]
-        filter_dispatcher(self.blitz_obj, 
-                          ret_dict,
-                          save,
-                          self.str_output)
-
-        self.assertEqual(ret_dict, 
-                        {'saved_vars': {}, 'action': 'any', 'filters': 'Device\\s+name:\\s+(?P<dev>NO MATCH)'})
-
-    def test_dq_filter_dispatcher_list(self):
-
-        list_output = [1,2,3,4,6,7,8,9999,854]
-        ret_dict = {'saved_vars': {},
-                    'action': 'any'}
-        save = [{'list_index': 3, 'variable_name': 'name'}]
-        filter_dispatcher(self.blitz_obj, 
-                          ret_dict,
-                          save,
-                          list_output)
-
-        self.assertEqual(ret_dict, {'saved_vars': {'name': 4}, 'action': 'any'})
-
     def test_dq_filter_list_index(self):
 
         list_output = [1,2,3,4,6,7,8,9999,854]
@@ -239,10 +185,10 @@ class TestMarkup(unittest.TestCase):
 
     def test_get_variable_replace_replace_keep_type(self):
     
-        kwargs = {'item': {'value': r"%VARIABLES{type_k}", 
+        kwargs = {'self': self.blitz_obj,
+                  'item': {'value': r"%VARIABLES{type_k}", 
                            'val': 11,
-                           'ls': ['a', {'b':1}]},
-                           'self': self.blitz_obj}
+                           'ls': ['a', {'b':1}]}}
 
         replaced_kwargs = get_variable(**kwargs)
         # check if type would stay the same 

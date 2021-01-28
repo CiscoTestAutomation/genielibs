@@ -14,7 +14,7 @@ from genie.conf.base.api import API
 from genie.conf.base import Testbed, Device
 from genie.libs.sdk.triggers.blitz.blitz import Blitz
 from genie.libs.sdk.triggers.blitz.actions import actions
-from genie.libs.sdk.triggers.blitz.blitz_loop import loop
+from genie.libs.sdk.triggers.blitz.advanced_actions import loop
 from genie.libs.ops.platform.nxos.platform import Platform
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
@@ -28,6 +28,16 @@ from pyats.easypy.tests.common_funcs import init_runtime
 from pyats.results import Passed, Failed, Errored, Skipped,\
                           Aborted, Passx, Blocked
 
+
+
+def check_maple_env():
+  if not os.environ.get('MAPLE_PATH'):
+     return True
+
+  if os.environ['MAPLE_PATH'] not in sys.path:
+    sys.path.append(os.environ['MAPLE_PATH'])
+
+  return False
 
 class TestLoop(unittest.TestCase):
 
@@ -227,9 +237,10 @@ class TestLoop(unittest.TestCase):
       data = yaml.safe_load(self.loop_with_val)
       self.kwargs.update({'steps': steps, 'action_item': data})
       out = loop(**self.kwargs)
-
       expected = {
-         "loop_output":[
+         "action":"loop",
+         "step_result":Failed,
+         "substeps":[
             {
                "device":"PE1",
                "continue_":True,
@@ -237,7 +248,9 @@ class TestLoop(unittest.TestCase):
                "description":"",
                "step_result":Passed,
                "alias":"execute_id",
-               "saved_vars":{'execute_id': 'passed'}
+               "saved_vars":{
+                  "execute_id":"passed"
+               }
             },
             {
                "device":"PE1",
@@ -246,7 +259,9 @@ class TestLoop(unittest.TestCase):
                "description":"",
                "step_result":Passed,
                "alias":None,
-               "saved_vars":{}
+               "saved_vars":{
+
+               }
             },
             {
                "device":"PE1",
@@ -255,7 +270,9 @@ class TestLoop(unittest.TestCase):
                "description":"",
                "step_result":Failed,
                "alias":"execute_id",
-               "saved_vars":{'execute_id': 'failed'}
+               "saved_vars":{
+                  "execute_id":"failed"
+               }
             },
             {
                "device":"PE1",
@@ -264,9 +281,13 @@ class TestLoop(unittest.TestCase):
                "description":"",
                "step_result":Passed,
                "alias":None,
-               "saved_vars":{}
+               "saved_vars":{
+
+               }
             }
-         ]
+         ],
+         "advanced_action":True,
+         "loop_until":None
       }
 
       self.assertEqual(out, expected)
@@ -279,9 +300,10 @@ class TestLoop(unittest.TestCase):
       data = yaml.safe_load(self.loop_over_device)
       self.kwargs.update({'steps': steps, 'action_item': data})
       out = loop(**self.kwargs)
-
       expected =  {
-          "loop_output":[
+         "action":"loop",
+         "step_result":Passed,
+         "substeps":[
             {
                "device":"PE1",
                "continue_":True,
@@ -290,6 +312,7 @@ class TestLoop(unittest.TestCase):
                "step_result":Passed,
                "alias":None,
                "saved_vars":{
+
                }
             },
             {
@@ -300,12 +323,16 @@ class TestLoop(unittest.TestCase):
                "step_result":Passed,
                "alias":None,
                "saved_vars":{
+
                }
             }
-         ]
+         ],
+         "advanced_action":True,
+         "loop_until":None
       }
+
       self.assertEqual(out, expected)
-      self.assertEqual(steps.result, Passed)
+      self.assertEqual(steps.result, out['step_result'])
 
     def test_until_condition_false(self):
 
@@ -315,9 +342,7 @@ class TestLoop(unittest.TestCase):
       self.blitz_obj.parameters['save_variable_name']['nbc'] = '06.33'
       self.kwargs.update({'steps': steps, 'action_item': data})
       out = loop(**self.kwargs)
-
-      expected ={
-            'loop_output': [
+      expected =[
                   {'device': 'PE1',
                    'continue_': True,
                     'action': 'parse',
@@ -330,11 +355,10 @@ class TestLoop(unittest.TestCase):
                     'filters': "get_values('bios_version', 0)"
                   }
               ]
-          }
 
       func = self.testbed.devices['PE1'].parse
       func.assert_called_once()
-      self.assertEqual(out, expected)
+      self.assertEqual(out['substeps'], expected)
       
     def test_until_condition_true(self):
 
@@ -345,13 +369,12 @@ class TestLoop(unittest.TestCase):
       self.kwargs.update({'self': self.blitz_obj,
                           'steps': steps,
                           'action_item': data})
-
+      
       out = loop(**self.kwargs)
-      expected = {'loop_output': []}
 
       func = self.testbed.devices['PE1'].parse
       func.assert_not_called()
-      self.assertEqual(out, expected)
+      self.assertEqual(out['substeps'], [])
 
     def test_do_until_condition_true(self):
 
@@ -365,20 +388,25 @@ class TestLoop(unittest.TestCase):
 
       out = loop(**self.kwargs)
       expected ={
-            'loop_output': [
-                  {'device': 'PE1',
-                   'continue_': True,
-                    'action': 'parse',
-                    'description': '',
-                    'step_result': Passed,
-                    'alias': None,
-                    'saved_vars': {
-                       'nbc': '07.33'
-                      }, 
-                    'filters': "get_values('bios_version', 0)"
-                  }
-              ]
-          }
+         "action":"loop",
+         "step_result": Passed,
+         "substeps":[
+            {
+               "device":"PE1",
+               "continue_":True,
+               "action":"parse",
+               "description":"",
+               "step_result": Passed,
+               "alias":None,
+               "saved_vars":{
+                  "nbc":"07.33"
+               },
+               "filters":"get_values('bios_version', 0)"
+            }
+         ],
+         "advanced_action":True,
+         "loop_until":None
+      }
 
       func = self.testbed.devices['PE1'].parse
       func.assert_called_once()
@@ -398,7 +426,7 @@ class TestLoop(unittest.TestCase):
     #   # TODO - The saved_vars on the second action should be like below, 
     #   # But it saves nbc: any_output Investigate
     #   expected = {
-    #      "loop_output":[
+    #      "substeps":[
     #         {
     #            "device":"PE1",
     #            "continue_":True,
@@ -417,7 +445,7 @@ class TestLoop(unittest.TestCase):
     #            "action":"parse",
     #            "description":"",
     #            "step_result":Passed,
-    #            "alias":"None",
+    #            "alias":None,
     #            "saved_vars":{},
     #            "filters":"get_values('bios_version', 0)"
     #         }
@@ -432,19 +460,20 @@ class TestLoop(unittest.TestCase):
       data = yaml.safe_load(self.loop_with_dict_val)
       self.kwargs.update({'steps': steps, 'action_item': data})
       out = loop(**self.kwargs)
-      self.assertEqual(len(out['loop_output']), 2)
-      self.assertEqual(out['loop_output'][0]['device'], 'PE1')
-      self.assertEqual(out['loop_output'][1]['device'], 'PE2')
+      self.assertEqual(len(out['substeps']), 2)
+      self.assertEqual(out['substeps'][0]['device'], 'PE1')
+      self.assertEqual(out['substeps'][1]['device'], 'PE2')
 
     def test_loop_everyseconds(self):
 
       steps = Steps()
       data = yaml.safe_load(self.loop_with_dict_val)
       self.kwargs.update({'steps': steps, 'action_item': data})
+
       out = loop(**self.kwargs)
-      self.assertEqual(len(out['loop_output']), 2)
-      self.assertEqual(out['loop_output'][0]['device'], 'PE1')
-      self.assertEqual(out['loop_output'][1]['device'], 'PE2')
+      self.assertEqual(len(out['substeps']), 2)
+      self.assertEqual(out['substeps'][0]['device'], 'PE1')
+      self.assertEqual(out['substeps'][1]['device'], 'PE2')
 
     def test_loop_with_loop_until(self):
       
@@ -453,8 +482,36 @@ class TestLoop(unittest.TestCase):
       data = yaml.safe_load(self.loop_until)
       self.kwargs.update({'steps': steps, 'action_item': data})
       out = loop(**self.kwargs)
-      self.assertEqual(out['loop_output'][0]['action'], 'loop')
+      self.assertEqual(out['substeps'], [])
       self.assertEqual(steps.result, Passed)
+
+    @unittest.skipIf(check_maple_env(), "MAPLE_PATH is not set")
+    def test_loop_maple(self):
+
+      steps = Steps()
+      data = {'maple': True, 'section': '{\n"package":"maple.plugins.user.LoopPlugins"'\
+              ',\n"method":"single_iterable_loop",\n"options":[\n    {"iterable_name": "front_ports"},\n'\
+              '    {"start": "0"},\n    {"stop": "1"},\n    {"step": "1"}\n    ]\n}', 
+              'actions': [
+                {'execute': 
+                  {'device': 'PE1', 
+                   'command': 'show interface ethernet 1/%VARIABLES{front_ports}', 
+                   'save': [{'variable_name': 'step-1_rule-1_match_unmatch'}]}, 
+                   'maple_search': {
+                     'search_string': '%VARIABLES{step-1_rule-1_match_unmatch}', 
+                     'device': 'PE1', 
+                     'include': ['.*o.*']}}]}
+
+      side_effect = [{'loop_continue': True,'matchObjs':{'front_ports':'b'}},
+                     {'loop_continue': False}]
+
+      with patch('plugins.user.LoopPlugins.single_iterable_loop', 
+                 side_effect= side_effect) as func:
+
+        self.kwargs.update({'steps': steps, 'action_item': data})
+        loop(**self.kwargs)
+        func.assert_called()
+        self.assertEqual(steps.result, Passed)
 
 if __name__ == '__main__':
     unittest.main()
