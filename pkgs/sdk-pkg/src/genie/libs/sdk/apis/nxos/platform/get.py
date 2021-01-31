@@ -3,6 +3,7 @@
 # Python
 import os
 import logging
+import re
 
 # pyATS
 from genie.metaparser.util.exceptions import SchemaEmptyParserError, SchemaMissingKeyError
@@ -480,3 +481,36 @@ def get_platform_type(device):
         return None
     
     return out.q.contains('platform').get_values('name', 0)
+
+def get_software_version(device, return_tuple:bool=False):
+    """Get software version of device
+
+    Args:
+        device (obj): Device object
+        return_tuple (bool, optional): Should the return be a tuple.
+            Defaults to False.
+
+    Returns:
+        (str, tuple): Device software version as a str or tuple
+    """
+    try:
+        out = device.parse('show version')
+    except SubCommandFailure:
+        log.error('Could not get device version information')
+        return None
+
+    # Version is the first token of software/system_version when split with ' '
+    ver:str = out.q.contains('software').get_values('system_version', 0) \
+        .split(' ')[0]
+    if return_tuple :
+        # Tokenize system version into a list with delimiters '.', '(' and ')'
+        ver:list = [ch for ch in re.split('\.|\(|\)', ver) if ch != '']
+        # Convert to int whereever possible
+        for i in range(len(ver)):
+            try:
+                ver[i] = int(ver[i])
+            except ValueError:
+                pass
+        return tuple(ver)
+    else :
+        return ver
