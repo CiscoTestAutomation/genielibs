@@ -436,6 +436,10 @@ class Bgp(ABC):
                             attributes.format('graceful-restart restart-time '
                                 '{graceful_restart_restart_time}'))
 
+                    if attributes.value('maxas_limit'):
+                        configurations.append_line(
+                            attributes.format('maxas-limit {maxas_limit}'))
+
                     # nxos: router bgp 100 / [vrf someword] /
                     # graceful-restart stalepath-time 600
                     if attributes.value('graceful_restart_stalepath_time'):
@@ -462,6 +466,11 @@ class Bgp(ABC):
                         configurations.append_line(
                             attributes.format('timers bgp '
                                 '{keepalive_interval} {holdtime}'))
+
+                    if attributes.value('prefix_peer_timeout'):
+                        configurations.append_line(
+                            attributes.format('timers prefix-peer-timeout '
+                                              '{prefix_peer_timeout}'))
 
                     # nxos: router bgp 100 / [vrf someword] /
                     # enforce-first-as
@@ -632,6 +641,18 @@ class Bgp(ABC):
                                     'redistribute direct route-map '
                                     '{af_redist_connected_route_policy}'))
 
+                        if attributes.value('af_default_metric'):
+                            configurations.append_line(
+                                attributes.format(
+                                    'default-metric '
+                                    '{af_default_metric_value}'
+                                )
+                            )
+
+                        if attributes.value('af_default_information_originate'):
+                            configurations.append_line(
+                                'default-information originate'
+                            )
                         # nxos: address-family ipv4 unicast/
                         # dampening 25 1000 1500 255
                         if attributes.value('af_dampening'):
@@ -798,6 +819,9 @@ class Bgp(ABC):
                             configurations.append_line(attributes.format(
                                 'advertise-pip'))
 
+                        if attributes.value('af_advertise_l2_evpn'):
+                            configurations.append_line(attributes.format(
+                                'advertise l2vpn evpn'))
                     return str(configurations)
 
                 def build_unconfig(self, apply=True, attributes=None,
@@ -1047,6 +1071,8 @@ class Bgp(ABC):
                                         attributes.format('maximum-prefix '
                                     '{nbr_af_maximum_prefix_max_prefix_no}'))
 
+                            if attributes.value('nbr_af_suppress_inactive'):
+                                configurations.append_line('suppress-inactive')
                             # nxos: address-family <nbr_af_name> \
                             # route-map <nbr_af_route_map_name_in> in
                             if attributes.value('nbr_af_route_map_name_in'):

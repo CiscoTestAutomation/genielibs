@@ -61,7 +61,7 @@ class TestLoop(unittest.TestCase):
                'reason': 'Reset Requested by CLI command reload',
                'system_version': '9.3(3)'}}
 
-    execute_output = """ 
+    execute_output = """
         2020-11-24 12:25:43,769: %UNICON-INFO: +++ N93_3: executing command 'show version' +++
         show version
         Cisco Nexus Operating System (NX-OS) Software
@@ -105,7 +105,7 @@ class TestLoop(unittest.TestCase):
         Active Package(s):
     """
 
-    loop_with_val = """ 
+    loop_with_val = """
             loop_variable_name: var_name
             value: ['show version', 'show vrf']
             actions:
@@ -121,7 +121,7 @@ class TestLoop(unittest.TestCase):
                   command: "%VARIABLES{var_name}"
                   device: PE1
             """
-    loop_over_device = """ 
+    loop_over_device = """
             loop_variable_name: dev_name
             value: ['PE1', 'PE2']
             actions:
@@ -166,7 +166,7 @@ class TestLoop(unittest.TestCase):
                   device: PE1
         """
 
-    loop_with_dict_val = """ 
+    loop_with_dict_val = """
             loop_variable_name: var_name
             value: {'PE1':'show version', 'PE2': 'show version'}
             actions:
@@ -179,7 +179,7 @@ class TestLoop(unittest.TestCase):
                   include:
                       - host
             """
-    loop_until = """ 
+    loop_until = """
             loop_variable_name: var_name
             value: ['cmd', 'amd', 'show vrf']
             loop_until: passed
@@ -188,6 +188,52 @@ class TestLoop(unittest.TestCase):
                   command: "%VARIABLES{var_name}"
                   device: PE1
             """
+
+    loop_parallel = """
+            loop_variable_name: dev_name
+            value: ['PE1', 'PE2']
+            parallel: True
+            actions:
+              - execute:
+                  command: show version
+                  device: "%VARIABLES{dev_name}"
+            """
+    loop_parallel_error = """
+            loop_variable_name: dev_name
+            value: ['PE', 'PE2']
+            parallel: True
+            actions:
+              - execute:
+                  command: show version
+          """
+
+    loop_nested = """
+          range: 2
+          loop_variable_name: nest_loop
+          actions:
+              - parse:
+                  device: PE2
+                  command: show version
+              - loop:
+                  loop_variable_name: var_name
+                  value: ['show vrf', 'show version']
+                  actions:
+                      - execute:
+                            device: PE1
+                            command: "%VARIABLES{var_name}"
+    """
+
+    loop_range = """
+            range: 1,5
+            loop_variable_name: range
+            actions:
+                - execute:
+                    device: PE1
+                    command: show version
+                - print:
+                    item:
+                      value: "%VARIABLES{range}"
+    """
 
     def setUp(self):
 
@@ -211,12 +257,16 @@ class TestLoop(unittest.TestCase):
       Blitz.parameters['testbed'] = self.testbed
 
       self.blitz_obj = Blitz()
+      self.uid = self.blitz_obj.uid
+      self.blitz_obj.parent = self
+      self.blitz_obj.parent.parameters = mock.Mock()
+
       self.dev = Device( name='PE1', os='iosxe')
       self.dev.custom = {'abstraction': {'order': ['os']}}
       self.blitz_obj.parameters['test_sections'] = [{'section1': [{'execute': {'command': 'cmd', 'device': 'PE1'}}]}]
       sections = self.blitz_obj._discover()
       self.kwargs = {'self': self.blitz_obj,
-                     'testbed': self.testbed, 
+                     'testbed': self.testbed,
                      'section': sections[0].__testcls__(sections[0]),
                      'name': ''}
 
@@ -351,7 +401,7 @@ class TestLoop(unittest.TestCase):
                     'alias': None,
                     'saved_vars': {
                        'nbc': '07.33'
-                      }, 
+                      },
                     'filters': "get_values('bios_version', 0)"
                   }
               ]
@@ -359,7 +409,6 @@ class TestLoop(unittest.TestCase):
       func = self.testbed.devices['PE1'].parse
       func.assert_called_once()
       self.assertEqual(out['substeps'], expected)
-      
     def test_until_condition_true(self):
 
       steps = Steps()
@@ -423,7 +472,7 @@ class TestLoop(unittest.TestCase):
     #                       'action_item': data})
 
     #   out = loop(**self.kwargs)
-    #   # TODO - The saved_vars on the second action should be like below, 
+    #   # TODO - The saved_vars on the second action should be like below,
     #   # But it saves nbc: any_output Investigate
     #   expected = {
     #      "substeps":[
@@ -476,7 +525,7 @@ class TestLoop(unittest.TestCase):
       self.assertEqual(out['substeps'][1]['device'], 'PE2')
 
     def test_loop_with_loop_until(self):
-      
+
       self.testbed.devices['PE1'].side_effect = [Exception, Exception, 'oop']
       steps = Steps()
       data = yaml.safe_load(self.loop_until)
@@ -485,33 +534,38 @@ class TestLoop(unittest.TestCase):
       self.assertEqual(out['substeps'], [])
       self.assertEqual(steps.result, Passed)
 
-    @unittest.skipIf(check_maple_env(), "MAPLE_PATH is not set")
-    def test_loop_maple(self):
+    def test_loop_with_parallel(self):
 
       steps = Steps()
-      data = {'maple': True, 'section': '{\n"package":"maple.plugins.user.LoopPlugins"'\
-              ',\n"method":"single_iterable_loop",\n"options":[\n    {"iterable_name": "front_ports"},\n'\
-              '    {"start": "0"},\n    {"stop": "1"},\n    {"step": "1"}\n    ]\n}', 
-              'actions': [
-                {'execute': 
-                  {'device': 'PE1', 
-                   'command': 'show interface ethernet 1/%VARIABLES{front_ports}', 
-                   'save': [{'variable_name': 'step-1_rule-1_match_unmatch'}]}, 
-                   'maple_search': {
-                     'search_string': '%VARIABLES{step-1_rule-1_match_unmatch}', 
-                     'device': 'PE1', 
-                     'include': ['.*o.*']}}]}
+      data = yaml.safe_load(self.loop_parallel)
+      self.kwargs.update({'steps': steps, 'action_item': data})
+      out = loop(**self.kwargs)
+      self.assertEqual(steps.result, Passed)
 
-      side_effect = [{'loop_continue': True,'matchObjs':{'front_ports':'b'}},
-                     {'loop_continue': False}]
+    def test_loop_with_parallel_errored(self):
 
-      with patch('plugins.user.LoopPlugins.single_iterable_loop', 
-                 side_effect= side_effect) as func:
+      steps = Steps()
+      data = yaml.safe_load(self.loop_parallel_error)
+      self.kwargs.update({'steps': steps, 'action_item': data})
+      out = loop(**self.kwargs)
+      self.assertEqual(steps.result, Errored)
 
-        self.kwargs.update({'steps': steps, 'action_item': data})
-        loop(**self.kwargs)
-        func.assert_called()
-        self.assertEqual(steps.result, Passed)
+    def test_nested_loop(self):
+
+      steps = Steps()
+      data = yaml.safe_load(self.loop_nested)
+      self.kwargs.update({'steps': steps, 'action_item': data})
+      out = loop(**self.kwargs)
+      self.assertEqual(steps.result, Passed)
+
+    def test_loop_range(self):
+
+      steps = Steps()
+      data = yaml.safe_load(self.loop_range)
+      self.kwargs.update({'steps': steps, 'action_item': data})
+      out = loop(**self.kwargs)
+      self.assertEqual(steps.result, Passed)
+
 
 if __name__ == '__main__':
     unittest.main()

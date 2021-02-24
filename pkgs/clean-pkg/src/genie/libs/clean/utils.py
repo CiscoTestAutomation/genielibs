@@ -10,6 +10,7 @@ import json
 import importlib
 from functools import wraps
 from unittest.mock import patch
+from copy import deepcopy
 
 # Genie
 from genie.libs import clean
@@ -34,12 +35,6 @@ from unicon.core.errors import (SubCommandFailure, TimeoutError,
 # Logger
 log = logging.getLogger(__name__)
 
-SECTIONS_WITH_IMAGE = ['tftp_boot',
-                       'copy_to_linux',
-                       'copy_to_device',
-                       'change_boot_variable',
-                       'verify_running_image']
-
 
 def clean_schema(schema):
     """decorator for defining schema"""
@@ -50,7 +45,6 @@ def clean_schema(schema):
         wrapped.schema = schema
         return wrapped
     return schema_decorator
-
 
 def find_clean_variable(section, key):
     # a set makes sure values are unique
@@ -64,14 +58,12 @@ def find_clean_variable(section, key):
 
     return list(found)
 
-
 def print_message(spawn, message, raise_exception=False):
     if raise_exception:
         spawn.log.error(message)
         raise Exception(message)
     else:
         spawn.log.info(message)
-
 
 def verify_num_images_provided(image_list, expected_images=1):
     num_images = len(image_list)
@@ -82,7 +74,6 @@ def verify_num_images_provided(image_list, expected_images=1):
     else:
         log.info("Provided {} image(s) as expected".format(num_images))
         return True
-
 
 def _apply_configuration(device, configuration=None, configuration_from_file=None,
                          file=None, configure_replace=False, timeout=60):
@@ -186,14 +177,12 @@ def _apply_configuration(device, configuration=None, configuration_from_file=Non
             log.info("The configuration caused the hostname to change. "
                      "Continuing clean.")
 
-
 def initialize_clean_sections(image_handler, order):
     '''Updates given section with images provided'''
 
     # Update section with image information if needed
     for section in order:
         getattr(image_handler, 'update_section')(section)
-
 
 def load_clean_json():
     """get all clean data in json file"""
@@ -214,7 +203,6 @@ def load_clean_json():
         with open(functions) as f:
             clean_data = json.load(f)
     return clean_data
-
 
 def get_clean_function(clean_name, clean_data, device):
     """From a clean function and device, return the function object"""
@@ -253,14 +241,12 @@ def get_clean_function(clean_name, clean_data, device):
                         "and common".format(cn=name,
                                             o=device.os)) from None
 
-
 def _get_submodule(abs_mod, mods):
     """recursively find the submodule"""
     ret = abs_mod
     for mod in mods.split('.'):
         ret = getattr(ret, mod)
     return ret
-
 
 def format_missing_key_msg(missing_list):
     """Beautifully populate missing keys in to human readable format
@@ -280,7 +266,6 @@ def format_missing_key_msg(missing_list):
                 d = d.setdefault(path, {})
 
     return _pprint_missing_key(missing_dict, max_path_len, max_key_len, indent)
-
 
 def _pprint_missing_key(missing_dict, max_path_len, max_key_len, indent):
     """format missing key dict into a yaml-like human readable output"""
@@ -308,7 +293,6 @@ def _pprint_missing_key(missing_dict, max_path_len, max_key_len, indent):
     __pprint_missing_key(missing_dict, lines)
     return '\n'.join(lines)
 
-
 def pretty_schema_exception(e):
     if isinstance(e, SchemaMissingKeyError):
         # proto type
@@ -327,7 +311,6 @@ def pretty_schema_exception(e):
                 format_missing_key_msg(e.unsupported_keys)))
     else:
         return e
-
 
 def validate_clean(clean_file, testbed_file):
     """ Validates the clean yaml using device abstraction to collect
@@ -354,6 +337,7 @@ def validate_clean(clean_file, testbed_file):
     ]
 
     base_schema = {
+        Optional('clean_devices'): list,
         'cleaners': {
             Any(): {
                 'module': str,
@@ -390,6 +374,21 @@ def validate_clean(clean_file, testbed_file):
                       "'pyats validate testbed <file>' to validate "
                       "the testbed file.")
         )
+        loaded_tb = testbed_loader({})
+
+    loader = Loader(enable_extensions=True,
+                    markupprocessor=MarkupProcessor(reference=True,
+                                                    callable=False,
+                                                    env_var=False,
+                                                    include_file=False,
+                                                    ask=False,
+                                                    encode=False))
+
+    try:
+        clean_dict = loader.load(clean_file, locations={})
+    except Exception as e:
+        exceptions.append(e)
+        return validation_results
 
     loader = Loader(enable_extensions=True,
                     markupprocessor=MarkupProcessor(reference=True,
@@ -422,11 +421,15 @@ def validate_clean(clean_file, testbed_file):
 
         try:
             dev = loaded_tb.devices[dev]
-        except Exception as e:
+        except KeyError as e:
             warnings.append(
                 "The device {dev} specified in the clean yaml does "
                 "not exist in the testbed.".format(dev=e))
             # cant validate schema so allow anything under dev
+            schema.update({Any(): Any()})
+            continue
+        except Exception as e:
+            exceptions.append(e)
             schema.update({Any(): Any()})
             continue
 
@@ -488,11 +491,9 @@ def validate_clean(clean_file, testbed_file):
 
     return validation_results
 
-
 def handle_rommon_exception(spawn, context):
     log.error('Device is in Rommon')
     raise Exception('Device is in Rommon')
-
 
 def remove_string_from_image(images, string):
     ''' Removes user given string from any provided image path
@@ -505,3 +506,12 @@ def remove_string_from_image(images, string):
     regex = re.compile(r'.*{}.*'.format(string))
 
     return [item.replace(string, "") if regex.match(item) else item for item in images]
+
+def get_image_handler(device):
+    if device.clean.get('images'):
+        # Get abstracted ImageHandler class
+        abstract = Lookup.from_device(device, packages={'clean': clean})
+        ImageHandler = abstract.clean.stages.image_handler.ImageHandler
+        return ImageHandler(device, device.clean['images'])
+    else:
+        return None

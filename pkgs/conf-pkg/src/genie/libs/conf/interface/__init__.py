@@ -4,6 +4,7 @@
 
 import importlib
 import warnings
+import logging
 import abc
 import types
 import re
@@ -17,12 +18,15 @@ from genie.conf.base.interface import BaseInterface,\
                                 VirtualInterface as BaseVirtualInterface,\
                                 LoopbackInterface as BaseLoopbackInterface,\
                                 PseudoInterface as BasePseudoInterface
-                                      
+
 from .ipv4addr import IPv4Addr
 from .ipv6addr import IPv6Addr
 from genie.libs import conf
 from genie.libs.conf.base import IPv4Address, IPv6Address, IPv4Interface, IPv6Interface, MAC
 from genie.libs.conf.vrf import Vrf
+
+
+log = logging.getLogger(__name__)
 
 
 class Option(Enum):
@@ -466,6 +470,12 @@ class Interface(BaseInterface):
         type=(None, managedattribute.test_istype(bool)),
         doc='Configure ip forward')
 
+    ipv6_forward = managedattribute(
+        name='ipv6_forward',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)),
+        doc='Configure ipv6 forward')
+
 
     @abc.abstractmethod
     def build_config(self, *args, **kwargs):
@@ -558,14 +568,15 @@ class Interface(BaseInterface):
                 if not device.os and 'os' in kwargs['device'].__dict__:
                     device.os = kwargs['device'].__dict__['os']
                 if device.os is None:
-                    raise AttributeError("Cannot convert interfaces for "
-                                         "device {dev} as mandatory field "
-                                         "'os' was not given in the "
-                                         "yaml file".format(dev=device.name))
+                    log.debug("Cannot convert interfaces for "
+                              "device '{dev}' as mandatory field "
+                              "'os' was not given in the "
+                              "yaml file".format(dev=device.name))
+                    device.os = 'generic'
 
                 try:
                     factory_cls = cls._get_os_specific_Interface_class(device.os)
-                except (ImportError, AttributeError) as e:
+                except (ImportError, AttributeError):
                     # it does not exist, then just use the default one,
                     # but configuration is not possible
                     pass
@@ -1390,10 +1401,11 @@ class TunnelTeInterface(TunnelInterface):
                 raise TypeError('\'device\' argument missing')
             device = kwargs['device']
             if device.os is None:
-                raise AttributeError("Cannot convert interfaces for "
-                                     "device {dev} as mandatory field "
-                                     "'os' was not given in the "
-                                     "yaml file".format(dev=device.name))
+                log.debug("Cannot convert interfaces for "
+                          "device '{dev}' as mandatory field "
+                          "'os' was not given in the "
+                          "yaml file".format(dev=device.name))
+                device.os = 'generic'
             try:
                 factory_cls = _get_descendent_subclass(
                     factory_cls._get_os_specific_Interface_class(device.os),
@@ -1428,10 +1440,11 @@ class NamedTunnelTeInterface(NamedTunnelInterface, TunnelTeInterface):
                 raise TypeError('\'device\' argument missing')
             device = kwargs['device']
             if device.os is None:
-                raise AttributeError("Cannot convert interfaces for "
-                                     "device {dev} as mandatory field "
-                                     "'os' was not given in the "
-                                     "yaml file".format(dev=device.name))
+                log.debug("Cannot convert interfaces for "
+                          "device '{dev}' as mandatory field "
+                          "'os' was not given in the "
+                          "yaml file".format(dev=device.name))
+                device.os = 'generic'
             try:
                 factory_cls = _get_descendent_subclass(
                     factory_cls._get_os_specific_Interface_class(device.os),
@@ -1489,11 +1502,47 @@ class NveInterface(VirtualInterface):
         type=(None, managedattribute.test_istype(bool)),
         doc='Nve virtual rmac')
 
+    nve_global_suppress_arp = managedattribute(
+        name='nve_global_suppress_arp',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)),
+        doc='Nve global suppress ARP')
+
+    nve_global_ir_proto = managedattribute(
+        name='nve_global_ir_proto',
+        default=None,
+        type=(None, HOST_REACHABILTY_PROTOCOL),
+        doc='Nve Global IR protocol')
+
+    nve_global_mcast_group_l2 = managedattribute(
+        name='nve_mcast_global_group_l2',
+        default=None,
+        type=(None, managedattribute.test_istype(str)),
+        doc='Nve Global L2 mcast group')
+
+    nve_global_mcast_group_l3 = managedattribute(
+        name='nve_mcast_global_group_l3',
+        default=None,
+        type=(None, managedattribute.test_istype(str)),
+        doc='Nve Global L3 mcast group')
+
     nve_src_intf_loopback = managedattribute(
         name='nve_src_intf_loopback',
         default=None,
         type=(None, managedattribute.test_istype(str)),
         doc='Nve source interface')
+
+    nve_src_intf_holddown = managedattribute(
+        name='nve_src_intf_holddown',
+        default=None,
+        type=(None, managedattribute.test_istype(int)),
+        doc='Nve source interface Holddown Timer')
+
+    nve_multisite_bgw_intf = managedattribute(
+        name='nve_multisite_bgw_intf',
+        default=None,
+        type=(None, managedattribute.test_istype(str)),
+        doc='Nve Multisite bgw interface')
 
     @abc.abstractmethod
     def __init__(self, *args, **kwargs):
@@ -1508,6 +1557,12 @@ class VniInterface(NveInterface):
         type=(None, managedattribute.test_istype(int)),
         doc='Nve vni')
 
+    vni_map = managedattribute(
+        name='vni_map',
+        default=None,
+        type=(None, managedattribute.test_istype(dict)),
+        doc='Nve vni MAP DICTIONARY')
+
     nve_vni_associate_vrf = managedattribute(
         name='nve_vni_associate_vrf',
         default=None,
@@ -1519,6 +1574,31 @@ class VniInterface(NveInterface):
         default=None,
         type=(None, managedattribute.test_istype(bool)),
         doc='Nve vni suppress arp')
+
+    nve_vni_multisite_ingress_replication_optimized = managedattribute(
+        name='nve_vni_multisite_ingress_replication_optimized',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)),
+        doc='Enable TRM for Multisite')
+
+    nve_vni_ir = managedattribute(
+        name='nve_vni_ir',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)),
+        doc='Enable  IR on VNI')
+
+    nve_vni_ir_proto = managedattribute(
+        name='nve_vni_ir_proto',
+        default=None,
+        type=(None, NveInterface.HOST_REACHABILTY_PROTOCOL),
+        doc='Enable  BGP or Static as IR protocol')
+
+    nve_vni_multisite_ingress_replication = managedattribute(
+        name='nve_vni_multisite_ingress_replication',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)),
+        doc='Enable Multsite IR on VNI')
+
 
     nve_vni_mcast_group = managedattribute(
         name='nve_vni_mcast_group',

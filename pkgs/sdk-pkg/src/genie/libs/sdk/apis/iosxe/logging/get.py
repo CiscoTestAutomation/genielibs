@@ -16,7 +16,7 @@ def get_logging_logs(device):
             device ('obj'): device to use
 
         Returns:
-            list of enteries from logging system
+            list of entries from logging system
         Raises:
             None
     """

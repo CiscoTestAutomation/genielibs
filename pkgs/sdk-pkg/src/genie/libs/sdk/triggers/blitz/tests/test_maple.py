@@ -38,7 +38,6 @@ class TestMaple(unittest.TestCase):
                     '  {\\"command\\":\\"show module\\"},\\n             '\
                     '       {\\"match\\":\\"Up\\"},\\n                   '\
                     '{\\"timeout\\":\\"10\\"}\\n       ]}"}}'
-  
     plugin_input2 =  '{"rule-1": {"type": "matcher", "commands": "matcher:{\\n'\
                      '    \\"package\\":\\"maple.plugins.user.MatcherPlugins\\"'\
                      ',\\n    \\"method\\":\\"populateObjects\\",\\n    '\
@@ -59,15 +58,15 @@ class TestMaple(unittest.TestCase):
                     '                 \\"options\\":[\\n                 '\
                     '  {\\"command\\":\\"connect\\"}]}"}}'
 
-    execute_output = ''' 
+    execute_output = '''
                      Mod Ports             Module-Type                       Model        Status
                     --- ----- -------------------------------------------------------------------
-                    1    48   1/10G SFP+ Ethernet Module            N9K-C9396PX           active *  
-                    2    12   40G Ethernet Expansion Module         N9K-M12PQ             ok        
+                    1    48   1/10G SFP+ Ethernet Module            N9K-C9396PX           active *
+                    2    12   40G Ethernet Expansion Module         N9K-M12PQ             ok
                     Mod  Sw                       Hw    Slot
                     ---  ----------------------- ------ ----
-                    1    9.3(3)IDI9(0.509)        2.2    NA  
-                    2    NA                       1.2    GEM 
+                    1    9.3(3)IDI9(0.509)        2.2    NA
+                    2    NA                       1.2    GEM
                     Mod  MAC-Address(es)                      Serial-Num
                     ---  --------------------------------------  ----------
                     1    84-b8-02-f0-83-90 to 84-b8-02-f0-83-c7  SAL1914CNL6
@@ -77,7 +76,7 @@ class TestMaple(unittest.TestCase):
                     1    Pass
     '''
 
-    execute_output_1 = """ 
+    execute_output_1 = """
           Legend:
           (P)=Protected, (F)=FRR active, (*)=more labels in stack.
 
@@ -117,22 +116,26 @@ class TestMaple(unittest.TestCase):
           IPV4:
           In-Label   Out-Label  FEC name           Out-Interface      Next-Hop
           16006      Pop Label  6.6.6.0/32         Eth1/8             6.7.1.6
-    """ 
+    """
 
     def setUp(self):
 
         dir_name = os.path.dirname(os.path.abspath(__file__))
-        
         self.testbed = load(os.path.join(dir_name, 'mock_testbeds/testbed.yaml'))
         Blitz.parameters = ParameterMap()
         Blitz.uid = 'test.dev'
         Blitz.parameters['testbed'] = self.testbed
+
         self.blitz_obj = Blitz()
+        self.uid = self.blitz_obj.uid
+        self.blitz_obj.parent = self
+        self.blitz_obj.parent.parameters = Mock()
+
         self.dev = Device( name='PE1', os='iosxe')
         self.dev.custom = {'abstraction': {'order': ['os']}}
         self.blitz_obj.parameters['test_sections'] = [{'section1': [{'action': {'command': 'a'}}]}]
         sections = self.blitz_obj._discover()
-        self.kwargs = {'self': self.blitz_obj, 
+        self.kwargs = {'self': self.blitz_obj,
                        'section': sections[0],
                        'name': ''}
 
@@ -144,7 +147,7 @@ class TestMaple(unittest.TestCase):
                           'maple_plugin_input': self.plugin_input1,
                           'maple_action': 'confirm'})
 
-      with patch('plugins.system.Commands.waitfor', 
+      with patch('plugins.system.Commands.waitfor',
                  return_value= {'result': [True],'matchObjs':{'a':'b', 'c':12}}) as func:
 
         maple(**self.kwargs)
@@ -160,7 +163,7 @@ class TestMaple(unittest.TestCase):
                           'maple_plugin_input': self.plugin_input1,
                           'maple_action': 'confirm'})
 
-      with patch('plugins.system.Commands.waitfor', 
+      with patch('plugins.system.Commands.waitfor',
                  return_value= {'result': [False],'matchObjs':{'a':'b', 'c':12}}) as func:
 
         maple(**self.kwargs)
@@ -176,7 +179,7 @@ class TestMaple(unittest.TestCase):
                           'device': self.dev,
                           'maple_plugin_input': self.plugin_input2})
 
-      with patch('plugins.user.MatcherPlugins.populateObjects', 
+      with patch('plugins.user.MatcherPlugins.populateObjects',
                  return_value= {'matchObjs':{'a':'b', 'c':12}}) as func:
 
         maple(**self.kwargs)
@@ -216,7 +219,7 @@ class TestMaple(unittest.TestCase):
                           'maple_plugin_input': self.plugin_input4,
                           'output': self.execute_output})
 
-      with patch('plugins.user.ConfirmPlugins.checkIfPresent', 
+      with patch('plugins.user.ConfirmPlugins.checkIfPresent',
                  return_value= {'result': True, 'matchObjs':{'a':'b', 'c':12}}) as func:
 
         maple(**self.kwargs)
@@ -232,7 +235,7 @@ class TestMaple(unittest.TestCase):
                           'maple_plugin_input': self.plugin_input5,
                           'maple_action': 'confirm'})
 
-      with patch('plugins.system.Commands.ixia', 
+      with patch('plugins.system.Commands.ixia',
                  return_value= {'result': [True],'ixiaObjs':{'a':'b', 'c':12}}) as func:
 
         maple(**self.kwargs)

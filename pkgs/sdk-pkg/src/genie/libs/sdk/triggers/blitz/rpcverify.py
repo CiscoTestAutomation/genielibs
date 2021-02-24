@@ -429,14 +429,20 @@ class RpcVerify():
                                 datatype.startswith('uint'):
                             r1 = int(r1)
                             r2 = int(r2)
+                            # change value to int type for subsequent compare operation
+                            value = int(value)
                         elif datatype in ['decimal64', 'float']:
                             r1 = float(r1)
                             r2 = float(r2)
+                            # change value to float type for subsequent compare operation
+                            value = float(value)
                         else:
                             raise TypeError
                     else:
                         r1 = float(r1)
                         r2 = float(r2)
+                        # change value to float type for subsequent compare operation
+                        value = float(value)
                 except TypeError:
                     log.error(
                         'OPERATION VALUE {0}: invalid range {1}{2}'
@@ -445,7 +451,6 @@ class RpcVerify():
                                 ' FAILED')
                     )
                     return False
-
                 if value >= r1 and value <= r2:
                     log.info(
                         'OPERATION VALUE {0}: {1} in range {2} SUCCESS'
@@ -581,24 +586,30 @@ class RpcVerify():
                     value = reply
                     name = reply_xpath[reply_xpath.rfind('/') + 1:]
                 for field in opfields:
-                    if field.get('selected', True) is False:
+                    sel = field.get('selected', True)
+                    if isinstance(sel, string_types):
+                        if sel.lower() == 'false':
+                            opfields.remove(field)
+                            continue
+                    elif sel is False:
                         opfields.remove(field)
                         continue
                     if 'xpath' in field and field['xpath'] == reply_xpath and \
                             name == field['name']:
-                        if not self.check_opfield(value, field):
-                            result = False
-                        opfields.remove(field)
-                        list_entry_found.append(field)
+                        op_chk = self.check_opfield(value, field)
+                        list_entry_found.append((field, op_chk))
                         break
 
             # reset for next entry
             opfields = returns
 
-        for entry in list_entry_found:
+        for entry, passed in list_entry_found:
             # Now see how many fields were found
             for field in opfields:
-                if field == entry:
+                # IDs will be unique so eliminate them from match
+                field.pop('id', '')
+                entry.pop('id', '')
+                if field == entry and passed:
                     opfields.remove(field)
 
         if opfields:
@@ -772,15 +783,18 @@ class RpcVerify():
                             boundary.startswith('/'):
                         continue
             if node.get('nodetype', '') == 'list':
-                # get-config on empty list will return no data
                 if edit_op in ['delete', 'remove']:
-                    # current xpath is a list node. So get the parent xpath,
-                    # to check for key/value
+                    # get-config on empty list returns no entry data but need
+                    # to check the parent xpath for any key/values
                     list_xpath = node.get('xpath', '')
                     parent_path = list_xpath[:list_xpath.rfind('/')]
                     self.add_key_nodes(parent_path, nodes)
                     del_parent = True
                     par_xp = xpath
+                elif edit_op in ['create', 'merge', 'replace']:
+                    # get-config on list so check keys were returned
+                    list_xpath = node.get('xpath', '')
+                    self.add_key_nodes(list_xpath, nodes)
                 continue
             if not value:
                 value = 'empty'
@@ -888,14 +902,6 @@ class RpcVerify():
             log.error(
                 banner('OPERATIONAL-VERIFY FAILED: Response XML:\n{0}'
                     .format(str(e)))
-            )
-            return False
-
-        # if first element of reply is not 'rpc-reply' this is a bad response
-        if self.et.QName(resp).localname != 'rpc-reply':
-            log.error(
-                banner("{0} Response missing rpc-reply:\nTag: {1}"
-                .format('OPERATIONAL-VERIFY FAILED:', resp[0]))
             )
             return False
 

@@ -16,8 +16,11 @@ from genie.libs.parser.iosxr.show_eigrp import ShowEigrpIpv4NeighborsDetail,\
 outputs = {}
 outputs['show eigrp ipv4 neighbors detail'] = EigrpOutput.ShowEigrpIpv4NeighborsDetail
 outputs['show eigrp ipv6 neighbors detail'] = EigrpOutput.ShowEigrpIpv6NeighborsDetail
+outputs['show eigrp ipv4 vrf all neighbors detail'] = EigrpOutput.ShowEigrpIpv4NeighborsDetailAllVrf
+outputs['show eigrp ipv6 vrf all neighbors detail'] = EigrpOutput.ShowEigrpIpv6NeighborsDetailAllVrf
 
 def mapper(key):
+    
     return outputs[key]
 
 
@@ -35,8 +38,16 @@ class test_eigrp(unittest.TestCase):
         eigrp = Eigrp(device=self.device)
 
         # Set outputs
-        eigrp.maker.outputs[ShowEigrpIpv4NeighborsDetail] = {'': EigrpOutput.ShowEigrpIpv4NeighborsDetail}
-        eigrp.maker.outputs[ShowEigrpIpv6NeighborsDetail] = {'': EigrpOutput.ShowEigrpIpv6NeighborsDetail}
+        eigrp.maker.outputs[ShowEigrpIpv4NeighborsDetail] = {
+            '': EigrpOutput.ShowEigrpIpv4NeighborsDetail,
+            '{"vrf":"all"}': EigrpOutput.ShowEigrpIpv4NeighborsDetailAllVrf,
+            }
+        eigrp.maker.outputs[ShowEigrpIpv6NeighborsDetail] = {
+            '': EigrpOutput.ShowEigrpIpv6NeighborsDetail,
+            '{"vrf":"all"}': EigrpOutput.ShowEigrpIpv6NeighborsDetailAllVrf,
+            }
+
+        
 
         self.device.execute = Mock()
         self.device.execute.side_effect = mapper
@@ -50,8 +61,14 @@ class test_eigrp(unittest.TestCase):
         eigrp = Eigrp(device=self.device)
 
         # Set outputs
-        eigrp.maker.outputs[ShowEigrpIpv4NeighborsDetail] = {'': EigrpOutput.ShowEigrpIpv4NeighborsDetail}
-        eigrp.maker.outputs[ShowEigrpIpv6NeighborsDetail] = {'': EigrpOutput.ShowEigrpIpv6NeighborsDetail}
+        eigrp.maker.outputs[ShowEigrpIpv4NeighborsDetail] = {
+            '': EigrpOutput.ShowEigrpIpv4NeighborsDetail,
+            '{"vrf":"all"}': EigrpOutput.ShowEigrpIpv4NeighborsDetailAllVrf,
+            }
+        eigrp.maker.outputs[ShowEigrpIpv6NeighborsDetail] = {
+            '': EigrpOutput.ShowEigrpIpv6NeighborsDetail,
+            '{"vrf":"all"}': EigrpOutput.ShowEigrpIpv6NeighborsDetailAllVrf,
+            }
 
         self.device.execute = Mock()
         self.device.execute.side_effect = mapper
@@ -68,12 +85,26 @@ class test_eigrp(unittest.TestCase):
         self.maxDiff = None
         eigrp = Eigrp(device=self.device)
 
+        def empty_mapper(key):
+            outputs = {}
+            outputs['show eigrp ipv4 neighbors detail'] = ""
+            outputs['show eigrp ipv6 neighbors detail'] = ""
+            outputs['show eigrp ipv4 vrf all neighbors detail'] = ""
+            outputs['show eigrp ipv6 vrf all neighbors detail'] = ""
+            return outputs[key]
+
         # Set outputs
-        eigrp.maker.outputs[ShowEigrpIpv4NeighborsDetail] = {'': {}}
-        eigrp.maker.outputs[ShowEigrpIpv6NeighborsDetail] = {'': {}}
+        eigrp.maker.outputs[ShowEigrpIpv4NeighborsDetail] = {
+            '': {},
+            '{"vrf":"all"}': {},
+            }
+        eigrp.maker.outputs[ShowEigrpIpv6NeighborsDetail] = {
+            '': {},
+            '{"vrf":"all"}': {},
+            }
 
         self.device.execute = Mock()
-        self.device.execute.side_effect = mapper
+        self.device.execute.side_effect = empty_mapper
 
         eigrp.learn()
 

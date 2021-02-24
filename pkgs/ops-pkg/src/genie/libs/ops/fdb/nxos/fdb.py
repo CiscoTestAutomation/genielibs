@@ -4,8 +4,8 @@ Fdb Genie Ops Object for IOSXE - CLI.
 # Genie
 from genie.libs.ops.fdb.fdb import Fdb as SuperFdb
 from genie.libs.parser.nxos.show_fdb import (ShowMacAddressTable,
-                                             ShowMacAddressTableAgingTime,
-                                             ShowSystemInternalL2fwderMac)
+                                             ShowMacAddressTableAgingTime)
+from genie.libs.parser.nxos.show_system import ShowSystemInternalL2fwderMac
 
 
 class Fdb(SuperFdb):

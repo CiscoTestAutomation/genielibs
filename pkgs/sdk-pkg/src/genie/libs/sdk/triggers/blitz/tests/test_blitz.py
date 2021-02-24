@@ -28,7 +28,7 @@ class MockDevice(object):
         self.testbed = testbed
         self.name = name
         self.os = os
-    
+
 
 class TestBlitz(unittest.TestCase):
 
@@ -37,9 +37,9 @@ class TestBlitz(unittest.TestCase):
                     'learn': {'a':'b'},
                     'api': 1500}
     yaml1 = '''
-        test: 
+        test:
           groups: ['test']
-          description: Modifying the testcase description 
+          description: Modifying the testcase description
           source:
               pkg: genie.libs.sdk
               class: triggers.blitz.blitz.Blitz
@@ -55,9 +55,9 @@ class TestBlitz(unittest.TestCase):
                       command: show version
     '''
     yaml2 = '''
-        test: 
+        test:
           groups: ['test']
-          description: Modifying the testcase description 
+          description: Modifying the testcase description
           source:
               pkg: genie.libs.sdk
               class: triggers.blitz.blitz.Blitz
@@ -75,9 +75,9 @@ class TestBlitz(unittest.TestCase):
                       command: show version
     '''
     yaml3 = '''
-        test: 
+        test:
           groups: ['test']
-          description: Modifying the testcase description 
+          description: Modifying the testcase description
           source:
               pkg: genie.libs.sdk
               class: triggers.blitz.blitz.Blitz
@@ -88,7 +88,7 @@ class TestBlitz(unittest.TestCase):
                   - execute:
                       device: PE1
                       command: show version
-                      include: 
+                      include:
                         - [0-9]
                   - execute:
                       device: PE1
@@ -101,9 +101,9 @@ class TestBlitz(unittest.TestCase):
                       command: show version
     '''
     yaml4 = '''
-        test: 
+        test:
           groups: ['test']
-          description: Modifying the testcase description 
+          description: Modifying the testcase description
           source:
               pkg: genie.libs.sdk
               class: triggers.blitz.blitz.Blitz
@@ -114,7 +114,7 @@ class TestBlitz(unittest.TestCase):
                       continue: False
                       device: PE1
                       command: show version
-                      include: 
+                      include:
                         - [0-9]
                   - execute:
                       device: PE1
@@ -123,7 +123,7 @@ class TestBlitz(unittest.TestCase):
 
 
     bad_yaml1 = '''
-        test: 
+        test:
           groups: ['test']
           source:
               pkg: genie.libs.sdk
@@ -136,7 +136,7 @@ class TestBlitz(unittest.TestCase):
                       command: show version
     '''
     bad_yaml2 = '''
-        test: 
+        test:
           groups: ['test']
           source:
               pkg: genie.libs.sdk
@@ -149,8 +149,8 @@ class TestBlitz(unittest.TestCase):
 
     '''
 
-    bad_yaml3 = ''' 
-        test: 
+    bad_yaml3 = '''
+        test:
           groups: ['test']
           source:
               pkg: genie.libs.sdk
@@ -160,8 +160,8 @@ class TestBlitz(unittest.TestCase):
                   - section2:
                     - empty_kwargs:
                   '''
-    bad_yaml4 = ''' 
-        test: 
+    bad_yaml4 = '''
+        test:
           groups: ['test']
           source:
               pkg: genie.libs.sdk
@@ -199,12 +199,17 @@ class TestBlitz(unittest.TestCase):
 
       blitz_discoverer = self.blitz_cls()._discover()
       for section in blitz_discoverer:
+
         new_section = section.__testcls__(section)
         steps = Steps()
-  
-        output = self.blitz_cls().dispatcher(steps, 
+        blitz_obj = self.blitz_cls()
+        self.uid = blitz_obj.uid
+        blitz_obj.parent = self
+        blitz_obj.parent.parameters = mock.Mock()
+
+        output = blitz_obj.dispatcher(steps,
                                              self.testbed,
-                                             new_section, 
+                                             new_section,
                                              section.parameters['data'])
 
         self.assertEqual(output, { 'action': 'execute',
@@ -219,16 +224,22 @@ class TestBlitz(unittest.TestCase):
         self.assertEqual(new_section.description, "section description")
 
     def test_dispatcher_2(self):
+
       self._initiate_blitz_cls(self.yaml2)
       blitz_discoverer = self.blitz_cls()._discover()
+
       for section in blitz_discoverer:
+
         new_section = section.__testcls__(section)
         steps = Steps()
         blitz_obj = self.blitz_cls()
+        self.uid = blitz_obj.uid
+        blitz_obj.parent = self
+        blitz_obj.parent.parameters = mock.Mock()
 
-        output = blitz_obj.dispatcher(steps, 
+        output = blitz_obj.dispatcher(steps,
                                       self.testbed,
-                                      new_section, 
+                                      new_section,
                                       section.parameters['data'])
 
         desc = section.parameters['data'][1]['parse']['description']
@@ -304,7 +315,7 @@ class TestBlitz(unittest.TestCase):
                                        section.parameters['data'])
 
     def _initiate_blitz_cls(self, yaml_file):
-      
+
       dir_name = os.path.dirname(os.path.abspath(__file__))
       self.blitz_cls = Blitz
       self.testbed = load(os.path.join(dir_name, 'mock_testbeds/testbed.yaml'))
@@ -313,7 +324,7 @@ class TestBlitz(unittest.TestCase):
       self.blitz_cls.parameters['testbed'] = self.testbed
       self._mock_testbed_devs()
       self.datafile = yaml.safe_load(yaml_file)
-      
+
       for key, value in self.datafile.items():
         self.blitz_cls.uid = "{}.{}".format(key, value['devices'][0])
         self.blitz_cls.parameters['test_sections'] = value['test_sections']

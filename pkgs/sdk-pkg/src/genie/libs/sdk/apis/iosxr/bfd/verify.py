@@ -239,6 +239,7 @@ def verify_bfd_session_destination_detail(
     address,
     expected_session_state=None,
     expected_received_parameters_state=None,
+    ipv6=False,
     max_time=60,
     check_interval=10,
 ):
@@ -249,6 +250,7 @@ def verify_bfd_session_destination_detail(
             address ('str'): IP address for command
             expected_session_state ('str'): Session state to verify
             expected_received_parameters_state ('str'): Received parameter state to verify
+            ipv6 ('bool'): Run ipv6 show command. Default to false
             max_time ('int'): Max time to retry. Default to 60
             check_interval ('int'): Number of check in interval. Default to 10
         Returns:
@@ -261,11 +263,19 @@ def verify_bfd_session_destination_detail(
     
     while timeout.iterate():
         try:
-            out = device.parse(
-                "show bfd session destination {address} detail".format(
+            if ipv6:
+                out = device.parse(
+                "show bfd ipv6 session destination {address} detail".format(
                     address=address
                 )
             )
+            
+            else:
+                out = device.parse(
+                    "show bfd session destination {address} detail".format(
+                        address=address
+                    )
+                )
         except SchemaEmptyParserError:
             timeout.sleep()
             continue
@@ -283,13 +293,14 @@ def verify_bfd_session_destination_detail(
                 timeout.sleep()
                 continue
         
-        timeout.sleep()
+        return True
 
     return False
 
 def verify_bfd_session_destination_detail_no_output(
     device,
     address,
+    ipv6=False,
     max_time=60,
     check_interval=10,
 ):
@@ -299,6 +310,7 @@ def verify_bfd_session_destination_detail_no_output(
             device ('obj'): device to use
             address_family ('str'): Address family value
             address ('str'): IP address for command
+            ipv6 ('bool'): Run ipv6 show command. Default to false
             expected_session_state ('str'): Session state to verify
             max_time ('int'): Max time to retry. Default to 60
             check_interval ('int'): Number of check in interval. Default to 10
@@ -312,11 +324,19 @@ def verify_bfd_session_destination_detail_no_output(
     
     while timeout.iterate():
         try:
-            out = device.parse(
-                "show bfd session destination {address} detail".format(
+            if ipv6:
+                out = device.parse(
+                "show bfd ipv6 session destination {address} detail".format(
                     address=address
                 )
             )
+            
+            else:
+                out = device.parse(
+                    "show bfd session destination {address} detail".format(
+                        address=address
+                    )
+                )
         except SchemaEmptyParserError:
             return True
         

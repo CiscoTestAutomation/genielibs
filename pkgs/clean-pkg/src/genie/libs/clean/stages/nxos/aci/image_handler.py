@@ -123,25 +123,25 @@ class ImageHandler(BaseImageHandler, ImageLoader):
                 self.switch[index] = section.parameters['image_mapping'].get(
                     image, self.switch[index])
 
-    def update_copy_to_linux(self):
+    def update_copy_to_linux(self, number=''):
         '''Update clean section 'copy_to_linux' with image information'''
 
         # Init 'copy_to_linux' defaults
-        origin = self.device.clean.setdefault('copy_to_linux', {}).\
+        origin = self.device.clean.setdefault('copy_to_linux'+number, {}).\
                                    setdefault('origin', {})
         origin.update({'files': self.switch})
 
-    def update_copy_to_device(self):
+    def update_copy_to_device(self, number=''):
         '''Update clean stage 'copy_to_device' with image information'''
 
-        origin = self.device.clean.setdefault('copy_to_device', {}).\
+        origin = self.device.clean.setdefault('copy_to_device'+number, {}).\
                                    setdefault('origin', {})
         origin.update({'files': self.switch})
 
-    def update_fabric_clean(self):
+    def update_fabric_clean(self, number=''):
         '''Update clean stage 'fabric_clean' with image information '''
 
-        fabric_clean = self.device.clean.setdefault('fabric_clean', {})
+        fabric_clean = self.device.clean.setdefault('fabric_clean'+number, {})
         if fabric_clean.get('copy_boot_image', {}).get('origin', {}):
             fabric_clean['copy_boot_image']['origin'].update({'files': self.switch})
 

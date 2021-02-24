@@ -167,14 +167,7 @@ class test_bgp_config1(TestCase):
                           ipv4='10.2.0.2/24')
 
         with self.assertNoWarnings():
-            Genie.testbed = None
-            with self.assertRaises(TypeError):
-                bgp = Bgp()
-            with self.assertRaises(TypeError):
-                bgp = Bgp(testbed=testbed)
             Genie.testbed = testbed
-            with self.assertRaises(TypeError):
-                bgp = Bgp()
             bgp = Bgp(asn=100, bgp_id=100)
             self.assertIs(bgp.testbed, testbed)
             Genie.testbed = testbed
@@ -188,12 +181,22 @@ class test_bgp_config1(TestCase):
             bgp.device_attr[dev1]
             bgp.device_attr[dev1].enabled = True
             bgp.device_attr[dev1].vrf_attr[None].always_compare_med = True
+            bgp.device_attr[dev1].vrf_attr[None].maxas_limit = 10
+            bgp.device_attr[dev1].vrf_attr[None].prefix_peer_timeout = 10
             bgp.device_attr[dev1].vrf_attr[None].address_family_attr[af_name]
             bgp.device_attr[dev1].vrf_attr[None].address_family_attr[af_name2]
             bgp.device_attr[dev1].vrf_attr[None].address_family_attr[af_name]. \
                 af_retain_rt_all = True
             bgp.device_attr[dev1].vrf_attr[None].address_family_attr[af_name]. \
                 af_dampening = True
+            bgp.device_attr[dev1].vrf_attr[None].address_family_attr[af_name]\
+                .af_default_metric = True
+            bgp.device_attr[dev1].vrf_attr[None].address_family_attr[af_name]\
+                .af_default_metric_value = 0
+            bgp.device_attr[dev1].vrf_attr[None].address_family_attr[af_name]\
+                .af_advertise_l2_evpn = True
+            bgp.device_attr[dev1].vrf_attr[None].address_family_attr[af_name] \
+                .af_default_information_originate = True
             neighbor_id = intf4.ipv4
             bgp.device_attr[dev1].vrf_attr[None].add_neighbor(neighbor_id)
             bgp.device_attr[dev1].vrf_attr[None].neighbor_attr[neighbor_id]
@@ -206,7 +209,8 @@ class test_bgp_config1(TestCase):
                 address_family_attr[nbr_af_name]
             bgp.device_attr[dev1].vrf_attr[None].neighbor_attr[neighbor_id]. \
                 address_family_attr[nbr_af_name].nbr_af_allowas_in = True
-
+            bgp.device_attr[dev1].vrf_attr[None].neighbor_attr[neighbor_id]. \
+                address_family_attr[nbr_af_name].nbr_af_suppress_inactive = True
             dev1.add_feature(bgp)
 
             cfgs = bgp.build_config(apply=False)
@@ -215,18 +219,24 @@ class test_bgp_config1(TestCase):
                 ['feature bgp',
                  'router bgp 100',
                  ' bestpath always-compare-med',
+                 ' maxas-limit 10',
+                 ' timers prefix-peer-timeout 10',
                  ' neighbor 10.2.0.2',
                  '  bfd',
                  '  shutdown',
                  '  address-family ipv4 unicast',
                  '   allowas-in',
+                 '   suppress-inactive',
                  '   exit',
                  '  exit',
                  ' address-family link-state',
                  '  exit',
                  ' address-family vpnv4 unicast',
+                 '  default-metric 0',
+                 '  default-information originate',
                  '  dampening',
                  '  retain route-target all',
+                 '  advertise l2vpn evpn',
                  '  exit',
                  ' exit',
                  ]))
@@ -259,14 +269,7 @@ class test_bgp_config1(TestCase):
 
         with self.assertNoWarnings():
 
-            Genie.testbed = None
-            with self.assertRaises(TypeError):
-                bgp = Bgp()
-            with self.assertRaises(TypeError):
-                bgp = Bgp(testbed=testbed)
             Genie.testbed = testbed
-            with self.assertRaises(TypeError):
-                bgp = Bgp()
             bgp = Bgp(asn=100,bgp_id=100)
             self.assertIs(bgp.testbed, testbed)
             Genie.testbed = testbed
@@ -382,15 +385,6 @@ class test_bgp_config1(TestCase):
                           ipv4='10.2.0.2/24')
 
         with self.assertNoWarnings():
-
-            Genie.testbed = None
-            with self.assertRaises(TypeError):
-                bgp = Bgp()
-            with self.assertRaises(TypeError):
-                bgp = Bgp(testbed=testbed)
-            Genie.testbed = testbed
-            with self.assertRaises(TypeError):
-                bgp = Bgp()
             bgp = Bgp(asn=100,bgp_id=100)
             self.assertIs(bgp.testbed, testbed)
             Genie.testbed = testbed
@@ -798,6 +792,17 @@ class test_bgp_config1(TestCase):
             nbr_af_maximum_prefix_max_prefix_no, bgp.device_attr[dev1].\
             vrf_attr['default'].neighbor_attr['4.4.4.4'].address_family_attr\
             [nbr_af_name].nbr_af_maximum_prefix_max_prefix_no)
+
+    def test_feature_bgp_config(self):
+        Genie.testbed = testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='nxos')
+        bgp = Bgp()
+        bgp.device_attr[dev1].enabled = True
+        dev1.add_feature(bgp)
+        cfgs = bgp.build_config(apply=False)
+        self.assertCountEqual(cfgs.keys(), [dev1.name])
+        self.assertEqual(str(cfgs[dev1.name]), "feature bgp")
+
 
 if __name__ == '__main__':
     unittest.main()

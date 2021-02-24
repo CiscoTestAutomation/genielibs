@@ -355,6 +355,37 @@ def request_login_other_re(device):
         return False
     return True
 
+def quick_configure_by_jinja2(device, templates_dir, template_name, **kwargs):
+    """Configure device with Jinja2 using a quick method
+
+    Args:
+            device ('obj'): Device object
+            templates_dir ('str'): Template directory
+            template_name ('str'): Template name
+            kwargs ('obj'): Keyword arguments
+        Returns:
+            Boolean
+        Raises:
+            None
+    """
+
+    log.info("Configuring {filename} on {device}".format(
+        filename=template_name,
+        device=device.alias))
+    template = device.api.get_jinja_template(
+        templates_dir=templates_dir,
+        template_name=template_name)
+    if not template:
+        raise Exception('Could not get template')
+
+    device.state_machine.go_to('config', device.spawn)
+    device.sendline('load set terminal')
+    device.sendline(template.render(**kwargs))
+    device.sendline('\x04')
+    device.execute('commit synchronize')
+    device.state_machine.go_to('enable', device.spawn)
+
+    
 def get_show_output_line_count(device, command, output=None):
     """ Count number of line from show command output
 

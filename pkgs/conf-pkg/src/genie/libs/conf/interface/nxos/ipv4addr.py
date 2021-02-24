@@ -53,10 +53,8 @@ class IPv4Addr(ABC):
                     ' {ipv4}/{prefix_length}'
                     .format(ipv4=attributes.value('ipv4'), 
                         prefix_length=attributes.value('prefix_length')))
-            if not attributes.value('redirect'):
-                configurations.append_line('no ip redirects')
-            elif attributes.value('redirect'):
-                configurations.append_line('ip redirects')
+        if not attributes.value('redirect'):
+            configurations.append_line('no ip redirects')
 
         return str(configurations)
 

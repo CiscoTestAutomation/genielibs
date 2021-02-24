@@ -89,7 +89,9 @@ devices:
 
     verify_running_image:
       images:
-        - harddisk:/vmlinux_PE1.bin
+        - /auto/vmlinux_PE1.bin
+      verify_md5:
+        hostname: the-tftp-server
 
     backup_file_on_device:
         copy_dir: 'harddisk:'

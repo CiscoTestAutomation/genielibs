@@ -57,9 +57,6 @@ class Device(genie.libs.conf.device.cisco.Device):
         attributes = AttributesHelper(self, attributes)
         configurations = CliConfigBuilder()
 
-        # nxos: logging logfile messages <0-7>  # 0-emerg;1-alert;2-crit;3-err;4-warn;5-notif;6-inform;7-debug
-        configurations.append_line(attributes.format('logging logfile messages {logfile_messages_level}'))
-
         configurations.append_block(super().build_config(apply=False, attributes=attributes))
 
         # TODO -- exception dump?

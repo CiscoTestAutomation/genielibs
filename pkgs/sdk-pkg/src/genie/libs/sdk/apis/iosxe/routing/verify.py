@@ -682,7 +682,7 @@ def is_routing_repair_path_in_route_database(
     log.info("Could not find any information about repair path")
     return False
 
-def verify_route_known_via(device, route, known_via, max_time=90, check_interval=10):
+def verify_route_known_via(device, route, known_via, ipv6=False, max_time=90, check_interval=10):
     """ Verify route known via
 
         Args:
@@ -709,7 +709,10 @@ def verify_route_known_via(device, route, known_via, max_time=90, check_interval
     while timeout.iterate():
         out = None
         try:
-            out = device.parse('show ip route {}'.format(route))
+            if ipv6:
+                out = device.parse('show ipv6 route {}'.format(route))
+            else:
+                out = device.parse('show ip route {}'.format(route))
         except Exception:
             timeout.sleep()
             continue

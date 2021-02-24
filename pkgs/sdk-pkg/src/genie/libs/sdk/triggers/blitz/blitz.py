@@ -98,7 +98,6 @@ class Blitz(Trigger):
         if not data:
             log.info('Nothing to execute, ending section')
             return
-
         for action_item in data:
 
             if not action_item or not isinstance(action_item, dict):
@@ -165,21 +164,22 @@ class Blitz(Trigger):
 
                     # step.result will be stored in action_alias for future use
                     if pre_step_removed_kwargs['action_alias']:
-                        save_variable(self, pre_step_removed_kwargs['action_alias'], str(step.result))
+                        save_variable(self, section, pre_step_removed_kwargs['action_alias'], str(step.result))
                         ret_dict['saved_vars'].update({
                             pre_step_removed_kwargs['action_alias']: str(step.result)
                             })
 
                     # Apply proper filter (regex filter, dq filter, list filter) on an output
                     # Then save the filtered output in the value
-                    self._filter_and_save_action_output(ret_dict, save, action_output)
+                    self._filter_and_save_action_output(section, ret_dict, save, action_output)
 
         # strictly because of use in maple
         save_variable(self,
+                      section,
                       self.uid.split('.')[0] + '.' + section.uid,
                       str(section.result))
 
-        save_variable(self, section.uid, str(section.result))
+        save_variable(self, section, section.uid, str(section.result))
 
         # if continue == false ...
         if not section_continue and section.result != Passed:
@@ -230,7 +230,7 @@ class Blitz(Trigger):
         # checks if the condition provided by maple is met
         # if so apply the function whether, pass, fail, abort etc
         if 'section_control' in action:
-            if blitz_control(self, kwargs['if'],
+            if blitz_control(self, section, kwargs['if'],
                              'if') and kwargs['function'] != 'run':
                 getattr(section,
                         kwargs['function'])('Section condition result')
@@ -279,7 +279,7 @@ class Blitz(Trigger):
             # adding the device name to return dictionary
             ret_dict['device'] = device.name
             # saving the device.name for the cycle that action exist
-            save_variable(self, 'device.name', device.name)
+            save_variable(self, section, 'device.name', device.name)
 
         else:
             # in cases that no device is defined
@@ -289,10 +289,10 @@ class Blitz(Trigger):
         continue_ = kwargs.pop('continue', True)
         ret_dict['continue_'] = continue_
 
-        save_variable(self, 'section', section)
-        save_variable(self, 'runtime', runtime)
-        save_variable(self, 'testscript.name', self.uid.split('.')[0])
-        save_variable(self, 'task.id', runtime.tasks._tasks[-1].taskid)
+        save_variable(self, section, 'section', section)
+        save_variable(self, section, 'runtime', runtime)
+        save_variable(self, section, 'testscript.name', self.uid.split('.')[0])
+        save_variable(self, section, 'task.id', runtime.tasks._tasks[-1].taskid)
 
         return {'action_alias': action_alias,
                 'step_msg': step_msg,
@@ -316,6 +316,8 @@ class Blitz(Trigger):
         # The actions were not added as a bounded method
         # so providing the self
         kwargs['self'] = self
+        # for pyATS Health Check
+        kwargs['section'] = section
         # Checking to replace variables and get those arguments
         kwargs = get_variable(**kwargs)
 
@@ -329,7 +331,7 @@ class Blitz(Trigger):
 
         return kwargs
 
-    def _filter_and_save_action_output(self, ret_dict, save, action_output):
+    def _filter_and_save_action_output(self, section, ret_dict, save, action_output):
         """
             Apply proper filter to the output based on the type of filter
             (regex, list, dictionary)
@@ -373,10 +375,11 @@ class Blitz(Trigger):
 
             for save_variable_name, output in save_dict.items():
                 save_variable(self,
+                              section,
                               save_variable_name,
                               output,
-                              item.get('append'),
-                              item.get('append_in_list'))
+                              append=item.get('append'),
+                              append_in_list=item.get('append_in_list'))
             if filter_:
                 log.info(
                     'Applied filter: {} to the action {} output'.

@@ -22,6 +22,7 @@ def verify_ping(device,
                 loss_rate=0,
                 ping_size=None,
                 count=None,
+                interface=None,
                 source=None,
                 rapid=False,
                 do_not_fragment=False,
@@ -40,6 +41,7 @@ def verify_ping(device,
             mpls_rsvp ('str'): MPLS RSVP value
             loss_rate ('int'): Expected loss rate value
             count ('int'): Count value for ping command
+            interface ('str'): source interface
             source ('str'): Source IP address, default: None
             rapid ('bool'): Appears in command or not, default: False
             do_not_fragment ('bool'): Appears in command or not, default: False
@@ -51,50 +53,44 @@ def verify_ping(device,
             None
     """
     timeout = Timeout(max_time, check_interval)
-    
-    while timeout.iterate():
+
+    if address or mpls_rsvp:
+        cmd = ['ping {address}'.format(address=address)]
+        if source:
+            cmd.append('source {source}'.format(source=source))
+        if size:
+            cmd.append('size {size}'.format(size=size))
+        if count:
+            cmd.append('count {count}'.format(count=count))
+        if interface:
+            cmd.append('interface {interface}'.format(interface=interface))
         if tos:
-            cmd = 'ping {address} source {source} size {size} count {count} tos {tos} rapid'.format(
-                    address=address,
-                    source=source,
-                    size=size,
-                    count=count,
-                    tos=tos
-                )
-        elif do_not_fragment and ping_size and count:
-            cmd = 'ping {address} size {ping_size} count {count} do-not-fragment'.format(
-                    address=address,
-                    ping_size=ping_size,
-                    count=count,
-                )
-        elif address and count and source and rapid:
-            cmd = 'ping {address} source {source} count {count} rapid'.format(
-                    address=address,
-                    source=source,
-                    count=count)
-        elif address and count and source:
-            cmd = 'ping {address} source {source} count {count}'.format(
-                    address=address,
-                    source=source,
-                    count=count)
-        elif address and count and not ttl and not wait:
-            cmd = 'ping {address} count {count}'.format(address=address,
-                                                        count=count)
-        elif address and count and ttl and wait:
-            cmd = 'ping {address} ttl {ttl} count {count} wait {wait}'.format(
-                    address=address,
-                    ttl=ttl,
-                    count=count,
-                    wait=wait)
-        elif not address and mpls_rsvp:
-            cmd = 'ping mpls rsvp {rsvp}'.format(rsvp=mpls_rsvp)
-        elif address:
-            cmd = 'ping {address}'.format(address=address)
-        else:
-            log.info('Need to pass address as argument')
-            return False
+            cmd.append('tos {tos}'.format(tos=tos))
+        if ttl:
+            cmd.append('ttl {ttl}'.format(ttl=ttl))
+        if wait:
+            cmd.append('wait {wait}'.format(wait=wait))
+        if rapid:
+            cmd.append('rapid')
+        if do_not_fragment:
+            cmd.append('do-not-fragment')
+        if not address:
+            cmd = ['ping mpls rsvp {rsvp}'.format(rsvp=mpls_rsvp)]
+    else:
+        log.info('Need to pass address or mpls_rsvp as argument')
+        return False
+
+    cmd = ' '.join(cmd)
+
+    while timeout.iterate():
         try:
-            out = device.parse(cmd)
+            # junos ping command can accept various paramegers order like below
+            # ping 192.168.1.1 count 1 size 1514
+            # ping 192.168.1.1 size 1514 count 1
+            # so, store ping output as string and call parser with just `ping {addrss}`
+            # with passing the ping output
+            output = device.execute(cmd)
+            out = device.parse('ping {address}'.format(address=address), output=output)
         except SchemaEmptyParserError as e:
             timeout.sleep()
             continue
@@ -127,11 +123,14 @@ def verify_ping(device,
         #         }
         #     }
         loss_rate_found = Dq(out).get_values("loss-rate", 0)
-        
 
-        if size:
-            if loss_rate_found == loss_rate and Dq(out).get_values("data-bytes", 0) == int(size):
-                return True
+
+        if (
+            size
+            and loss_rate_found == loss_rate
+            and Dq(out).get_values("data-bytes", 0) == int(size)
+        ):
+            return True
         if loss_rate_found == loss_rate:
             return True
         timeout.sleep()

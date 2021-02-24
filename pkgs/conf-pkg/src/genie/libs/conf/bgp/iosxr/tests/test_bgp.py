@@ -36,14 +36,7 @@ class test_bgp(TestCase):
 
         with self.assertNoWarnings():
 
-            Genie.testbed = None
-            with self.assertRaises(TypeError):
-                bgp = Bgp()
-            with self.assertRaises(TypeError):
-                bgp = Bgp(testbed=testbed)
             Genie.testbed = testbed
-            with self.assertRaises(TypeError):
-                bgp = Bgp()
             bgp = Bgp(asn=100)
             self.assertIs(bgp.testbed, testbed)
             Genie.testbed = testbed

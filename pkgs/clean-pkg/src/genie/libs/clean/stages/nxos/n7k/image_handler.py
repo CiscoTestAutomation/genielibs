@@ -120,6 +120,9 @@ class ImageHandler(BaseImageHandler, ImageLoader):
         self.system = [self.system[0].replace('file://', '')]
         self.kickstart = [self.kickstart[0].replace('file://', '')]
 
+        self.original_system = [self.system[0].replace('file://', '')]
+        self.original_kickstart = [self.kickstart[0].replace('file://', '')]
+
         super().__init__(device, *args, **kwargs)
 
     def update_image_references(self, section):
@@ -135,36 +138,36 @@ class ImageHandler(BaseImageHandler, ImageLoader):
                 # change the saved image to the new image name/path
                 self.kickstart[index] = section.parameters['image_mapping'].get(image, image)
 
-    def update_tftp_boot(self):
+    def update_tftp_boot(self, number=''):
         '''Update clean section 'tftp_boot' with image information'''
-        image = self.device.clean.setdefault('tftp_boot', {}).setdefault('image', [])
+        image = self.device.clean.setdefault('tftp_boot'+number, {}).setdefault('image', [])
 
         # Update the same object id
         image.clear()
         image.extend(self.kickstart + self.system)
 
-    def update_copy_to_linux(self):
+    def update_copy_to_linux(self, number=''):
         '''Update clean section 'copy_to_linux' with image information'''
-        files = self.device.clean.setdefault('copy_to_linux', {}).\
+        files = self.device.clean.setdefault('copy_to_linux'+number, {}).\
             setdefault('origin', {}).setdefault('files', [])
 
         # Update the same object id
         files.clear()
         files.extend(self.kickstart + self.system)
 
-    def update_copy_to_device(self):
+    def update_copy_to_device(self, number=''):
         '''Update clean stage 'copy_to_device' with image information'''
-        files = self.device.clean.setdefault('copy_to_device', {}).\
+        files = self.device.clean.setdefault('copy_to_device'+number, {}).\
             setdefault('origin', {}).setdefault('files', [])
 
         # Update the same object id
         files.clear()
         files.extend(self.kickstart + self.system)
 
-    def update_change_boot_variable(self):
+    def update_change_boot_variable(self, number=''):
         '''Update clean stage 'change_boot_variable' with image information'''
 
-        images = self.device.clean.setdefault('change_boot_variable', {}).\
+        images = self.device.clean.setdefault('change_boot_variable'+number, {}).\
             setdefault('images', {})
 
         kickstart = images.setdefault('kickstart', [])
@@ -175,15 +178,17 @@ class ImageHandler(BaseImageHandler, ImageLoader):
         system = images.setdefault('system', [])
         # Update the same object id
         system.clear()
-        system.extend(self.kickstart)
+        system.extend(self.system)
 
-    def update_verify_running_image(self):
+    def update_verify_running_image(self, number=''):
         '''Update clean stage 'verify_running_image' with image information'''
-        images = self.device.clean.setdefault('verify_running_image', {}).\
-            setdefault('images', [])
+        verify_running_image = self.device.clean. \
+            setdefault('verify_running_image' + number, {})
 
-        # Update the same object id
+        images = verify_running_image.setdefault('images', [])
         images.clear()
-        images.extend(self.kickstart + self.system)
 
-
+        if verify_running_image.get('verify_md5'):
+            images.extend(self.original_kickstart + self.original_system)
+        else:
+            images.extend(self.kickstart + self.system)

@@ -47,7 +47,7 @@ class TestCondition(unittest.TestCase):
                'reason': 'Reset Requested by CLI command reload',
                'system_version': '9.3(3)'}}
 
-    execute_output = """ 
+    execute_output = """
         2020-11-24 12:25:43,769: %UNICON-INFO: +++ N93_3: executing command 'show version' +++
         show version
         Cisco Nexus Operating System (NX-OS) Software
@@ -91,7 +91,7 @@ class TestCondition(unittest.TestCase):
         Active Package(s):
     """
 
-    condition_1 = """ 
+    condition_1 = """
           if : "%VARIABLES{execute_id} == id1"
           function: failed
           actions:
@@ -111,7 +111,7 @@ class TestCondition(unittest.TestCase):
                     command: aa
     """
 
-    condition_2 = """ 
+    condition_2 = """
           if : "%VARIABLES{execute_id} == id2"
           function: failed
           actions:
@@ -131,7 +131,7 @@ class TestCondition(unittest.TestCase):
                     command: aa
     """
 
-    condition_3 = """ 
+    condition_3 = """
           if : "%VARIABLES{execute_id} == id1"
           function: passed
           actions:
@@ -151,6 +151,48 @@ class TestCondition(unittest.TestCase):
                       device: PE1
                       command: aa
     """
+
+    condition_4 = """
+
+          if : "%VARIABLES{execute_id} == id1"
+          actions:
+            - parallel:
+                - execute:
+                      alias: exec_1
+                      device: PE1
+                      command: cmd
+                - execute:
+                      alias: exec_2
+                      device: PE2
+                      command: another
+                - configure:
+                      device: PE1
+                      command: feature bgp
+                - execute:
+                      device: PE1
+                      command: aa
+    """
+
+    condition_5 = """
+
+          if : "%VARIABLES{execute_id} == id1"
+          actions:
+            - execute:
+                  alias: exec_1
+                  device: PE1
+                  command: cmd
+            - execute:
+                  alias: exec_2
+                  device: PE2
+                  command: another
+            - configure:
+                  device: PE1
+                  command: feature bgp
+            - execute:
+                  device: PE1
+                  command: aa
+    """
+
 
     def setUp(self):
 
@@ -174,12 +216,16 @@ class TestCondition(unittest.TestCase):
       Blitz.parameters['testbed'] = self.testbed
 
       self.blitz_obj = Blitz()
+      self.uid = self.blitz_obj.uid
+      self.blitz_obj.parent = self
+      self.blitz_obj.parent.parameters = mock.Mock()
+
       self.dev = Device( name='PE1', os='iosxe')
       self.dev.custom = {'abstraction': {'order': ['os']}}
       self.blitz_obj.parameters['test_sections'] = [{'section1': [{'execute': {'command': 'cmd', 'device': 'PE1'}}]}]
       sections = self.blitz_obj._discover()
       self.kwargs = {'self': self.blitz_obj,
-                     'testbed': self.testbed, 
+                     'testbed': self.testbed,
                      'section': sections[0].__testcls__(sections[0]),
                      'name': ''}
 
@@ -204,7 +250,7 @@ class TestCondition(unittest.TestCase):
     #   self.blitz_obj.parameters['save_variable_name'] = {}
     #   self.blitz_obj.parameters['save_variable_name']['execute_id'] = 'id1'
     #   out = control(**self.kwargs)
-      
+
     def test_condition_fail(self):
 
       steps = Steps()
@@ -212,7 +258,7 @@ class TestCondition(unittest.TestCase):
       self.kwargs.update({'steps': steps, 'action_item': data})
       self.blitz_obj.parameters['save_variable_name'] = {}
       self.blitz_obj.parameters['save_variable_name']['execute_id'] = 'id1'
-      out = run_condition(**self.kwargs)
+      run_condition(**self.kwargs)
       self.assertEqual(steps.result, Passed)
 
       func1 = self.testbed.devices['PE1'].configure
@@ -229,8 +275,43 @@ class TestCondition(unittest.TestCase):
       self.kwargs.update({'steps': steps, 'action_item': data})
       self.blitz_obj.parameters['save_variable_name'] = {}
       self.blitz_obj.parameters['save_variable_name']['execute_id'] = 'id1'
-      out = run_condition(**self.kwargs)
+      run_condition(**self.kwargs)
       self.assertEqual(steps.result, Passed)
+
+    def test_condition_no_function_pass(self):
+
+      steps = Steps()
+      data = yaml.safe_load(self.condition_5)
+      self.kwargs.update({'steps': steps, 'action_item': data})
+      self.blitz_obj.parameters['save_variable_name'] = {}
+      self.blitz_obj.parameters['save_variable_name']['execute_id'] = 'id1'
+      run_condition(**self.kwargs)
+      self.assertEqual(steps.result, Passed)
+
+    def test_condition_no_function_fail(self):
+
+      steps = Steps()
+      data = yaml.safe_load(self.condition_5)
+      self.kwargs.update({'steps': steps, 'action_item': data})
+      self.blitz_obj.parameters['save_variable_name'] = {}
+      self.blitz_obj.parameters['save_variable_name']['execute_id'] = 'id9'
+      out = run_condition(**self.kwargs)
+      self.assertEqual(out['substeps'], [])
+      self.assertEqual(out['run_condition_skipped'], True)
+
+    def test_condition_no_function_parallel(self):
+
+      steps = Steps()
+      data = yaml.safe_load(self.condition_4)
+      self.kwargs.update({'steps': steps, 'action_item': data})
+      self.blitz_obj.parameters['save_variable_name'] = {}
+      self.blitz_obj.parameters['save_variable_name']['execute_id'] = 'id1'
+      out = run_condition(**self.kwargs)
+      self.assertEqual(out['run_condition_skipped'], False)
+
+
+
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -175,28 +175,28 @@ class ImageHandler(BaseImageHandler, ImageLoader):
                 self.switch[index] = section.parameters['image_mapping'].get(
                     image, self.switch[index])
 
-    def update_copy_to_linux(self):
+    def update_copy_to_linux(self, number=''):
         '''Update clean section 'copy_to_linux' with image information'''
-        files = self.device.clean.setdefault('copy_to_linux', {}).\
+        files = self.device.clean.setdefault('copy_to_linux'+number, {}).\
             setdefault('origin', {}).setdefault('files', [])
 
         # Update the same object id
         files.clear()
         files.extend(self.controller + self.switch)
 
-    def update_copy_to_device(self):
+    def update_copy_to_device(self, number=''):
         '''Update clean stage 'copy_to_device' with image information'''
-        files = self.device.clean.setdefault('copy_to_device', {}).\
+        files = self.device.clean.setdefault('copy_to_device'+number, {}).\
             setdefault('origin', {}).setdefault('files', [])
 
         # Update the same object id
         files.clear()
         files.extend(self.controller + self.switch)
 
-    def update_fabric_upgrade(self):
+    def update_fabric_upgrade(self, number=''):
         '''Update clean stage 'fabric_upgrade' with image information'''
 
-        fabric_upgrade = self.device.clean.setdefault('fabric_upgrade', {})
+        fabric_upgrade = self.device.clean.setdefault('fabric_upgrade'+number, {})
         fabric_upgrade.update({'controller_image': self.controller})
         fabric_upgrade.update({'switch_image': self.switch})
 

@@ -1935,6 +1935,7 @@ class LoopbackInterface(VirtualInterface, genie.libs.conf.interface.LoopbackInte
 
     _interface_name_types = (
         'Loopback',
+        'loopback'
     )
 
     def __init__(self, *args, **kwargs):

@@ -14,7 +14,7 @@ from genie.libs.sdk.triggers.blitz.markup import apply_dictionary_filter,\
                                                  get_variable,\
                                                  save_variable,\
                                                  apply_list_filter
-                                                
+
 
 from pyats.easypy import Task
 from pyats.easypy.job import Job
@@ -46,8 +46,8 @@ class TestMarkup(unittest.TestCase):
                    'kernel_uptime': {'days': 61, 'hours': 22, 'minutes': 8, 'seconds': 40},
                    'reason': 'Reset Requested by CLI command reload',
                    'system_version': '9.3(3)'}}
-    
-    str_output = """ 
+
+    str_output = """
 
         2020-11-24 12:25:43,769: %UNICON-INFO: +++ N93_3: executing command 'show version' +++
         show version
@@ -107,20 +107,27 @@ class TestMarkup(unittest.TestCase):
         Blitz.parameters = ParameterMap()
         Blitz.uid = 'test.dev'
         Blitz.parameters['testbed'] = self.testbed
-        Blitz.parameters['save_variable_name'] = {'dev_name': 'PE2', 
+        Blitz.parameters['save_variable_name'] = {'dev_name': 'PE2',
                                                   'command':'sh version',
                                                   'sub_command': 'interface',
                                                   'type_k': 1500,
                                                   'list_item': [177,24,13,45],
                                                   'iter_class': mfc,
                                                   'dict1': {'st': "name"}}
+
         self.blitz_obj = Blitz()
+        self.uid = self.blitz_obj.uid
+        self.blitz_obj.parent = self
+        self.blitz_obj.parent.parameters = mock.Mock()
+        self.blitz_obj.parameters['test_sections'] = [{'section1': [{'execute': {'command': 'cmd', 'device': 'PE1'}}]}]
+        sections = self.blitz_obj._discover()
+        self.section = sections[0].__testcls__(sections[0])
 
     def test_dq_filter_list_index(self):
 
         list_output = [1,2,3,4,6,7,8,9999,854]
         list_index = 3
-        filtered_out = apply_list_filter(self.blitz_obj, 
+        filtered_out = apply_list_filter(self.blitz_obj,
                                          list_output,
                                          list_index=list_index)
 
@@ -153,7 +160,7 @@ class TestMarkup(unittest.TestCase):
 
         filters = "contains('software')"
         filtered_out = apply_dictionary_filter(self.blitz_obj, self.dict_output, filters)
-        
+
         self.assertEqual(filtered_out, {'platform': {'software': {'bios_version': '07.33',
                                         'system_version': '9.3(3) [build 9.3(3)IDI9(0.509)]',
                                         'bios_compile_time': '08/04/2015',
@@ -178,31 +185,41 @@ class TestMarkup(unittest.TestCase):
 
     def test_get_variable_replace(self):
 
-        kwargs = {'command': r"%VARIABLES{command}", 'device': 'PE2', 'self': self.blitz_obj}
+        kwargs = {'command': r"%VARIABLES{command}",
+                  'device': 'PE2',
+                  'self': self.blitz_obj,
+                  'section': self.section}
+
         replaced_kwargs = get_variable(**kwargs)
         # check if replacement is done
         self.assertEqual(replaced_kwargs['command'], self.blitz_obj.parameters['save_variable_name']['command'])
 
     def test_get_variable_replace_replace_keep_type(self):
-    
+
         kwargs = {'self': self.blitz_obj,
-                  'item': {'value': r"%VARIABLES{type_k}", 
+                  'item': {'value': r"%VARIABLES{type_k}",
                            'val': 11,
-                           'ls': ['a', {'b':1}]}}
+                           'ls': ['a', {'b':1}]},
+                  'section': self.section}
 
         replaced_kwargs = get_variable(**kwargs)
-        # check if type would stay the same 
+        # check if type would stay the same
         self.assertEqual(type(replaced_kwargs['item']['value']), int)
 
     def test_get_variable_replace_replace_mid_str(self):
 
-        kwargs = {'cmd': r"show  %VARIABLES{sub_command}", 'self': self.blitz_obj}
+        kwargs = {'cmd': r"show  %VARIABLES{sub_command}",
+                  'self': self.blitz_obj,
+                  'section': self.section}
+
         replaced_kwargs = get_variable(**kwargs)
         self.assertEqual(replaced_kwargs['cmd'], 'show  interface')
 
     def test_get_variable_replace_replace_list_item(self):
 
-        kwargs = {'cmd': r"%VARIABLES{list_item[2]}", 'self': self.blitz_obj}
+        kwargs = {'cmd': r"%VARIABLES{list_item[2]}",
+                  'self': self.blitz_obj,
+                  'section': self.section}
         replaced_kwargs = get_variable(**kwargs)
         self.assertEqual(replaced_kwargs['cmd'], 13)
 
@@ -212,31 +229,33 @@ class TestMarkup(unittest.TestCase):
 
     def test_get_variable_replace_replace_iter_fucnt(self):
 
-        kwargs = {'a': r"%VARIABLES{iter_class.mock_func}", 'self': self.blitz_obj}
+        kwargs = {'a': r"%VARIABLES{iter_class.mock_func}",
+                  'self': self.blitz_obj,
+                  'section': self.section}
         replaced_kwargs = get_variable(**kwargs)
         self.assertEqual(replaced_kwargs['a'], 'mock func returned val')
 
     def test_save_variable(self):
 
-        save_variable(self.blitz_obj, 'var1', 'aa')
+        save_variable(self.blitz_obj, self.section, 'var1', 'aa')
         self.assertEqual(
             self.blitz_obj.parameters['save_variable_name']['var1'], 'aa')
 
     def test_save_variable_append(self):
 
-        save_variable(self.blitz_obj, 'sub_command', 'vrf', append=True)
+        save_variable(self.blitz_obj, self.section, 'sub_command', 'vrf', append=True)
         self.assertEqual(
             self.blitz_obj.parameters['save_variable_name']['sub_command'], 'interface\nvrf')
 
     def test_save_variable_append_in_empty_list(self):
 
-        save_variable(self.blitz_obj, 'new_item', 'VRF1', append_in_list=True)
+        save_variable(self.blitz_obj, self.section, 'new_item', 'VRF1', append_in_list=True)
         self.assertEqual(
             self.blitz_obj.parameters['save_variable_name']['new_item'], ['VRF1'])
 
     def test_save_variable_append_in_existing_list(self):
 
-        save_variable(self.blitz_obj, 'list_item', 9000, append_in_list=True)
+        save_variable(self.blitz_obj, self.section, 'list_item', 9000, append_in_list=True)
         self.assertEqual(
             self.blitz_obj.parameters['save_variable_name']['list_item'], [177,24,13,45, 9000])
 

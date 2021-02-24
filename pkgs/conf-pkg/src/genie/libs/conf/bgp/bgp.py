@@ -1,40 +1,35 @@
-
 __all__ = (
-        'Bgp',
-        )
-
-from enum import Enum
-from genie.libs import parser
-from genie.abstract import Lookup
+    'Bgp',
+)
 
 import ipaddress
-from ipaddress import IPv4Address, IPv4Interface,\
-                      IPv6Address, IPv6Interface, IPv6Network
+from enum import Enum
+from ipaddress import IPv4Address, IPv4Interface, \
+    IPv6Address, IPv6Interface, IPv6Network
 
-from genie.utils.cisco_collections import typedset
-from genie.decorator import managedattribute
-from genie.conf.base import Base, DeviceFeature, Interface
 import genie.conf.base.attributes
+from genie.abstract import Lookup
+from genie.conf.base import Base, DeviceFeature, Interface
 from genie.conf.base.attributes import SubAttributes, \
-                                       SubAttributesDict, \
-                                       AttributesHelper, \
-                                       KeyedSubAttributes
-
+    SubAttributesDict, \
+    AttributesHelper, \
+    KeyedSubAttributes
+from genie.decorator import managedattribute
+from genie.libs import parser
+from genie.libs.conf.address_family import AddressFamily, \
+    AddressFamilySubAttributes
 from genie.libs.conf.base import Redistribution
-from genie.libs.conf.base import Routing, IPNeighbor
 from genie.libs.conf.base import RouteDistinguisher, RouteTarget
+from genie.libs.conf.base import Routing, IPNeighbor
 from genie.libs.conf.base.neighbor import IPNeighborSubAttributes
-from genie.libs.conf.address_family import AddressFamily,\
-                                           AddressFamilySubAttributes
-from genie.libs.conf.vrf import Vrf, VrfSubAttributes
 from genie.libs.conf.route_policy import RoutePolicy
-
+from genie.libs.conf.vrf import Vrf, VrfSubAttributes
 from genie.ops.base import Base as ops_Base
 from genie.ops.base import Context
+from genie.utils.cisco_collections import typedset
 
 
 class Bgp(Routing, DeviceFeature):
-
     bgp_id = managedattribute(
         name='bgp_id',
         default=None,
@@ -369,6 +364,11 @@ class Bgp(Routing, DeviceFeature):
         default=None,
         type=(None, managedattribute.test_istype(int)))
 
+    maxas_limit = managedattribute(
+        name='maxas_limit',
+        default=None,
+        type=(None, managedattribute.test_istype(int)))
+
     graceful_restart_stalepath_time = managedattribute(
         name='graceful_restart_stalepath_time',
         default=None,
@@ -386,6 +386,11 @@ class Bgp(Routing, DeviceFeature):
 
     keepalive_interval = managedattribute(
         name='keepalive_interval',
+        default=None,
+        type=(None, managedattribute.test_istype(int)))
+
+    prefix_peer_timeout = managedattribute(
+        name='prefix_peer_timeout',
         default=None,
         type=(None, managedattribute.test_istype(int)))
 
@@ -421,6 +426,11 @@ class Bgp(Routing, DeviceFeature):
     # vxlan
     af_advertise_pip = managedattribute(
         name='af_advertise_pip',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)))
+
+    af_advertise_l2_evpn = managedattribute(
+        name='af_advertise_l2_evpn',
         default=None,
         type=(None, managedattribute.test_istype(bool)))
 
@@ -659,6 +669,22 @@ class Bgp(Routing, DeviceFeature):
         default=None,
         type=(None, managedattribute.test_istype(bool)))
 
+    af_default_metric = managedattribute(
+        name='af_default_metric',
+        default=None,
+        type=(None, managedattribute.test_istype(bool))
+    )
+    af_default_metric_value = managedattribute(
+        name='af_default_metric_value',
+        default=None,
+        type=(None, managedattribute.test_istype(int))
+    )
+
+    af_default_information_originate = managedattribute(
+        name='af_default_information_originate',
+        default=None,
+        type=(None, managedattribute.test_istype(bool))
+    )
     # ==== Neighbor section ======================
     class NBR_TRANSPORT_CONNECTION_MODE(Enum):
         active = 'active'
@@ -857,6 +883,12 @@ class Bgp(Routing, DeviceFeature):
         default=None,
         type=(None, managedattribute.test_istype(bool)))
 
+    nbr_af_suppress_inactive = managedattribute(
+        name='nbr_af_suppress_inactive',
+        default=None,
+        type=(None, managedattribute.test_istype(bool))
+    )
+
     class NBR_AF_SEND_COMMUNITY(Enum):
         standard = 'standard'
         extended = 'extended'
@@ -1049,7 +1081,7 @@ class Bgp(Routing, DeviceFeature):
         name='send_extended_community_ebgp_inheritance_disable',
         default=None,
         type=(None, managedattribute.test_istype(bool)))
- 
+
     # ########
     # only supports in XR, TODO apply in other platforms
     nexthop_mpls_forwarding_ibgp = managedattribute(
@@ -1154,7 +1186,6 @@ class Bgp(Routing, DeviceFeature):
             return SubAttributesDict(self.PeerPolicyAttributes, parent=self)
 
         class VrfAttributes(VrfSubAttributes):
-
             rd = Vrf.rd.copy()
 
             @rd.defaulter
@@ -1182,10 +1213,9 @@ class Bgp(Routing, DeviceFeature):
             @address_family_attr.initter
             def address_family_attr(self):
                 return SubAttributesDict(self.AddressFamilyAttributes,
-                                        parent=self)
+                                         parent=self)
 
             class NeighborAttributes(IPNeighborSubAttributes):
-
                 address_families = managedattribute(
                     name='address_families',
                     finit=typedset(AddressFamily).copy,
@@ -1207,7 +1237,6 @@ class Bgp(Routing, DeviceFeature):
                 def address_family_attr(self):
                     return SubAttributesDict(self.AddressFamilyAttributes,
                                              parent=self)
-
 
             neighbor_attr = managedattribute(
                 name='neighbor_attr',
@@ -1288,10 +1317,6 @@ class Bgp(Routing, DeviceFeature):
             self.bgp_id = int(bgp_id)
         if instance_name:
             self.instance_name = instance_name
-        # Make sure at least one was populated:
-        if not asn and not bgp_id:
-            raise TypeError("__init__() requires either 'asn' or 'bgp_id' "
-                            "to be provided")
         super().__init__(*args, **kwargs)
 
     def build_config(self, devices=None, apply=True, attributes=None,
@@ -1428,35 +1453,34 @@ class Bgp(Routing, DeviceFeature):
         for instance_key in new_bgp['instance']:
             if 'vrf_attr' in new_bgp['instance'][instance_key]:
                 for vrf in new_bgp['instance'][instance_key]['vrf_attr']:
-                    if 'neighbor_id' in new_bgp['instance'][instance_key]\
-                        ['vrf_attr'][vrf]:
-                        del new_bgp['instance'][instance_key]['vrf_attr'][vrf]\
+                    if 'neighbor_id' in new_bgp['instance'][instance_key] \
+                            ['vrf_attr'][vrf]:
+                        del new_bgp['instance'][instance_key]['vrf_attr'][vrf] \
                             ['neighbor_id']
-                    if 'af_name' in new_bgp['instance'][instance_key]\
-                        ['vrf_attr'][vrf]:
-                        del new_bgp['instance'][instance_key]['vrf_attr'][vrf]\
+                    if 'af_name' in new_bgp['instance'][instance_key] \
+                            ['vrf_attr'][vrf]:
+                        del new_bgp['instance'][instance_key]['vrf_attr'][vrf] \
                             ['af_name']
-                    if 'neighbor_attr' in new_bgp['instance'][instance_key]\
-                        ['vrf_attr'][vrf]:
-                        for neighbor in new_bgp['instance'][instance_key]\
-                            ['vrf_attr'][vrf]['neighbor_attr'].keys():
-                            if 'nbr_af_name' in new_bgp['instance']\
-                                [instance_key]['vrf_attr'][vrf]\
-                                ['neighbor_attr'][neighbor]:
-                                del new_bgp['instance'][instance_key]\
-                                    ['vrf_attr'][vrf]['neighbor_attr']\
+                    if 'neighbor_attr' in new_bgp['instance'][instance_key] \
+                            ['vrf_attr'][vrf]:
+                        for neighbor in new_bgp['instance'][instance_key] \
+                                ['vrf_attr'][vrf]['neighbor_attr'].keys():
+                            if 'nbr_af_name' in new_bgp['instance'] \
+                                    [instance_key]['vrf_attr'][vrf] \
+                                    ['neighbor_attr'][neighbor]:
+                                del new_bgp['instance'][instance_key] \
+                                    ['vrf_attr'][vrf]['neighbor_attr'] \
                                     [neighbor]['nbr_af_name']
 
             # Instiantiate a BGP conf object
             conf_obj = self(bgp_id=new_bgp['instance'][instance_key]['bgp_id'])
 
             # Pass the class method not the instnace.
-            maker.dict_to_obj(conf=conf_obj,\
-                              struct=structure_keys,\
+            maker.dict_to_obj(conf=conf_obj, \
+                              struct=structure_keys, \
                               struct_to_map=new_bgp['instance'][instance_key])
 
             conf_obj_list.append(conf_obj)
 
         # List of mapped conf objects
         return conf_obj_list
-

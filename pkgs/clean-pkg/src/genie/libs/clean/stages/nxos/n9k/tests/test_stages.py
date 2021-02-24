@@ -161,11 +161,21 @@ class PositiveStages(unittest.TestCase):
 
     def test_stage_verify_running_image(self):
         self.device.parse = Mock(side_effect=pos_parsed)
+        self.device.execute = Mock(side_effect=pos_execute)
+
+        server = self.device.api.convert_server_to_linux_device('the-tftp-server')
+        server.connect = Mock()
+
+        self.device.api.convert_server_to_linux_device = Mock(return_value=server)
+
+        server.api.get_md5_hash_of_file = Mock(return_value='Hash1')
+        self.device.api.get_md5_hash_of_file = Mock(return_value='Hash1')
 
         # Execute stage: verify_running_image
-        with self.assertRaises(AEtestPassedSignal):
-            verify_running_image(self.section, self.steps, self.device,
-                                 **self.device.clean.verify_running_image)
+        verify_running_image(self.section, self.steps, self.device,
+                             **self.device.clean.verify_running_image)
+
+        self.assertEqual('passed', self.section.result.name)
 
 
 class NegativeStages(unittest.TestCase):
@@ -328,6 +338,14 @@ class NegativeStages(unittest.TestCase):
 
     def test_stage_verify_running_image(self):
         self.device.parse = Mock(side_effect=neg_parsed)
+
+        server = self.device.api.convert_server_to_linux_device('the-tftp-server')
+        server.connect = Mock()
+
+        self.device.api.convert_server_to_linux_device = Mock(return_value=server)
+
+        server.api.get_md5_hash_of_file = Mock(return_value='Hash2')
+        self.device.api.get_md5_hash_of_file = Mock(return_value='Hash1')
 
         # Execute stage: verify_running_image
         with self.assertRaises(TerminateStepSignal):

@@ -15,7 +15,7 @@ def configure_interfaces_shutdown(device, interfaces):
     """
     config_cmd = []
     for interface in interfaces:
-        config_cmd = ["interface {interface}".format(interface=interface), "shutdown"]
+        config_cmd += ["interface {interface}".format(interface=interface), "shutdown"]
     try:
         device.configure(config_cmd)
     except SubCommandFailure as e:
@@ -30,7 +30,7 @@ def configure_interfaces_unshutdown(device, interfaces):
     """
     config_cmd = []
     for interface in interfaces:
-        config_cmd = ["interface {interface}".format(interface=interface), "no shutdown"]
+        config_cmd += ["interface {interface}".format(interface=interface), "no shutdown"]
     try:
         device.configure(config_cmd)
     except SubCommandFailure as e:

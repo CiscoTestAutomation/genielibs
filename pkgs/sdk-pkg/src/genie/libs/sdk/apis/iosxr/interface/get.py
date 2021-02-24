@@ -96,8 +96,6 @@ def get_interface_ipv4_address(device, interface):
         ip = list(ip_dict)[0]
     return ip
 
-
-
 def get_ipv6_interface_ip_address(device, interface, link_local=False):
     """ Get interface ip address from device
 
@@ -172,4 +170,26 @@ def get_ipv6_interface_ip_address(device, interface, link_local=False):
 
             if 'ipv6' in sub_value_keys:
                 return sub_value['ipv6']
-    return None        
+    return None    
+
+
+def get_interfaces_status(device):
+    """Get up/down status of all interfaces
+
+    Args:
+        device (obj): device object
+    """
+
+    try:
+        out=device.parse('show ip interface brief')
+    except SchemaEmptyParserError as e:
+        log.error('No interface information found')
+        return None
+
+    # {'interface': {'GigabitEthernet1': {'interface_is_ok': 'YES',
+    #           'ip_address': '172.16.1.210',
+    #           'method': 'DHCP',
+    #           'protocol': 'up',
+    #           'status': 'up'},
+
+    return {key:val.get('interface_status') for key, val in out.get('interface', {}).items()}

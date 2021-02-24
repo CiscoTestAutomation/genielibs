@@ -124,15 +124,16 @@ class test_filetransferutils(unittest.TestCase):
 
     outputs = {}
     outputs['copy bootflash:/virtual-instance.conf '
-        'ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf'] = raw1
+        'ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf vrf management'] = raw1
     outputs['dir'] = raw2
     outputs['delete bootflash:new_file.tcl'] = raw3
     outputs['move bootflash:mem_leak.tcl new_file.tcl'] = raw4
     outputs['show clock > ftp://1.1.1.1//auto/tftp-ssr/show_clock vrf management'] = raw5
     outputs['copy running-config tftp://10.1.7.250//auto/tftp-ssr/test_config.py vrf management'] = raw7
     outputs['copy running-config sftp://myuser@1.1.1.1//home/virl vrf management'] = raw8
+    outputs['copy running-config sftp://myuser@1.1.1.1//home/virl'] = raw8
     outputs['copy bootflash:/virtual-instance.conf '
-        'ftp://10.1.0.214//auto/tftp-ssr/virtual-instance.conf'] = raw9
+        'ftp://10.1.0.214//auto/tftp-ssr/virtual-instance.conf vrf management'] = raw9
 
     def mapper(self, key, timeout=None, reply= None, prompt_recovery=False):
         return self.outputs[key]
@@ -166,10 +167,27 @@ class test_filetransferutils(unittest.TestCase):
         self.device.execute = Mock()
         self.device.execute.side_effect = self.mapper
 
-        # Call copyfiles
+        # Call copyfiles with vrf None (for default)
         self.fu_device.copyfile(source='running-config',
             destination='sftp://1.1.1.1//home/virl',
-            vrf='management', device=self.device)
+            vrf=None, device=self.device)
+
+        self.assertEqual(self.device.execute.mock_calls[0][1][0],
+                         'copy running-config sftp://myuser@1.1.1.1//home/virl '
+                         'vrf management')
+
+    def test_copyfile_sftp_no_vrf(self):
+
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
+
+        # Call copyfiles with vrf empty string
+        self.fu_device.copyfile(source='running-config',
+            destination='sftp://1.1.1.1//home/virl',
+            vrf='', device=self.device)
+
+        self.assertEqual(self.device.execute.mock_calls[0][1][0],
+                         'copy running-config sftp://myuser@1.1.1.1//home/virl')
 
     def test_validate_and_update_url(self):
         self.fu_device.is_valid_ip = Mock()

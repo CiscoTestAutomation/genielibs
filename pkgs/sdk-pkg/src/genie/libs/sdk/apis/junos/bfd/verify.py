@@ -88,7 +88,7 @@ def verify_bfd_session_detail(device, session_address, expected_session_state=No
         except SchemaEmptyParserError:
             timeout.sleep()
             continue
-
+        
         #"bfd-session": {
         #    "bfd-client": {
         #        "client-name": "LDP-OAM",
@@ -110,7 +110,7 @@ def verify_bfd_session_detail(device, session_address, expected_session_state=No
         if session_state:
             session_state = session_state.lower()
         
-        remote_state = out.q.get_values('session-state',0)
+        remote_state = out.q.get_values('remote-state',0)
         if remote_state:
             remote_state = remote_state.lower()
 
@@ -134,25 +134,41 @@ def verify_bfd_session_detail(device, session_address, expected_session_state=No
             timeout.sleep()
             continue
         
-        if expected_session_multiplier and multiplier and float(expected_session_multiplier) != float(multiplier):
-            timeout.sleep()
-            continue
+        if expected_session_multiplier:
+            if not multiplier or (float(expected_session_multiplier) != float(multiplier)):
+                timeout.sleep()
+                continue
 
-        if expected_tx_interval and tx_interval and float(expected_tx_interval) != float(tx_interval):
-            timeout.sleep()
-            continue
-
-        if expected_rx_interval and rx_interval and float(expected_rx_interval) != float(rx_interval):
-            timeout.sleep()
-            continue
+        # if expected_session_multiplier and multiplier and float(expected_session_multiplier) != float(multiplier):
+        #     timeout.sleep()
+        #     continue
         
-        if expected_session_detect_time and session_detect_time and float(session_detect_time) != float(expected_session_detect_time):
-            timeout.sleep()
-            continue
+        if expected_tx_interval:
+            if not tx_interval or (float(expected_tx_interval) != float(tx_interval)):
+                timeout.sleep()
+                continue
 
-        if expected_remote_state and remote_state and remote_state != expected_client.lower():
-            timeout.sleep()
-            continue
+        # if expected_tx_interval and tx_interval and float(expected_tx_interval) != float(tx_interval):
+        #     timeout.sleep()
+        #     continue
+        
+        if expected_rx_interval:
+            if not rx_interval or (float(expected_rx_interval) != float(rx_interval)):
+                timeout.sleep()
+                continue
+        # if expected_rx_interval and rx_interval and float(expected_rx_interval) != float(rx_interval):
+        #     timeout.sleep()
+        #     continue
+        
+        if expected_session_detect_time:
+            if not session_detect_time or (session_detect_time and float(session_detect_time) != float(expected_session_detect_time)):
+                timeout.sleep()
+                continue
+
+        if expected_remote_state:
+            if not remote_state or (remote_state and remote_state != expected_remote_state.lower()):
+                timeout.sleep()
+                continue
         
         return True
 

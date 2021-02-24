@@ -139,11 +139,11 @@ def maple(self,
         # in self.parameters['save_variable_name']
         if 'matchObjs' in ret_value:
             for key, val in ret_value['matchObjs'].items():
-                save_variable(self, key, val)
+                save_variable(self, kwargs.get('section'), key, val)
         if 'ixiaObjs' in ret_value:
             for key, val in ret_value['ixiaObjs'].items():
                 if val != {}:
-                    save_variable(self, key, val)
+                    save_variable(self, kwargs.get('section'), key, val)
 
         # checking if there is a results that needs to be used
         # to pass or fail the action
