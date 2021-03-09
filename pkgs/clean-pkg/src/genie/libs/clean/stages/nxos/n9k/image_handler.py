@@ -105,6 +105,8 @@ class ImageHandler(BaseImageHandler, ImageLoader):
         # Temp workaround for XPRESSO
         self.system = [self.system[0].replace('file://', '')]
 
+        self.original_system = [self.system[0].replace('file://', '')]
+
         super().__init__(device, *args, **kwargs)
 
     def update_image_references(self, section):
@@ -116,35 +118,39 @@ class ImageHandler(BaseImageHandler, ImageLoader):
                 # change the saved image to the new image name/path
                 self.system[index] = section.parameters['image_mapping'].get(image, self.system[index])
 
-    def update_tftp_boot(self):
+    def update_tftp_boot(self, number=''):
         '''Update clean section 'tftp_boot' with image information'''
 
-        tftp_boot = self.device.clean.setdefault('tftp_boot', {})
+        tftp_boot = self.device.clean.setdefault('tftp_boot'+number, {})
         tftp_boot.update({'image': self.system})
 
-    def update_copy_to_linux(self):
+    def update_copy_to_linux(self, number=''):
         '''Update clean section 'copy_to_linux' with image information'''
 
-        origin = self.device.clean.setdefault('copy_to_linux', {}).\
+        origin = self.device.clean.setdefault('copy_to_linux'+number, {}).\
                                    setdefault('origin', {})
         origin.update({'files': self.system})
 
-    def update_copy_to_device(self):
+    def update_copy_to_device(self, number=''):
         '''Update clean stage 'copy_to_device' with image information'''
 
-        origin = self.device.clean.setdefault('copy_to_device', {}).\
+        origin = self.device.clean.setdefault('copy_to_device'+number, {}).\
                                    setdefault('origin', {})
         origin.update({'files': self.system})
 
-    def update_change_boot_variable(self):
+    def update_change_boot_variable(self, number=''):
         '''Update clean stage 'change_boot_variable' with image information'''
 
-        images = self.device.clean.setdefault('change_boot_variable', {}). \
+        images = self.device.clean.setdefault('change_boot_variable'+number, {}). \
                                    setdefault('images', {})
         images.update({'system': self.system})
 
-    def update_verify_running_image(self):
+    def update_verify_running_image(self, number=''):
         '''Update clean stage 'verify_running_image' with image information'''
+        verify_running_image = self.device.clean. \
+            setdefault('verify_running_image' + number, {})
 
-        verify_running_image = self.device.clean.setdefault('verify_running_image', {})
-        verify_running_image.update({'images': self.system})
+        if verify_running_image.get('verify_md5'):
+            verify_running_image.update({'images': self.original_system})
+        else:
+            verify_running_image.update({'images': self.system})

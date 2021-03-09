@@ -8,12 +8,12 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.sdk.apis.utils import get_config_dict
 from genie.utils import Dq
 
-def get_task_memory_information(device):
-    """ Currently just gets size value of memory currently
-        in use, but can be enhanced to get more values in the future.
+def get_task_memory_information(device, required_attribute='task-memory-in-use-size'):
+    """ Returns specific data based on requirement
 
         Args:
             device (`obj`): Device object
+            required_attribute ('str'): Type of data to return from show task memory
         Returns:
             result (`str`): size of memory currently in use
     """
@@ -36,4 +36,4 @@ def get_task_memory_information(device):
     #         "task-memory-max-when":"20/10/01 01:27:19"
     #     }
 
-    return out.q.get_values('task-memory-in-use-size',0)
+    return out.q.get_values(required_attribute,0)

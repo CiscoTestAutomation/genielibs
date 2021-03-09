@@ -24,7 +24,7 @@ from genie.conf.base.config import CliConfig
 from genie.decorator import managedattribute
 from genie.conf.base import ConfigurableBase
 from genie.conf.base.exceptions import UnknownInterfaceTypeError
-from genie.conf.base.attributes import SubAttributes, SubAttributesDict,\
+from genie.conf.base.attributes import SubAttributes, SubAttributesDict, \
     AttributesHelper, UnsupportedAttributeWarning
 from genie.conf.base.cli import CliConfigBuilder
 
@@ -373,13 +373,19 @@ class Interface(genie.libs.conf.interface.Interface):
         if mode:
             configurations.append_line(
                 attributes.format('fabric forwarding mode {}'.format(mode)),
-                unconfig_cmd='no fabric forwarding mode{}'.format(mode))
+                unconfig_cmd='no fabric forwarding mode {}'.format(mode))
 
         # ip forward
         if attributes.value('ip_forward'):
             configurations.append_line(
                 attributes.format('ip forward'),
                 unconfig_cmd='no ip forward')
+
+        # ipv6 forward
+        if attributes.value('ipv6_forward'):
+            configurations.append_line(
+                attributes.format('ipv6 forward'),
+                unconfig_cmd='no ipv6 forward')
 
         # IPv4Addr attributes
         for ipv4addr, attributes2 in attributes.sequence_values(
@@ -463,7 +469,7 @@ class PhysicalInterface(Interface, genie.libs.conf.interface.PhysicalInterface):
         super().__init__(*args, **kwargs)
 
     def build_unconfig(self, apply=True, attributes=None, **kwargs):
-    
+
         # physical interfaces unconfigured
         attributes_unconfig = AttributesHelper(self, attributes)
         if attributes_unconfig.iswildcard:
@@ -483,61 +489,6 @@ class PhysicalInterface(Interface, genie.libs.conf.interface.PhysicalInterface):
 
     def _build_config_interface_submode(self, configurations, attributes, unconfig):
         super()._build_config_interface_submode(configurations, attributes, unconfig)
-
-
-class VirtualInterface(Interface, genie.libs.conf.interface.VirtualInterface):
-    """ VirtualInterface class, presenting logical/virtual type of `Interface`
-    objects
-
-    `VirtualInterface` class inherits from the `Interface` class. It is the
-     super class of `LoopbackInterface`, 'PortchannelInterface`,
-     `VlanInterface` and `SubInterface`
-
-    Args:
-        All the parameters/attributes inherits from its super class
-        'Interface'
-    """
-
-    def _build_config_interface_submode(self, configurations, attributes, unconfig):
-
-        # Virtual interfaces can be fully unconfigured
-        if unconfig and attributes.iswildcard:
-            configurations.submode_unconfig()
-
-
-        super()._build_config_interface_submode(configurations, attributes, unconfig)
-
-    @abc.abstractmethod
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-
-class PseudoInterface(VirtualInterface, genie.libs.conf.interface.PseudoInterface):
-
-    @abc.abstractmethod
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-
-class LoopbackInterface(VirtualInterface, genie.libs.conf.interface.LoopbackInterface):
-    """ LoopbackInterface class, presenting loopback type of `Interface`
-    objects
-
-    `LoopbackInterface` class inherits from the `VirtualInterface` class.
-
-    Args:
-        All the parameters/attrinutes inherits from its supper class
-        'Interface'
-    """
-
-    _interface_name_types = (
-        'loopback',
-        'Loopback',
-    )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
 
 class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInterface):
     """ EthernetInterface class, presenting ethernet type of `Interface`
@@ -788,10 +739,10 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
             if duplex_mode:
                 if duplex_mode.name == 'full':
                     configurations.append_line('duplex full',
-                        unconfig_cmd='no duplex')
+                                               unconfig_cmd='no duplex')
                 elif duplex_mode.name == 'half':
                     configurations.append_line('duplex half',
-                        unconfig_cmd='no duplex')
+                                               unconfig_cmd='no duplex')
 
         # flow_control_receive
         flow_control_receive = attributes.value('flow_control_receive')
@@ -832,6 +783,64 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
         # nxos: interface <intf> / power efficient-ethernet sleep threshold aggressive
         # nxos: interface <intf> / speed-group 10000
         # nxos: interface <intf> / speed-group 40000
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+class VirtualInterface(EthernetInterface, genie.libs.conf.interface.VirtualInterface):
+    """ VirtualInterface class, presenting logical/virtual type of `Interface`
+    objects
+
+    `VirtualInterface` class inherits from the `Interface` class. It is the
+     super class of `LoopbackInterface`, 'PortchannelInterface`,
+     `VlanInterface` and `SubInterface`
+
+    Args:
+        All the parameters/attributes inherits from its super class
+        'Interface'
+    """
+
+    def _build_config_interface_submode(self, configurations, attributes, unconfig):
+
+        # Virtual interfaces can be fully unconfigured
+        if unconfig and attributes.iswildcard:
+            configurations.submode_unconfig()
+
+
+        super()._build_config_interface_submode(configurations, attributes, unconfig)
+
+    def build_unconfig(self, apply=True, attributes=None, **kwargs):
+        return self.build_config(apply=apply,
+                                 attributes=attributes,
+                                 unconfig=True, **kwargs)
+
+    @abc.abstractmethod
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class PseudoInterface(VirtualInterface, genie.libs.conf.interface.PseudoInterface):
+
+    @abc.abstractmethod
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class LoopbackInterface(VirtualInterface, genie.libs.conf.interface.LoopbackInterface):
+    """ LoopbackInterface class, presenting loopback type of `Interface`
+    objects
+
+    `LoopbackInterface` class inherits from the `VirtualInterface` class.
+
+    Args:
+        All the parameters/attrinutes inherits from its supper class
+        'Interface'
+    """
+
+    _interface_name_types = (
+        'loopback',
+        'Loopback',
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1030,7 +1039,7 @@ class PortchannelInterface(VirtualInterface, genie.libs.conf.interface.Aggregate
                      **kwargs):
         attributes = AttributesHelper(self, attributes)
         configurations = CliConfigBuilder(unconfig=unconfig)
-        
+
         if attributes:
             try:
                 for intf_member, attributes2 in attributes.sequence_values('members', sort=True):
@@ -1115,27 +1124,26 @@ class PortchannelInterface(VirtualInterface, genie.libs.conf.interface.Aggregate
         super().__init__(*args, **kwargs)
 
 class NveInterface(VirtualInterface, genie.libs.conf.interface.NveInterface):
-
     _interface_name_types = (
         'nve',
         'Nve',
     )
 
-    vnis_map = managedattribute(
-        name='vnis_map',
+    vni_map = managedattribute(
+        name='vni_map',
         finit=dict,
         doc='''Mapping of Vni.vni_id to Vni objects''')
 
     @property
     def vnis(self):
-        return frozenset(self.vnis_map.values())
+        return frozenset(self.vni_map.values())
 
     def add_vni(self, vni):
-        if vni.vni_id in self.vnis_map:
+        if vni.vni_id in self.vni_map:
             raise ValueError(
                 'Duplicate vni {} exists within {!r}'.\
                 format(vni.vni_id, self))
-        self.vnis_map[vni.vni_id] = vni
+        self.vni_map[vni.vni_id] = vni
         # TODO vni._on_added_from_nve_interface(self)
 
     def remove_vni(self, vni):
@@ -1146,14 +1154,14 @@ class NveInterface(VirtualInterface, genie.libs.conf.interface.NveInterface):
             vni = None
 
         try:
-            old_vni = self.vnis_map.pop(vni_id)
+            old_vni = self.vni_map.pop(vni_id)
         except KeyError:
             raise ValueError(
                 'Vni {!r} does not exist within {!r}'.\
                 format(vni or vni_id, self))
 
         if vni is not None and old_vni is not vni:
-            self.vnis_map[vni_id] = old_vni
+            self.vni_map[vni_id] = old_vni
             raise ValueError(
                 'Vni {!r} does not match existing {!r} within {!r}'.\
                 format(vni, old_vni, self))
@@ -1163,50 +1171,108 @@ class NveInterface(VirtualInterface, genie.libs.conf.interface.NveInterface):
     def _build_config_interface_submode(self, configurations, attributes, unconfig):
 
         super()._build_config_interface_submode(configurations, attributes, unconfig)
-
         if attributes.value('nve_host_reachability_protocol'):
             configurations.append_line(
-                attributes.format('host-reachability protocol {nve_host_reachability_protocol.value}'),
-                unconfig_cmd=attributes.format('no host-reachability protocol {nve_host_reachability_protocol.value}'))
+                attributes.format('host-reachability protocol {nve_host_reachability_protocol.value}'))
+
+
+        if attributes.value('nve_global_suppress_arp'):
+            configurations.append_line(
+                attributes.format('global suppress-arp'))
+
+
+        if attributes.value('nve_global_ir_proto'):
+            configurations.append_line(
+                attributes.format('global ingress-replication protocol bgp'))
+
+
+        if attributes.value('nve_global_mcast_group_l2'):
+            configurations.append_line(
+                attributes.format('global mcast-group {nve_global_mcast_group_l2} L2'),
+                unconfig_cmd='no global mcast-group L2')
+
+        if attributes.value('nve_global_mcast_group_l3'):
+            configurations.append_line(
+                attributes.format('global mcast-group {nve_global_mcast_group_l3} L3'),
+                unconfig_cmd='no global mcast-group L3')
 
         if attributes.value('nve_adv_virtual_rmac'):
             configurations.append_line(
-                attributes.format('advertise virtual-rmac'),
-                unconfig_cmd='no advertise virtual-rmac')
+                attributes.format('advertise virtual-rmac'))
+
 
         if attributes.value('nve_src_intf_loopback'):
             configurations.append_line(
                 attributes.format('source-interface {nve_src_intf_loopback}'),
                 unconfig_cmd='no source-interface')
 
+        if attributes.value('nve_src_intf_holddown'):
+            configurations.append_line(
+                attributes.format('source-interface hold-down-time {nve_src_intf_holddown}'))
+
+
         if attributes.value('nve_multisite_bgw_intf'):
             configurations.append_line(
-                attributes.format('multisite border-gateway interface {nve_multisite_bgw_intf}'),
-                unconfig_cmd=attributes.format('no multisite border-gateway interface {nve_multisite_bgw_intf}'))
+                attributes.format('multisite border-gateway interface {nve_multisite_bgw_intf}'))
 
         # attributes for vnis
-        if attributes.value('nve_vni') :
-            if attributes.value('nve_vni_associate_vrf') == True:
-                cfg_line = 'member vni {nve_vni} associate-vrf'
-            else:
-                cfg_line = 'member vni {nve_vni}'
+        if attributes.value('nve_vni'):
+                if attributes.value('nve_vni_associate_vrf') == True:
+                    cfg_line = 'member vni {nve_vni} associate-vrf'
+                else:
+                    cfg_line = 'member vni {nve_vni}'
 
-            with configurations.submode_context(attributes.format(cfg_line, force=True)):
-                if unconfig and attributes.value('nve_vni') and \
-                   len(getattr(attributes, 'attributes', {})) == 1:
-                    configurations.submode_unconfig()
+                with configurations.submode_context(attributes.format(cfg_line, force=True)):
+                    if unconfig and attributes.value('nve_vni') and \
+                            len(getattr(attributes, 'attributes', {})) == 1:
+                        configurations.submode_unconfig()
 
-                if attributes.value('nve_vni_suppress_arp'):
-                    configurations.append_line('suppress-arp')
+                    if attributes.value('nve_vni_suppress_arp'):
+                        configurations.append_line('suppress-arp')
 
-                if attributes.value('nve_vni_multisite_ingress_replication'):
-                    configurations.append_line('multisite ingress-replication')
+                    if attributes.value('nve_vni_multisite_ingress_replication'):
+                        configurations.append_line('multisite ingress-replication')
 
-                if attributes.value('nve_vni_mcast_group'):
-                    configurations.append_line(
-                        attributes.format('mcast-group {nve_vni_mcast_group}'),
-                        unconfig_cmd = 'no mcast-group')
+                    if attributes.value('nve_vni_mcast_group'):
+                        configurations.append_line(
+                            attributes.format('mcast-group {nve_vni_mcast_group}'),
+                            unconfig_cmd='no mcast-group')
 
+        else:
+            req_attr = getattr(attributes,'attributes', None)
+            vni_attr = attributes.value('vni_map')
+            if vni_attr or (req_attr and req_attr.value('vni_map')):
+                vni_config_dict = attributes.value('vni_map')
+                for key, value in vni_config_dict.items():
+                   if vni_config_dict[key].get('nve_vni_associate_vrf', False) == True:
+                       cfg_line = 'member vni {} associate-vrf'.format(key)
+                   else:
+                       cfg_line = 'member vni {}'.format(key)
+                   with configurations.submode_context(attributes.format(cfg_line, force=True)):
+
+                      if unconfig and vni_config_dict[key].get('nve_vni',0) and len(vni_config_dict[key].items()) == 1 :
+                          configurations.submode_unconfig()
+
+                      if vni_config_dict[key].get('nve_vni_suppress_arp', False):
+                          configurations.append_line(
+                            attributes.format('suppress-arp'))
+
+                      if vni_config_dict[key].get('nve_vni_ir', False):
+                          configurations.append_line(
+                            attributes.format('ingress-replication protocol {}'.format(vni_config_dict[key].get('nve_vni_ir_proto',None))))
+
+                      if vni_config_dict[key].get('nve_vni_multisite_ingress_replication', False):
+                          configurations.append_line(
+                            attributes.format('multisite ingress-replication'))
+
+                      if vni_config_dict[key].get('nve_vni_multisite_ingress_replication_optimized', False):
+                          configurations.append_line(
+                            attributes.format('multisite ingress-replication optimized'))
+
+                      if vni_config_dict[key].get('nve_vni_mcast_group'):
+                          configurations.append_line(
+                            attributes.format('mcast-group {}'.format(vni_config_dict[key].get('nve_vni_mcast_group',None))),
+                            unconfig_cmd='no mcast-group')
         # -- NVE
         # nxos: interface <intf> / auto-remap-replication-servers
         # nxos: interface <intf> / host-reachability protocol
@@ -1597,4 +1663,3 @@ class NveInterface(VirtualInterface, genie.libs.conf.interface.NveInterface):
 # nxos: interface <intf> / vtp
 
 Interface._build_name_to_class_map()
-

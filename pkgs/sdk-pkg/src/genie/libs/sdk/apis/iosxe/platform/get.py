@@ -168,17 +168,46 @@ def get_running_image(device):
             Image or None
     '''
 
+    output = {}
     try:
         # Execute 'show version'
         output = device.parse("show version")
-        return output.get('version', {}).get('system_image')
     except SchemaEmptyParserError as e:
         log.error("Command 'show version' did not return any results: {e}".format(e=e))
     except SchemaMissingKeyError as e:
         log.error("Missing key while parsing 'show version': {e}".format(e=e))
     except Exception as e:
         log.error("Failed to parse 'show version': {e}".format(e=e))
-    return None
+
+    if not output:
+        return None
+
+    system_image = output.get('version', {}).get('system_image')
+
+    if 'packages.conf' in system_image:
+        directory = system_image.split(":")[0]
+
+        try:
+            output = device.execute("more {}".format(system_image))
+        except Exception as e:
+            log.error("Failed to check contents of {}".format(system_image))
+            return None
+
+        # more bootflash:packages.conf
+        # #! /usr/binos/bin/packages_conf.sh
+        #
+        # sha1sum: e4de49179e2b7fbd772888d0d8ce7fc57f830b80
+        # boot  rp 0 0   rp_boot       csr1000v-rpboot.16.12.01a.SPA.pkg
+        #
+        # iso   rp 0 0   rp_base       csr1000v-mono-universalk9.16.12.01a.SPA.pkg
+
+        for line in output.splitlines():
+            if line.startswith("boot"):
+                system_image = line.split()[-1]
+                system_image = directory + ":" + system_image
+                break
+
+    return system_image
 
 
 def get_available_space(device, directory='', output=None):
@@ -374,7 +403,6 @@ def get_platform_core(device,
     else:
         raise Exception(
             "'default_dir {dd} is not string or list".format(dd=default_dir))
-    copy_success = False
 
     # check if device is HA
     if device.is_ha:
@@ -386,16 +414,17 @@ def get_platform_core(device,
     dirs.extend(stby_dirs)
 
     # convert from device name to device object
-    if remote_device in device.testbed.devices:
-        remote_device = device.testbed.devices[remote_device]
-    else:
-        raise Exception(
-            'remote device {rd} was not found.'.format(rd=remote_device))
+    if remote_device:
+        if remote_device in device.testbed.devices:
+            remote_device = device.testbed.devices[remote_device]
+        else:
+            raise Exception(
+                'remote device {rd} was not found.'.format(rd=remote_device))
 
-    # check connected_alias for remote_device
-    remote_device_alias = [
-        i for i in remote_device.api.get_connected_alias().keys()
-    ]
+        # check connected_alias for remote_device
+        remote_device_alias = [
+            i for i in remote_device.api.get_connected_alias().keys()
+        ]
 
     for storage in dirs:
         corefiles = []
@@ -429,94 +458,109 @@ def get_platform_core(device,
                         all_corefiles.append(file)
 
         # copy core file to remote device
-        for corefile in corefiles:
-            if not (remote_device and remote_path):
-                raise Exception(
-                    '`remote_device` or/and `remote_path` are missing')
-            local_path = "{lp}{fn}".format(lp=storage, fn=corefile)
-            if not device.api.scp(local_path=local_path,
-                                  remote_path=remote_path,
-                                  remote_device=remote_device.name,
-                                  remote_via=remote_via,
-                                  vrf=vrf):
-                raise Exception(
-                    'SCP has failed to copy core file to remote device {rd}'.
-                    format(rd=remote_device.name))
+        if remote_device:
+            for corefile in corefiles:
+                copy_success = False
+                log.info('Copying {s} to remote device {rd}'.format(
+                    s=corefile, rd=remote_device.name))
+                if not (remote_device and remote_path):
+                    log.warn(
+                        '`remote_device` or/and    `remote_path` are missing')
+                    return len(dirs) if num_of_cores else dirs
+                local_path = "{lp}{fn}".format(lp=storage, fn=corefile)
+                if not device.api.scp(local_path=local_path,
+                                              remote_path=remote_path,
+                                              remote_device=remote_device.name,
+                                              remote_via=remote_via,
+                                              vrf=vrf):
+                    log.warn(
+                        'SCP has failed to copy core file to remote device {rd}'
+                        .format(rd=remote_device.name))
+                    return len(dirs) if num_of_cores else dirs
+                else:
+                    copy_success = True
 
-            # decode core file
-            if decode:
+                # decode core file
+                if decode:
 
-                cores = []
+                    cores = []
 
-                # connect to remote_device if not connected
-                if not remote_device_alias:
-                    # if no connected alias, connect
-                    try:
-                        remote_device.connect()
-                    except Exception as e:
-                        raise Exception(
-                            "Remote device {d} was not connected and failed to connect : {e}"
-                            .format(d=remote_device.name, e=e))
+                    # connect to remote_device if not connected
+                    if not remote_device_alias:
+                        # if no connected alias, connect
+                        try:
+                            remote_device.connect()
+                        except Exception as e:
+                            log.warn(
+                                "Remote device {d} was not connected and failed to  connect : {e}"
+                                .format(d=remote_device.name, e=e))
+                            return len(dirs) if num_of_cores else dirs
 
-                # extract system-report
-                if '.tar.gz' in corefile:
-                    extracted_files = remote_device.api.extract_tar_gz(
-                        path=remote_path, files=[corefile])
-                    # find core file in extracted files from system report
-                    cores = [
-                        extracted_file for extracted_file in extracted_files
-                        if '.core.gz' in extracted_file
-                    ]
-                    if not cores:
-                        log.warning(
-                            'No core file was found in system-report {sr}'.
-                            format(sr=corefile))
+                    # extract system-report
+                    if '.tar.gz' in corefile:
+                        extracted_files = remote_device.api.extract_tar_gz(
+                            path=remote_path, files=[corefile])
+                        # find core file in extracted files from system report
+                        cores = [
+                            extracted_file
+                            for extracted_file in extracted_files
+                            if '.core.gz' in extracted_file
+                        ]
+                        if not cores:
+                            log.warning(
+                                'No core file was found in system-report {sr}'.
+                                format(sr=corefile))
 
-                if not cores and '.tar.gz' not in corefile:
-                    cores = [corefile]
+                    if not cores and '.tar.gz' not in corefile:
+                        cores = [corefile]
 
-                for core in cores:
-                    try:
-                        # archive decode output
-                        if archive:
-                            fullpath = core if remote_path in core else remote_path + '/' + core
-                            decode_output = remote_device.api.decode_core(
-                                corefile="{fp}".format(fp=fullpath),
-                                timeout=decode_timeout)
-                            with open(
-                                    '{folder}/{fn}'.format(
-                                        folder=runtime.directory,
-                                        fn='core_decode_{file}'.format(
-                                            file=corefile)), 'w') as f:
-                                print(decode_output, file=f)
-                                log.info(
-                                    'Saved decode output as archive: {folder}/{fn}'
-                                    .format(folder=runtime.directory,
+                    for core in cores:
+                        try:
+                            # archive decode output
+                            if archive:
+                                fullpath = core if remote_path in core else remote_path + '/' + core
+                                decode_output = remote_device.api.decode_core(
+                                    corefile="{fp}".format(fp=fullpath),
+                                    timeout=decode_timeout)
+                                with open(
+                                        '{folder}/{fn}'.format(
+                                            folder=runtime.directory,
                                             fn='core_decode_{file}'.format(
-                                                file=corefile)))
+                                                file=corefile)), 'w') as f:
+                                    print(decode_output, file=f)
+                                    log.info(
+                                        'Saved decode output as archive: {folder}/{fn}'
+                                        .format(folder=runtime.directory,
+                                                fn='core_decode_{file}'.format(
+                                                    file=corefile)))
+                        except Exception as e:
+                            log.warning(
+                                'decode core file is failed : {e}'.format(e=e))
+
+                    if 'tar.gz' in corefile:
+                        # delete folder for extracting .tar.gz
+                        extracted_dir = remote_path + '/' + corefile.split(
+                            '.')[0]
+                        log.info(
+                            'Deleting folder {d} where system-report was extracted.'
+                            .format(d=extracted_dir))
+                        remote_device.api.execute(
+                            'rm -rf {d}'.format(d=extracted_dir))
+
+                # delete core files
+                if delete_core and copy_success:
+                    try:
+                        log.info(
+                            'Deleting copied file {lp}.'.format(lp=local_path))
+                        device.execute(
+                            'delete /force {lp}'.format(lp=local_path))
+                        log.info('{lp} was successfully deleted'.format(
+                            lp=local_path))
                     except Exception as e:
-                        log.warning(
-                            'decode core file is failed : {e}'.format(e=e))
-
-                if 'tar.gz' in corefile:
-                    # delete folder for extracting .tar.gz
-                    extracted_dir = remote_path + '/' + corefile.split('.')[0]
-                    log.info(
-                        'Deleting folder {d} where system-report was extracted.'
-                        .format(d=extracted_dir))
-                    remote_device.api.execute(
-                        'rm -rf {d}'.format(d=extracted_dir))
-
-            # delete core files
-            if delete_core:
-                try:
-                    log.info(
-                        'Deleting copied file {lp}.'.format(lp=local_path))
-                    device.execute('delete /force {lp}'.format(lp=local_path))
-                    log.info(
-                        '{lp} was successfully deleted'.format(lp=local_path))
-                except Exception as e:
-                    raise Exception('deleting core files failed. {}'.format(e))
+                        log.warn(
+                            'deleting core files on s failed. {e}'.
+                            format(s=storage, e=e))
+                        return []
 
     if num_of_cores:
         return len(all_corefiles)

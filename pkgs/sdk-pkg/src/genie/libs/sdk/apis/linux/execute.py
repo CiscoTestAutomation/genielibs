@@ -156,5 +156,3 @@ def revert_vm_snapshot(device, vm_name, vm_id, vm_snapshot_id,
     
     if 'doesnt exist' in output:
         raise Exception("Snapshot not found on {dev}".format(dev=vm_name))
-
-        

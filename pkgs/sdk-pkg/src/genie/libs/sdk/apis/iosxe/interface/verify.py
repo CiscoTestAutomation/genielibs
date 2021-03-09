@@ -19,6 +19,7 @@ from genie.libs.sdk.apis.utils import get_config_dict
 from genie.libs.sdk.apis.iosxe.running_config.get import (
     get_running_config_section_dict,
 )
+from genie.utils import Dq
 
 # Interface
 from genie.libs.sdk.apis.iosxe.interface.get import (
@@ -818,3 +819,102 @@ def verify_interface_description_in_show_interfaces(
         return True
 
     return False
+
+
+def verify_interface_errors(device,
+                            interface,
+                            expected_value,
+                            input=False,
+                            output=False,
+                            max_time=30,
+                            check_interval=10):
+    """ Verify interface input and output errors
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Pass interface in show command
+            expected_value (`int`, Optional): Expected errors values
+            input (`bool`, Optional): True if input errors to verify. Default to False.
+            output (`bool`, Optional): True if output errors to verify. Default to False.
+            max_time (`int`, Optional): Max time, default: 60 seconds
+            check_interval (`int`, Optional): Check interval, default: 10 seconds
+
+        Returns:
+            result (`bool`): Verified result
+        Raises:
+            N/A
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            cmd = 'show interface {interface}'.format(
+                interface=interface)
+            out = device.parse(cmd)
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # Any(): {
+        #     Optional('counters'): {
+        #         Optional('in_errors'): int,
+
+        interface, data = next(iter(out.items()))
+        data = Dq(data)
+        if input and output:
+            input_errors = data.get_values("in_errors", 0)
+            output_errors = data.get_values("out_errors", 0)
+            if input_errors == output_errors == expected_value:
+                return True
+        elif input:
+            input_errors = data.get_values("in_errors", 0)
+            if input_errors == expected_value:
+                return True
+        elif output:
+            output_errors = data.get_values("out_errors", 0)
+            if output_errors == expected_value:
+                return True
+
+        timeout.sleep()
+        continue
+
+    return False
+
+
+def verify_interface_state_admin_up(
+    device, interface, max_time=60, check_interval=10
+):
+    """Verify interface state is administratively up and line protocol is up
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            max_time (`int`): max time
+            check_interval (`int`): check interval
+        Returns:
+            result(`bool`): True if is up else False
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            cmd = 'show interfaces {interface}'.format(
+                interface=interface)
+            out = device.parse(cmd)
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # Any(): {
+        #     'oper_status': str,
+        #     Optional('line_protocol'): str,
+        
+        oper_status = out[interface]["oper_status"]
+        line_protocol = out[interface]["line_protocol"]
+        enabled = out[interface]["enabled"]
+        if oper_status == line_protocol == "up" and enabled == True:
+            return True
+        timeout.sleep()
+
+    return False
+

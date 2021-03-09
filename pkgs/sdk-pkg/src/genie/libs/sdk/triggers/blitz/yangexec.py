@@ -108,6 +108,7 @@ def netconf_send(uut, rpcs, ds_state, lock=True, lock_retry=40, timeout=30):
                         if not commit_ret.ok:
                             log.error('COMMIT FAILED\n{0}\n'.format(commit_ret))
                             dc_ret = uut.discard_changes()
+                            ret = commit_ret
                             log.info('\n{0}\n'.format(dc_ret))
                         else:
                             log.info(commit_ret)
@@ -126,6 +127,7 @@ def netconf_send(uut, rpcs, ds_state, lock=True, lock_retry=40, timeout=30):
                                 commit_ret
                             )
                         )
+                    ret = commit_ret
                     dc_ret = uut.discard_changes()
                     log.info('\n{0}\n'.format(dc_ret))
                 else:
@@ -136,7 +138,8 @@ def netconf_send(uut, rpcs, ds_state, lock=True, lock_retry=40, timeout=30):
 
             elif nc_op == 'get':
                 ret = uut.get(**kwargs)
-
+            elif nc_op == 'subscribe':
+                ret = uut.dispatch(**kwargs)
             elif nc_op == 'rpc':
                 target = 'running'
                 rpc = kwargs.get('rpc')
@@ -156,6 +159,7 @@ def netconf_send(uut, rpcs, ds_state, lock=True, lock_retry=40, timeout=30):
                                 commit_ret
                             )
                         )
+                        ret = commit_ret
                         dc_ret = uut.discard_changes()
                         log.info('\n{0}\n'.format(dc_ret))
                     else:
@@ -273,10 +277,13 @@ def gen_ncclient_rpc(rpc_data, prefix_type="minimal"):
     rpcbuilder.get_payload(nodes, container)
 
     kwargs = {}
-    if prt_op == "rpc":
+
+    if prt_op in ['rpc', 'subscribe']:
         # The outer container is temporary - the child element(s) created
         # should be the actual raw RPC(s), which is what we want to return
-        return [[prt_op, {'rpc_command': elem}] for elem in container]
+        child_elements = [(prt_op, {'rpc_command': elem}) for elem in container]
+        if child_elements:
+            return child_elements[0]
 
     if prt_op == 'edit-config':
         kwargs['target'] = datastore
@@ -415,10 +422,25 @@ def _included_excluded(caps, returns=[]):
     return result
 
 
+def _validate_pause(pause):
+    if not pause:
+        return 0
+    if isinstance(pause, (int, float)):
+        return pause
+    if isinstance(pause, string_types):
+        try:
+            pause = float(pause)
+            return pause
+        except ValueError:
+            log.error('Invalid "pause" type {0}'.format(type(pause)))
+    return 0
+
+
 def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs):
     """Form NETCONF message and send to testbed."""
     log.debug('NETCONF MESSAGE')
     result = True
+
     try:
         device.raise_mode = RaiseMode.NONE
     except NameError:
@@ -440,7 +462,9 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
     else:
         negative_test = format.get('negative-test', False)
     timeout = format.get('timeout', None)
-    pause = format.get('pause', 0)
+    pause = _validate_pause(format.get('pause', 0))
+    if pause:
+        sleep(pause)
 
     if operation == 'capabilities':
         if not returns:
@@ -531,6 +555,7 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
     try:
         for op, reply in result:
             if op == 'traceback':
+                log.error('Failed to send using NETCONF')
                 break
             log.info(
                 et.tostring(
@@ -545,18 +570,6 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
             )
     except Exception as exc:
         log.info('Pretty print failed: {0}'.format(str(exc)))
-
-    if pause:
-        if isinstance(pause, string_types):
-            try:
-                sleep(int(pause))
-            except ValueError:
-                try:
-                    pause = sleep(float(pause))
-                except ValueError:
-                    log.error('Invalid "pause" type {0}'.format(type(pause)))
-        else:
-            sleep(pause)
 
     # rpc-reply should show up in NETCONF log
     if not result:
@@ -576,7 +589,9 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
         return negative_test != False
 
     if rpc_data['operation'] == 'edit-config' and auto_validate:
-        # Verify the get-config TODO: what do we do with custom rpc's?
+        # Verify custom rpc's with a follow-up action.
+        if pause:
+            sleep(pause)
         rpc_clone = deepcopy(rpc_data)
         rpc_clone['operation'] = 'get-config'
         rpc_clone['datastore'] = 'running'
@@ -614,8 +629,19 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
         # TODO: get-data return may not be relevent depending on datastore
         log.debug('Use "get-data" yang action to verify this "edit-data".')
     elif rpc_data['operation'] == 'subscribe':
-        log.info(banner('Subscribed to {0}'.format('TODO: device name')))
+        # check if subscription id exists in rpc reply, subscribe to device if subscription id is found
+        for op, res in result:
+            if '</subscription-id>' in res:
+                rpc_data['decode'] = rpc_verify.process_rpc_reply
+                rpc_data['verifier'] = rpc_verify.process_operational_state
+                rpc_data['format'] = format
+                rpc_data['returns'] = returns
 
+                device.subscribe(rpc_data)
+                break
+        else:
+            log.error(banner('NO SUBSCRIPTION-ID REPLY FROM DEVICE'))
+            return negative_test != False
     return negative_test != True
 
 
@@ -625,6 +651,11 @@ def run_gnmi(operation, device, steps,
     log.debug('gNMI MESSAGE')
     result = True
     rpc_verify = RpcVerify(log=log, capabilities=[])
+    format = kwargs.get('format', {})
+    if format:
+        pause = _validate_pause(format.get('pause', 0))
+        if pause:
+            sleep(pause)
 
     if operation == 'edit-config':
         result = device.set(rpc_data)
@@ -661,7 +692,6 @@ def run_gnmi(operation, device, steps,
             return True
         return result
     elif operation == 'subscribe':
-        format = kwargs.get('format', {})
         rpc_data['format'] = format
         if format.get('request_mode', 'STREAM') == 'ONCE':
             response = device.subscribe(rpc_data)
@@ -681,5 +711,8 @@ def run_gnmi(operation, device, steps,
 
 
 def notify_wait(steps, device):
-    if hasattr(device, 'notify_wait'):
+    if hasattr(device, 'netconf'):
+        if hasattr(device.netconf, 'notify_wait'):
+            return device.netconf.notify_wait(steps)
+    elif hasattr(device, 'notify_wait'):
         return device.notify_wait(steps)

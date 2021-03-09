@@ -159,7 +159,10 @@ def ping_server(section,
 
         # Patterns for success rate
         p1 = r'Success +rate +is +(?P<success>(\d+)) +percent +\((?P<pass>(\d+))\/(?P<fail>(\d+))\)'
-        p2 = r'(?P<transmit>(\d+)) +packets +transmitted, (?P<recv>(\d+)) +packets +received, (?P<loss>(\S+))% +packet +loss'
+
+        #   5 packets transmitted, 5 packets received, 0.00% packet loss
+        #   5 packets transmitted, 5 received, 0% packet loss, time 4005ms
+        p2 = r'(?P<transmit>(\d+)) +packets +transmitted, (?P<recv>(\d+)) +(packets )?received, (?P<loss>(\S+))% +packet +loss'
 
         # Verify given server is found in the testbed YAML file
         try:
@@ -646,7 +649,8 @@ def copy_to_device(section,
                    protocol,
                    verify_num_images=True,
                    expected_num_images=1,
-                   vrf=None,
+                   vrf='', # must be '' instead of None to prevent NXOS from
+                           # defaulting to 'management'
                    timeout=300,
                    compact=False,
                    use_kstack=False,
@@ -677,7 +681,7 @@ def copy_to_device(section,
                                    by user for clean
                                    Default 1 (Optional)
         vrf ('str'): Vrf name if applicable
-                   Default None (Optional)
+                    Default '' (empty string to use no vrf) (Optional)
         timeout ('int'): Copy operation timeout in seconds
                        Default 300 (Optional)
         compact ('bool'): Compact copy mode if supported by the device
@@ -1303,44 +1307,150 @@ def apply_configuration(section, steps, device, configuration=None,
 #===============================================================================
 
 
-@clean_schema({Optional('images'): list})
+@clean_schema({
+    'images': list,
+    Optional('verify_md5'): {
+        'hostname': str,
+        Optional('timeout'): int
+    }
+})
 @aetest.test
-def verify_running_image(section, steps, device, images):
-    """ This stage verifies the currently running image is the expected image.
+def verify_running_image(section, steps, device, images, verify_md5=None):
+    """ This stage verifies the current running image is the expected image.
+The verification can be done by either MD5 hash comparison or by filename
+comparison.
 
-    Stage Schema
-    ------------
-    verify_running_image:
-        images: <Images reloaded on the device, 'list'> (Mandatory)
+Stage Schema
+------------
+verify_running_image:
+    images (list): Image(s) that should be running on the device. If not
+        using verify_md5 then this should be the image path on the device.
+        If using verify_md5 then this should be the original image location
+        from the linux server.
 
-    Example
-    -------
-    verify_running_image:
-        images:
-            - test_image.gbin
+    verify_md5 (dict, optional): When this dictionary is defined, the image
+            verification will by done by comparing the MD5 hashes of the
+            running image against the expected image.
+
+        hostname (str): Linux server that is used to generate the MD5
+            hashes. This server must exist in the testbed servers block.
+
+        timeout (int, optional): Maximum time in seconds allowed for the
+            hashes to generate. Defaults to 60.
+
+Example
+-------
+verify_running_image:
+    images:
+        - test_image.bin
 
     """
+    if verify_md5:
+        # Verify via hash comparison
 
-    log.info("Section steps:\n1- Verify the running image on the device")
+        # Set default if not provided
+        timeout = verify_md5.setdefault('timeout', 60)
+        hostname = verify_md5['hostname']
 
-    # Verify running image on the device
-    with steps.start("Verify running image on device {}".\
-                     format(device.name)) as step:
         try:
-            device.api.verify_current_image(images=images)
-        except Exception as e:
-            step.failed("Unable to verify running image on device {}\n{}".\
-                           format(device.name, str(e)))
-        else:
-            section.passed("Successfully verified running image on device {}".\
-                           format(device.name))
+            server = device.api.convert_server_to_linux_device(hostname)
+        except AttributeError:
+            section.failed("The hostname '{}' provided does not exist in the "
+                           "testbed servers block".format(hostname))
 
+        with steps.start("Generate the MD5 hash of the image(s) on {}"
+                         "".format(server.name)) as step:
+
+            try:
+                server.connect()
+            except Exception:
+                step.failed("Failed to connect to {}.".format(hostname))
+
+            server_hashes = {}
+
+            # Generate the hash for each image
+            for image in images:
+                with step.start("Generating the MD5 hash for '{}'"
+                                "".format(image)) as substep:
+
+                    hash_ = server.api.get_md5_hash_of_file(
+                        image, timeout=timeout)
+
+                    if hash_:
+                        server_hashes[image] = hash_
+                        substep.passed("The MD5 has for '{}' is '{}'"
+                                       .format(image, hash_))
+                    else:
+                        substep.failed("Failed to get MD5 hash for {}"
+                                       .format(image))
+
+        with steps.start("Get the running image(s) on {}"
+                         "".format(device.name)) as step:
+
+            running_images = device.api.get_running_image()
+            if not running_images:
+                step.failed("Failed to get running image(s)")
+
+            if not isinstance(running_images, list):
+                running_images = [running_images]
+
+            step.passed("The running image(s) are: {}".format(running_images))
+
+        with steps.start("Generate the MD5 hash of the running image(s) "
+                         "on {}".format(device.name)) as step:
+
+            running_image_hashes = {}
+
+            for image in running_images:
+                with step.start("Generating the MD5 hash for '{}'"
+                                "".format(image)) as substep:
+
+                    hash_ = device.api.get_md5_hash_of_file(
+                        image, timeout=timeout)
+
+                    if hash_:
+                        running_image_hashes[image] = hash_
+                        substep.passed("The MD5 hash for '{}' is '{}'"
+                                       .format(image, hash_))
+                    else:
+                        substep.failed("Failed to get MD5 hash for {}"
+                                       .format(image))
+
+        with steps.start("Compare the hashes from the origin to the running "
+                         "images") as step:
+
+            # Values must be compared since the path or name
+            # of the image can be different
+            if set(server_hashes.values()) == set(running_image_hashes.values()):
+                step.passed("The hashes from the running image(s) match the "
+                            "hashes from the origin server.\n"
+                            "Server hash(es): {}\n"
+                            "Running image hash(es): {}".format(server_hashes,
+                                                                running_image_hashes))
+            else:
+                step.failed("The hashes from the running image(s) do not match "
+                            "the hashes from the origin server\n"
+                            "Server hash(es): {}\n"
+                            "Running image hash(es): {}".format(server_hashes,
+                                                                running_image_hashes))
+    else:
+
+        # Verify via filename comparison
+        with steps.start("Verify running image on device {}". \
+                                 format(device.name)) as step:
+            try:
+                device.api.verify_current_image(images=images)
+            except Exception as e:
+                step.failed("Unable to verify running image on device {}\n{}". \
+                            format(device.name, str(e)))
+            else:
+                step.passed(
+                    "Successfully verified running image on device {}". \
+                    format(device.name))
 
 #===============================================================================
 #                       stage: backup_file_on_device
 #===============================================================================
-
-
 @clean_schema({
     'copy_dir': str,
     'copy_file': str,

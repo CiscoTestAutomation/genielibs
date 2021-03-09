@@ -1,5 +1,99 @@
+"""Common get functions for services"""
+
+# Python
+import re
+import logging
+
+# Genie
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
+log = logging.getLogger(__name__)
+
+
+def get_services_accounting_flow_exported(device):
+    """ Get services accounting flow exported flows
+
+    Args:
+        device (obj): Device obj
+    """
+
+    try:
+        out = device.parse('show services accounting flow')
+    except SchemaEmptyParserError:
+        return None
+    
+    # "services-accounting-information": {
+    #     "flow-information": [
+    #         {
+    #             "flows-exported": '0',
+
+    return out.q.get_values('flows-exported', 0) or None
+
+
+def get_services_accounting_flow_active(device):
+    """ Get services accounting flow active flows
+
+    Args:
+        device (obj): Device obj
+    """
+
+    try:
+        out = device.parse('show services accounting flow')
+    except SchemaEmptyParserError:
+        return None
+    
+    # "services-accounting-information": {
+    #     "flow-information": [
+    #         {
+    #             "active-flows": '0',
+
+    return out.q.get_values('active-flows', 0) or None
+
+def get_services_accounting_flow_expired(device):
+    """ Get services accounting flow expired flows
+
+    Args:
+        device (obj): Device obj
+    """
+
+    try:
+        out = device.parse('show services accounting flow')
+    except SchemaEmptyParserError:
+        return None
+    
+    # "services-accounting-information": {
+    #     "flow-information": [
+    #         {
+    #             "flows-expired": '0',
+
+    return out.q.get_values('flows-expired', 0) or None
+
+def get_services_accounting_usage_five_second_load(device):
+    """ Get services accounting usage five-second-load
+
+        Args:
+            device (`obj`): Device object
+        Returns:
+            One minute load value
+    """
+
+    try:
+        out = device.parse('show services accounting usage')
+    except SchemaEmptyParserError:
+        return None
+    
+    # Example dictionary structure:
+    # {'services-accounting-information': 
+    #   {'usage-information': [{
+    #       'interface-name': 'ex-9/0/0',
+    #       'uptime': '79203479',
+    #       'inttime': '0',
+    #       'five-second-load': '1',
+    #       'one-minute-load': '1'}]}}
+    five_second_load = out.q.get_values('five-second-load', 0)
+    if five_second_load:
+        five_second_load = int(five_second_load)
+    return five_second_load or None
 
 def get_services_accounting_usage_one_minute_load(device):
     """ Get services accounting usage one-min-load
@@ -14,18 +108,88 @@ def get_services_accounting_usage_one_minute_load(device):
         out = device.parse('show services accounting usage')
     except SchemaEmptyParserError:
         return None
-
+    
     # Example dictionary structure:
-    # {'services-accounting-information': {'usage-information': [{'interface-name': 'ex-9/0/0',
-    # 'uptime': '79203479',
-    # 'inttime': '0',
-    # 'five-second-load': '1',
-    # 'one-minute-load': '1'}]}}
+    # {'services-accounting-information': {
+    #    'usage-information': [{
+    #       'interface-name': 'ex-9/0/0',
+    #       'uptime': '79203479',
+    #       'inttime': '0',
+    #       'five-second-load': '1',
+    #       'one-minute-load': '1'}]}}
     one_min_load = out.q.get_values('one-minute-load', 0)
     if one_min_load:
         one_min_load = int(one_min_load)
     return one_min_load or None
 
+
+def get_services_accounting_flow_packets(device, criteria='flow-packets'):
+    """ Get criteria from show services accounting flow
+
+        Args:
+            device (`obj`): Device object
+            criteria ('str'): Criteria to return from show command
+        Returns:
+            flow packet value
+    """
+
+    try:
+        out = device.parse('show services accounting flow')
+    except SchemaEmptyParserError:
+        return None
+    
+    # Example dictionary structure:
+    #"flow-information": [
+    #        {
+    #            "interface-name": "ms-9/0/0",
+    #            "local-ifd-index": "140",
+    #            "flow-packets": "0",
+    #            "flow-bytes": "0",
+    #            "flow-packets-ten-second-rate": "0",
+    #            "flow-bytes-ten-second-rate": "0",
+    #            "active-flows": "0",
+    #            "flows": "0",
+    #            "flows-exported": "0",
+    #            "flow-packets-exported": "9",
+    #            "flows-expired": "0",
+    #            "flows-aged": "0",
+    #        }
+    #    ]
+    return out.q.get_values(criteria, 0)
+
+
+def get_services_accounting_memory(device):
+    """ Get services accounting memory
+
+        Args:
+            device (`obj`): Device object
+        Returns:
+            One minute load value
+    """
+
+    try:
+        out = device.parse('show services accounting memory')
+    except SchemaEmptyParserError:
+        return None
+    
+    # Example dictionary structure:
+    #"memory-information": [
+    #        {
+    #            "interface-name": "ms-9/0/0",
+    #            "allocation-count": "1",
+    #            "free-count": "0",
+    #            "allocations-per-second": "0",
+    #            "frees-per-second": "0",
+    #            "memory-used": "862529184",
+    #            "memory-free": "3164002312",
+    #            "v9-memory-used": "48",
+    #       }
+    total_memory_used = out.q.get_values('memory-used', 0)
+    if total_memory_used:
+        return total_memory_used
+    else:
+        return None
+        
 
 def get_services_accounting_status(device, field, output=None):
     """ Get value of field from show services accounting status
@@ -150,17 +314,17 @@ def get_services_accounting_errors(device, field, output=None):
 
 
 def get_services_accounting_aggregation_template_field(device,
-                                                       source,
-                                                       destination,
                                                        template_name,
                                                        field,
+                                                       source=None,
+                                                       destination=None,
                                                        output=None):
     """ Get value of field from show service accounting aggregation template template-name {template-name} extensive
 
         Args:
             device (`obj`): Device object
-            source (`str`): source address
-            destination (`str`): destination address
+            source (`str`, Optional): source address. Default to None
+            destination (`str`, Optional): destination address. Default to None
             template_name (`str`): template name
             field (`str`): field name in show output
             output (`str`): output of show services accounting errors
@@ -208,8 +372,26 @@ def get_services_accounting_aggregation_template_field(device,
         'flow-aggregate-template-detail'][
             'flow-aggregate-template-detail-ipv4']['detail-entry']
 
-    if entry['source-address'] == source and entry[
-            'destination-address'] == destination:
+    if source and destination:
+        if entry['source-address'] == source and entry[
+                'destination-address'] == destination:
+            if field in entry:
+                return entry[field]
+            else:
+                return None
+    elif source:
+        if entry['source-address'] == source:
+            if field in entry:
+                return entry[field]
+            else:
+                return None
+    elif destination:
+        if entry['destination-address'] == destination:
+            if field in entry:
+                return entry[field]
+            else:
+                return None
+    else:
         if field in entry:
             return entry[field]
         else:

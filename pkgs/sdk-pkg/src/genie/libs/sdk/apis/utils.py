@@ -875,7 +875,7 @@ def copy_to_device(device,
     if not fu:
         fu = FileUtils.from_device(device)
 
-    if vrf:
+    if vrf is not None:
         server = fu.get_hostname(server, device, vrf=vrf)
     else:
         server = fu.get_hostname(server, device)
@@ -883,7 +883,7 @@ def copy_to_device(device,
     # build the source address
     source = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
     try:
-        if vrf:
+        if vrf is not None:
             fu.copyfile(source=source,
                         destination=local_path,
                         device=device,
@@ -943,7 +943,7 @@ def copy_from_device(device,
 
     # build the source address
     destination = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
-    if vrf:
+    if vrf is not None:
         fu.copyfile(source=local_path,
                     destination=destination,
                     device=device,
@@ -2233,6 +2233,7 @@ def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_d
 
     pcap_object = rdpcap(pcap_location)
     supported = [IP, MPLS, IPv6]
+    ip_packet = None
 
     for packet in pcap_object:
         if any(i for i in supported if i in packet):
@@ -2243,14 +2244,17 @@ def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_d
                     ip_packet = packet.getlayer(IPv6)
                 else:
                     continue
-
+            
             if expected_dst_address:
-
+                if not ip_packet:
+                    continue
                 dst = ip_packet.dst
                 if dst != expected_dst_address:
                     continue
 
             if expected_src_address:
+                if not ip_packet:
+                    continue
                 src = ip_packet.src
                 if src != expected_src_address:
                     continue
@@ -2291,7 +2295,9 @@ def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_d
 
             if expected_tos is not None:
                 # If it is an IPv6 packet, use .tc to get tos value
-                # otherwise use .tos 
+                # otherwise use .tos
+                if not ip_packet:
+                    continue
                 ip_tos = ip_packet.tc if IPv6 in ip_packet else ip_packet.tos
                 if not bin(ip_tos).startswith(bin(expected_tos)):
                     if check_all:
@@ -2312,6 +2318,7 @@ def verify_no_mpls_header(pcap_location, expected_dst_address=None):
 
     Returns:
         bool: True or False
+
     """
     try:
         from scapy.contrib.mpls import MPLS
@@ -2787,9 +2794,12 @@ def verify_pcap_as_path(
         if ':' in layer:
             try:
                 packet_26 = IPv6(packet.load[26:])
-                packet_36 = IPv6(packet.load[36:])
                 log.info(f"IPv6(packet.load[26:]) is \n {packet_26.show()}\n\n")
-                log.info(f"IPv6(packet.load[36:]) is \n {packet_36.show()}\n\n")
+                try:
+                    packet_36 = IPv6(packet.load[36:])
+                    log.info(f"IPv6(packet.load[36:]) is \n {packet_36.show()}\n\n")
+                except Exception:
+                    continue
             except IndexError:
                 log.info('Failed to load packets in IndexError')
                 continue
@@ -2931,9 +2941,12 @@ def verify_pcap_capability(
         if ':' in source:
             try:
                 packet_26 = IPv6(packet.load[26:])
-                packet_36 = IPv6(packet.load[36:])
                 log.info(f"IPv6(packet.load[26:]) is \n {packet_26.show()}\n\n")
-                log.info(f"IPv6(packet.load[36:]) is \n {packet_36.show()}\n\n")
+                try:
+                    packet_36 = IPv6(packet.load[36:])
+                    log.info(f"IPv6(packet.load[36:]) is \n {packet_36.show()}\n\n")
+                except Exception:
+                    continue
             except IndexError:
                 continue
         else:
@@ -2997,18 +3010,18 @@ def verify_keywords_in_output(device,
     Verify if keywords are in output
 
     Args:
-        device(`obj`): device to use  
+        device(`obj`): device to use
         max_time (`int`): Maximum time to keep checking. Default to 60 secs
         check_interval (`int`): How often to check. Default to 10 secs
         keywords (`list`, `str`): list of keywords to find
-        output (`str`): output of show command. 
+        output (`str`): output of show command.
         invert (`bool`): invert result. (check all keywords not in log)
                          Default to False
 
-    Returns:  
+    Returns:
         Boolean : if True, find the keywords in log
     Raises:
-        N/A    
+        N/A
     """
 
     if not isinstance(keywords, list):

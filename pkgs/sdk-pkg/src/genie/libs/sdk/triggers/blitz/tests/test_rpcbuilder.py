@@ -5,7 +5,6 @@ import logging
 import os.path
 import lxml.etree as et
 
-sys.path = ['.', '..'] + sys.path
 from genie.libs.sdk.triggers.blitz.rpcverify import RpcVerify
 from genie.libs.sdk.triggers.blitz.rpcbuilder import YSNetconfRPCBuilder, RpcInputError
 
@@ -161,8 +160,8 @@ class TestNetconfRPCBuilder(unittest.TestCase):
         xml = et.tostring(payload, encoding='unicode', pretty_print=True)
         self.assertEqual(u"""\
 <y>
-  <ocif:interfaces xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type" \
-xmlns:ocif="http://openconfig.net/yang/interfaces">
+  <ocif:interfaces xmlns:ocif="http://openconfig.net/yang/interfaces"\
+ xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">
     <ocif:interface>
       <ocif:config>
         <ocif:type>ianaift:ethernetCsmacd</ocif:type>
@@ -236,8 +235,8 @@ ianaift:ethernetCsmacd</type>
 
         self.assertEqual("""\
 <rpc>
-  <nc:get-config xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" \
-xmlns:ocif="http://openconfig.net/yang/interfaces">
+  <nc:get-config xmlns:ocif="http://openconfig.net/yang/interfaces" \
+xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
     <nc:filter>
       <ocif:interfaces>
   <ocif:interface>
@@ -264,9 +263,9 @@ eth:config/eth:port-speed",
 
         self.assertEqual("""\
 <z>
-  <ocif:interfaces xmlns:eth="http://openconfig.net/yang/interfaces/ethernet" \
+  <ocif:interfaces xmlns:ocif="http://openconfig.net/yang/interfaces" \
 xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type" \
-xmlns:ocif="http://openconfig.net/yang/interfaces">
+xmlns:eth="http://openconfig.net/yang/interfaces/ethernet">
     <ocif:interface>
       <ocif:config>
         <ocif:type>ianaift:ethernetCsmacd</ocif:type>
@@ -433,8 +432,8 @@ xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
 
         self.assertEqual("""\
 <config>
-  <ocif:interfaces xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" \
-xmlns:ocif="http://openconfig.net/yang/interfaces">
+  <ocif:interfaces xmlns:ocif="http://openconfig.net/yang/interfaces" \
+xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
     <ocif:interface nc:operation="create">
       <ocif:name>eth0</ocif:name>
     </ocif:interface>
@@ -723,11 +722,11 @@ ocip:ipv4/ocip:address/ocip:ip",
         xml = et.tostring(payload, encoding='unicode', pretty_print=True)
         self.assertEqual("""\
 <foobar>
-  <ocif:interfaces xmlns:eth="http://openconfig.net/yang/interfaces/ethernet" \
+  <ocif:interfaces xmlns:ocif="http://openconfig.net/yang/interfaces" \
+xmlns:eth="http://openconfig.net/yang/interfaces/ethernet" \
+xmlns:vlan="http://openconfig.net/yang/vlan" \
 xmlns:lag="http://openconfig.net/yang/interface/aggregate" \
-xmlns:ocif="http://openconfig.net/yang/interfaces" \
-xmlns:ocip="http://openconfig.net/yang/interfaces/ip" \
-xmlns:vlan="http://openconfig.net/yang/vlan">
+xmlns:ocip="http://openconfig.net/yang/interfaces/ip">
     <ocif:interface>
       <eth:ethernet>
         <vlan:vlan>

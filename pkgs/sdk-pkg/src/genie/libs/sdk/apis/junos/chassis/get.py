@@ -108,8 +108,9 @@ def get_chassis_cpu_util_alternative(device, cpu_idle_section = 'cpu-idle', expe
         route_engine = out.q.get_values('route-engine')
 
     for route in route_engine:
-        if route.get('slot') != expected_slot:
-            continue
+        if expected_slot:
+            if route.get('slot') != expected_slot:
+                continue
         if route.get('mastership-state') == expected_state:
             return route.get(cpu_idle_section)
     return None
@@ -197,32 +198,86 @@ def get_chassis_fpc_slot_numbers(device, expected_state=None):
         return out.q.contains(expected_state, level=-1).get_values('slot') or None
     return out.q.get_values('slot') or None
 
-def get_chassis_fpc_cpu_util(device, expected_slot):
-    """Returns chassis cpu utilization
+def get_chassis_fpc_cpu_util(device, cpu_total = 'cpu-total', expected_slot='0', all_slots=False):
+    """Returns chassis fpc cpu utilization
+
     Args:
         device (obj): Device object
-        expected_slot: CPU util
-    Returns:
+        cpu_total ('str', optional): cpu utilization, defaults to cpu-total
+        expected_state ('str'): cpu state, defaults to Master
+        Returns:
         str: CPU utilization percentage
     """
 
     # Example dict
-    # {'fpc-information': {'fpc': [{'slot': '0',
-    # 'state': 'Online',
-    # 'temperature': {'#text': 'Testing'},
-    # 'cpu-total': '3',
-    # 'cpu-interrupt': '0',
-    # 'cpu-1min-avg': '3',
-    # 'cpu-5min-avg': '3',
-    # 'cpu-15min-avg': '3',
-    # 'memory-dram-size': '511',
-    # 'memory-heap-utilization': '34',
-    # 'memory-buffer-utilization': '0'},
+    #"fpc": [
+    #        {
+    #            "cpu-15min-avg": "2",
+    #            "cpu-1min-avg": "2",
+    #            "cpu-5min-avg": "2",
+    #            "cpu-interrupt": "0",
+    #            "cpu-total": "3",
+    #            "memory-buffer-utilization": "0",
+    #            "memory-dram-size": "511",
+    #            "memory-heap-utilization": "31",
+    #            "slot": "0",
+    #            "state": "Online",
+    #            "temperature": {"#text": "Testing"},
+    #        },
 
     try:
         out = device.parse('show chassis fpc')
     except SchemaEmptyParserError:
         return None
 
-    slot_ = out.q.get_values('cpu-total', expected_slot)
-    return int(slot_) if slot_ else None
+    if all_slots:
+        return(out.q.get_values(cpu_total))
+
+    if expected_slot is not None:
+        slot_dict = out.q.get_values('fpc', int(expected_slot))
+        slot_ = slot_dict.get('slot')
+        if slot_ == str(expected_slot):
+            cpu_total_val = slot_dict.get(cpu_total, None)
+            return int(cpu_total_val) if cpu_total_val else None
+
+    return None
+
+
+def get_chassis_slot_idle_value(device, slot='0'):
+    """Returns chassis cpu utilization for specific slot.
+
+    Args:
+        device (obj): Device object
+        cpu_idle_section ('str', optional): cpu utilization, defaults to cpu-idle
+        slot ('str'): cpu slot, defaults to 0
+
+    Returns:
+        str: CPU utilization percentage
+    """
+
+    # Example dict
+    #"route-engine": [
+    #            {
+    #                "cpu-background": "0",
+    #                "cpu-idle": "82",
+    #                "cpu-interrupt": "4",
+    #                "cpu-system": "11",
+    #                "cpu-user": "3",
+    #                "last-reboot-reason": "Router rebooted after a normal shutdown.",
+    #                "load-average-fifteen": "0.23",
+    #                "load-average-five": "0.26",
+    #                "load-average-one": "0.22",
+    #                "mastership-priority": "Master (default)",
+
+    try:
+        out = device.parse('show chassis routing-engine')
+    except SchemaEmptyParserError:
+        return None
+
+    route_engine = out.q.get_values('route-engine')
+
+    for route in route_engine:
+        if route.get('slot') == slot:
+            return route.get('cpu-idle')
+
+    return None

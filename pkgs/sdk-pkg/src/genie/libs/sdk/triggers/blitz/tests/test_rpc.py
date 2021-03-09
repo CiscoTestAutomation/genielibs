@@ -4,7 +4,6 @@ import unittest
 import logging
 from time import time
 
-sys.path = ['.', '..'] + sys.path
 
 from  genie.libs.sdk.triggers.blitz import yangexec
 from  genie.libs.sdk.triggers.blitz.rpcverify import RpcVerify
@@ -44,6 +43,54 @@ operstate = """<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" \
         </statistics>
       </interface>
     </interfaces-state>
+  </data>
+</rpc-reply>"""
+
+
+multilist = """<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" \
+    xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" \
+        message-id="urn:uuid:39eeacc2-821e-4822-ba44-477c502d0242">
+  <data>
+    <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
+      <vrf>
+        <definition>
+          <name>Mgmt-vrf</name>
+        </definition>
+        <definition>
+          <name>cisco</name>
+        </definition>
+        <definition>
+          <name>genericstring</name>
+        </definition>
+        <definition>
+          <name>mgmt1</name>
+          <description>
+            test me
+          </description>
+        </definition>
+        <definition>
+          <name>try</name>
+        </definition>
+      </vrf>
+    </native>
+  </data>
+</rpc-reply>"""
+
+
+listreply = """<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" \
+    xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:851d10b3-6cf2-4ed0-a58b-a7e34a61fe66">
+  <data>
+    <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
+      <router>
+        <rip xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-rip">
+          <redistribute>
+            <eigrp>
+              <as-number xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">32768</as-number>
+            </eigrp>
+          </redistribute>
+        </rip>
+      </router>
+    </native>
   </data>
 </rpc-reply>"""
 
@@ -362,6 +409,71 @@ basic-mode=explicit&also-supported=report-all-tagged']
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
 
+    def test_operational_state_multiple_entries(self):
+        """Check verifying one entry exists in a list of multiple entries."""
+        opfields = [
+            {'selected': 'true',
+             'default': '',
+             'id': 'somthing unique',
+             'name': 'name',
+             'xpath': '/native/vrf/definition/name',
+             'value': 'mgmt1',
+             'datatype': 'string',
+             'op': '=='}]
+        resp = self.rpcv.process_rpc_reply(multilist)
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
+    def test_opfields_selected(self):
+        """Check "selected" parameter True or False."""
+        opfields_in = [
+            {
+                'selected': 'true',
+                'name': 'name',
+                'xpath': '/native/vrf/definition/name',
+                'value': 'mgmt1',
+                'datatype': 'string',
+                'op': '=='
+            },
+            {
+                'selected': 'true',
+                'name': 'description',
+                'xpath': '/native/vrf/definition/description',
+                'value': 'test me',
+                'datatype': 'string',
+                'op': '=='
+            }
+        ]
+        opfields = opfields_in.copy()
+        for select in ['true', 'True', 'TRUE', True]:
+            opfields[0]['selected'] = select
+            resp = self.rpcv.process_rpc_reply(multilist)
+            result = self.rpcv.process_operational_state(resp, opfields)
+            self.assertTrue(result, str(select))
+            opfields = opfields_in.copy()
+        for select in ['false', 'False', 'FALSE', False]:
+            opfields[0]['selected'] = select
+            resp = self.rpcv.process_rpc_reply(multilist)
+            result = self.rpcv.process_operational_state(resp, opfields)
+            self.assertTrue(result, str(select))
+            opfields = opfields_in.copy()
+
+    def test_auto_validate_list_key(self):
+        """List entry with only key should auto-validate the key."""
+        rpc_data = {
+            'nodes': [
+                {
+                    'datatype': '',
+                    'edit-op': 'create',
+                    'nodetype': 'list',
+                    'xpath': '/ios:native/ios:router/ios-rip:rip/ios-rip:redistribute/ios-rip:eigrp[ios-rip:as-number="32768"]'
+                }
+            ]
+        }
+        resp = self.rpcv.process_rpc_reply(listreply)
+        result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
+        self.assertTrue(result)
+
 
 class Device:
     server_capabilities = []
@@ -472,11 +584,11 @@ basic-mode=explicit&also-supported=report-all-tagged']
         self.assertTrue(result)
 
     def test_pause_on(self):
-        """Check if pause 5 seconds operates correctly."""
-        self.format['pause'] = 5
+        """Check if pause 2 seconds operates correctly."""
+        self.format['pause'] = 2
         yangexec.netconf_send = netconf_send
         n1 = time()
-        log.info('Pausing 5 seconds...')
+        log.info('Pausing 2 seconds before edit-config and 2 seconds after get-config')
         yangexec.run_netconf(
             'edit-config',
             self.device,
@@ -486,7 +598,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
             self.returns[0],
             format=self.format
         )
-        self.assertGreater(time() - n1, 4)
+        self.assertGreater(time() - n1, 3)
 
     def test_custom_rpc_bad_xml(self):
         """Send invalid custom RPC and make sure it fails."""

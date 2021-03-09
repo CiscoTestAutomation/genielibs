@@ -656,6 +656,7 @@ def verify_traffic_statistics_data(device,
                                    interface,
                                    expected_input_packet=None,
                                    expected_output_packet=None,
+                                   invert=False,
                                    max_time=60,
                                    check_interval=10):
     """ Verify queue counters dropped based on interfaces queue
@@ -665,6 +666,7 @@ def verify_traffic_statistics_data(device,
             interface('str'): Interface name
             expected_input_packet ('str'): input packet
             expected_output_packet ('str'): output packet
+            invert ('bool'): Check the invert way, default: False
             max_time (`int`, Optional): Max time, default: 60 seconds
             check_interval (`int`, Optional): Check interval, default: 10 seconds
         Returns:
@@ -691,13 +693,34 @@ def verify_traffic_statistics_data(device,
         actual_output_packet_list = Dq(out).contains(
             'traffic-statistics').get_values('output-packets')
 
-        if expected_input_packet and str(
-                expected_input_packet) in actual_input_packet_list:
-            return True
+        # check both expected_input_packet and expected_output_packet
+        if expected_input_packet and expected_output_packet:
+            if invert:
+                if str(expected_input_packet)!=actual_input_packet_list[0] and \
+                    str(expected_output_packet)!=actual_output_packet_list[0]:
+                    return True
+            else:
+                if str(expected_input_packet)==actual_input_packet_list[0] and \
+                    str(expected_output_packet)==actual_output_packet_list[0]:
+                    return True
 
-        if expected_output_packet and str(
-                expected_output_packet) in actual_output_packet_list:
-            return True
+        # only check expected_input_packet 
+        elif expected_input_packet:
+            if invert:
+                if str(expected_input_packet)!=actual_input_packet_list[0]:
+                    return True
+            else:
+                if str(expected_input_packet)==actual_input_packet_list[0]:
+                    return True
+
+        # only check expected_output_packet 
+        elif expected_output_packet:
+            if invert:
+                if str(expected_output_packet)!=actual_output_packet_list[0]:
+                    return True
+            else:
+                if str(expected_output_packet)==actual_output_packet_list[0]:
+                    return True
 
         timeout.sleep()
 
@@ -1320,3 +1343,47 @@ def verify_lacp_interface(device,
         timeout.sleep()
 
     return False            
+
+def verify_interface_mtu(device, 
+                        interface, 
+                        expected_mtu,
+                        max_time=60, 
+                        check_interval=10):
+    """ Verify the interface mtu is the expected value via 'show interfaces {interface} extensive'           
+        Args:
+            device ('obj'): Device object
+            interface('str'): Interface name
+            expected_mtu('str'): Expected mtu           
+            max_time (`int`, Optional): Max time, default: 60 seconds
+            check_interval (`int`, Optional): Check interval, default: 10 seconds
+        Returns:
+            Boolean
+
+        Raises:
+            None
+    """    
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse(
+                'show interfaces {interface} extensive'.format(interface=interface))
+        except SchemaEmptyParserError as e:
+            timeout.sleep()
+            continue
+
+        # Sample output
+        # {
+        # "interface-information": {
+        #     "physical-interface": [
+        #         {
+        #         "mru": "1522",
+        #         "mtu": "1514", <-------------
+        #         "name": "et-0/0/0",
+
+        mtu = out.q.get_values("mtu", 0)
+
+        if str(mtu) == str(expected_mtu):
+            return True
+
+        timeout.sleep()
+    return False          

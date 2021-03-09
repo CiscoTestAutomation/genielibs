@@ -199,6 +199,10 @@ class test_interface(TestCase):
         del intf1.mac_address
         del intf1.burnin_mac_address
 
+        dev1 = Device(name='PE1', os=None)
+        # Should not raise exception
+        intf1 = Interface(device=dev1, name='GigabitEthernet0/0/0/1')
+
 
 if __name__ == '__main__':
     unittest.main()

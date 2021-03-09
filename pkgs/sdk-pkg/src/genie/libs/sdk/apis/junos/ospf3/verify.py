@@ -929,6 +929,37 @@ def verify_ospfv3_no_router_id(device, expected_id,max_time=60,check_interval=10
 
     return False             
 
+
+def verify_ospf3_neighbor_instance_state_all(device, instance_name, expected_state, max_time=60, check_interval=10):
+    """Verifies all states of ospfv3 neighbor instance
+
+    Args:
+        device (obj): Device object
+        instance_name (str): Instance name
+        expected_state (str): Expected state to check for
+        max_time (int, optional): Maximum timeout time. Defaults to 60.
+        check_interval (int, optional): Check interval. Defaults to 10.
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse('show ospf3 neighbor instance {instance_name}'.format(
+                instance_name=instance_name
+            ))
+
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        if all([state == expected_state for state in out.q.get_values('ospf-neighbor-state')]) and out.q.get_values('ospf-neighbor-state'):
+            return True
+
+        timeout.sleep()
+
+    return False
+
+    
 def verify_ospf3_neighbor_address(device, neighbor_address, 
     expected_state='Full', max_time=90, check_interval=10, expected_failure=False):
     """ Verifies ospf3 neighbors address

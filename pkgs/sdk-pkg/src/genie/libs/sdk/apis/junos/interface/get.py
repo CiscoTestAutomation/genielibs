@@ -577,7 +577,7 @@ def get_interface_traffic_input_pps(device: object, interface: str) -> str:
     #                     "input-pps": str
 
     phy_ = out.q.get_values('physical-interface', 0)
-    return phy_.get('traffic-statistics').get('input-pps')
+    return Dq(phy_).get_values('input-pps',0)
 
 
 def get_interface_queue_counters_transmitted_byte_rate(device, interface,
@@ -733,6 +733,39 @@ def get_interface_traffic_stats(device, interface, stat_name, extensive=True):
                 traffic_stats=physical_interface['traffic-statistics']))
     return None
 
+
+def get_interface_ipv4_address(device, interface):
+    """Get the ip address for an interface on target device
+
+        Args:
+            interface ('string'): interface to get address for
+            device: ('obj'): Device Object
+        Returns:
+            None
+            String with interface ip address
+    """
+
+    return get_interface_ip_address(device, interface, 'ipv4')
+
+
+
+def get_ipv6_interface_ip_address(device, interface, link_local=False):
+    """ Get interface ip address from device
+
+        Args:
+            interface('str'): Interface to get address
+            device ('obj'): Device object
+            link_local ('bool'): Link local address. Default: False
+        Returns:
+            None
+            ip_address ('str'): If has multiple addresses
+                                will return the first one.
+
+        Raises:
+            None
+    """
+    return get_interface_ip_address(device, interface, 'ipv6', link_local=link_local)
+    
 def get_diagnostics_optics_stats(device, interface, stat_name, lane_number=None):
     """Get the traffic stats of given interface via show interfaces diagnostics optics {interface}
         Args:
@@ -782,9 +815,10 @@ def get_diagnostics_optics_stats(device, interface, stat_name, lane_number=None)
 
     physical_interface = parsed_output.q.get_values('physical-interface', 0)
 
-    if lane_number:
-        lanes_list = physical_interface["optics-diagnostics"]["lanes"]
-        return lanes_list[lane_number][stat_name]
+    if type(lane_number) == int:
+        if lane_number>=0:
+            lanes_list = physical_interface["optics-diagnostics"]["lanes"]
+            return lanes_list[lane_number][stat_name]
 
     if stat_name in physical_interface['optics-diagnostics']:
         return physical_interface['optics-diagnostics'][stat_name]
@@ -879,3 +913,45 @@ def get_interface_field(device, interface, field, output=None):
         return field_value
     else:
         return None
+
+
+def get_interface_snmp_index(device,
+                             interface):
+    """ Get local index number
+
+        Args:
+            device ('obj'): Device object
+            interface('str'): Interface name
+            
+        Returns:
+            total_drop_packets: Output error drops
+        Raises:
+            None
+    """
+    try:
+        out = device.parse('show interfaces {interface}'.format(
+            interface=interface.split('.')[0]))
+    except SchemaEmptyParserError as e:
+        return None
+
+    # Sample output
+    #"logical-interface": [
+    #                {
+    #                    "address-family": [],
+    #                    "encapsulation": "ENET2",
+    #                    "if-config-flags": {
+    #                        "iff-snmp-traps": True,
+    #                        "iff-up": True,
+    #                        "internal-flags": "0x4004000"
+    #                    },
+    #                    "local-index": "333",
+    #                    "name": "ge-0/0/0.0",
+    #                    "snmp-index": "606",
+    #                    "traffic-statistics": {
+    #                        "input-packets": "133657033",
+    #                        "output-packets": "129243982"
+    #                    }
+    #                }
+    #            ]
+
+    return(out.q.get_values("local-index",0))

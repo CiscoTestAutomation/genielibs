@@ -15,18 +15,17 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.sdk.libs.utils.normalize import GroupKeys
 from genie.utils import Dq
 
-
 log = logging.getLogger(__name__)
 
 
 def verify_task_replication(device,
-                               expected_state,
-                               expected_re_mode,
-                               expected_protocols=None,
-                               expected_protocols_sync_status=None,
-                               output=None,
-                               max_time=60,
-                               check_interval=15):
+                            expected_state,
+                            expected_re_mode,
+                            expected_protocols=None,
+                            expected_protocols_sync_status=None,
+                            output=None,
+                            max_time=60,
+                            check_interval=15):
     """ Verifies task replication info
 
         Args:
@@ -51,7 +50,6 @@ def verify_task_replication(device,
             N/A
     """
     timeout = Timeout(max_time, check_interval)
-
 
     while timeout.iterate():
         try:
@@ -85,7 +83,14 @@ def verify_task_replication(device,
         if state and re_mode:
             if state == expected_state and re_mode == expected_re_mode:
                 if expected_protocols and expected_protocols_sync_status:
-                    if expected_protocols == protocol_name and expected_protocols_sync_status == protocol_state:
+                    if expected_protocols == protocol_name and \
+                        expected_protocols_sync_status == protocol_state:
+                        return True
+                elif expected_protocols:
+                    if expected_protocols == protocol_name:
+                        return True
+                elif expected_protocols_sync_status:
+                    if expected_protocols_sync_status == protocol_state:
                         return True
                 else:
                     return True

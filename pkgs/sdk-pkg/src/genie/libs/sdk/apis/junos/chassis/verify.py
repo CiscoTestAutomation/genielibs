@@ -755,12 +755,19 @@ def verify_chassis_alarm_output(device,
         # ['PSM 15 Not OK']
         alarm_description = output.q.get_values('alarm-description', None)
 
+        no_output = output.q.get_values('no-active-alarms', 0)
+
         if not invert:
+            if no_output:
+                timeout.sleep()
+                continue
             for single_description in alarm_description:
                 if message_topic in single_description:
                     return True
                 timeout.sleep()
         else:
+            if no_output:
+                return True
             for single_description in alarm_description:
                 if message_topic not in alarm_description:
                     return True
@@ -1551,3 +1558,165 @@ def verify_chassis_fabric_plane_exists(device,
                 return True
         timeout.sleep()
     return True
+
+def verify_chassis_fpc_slot_port(device, fpc_slot, pic_slot, expected_pic_port, 
+                                 invert=False, max_time=60, check_interval=10):
+    """Verifies chassis fpc slot exists
+
+    Args:
+        device (obj): Device object
+        fpc_slot (str/int): FPC slot number
+        pic_slot (str/int): PIC slot number
+        expected_pic_port (str): Expected PIC port
+        invert (bool): Inverts function
+        max_time (int, optional): Maximum timeout time. Defaults to 60.
+        check_interval (int, optional): Check interval. Defaults to 10.
+    """
+
+    op = operator.truth
+    if invert:
+        op = lambda val: operator.not_(operator.truth(val))
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse('show chassis pic fpc-slot {fpc_slot} pic-slot {pic_slot}'.format(
+                fpc_slot=fpc_slot,
+                pic_slot=pic_slot,
+            ))
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue   
+
+        """
+        schema = {
+        "fpc-information": {
+            "fpc": {
+                "pic-detail": {
+                    "port-information": {
+                        "port": [
+                            {
+                                "port-number": str,
+        """  
+
+        if op(str(expected_pic_port) in out.q.get_values('port-number')):
+            return True
+
+            
+def verify_chassis_environment_item(device,
+                                    expected_item,
+                                    invert=False,
+                                    max_time=60,
+                                    check_interval=10):
+    """ Verify specific item in show chassis environment exists or doesn't exist
+        Args:
+            device (`obj`): Device object
+            expected_item (`str`): Hardware inventory item expected
+            invert ('bool', 'optional'): Inverts to check if it doesn't exist
+            max_time (`int`): Max time, default: 60 seconds
+            check_interval (`int`): Check interval, default: 10 seconds
+        Returns:
+            result (`bool`): Verified result
+        Raises:
+            N/A
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            output = device.parse('show chassis environment')
+        except SchemaEmptyParserError:
+            if invert:
+                return True
+            timeout.sleep()
+            continue      
+
+        # Sample output:
+        # {'environment-information': {'environment-item': [
+        #                                          {'class': 'Fans',
+        #                                            'comment': '2760 RPM',
+        #                                            'name': 'Fan Tray 0 Fan 1', <---------------
+        #                                            'status': 'OK'}, <--------------------------
+        #                                           {'class': 'Fans',
+        #                                            'comment': '2520 RPM',
+        #                                            'name': 'Fan Tray 0 Fan 2',
+        #                                            'status': 'OK'},]}}
+        environment_items_list = output.q.get_values('name', None)
+
+        if environment_items_list:
+            if not invert:
+                if expected_item in environment_items_list :
+                    return True
+
+            else:
+                if expected_item not in environment_items_list :
+                    return True
+        
+        timeout.sleep()
+
+    return False
+
+
+def verify_chassis_fabric_plane_exists(device,
+                                       expected_item,
+                                       invert=False,
+                                       max_time=60,
+                                       check_interval=10):
+    """ Verify specific items status in 'show chassis fabric summary'
+
+        Args:
+            device (`obj`): Device object
+            expected_item (`list`): Chassis fabric items expected
+            invert ('bool', 'optional'): Inverts to check if it doesn't exist
+            max_time (`int`): Max time, default: 60 seconds
+            check_interval (`int`): Check interval, default: 10 seconds
+        Returns:
+            result (`bool`): Verified result
+        Raises:
+            N/A
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            output = device.parse('show chassis fabric plane')
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue     
+
+        # Sample output:
+        # "fmp-plane": [
+        #        {
+        #            "fru-name": [
+        #                "FPC",
+        #                "FPC"
+        #            ],
+        #            "fru-slot": [
+        #                "0",
+        #                "1"
+        #            ],
+        #            "pfe-link-status": [
+        #                "Links ok",
+        #                "Links ok",
+        #                "Links ok",
+        #                "Links ok"
+        #            ],
+        #            "pfe-slot": [
+        #                "0",
+        #                "1",
+        #                "0",
+        #                "1"
+        #            ],
+        #            "slot": "0",
+        #            "state": "ACTIVE"
+        #        }
+        fm_state_item = output.q.get_values('slot', None)
+
+        if not invert:
+            if expected_item in fm_state_item:
+                return True
+        else:
+            if expected_item not in fm_state_item:
+                return True
+        timeout.sleep()
+    return False

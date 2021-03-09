@@ -1,5 +1,7 @@
 """ File utils base class for NXOS devices. """
 
+import logging
+
 # Parent inheritance
 from .. import FileUtils as FileUtilsDeviceBase
 
@@ -10,6 +12,7 @@ except ImportError:
     # For apidoc building only
     from unittest.mock import Mock; Dir=Mock()
 
+logger = logging.getLogger(__name__)
 
 class FileUtils(FileUtilsDeviceBase):
     COPY_CONFIG_TEMPLATE = '''\
@@ -95,7 +98,14 @@ ip ftp source-interface {interface} vrf {vrf}'''
                                                    cache_ip=kwargs.get(
                                                        'cache_ip', True))
 
-        # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl vrf managemen
+        if vrf is None:
+            logger.warning('Using default vrf "management" for NXOS. This '
+                           'default will change to None in v21.4. Please '
+                           'explicitly specify "management" to continue using '
+                           'this vrf.')
+            vrf = 'management'
+
+        # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl vrf management
         if vrf:
             # for n9k only
             if compact:
@@ -107,21 +117,10 @@ ip ftp source-interface {interface} vrf {vrf}'''
                                                       t=destination,
                                                       vrf=vrf)
         else:
-            # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl vrf managemen
-            if vrf:
-                # for n9k only
-                if compact:
-                    cmd = 'copy {f} {t} compact vrf {vrf}'.format(
-                        f=source, t=destination, vrf=vrf)
-                else:
-                    cmd = 'copy {f} {t} vrf {vrf}'.format(f=source,
-                                                          t=destination,
-                                                          vrf=vrf)
+            if compact:
+                cmd = 'copy {f} {t} compact'.format(f=source, t=destination)
             else:
-                if compact:
-                    cmd = 'copy {f} {t} compact'.format(f=source, t=destination)
-                else:
-                    cmd = 'copy {f} {t}'.format(f=source, t=destination)
+                cmd = 'copy {f} {t}'.format(f=source, t=destination)
 
         # for n9k only
         if use_kstack:

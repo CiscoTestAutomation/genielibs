@@ -47,7 +47,7 @@ class TestParallel(unittest.TestCase):
                'reason': 'Reset Requested by CLI command reload',
                'system_version': '9.3(3)'}}
 
-    execute_output = """ 
+    execute_output = """
         2020-11-24 12:25:43,769: %UNICON-INFO: +++ N93_3: executing command 'show version' +++
         show version
         Cisco Nexus Operating System (NX-OS) Software
@@ -91,7 +91,7 @@ class TestParallel(unittest.TestCase):
         Active Package(s):
     """
 
-    yaml1 = """ 
+    yaml1 = """
             - configure:
                 command: feature bgp
                 device: PE1
@@ -114,7 +114,7 @@ class TestParallel(unittest.TestCase):
                     - get_values('hardware', 0)
             """
 
-    yaml2 = """ 
+    yaml2 = """
             - configure:
                 command: feature bgp
                 device: PE1
@@ -128,7 +128,7 @@ class TestParallel(unittest.TestCase):
                 include:
                     - extreme
             """
-    yaml3 = """ 
+    yaml3 = """
             - run_condition:
                 if : "%VARIABLES{execute_id} == passed"
                 function: failed
@@ -212,13 +212,17 @@ class TestParallel(unittest.TestCase):
       Blitz.uid = 'test.dev'
       Blitz.parameters['testbed'] = self.testbed
 
+
       self.blitz_obj = Blitz()
+      self.uid = self.blitz_obj.uid
+      self.blitz_obj.parent = self
+      self.blitz_obj.parent.parameters = mock.Mock()
 
       self.blitz_obj.parameters['test_sections'] = [
                                {'section1': [{'parallel': [{'action': {'arg1':'cmd'}}]}]}
                                ]
       sections = self.blitz_obj._discover()
-      
+
       self.kwargs = {'self': self.blitz_obj,
                      'testbed': self.testbed,
                      'section': sections[0].__testcls__(sections[0]),
@@ -261,17 +265,17 @@ class TestParallel(unittest.TestCase):
       data = yaml.safe_load(self.yaml3)
       self.blitz_obj.parameters['save_variable_name'] = {}
       self.blitz_obj.parameters['save_variable_name']['execute_id'] = 'passed'
-      self.kwargs.update({'self': self.blitz_obj, 
-                          'data': data, 
+      self.kwargs.update({'self': self.blitz_obj,
+                          'data': data,
                           'steps': steps})
-      
-      # TODO alias and saved_vars wont get stored when under loop/run_condition 
+
+      # TODO alias and saved_vars wont get stored when under loop/run_condition
       # self.assertIn('exec_1', self.blitz_obj.parameters['save_variable_name'])
       parallel(**self.kwargs)
-      self.assertIn('parse_id', self.blitz_obj.parameters['save_variable_name']) 
+      self.assertIn('parse_id', self.blitz_obj.parameters['save_variable_name'])
       self.assertEqual(steps.result, Failed)
       self.assertEqual(steps.details[0].name, 'Executing actions in parallel')
-      self.assertEqual(steps.details[1].name, 
+      self.assertEqual(steps.details[1].name,
                        'Condition %VARIABLES{execute_id} == passed is met and '
                        'the step result is failed')
       self.assertEqual(steps.details[1].result, Failed)

@@ -351,8 +351,8 @@ def verify_routing_ip_exist(device,
         
         for rt_dict in rt_list:
             rt_destination_ = Dq(rt_dict).get_values("rt-destination", 0)
-            
-            if not rt_destination_.startswith(str(destination_address)):
+
+            if not rt_destination_ or not rt_destination_.startswith(str(destination_address)):
                 continue
             
             if metric:
@@ -3435,7 +3435,7 @@ def verify_route_best_path_counter(device, expected_count, protocol=None, ip_add
                 protocol=protocol,
                 ip_address=ip_address
             ))
-        except Exception as e:
+        except SchemaEmptyParserError as e:
             timeout.sleep()
             continue
         
@@ -3534,7 +3534,7 @@ def verify_route_four_byte_as(device, expected_as_path, peer_address, target_add
                     peer_address=peer_address,
                     target_address=target_address,
                 ))
-        except Exception as e:
+        except SchemaEmptyParserError as e:
             timeout.sleep()
             continue
         
@@ -3561,3 +3561,184 @@ def verify_route_four_byte_as(device, expected_as_path, peer_address, target_add
                 
         timeout.sleep()    
     return False        
+
+def verify_route_instance_type(device, instance_name, expected_type, max_time=60, check_interval=10):
+    """Verifies route instance type
+
+    Args:
+        device (obj): Device object
+        instance_name (str): Instance name
+        expected_type (str): Expected instance type
+        max_time (int, optional): Maximum timeout time. Defaults to 60.
+        check_interval (int, optional): Check interval. Defaults to 10.
+    """
+
+    timeout = Timeout(max_time, check_interval)            
+    while timeout.iterate():
+        try:
+            out = device.parse('show route instance {instance_name}'.format(
+                instance_name=instance_name
+            ))
+        except SchemaEmptyParserError as e:
+            timeout.sleep()
+            continue
+
+        # "instance-information": {
+        #     "instance-core": {
+        #         "instance-name": str,
+        #         "instance-type": str,
+
+        if str(out.q.get_values('instance-type', 0).lower()) == expected_type.lower():
+            return True
+        
+        timeout.sleep()
+
+    return False
+
+def verify_route_instance_exists(device, instance_name, expected_instance_name, max_time=60, check_interval=10):
+    """Verifies a route instance exists
+
+    Args:
+        devices (obj): Device object
+        instance_name (str): Instance name
+        expected_instance_name (str): Expected instance name to check for
+        max_time (int, optional): Maximum timeout time. Defaults to 60.
+        check_interval (int, optional): Check interval. Defaults to 10.
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse('show route instance {instance_name}'.format(
+                instance_name=instance_name
+            ))
+        except SchemaEmptyParserError as e:
+            timeout.sleep()
+            continue
+
+        # "instance-information": {
+        #     "instance-core": {
+        #         "instance-ribs": {
+        #             "irib-name": str,
+
+        instances = out.q.get_values('irib-name')
+        if expected_instance_name in instances:
+            return True
+
+        timeout.sleep()
+
+    return False
+
+def verify_route_table_route_exists(device, route, max_time=60, check_interval=10):
+    """Verifies a route exists in the route table
+
+    Args:
+        device (obj): Device object
+        route (str): Route table route name
+        max_time (int, optional): Maximum timeout time. Defaults to 60.
+        check_interval (int, optional): Check interval. Defaults to 10.
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse('show route table {route}'.format(
+                route=route
+            ))
+        except SchemaEmptyParserError as e:
+            timeout.sleep()
+            continue
+
+        # 'table_name': {
+        #     Any(): {
+        #         'total_route_count': int,
+
+        if int(out.q.get_values('total_route_count', 0)) > 0:
+            return True
+
+        timeout.sleep()
+
+    return False
+
+
+def verify_route_output_empty(device,
+                              protocol,
+                              ip_address,
+                              invert=False,
+                              max_time=60,
+                              check_interval=10):
+    """Verifies if output is empty or not via 'show route protocol {protocol}'
+
+    Args:
+        addr_list('list'): List to verify
+        protocol ('str'): Protocol type to check in show route
+        ip_address ('str'): Address to use in show command
+        invert(bool, optional): Flips from verying 
+        max_time ('int'): Maximum time to keep checking
+        check_interval ('int'): How often to check
+
+    Returns:
+        True/False
+
+    Raises:
+        N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            output = device.parse(
+                "show route protocol {protocol} {ip_address}".format(protocol=protocol, ip_address=ip_address))
+        except SchemaEmptyParserError:
+            if not invert:
+                return True
+            else:
+                timeout.sleep()
+                continue
+        
+        #"table_name": {
+        #"inet.3": {
+        #    "active_route_count": 3,
+        #    "destination_count": 3,
+        #    "hidden_route_count": 0,
+        #    "holddown_route_count": 0,
+        #    "routes": {
+        #        "10.64.4.4/32": {
+        #            "active_tag": "*",
+        #            "age": "03:40:50",
+        #            "metric": "110",
+        #            "next_hop": {
+        #                "next_hop_list": {
+        #                    1: {
+        #                        "best_route": ">",
+        #                        "to": "192.168.220.6",
+        #                        "via": "ge-0/0/1.0",
+        #                    }
+        #                }
+        #            },
+        #            "preference": "9",
+        #            "protocol_name": "LDP",
+        #        }
+        #    },
+        #    "total_route_count": 3,
+        #}
+        #}
+
+        if not invert:
+            if output:
+                timeout.sleep()
+                continue
+            else:
+                return True
+        else:
+            if output:
+                return True
+            else:
+                timeout.sleep()
+                continue
+
+
+    if not invert:
+        return False
+    else:
+        return True

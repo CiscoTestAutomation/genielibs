@@ -387,7 +387,7 @@ class Health(Blitz):
                                 if len(new_data_dict) == 1:
                                     new_data_flag = True
         else:
-            new_data_flag = bool(new_data_dict)
+            new_data_flag = len(set(list_of_args)) == len(new_data_dict)
 
         log.debug('new_data_flag: {f}'.format(f=new_data_flag))
 

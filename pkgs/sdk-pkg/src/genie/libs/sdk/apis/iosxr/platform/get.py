@@ -4,6 +4,9 @@ import re
 import logging
 import os
 
+# pyATS
+from pyats.easypy import runtime
+
 # Genie
 from genie.utils import Dq
 from genie.metaparser.util.exceptions import SchemaEmptyParserError,\
@@ -213,43 +216,210 @@ def get_platform_default_dir(device, output=None):
 
     return default_dir
 
-def get_platform_core(device, default_dir, output=None, keyword=['.x86.']):
+
+def get_platform_core(device,
+                      default_dir,
+                      output=None,
+                      keyword=['.x86.'],
+                      num_of_cores=False,
+                      decode=False,
+                      decode_timeout=300,
+                      remote_device=None,
+                      remote_path=None,
+                      remote_via=None,
+                      vrf=None,
+                      archive=False,
+                      delete_core=False):
     '''Get the default directory of this device
 
         Args:
             device      (`obj`) : Device object
-            default_dir (`str`) : default directory on device
+            default_dir (`str` or `list`) : default directory where core is generated 
+                                            on device
+                                            ex.) `harddisk:/dumper`
             output      (`str`) : Output of `dir` command
             keyword     (`list`): List of keywords to search
+            num_of_cores (`bool`): flag to return number of core files
+                                   Default to False
+            remote_device (`str`): remote device in testbed yaml
+                                   Default to None
+            remote_path (`str`): path with/without file on remote device
+                                 Default to None
+            remote_via (`str`) : specify connection to get ip
+                                 Default to None
+            vrf (`str`): use vrf where scp find route to remote device
+                                 Default to None
+            archive     (`bool`): flag to save the decode output as file in archive
+                                  Defaults to False
+            delete_core (`bool`): flag to delete core files only when copying to
+                                  remove_device is successfully done
+                                  Defaults to False
+
+            ### CISCO INTERNAL ###
+            decode      (`bool`): flag to enable for decoding core
+                                  copy core file to remote_server and decode on remote_server
+            decode_timeout (`int`): timeout to execute decode script
+                                    Default to 300
+
         Returns:
-            corefiles (`list`): List of found core files
+            all_corefiles (`list`, `int`): List of found core files
+                                           or number of core files if num_of_cores=True
     '''
+    all_corefiles = []
+    dirs = []
+    stby_dirs = []
 
-    cmd = "dir {default_dir}/dumper/".format(default_dir=default_dir)
+    if isinstance(default_dir, str):
+        dirs = [default_dir]
+    elif isinstance(default_dir, list):
+        dirs = default_dir
+    else:
+        raise Exception(
+            "'default_dir {dd} is not string or list".format(dd=default_dir))
 
-    try:
-        # sample output:
-        # #dir harddisk:/dumper/
-        # Fri Sep 15 18:14:57.449 UTC
-        #
-        # Directory of harddisk:/dumper
-        #
-        # 1769728     -rw-  2353427     Thu Sep 14 06:34:54 2017  first.dsc_174.by.wdsysmon.sparse.20170914-063449.node0_0_CPU0.x86.Z
-        # 1769952     -rw-  7814        Thu Sep 14 06:34:54 2017  first.dsc_174.by.wdsysmon.sparse.20170914-063449.node0_0_CPU0.x86.txt
-        # 1770176     -rw-  73415       Thu Sep 14 06:34:56 2017  first.dsc_174.by.wdsysmon.sparse.20170914-063449.node0_0_CPU0.x86.cpu_info.Z
-        output = device.parse(cmd, output=output)
-    except SchemaEmptyParserError:
-        # empty is possible. so pass instead of exception
-        pass
+    # check if device is HA
+    if device.is_ha:
+        log.info('Detected device is HA configuration.')
+        log.info('Checking location for standby RP.')
+        red_out = device.parse('show redundancy summary')
+        standby_location = red_out.q.get_values('standby_node',
+                                                0).split('(')[0]
+        for storage in dirs:
+            # if missing, adding `/`. harddisk:/dumper -> harddisk:/dumper/
+            if storage[-1] != '/':
+                storage += '/'
+            stby_dirs.append('{dd} location {sl}'.format(dd=storage,
+                                                         sl=standby_location))
 
-    corefiles = []
-    if output:
-        for file in output.q.get_values('files'):
-            for kw in keyword:
-                if kw in file:
-                    corefiles.append('file')
+    # add standby location `stby_dirs` to main `dirs`
+    dirs.extend(stby_dirs)
 
-    return corefiles
+    # convert from device name to device object
+    if remote_device:
+        if remote_device in device.testbed.devices:
+            remote_device = device.testbed.devices[remote_device]
+        else:
+            raise Exception(
+                'remote device {rd} was not found.'.format(rd=remote_device))
+
+        # check connected_alias for remote_device
+        remote_device_alias = [
+            i for i in remote_device.api.get_connected_alias().keys()
+        ]
+
+    for storage in dirs:
+        corefiles = []
+        log.info('Checking on {s}'.format(s=storage))
+
+        cmd = "dir {s}".format(s=storage)
+
+        parsed = ''
+        try:
+            # sample output:
+            # #dir harddisk:/dumper/
+            # Fri Sep 15 18:14:57.449 UTC
+            #
+            # Directory of harddisk:/dumper
+            #
+            # 1769728     -rw-  2353427     Thu Sep 14 06:34:54 2017  first.dsc_174.by. wdsysmon.sparse.20170914-063449.node0_0_CPU0.x86.Z
+            # 1769952     -rw-  7814        Thu Sep 14 06:34:54 2017  first.dsc_174.by. wdsysmon.sparse.20170914-063449.node0_0_CPU0.x86.txt
+            # 1770176     -rw-  73415       Thu Sep 14 06:34:56 2017  first.dsc_174.by. wdsysmon.sparse.20170914-063449.node0_0_CPU0.x86.cpu_info.Z
+            parsed = device.parse(cmd, output=output)
+        except SchemaEmptyParserError:
+            # empty is possible. so pass instead of exception
+            pass
+
+        if parsed:
+            location_alias = parsed.q.get_values('dir_name', 0)
+            for file in parsed.q.get_values('files'):
+                for kw in keyword:
+                    if kw in file:
+                        # corefiles in current storage
+                        log.debug('core file {f} is found'.format(f=file))
+                        corefiles.append(file)
+                        # corefiles in all storages
+                        all_corefiles.append(file)
+
+        # copy core file to remote device
+        if remote_device:
+            for corefile in corefiles:
+                copy_success = False
+                log.info('Copying {s} to remote device {rd}'.format(
+                    s=corefile, rd=remote_device.name))
+
+                if not (remote_device and remote_path):
+                    log.warn(
+                        '`remote_device` or/and `remote_path` are missing')
+                    return len(dirs) if num_of_cores else dirs
+                local_path = "{la}/{fn}".format(la=location_alias, fn=corefile)
+                if not device.api.scp(local_path=local_path,
+                                              remote_path=remote_path,
+                                              remote_device=remote_device.name,
+                                              remote_via=remote_via,
+                                              vrf=vrf):
+                    log.warn(
+                        'SCP has failed to copy core file to remote device {rd}'
+                        .format(rd=remote_device.name))
+                    return len(dirs) if num_of_cores else dirs
+                else:
+                    copy_success = True
+
+                # TODO: waiting for enhancement of decoder
+                # # decode core file
+                # if decode:
+
+                #     # connect to remote_device if not connected
+                #     if not remote_device_alias:
+                #         # if no connected alias, connect
+                #         try:
+                #             remote_device.connect()
+                #         except Exception as e:
+                #             log.warn(
+                #                 "Remote device {d} was not connected and failed to  connect   : {e}"
+                #                 .format(d=remote_device.name, e=e))
+                #             return len(dirs) if num_of_cores else dirs
+
+                #     try:
+                #         # archive decode output
+                #         if archive:
+                #             fullpath = corefile if remote_path in corefile else remote_path   + '/'+ corefile
+                #             decode_output = remote_device.api.decode_core(
+                #                 corefile="{fp}".format(fp=fullpath),
+                #                 timeout=decode_timeout)
+                #             with open(
+                #                     '{folder}/{fn}'.format(
+                #                         folder=runtime.directory,
+                #                         fn='core_decode_{file}'.format(
+                #                             file=corefile)), 'w') as f:
+                #                 print(decode_output, file=f)
+                #                 log.info(
+                #                     'Saved decode output as archive: {folder}/{fn}'
+                #                     .format(folder=runtime.directory,
+                #                             fn='core_decode_{file}'.format(
+                #                                 file=corefile)))
+                #     except Exception as e:
+                #         log.warning(
+                #             'decode core file is failed : {e}'.format(e=e))
+
+                # delete core files
+                if delete_core and copy_success:
+                    try:
+                        log.info(
+                            'Deleting copied file {lp}.'.format(lp=local_path))
+                        device.execute(
+                            'delete /noprompt {lp}'.format(lp=local_path))
+                        log.info('{lp} was successfully deleted'.format(
+                            lp=local_path))
+                    except Exception as e:
+                        log.warn(
+                            'deleting core files on {s} failed. {e}'.format(
+                                s=storage, e=e))
+                        return []
+
+    if num_of_cores:
+        return len(all_corefiles)
+    return all_corefiles
+
 
 def get_platform_cpu_load(device,
                           command='show processes cpu',
@@ -535,3 +705,50 @@ def get_platform_memory_usage_detail(device,
             memory_usage_dict.update({ps_item: memory_usage * 100})
 
     return memory_usage_dict
+
+
+def get_platform_logging(device,
+                         command='show logging',
+                         files=None,
+                         keywords=None,
+                         output=None,
+                         num_of_logs=False):
+    '''Get logging messages
+
+        Args:
+            device    (`obj`): Device object
+            command   (`str`): N/A
+            files    (`list`): Not applicable on this platform
+            keywords (`list`): List of keywords to match
+            output    (`str`): Output of show command
+            num_of_logs (`bool`): flag to return number of log messages
+                                  Default to False
+        Returns:
+            logs     (`list` or `int`): list of logging messages
+                                        OR or number of core files if num_of_logs=True
+    '''
+    # check keywords and create strings for `include` option
+    kw = ''
+    if isinstance(keywords, list):
+        kw = '|'.join(keywords)
+        kw = '"{kw}"'.format(kw=kw)
+
+    try:
+        if kw:
+            parsed = device.parse('show logging | include {kw}'.format(kw=kw),
+                                  output=output)
+        else:
+            parsed = device.parse('show logging', output=output)
+    except SchemaEmptyParserError:
+        if num_of_logs:
+            return 0
+        else:
+            return []
+
+    # Get value of 'logs' if it exists else '[]'
+    logs = parsed.setdefault('logs', [])
+
+    if num_of_logs:
+        return len(logs)
+
+    return logs

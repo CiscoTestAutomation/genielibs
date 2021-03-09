@@ -54,12 +54,9 @@ class IPv6Addr(ABC):
             elif attributes.value('ipv6_route_tag'):
                 cmd.append(' tag {ipv6_route_tag}'.\
                     format(ipv6_route_tag=attributes.value('ipv6_route_tag')))
-            if not attributes.value('redirect'):
-                cmd.append('\nno ipv6 redirects')
-            elif attributes.value('redirect'):
-                cmd.append('\nipv6 redirects')
-
             configurations.append_line(''.join(cmd))
+        if not attributes.value('redirect'):
+            configurations.append_line('no ipv6 redirects')
 
         return str(configurations)
 

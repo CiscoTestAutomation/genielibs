@@ -61,11 +61,10 @@ class IPv6Addr(ConfigurableBase):
     # ipv6 redirect
     redirect = managedattribute(
         name='redirect',
-        default=True,
+        default=None,
         type=(None, managedattribute.test_istype(bool)),
         doc='Assign the v6 redirect attribute'
     )
-
 
     # Overload __eq__
     def __eq__(self, other):

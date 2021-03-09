@@ -91,3 +91,24 @@ def execute_by_jinja2(device, templates_dir, template_name, post_commands=None, 
         )
 
     log.info("Successfully changed configuration using the jinja template")
+
+def get_md5_hash_of_file(device, file, timeout=60):
+    """ Return the MD5 hash of a given file.
+
+    Args:
+        device (obj): Device to execute on
+        file (str): File to calculate the MD5 on
+        timeout (int, optional): Max time in seconds allowed for calculation.
+            Defaults to 60.
+
+    Returns:
+        MD5 hash (str), or None if something went wrong
+    """
+    # md5sum test_file.bin
+    # 5a06abf1ce541d311de335ce6bd9997a  /test_file.bin
+    try:
+        return device.execute('md5sum {}'.format(file),
+                              timeout=timeout).split()[0]
+    except Exception as e:
+        log.warning(e)
+        return None

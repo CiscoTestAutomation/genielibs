@@ -136,6 +136,8 @@ class ImageHandler(BaseImageHandler, ImageLoader):
         if hasattr(self, 'packages'):
             self.packages = [x.replace('file://', '') for x in self.packages]
 
+        self.original_image = [self.image[0].replace('file://', '')]
+
         super().__init__(device, *args, **kwargs)
 
     def update_image_references(self, section):
@@ -151,45 +153,50 @@ class ImageHandler(BaseImageHandler, ImageLoader):
                 # change the saved package to the new package name/path
                 self.packages[index] = section.parameters['image_mapping'].get(package, package)
 
-    def update_tftp_boot(self):
+    def update_tftp_boot(self, number=''):
         '''Update clean section 'tftp_boot' with image information'''
 
-        tftp_boot = self.device.clean.setdefault('tftp_boot', {})
+        tftp_boot = self.device.clean.setdefault('tftp_boot'+number, {})
         tftp_boot.update({'image': self.image})
 
-    def update_copy_to_linux(self):
+    def update_copy_to_linux(self, number=''):
         '''Update clean section 'copy_to_linux' with image information'''
 
-        origin = self.device.clean.setdefault('copy_to_linux', {}).\
+        origin = self.device.clean.setdefault('copy_to_linux'+number, {}).\
                                    setdefault('origin', {})
         origin.update({'files': self.image + self.packages})
 
-    def update_copy_to_device(self):
+    def update_copy_to_device(self, number=''):
         '''Update clean stage 'copy_to_device' with image information'''
 
-        origin = self.device.clean.setdefault('copy_to_device', {}).\
+        origin = self.device.clean.setdefault('copy_to_device'+number, {}).\
                                    setdefault('origin', {})
         origin.update({'files': self.image + self.packages})
 
-    def update_change_boot_variable(self):
+    def update_change_boot_variable(self, number=''):
         '''Update clean stage 'change_boot_variable' with image information'''
 
-        change_boot_variable = self.device.clean.setdefault('change_boot_variable', {})
+        change_boot_variable = self.device.clean.setdefault('change_boot_variable'+number, {})
         change_boot_variable.update({'images': self.image})
 
-    def update_verify_running_image(self):
+    def update_verify_running_image(self, number=''):
         '''Update clean stage 'verify_running_image' with image information'''
-        verify_running_image = self.device.clean.setdefault('verify_running_image', {})
-        verify_running_image.update({'images': self.image})
+        verify_running_image = self.device.clean. \
+            setdefault('verify_running_image' + number, {})
 
-    def update_install_image(self):
+        if verify_running_image.get('verify_md5'):
+            verify_running_image.update({'images': self.original_image})
+        else:
+            verify_running_image.update({'images': self.image})
+
+    def update_install_image(self, number=''):
         '''Update clean stage 'install_image' with image information'''
 
-        install_image = self.device.clean.setdefault('install_image', {})
+        install_image = self.device.clean.setdefault('install_image'+number, {})
         install_image.update({'images': self.image})
 
-    def update_install_packages(self):
+    def update_install_packages(self, number=''):
         '''Update clean stage 'install_packages' with package information'''
 
-        install_packages = self.device.clean.setdefault('install_packages', {})
+        install_packages = self.device.clean.setdefault('install_packages'+number, {})
         install_packages.update({'packages': self.packages})

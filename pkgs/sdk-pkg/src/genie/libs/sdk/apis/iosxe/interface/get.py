@@ -1129,3 +1129,25 @@ def get_ipv6_interface_ip_address(device, interface, link_local=False):
             if 'origin' not in sub_value_keys and 'ip' in sub_value_keys:
                 return sub_value['ip']
     return None    
+
+
+def get_interfaces_status(device):
+    """Get up/down status of all interfaces
+
+    Args:
+        device (obj): device object
+    """
+
+    try:
+        out=device.parse('show ip interface brief')
+    except SchemaEmptyParserError as e:
+        log.error('No interface information found')
+        return None
+
+    # {'interface': {'GigabitEthernet1': {'interface_is_ok': 'YES',
+    #           'ip_address': '172.16.1.210',
+    #           'method': 'DHCP',
+    #           'protocol': 'up',
+    #           'status': 'up'},
+
+    return {key:val.get('status') for key, val in out.get('interface', {}).items()}

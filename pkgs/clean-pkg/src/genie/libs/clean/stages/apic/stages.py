@@ -25,6 +25,7 @@ log = logging.getLogger(__name__)
     Optional('timeouts'): {
         Optional('firmware_repository_add'): int,
         Optional('controller_upgrade'): int,
+        Optional('controller_reconnect'): int,
         Optional('switch_upgrade'): int,
         Optional('controller_upgrade_after_reconnect'): int,
         Optional('switch_upgrade'): int,

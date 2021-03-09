@@ -5,12 +5,14 @@ import logging
 import importlib
 
 from datetime import datetime
+from pyats.log.utils import banner
 from collections import OrderedDict
 from genie.utils.timeout import Timeout
 
 from .markup import get_variable, save_variable
 from .actions_helper import _condition_validator
 
+from pyats.async_ import pcall
 from pyats.aetest.steps import Steps
 from pyats.results import Passed, Failed, Errored, Skipped,\
                           Aborted, Passx, Blocked
@@ -49,9 +51,10 @@ def callback_blitz_dispatcher_gen(self,
                 # for possible change of device name in case the device name is %VARIABLES{<var_name>}
                 # device name should be replaced
                 elif action_kwargs['device'] not in testbed.devices:
-                    action_kwargs.update({'self': self})
+                    action_kwargs.update({'self': self, 'section': section})
                     action_kwargs = get_variable(**action_kwargs)
                     action_kwargs.pop('self')
+                    action_kwargs.pop('section')
 
             kwargs = {
                 'steps': steps,
@@ -84,6 +87,7 @@ def _loop_dispatcher(self, steps, testbed, section, action_item, ret_list, name)
 
     # Sending to get_variable to replace saved items.
     action_item.update({'self': self})
+    action_item['section'] = section
     action_item = get_variable(**action_item)
     section_ = action_item.pop('section', None)
 
@@ -121,21 +125,22 @@ def _loop_iterator_item_update(action_item):
     return iterator_item
 
 def _loop_iterator(self,
-                 steps,
-                 testbed,
-                 section,
-                 name,
-                 ret_list,
-                 loop_variable_name=None,
-                 loop_until=False,
-                 max_time=None,
-                 check_interval=None,
-                 until=None,
-                 do_until=None,
-                 actions=None,
-                 iterator_item=None,
-                 every_seconds=None,
-                 **kwargs):
+                   steps,
+                   testbed,
+                   section,
+                   name,
+                   ret_list,
+                   loop_variable_name=None,
+                   loop_until=False,
+                   max_time=None,
+                   check_interval=None,
+                   until=None,
+                   do_until=None,
+                   actions=None,
+                   iterator_item=None,
+                   every_seconds=None,
+                   parallel=None,
+                   **kwargs):
     """actually iterate over the actions under loop and call them"""
 
     # TODO cant save vars in loop, enhancement needed
@@ -146,12 +151,13 @@ def _loop_iterator(self,
     iterator_len = None
     iterator_index = 0
     iterator_len = len(iterator_item) if iterator_item else None
+    pcall_payload = []
 
     # until condition would be sent to blitz_control
     # in order to evaluate and see if the condition is true or not
     # loop wont start if the condition is true with step as passed
     until_condition = False
-    if until and blitz_control(self, until, 'until'):
+    if until and blitz_control(self, section, until, 'until'):
         until_condition = True
         log.info(
                 'Until condition is met. Loop terminated')
@@ -166,46 +172,59 @@ def _loop_iterator(self,
         if _check_pre_iteration(iterator_len,
                                 iterator_index,
                                 max_time,
-                                timeout):
+                                timeout,
+                                parallel):
             break
 
         # assign each item in an iterable_item to a variable
         # to be used later on within the actions
         # the loop_variable_name should exist in the testcase
-        _save_iterator_items(self, loop_variable_name, iterator_item, iterator_index)
+        _save_iterator_items(self, section, loop_variable_name, iterator_item, iterator_index)
 
         # running all the actions and adding the outputs of those actions to return list
-        if actions:
-            kwargs = {'self': self,
-                      'steps': steps,
-                      'testbed': testbed,
-                      'section': section,
-                      'data': actions,
-                      'loop_until': loop_until
-                     }
+        kwargs = {'self': self,
+                  'steps': steps,
+                  'testbed': testbed,
+                  'section': section,
+                  'data': actions,
+                  'loop_until': loop_until,
+                  'parallel': parallel
+                 }
 
-            ret_list.extend(list(callback_blitz_dispatcher_gen(**kwargs)))
-
-        # check if loop_until is true and get the item that meet the loop_until value
-        loop_until_last_index = _check_loop_until(self, ret_list, loop_until)
-        if loop_until_last_index is not None:
-            ret_list = ret_list[loop_until_last_index: loop_until_last_index+1]
+        list_of_kwargs = list(callback_blitz_dispatcher_gen(**kwargs))
 
         # increase the iterator_index until it hits the iterator_len
         # it terminates the iteration when reaches the end of iterator
         if iterator_len:
             iterator_index += 1
 
+        # if parallel then create a pcall_payload of all the actions kwargs
+        # to call them later on in parallel
+        # NOTE: parallel would not work with until, do_until and loop_until
+        if parallel:
+            pcall_payload.extend(list_of_kwargs)
+            continue
+
+        ret_list.extend(list_of_kwargs)
+
+        # check if loop_until is true and get the item that meet the loop_until value
+        loop_until_last_index = _check_loop_until(self, ret_list, loop_until)
+        if loop_until_last_index is not None:
+            ret_list = ret_list[loop_until_last_index: loop_until_last_index+1]
+
         until_condition = _check_post_iteration(self,
+                                                section,
                                                 until,
                                                 do_until,
                                                 loop_until_last_index)
 
         _report_every_seconds(loop_start_time, every_seconds)
 
+    # execute each iteration of the loop in parallel
+    _actions_execute_in_loop_in_parallel(self, section, pcall_payload, ret_list, steps)
     return ret_list
 
-def _save_iterator_items(self, loop_variable_name, iterator_item, iterator_index):
+def _save_iterator_items(self, section, loop_variable_name, iterator_item, iterator_index):
     """ Save each item of a loop into a variable before running the actions
         E.g: value: [get_logger, get_mtu_size]
              loop_variable_name: func_name
@@ -213,7 +232,6 @@ def _save_iterator_items(self, loop_variable_name, iterator_item, iterator_index
                 - api:
                     function: %VARIABLES{func_name}
     """
-
     if loop_variable_name and iterator_item:
 
         # parse through dictionary
@@ -224,9 +242,9 @@ def _save_iterator_items(self, loop_variable_name, iterator_item, iterator_index
         # parse through list
         else:
             value_ = iterator_item[iterator_index]
-        save_variable(self, loop_variable_name, value_)
+        save_variable(self, section, loop_variable_name, value_)
 
-def _check_pre_iteration(iterator_len, iterator_index, max_time, timeout):
+def _check_pre_iteration(iterator_len, iterator_index, max_time, timeout, parallel):
     """
         check pre each iteration, if timeout is reached or
         or the iterator item (list/dict) reached its end
@@ -239,12 +257,13 @@ def _check_pre_iteration(iterator_len, iterator_index, max_time, timeout):
 
     for key in keys:
         if key[0]:
-            log.info(key[1])
+            if not parallel:
+                log.info(key[1])
             return True
 
     return False
 
-def _check_post_iteration(self, until, do_until, loop_until_last_index):
+def _check_post_iteration(self, section, until, do_until, loop_until_last_index):
     """check post each iteration if, until, do_until
        or loop_until condition is met"""
 
@@ -254,10 +273,10 @@ def _check_post_iteration(self, until, do_until, loop_until_last_index):
     # if terminating condition is set with key do_until/until
     # if condition met update the flag to terminate the loop
     if until:
-        until_condition = blitz_control(self, until, 'until')
+        until_condition = blitz_control(self, section, until, 'until')
         until_stmnt = until
     elif do_until:
-        until_condition = blitz_control(self, do_until, 'do_until')
+        until_condition = blitz_control(self, section, do_until, 'do_until')
         until_stmnt = do_until
 
     if until_condition:
@@ -302,6 +321,18 @@ def _check_loop_until(self, ret_list, loop_until=None):
         if str(ret_list[index_]['step_result']) == loop_until.lower():
             return index_
 
+def _actions_execute_in_loop_in_parallel(self, section, payload, ret_list, steps):
+
+    if not payload:
+        return
+
+    try:
+        pcall_returns = pcall(self.dispatcher, ikwargs=payload)
+    except Exception:
+        steps.errored("Unable to execute actions concurrently")
+
+    ret_list.append(_parallel(self, section, pcall_returns, steps))
+
 def _check_user_input_error(step, action_item, loop_return_items):
     """
     possible user input errors:
@@ -309,6 +340,7 @@ def _check_user_input_error(step, action_item, loop_return_items):
     2 - cannot have until and do_until
     3 - must have actions
     4 - needs at least one iterable or terminating condition
+    5 - parallel in loop would not work with until, do_until and loop_until
     """
 
     keys = [(not 'actions' in action_item,
@@ -319,8 +351,11 @@ def _check_user_input_error(step, action_item, loop_return_items):
             'You only can have one terminating condition per loop.'),
             ((not 'range' in action_item and not 'value' in action_item) and
               not 'until' in action_item and not 'do_until' in action_item and
-              not 'loop_until' in action_item and not 'maple' in action_item,
-            'At least one iterable item or terminating condition should be in the loop')]
+              not 'loop_until' in action_item,
+            'At least one iterable item or terminating condition should be in the loop'),
+            (('until' in action_item or 'do_until' in action_item or
+              'lop_until' in action_item) and 'parallel' in action_item,
+            'Parallel execution of items in loop cannot be done with until, do_until or loop_until')]
 
     for key in keys:
         if key[0]:
@@ -330,19 +365,49 @@ def _check_user_input_error(step, action_item, loop_return_items):
             step.errored(key[1])
 
 
-def blitz_control(self, condition, key):
+def blitz_control(self, section, condition, key):
     """
         check if the condition provided is True or false
     """
     condition_dict = {}
     condition_dict.update({'self': self, key: condition})
+    condition_dict['section'] = section
 
     # replace all the %VARIABLES{name}
     condition_dict = get_variable(**condition_dict)
     # function that validates conditions
     return _condition_validator(condition_dict[key])
 
-def _parallel(self, pcall_returns, step):
+def _run_condition_with_optional_func(condition_bool,
+                                      condition,
+                                      kwargs,
+                                      description=''):
+
+    ret_dict = {'substeps': [],
+                'run_condition_skipped': not condition_bool,
+                'action': 'run_condition',
+                'advanced_action': False,
+                'condition': condition
+                }
+
+    if condition_bool:
+
+        log.info(banner("run condition: {}\n"\
+                        "Condition {} is met, running the actions"
+                        .format(description, condition )))
+
+        ret_dict.update({'substeps':
+                         list(callback_blitz_dispatcher_gen(**kwargs))})
+
+    else:
+
+        log.info(banner("run condition: {}\n"\
+                        "Condition {} is not met, not running the actions"
+                        .format(description, condition )))
+
+    return ret_dict
+
+def _parallel(self, section, pcall_returns, step):
     """
     Each action return is a dictionary containing the following:
         * Action name, possible saved_variable, action results,
@@ -357,18 +422,23 @@ def _parallel(self, pcall_returns, step):
         # need to iterate through loop and control outputs
         # to adjust the log accordingly
         if 'advanced_action' in each_return and each_return['substeps']:
-            _pcall_return_trim(self, each_return, step, each_return['action'])
+            _pcall_return_trim(self, section, each_return, step, each_return['action'])
             continue
+
+        if each_return['action'] == 'run_condition' and\
+           'advanced_action' in each_return and\
+           not each_return['advanced_action']:
+           continue
 
         # save action alias
         if each_return.get('alias'):
-            save_variable(self, each_return['alias'],
+            save_variable(self, section, each_return['alias'],
                           str(each_return['step_result']))
 
         if each_return.get('saved_vars'):
             for saved_var_name, saved_var_data in each_return.get(
                     'saved_vars').items():
-                save_variable(self, saved_var_name, saved_var_data)
+                save_variable(self, section, saved_var_name, saved_var_data)
 
         # log the filters that are applied
         if each_return.get('filters'):
@@ -385,13 +455,18 @@ def _parallel(self, pcall_returns, step):
 
     return {'action': 'parallel', 'step_result': step.result}
 
-def _pcall_return_trim(self, each_return, steps, trim_value):
+def _pcall_return_trim(self, section, each_return, steps, trim_value):
     """
        recursively check for actions that are ran under run_condition/loop
        in parallel
     """
 
     if trim_value == 'run_condition':
+
+        if not each_return.get('advanced_action'):
+            _parallel(self, section, each_return['substeps'], steps)
+            return
+
         msg = 'Condition {c} is not met. Running actions in parallel'\
                 .format(c=each_return['condition'])
     elif trim_value == 'loop':
@@ -399,7 +474,7 @@ def _pcall_return_trim(self, each_return, steps, trim_value):
 
     with steps.start(msg, continue_=True) as step:
         each_return = each_return['substeps']
-        _parallel(self, each_return, step)
+        _parallel(self, section, each_return, step)
 
 def _check_parallel_msg(self, each_return):
     """Set the proper message for actions ran under parallel"""
@@ -408,7 +483,8 @@ def _check_parallel_msg(self, each_return):
 
         msg = 'Executed action {a} on {d} in parallel'.format(
             a=each_return['action'], d=each_return['device'])
-    elif each_return.get('run_condition_skipped'):
+    elif each_return.get('run_condition_skipped') and\
+         each_return.get('advanced_action'):
 
         msg = "Condition {c} is met and the step result is {r}"\
                 .format(c=each_return['condition'],
@@ -455,7 +531,6 @@ def _maple_loop_iterator(self,
                                     a
     ==========================================================
     # blitz loop
-
     helloworld_loop_simple:
     source:
       pkg: genie.libs.sdk

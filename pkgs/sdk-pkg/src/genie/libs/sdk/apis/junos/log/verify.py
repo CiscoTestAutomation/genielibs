@@ -108,7 +108,7 @@ def verify_log_exists(device, file_name, expected_log,
 
 
 def verify_no_log_output(device, file_name,max_time=60,
-                         check_interval=10, invert=False, match=None):
+                         check_interval=10, invert=False, match=None, exclude=None):
     """
     Verify no log exists
 
@@ -118,7 +118,8 @@ def verify_no_log_output(device, file_name,max_time=60,
         max_time ('int'): Maximum time to keep checking
         check_interval ('int'): How often to check
         invert ('bool', 'optional'): Inverts to check if it doesn't exist
-        match ('str', 'optional'): used in show log command to specify output
+        match ('str' or 'list', 'optional'): used in show log command to specify output
+        exclude ('str' or 'list', 'optional'): used in show log command to exclude output
 
     Returns:  
         Boolean       
@@ -127,17 +128,31 @@ def verify_no_log_output(device, file_name,max_time=60,
     """
 
     timeout = Timeout(max_time, check_interval)
+
+    cmd = ['show log {file_name}'.format(file_name=file_name), 'except "show log"']
+    if match:
+        if type(match) is str:
+            cmd.append('match "{match}"'.format(match=match))
+        elif type(match) is list:
+            for m in match:
+                cmd.append('match "{match}"'.format(match=m))
+
+    if exclude:
+        if type(exclude) is str:
+            cmd.append('except "{exclude}"'.format(exclude=exclude))
+        elif type(exclude) is list:
+            for e in exclude:
+                cmd.append('except "{exclude}"'.format(exclude=e))
+
+    cmd = '|'.join(cmd)
+
     while timeout.iterate():
+        log_output=""
         try:
-            if match:
-                cmd = 'show log {file_name} | except "show log" | match "{match}"'.format(
-                    file_name=file_name,
-                    match=match)
-                output = device.execute(cmd)
-                log_output = device.parse(cmd, output=output)
-            else:
+            output = device.execute(cmd)
+            if output:
                 log_output = device.parse('show log {file_name}'.format(
-                    file_name=file_name))
+                    file_name=file_name), output=output)
         except SchemaEmptyParserError:
             return True
 

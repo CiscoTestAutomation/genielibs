@@ -113,10 +113,14 @@ def configure(self,
               health_sections=None,
               **kwargs):
 
+    # checking if custom msg else default msg will be written
+    msg = kwargs.pop('custom_substep_message',
+                     "Configuring '{device}'"
+                    .format(device=device.name))
+
     # default output set to none in case of an exception
     output = None
-    with steps.start("Configuring '{device}'".\
-                    format(device=device.name), continue_=continue_) as step:
+    with steps.start(msg, continue_=continue_) as step:
 
         kwargs.update({'step': step,
                        'device': device,
@@ -145,10 +149,14 @@ def configure_dual(self,
                    health_sections=None,
                    **kwargs):
 
+    # checking if custom msg else default msg will be written
+    msg = kwargs.pop('custom_substep_message',
+                     "Configuring '{device}' in (config-dual-stage) prompt".
+                     format(device=device.name))
+
     # default output set to none in case of an exception
     output = None
-    with steps.start("Configuring '{device}' in (config-dual-stage) prompt".\
-                    format(device=device.name), continue_=continue_) as step:
+    with steps.start(msg, continue_=continue_) as step:
 
         kwargs.update({'step': step,
                        'device': device,
@@ -183,10 +191,14 @@ def parse(self,
           *args,
           **kwargs):
 
+    # checking if custom msg else default msg will be written
+    msg = kwargs.pop('custom_substep_message',
+                     "Parsing '{c}' on '{d}'".
+                     format(c=command, d=device.name))
+
     # action parse
     output = {}
-    with steps.start("Parsing '{c}' on '{d}'".\
-                    format(c=command, d=device.name), continue_=continue_) as step:
+    with steps.start(msg, continue_=continue_) as step:
 
         arguments = kwargs.get('arguments', None)
         handler_kwargs = {'step': step,
@@ -198,14 +210,14 @@ def parse(self,
                           'check_interval': check_interval,
                           'continue_': continue_,
                           'expected_failure': expected_failure,
-                          'arguments': arguments}
+                          'arguments': arguments,
+                          'custom_verification_message': kwargs.pop('custom_verification_message', None)}
 
         output = parse_handler(**handler_kwargs)
 
     notify_wait(steps, device)
 
     return output
-
 
 @add_result_as_extra
 def execute(self,
@@ -227,10 +239,14 @@ def execute(self,
             health_sections=None,
             **kwargs):
 
+    # checking if custom msg else default msg will be written
+    msg = kwargs.pop('custom_substep_message',
+                     "Executing '{c}' on '{d}'".
+                     format(c=command, d=device.name))
+
     # action execute
     output = None
-    with steps.start("Executing '{c}' on '{d}'".\
-                    format(c=command, d=device.name), continue_=continue_) as step:
+    with steps.start(msg, continue_=continue_) as step:
 
         kwargs.update({'step': step,
                        'device': device,
@@ -247,7 +263,6 @@ def execute(self,
     notify_wait(steps, device)
 
     return output
-
 
 @add_result_as_extra
 def api(self,
@@ -274,9 +289,11 @@ def api(self,
     output = None
 
     if not device:
-        msg = "Calling API {f}".format(f=function)
+        default_msg = "Calling API {f}".format(f=function)
     else:
-        msg = "Calling API '{f}' on '{d}'".format(f=function, d=device.name)
+        default_msg = "Calling API '{f}' on '{d}'".format(f=function, d=device.name)
+
+    msg = kwargs.pop('custom_substep_message', default_msg)
 
     with steps.start(msg, continue_=continue_) as step:
 
@@ -316,22 +333,25 @@ def learn(self,
           processor='',
           health_uids=None,
           health_groups=None,
-          health_sections=None):
+          health_sections=None,
+          **kwargs):
 
+    msg = kwargs.pop('custom_substep_message',
+                     "Learning '{f}' on '{d}'".
+                     format(f=feature, d=device.name))
     # action learn
     output = None
-    with steps.start("Learning '{f}' on '{d}'".\
-                    format(f=feature, d=device.name), continue_=continue_) as step:
+    with steps.start(msg, continue_=continue_) as step:
 
-        kwargs = {'step': step,
-                  'device': device,
-                  'command': feature,
-                  'include': include,
-                  'exclude': exclude,
-                  'max_time': max_time,
-                  'check_interval': check_interval,
-                  'continue_': continue_,
-                  'expected_failure': expected_failure}
+        kwargs.update({'step': step,
+                        'device': device,
+                        'command': feature,
+                        'include': include,
+                        'exclude': exclude,
+                        'max_time': max_time,
+                        'check_interval': check_interval,
+                        'continue_': continue_,
+                        'expected_failure': expected_failure})
 
         output = learn_handler(**kwargs)
 
@@ -348,16 +368,23 @@ def compare(self,
             processor='',
             health_uids=None,
             health_groups=None,
-            health_sections=None):
+            health_sections=None,
+            **kwargs):
 
     # action compare
     if not items:
 
         steps.failed('No item is provided for comparision')
 
+    msg = kwargs.pop('custom_substep_message', None)
+
     for comp_item in items:
-        with steps.start("Verifying the following comparison request {}"\
-                        .format(comp_item), continue_=continue_) as step:
+
+        if not msg:
+            msg = "Verifying the following comparison request {}"\
+                    .format(comp_item)
+
+        with steps.start(msg, continue_=continue_) as step:
 
             condition = _condition_validator(comp_item)
             result = 'passed' if condition else 'failed'
@@ -402,10 +429,13 @@ def rest(self,
          *args,
          **kwargs):
 
+    msg = kwargs.pop('custom_substep_message',
+                     "Submitting a '{m}' call to a REST API on '{d}'".\
+                     format(m=method, d=device.name))
+
     # action rest
     output = None
-    with steps.start("Submitting a '{m}' call to a REST API on '{d}'".\
-                    format(m=method, d=device.name), continue_=continue_) as step:
+    with steps.start(msg, continue_=continue_) as step:
 
         kwargs.update({'device': device,
                        'method': method,
@@ -507,7 +537,6 @@ def configure_replace(self,
         interval=interval,
         delete_after_restore=False,
     )
-
 
 @add_result_as_extra
 def save_config_snapshot(self,
@@ -694,10 +723,14 @@ def diff(self,
          health_groups=None,
          health_sections=None,
          feature=None,
-         mode=None):
+         mode=None,
+         **kwargs):
 
-    with steps.start("Perform Diff for '{device}'".format(device=device.name),
-                     continue_=continue_) as step:
+    msg = kwargs.pop('custom_substep_message',
+                     "Perform Diff for '{device}'".format(device=device.name))
+
+    with steps.start(msg, continue_=continue_) as step:
+
         exclude_items = _get_exclude(command, device)
         # if feature is given, get exclude from the Ops
         if feature:

@@ -15,6 +15,7 @@ from genie.libs.parser.utils import get_parser_exclude
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # from pyats
+from pyats.easypy import runtime
 from pyats.results import Passed, Failed
 
 # from unicon
@@ -59,7 +60,8 @@ def parse_handler(step,
                   max_time=None,
                   check_interval=None,
                   continue_=True,
-                  arguments=None):
+                  arguments=None,
+                  **extra_kwargs):
 
     if not arguments:
         arguments = {}
@@ -76,7 +78,9 @@ def parse_handler(step,
               'check_interval': check_interval,
               'continue_': continue_,
               'action': 'parse',
-              'expected_failure': expected_failure}
+              'expected_failure': expected_failure,
+              'extra_kwargs': extra_kwargs}
+
     # handeling parse command
     try:
 
@@ -142,7 +146,8 @@ def learn_handler(step,
                   exclude=None,
                   max_time=None,
                   check_interval=None,
-                  continue_=True):
+                  continue_=True,
+                  **extra_kwargs):
 
     # Save the to_dict learn output,
     learned_value = device.learn(command)
@@ -159,7 +164,8 @@ def learn_handler(step,
               'check_interval': check_interval,
               'continue_': continue_,
               'action': 'learn',
-              'expected_failure': expected_failure}
+              'expected_failure': expected_failure,
+              'extra_kwargs': extra_kwargs}
 
     return _output_query_template(**kwargs)
 
@@ -183,7 +189,14 @@ def api_handler(step,
         arguments = {}
 
     common_api = kwargs.get('common_api')
-    testbed = kwargs['blitz_obj'].parameters['testbed']
+    # To support below both cases.
+    # 1. when tb file is passed via gRun in job file
+    # 2. when tb file is passed via CLI to pyats run command
+    # (pyATS Health Check ues runtime.testbed)
+    if kwargs['blitz_obj'].parameters.get('testbed'):
+        testbed = kwargs['blitz_obj'].parameters.get('testbed')
+    else:
+        testbed = runtime.testbed
 
     # updating the device object
     device = _api_device_update(arguments,
@@ -195,14 +208,12 @@ def api_handler(step,
     # check the os and decide how to call the api_function
     # will be changed when we figure out the use of device.type for more general use
     api_function = device if device.os == 'ixianative' else device.api
-
     try:
         output = getattr(api_function, command)(**arguments)
     except (AttributeError, TypeError) as e:
         # if could not find api or the kwargs is wrong for api
         if not expected_failure:
-            step.errored("Could not find api {c} under device os"
-                         " or in the list of common apis".format(c=command))
+            step.errored("Got an error with API {c}: {e}".format(c=command, e=e))
         else:
             step.passed('API failed as expected, the step test result is set as passed')
 
@@ -224,7 +235,8 @@ def api_handler(step,
               'continue_': continue_,
               'action': 'api',
               'expected_failure': expected_failure,
-              'arguments':arguments}
+              'arguments':arguments,
+              'extra_kwargs':kwargs}
 
     return _output_query_template(**kwargs)
 
@@ -282,6 +294,9 @@ def bash_console_handler(device,
                          **extra_kwargs):
 
     output_dict = {}
+
+    custom_msg = extra_kwargs.pop('custom_verification_message', None)
+
     with device.bash_console(**extra_kwargs) as bash:
         for command in commands:
             bash_command_output = bash.execute(command, **extra_kwargs)
@@ -290,6 +305,7 @@ def bash_console_handler(device,
             else:
                 output_dict.update({command:bash_command_output})
 
+    extra_kwargs.update({'custom_verification_message':custom_msg})
     kwargs = {'output': output_dict,
               'steps': step,
               'device': device,
@@ -318,6 +334,8 @@ def rest_handler(device,
                  **extra_kwargs):
     output = ''
 
+    custom_msg = extra_kwargs.pop('custom_verification_message', None)
+
     # Checking the connection alias
     try:
         device_alias = getattr(device, connection_alias)
@@ -340,6 +358,7 @@ def rest_handler(device,
 
     log.info(output)
 
+    extra_kwargs.update({'custom_verification_message':custom_msg})
     kwargs = {'output': output,
               'steps': step,
               'device': device,
@@ -386,12 +405,18 @@ def _output_query_template(output,
     timeout = Timeout(max_time, check_interval)
 
     for query, style in keys:
+
+        if extra_kwargs.get('custom_verification_message'):
+            step_msg = extra_kwargs.pop('custom_verification_message')
+        else:
+            step_msg = "Verify that '{query}' is {style} in the output".\
+                        format(query=query, style=style)
+
         # dict that would be sent with various data for inclusion/exclusion check
         kwargs = {}
         send_cmd = False
         # for each query and style
-        with steps.start("Verify that '{query}' is {style} in the output".\
-                    format(query=query, style=style), continue_=continue_) as substep:
+        with steps.start(step_msg, continue_=continue_) as substep:
 
             while True:
                 if send_cmd:

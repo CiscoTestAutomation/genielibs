@@ -5,6 +5,8 @@ from ipaddress import IPv4Interface
 
 # Genie
 from genie.utils.timeout import Timeout
+from genie.utils import Dq
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 log = logging.getLogger(__name__)
 
@@ -122,6 +124,154 @@ def verify_interface_in_state(device, interface, verify_status=True, oper_status
         if result:
             return True
 
+        timeout.sleep()
+
+    return False
+
+
+def verify_interface_state_up(
+    device, interface, max_time=60, check_interval=10
+):
+    """Verify interface state is up and and line protocol is up
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            max_time (`int`): max time
+            check_interval (`int`): check interval
+        Returns:
+            result(`bool`): True if is up else False
+    """
+
+    return verify_interface_in_state(device, interface, verify_ip=False, max_time=max_time, check_interval=check_interval)
+
+
+def verify_interface_errors(device,
+                            interface,
+                            expected_value=None,
+                            input=False,
+                            output=False,
+                            max_time=30,
+                            check_interval=10):
+    """ Verify interface input and output errors
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Pass interface in show command
+            expected_value (`int`, Optional): Expected errors values. Defaults to None
+            input (`bool`, Optional): True if input errors to verify. Default to False.
+            output (`bool`, Optional): True if output errors to verify. Default to False.
+            max_time (`int`, Optional): Max time, default: 60 seconds
+            check_interval (`int`, Optional): Check interval, default: 10 seconds
+
+        Returns:
+            result (`bool`): Verified result
+        Raises:
+            N/A
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            cmd = 'show interface {interface}'.format(
+                interface=interface)
+            out = device.parse(cmd)
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        interface, data = next(iter(out.items()))
+        data = Dq(data)
+        if input and output:
+            input_errors = data.get_values("in_errors", 0)
+            output_errors = data.get_values("out_errors", 0)
+            if input_errors == output_errors == expected_value:
+                return True
+        elif input:
+            input_errors = data.get_values("in_errors", 0)
+            if input_errors == expected_value:
+                return True
+        elif output:
+            output_errors = data.get_values("out_errors", 0)
+            if output_errors == expected_value:
+                return True
+
+        timeout.sleep()
+        continue
+
+    return False
+
+def verify_interface_state_admin_down(
+    device, interface, max_time=60, check_interval=10
+):
+    """Verify interface state is administratively down and line protocol is down
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            max_time (`int`): max time
+            check_interval (`int`): check interval
+        Returns:
+            result(`bool`): True if is up else False
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            cmd = 'show interface {interface}'.format(
+                interface=interface)
+            out = device.parse(cmd)
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # Any(): {
+        #     'oper_status': str,
+        #     Optional('line_protocol'): str,
+
+        oper_status = out.q.get_values("oper_status", 0)
+        line_protocol = out.q.get_values("line_protocol", 0)
+        enabled = out.q.get_values("enabled", 0)
+        if oper_status == line_protocol == "down" and enabled == False:
+            return True
+        timeout.sleep()
+
+    return False
+
+
+def verify_interface_state_admin_up(
+    device, interface, max_time=60, check_interval=10
+):
+    """Verify interface state is administratively up and line protocol is up
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            max_time (`int`): max time
+            check_interval (`int`): check interval
+        Returns:
+            result(`bool`): True if is up else False
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            cmd = 'show interface {interface}'.format(
+                interface=interface)
+            out = device.parse(cmd)
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+        
+        # Any(): {
+        #     'oper_status': str,
+        #     Optional('line_protocol'): str,
+
+        oper_status = out.q.get_values("oper_status", 0)
+        line_protocol = out.q.get_values("line_protocol", 0)
+        enabled = out.q.get_values("enabled", 0)
+        if oper_status == line_protocol == "up" and enabled:
+            return True
         timeout.sleep()
 
     return False

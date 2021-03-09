@@ -125,7 +125,7 @@ def verify_bfd_neighbors_details_registered_protocols(
     device,
     address_family,
     address,
-    expected_registered_protocols,
+    expected_registered_protocol,
     max_time=60,
     check_interval=10,
 ):
@@ -157,7 +157,7 @@ def verify_bfd_neighbors_details_registered_protocols(
             continue
 
         registered_protocols = out.q.get_values('registered_protocols')
-        if registered_protocols in expected_registered_protocols:
+        if expected_registered_protocol in registered_protocols:
             return True
         timeout.sleep()
 
@@ -203,7 +203,7 @@ def verify_bfd_neighbors_details(
             continue
 
         if expected_session_state:
-            state = out.q.contains('session').get_values('state', 0)
+            state = out.q.get_values('state', 0)
             if state == expected_session_state:
                 return True
         

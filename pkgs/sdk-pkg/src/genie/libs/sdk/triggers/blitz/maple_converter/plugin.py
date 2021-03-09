@@ -26,7 +26,7 @@ from genie.harness.datafile.loader import TriggerdatafileLoader
 logger = logging.getLogger(__name__)
 
 
-class MapleCleanPlugin(KleenexPlugin):
+class MapleCleanPlugin(BasePlugin):
 
     # plugin name
     name = 'mapleClean'
@@ -82,9 +82,14 @@ class MapleCleanPlugin(KleenexPlugin):
             logger.error("Unable to disconnect the device '{}'\n{}".\
                 format(device.name, str(e)))
 
+    def pre_job(self):
+        pass
+
     # pre-task
     def pre_task(self, task, reporter):
 
+        if not runtime.args.testsuite_file:
+            return
         # updating the folder id that maple tests
         # are getting uploaded into
         if 'tims_rest' in self.runtime.args:
@@ -93,10 +98,11 @@ class MapleCleanPlugin(KleenexPlugin):
         if not self.runtime.args.clean_files:
             return
 
-        self.clean_files = self.runtime.args.clean_files
+        kleenex = KleenexPlugin(self.runtime)
+        kleenex.clean_files = self.runtime.args.clean_files
 
         logger.debug('Verifying clean files...')
-        for clean_idx, clean_file in enumerate(self.clean_files):
+        for clean_idx, clean_file in enumerate(kleenex.clean_files):
 
             if not os.path.isfile(clean_file):
                 raise FileNotFoundError('the provided clean file %s does '
@@ -108,16 +114,16 @@ class MapleCleanPlugin(KleenexPlugin):
                 logger.info('Clean file %s exists and is readable.'
                             % clean_file)
                 copy_to = 'testbed.clean%s.yaml' % (clean_idx+1)
-                if len(self.clean_files) == 1:
+                if len(kleenex.clean_files) == 1:
                     copy_to = 'testbed.clean.yaml'
                 copyfile(clean_file, os.path.join(self.runtime.directory,
                                                   copy_to))
 
-        self.clean_config = KleenexFileLoader(
-                testbed = self.runtime.testbed,
-                invoke_clean = self.runtime.args.invoke_clean).load(
-                        *(self.clean_files or ()))
-        extended_clean = deepcopy(self.clean_config)
+        kleenex.clean_config = KleenexFileLoader(
+                     testbed = self.runtime.testbed,
+                     invoke_clean = self.runtime.args.invoke_clean).load(
+                        *(kleenex.clean_files or ()))
+        extended_clean = deepcopy(kleenex.clean_config)
 
         # We must cast the <cleaners/cleaner/class> to a string
         # because the class is not pickle-able
@@ -137,29 +143,16 @@ class MapleCleanPlugin(KleenexPlugin):
             # Best effort
             pass
 
-        clean_config_clean_devices = self.clean_config.get('clean_devices')
+        clean_config_clean_devices = kleenex.clean_config.get('clean_devices')
 
         if clean_config_clean_devices is not None:
 
-            self.clean_devices = [str(clean_config_clean_devices)]
+            kleenex.clean_devices = [str(clean_config_clean_devices)]
         else:
-            self.clean_devices = None
-
+            kleenex.clean_devices = None
         self.logfile = managed_handlers.tasklog.logfile
-        self.do_bringup_clean_logic(task=task, reporter = reporter)
-
-    def post_task(self, task):
-
-        # Create a diagram representing the newly brought up
-        # actual topology.
-        try:
-            taskid = task.taskid
-            self.create_topology_graph(taskid)
-        except Exception as e:
-            if task:
-                task.manager.register_message("!!! UNABLE TO MAP NETWORK "
-                                              "TOPOLOGY - EXCEPTION {} !!!".
-                                              format(e))
+        kleenex.logical_testbed_file = None
+        kleenex.do_bringup_clean_logic(task=task, reporter = reporter)
 
 # Custom Plugin Entrypoints
 maple_clean_plugin = {
@@ -169,6 +162,7 @@ maple_clean_plugin = {
             'enabled': True,
             'kwargs': {},
             'module': 'genie.libs.sdk.triggers.blitz.maple_converter',
+            'order': 130,
             'name': 'MapleCleanPlugin:',
         },
     },

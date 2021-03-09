@@ -61,7 +61,7 @@ class IPv4Addr(ConfigurableBase):
     # ip redirect
     redirect = managedattribute(
         name='redirect',
-        default=True,
+        default=None,
         type=(None, managedattribute.test_istype(bool)),
         doc='Assign the redirect attribute'
     )

@@ -80,55 +80,63 @@ class Eigrp(Base):
 
         for cmd in [ShowEigrpIpv4NeighborsDetail, ShowEigrpIpv6NeighborsDetail]:
 
-            # address_family
-            #   name
-            #   named_mode
-            #   eigrp_interface
-            for key in ['name', 'named_mode']:
-                info_src = '[eigrp_instance][(?P<as_num>.*)][vrf][(?P<vrf>.*)][address_family][(?P<address_family>.*)]'
-                info_dest = 'info' + info_src
+            for vrf in ['', 'all']:
 
                 # address_family
                 #   name
-                self.add_leaf(cmd=cmd,
-                              src=info_src+'[{key}]'.format(key=key),
-                              dest=info_dest+'[{key}]'.format(key=key))
+                #   named_mode
+                #   eigrp_interface
+                for key in ['name', 'named_mode']:
+                    info_src = '[eigrp_instance][(?P<as_num>.*)][vrf][(?P<vrf>.*)][address_family][(?P<address_family>.*)]'
+                    info_dest = 'info' + info_src
 
-            info_src = '[eigrp_instance][(?P<as_num>.*)][vrf][(?P<vrf>.*)][address_family][(?P<address_family>.*)][eigrp_interface][(?P<eigrp_interface>.*)][eigrp_nbr][(?P<eigrp_nbr>.*)]'
-            info_dest = 'info' + info_src
+                    # address_family
+                    #   name
+                    self.add_leaf(cmd=cmd,
+                                src=info_src+'[{key}]'.format(key=key),
+                                dest=info_dest+'[{key}]'.format(key=key),
+                                vrf=vrf
+                                )
 
-            # eigrp_interface
-            #   eigrp_nbr
-            #     retransmit_count
-            #     retry_count
-            #     last_seq_number
-            #     srtt
-            #     rto
-            #     q_cnt
-            #     peer_handle
-            #     nbr_sw_ver
-            #     hold
-            #     uptime
-            #     prefixes
-            for key in ['retransmit_count', 'retry_count', 'last_seq_number',
-                        'srtt', 'rto', 'q_cnt', 'peer_handle',
-                        'nbr_sw_ver', 'hold', 'uptime', 'prefixes']:
+                info_src = '[eigrp_instance][(?P<as_num>.*)][vrf][(?P<vrf>.*)][address_family][(?P<address_family>.*)][eigrp_interface][(?P<eigrp_interface>.*)][eigrp_nbr][(?P<eigrp_nbr>.*)]'
+                info_dest = 'info' + info_src
 
-                self.add_leaf(cmd=cmd,
-                              src=info_src+'[{key}]'.format(key=key),
-                              dest=info_dest+'[{key}]'.format(key=key))
+                # eigrp_interface
+                #   eigrp_nbr
+                #     retransmit_count
+                #     retry_count
+                #     last_seq_number
+                #     srtt
+                #     rto
+                #     q_cnt
+                #     peer_handle
+                #     nbr_sw_ver
+                #     hold
+                #     uptime
+                #     prefixes
+                for key in ['retransmit_count', 'retry_count', 'last_seq_number',
+                            'srtt', 'rto', 'q_cnt', 'peer_handle',
+                            'nbr_sw_ver', 'hold', 'uptime', 'prefixes']:
 
-            # eigrp_interface
-            #   eigrp_nbr
-            #       nbr_sw_ver
-            #           os_majorver
-            #           os_minorver
-            #           tlv_majorrev
-            #           tlv_minorrev
-            for key in ['os_majorver', 'os_minorver', 'tlv_majorrev',
-                        'tlv_minorrev']:
-                self.add_leaf(cmd=cmd,
-                              src=info_src+'[eigrp_interface][(?P<eigrp_interface>.*)][eigrp_nbr][(?P<eigrp_nbr>.*)][nbr_sw_ver][(?P<nbr_sw_ver>.*)][{key}]'.format(key=key),
-                              dest=info_dest+'[eigrp_interface][(?P<eigrp_interface>.*)][eigrp_nbr][(?P<eigrp_nbr>.*)][nbr_sw_ver][(?P<nbr_sw_ver>.*)][{key}]'.format(key=key))
+                    self.add_leaf(cmd=cmd,
+                                src=info_src+'[{key}]'.format(key=key),
+                                dest=info_dest+'[{key}]'.format(key=key),
+                                vrf=vrf
+                                )
+
+                # eigrp_interface
+                #   eigrp_nbr
+                #       nbr_sw_ver
+                #           os_majorver
+                #           os_minorver
+                #           tlv_majorrev
+                #           tlv_minorrev
+                for key in ['os_majorver', 'os_minorver', 'tlv_majorrev',
+                            'tlv_minorrev']:
+                    self.add_leaf(cmd=cmd,
+                                src=info_src+'[eigrp_interface][(?P<eigrp_interface>.*)][eigrp_nbr][(?P<eigrp_nbr>.*)][nbr_sw_ver][(?P<nbr_sw_ver>.*)][{key}]'.format(key=key),
+                                dest=info_dest+'[eigrp_interface][(?P<eigrp_interface>.*)][eigrp_nbr][(?P<eigrp_nbr>.*)][nbr_sw_ver][(?P<nbr_sw_ver>.*)][{key}]'.format(key=key),
+                                vrf=vrf
+                                )
 
         self.make(final_call=True)

@@ -6,6 +6,9 @@ import logging
 import re
 
 # pyATS
+from pyats.easypy import runtime
+
+# Genie
 from genie.metaparser.util.exceptions import SchemaEmptyParserError, SchemaMissingKeyError
 from genie.utils import Dq
 
@@ -126,37 +129,193 @@ def get_platform_default_dir(device, output=None):
 
     return output.get('dir', '')
 
-def get_platform_core(device, default_dir, output=None, keyword=['_core.']):
+
+def get_platform_core(device,
+                      default_dir=None,
+                      output=None,
+                      keyword=['_core.'],
+                      num_of_cores=False,
+                      decode=False,
+                      decode_timeout=300,
+                      remote_device=None,
+                      remote_path=None,
+                      remote_via=None,
+                      vrf=None,
+                      archive=False,
+                      delete_core=False):
     '''Get the default directory of this device
 
         Args:
             device      (`obj`) : Device object
-            default_dir (`str`) : default directory on device
-            output      (`str`) : Output of `dir` command
+            default_dir (`str` or `list`) : N/A. location will be identified
+                                            from show cores command
+            output      (`str`) : Output of `dir` command. Default to None
             keyword     (`list`): List of keywords to search
+            num_of_cores (`bool`): flag to return number of core files
+                                   Default to False
+            remote_device (`str`): remote device in testbed yaml
+                                   Default to None
+            remote_path (`str`): path with/without file on remote device
+                                 Default to None
+            remote_via (`str`) : specify connection to get ip
+                                 Default to None
+            vrf (`str`): use vrf where scp find route to remote device
+                                 Default to None
+            archive     (`bool`): flag to save the decode output as file in archive
+                                  Defaults to False
+            delete_core (`bool`): flag to delete core files only when copying to
+                                  remove_device is successfully done
+                                  Defaults to False
+            ### CISCO INTERNAL ###
+            decode      (`bool`): flag to enable for decoding core
+                                  copy core file to remote_server and decode on remote_server
+            decode_timeout (`int`): timeout to execute decode script
+                                    Default to 300
         Returns:
-            corefiles (`list`): List of found core files
+            all_corefiles (`list`, `int`): List of found core files
+                                                   or number of core files if num_of_cores=True
     '''
+    # store found core file name
+    all_corefiles = []
+    # store core file name which is successfully copied
+    copied_files = []
+    # store found core file location
+    dirs = []
 
-    cmd = "dir {default_dir}//sup-active/core/".format(default_dir=default_dir)
-
+    parsed = {}
     try:
-        # sample output:
-        # # dir logflash://sup-active/core/
-        #   119173734    May 25 00:09:00 2017  0x101_vsh.bin_core.27380.gz
-        output = device.parse(cmd, output=output)
+        parsed = device.parse('show cores', output=output)
+        # example:
+        # {
+        #     "date": {
+        #         "2020-08-20 05:49:09": {
+        #             "pid": {
+        #                 18234: {
+        #                     "instance": 1,
+        #                     "module": 1,
+        #                     "process_name": "bgp-65000",
+        #                     "vdc": 1
+        #                 }
+        #             }
+        #         }
+        #     }
+        # }
     except SchemaEmptyParserError:
         # empty is possible. so pass instead of exception
         pass
 
-    corefiles = []
-    if output:
-        for file in output.q.get_values('files'):
-            for kw in keyword:
-                if kw in file:
-                    corefiles.append('file')
+    if parsed:
+        for entry in parsed['date']:
+            for pid in parsed['date'][entry]['pid'].keys():
+                loc = '{module}/{pid}/{instance}'.format(
+                    module=str(parsed['date'][entry]['pid'][pid]['module']),
+                    pid=str(pid),
+                    instance=str(
+                        parsed['date'][entry]['pid'][pid]['instance']))
+                dirs.append(loc)
 
-    return corefiles
+    log.debug('dirs: {dirs}'.format(dirs=dirs))
+
+    if remote_device:
+        # convert from device name to device object
+        if remote_device in device.testbed.devices:
+            remote_device = device.testbed.devices[remote_device]
+        else:
+            log.warn(
+                'remote device {rd} was not found.'.format(rd=remote_device))
+            return len(dirs) if num_of_cores else dirs
+        # check connected_alias for remote_device
+        remote_device_alias = [
+            i for i in remote_device.api.get_connected_alias().keys()
+        ]
+
+    corefiles = []
+
+    # copy core file to remote device
+    for corefile in dirs:
+        log.info('Copying {s} to remote device {rd}'.format(s=corefile,
+                                                            rd=remote_device))
+        if not (remote_device and remote_path):
+            log.warn('`remote_device` or/and `remote_path` are missing')
+            return len(dirs) if num_of_cores else dirs
+        local_path = "core://{cf}".format(cf=corefile)
+        copied_files = device.api.scp(local_path=local_path,
+                                      remote_path=remote_path,
+                                      remote_device=remote_device.name,
+                                      remote_via=remote_via,
+                                      vrf=vrf,
+                                      return_filename=True)
+        if not copied_files:
+            log.warn('SCP has failed to copy core file to remote device {rd}'.
+                     format(rd=remote_device.name))
+            return len(dirs) if num_of_cores else dirs
+        # decode core file
+        if decode:
+            # connect to remote_device if not connected
+            if not remote_device_alias:
+                # if no connected alias, connect
+                try:
+                    remote_device.connect()
+                except Exception as e:
+                    log.warn(
+                        "Remote device {d} was not connected and failed to connect : {e}"
+                        .format(d=remote_device.name, e=e))
+                    return len(dirs) if num_of_cores else dirs
+            for core in copied_files:
+                try:
+                    fullpath = "{rp}/{core}".format(rp=remote_path, core=core)
+                    decode_output = remote_device.api.analyze_core_by_ucd(
+                        core_file="{fp}".format(fp=fullpath),
+                        timeout=decode_timeout)
+                    # archive decode output
+                    if archive:
+                        with open(
+                                '{folder}/{fn}'.format(
+                                    folder=runtime.directory,
+                                    fn='core_decode_{file}'.format(file=core)),
+                                'w') as f:
+                            print(decode_output, file=f)
+                            log.info(
+                                'Saved decode output as archive: {folder}/{fn}'
+                                .format(
+                                    folder=runtime.directory,
+                                    fn='core_decode_{file}'.format(file=core)))
+                except Exception as e:
+                    log.warning('decode core file is failed : {e}'.format(e=e))
+        # delete core files
+        if delete_core:
+            for corefile in dirs:
+                module = corefile.split('/')[0]
+                try:
+                    log.info(
+                        'Deleting copied file on module-{m}.'.format(m=module))
+                    device.execute(
+                        'delete logflash://module-{m}/core/* no-prompt'.format(
+                            m=module))
+                    log.info(
+                        'Core files on module-{m} was successfully deleted'.
+                        format(m=module))
+                except Exception as e:
+                    log.warn(
+                        'deleting core files on module-{m} failed. {e}'.format(
+                            m=module, e=e))
+                    return []
+
+    # clear show cores history
+    if copied_files:
+        try:
+            device.execute('clear cores')
+        except Exception as e:
+            log.warn('Failed to execute `clear cores`.'.format(
+                rd=remote_device.name))
+            return len(dirs) if num_of_cores else dirs
+    else:
+        log.info('No core file was copied. So `clear cores` was not executed.')
+
+    if num_of_cores:
+        return len(dirs)
+    return dirs
+
 
 def get_platform_cpu_load(device,
                          command='show processes cpu',
@@ -204,7 +363,7 @@ def get_platform_cpu_load(device,
                 cpu_load += parsed.q.contains_key_value('index', pid).get_values(check_key, 0)
         if count == 0:
             cpu_load = 0
-        else: 
+        else:
             cpu_load /= count
     else:
         cpu_load = float(parsed['five_sec_cpu_total'])
@@ -405,7 +564,7 @@ def get_platform_memory_usage_detail(device,
                 memory_usage = memory_holding / parsed[check_key]
 
             memory_usage_dict.update({ps_item: memory_usage*100})
- 
+
     return memory_usage_dict
 
 
@@ -425,7 +584,7 @@ def get_slot_model(device):
     except SubCommandFailure as e:
         log.info('Failed to get slot model: {e}'.format(e=e))
         return None
-      
+
     return {key: Dq(val).get_values('model', 0) for key, val in out.get('slot', {}).get('rp', {}).items()}
 
 def get_chassis_type(device):
@@ -443,7 +602,7 @@ def get_chassis_type(device):
     except SubCommandFailure:
         log.info('Could not get device version information')
         return None
-    
+
     return out.q.get_values('chassis', 0)
 
 def get_chassis_sn(device):
@@ -461,7 +620,7 @@ def get_chassis_sn(device):
     except SubCommandFailure:
         log.info('Could not get device version information')
         return None
-    
+
     return out.q.get_values('chassis_sn', 0)
 
 def get_platform_type(device):
@@ -479,8 +638,49 @@ def get_platform_type(device):
     except SubCommandFailure:
         log.info('Could not get device version information')
         return None
-    
+
     return out.q.contains('platform').get_values('name', 0)
+
+def get_platform_logging(device,
+                         command='show logging logfile',
+                         files=None,
+                         keywords=None,
+                         output=None,
+                         num_of_logs=False):
+    '''Get logging messages
+        Args:
+            device    (`obj`): Device object
+            command   (`str`): show command. Default to 'show logging logfile'
+            files    (`list`): Not applicable on this platform
+            keywords (`list`): List of keywords to match. Default to None
+            output    (`str`): Output of show command. Default to None
+            num_of_logs (`bool`): flag to return number of log messages
+                                  Default to False
+        Returns:
+            logs     (`list` or `int`): list of logging messages
+                                        OR or number of core files if num_of_logs=True
+    '''
+
+    # check keywords and create strings for `include` option
+    kw = ''
+    if isinstance(keywords, list):
+        kw = '|'.join(keywords)
+
+    try:
+        parsed = device.parse(command, include=kw)
+    except SchemaEmptyParserError:
+        if num_of_logs:
+            return 0
+        else:
+            return []
+
+    # Get value of 'logs' if it exists else '[]'
+    logs = parsed.setdefault('logs', [])
+
+    if num_of_logs:
+        return len(logs)
+
+    return logs
 
 def get_software_version(device, return_tuple:bool=False):
     """Get software version of device
