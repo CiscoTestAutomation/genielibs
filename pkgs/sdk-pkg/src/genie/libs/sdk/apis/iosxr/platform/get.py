@@ -145,7 +145,6 @@ def get_available_space(device, directory='', output=None):
     reg = re.search(r'(\d+)\s(\S+)', free_bytes[0])
     
     if reg:
-        import ipdb; ipdb.set_trace()
         if reg.group(2) == 'kbytes':
             bytes_free = int(reg.group(1))*1000
         else:
