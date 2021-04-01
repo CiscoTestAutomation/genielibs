@@ -28,24 +28,6 @@ class UnsupportedDeviceOsWarning(UserWarning):
 
 class Device(genie.conf.base.device.Device):
 
-    class Role(Enum):
-        router = 'router'  # TODO use 'test' instead?
-        emulated = 'emulated'
-        tgen = 'tgen'
-        switch = 'switch'  # TODO use something that means 'accessory' more
-
-    role = managedattribute(
-        name='role',
-        type=Role)
-
-    @role.defaulter
-    def role(self):
-        try:
-            return Device.Role(self.role)
-        except AttributeError:
-            pass
-        return Device.Role.router
-
     def __new__(cls, name, *args, **kwargs):
         kwargs['name'] = name
 
@@ -261,9 +243,6 @@ class Device(genie.conf.base.device.Device):
 
 
 class EmulatedDevice(Device):
-
-    role = Device.role.copy(
-        default=Device.Role.emulated)
 
     tgen_interface = managedattribute(
         name='tgen_interface',

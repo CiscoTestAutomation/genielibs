@@ -486,7 +486,8 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
         log.error('NETCONF message data not present')
         return False
 
-    if 'report-all' in rpc_verify.with_defaults:
+    if 'explicit' not in rpc_verify.with_defaults and \
+            'report-all' in rpc_verify.with_defaults:
         for node in rpc_data.get('nodes', []):
             if node.get('edit-op', '') == 'create' and node.get('default', ''):
                 log.info(

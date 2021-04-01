@@ -20,6 +20,7 @@ from genie.abstract import Lookup
 from genie.libs import parser
 from genie.utils.timeout import Timeout
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
+from genie.libs.sdk.libs.utils.common import set_filetransfer_attributes
 
 # ATS
 from pyats.utils.objects import R, find
@@ -73,10 +74,9 @@ class HA(HA_iosxe):
         device = self.device
         filetransfer = FileUtils.from_device(device)
 
-        if not device.filetransfer_attributes['protocol']:
-            raise Exception("Unable to continue ISSU process, file transfer "
-                "'protocol' is missing. Check the testbed yaml file and the "
-                "provided arguments.")
+        if not hasattr(self.device, 'filetransfer_attributes'):
+            filetransfer = FileUtils.from_device(self.device)
+            set_filetransfer_attributes(self, self.device, filetransfer)
 
         for disk in ['harddisk:', 'stby-harddisk:']:
 

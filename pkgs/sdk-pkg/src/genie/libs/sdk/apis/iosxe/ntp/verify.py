@@ -76,13 +76,14 @@ def verify_smallest_stratum_ntp_system_peer(
 
 
 def is_ntp_clock_synchronized(
-    device, ip_address_peer, max_time=60, check_interval=5, check_leap=False
+    device, ip_address_peer=None, max_time=60, check_interval=5, check_leap=False
 ):
     """ Verify that clock is synchronized to given peer
 
         Args:
             device (`obj`): Device object
-            ip_address_peer (`str`): peer ip address
+            ip_address_peer (`str`): peer ip address. 
+                            If None, peer/reference clock is ignored.
             max_time (int): Maximum wait time for the trigger,
                             in second. Default: 60
             check_interval (int): Wait time between iterations when looping is needed,
@@ -102,10 +103,13 @@ def is_ntp_clock_synchronized(
                         == True
                     ):
                         return True
-                elif (
-                    out["clock_state"]["system_status"]["refid"]
-                    == ip_address_peer
-                ):
+                elif ip_address_peer:
+                    if (
+                        out["clock_state"]["system_status"]["refid"]
+                        == ip_address_peer
+                    ):
+                        return True
+                else:
                     return True
         except Exception:
             pass

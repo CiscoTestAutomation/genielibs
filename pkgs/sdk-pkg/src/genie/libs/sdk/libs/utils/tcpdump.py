@@ -51,14 +51,14 @@ class TcpDump(object):
             # Find server
             servers = self.device.testbed.servers
 
-            # Check if there is a self.protocol server
-            if self.protocol not in servers:
+            # Check if there is a self.device.name server
+            if self.device.name not in servers:
                 raise Exception("'{p}' server missing in the testbed "
-                                "yaml file".format(p=self.protocol))
+                                "yaml file".format(p=self.device.name))
 
             # Find ip
-            ip = servers[self.protocol]['address']
-            port = servers[self.protocol].get('custom', {}).get('port', 22)
+            ip = servers[self.device.name]['address']
+            port = servers[self.device.name].get('custom', {}).get('port', 22)
             local_file = os.path.join(self.local_dir,
                                       os.path.basename(self.pcap_file))
 

@@ -37,6 +37,7 @@ DIST_DIR      = $(BUILD_DIR)/dist
 BUILD_CMD     = python setup.py bdist_wheel --dist-dir=$(DIST_DIR)
 PROD_USER     = pyadm@pyats-ci
 PROD_PKGS     = /auto/pyats/packages
+STAGING_PKGS  = /auto/pyats/staging/packages
 PROD_SCRIPTS  = /auto/pyats/bin
 TESTCMD       = runAll
 WATCHERS      = asg-genie-dev@cisco.com
@@ -61,7 +62,7 @@ PYPI_PKGS      = health-pkg clean-pkg conf-pkg ops-pkg robot-pkg sdk-pkg filetra
 ALL_PKGS       = $(PYPI_PKGS)
 
 .PHONY: help docs distribute_docs clean check devnet\
-	develop undevelop distribute test install_build_deps
+	develop undevelop distribute distribute_staging test install_build_deps \
 	uninstall_build_deps $(ALL_PKGS)
 
 help:
@@ -101,6 +102,7 @@ help:
 	@echo "     --- distributions to production environment ---"
 	@echo ""
 	@echo " distribute           distribute built pkgs to production server"
+	@echo " distribute_staging   distribute build pkgs to staging area"
 	@echo ""
 	@echo "     --- redirects ---"
 	@echo " docs             create all documentation locally. This the same as"
@@ -203,6 +205,17 @@ distribute:
 	@echo "Done."
 	@echo ""
 
+distribute_staging:
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Copying all distributable to $(STAGING_PKGS)"
+	@test -d $(DIST_DIR) || { echo "Nothing to distribute! Exiting..."; exit 1; }
+	@ssh -q $(PROD_USER) 'test -e $(STAGING_PKGS)/$(PKG_NAME) || mkdir $(STAGING_PKGS)/$(PKG_NAME)'
+	@scp $(DIST_DIR)/* $(PROD_USER):$(STAGING_PKGS)/$(PKG_NAME)/
+	@echo ""
+	@echo "Done."
+	@echo ""
+
 all: $(ALL_PKGS)
 	@echo ""
 	@echo "Done."
@@ -265,19 +278,19 @@ changelogs:
 	@echo "--------------------------------------------------------------------"
 	@echo "Generating changelog file"
 	@echo ""
-	@python "./tools/changelog_script.py" "./pkgs/clean-pkg/changelog/undistributed" --output "./pkgs/clean-pkg/changelog/undistributed.rst"
+	@python -c "from genie.utils.make_changelog import main; main('./pkgs/clean-pkg/changelog/undistributed', './pkgs/clean-pkg/changelog/undistributed.rst')"
 	@echo "clean-pkg changelog done..."
-	@python "./tools/changelog_script.py" "./pkgs/health-pkg/changelog/undistributed" --output "./pkgs/health-pkg/changelog/undistributed.rst"
+	@python -c "from genie.utils.make_changelog import main; main('./pkgs/health-pkg/changelog/undistributed', './pkgs/health-pkg/changelog/undistributed.rst')"
 	@echo "health-pkg changelog done..."
-	@python "./tools/changelog_script.py" "./pkgs/conf-pkg/changelog/undistributed" --output "./pkgs/conf-pkg/changelog/undistributed.rst"
+	@python -c "from genie.utils.make_changelog import main; main('./pkgs/conf-pkg/changelog/undistributed', './pkgs/conf-pkg/changelog/undistributed.rst')"
 	@echo "conf-pkg changelog done..."
-	@python "./tools/changelog_script.py" "./pkgs/filetransferutils-pkg/changelog/undistributed" --output "./pkgs/filetransferutils-pkg/changelog/undistributed.rst"
+	@python -c "from genie.utils.make_changelog import main; main('./pkgs/filetransferutils-pkg/changelog/undistributed', './pkgs/filetransferutils-pkg/changelog/undistributed.rst')"
 	@echo "filetransferutils-pkg changelog done..."
-	@python "./tools/changelog_script.py" "./pkgs/ops-pkg/changelog/undistributed" --output "./pkgs/ops-pkg/changelog/undistributed.rst"
+	@python -c "from genie.utils.make_changelog import main; main('./pkgs/ops-pkg/changelog/undistributed', './pkgs/ops-pkg/changelog/undistributed.rst')"
 	@echo "ops-pkg changelog done..."
-	@python "./tools/changelog_script.py" "./pkgs/robot-pkg/changelog/undistributed" --output "./pkgs/robot-pkg/changelog/undistributed.rst"
+	@python -c "from genie.utils.make_changelog import main; main('./pkgs/robot-pkg/changelog/undistributed', './pkgs/robot-pkg/changelog/undistributed.rst')"
 	@echo "robot-pkg changelog done..."
-	@python "./tools/changelog_script.py" "./pkgs/sdk-pkg/changelog/undistributed" --output "./pkgs/sdk-pkg/changelog/undistributed.rst"
+	@python -c "from genie.utils.make_changelog import main; main('./pkgs/sdk-pkg/changelog/undistributed', './pkgs/sdk-pkg/changelog/undistributed.rst')"
 	@echo "sdk-pkg changelog done..."
 	@echo ""
 	@echo "Done."

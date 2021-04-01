@@ -80,18 +80,26 @@ def verify_task_replication(device,
         protocol_name = out.q.get_values('task-protocol-replication-name')
         protocol_state = out.q.get_values('task-protocol-replication-state')
 
+        name_state_status = {name: state for name, state in zip(protocol_name, protocol_state)}
+
         if state and re_mode:
             if state == expected_state and re_mode == expected_re_mode:
+
                 if expected_protocols and expected_protocols_sync_status:
-                    if expected_protocols == protocol_name and \
-                        expected_protocols_sync_status == protocol_state:
-                        return True
+                    for protocol in expected_protocols:
+                        if name_state_status.get(protocol) in expected_protocols_sync_status:
+                            return True
+
                 elif expected_protocols:
-                    if expected_protocols == protocol_name:
-                        return True
+                    for protocol in expected_protocols:
+                        if protocol in protocol_name:
+                            return True
+
                 elif expected_protocols_sync_status:
-                    if expected_protocols_sync_status == protocol_state:
-                        return True
+                    for state in expected_protocols_sync_status:
+                        if state in protocol_state:
+                            return True
+
                 else:
                     return True
 

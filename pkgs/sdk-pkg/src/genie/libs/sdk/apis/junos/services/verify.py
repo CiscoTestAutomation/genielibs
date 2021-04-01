@@ -3,6 +3,7 @@
 # Python
 import re
 import logging
+import operator
 from datetime import datetime
 
 # Genie
@@ -98,7 +99,7 @@ def verify_services_accounting_status(device, expected_export_format=None, route
 
 
 def verify_services_accounting_flow(device, expected_flow_packets_ten_second_rate=None, expected_active_flows=None,
-                                    max_time=60, check_interval=10):
+                                    max_time=60, check_interval=10, invert=False):
     """ Verify 'show services accounting flow' against criteria
 
     Args:
@@ -107,6 +108,7 @@ def verify_services_accounting_flow(device, expected_flow_packets_ten_second_rat
         expected_active_flows (str): expected active flows
         max_time (int, optional): Maximum timeout time. Defaults to 60.
         check_interval (int, optional): Check interval. Defaults to 10.
+        invert (bool, optional): Inverts the API
 
     Returns:  
         Boolean
@@ -114,6 +116,10 @@ def verify_services_accounting_flow(device, expected_flow_packets_ten_second_rat
     Raises:
         N/A
     """
+
+    op = operator.ne
+    if invert:
+        op = operator.eq
 
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
@@ -141,12 +147,10 @@ def verify_services_accounting_flow(device, expected_flow_packets_ten_second_rat
         #    }
         #]
 
-        if expected_flow_packets_ten_second_rate and \
-            out.q.get_values('flow-packets-ten-second-rate',0) == str(expected_flow_packets_ten_second_rate):
+        if expected_flow_packets_ten_second_rate and op(out.q.get_values('flow-packets-ten-second-rate', 0), str(expected_flow_packets_ten_second_rate)):
             timeout.sleep()
             continue
-        if expected_active_flows and \
-            out.q.get_values('active-flows',0) != str(expected_active_flows):
+        if expected_active_flows and op(out.q.get_values('active-flows', 0), str(expected_active_flows)):
             timeout.sleep()
             continue
 
@@ -253,7 +257,7 @@ def verify_services_accounting_aggregation(device, name, expected_source_address
         
         #"flow-aggregate-template-detail": {
         #    "flow-aggregate-template-detail-ipv4": {
-        #        "detail-entry": {
+        #        "detail-entry": [{
         #            "source-address": "27.93.202.64",
         #            "destination-address": "106.187.14.158",
         #            "source-port": "8",
@@ -269,34 +273,36 @@ def verify_services_accounting_aggregation(device, name, expected_source_address
         #            "end-time": "79167425",
         #            "packet-count": "1",
         #            "byte-count": "84",
-        #        }
+        #        }]
         #    }
         #}
 
+        for entry in out['services-accounting-information']\
+            ['flow-aggregate-template-detail']['flow-aggregate-template-detail-ipv4']\
+            ['detail-entry']:
 
-        if expected_source_address and \
-            out.q.get_values('source-address',0) != str(expected_source_address):
-            timeout.sleep()
-            continue
-        if expected_destination_address and \
-            out.q.get_values('destination-address',0) != str(expected_destination_address):
-            timeout.sleep()
-            continue
-        if expected_snmp_interface and \
-            out.q.get_values('input-snmp-interface-index',0) != str(expected_snmp_interface):
-            timeout.sleep()
-            continue
-        if expected_mpls_label1 and \
-            out.q.get_values('mpls-label-1',0) != str(expected_mpls_label1):
-            timeout.sleep()
-            continue
-        if expected_mpls_label2 and \
-            out.q.get_values('mpls-label-2',0) != str(expected_mpls_label2):
-            timeout.sleep()
-            continue
+            passflag=True
+            entry = Dq(entry)
+            if expected_source_address and \
+                entry.get_values('source-address', 0) != str(expected_source_address):
+                passflag = False
+            if expected_destination_address and \
+                entry.get_values('destination-address', 0) != str(expected_destination_address):
+                passflag = False
+            if expected_snmp_interface and \
+                entry.get_values('input-snmp-interface-index', 0) != str(expected_snmp_interface):
+                passflag = False
+            if expected_mpls_label1 and \
+                entry.get_values('mpls-label-1', 0) != str(expected_mpls_label1):
+                passflag = False
+            if expected_mpls_label2 and \
+                entry.get_values('mpls-label-2', 0) != str(expected_mpls_label2):
+                passflag = False
 
-        return True
-        
+            if (expected_source_address or expected_destination_address or expected_snmp_interface or expected_mpls_label1 or expected_mpls_label2) and passflag:
+                return True
+
+        timeout.sleep()
 
     return False
 

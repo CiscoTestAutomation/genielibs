@@ -27,6 +27,7 @@ from pyats.topology.loader.markup import TestbedMarkupProcessor
 from pyats.utils.yaml import Loader
 from pyats.utils.yaml.markup import Processor as MarkupProcessor
 from pyats.utils.schemaengine import Use as PyatsUse
+from pyats.utils.commands import do_lint
 
 # Unicon
 from unicon.core.errors import (SubCommandFailure, TimeoutError,
@@ -76,7 +77,8 @@ def verify_num_images_provided(image_list, expected_images=1):
         return True
 
 def _apply_configuration(device, configuration=None, configuration_from_file=None,
-                         file=None, configure_replace=False, timeout=60):
+                         file=None, configure_replace=False, timeout=60,
+                         copy_directly_to_startup=False):
 
     if configuration or configuration_from_file and not file:
         # Apply raw configuration using configure service
@@ -121,7 +123,12 @@ def _apply_configuration(device, configuration=None, configuration_from_file=Non
         # Apply configuration from file
 
         try:
-            if configure_replace:
+            if copy_directly_to_startup:
+                log.info("Applying configuration from '{}' via "
+                         "'copy to startup-config'".format(file))
+                device.api.execute_copy_to_startup_config(
+                    file=file, copy_config_timeout=timeout)
+            elif configure_replace:
                 log.info("Applying configuration from '{}' via "
                          "'configure replace'".format(file))
                 device.api.restore_running_config(
@@ -142,7 +149,7 @@ def _apply_configuration(device, configuration=None, configuration_from_file=Non
             # type of exception
 
             log.warning("The device hostname changed or the configuration "
-                        "failed to apply. Attempting to recover...")
+                        "failed to apply. Attempting to recover...", exc_info=True)
 
             try:
                 device.destroy()
@@ -312,13 +319,14 @@ def pretty_schema_exception(e):
     else:
         return e
 
-def validate_clean(clean_file, testbed_file):
+def validate_clean(clean_file, testbed_file, lint=True):
     """ Validates the clean yaml using device abstraction to collect
         the proper schemas
 
         Args:
             clean_file (str/dict): clean datafile
             testbed_file (str/dict): testbed datafile
+            lint (bool, optional): Do yaml linting on the clean_file
 
         Returns:
             {
@@ -329,6 +337,12 @@ def validate_clean(clean_file, testbed_file):
     warnings = []
     exceptions = []
     validation_results = {'warnings': warnings, 'exceptions': exceptions}
+
+    if lint:
+        lint_messages = do_lint(clean_file)
+        for message in lint_messages:
+            # we want to use the str representation not the object
+            warnings.append(str(message))
 
     # these sections are not true stages and therefore cant be loaded
     sections_to_ignore = [

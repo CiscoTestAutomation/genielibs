@@ -1214,12 +1214,14 @@ def reload(section,
     Optional('check_interval'): int,
     Optional('configure_replace'): bool,
     Optional('skip_copy_run_start'): bool,
+    Optional('copy_directly_to_startup'): bool,
 })
 @aetest.test
 def apply_configuration(section, steps, device, configuration=None,
     configuration_from_file=None, file=None, config_timeout=60,
     config_stable_time=10, copy_vdc_all=False, max_time=300,
-    check_interval=60, configure_replace=False, skip_copy_run_start=False):
+    check_interval=60, configure_replace=False, skip_copy_run_start=False,
+    copy_directly_to_startup=False):
 
     """ Apply configuration on the device, either by providing a file and/or
     raw configuration.
@@ -1237,6 +1239,7 @@ def apply_configuration(section, steps, device, configuration=None,
         max_time: <Maximum time section will take for checks in seconds, 'int'> (Optional)
         check_interval: <Time interval, 'int'> (Optional)
         skip_copy_run_start: <Option to skip copy run start. Default False. 'bool'> (Optional)
+        copy_directly_to_startup: <Copy configuration directly to startup. Default False. 'bool'> (Optional)
 
     Example
     -------
@@ -1251,6 +1254,7 @@ def apply_configuration(section, steps, device, configuration=None,
         copy_vdc_all: True
         max_time: 300
         check_interval: 20
+        copy_directly_to_startup: False
 
     """
 
@@ -1268,7 +1272,8 @@ def apply_configuration(section, steps, device, configuration=None,
                 configuration_from_file=configuration_from_file,
                 file=file,
                 configure_replace=configure_replace,
-                timeout=config_timeout)
+                timeout=config_timeout,
+                copy_directly_to_startup=copy_directly_to_startup)
         except Exception as e:
             step.failed("Error while applying configuration to device "
                         "{}\n{}".format(device.name, str(e)))
@@ -1278,7 +1283,7 @@ def apply_configuration(section, steps, device, configuration=None,
                     device.name))
 
     # Copy running-config to startup-config
-    if not skip_copy_run_start:
+    if not copy_directly_to_startup and not skip_copy_run_start:
         with steps.start("Copy running-config to startup-config on device {}".\
                         format(device.name)) as step:
             try:

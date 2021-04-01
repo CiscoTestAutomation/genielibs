@@ -861,3 +861,51 @@ def check_regexp_uptime(log_output, expect_uptime, pre_time, tolerance=0.5):
     if not flag:
       raise Exception('Not all the regexps uptime are closed to the ones given from trigger yaml file. \n'
         'Please refer the table to see if anything needs to be adjusted from trigger yaml file')
+
+def set_filetransfer_attributes(self, device, fileutil):
+    """ Used for certain triggers like TriggerIssu when ran from run_genie_sdk
+    as some setup for that trigger is normally done in the configure subsection.
+    """
+
+    testbed = device.testbed
+
+    if (hasattr(self, 'parent') and
+            hasattr(self.parent, 'filetransfer_protocol') and
+            self.parent.filetransfer_protocol):
+        protocol = self.parent.filetransfer_protocol
+    else:
+        protocol = None
+
+    if not hasattr(testbed, 'servers'):
+        raise Exception("No servers have been defined in the testbed yaml")
+
+    address = None
+
+    if protocol:
+        if protocol not in testbed.servers:
+            raise Exception("The protocol '{}' is not provided in the "
+                            "testbed.servers block".format(protocol))
+
+        if not hasattr(testbed.servers[protocol], 'address'):
+            raise Exception("There was no 'address' provided under the '{}' "
+                            "server in the testbed.servers block".format(protocol))
+
+        address = testbed.servers[protocol].address
+    else:
+        # no user provided protocol provided. Grab any suitable one.
+        for server in testbed.servers:
+            if not hasattr(testbed.servers[server], 'address'):
+                continue
+
+            address = testbed.servers[server].address
+            protocol = server
+            break
+
+    device.filetransfer = fileutil
+    device.filetransfer_attributes = {}
+    device.filetransfer_attributes['server_address'] = address
+    device.filetransfer_attributes['protocol'] = protocol
+    device.filetransfer_attributes['path'] = \
+        testbed.servers[protocol].get('path')
+    device.filetransfer_attributes['credentials'] = \
+        testbed.servers[protocol].get('credentials')

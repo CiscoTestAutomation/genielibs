@@ -6,6 +6,8 @@ import re
 
 # Genie
 from genie.libs.sdk.apis.utils import get_config_dict
+from genie.libs.parser.nxos.ping import Ping
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # unicon
 from unicon.eal.dialogs import Dialog, Statement
@@ -137,3 +139,65 @@ def get_md5_hash_of_file(device, file, timeout=60):
     except Exception as e:
         log.warning(e)
         return None
+
+def ping(device,
+         address,
+         ttl=None,
+         timeout=None,
+         tos=None,
+         dscp=None,
+         size=None,
+         count=None,
+         source=None,
+         rapid=False,
+         do_not_fragment=False,
+         validate=False,
+         vrf=None,
+         command=None,
+         output=None):
+    """ execute ping and parse ping result and return structure data
+
+    Args:
+        device ('obj'): Device object
+        address ('str'): Address value
+        tos ('int'): Not supported. type of service value
+        dscp (`str`): Not supported. DSCP value
+        size ('str'): data bytes expected
+        ttl ('int'): Not supported
+        timeout ('int'): timeout interval
+        count ('int'): repeat count
+        source ('str'): source address or interface, default: None
+        rapid ('bool'): Not supported
+        do_not_fragment ('bool'): enable do not fragment bit in IP header, default: False
+        validate (`bool`): Not supported. validate reply data, default: False
+        vrf ('str'): VRF name
+        command (`str`): ping command. This will ignore all other arguments
+        output (`str`): ping command output. no parser call involved
+    Returns:
+        Boolean
+    Raises:
+        None
+
+    """
+    try:
+        obj = Ping(device=device)
+        return obj.parse(addr=address,
+                         vrf=vrf,
+                         tos=tos,
+                         dscp=dscp,
+                         size=size,
+                         ttl=ttl,
+                         timeout=timeout,
+                         count=count,
+                         source=source,
+                         rapid=rapid,
+                         do_not_fragment=do_not_fragment,
+                         validate=validate,
+                         command=command,
+                         output=output)
+    except SchemaEmptyParserError:
+        log.info('parsed_output was empty')
+        return {}
+    except Exception as e:
+        log.warning(e)
+        return {}

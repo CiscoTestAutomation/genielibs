@@ -102,6 +102,10 @@ def verify_log_exists(device, file_name, expected_log,
 
         if op(log_found):
             return True
+        else:
+            log_found = ''.join(log_output['file-content']).replace("'",'')
+            if op(re.findall(r"{}".format(expected_log),log_found)):
+                return True
 
         timeout.sleep()
     return False
@@ -167,6 +171,8 @@ def verify_no_log_output(device, file_name,max_time=60,
 
         # {'file-content': ['', '', '', '', '{master}']}
         elif set(log_output['file-content']) == {'', '{master}'}:
+            return True
+        elif set(log_output['file-content']) == {'', ''}:
             return True
 
         timeout.sleep()

@@ -93,15 +93,17 @@ def get_interfaces_status(device):
     """
 
     try:
-        out=device.parse('show ip interface brief')
+        out=device.parse('show interface brief')
     except SchemaEmptyParserError as e:
         log.error('No interface information found')
         return None
 
-    # {'interface': {'GigabitEthernet1': {'interface_is_ok': 'YES',
+    # {'interface': 
+    #   {'ethernet':
+    #       {'GigabitEthernet1': {'interface_is_ok': 'YES',
     #           'ip_address': '172.16.1.210',
     #           'method': 'DHCP',
     #           'protocol': 'up',
     #           'status': 'up'},
 
-    return {key:val.get('interface_status').split('-')[-1].title() for key, val in out.get('interface', {}).items()}
+    return {key: val['status'].title() for key, val in out.get('interface', {}).get('ethernet', {}).items()}

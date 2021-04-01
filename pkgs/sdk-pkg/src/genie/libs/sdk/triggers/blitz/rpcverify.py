@@ -387,8 +387,10 @@ class RpcVerify():
             * Logical operation to apply to replay value
             * Value to use when applying logic to replay value
         Returns:
-          bool: True, logic passed, False, logic failed
+          Tuple: bool: Pass | Fail, str: log message
         """
+        log_msg = 'None'
+
         try:
             # set this to operation in case we get an exception
             eval_text = field['op']
@@ -401,14 +403,13 @@ class RpcVerify():
                     if not datatype:
                         value = float(value)
                 except ValueError:
-                    log.error(
-                        'OPERATION VALUE {0}: {1} invalid for range {2}{3}'
-                        .format(field['xpath'],
-                                str(value),
-                                str(field['value']),
-                                ' FAILED')
-                    )
-                    return False
+                    log_msg = 'OPERATION VALUE {0}: {1} invalid for range {2}{3}'.format(
+                            field['xpath'],
+                            str(value),
+                            str(field['value']),
+                            ' FAILED'
+                        )
+                    return (False, log_msg)
 
                 if len(field['value'].split(',')) == 2:
                     rng = field['value'].split(',')
@@ -444,29 +445,24 @@ class RpcVerify():
                         # change value to float type for subsequent compare operation
                         value = float(value)
                 except TypeError:
-                    log.error(
-                        'OPERATION VALUE {0}: invalid range {1}{2}'
-                        .format(field['xpath'],
-                                str(field['value']),
-                                ' FAILED')
+                    log_msg = 'OPERATION VALUE {0}: invalid range {1}{2}'.format(
+                        field['xpath'],
+                        str(field['value']),
+                        ' FAILED'
                     )
-                    return False
+                    return (False, log_msg)
                 if value >= r1 and value <= r2:
-                    log.info(
-                        'OPERATION VALUE {0}: {1} in range {2} SUCCESS'
-                        .format(
+                    log_msg = 'OPERATION VALUE {0}: {1} in range {2} SUCCESS'.format(
                             field['xpath'], str(value), str(field['value'])
                         )
-                    )
                 else:
-                    log.error(
-                        'OPERATION VALUE {0}: {1} out of range {2}{3}'
-                        .format(field['xpath'],
-                                str(value),
-                                str(field['value']),
-                                ' FAILED')
-                    )
-                    return False
+                    log_msg = 'OPERATION VALUE {0}: {1} out of range {2}{3}'.format(
+                            field['xpath'],
+                            str(value),
+                            str(field['value']),
+                            ' FAILED'
+                        )
+                    return (False, log_msg)
             else:
                 if not datatype:
                     value = str(value)
@@ -476,12 +472,10 @@ class RpcVerify():
                         # the eval_text will show the issue
                         eval_text = '"' + value + '" ' + field['op']
                         eval_text += ' "' + fval + '"'
-                        log.error(
-                            'OPERATION VALUE {0}: {1} FAILED'.format(
+                        log_msg = 'OPERATION VALUE {0}: {1} FAILED'.format(
                                 field['xpath'], eval_text
                             )
-                        )
-                        return False
+                        return (False, log_msg)
                     if value.isnumeric():
                         eval_text = value + ' ' + field['op'] + ' '
                         eval_text += fval
@@ -496,29 +490,24 @@ class RpcVerify():
                             eval_text = '"' + value + '" ' + field['op']
                             eval_text += ' "' + fval + '"'
                     if eval(eval_text):
-                        log.info(
-                            'OPERATION VALUE {0}: {1} SUCCESS'.format(
+                        log_msg = 'OPERATION VALUE {0}: {1} SUCCESS'.format(
                                 field['xpath'], eval_text
                             )
-                        )
                     else:
-                        log.error(
-                            'OPERATION VALUE {0}: {1} FAILED'.format(
+                        log_msg = 'OPERATION VALUE {0}: {1} FAILED'.format(
                                 field['xpath'], eval_text
                             )
-                        )
-                        return False
+                        return (False, log_msg)
                 else:
-                    log_msg = 'OPERATION VALUE {0}: {1} {2} {3} {4}'
+                    log_tmp = 'OPERATION VALUE {0}: {1} {2} {3} {4}'
                     failed_type = 'FAILED'
                     evaldt = EvalDatatype(value, field)
                     if evaldt.evaluate():
-                        log.info(log_msg.format(
+                        log_msg = log_tmp.format(
                                 field['xpath'], str(value),
                                 field['op'], str(field['value']),
                                 'SUCCESS'
                             )
-                        )
                     else:
                         if evaldt.min_max_failed:
                             failed_type = '"{0}" MIN-MAX FAILED'.format(
@@ -526,25 +515,60 @@ class RpcVerify():
                             )
                         elif evaldt.bool_failed:
                             failed_type = 'BOOLEAN FAILED'
-                        log.error(log_msg.format(
+                        log_msg = log_tmp.format(
                                 field['xpath'], str(value),
                                 field['op'], str(field['value']),
                                 failed_type
                             )
-                        )
-                        return False
+                        return (False, log_msg)
 
         except Exception as e:
-            log.error(
-                'OPERATION VALUE {0}: {1} {2} FAILED\n{3}'.format(
+            log_msg = 'OPERATION VALUE {0}: {1} {2} FAILED\n{3}'.format(
                     field['xpath'], str(value), eval_text, str(e)
                 )
-            )
-            return False
+            return (False, log_msg)
 
-        return True
+        return (True, log_msg)
 
-    def process_operational_state(self, response, returns):
+    def process_one_operational_state(self, response, field, key=False):
+        """Check if a response contains an expected result.
+
+        Args:
+          response (list): List of tuples containing
+                           NETCONF - lxml.Element, xpath.
+                           GNMI - value, xpath
+          field (dict): Expected field in result includes
+                        datatype, nodetype, and value.
+        Returns:
+          bool: True if successful.
+        """
+        log_msg = 'ERROR: "{0}" Not found.'.format(field['xpath'])
+        for resp in response:
+            for reply, reply_xpath in resp:
+                if self.et.iselement(reply):
+                    # NETCONF response
+                    value_state = self._process_values(reply, '')
+                    value = value_state.get('reply_val', 'empty')
+                    name = self.et.QName(reply).localname
+                else:
+                    # GNMI response
+                    value = reply
+                    name = reply_xpath[reply_xpath.rfind('/') + 1:]
+                if 'xpath' in field and field['xpath'] == reply_xpath and \
+                        name == field['name']:
+                    result, log_msg = self.check_opfield(value, field)
+                    if result:
+                        log.info(log_msg)
+                        return True
+        if key:
+            log.info('Parent list key "{0} == {1}" not required.'.format(
+                field['name'], field['value']
+            ))
+            return True
+        log.info(log_msg)
+        return False
+
+    def process_operational_state(self, response, returns, key=False):
         """Test NETCONF or GNMI operational state response.
 
         Args:
@@ -556,7 +580,6 @@ class RpcVerify():
           bool: True if successful.
         """
         result = True
-        list_entry_found = []
         opfields = returns
 
         if not opfields:
@@ -574,55 +597,9 @@ class RpcVerify():
             # yang.connector only returned one list of fields
             response = [response]
 
-        for resp in response:
-            for reply, reply_xpath in resp:
-                if self.et.iselement(reply):
-                    # NETCONF response
-                    value_state = self._process_values(reply, '')
-                    value = value_state.get('reply_val', 'empty')
-                    name = self.et.QName(reply).localname
-                else:
-                    # GNMI response
-                    value = reply
-                    name = reply_xpath[reply_xpath.rfind('/') + 1:]
-                for field in opfields:
-                    sel = field.get('selected', True)
-                    if isinstance(sel, string_types):
-                        if sel.lower() == 'false':
-                            opfields.remove(field)
-                            continue
-                    elif sel is False:
-                        opfields.remove(field)
-                        continue
-                    if 'xpath' in field and field['xpath'] == reply_xpath and \
-                            name == field['name']:
-                        op_chk = self.check_opfield(value, field)
-                        list_entry_found.append((field, op_chk))
-                        break
-
-            # reset for next entry
-            opfields = returns
-
-        for entry, passed in list_entry_found:
-            # Now see how many fields were found
-            for field in opfields:
-                # IDs will be unique so eliminate them from match
-                field.pop('id', '')
-                entry.pop('id', '')
-                if field == entry and passed:
-                    opfields.remove(field)
-
-        if opfields:
-            # Missing fields in rpc-reply
-            msg = 'OPERATIONAL STATE FAILED: Missing value(s)\n'
-            for opfield in opfields:
-                if opfield.get('selected', True) is False:
-                    continue
-                msg += opfield.get('xpath', '') + ' value: '
-                msg += str(opfield.get('value', ''))
-                msg += '\n'
-            log.error(msg)
-            result = False
+        for field in returns:
+            if not self.process_one_operational_state(response, field, key):
+                result = False
 
         return result
 
@@ -753,7 +730,9 @@ class RpcVerify():
         Returns
           bool: True = passed, False = failed.
         """
+        result = True
         nodes = []
+        list_keys = []
         par_xp = ''
         del_parent = False
         if 'explicit' in self.with_defaults:
@@ -764,14 +743,11 @@ class RpcVerify():
             log.info('WITH DEFAULTS - REPORT-ALL MODE')
         else:
             # RFC 6243 not supported
-            log.info('WITH DEFAULTS - NOT SUPPORTED')
+            log.info('WITH DEFAULTS - NOT REPORTED')
 
         for node in rpc_data.get('nodes', []):
-            edit_op = node.get('edit-op')
-            default = node.get('default')
             xpath = re.sub(self.RE_FIND_KEYS, '', node.get('xpath', ''))
             xpath = re.sub(self.RE_FIND_PREFIXES, '/', xpath)
-            value = node.get('value', '')
             if del_parent:
                 # Check to see if parent and child have same xpath,
                 # so "not boundary" will be True hence continue.
@@ -782,31 +758,34 @@ class RpcVerify():
                     if not boundary or \
                             boundary.startswith('/'):
                         continue
-            if node.get('nodetype', '') == 'list':
-                if edit_op in ['delete', 'remove']:
-                    # get-config on empty list returns no entry data but need
-                    # to check the parent xpath for any key/values
-                    list_xpath = node.get('xpath', '')
-                    parent_path = list_xpath[:list_xpath.rfind('/')]
-                    self.add_key_nodes(parent_path, nodes)
-                    del_parent = True
-                    par_xp = xpath
-                elif edit_op in ['create', 'merge', 'replace']:
-                    # get-config on list so check keys were returned
-                    list_xpath = node.get('xpath', '')
-                    self.add_key_nodes(list_xpath, nodes)
-                continue
+            edit_op = node.get('edit-op')
+            default = node.get('default')
+            value = node.get('value', '')
             if not value:
                 value = 'empty'
-            if 'explicit' in self.with_defaults:
-                # RFC 6243 - Only tags set by client sould be in reply
+
+            if node.get('nodetype', '') == 'list':
                 if edit_op in ['delete', 'remove']:
-                    if node.get('nodetype', '') == 'container':
-                        par_xp = xpath
-                        del_parent = True
-                    self.add_key_nodes(node.get('xpath', ''), nodes)
+                    del_parent = True
+                    par_xp = xpath
                     continue
-            elif 'report-all' in self.with_defaults:
+                # get-config on empty list returns no entry data but need
+                # to check the parent xpath for any key/values
+                list_xpath = node.get('xpath', '')
+                parent_path = list_xpath[:list_xpath.rfind('/')]
+                self.add_key_nodes(parent_path, list_keys)
+
+            if node.get('nodetype', '') == 'container':
+                if edit_op in ['delete', 'remove']:
+                    # presence container
+                    par_xp = xpath
+                    del_parent = True
+                    continue
+                self.add_key_nodes(node.get('xpath', ''), list_keys)
+                continue
+
+            if 'explicit' not in self.with_defaults and \
+                    'report-all' in self.with_defaults:
                 # RFC 6243 - if value is default it should match
                 if edit_op in ['delete', 'remove']:
                     nodes.append(
@@ -817,26 +796,27 @@ class RpcVerify():
                          'op': '=='}
                     )
                     continue
-            else:
-                # RFC 6243 not supported
-                if edit_op in ['delete', 'remove']:
-                    if node.get('nodetype', '') == 'contaner':
-                        # presence container so nothing else is relavent
-                        par_xp = xpath
-                        del_parent = True
-                    continue
-            nodes.append(
-                {'name': xpath.split('/')[-1],
-                 'value': value,
-                 'xpath': xpath,
-                 'selected': True,
-                 'op': '=='}
-            )
+
+            if edit_op not in ['delete', 'remove']:
+                nodes.append(
+                    {'name': xpath.split('/')[-1],
+                     'value': value,
+                     'xpath': xpath,
+                     'selected': True,
+                     'op': '=='}
+                )
+
         if not response and not nodes and \
                 edit_op in ['delete', 'remove']:
             log.info('NO DATA RETURNED')
             return True
-        return self.process_operational_state(response, nodes)
+        for node in nodes:
+            if not self.process_operational_state(response, [node]):
+                result = False
+        for node in list_keys:
+            if not self.process_operational_state(response, [node], key=True):
+                result = False
+        return result
 
     def add_key_nodes(self, xpath, nodes):
         """Add the List key nodes to the opfields"""

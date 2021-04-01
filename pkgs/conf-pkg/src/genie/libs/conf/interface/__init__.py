@@ -25,6 +25,8 @@ from genie.libs import conf
 from genie.libs.conf.base import IPv4Address, IPv6Address, IPv4Interface, IPv6Interface, MAC
 from genie.libs.conf.vrf import Vrf
 
+from pyats.topology.schema import ipv6_or_list_of_ipv6
+
 
 log = logging.getLogger(__name__)
 
@@ -232,7 +234,7 @@ class Interface(BaseInterface):
     ipv6 = managedattribute(
         name='ipv6',
         default=None,
-        type=(None, IPv6Interface))
+        type=(None, ipv6_or_list_of_ipv6))
 
     vrf = managedattribute(
         name='vrf',

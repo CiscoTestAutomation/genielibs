@@ -14,6 +14,9 @@ from genie.parsergen import oper_fill_tabular
 
 # parser
 from genie.libs.parser.nxos.show_platform import ShowModule
+from genie.libs.sdk.libs.utils.common import set_filetransfer_attributes
+
+from pyats.utils.fileutils import FileUtils
 
 # module logger
 log = logging.getLogger(__name__)
@@ -97,10 +100,11 @@ class HA(HA_main):
             >>> upload_core_to_linux(core='RP_0_bt_logger_13899_20180112-184444-EST.core.gz')
         """
 
-        if not self.device.filetransfer_attributes['protocol']:
-            raise Exception("Unable to upload core to linux, file transfer "
-                "'protocol' is missing. Check the testbed yaml file and the "
-                "provided arguments.")
+        # if the setup was not done because the configure subsection did
+        # not run, then we do the setup here
+        if not hasattr(self.device, 'filetransfer_attributes'):
+            filetransfer = FileUtils.from_device(self.device)
+            set_filetransfer_attributes(self, self.device, filetransfer)
 
         filename, core = self.get_upload_cmd(**core)
         message = "Core dump upload attempt: {}".format(filename)

@@ -611,6 +611,9 @@ def verify_chassis_environment_component_present(device,
                 if name_ in component_list and state_ != expected_status:
                     result = False
                     break
+        if component_list[0] not in output.q.get_values('name', None):
+            timeout.sleep()
+            continue
         if result:
             return True
         timeout.sleep()
@@ -764,14 +767,20 @@ def verify_chassis_alarm_output(device,
             for single_description in alarm_description:
                 if message_topic in single_description:
                     return True
-                timeout.sleep()
+            timeout.sleep()
+            continue
         else:
+            match_flag = False
             if no_output:
                 return True
             for single_description in alarm_description:
-                if message_topic not in alarm_description:
-                    return True
+                if message_topic in single_description:
+                    match_flag=True
+            if match_flag:
                 timeout.sleep()
+                continue
+            else:
+                return True
 
     return False
 

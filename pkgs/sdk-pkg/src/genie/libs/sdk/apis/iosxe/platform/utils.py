@@ -6,7 +6,6 @@ import logging
 
 # Genie
 from genie.harness.utils import connect_device
-from genie.harness._commons_internal import _error_patterns
 
 # Unicon
 from unicon import Connection
@@ -349,8 +348,6 @@ def write_erase_reload_device(
     )
     try:
         connect_device(device=device)
-        # add error pattern
-        _error_patterns(device=device)
     except Exception as e:
         raise Exception(
             "'write erase' and 'reload' did not complete successfully"

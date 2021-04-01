@@ -20,15 +20,13 @@ class TriggerUnconfigConfigVlan(TriggerUnconfigConfig):
                                 in second. Default: 180
                 interval (`int`): Wait time between iteration when looping is needed,
                                 in second. Default: 15
-                method (`str`): Method to recover the device configuration,
-                              Support methods:
-                                'checkpoint': Rollback the configuration by
-                                              checkpoint (nxos),
-                                              archive file (iosxe),
-                                              load the saved running-config file on disk (iosxr)
         Optional:
+            method (`str`): Method to recover the device configuration,
+                            Support methods:
+                            'checkpoint': Rollback the configuration by checkpoint
+                            'local': Rollback the configuration by locally saved config
             tgn_timeout (`int`): Maximum wait time for all traffic threads to be
-                                 restored to the reference rate,
+                             restored to the reference rate,
                                  in second. Default: 60
             tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,
                                in second. Default: 10
@@ -90,13 +88,11 @@ class TriggerUnconfigConfigVlanVnsegment(TriggerUnconfigConfig):
                                     in second. Default: 180
                     interval (`int`): Wait time between iteration when looping is needed,
                                     in second. Default: 15
-                    method (`str`): Method to recover the device configuration,
-                                  Support methods:
-                                    'checkpoint': Rollback the configuration by
-                                                  checkpoint (nxos),
-                                                  archive file (iosxe),
-                                                  load the saved running-config file on disk (iosxr)
             Optional:
+                method (`str`): Method to recover the device configuration,
+                                Support methods:
+                                'checkpoint': Rollback the configuration by checkpoint
+                                'local': Rollback the configuration by locally saved config
                 tgn_timeout (`int`): Maximum wait time for all traffic threads to be
                                      restored to the reference rate,
                                      in second. Default: 60

@@ -4,9 +4,8 @@ import unittest
 import logging
 from time import time
 
-
-from  genie.libs.sdk.triggers.blitz import yangexec
-from  genie.libs.sdk.triggers.blitz.rpcverify import RpcVerify
+from genie.libs.sdk.triggers.blitz import yangexec
+from genie.libs.sdk.triggers.blitz.rpcverify import RpcVerify
 
 
 # TODO: Needs to be part of genielibs test run
@@ -46,7 +45,6 @@ operstate = """<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" \
   </data>
 </rpc-reply>"""
 
-
 multilist = """<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" \
     xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" \
         message-id="urn:uuid:39eeacc2-821e-4822-ba44-477c502d0242">
@@ -76,7 +74,6 @@ multilist = """<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" \
   </data>
 </rpc-reply>"""
 
-
 listreply = """<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" \
     xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:851d10b3-6cf2-4ed0-a58b-a7e34a61fe66">
   <data>
@@ -94,6 +91,24 @@ listreply = """<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" \
   </data>
 </rpc-reply>"""
 
+multientry = """<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:c8ced2db-d58f-4beb-9881-d9e7a01f0a2d">
+  <data>
+    <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
+      <num-exp xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-voice">
+        <dialled_digit>123</dialled_digit>
+        <dialled_pattern>1234</dialled_pattern>
+      </num-exp>
+      <num-exp xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-voice">
+        <dialled_digit>456</dialled_digit>
+        <dialled_pattern>4567</dialled_pattern>
+      </num-exp>
+    </native>
+  </data>
+</rpc-reply>"""
+
+no_data_rpc_reply = """<rpc-reply message-id="101" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <data/>
+</rpc-reply>"""
 
 class TestRpcVerify(unittest.TestCase):
     """Test cases for the rpcverify.RpcVerify methods."""
@@ -474,6 +489,119 @@ basic-mode=explicit&also-supported=report-all-tagged']
         result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
         self.assertTrue(result)
 
+    def test_auto_validate_delete_list_key_with_defaults(self):
+        """Deleted nested list entry expecting parent key in return."""
+        rpc_data = {
+            'nodes': [
+                {
+                    'edit-op': 'delete',
+                    'nodetype': 'list',
+                    'datatype': '',
+                    'xpath': '/um-segment-routing-cfg:segment-routing/um-segment-routing-traffic-eng-cfg:traffic-eng/um-segment-routing-traffic-eng-cfg:policies/um-segment-routing-traffic-eng-cfg:policy[um-segment-routing-traffic-eng-cfg:policy-name="genericstring"]/um-segment-routing-traffic-eng-cfg:autoroute/um-segment-routing-traffic-eng-cfg:include/um-segment-routing-traffic-eng-cfg:ipv4s/um-segment-routing-traffic-eng-cfg:ipv4[um-segment-routing-traffic-eng-cfg:address="10.1.1.1"][um-segment-routing-traffic-eng-cfg:length="64"]'
+                }
+            ]
+        }
+        rpc_reply = """<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="101">
+  <data>
+    <segment-routing xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-um-segment-routing-cfg">
+      <traffic-eng xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-um-segment-routing-traffic-eng-cfg">
+        <policies>
+          <policy>
+            <policy-name>genericstring</policy-name>
+          </policy>
+        </policies>
+      </traffic-eng>
+    </segment-routing>
+  </data>
+</rpc-reply>"""
+        resp = self.rpcv.process_rpc_reply(rpc_reply)
+        result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
+        self.assertTrue(result)
+
+    def test_auto_validate_multiple_list_entries(self):
+        """Edit-config of multiple list entries in one RPC."""
+        rpc_data = {
+            'nodes': [
+                {
+                    'datatype': 'string',
+                    'edit-op': 'create',
+                    'nodetype': 'leaf',
+                    'value': '1234',
+                    'xpath': '/ios:native/ios-voice:num-exp[ios-voice:dialled_digit="123"]/ios-voice:dialled_pattern'
+                },
+                {
+                    'datatype': 'string',
+                    'edit-op': 'create',
+                    'nodetype': 'leaf',
+                    'value': '4567',
+                    'xpath': '/ios:native/ios-voice:num-exp[ios-voice:dialled_digit="456"]/ios-voice:dialled_pattern'
+                }
+            ]
+        }
+        resp = self.rpcv.process_rpc_reply(multientry)
+        result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
+        self.assertTrue(result)
+
+    def test_auto_validate_delete_presence_with_children(self):
+        """Edit-config of multiple list entries in one RPC."""
+        rpc_data = {
+            'nodes': [
+                {
+                    'datatype': '',
+                    'edit-op': 'delete',
+                    'nodetype': 'container',
+                    'xpath': '/um-segment-routing-cfg:segment-routing/um-segment-routing-cfg:global-block'
+                },
+                {
+                    'datatype': 'uint32',
+                    'nodetype': 'leaf',
+                    'value': '16000',
+                    'xpath': '/um-segment-routing-cfg:segment-routing/um-segment-routing-cfg:global-block/um-segment-routing-cfg:lower-bound'
+                },
+                {
+                    'datatype': 'uint32',
+                    'nodetype': 'leaf',
+                    'value': '16001',
+                    'xpath': '/um-segment-routing-cfg:segment-routing/um-segment-routing-cfg:global-block/um-segment-routing-cfg:upper-bound'
+                }
+            ]
+        }
+        resp = self.rpcv.process_rpc_reply(no_data_rpc_reply)
+        result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
+        self.assertTrue(result)
+
+    def test_auto_validate_delete_nested_list_no_key(self):
+        rpc_data = {
+            'nodes': [
+                {
+                    'edit-op': 'delete',
+                    'nodetype': 'list',
+                    'datatype': '',
+                    'xpath': '/um-segment-routing-cfg:segment-routing/um-segment-routing-traffic-eng-cfg:traffic-eng/um-segment-routing-traffic-eng-cfg:policies/um-segment-routing-traffic-eng-cfg:policy[um-segment-routing-traffic-eng-cfg:policy-name="genericstring"]/um-segment-routing-traffic-eng-cfg:autoroute/um-segment-routing-traffic-eng-cfg:include/um-segment-routing-traffic-eng-cfg:ipv4s/um-segment-routing-traffic-eng-cfg:ipv4[um-segment-routing-traffic-eng-cfg:address="10.1.1.1"][um-segment-routing-traffic-eng-cfg:length="64"]'
+                }
+            ]
+        }
+        resp = self.rpcv.process_rpc_reply(no_data_rpc_reply)
+        result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
+        self.assertTrue(result)
+
+    def test_auto_validate_remove_leaf(self):
+        """Test a removed leaf is ok with no data returned."""
+        rpc_data = {
+            'nodes': [
+                {
+                    'edit-op': 'remove',
+                    'nodetype': 'leaf',
+                    'datatype': '',
+                    'value': '3',
+                    'xpath': '/segment-routing/um-segment-routing-traffic-eng-cfg:traffic-eng/um-segment-routing-traffic-eng-cfg:policies/um-segment-routing-traffic-eng-cfg:policy[um-segment-routing-traffic-eng-cfg:policy-id="1"]/um-segment-routing-traffic-eng-cfg:candidate-paths/um-segment-routing-traffic-eng-cfg:preferences/um-segment-routing-traffic-eng-cfg:preference[um-segment-routing-traffic-eng-cfg:preference-id="2"]/um-segment-routing-traffic-eng-cfg:per-flow/um-segment-routing-traffic-eng-cfg:forward-class/um-segment-routing-traffic-eng-cfg:default'
+                }
+            ]
+        }
+        resp = self.rpcv.process_rpc_reply(no_data_rpc_reply)
+        result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
+        self.assertTrue(result)
+
 
 class Device:
     server_capabilities = []
@@ -527,7 +655,6 @@ basic-mode=explicit&also-supported=report-all-tagged']
         """Check if auto_validate False does not try validation."""
         self.format['auto_validate'] = False
         yangexec.netconf_send = netconf_send
-
         result = yangexec.run_netconf(
             'edit-config',
             self.device,

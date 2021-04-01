@@ -9,7 +9,7 @@ def round_nearest(value):
     return int(value
                + (0.5 if value >= 0 else -0.5))
 
-from fractions import gcd
+from math import gcd
 
 
 def lcm(a, b):

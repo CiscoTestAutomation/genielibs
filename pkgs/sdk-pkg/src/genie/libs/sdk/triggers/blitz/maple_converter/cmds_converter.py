@@ -186,6 +186,7 @@ class CmdsConverter(InternalConverter):
         for key, value in cmds_dict.items():
 
             blitz_action_dict = {}
+            key = _XR_pattern_matching(key)
             blitz_action_dict.update({'execute':{'device': device, 'command': key}})
             value_list = []
             for val in value:

@@ -37,7 +37,7 @@ def get_firewall_counter(device,
             output (`str`): output of show firewall counter filter {filters} {counter_name}
                             Default to None
         Returns:
-            result (`bool`): Verified result
+            counter value(int) 
         Raises:
             N/A
     """
@@ -45,7 +45,7 @@ def get_firewall_counter(device,
     try:
         out = device.parse(
             'show firewall counter filter {filters} {counter_name}'.format(
-                filters=filters, counter_name=counter_name, output=output))
+                filters=filters, counter_name=counter_name), output=output)
     except SchemaEmptyParserError:
         return None
 
@@ -59,7 +59,10 @@ def get_firewall_counter(device,
     #        "filter-name": "v6_local-access-control"
     #    }
     #}
-    field_value = out.q.get_values(field, 0)
+    try:
+        field_value = int(out.q.get_values(field, 0))
+    except Exception:
+        field_value = out.q.get_values(field, 0)
     if field_value:
         return field_value
     else:

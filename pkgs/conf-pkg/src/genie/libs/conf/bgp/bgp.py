@@ -889,6 +889,12 @@ class Bgp(Routing, DeviceFeature):
         type=(None, managedattribute.test_istype(bool))
     )
 
+    nbr_af_disable_peer_as_check = managedattribute(
+        name='nbr_af_disable_peer_as_check',
+        default=None,
+        type=(None, managedattribute.test_istype(bool))
+    )
+
     class NBR_AF_SEND_COMMUNITY(Enum):
         standard = 'standard'
         extended = 'extended'
@@ -935,6 +941,10 @@ class Bgp(Routing, DeviceFeature):
         default=None,
         type=(None, managedattribute.test_istype(bool)))
 
+    nbr_af_rewrite_mvpn_rt_asn = managedattribute(
+        name='nbr_af_rewrite_mvpn_rt_asn',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)))
     # XXXJST TODO Merge with send_community_ebgp
     send_community = managedattribute(
         name='send_community',

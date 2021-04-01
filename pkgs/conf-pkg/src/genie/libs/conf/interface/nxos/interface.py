@@ -387,6 +387,12 @@ class Interface(genie.libs.conf.interface.Interface):
                 attributes.format('ipv6 forward'),
                 unconfig_cmd='no ipv6 forward')
 
+        # ipv6 address use-link-local-only
+        if attributes.value('ipv6_addr_use_link_local_only'):
+            configurations.append_line(
+                attributes.format('ipv6 address use-link-local-only'),
+                unconfig_cmd='no ipv6 address use-link-local-only')
+
         # IPv4Addr attributes
         for ipv4addr, attributes2 in attributes.sequence_values(
             'ipv4addr', sort=True):
@@ -1241,7 +1247,7 @@ class NveInterface(VirtualInterface, genie.libs.conf.interface.NveInterface):
         else:
             req_attr = getattr(attributes,'attributes', None)
             vni_attr = attributes.value('vni_map')
-            if vni_attr or (req_attr and req_attr.value('vni_map')):
+            if vni_attr or (req_attr and req_attr.get('vni_map')):
                 vni_config_dict = attributes.value('vni_map')
                 for key, value in vni_config_dict.items():
                    if vni_config_dict[key].get('nve_vni_associate_vrf', False) == True:

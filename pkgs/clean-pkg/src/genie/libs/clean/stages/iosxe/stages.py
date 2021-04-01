@@ -17,6 +17,8 @@ from genie.libs.clean.recovery.recovery import _disconnect_reconnect
 from genie.metaparser.util.schemaengine import Optional
 from genie.utils.timeout import Timeout
 
+from genie.libs.sdk.libs.abstracted_libs.iosxe.subsection import get_default_dir
+
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
 
@@ -484,13 +486,14 @@ def install_image(section, steps, device, images, save_system_config=False,
 
     # Need to get directory that the image would be unpacked to
     # This is the same directory the image is in
-    directory = images[0].split(':')[0]
+    with steps.start("Learning the default directory where packages.conf will be unpacked to") as step:
+        directory = get_default_dir(device=device)
 
-    # pacakges.conf is hardcoded because it is required to set
+    # packages.conf is hardcoded because it is required to set
     # the boot variable to packages.conf for 'install mode'
     # ----------------------------------------------------------
     # 'Bundle mode' is when we set the boot var to the image.bin
-    new_boot_var = directory+':packages.conf'
+    new_boot_var = directory+'packages.conf'
 
     with steps.start("Configure boot variables for 'install mode' on '{dev}'".format(dev=device.hostname)) as step:
         with step.start("Delete all boot variables") as substep:
@@ -612,8 +615,8 @@ def install_packages(section, steps, device, packages, save_system_config=False,
 
     Example
     -------
-    install_image:
-        images:
+    install_packages:
+        packages:
           - /auto/some-location/that-this/image/stay-isr-image.bin
         save_system_config: True
         install_timeout: 1000

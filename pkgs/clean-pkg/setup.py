@@ -24,7 +24,7 @@ def find_version(*paths):
         return version_match.group(1)
     raise RuntimeError("Unable to find version string.")
 
-install_requires=['setuptools', 'wheel', 'genie', 'pysnmp']
+install_requires=['setuptools', 'wheel', 'genie']
 
 # launch setup
 setup(

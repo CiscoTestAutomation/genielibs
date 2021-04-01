@@ -24,9 +24,6 @@ debug_clean_config = False
 class Device(genie.libs.conf.device.Device):
     '''Base Device class for Cisco devices'''
 
-    role = genie.libs.conf.device.Device.role.copy(
-        default=genie.libs.conf.device.Device.Role.router)
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

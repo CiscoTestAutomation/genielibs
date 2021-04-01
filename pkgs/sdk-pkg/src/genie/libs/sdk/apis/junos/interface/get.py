@@ -930,7 +930,7 @@ def get_interface_snmp_index(device,
     """
     try:
         out = device.parse('show interfaces {interface}'.format(
-            interface=interface.split('.')[0]))
+            interface=interface))
     except SchemaEmptyParserError as e:
         return None
 
@@ -954,4 +954,4 @@ def get_interface_snmp_index(device,
     #                }
     #            ]
 
-    return(out.q.get_values("local-index",0))
+    return(out.q.get_values("snmp-index",0))

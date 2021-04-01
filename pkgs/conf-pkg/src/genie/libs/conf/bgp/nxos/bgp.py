@@ -1073,6 +1073,9 @@ class Bgp(ABC):
 
                             if attributes.value('nbr_af_suppress_inactive'):
                                 configurations.append_line('suppress-inactive')
+
+                            if attributes.value('nbr_af_disable_peer_as_check'):
+                                configurations.append_line('disable-peer-as-check')
                             # nxos: address-family <nbr_af_name> \
                             # route-map <nbr_af_route_map_name_in> in
                             if attributes.value('nbr_af_route_map_name_in'):
@@ -1176,6 +1179,10 @@ class Bgp(ABC):
                             if attributes.value('nbr_af_rewrite_evpn_rt_asn'):
                                 configurations.append_line(
                                     attributes.format('rewrite-evpn-rt-asn'))
+                            # rewrite-mvpn-rt-asn
+                            if attributes.value('nbr_af_rewrite_mvpn_rt_asn'):
+                                configurations.append_line(
+                                    attributes.format('rewrite-rt-asn'))
 
                         return str(configurations)
 

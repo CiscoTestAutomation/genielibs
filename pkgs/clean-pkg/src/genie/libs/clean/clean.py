@@ -66,6 +66,10 @@ class CleanTestcase(Testcase):
         order = self.device.clean['order']
         while True:
             for stage in order:
+                if stage not in self.stages:
+                    self.failed("Stage '{}' has no configuration"
+                                " in clean.yaml for device {}"
+                                .format(stage, self.device.name))
 
                 # Check if stage has hit execution limits to protect
                 # against an infinite loop scenario

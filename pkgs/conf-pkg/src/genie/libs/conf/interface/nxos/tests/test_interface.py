@@ -28,6 +28,7 @@ class test_interface(TestCase):
         intf1.evpn_multisite_dci_tracking = True
         intf1.fabric_forwarding_mode = 'anycast-gateway'
         intf1.ip_forward = True
+        intf1.ipv6_addr_use_link_local_only = True
 
         cfg = intf1.build_config(apply=False)
         self.assertMultiLineEqual(
@@ -38,6 +39,7 @@ class test_interface(TestCase):
                 ' evpn multisite fabric-tracking',
                 ' fabric forwarding mode anycast-gateway',
                 ' ip forward',
+                ' ipv6 address use-link-local-only',
                 ' exit',
             ]))
 
@@ -117,8 +119,41 @@ class test_interface(TestCase):
                 ' exit',
             ]))
 
-
 class test_nx_interface(TestCase):
+
+    def test_nve_interface_simple(self):
+        # Set Genie Tb
+        testbed = Testbed()
+        Genie.testbed = testbed
+
+        # Device
+        dev1 = Device(name='BL1', testbed=testbed, os='nxos')
+        intf1 = Interface(name='nve1', device=dev1)
+
+        # Apply configuration
+        intf1.enabled = False
+
+        # Build config
+        cfgs = intf1.build_config(apply=False)
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(cfgs),
+            '\n'.join([
+                'interface nve1',
+                ' shutdown',
+                ' exit'
+            ]))
+
+        # Build unconfig
+        uncfgs = intf1.build_unconfig(apply=False, attributes={'enabled': {False: None}})
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(uncfgs),
+            '\n'.join([
+                'interface nve1',
+                ' no shutdown',
+                ' exit'
+            ]))
 
     def test_nve_interface(self):
         # Set Genie Tb

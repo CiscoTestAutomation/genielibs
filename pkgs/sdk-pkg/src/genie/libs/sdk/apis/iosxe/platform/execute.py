@@ -186,6 +186,7 @@ def execute_install_package(device, image_dir, image, save_system_config=True,
 
     try:
         device.execute(cmd, reply=dialog, timeout=install_timeout)
+        device.enable()
     except StateMachineError:
         # this will be raised after 'Return to get started' is seen
         timeout = Timeout(reconnect_max_time, reconnect_interval)
@@ -199,7 +200,8 @@ def execute_install_package(device, image_dir, image, save_system_config=True,
                 continue
             break
         else:
-            raise Exception("Couldn't reconnect to the device. Error: {}".format(connection_error))
+            raise Exception("Couldn't reconnect to the device. Error: {}"\
+                            .format(connection_error))
 
     if _install:
         cmd = "install commit"
@@ -233,7 +235,7 @@ def execute_install_package(device, image_dir, image, save_system_config=True,
     return False if _install else True
 
 def execute_uninstall_package(device, image_dir, image, save_system_config=True,
-                              timeout=660):
+                              timeout=660, install_commit_sleep_time=None):
     """ Uninstalls package
         Args:
             device ("obj"): Device object
@@ -241,6 +243,7 @@ def execute_uninstall_package(device, image_dir, image, save_system_config=True,
             image ("str"): Image name
             save_system_config ("bool"): If config changed do we save it?
             timeout ("int"): maximum time for install
+            install_commit_sleep_time ("int"): Sleep time before install commit command
 
         Raises:
             Exception
@@ -249,7 +252,13 @@ def execute_uninstall_package(device, image_dir, image, save_system_config=True,
             True if install succeeded else False
     """
     return execute_install_package(
-        device, image_dir, image, save_system_config, timeout, _install=False)
+        device,
+        image_dir,
+        image,
+        save_system_config,
+        timeout,
+        _install=False,
+        install_commit_sleep_time=install_commit_sleep_time)
 
 
 def delete_unprotected_files(device,

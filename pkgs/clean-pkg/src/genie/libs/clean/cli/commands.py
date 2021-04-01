@@ -51,7 +51,7 @@ class ValidateClean(Subcommand):
         if args.lint:
             do_lint(args.clean_file)
 
-        validation_results = validate_clean(args.clean_file, args.testbed_file)
+        validation_results = validate_clean(args.clean_file, args.testbed_file, False)
 
         if validation_results['warnings']:
             log.warning('\nWarning Messages')

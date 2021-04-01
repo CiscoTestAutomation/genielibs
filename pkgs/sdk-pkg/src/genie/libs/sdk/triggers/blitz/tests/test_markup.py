@@ -174,7 +174,7 @@ class TestMarkup(unittest.TestCase):
 
         filters = r"Device\s+name:\s+(?P<dev>NO MATCH)"
         filtered_out = apply_regex_filter(self.blitz_obj, self.str_output, filters)
-        self.assertEqual(filtered_out, {})
+        self.assertEqual(filtered_out, {'dev': ''})
 
     def test_no_filter(self):
         # with No filter

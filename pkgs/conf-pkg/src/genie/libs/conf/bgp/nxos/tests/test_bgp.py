@@ -63,6 +63,8 @@ class test_bgp_config1(TestCase):
                     nbr_peer_type = Bgp.NBR_PEER_TYPE.fabric_border_leaf
         bgp2.device_attr[dev1].vrf_attr[vrf].neighbor_attr[neighbor_id].address_family_attr[af_name]. \
             nbr_af_rewrite_evpn_rt_asn = True
+        bgp2.device_attr[dev1].vrf_attr[vrf].neighbor_attr[neighbor_id].address_family_attr[af_name].\
+            nbr_af_disable_peer_as_check = True
 
         bgp2.device_attr[dev1]
 
@@ -76,6 +78,7 @@ class test_bgp_config1(TestCase):
              ' neighbor 10.0.0.1',
              '  peer-type fabric-border-leaf',
              '  address-family l2vpn evpn',
+             '   disable-peer-as-check',
              '   rewrite-evpn-rt-asn',
              '   exit',
              '  exit',
@@ -99,6 +102,64 @@ class test_bgp_config1(TestCase):
              '  no peer-type fabric-border-leaf',
              '  address-family l2vpn evpn',
              '   no rewrite-evpn-rt-asn',
+             '   exit',
+             '  exit',
+             ' exit',
+             ]))
+
+    def test_cfg_vxlan_rewrite_mvpn(self):
+        Genie.testbed = testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='nxos')
+        bgp = Bgp(bgp_id=100)
+
+        # Defining attributes
+        af_name = 'ipv4 mvpn'
+        vrf = Vrf('default')
+
+        self.assertIs(bgp.testbed, testbed)
+        dev1.add_feature(bgp)
+
+        neighbor_id = '10.0.0.1'
+        bgp.device_attr[dev1].vrf_attr[vrf].neighbor_attr[neighbor_id].\
+                    nbr_peer_type = Bgp.NBR_PEER_TYPE.fabric_border_leaf
+        bgp.device_attr[dev1].vrf_attr[vrf].neighbor_attr[neighbor_id].address_family_attr[af_name]. \
+            nbr_af_rewrite_mvpn_rt_asn = True
+
+        bgp.device_attr[dev1]
+
+        self.assertIs(bgp.testbed, testbed)
+        dev1.add_feature(bgp)
+
+        cfgs = bgp.build_config(apply=False)
+        self.assertCountEqual(cfgs.keys(), [dev1.name])
+        self.assertMultiLineEqual(str(cfgs[dev1.name]), '\n'.join(
+            ['router bgp 100',
+             ' neighbor 10.0.0.1',
+             '  peer-type fabric-border-leaf',
+             '  address-family ipv4 mvpn',
+             '   rewrite-rt-asn',
+             '   exit',
+             '  exit',
+             ' exit',
+             ]))
+
+        uncfgs2 = bgp.build_unconfig(
+            apply=False,
+            attributes={'device_attr': {'*': {'vrf_attr':
+                                                  {'*': {'neighbor_attr': \
+                                                     {'*': {"nbr_peer_type":None,
+                                                            'address_family_attr': \
+                                                                   {'*': "nbr_af_rewrite_mvpn_rt_asn"},
+                                                            }}}}}}})
+
+        self.assertCountEqual(uncfgs2.keys(), [dev1.name])
+        self.maxDiff = None
+        self.assertMultiLineEqual(str(uncfgs2[dev1.name]), '\n'.join(
+            ['router bgp 100',
+             ' neighbor 10.0.0.1',
+             '  no peer-type fabric-border-leaf',
+             '  address-family ipv4 mvpn',
+             '   no rewrite-rt-asn',
              '   exit',
              '  exit',
              ' exit',

@@ -2,6 +2,7 @@
 # Python
 import re
 import logging
+import ipaddress
 # unicon
 from unicon.core.errors import SubCommandFailure
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
@@ -697,7 +698,7 @@ def get_route_push_value(device, address, expected_table_name):
 
     for route in route_table_list:
         if expected_table_name == route.get('table-name',None) and \
-            address.split('/')[0] == Dq(route).get_values('rt-destination', 0):
+            address.split('/')[0] == Dq(route).get_values('rt-destination', 0).split('/')[0]:
             mpls_label = Dq(route).get_values('mpls-label',0)
             return(re.match(r'Push (?P<push_value>\d+).*', mpls_label).groupdict()["push_value"])
 
@@ -744,7 +745,8 @@ def get_route_table_first_label(device, table, address):
         table=table
     ))
 
-    mpls_label= out.q.contains(address).get_values('mpls_label',0).split(',')[0]
+    ip = str(ipaddress.ip_interface(address).network)
+    mpls_label= out.q.contains(ip).get_values('mpls_label',0).split(',')[0]
 
     if mpls_label:
         return(re.match(r'Push (?P<push_value>\d+).*', mpls_label).groupdict()["push_value"])

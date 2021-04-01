@@ -238,6 +238,42 @@ def verify_interface_state_admin_down(
 
     return False
 
+def verify_interface_state_down(
+    device, interface, max_time=60, check_interval=10
+):
+    """Verify interface state is down and line protocol is down
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            max_time (`int`): max time
+            check_interval (`int`): check interval
+        Returns:
+            result(`bool`): True if is up else False
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            cmd = 'show interface {interface}'.format(
+                interface=interface)
+            out = device.parse(cmd)
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        # Any(): {
+        #     'oper_status': str,
+        #     Optional('line_protocol'): str,
+
+        oper_status = out.q.get_values("oper_status", 0)
+        line_protocol = out.q.get_values("line_protocol", 0)
+        enabled = out.q.get_values("enabled", 0)
+        if oper_status == line_protocol == "down" and enabled:
+            return True
+        timeout.sleep()
+
+    return False
 
 def verify_interface_state_admin_up(
     device, interface, max_time=60, check_interval=10

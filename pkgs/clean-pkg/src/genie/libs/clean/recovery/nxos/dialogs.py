@@ -1,6 +1,7 @@
 '''NXOS specific Dialogs'''
 
 # Python
+import re
 import logging
 from time import sleep
 
@@ -179,6 +180,34 @@ class RommonDialog(CommonRommonDialog):
             spawn.sendline("write erase")
             sleep(2)
             session['switch_count'] = 1
+
+    @statement_decorator(r'^(.*)(bash-\S+|Linux)[#\$]\s?', loop_continue=True, continue_timer=False)
+    def bash_prompt_handler(spawn, session, context):
+        # clean up disk space in case NXOS goes to bash prompt during reload
+        # no info about protected_files in this situation, so protect only given
+        # golden image and delete other thinkable image files
+        m = re.search("'(?P<storage>\S+)' is FULL", spawn.buffer)
+        if m:
+            spawn.buffer = ''
+            storage = m.group('storage')
+
+            if storage in context['sys']:
+                image_name = context['sys'].split('/')[-1]
+
+            log.info("Detected {s} is FULL. Cleaning up image files except for {i}".format(s=storage, i=image_name))
+            spawn.sendline('cd {s}'.format(s=storage.split(':')[0]))
+            sleep(1)
+            spawn.sendline('mv {i} protected_image_{spid}'.format(i=image_name, spid=spawn.pid))
+            sleep(1)
+            spawn.sendline('rm -rf *bin')
+            sleep(30)
+            spawn.sendline('rm -rf system-image*')
+            sleep(30)
+            spawn.sendline('mv protected_image_{spid} {i}'.format(i=image_name, spid=spawn.pid))
+            sleep(1)
+            spawn.sendline('exit')
+        else:
+            spawn.sendline('exit')
 
 class TftpRommonDialog(RommonDialog):
     def hostname_statement(self, hostname):

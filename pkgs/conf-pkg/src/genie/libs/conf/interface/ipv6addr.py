@@ -66,6 +66,7 @@ class IPv6Addr(ConfigurableBase):
         doc='Assign the v6 redirect attribute'
     )
 
+
     # Overload __eq__
     def __eq__(self, other):
         if not isinstance(other, IPv6Addr):

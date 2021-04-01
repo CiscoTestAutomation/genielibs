@@ -712,5 +712,5 @@ def get_software_version(device, return_tuple:bool=False):
             except ValueError:
                 pass
         return tuple(ver)
-    else :
+    else:
         return ver

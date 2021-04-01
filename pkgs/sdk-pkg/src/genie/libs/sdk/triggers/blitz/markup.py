@@ -1,6 +1,7 @@
 import re
 import ast
 import logging
+import operator
 from genie.utils.dq import Dq
 from pyats.datastructures import AttrDict
 
@@ -26,10 +27,11 @@ def apply_regex_filter(self, output, filters=None):
 
     pattern = re.compile(filters)
     match = re.search(pattern, output)
+
     if match:
        return match.groupdict()
 
-    return {}
+    return {k:'' for k in pattern.groupindex.keys()}
 
 def apply_list_filter(self, output, list_index=None, filters=None):
 
@@ -208,7 +210,13 @@ def _load_chained_saved_vars(last_attr, reuse_var_name):
         try:
             last_attr = last_attr[attr]
         except TypeError:
-            last_attr = getattr(last_attr, attr)
+            if hasattr(last_attr, attr):
+                last_attr = getattr(last_attr, attr)
+            else:
+                log.debug("The value {} is not supporting such attribute {}".
+                            format(last_attr, attr))
+                last_attr = ''
+                break
         except KeyError:
             if attr in ['_keys', '_values']:
                 temp_value_holder = getattr(

@@ -201,6 +201,17 @@ class NegativeStages(unittest.TestCase):
         with self.assertRaises(AEtestFailedSignal):
             connect(self.section, self.device)
 
+    def test_stage_not_configured(self):
+        from genie.libs.clean.clean import CleanTestcase
+        tb = load(test_path+'/mock_testbed.yaml')
+        k = KleenexFileLoader(testbed=tb,
+                              invoke_clean=True).\
+                              load(test_path+'/mock_clean_invalid.yaml')
+        KleenexEngine.update_testbed(tb, **k['devices'])
+        device = tb.devices['PE1']
+        tc = CleanTestcase(device, global_stage_reuse_limit=1)
+        with self.assertRaisesRegex(AEtestFailedSignal, 'has no configuration in clean.yaml'):
+            tc()
 
     def test_stage_ping_server(self):
         self.device.ping = Mock(return_value=self.raw_output.ping_server)

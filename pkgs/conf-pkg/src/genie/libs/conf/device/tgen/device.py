@@ -18,9 +18,6 @@ from genie.libs.conf.stream.stream import Stream
 class Device(genie.libs.conf.device.Device):
     '''Base Device class for TGEN devices'''
 
-    role = genie.libs.conf.device.Device.role.copy(
-        default=genie.libs.conf.device.Device.Role.tgen)
-
     @property
     def tgen_port_interfaces(self):
         from genie.libs.conf.interface.tgen import PhysicalInterface

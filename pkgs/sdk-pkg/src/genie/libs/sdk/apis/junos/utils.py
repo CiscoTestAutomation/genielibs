@@ -53,7 +53,7 @@ def verify_file_details_exists(device,
             timeout.sleep()
             continue
         file_found = Dq(out).contains_key_value('file-name',
-                                                file,
+                                                '.*{file}.*'.format(file=file),
                                                 value_regex=True)
         if op(file_found):
             return True

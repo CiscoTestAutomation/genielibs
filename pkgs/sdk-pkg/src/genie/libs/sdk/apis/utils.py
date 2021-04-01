@@ -25,13 +25,13 @@ from pyats.utils.email import EmailMsg
 from pyats.utils.fileutils import FileUtils
 from pyats.utils.secret_strings import to_plaintext
 from pyats.datastructures.logic import Not
+from pyats.datastructures import ListDict
 
 # Genie
 from genie.utils.config import Config
 from genie.utils.diff import Diff
 from genie.utils.timeout import Timeout
 from genie.conf.base import Device
-from genie.harness._commons_internal import _error_patterns
 from genie.utils import Dq
 from genie.libs.sdk.libs.utils.normalize import merge_dict
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
@@ -738,7 +738,6 @@ def reconnect_device_with_new_credentials(
     else:
         device.connect()
 
-    _error_patterns(device=device)
     return device
 
 
@@ -795,7 +794,6 @@ def reconnect_device(device,
                 device.connect(via=via)
             else:
                 device.connect()
-            _error_patterns(device=device)
         except Exception as e:
             log.info("Device {dev} is not connected".format(dev=device.name))
             destroy_connection(device=device)
@@ -2244,7 +2242,7 @@ def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_d
                     ip_packet = packet.getlayer(IPv6)
                 else:
                     continue
-            
+
             if expected_dst_address:
                 if not ip_packet:
                     continue
@@ -3050,3 +3048,186 @@ def verify_keywords_in_output(device,
             return False
 
     return False
+
+def get_structure_output(device, command=None, exclude=['!'], negative_keyword='no', output=None):
+    """
+    Get structure output from any test data. Data will be divided by space
+    and generate structure data.
+
+    Args:
+        device (`obj`): device to use
+        command (`str`): show command. Default to None
+        exclude (`list`): patter to excute in text output
+                          Default to ['!']
+        negative_keyword (`str`): keyword to set value as False
+                                  Default to 'no'
+        output (`str`): text output
+
+    Returns:
+        Dict : structure data (python dictionary)
+    Raises:
+        N/A
+    """
+
+    if not output and not command:
+        log.warn('output or/and command were not provided.')
+        return {}
+
+    base = []
+    ld = ListDict()
+    priv_line = ''
+    priv_orig_line = ''
+    priv_line_list = []
+
+    if not output and command:
+        output = device.execute(command)
+
+    def _check_output(line, priv_orig_line, priv_line, config_flag, base):
+        line_space = re.search(r'^\s+', line)
+        if line_space:
+            start, end = line_space.span()
+            line_space = end
+        else:
+            line_space = 0
+        priv_orig_line_space = re.search(r'^\s+', priv_orig_line)
+        if priv_orig_line_space:
+            start, end = priv_orig_line_space.span()
+            priv_orig_line_space = end
+        else:
+            priv_orig_line_space = 0
+        # check if same level(indentation)
+        if line_space == priv_orig_line_space:
+            # check if no indentation
+            # (=global configuration)
+            if line.split(' ').count('') == 0:
+                base = []
+            priv_line_list = priv_orig_line.strip().split(' ')
+            # check if negative_keyword(default `no`) in output line
+            # (mainly for iosxe/nxos)
+            if priv_line.strip().split(' ')[0] == negative_keyword:
+                priv_line_list = priv_line.strip().split(' ')
+                priv_line_list.pop(0)
+                priv_line = ' '.join(priv_line_list)
+                config_flag = False
+            # add base to priv_line_list. and then have complete priv_line
+            # without config_flag
+            if priv_orig_line_space != 0:
+                priv_line = ' '.join(base) + ' ' + ' '.join(priv_line_list)
+            priv_line_list = priv_line.split(' ')
+            # if not only spaces, add priv_line_list to ld(ListDict)
+            if priv_line.replace(' ', ''):
+                ld.append(((tuple(priv_line_list)), config_flag))
+                log.debug('append_ld_path: {}'.format(priv_line_list))
+        else:
+            # check if line is more deeper indentation comparing to priv_line
+            # ex.)
+            # interface GigabitEthernet1 # priv_line
+            #   ip address 10.1.1.1      # line
+            if line.split(' ').count('') > priv_line.split(' ').count(
+                    '') and line.split(' ').count('') != len(base):
+                base.append(priv_line.strip())
+                priv_line = line
+                priv_orig_line = orig_line
+            # check if line is less deeper indentation comparing to priv_line
+            # ex.)
+            # interface GigabitEthernet1
+            #   ip address 10.1.1.1      # priv_line
+            # end                        # line
+            if (line.split(' ').count('') < priv_line.split(' ').count('')
+                    and priv_line != ''):
+                diff_count = priv_line.split(' ').count('') - line.split(
+                    ' ').count('')
+                # check if line of indentation is not same with base
+                if line.split(' ').count('') != len(base):
+                    priv_line_list = priv_orig_line.strip().split(' ')
+                    if priv_line.strip().split(' ')[0] == negative_keyword:
+                        priv_line_list = re.sub(r'\s+', ' ',
+                                                priv_line.strip()).split(' ')
+                        priv_line_list.pop(0)
+                        config_flag = False
+                    # to add LD, add base
+                    priv_line = ' '.join(base) + ' ' + ' '.join(priv_line_list)
+                    priv_line_list = re.sub(r'\s+', ' ', priv_line).split(' ')
+                    if priv_line.replace(' ', ''):
+                        ld.append(((tuple(priv_line_list)), config_flag))
+                        log.debug('append_ld_path: {}'.format(priv_line_list))
+                    log.debug('diff_count: {}'.format(diff_count))
+                    for _ in range(diff_count):
+                        try:
+                            base.pop()
+                        except IndexError:
+                            break
+            line_list = line.split(' ')
+            # check if negative_keyword(default `no`) in line
+            if negative_keyword in line_list:
+                line_list.remove(negative_keyword)
+                config_flag = False
+                line = ' '.join(line_list)
+            if line not in base:
+                line = ' '.join(base) + line
+        line_list = line.split(' ')
+        priv_line = line
+        priv_orig_line = orig_line
+        return priv_orig_line, priv_line, config_flag, base
+
+    output = output.splitlines()
+
+    while output:
+        line = output.pop(0)
+        line = line.rstrip()
+        line = re.sub(r'\s+', ' ', line)
+        # debug messages
+        log.debug('-' * 50)
+        log.debug('line: {}'.format(line))
+        log.debug('base: {}'.format(base))
+        log.debug('priv_line: {}'.format(priv_line))
+        log.debug('priv_line_list: {}'.format(priv_line_list))
+        orig_line = line
+        # ignore empty line
+        if not line or line.strip() in exclude:
+            continue
+        config_flag = True
+        # check if global config
+        priv_orig_line, priv_line, config_flag, base = _check_output(
+            line, priv_orig_line, priv_line, config_flag, base)
+
+    # handle last one
+    config_flag = True
+    # check if global config
+    _check_output(line, priv_orig_line, priv_line, config_flag, base)
+
+    # remove items which should be ignored because ignored ones prevent to build
+    # dictionary
+
+    # need sorting to check from longer ones to shorter ones
+    ld.sort(reverse=True)
+    # final config parse result
+    ld_final = ListDict()
+    # ignored items
+    ld_final_ignored = ListDict()
+    ld_final_paths = []
+    match_flag = False
+    for item in ld:
+        if not ld_final_paths:
+            ld_final_paths.append(item.path)
+            ld_final.append(((tuple(item.path)), item.value))
+            continue
+        match_flag = False
+        for each_final_path in ld_final_paths:
+            # check shorter DictItem exists in longer DictItem
+            # and move matched item to ld_final_ignored list
+            if set(item.path) == (set(item.path) & set(each_final_path)):
+                match_flag = True
+                ld_final_ignored.append(((tuple(item.path)), item.value))
+        # if item is unique and longer than other items, added to ld_final list
+        if not match_flag:
+            ld_final_paths.append(item.path)
+            ld_final.append(((tuple(item.path)), item.value))
+
+    log.debug(json.dumps(ld_final.reconstruct(), indent=2, sort_keys=True))
+    if ld_final_ignored:
+        log.debug('below DictItem are ignored:')
+        for item in set(ld_final_ignored):
+            log.debug(item)
+
+    return ld_final.reconstruct()

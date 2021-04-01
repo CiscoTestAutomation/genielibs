@@ -7,6 +7,7 @@ import importlib
 from datetime import datetime
 from pyats.log.utils import banner
 from collections import OrderedDict
+from collections.abc import Iterable
 from genie.utils.timeout import Timeout
 
 from .markup import get_variable, save_variable
@@ -78,7 +79,8 @@ def _loop_dispatcher(self, steps, testbed, section, action_item, ret_list, name)
     actions = action_item.pop('actions')
 
     # determine whether it is a range or an iterator value(list/dict) as input
-    iterator_item = _loop_iterator_item_update(action_item)
+    iterator_item = _loop_iterator_item_update(
+                        self, section, action_item, steps)
 
     # values needs to be popped so markup vars wont get
     # replaced by get_variable()
@@ -111,7 +113,11 @@ def _loop_dispatcher(self, steps, testbed, section, action_item, ret_list, name)
 
     return func, action_item
 
-def _loop_iterator_item_update(action_item):
+def _loop_iterator_item_update(self, section, action_item, steps):
+
+    if not (action_item.get('loop_variable_name') and
+            (action_item.get('range') or action_item.get('value'))):
+            return None
 
     if 'range' in action_item:
 
@@ -119,9 +125,33 @@ def _loop_iterator_item_update(action_item):
         tree = ast.parse("f({})".format(range_))
         funccall = tree.body[0].value
         args = [ast.literal_eval(arg) for arg in funccall.args]
-        return range(*args)
+        action_item['loop_variable_name'] = [action_item['loop_variable_name']]
+        return [range(*args)]
 
-    iterator_item = action_item.pop('value', None)
+    if not (action_item.get('value') and
+            action_item.get('loop_variable_name')):
+        return None
+
+    # get value whether list or dict or multiple iterators
+    value = action_item.pop('value')
+
+    # if list then multiple variable names, need to make sure that
+    # each variable name goes with one iterable else steps has to error out
+    if isinstance(action_item.get('loop_variable_name'), list):
+
+        if not(len(action_item['loop_variable_name']) == len(value) and
+                all(isinstance(item, Iterable) for item in value)):
+
+            steps.errored("Cannot verify if enough lists are provided for"
+                          " the number of variable names")
+    else:
+        # if not list and singular make everything as a list of Iterables,
+        # so we could follow same implementation
+        action_item['loop_variable_name'] = [action_item['loop_variable_name']]
+        value = [value]
+
+    kwargs = {'value': value, 'self': self, 'section': section}
+    iterator_item = get_variable(**kwargs)['value']
     return iterator_item
 
 def _loop_iterator(self,
@@ -150,7 +180,7 @@ def _loop_iterator(self,
 
     iterator_len = None
     iterator_index = 0
-    iterator_len = len(iterator_item) if iterator_item else None
+    iterator_len = max(len(itm)for itm in iterator_item) if iterator_item else None
     pcall_payload = []
 
     # until condition would be sent to blitz_control
@@ -224,7 +254,8 @@ def _loop_iterator(self,
     _actions_execute_in_loop_in_parallel(self, section, pcall_payload, ret_list, steps)
     return ret_list
 
-def _save_iterator_items(self, section, loop_variable_name, iterator_item, iterator_index):
+def _save_iterator_items(self, section, loop_variable_name,
+                         iterator_item, iterator_index):
     """ Save each item of a loop into a variable before running the actions
         E.g: value: [get_logger, get_mtu_size]
              loop_variable_name: func_name
@@ -234,15 +265,20 @@ def _save_iterator_items(self, section, loop_variable_name, iterator_item, itera
     """
     if loop_variable_name and iterator_item:
 
-        # parse through dictionary
-        if isinstance(iterator_item, dict):
-            item_dict_key = list(iterator_item.keys())[iterator_index]
-            value_ = {item_dict_key: iterator_item[item_dict_key]}
+        for index, item in enumerate(iterator_item):
 
-        # parse through list
-        else:
-            value_ = iterator_item[iterator_index]
-        save_variable(self, section, loop_variable_name, value_)
+            try:
+                if isinstance(item, dict):
+                    item_dict_key = list(item.keys())[iterator_index]
+                    value_ = {item_dict_key: item[item_dict_key]}
+
+                # parse through list
+                else:
+                    value_ = item[iterator_index]
+            except IndexError:
+                save_variable(self, section, loop_variable_name[index], '')
+            else:
+                save_variable(self, section, loop_variable_name[index], value_)
 
 def _check_pre_iteration(iterator_len, iterator_index, max_time, timeout, parallel):
     """

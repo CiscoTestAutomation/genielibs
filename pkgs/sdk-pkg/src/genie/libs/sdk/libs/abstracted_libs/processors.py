@@ -1422,6 +1422,15 @@ def post_execute_command(section,
     Raises:
         None
     '''
+    # If valid_section_results is defined and result isn't in it, 
+    # log a warning message and don't run command
+    if valid_section_results and section.result.name not in valid_section_results:
+        log.warning('{result} not in {valid_section_results}. post_execute_command will not run'.format(
+            result = section.result.name,
+            valid_section_results = valid_section_results,
+        ))
+        return
+        
     # Init
     log.info(banner("processor: 'execute_command'"))
 
@@ -1481,7 +1490,6 @@ def post_execute_command(section,
             continue
         # execute list of commands given in yaml
         for cmd in devices[dev].get('cmds', []):
-
             if not cmd.get('condition') or section.result in list(
                     map(TestResult.from_str, cmd['condition'])):
                 exec_cmd = cmd.get('cmd', '')
@@ -1511,40 +1519,41 @@ def post_execute_command(section,
                         else:
                             output = device.execute(exec_cmd,
                                                     timeout=cmd_timeout)
+
                         # save output to file as per device or command
-                        if not valid_section_results or str(section.result) in valid_section_results:
-                            if save_to_file == 'per_device':
-                                file_name = folder_name + '/' + dev
-                                save_file_name = file_name.split('/')[-1] + '.txt'
-                                with open(file_name + '.txt', 'a') as f:
-                                    output = '+' * 10 + ' ' + datetime.datetime.now(
-                                    ).strftime(
-                                        '%Y-%m-%d %H:%M:%S.%f'
-                                    ) + ': ' + dev + ': executing command \'' + exec_cmd + '\' ' + '+' * 10 + '\n' + output + '\n'
-                                    f.write(output)
-                                    log.info(
-                                        "File {file} saved to folder {folder}".
-                                        format(file=save_file_name,
-                                               folder=folder_name))
-                                if zipped_folder:
-                                    file_list.update({file_name+'.txt': save_file_name})
-                            elif save_to_file == 'per_command':
-                                file_name = folder_name + '/' + dev
-                                file_name = file_name + '_' + device.api.slugify(
-                                    exec_cmd)
-                                save_file_name = file_name.split('/')[-1] + '.txt'
-                                with open(file_name + '.txt', 'w') as f:
-                                    output = '+' * 10 + ' ' + datetime.datetime.now(
-                                    ).strftime(
-                                        '%Y-%m-%d %H:%M:%S.%f'
-                                    ) + ': ' + dev + ': executing command \'' + exec_cmd + '\' ' + '+' * 10 + '\n' + output + '\n'
-                                    f.write(output)
-                                    log.info(
-                                        "File {file} saved to folder {folder}".
-                                        format(file=save_file_name,
-                                               folder=folder_name))
-                                if zipped_folder or server_to_store:
-                                    file_list.update({file_name+'.txt': save_file_name})
+                        if save_to_file == 'per_device':
+                            file_name = folder_name + '/' + dev
+                            save_file_name = file_name.split('/')[-1] + '.txt'
+                            with open(file_name + '.txt', 'a') as f:
+                                output = '+' * 10 + ' ' + datetime.datetime.now(
+                                ).strftime(
+                                    '%Y-%m-%d %H:%M:%S.%f'
+                                ) + ': ' + dev + ': executing command \'' + exec_cmd + '\' ' + '+' * 10 + '\n' + output + '\n'
+                                f.write(output)
+                                log.info(
+                                    "File {file} saved to folder {folder}".
+                                    format(file=save_file_name,
+                                            folder=folder_name))
+                            if zipped_folder:
+                                file_list.update({file_name+'.txt': save_file_name})
+                        elif save_to_file == 'per_command':
+                            file_name = folder_name + '/' + dev
+                            file_name = file_name + '_' + device.api.slugify(
+                                exec_cmd)
+                            save_file_name = file_name.split('/')[-1] + '.txt'
+                            with open(file_name + '.txt', 'w') as f:
+                                output = '+' * 10 + ' ' + datetime.datetime.now(
+                                ).strftime(
+                                    '%Y-%m-%d %H:%M:%S.%f'
+                                ) + ': ' + dev + ': executing command \'' + exec_cmd + '\' ' + '+' * 10 + '\n' + output + '\n'
+                                f.write(output)
+                                log.info(
+                                    "File {file} saved to folder {folder}".
+                                    format(file=save_file_name,
+                                            folder=folder_name))
+                            if zipped_folder or server_to_store:
+                                file_list.update({file_name+'.txt': save_file_name})
+                            
                     except SubCommandFailure as e:
                         log.error(
                             'Failed to execute "{cmd}" on device {d}: {e}'.

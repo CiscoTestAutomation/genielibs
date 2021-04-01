@@ -304,6 +304,7 @@ def execute_copy_to_running_config(device, file, copy_config_timeout=60):
         Args:
             device ('obj'): Device object
             file ('str'): String object to copy to device
+            copy_config_timeout ('int'): Timeout for copy in seconds (default: 60)
     '''
 
     log.info("Copying {} to running-config on '{}'".format(file, device.name))
@@ -317,6 +318,29 @@ def execute_copy_to_running_config(device, file, copy_config_timeout=60):
         if re.search('^0 bytes.*', output):
             raise Exception("Config file {} not applied to "\
                             "running-config - 0 bytes was copied".\
+                            format(file))
+
+
+def execute_copy_to_startup_config(device, file, dest='startup-config', copy_config_timeout=60):
+    ''' Copying file to startup-config on device
+        Args:
+            device ('obj'): Device object
+            file ('str'): String object to copy to device
+            dest ('str'): Target to copy to (default: startup-config)
+            copy_config_timeout ('int'): Timeout for copy in seconds (default: 60)
+    '''
+
+    log.info("Copying {} to startup-config on '{}'".format(file, device.name))
+    try:
+        output = device.copy(source=file, dest=dest,
+                             timeout=copy_config_timeout)
+    except Exception as e:
+        raise Exception("Failed to apply config file {} to startup-config\n{}".\
+                        format(file, str(e)))
+    else:
+        if re.search('^0 bytes.*', output):
+            raise Exception("Config file {} not applied to "\
+                            "startup-config - 0 bytes was copied".\
                             format(file))
 
 
