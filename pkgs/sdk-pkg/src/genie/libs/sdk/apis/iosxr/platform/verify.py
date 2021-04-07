@@ -66,12 +66,7 @@ def verify_file_exists(device, file, size=None, dir_output=None):
     dir_out = device.parse('dir {}'.format(directory), output=dir_output)
 
     # Check if file exists
-    if 'files' in dir_out.get('dir'):
-        exist = filename in dir_out.get('dir').get('files')
-    else:
-        log.info("File '{}' does ont exist on {} as {} is an empty folder"\
-            .format(file, device.name, directory))
-        return False
+    exist = filename in dir_out.get('dir', {}).get('files', '')
 
     if not exist:
         log.info("File '{}' does not exist on {}".format(file, device.name))
