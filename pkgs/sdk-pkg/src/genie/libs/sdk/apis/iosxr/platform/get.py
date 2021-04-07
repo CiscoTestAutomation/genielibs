@@ -142,11 +142,14 @@ def get_available_space(device, directory='', output=None):
         return None
 
     free_bytes = Dq(dir_output).get_values(key='total_free_bytes')
-    reg = re.search(r'(\d+)\s(\S+)', free_bytes[0])
+    reg = re.search(r'(\d+)\s*(\S+)?', free_bytes[0])
     
     if reg:
-        if reg.group(2) == 'kbytes':
-            bytes_free = int(reg.group(1))*1000
+        if len(reg.groups()) == 2:
+            if reg.group(2) == 'kbytes':
+                bytes_free = int(reg.group(1))*1000
+            else:
+                bytes_free = reg.group(1)
         else:
             bytes_free = reg.group(1)
         return bytes_free
