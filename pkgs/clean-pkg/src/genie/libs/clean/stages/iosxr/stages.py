@@ -325,6 +325,30 @@ def install_image_and_packages(section, steps, device, image, packages,
 
     """
 
+    
+    def _getFileNameFromPath(str):
+        """ Internal Method to retrieve fileame from an XR path.
+        Work with the following format : 
+            - <dir>:<image>
+            - <dir>:<special>/<folder>/<to>/<image_file>
+            - <dir>:<folder>/<image>
+        
+        Returns:
+            tuple (dirname, filename)
+        """
+        delimiter = '/'
+        if str.find(delimiter) == -1:
+            delimiter = ':'
+        outList=str.split(delimiter)
+        dirname = ''
+        len(outList)
+        for i in range(0,len(outList)-1):
+            dirname += outList[i]+delimiter
+
+        filename = outList[-1]
+
+        return dirname, filename
+    
     # Commonly used patterns
     error_patterns = [
         r".*Could not start this install operation.*",
@@ -334,7 +358,8 @@ def install_image_and_packages(section, steps, device, image, packages,
         r".*Install operation (?P<id>\d+) finished successfully.*"
 
     if ':' not in image[0]:
-        section.failed("The image provided is not in the format '<dir>:<image>'.")
+        section.failed("The image provided is not in the format '<dir>:<image>'"
+                        "or '<dir>:<folder>/<image>'.")
 
     with steps.start("Running install commit to clear any in progress "
                      "installs") as step:
@@ -352,20 +377,17 @@ def install_image_and_packages(section, steps, device, image, packages,
                      "install repository") as step:
 
         # Separate directory and image
-        directory, image = image[0].replace('/', '').split(':')
+        directory, image = _getFileNameFromPath(image[0])
 
         # Get packages and remove directories
         # pkgs = ' pkg1 pkg2 pkg3 ...'
         pkgs = ''
         for pkg in packages:
-            pkg = pkg.replace('/', '').split(':')
-            if len(pkg) == 1:
-                pkgs += ' '+pkg[0]
-            else:
-                pkgs += ' '+pkg[1]
-
+            _, pkg = _getFileNameFromPath(pkg)
+            pkgs += ' '+pkg
+            
         # install add source flash: <image> <pkg1> <pkg2>
-        cmd = 'install add source {dir}: {image}{packages}'.format(
+        cmd = 'install add source {dir} {image} {packages}'.format(
             dir=directory, image=image, packages=pkgs)
 
         try:
@@ -404,7 +426,7 @@ def install_image_and_packages(section, steps, device, image, packages,
 
         install_activate_dialog = Dialog([
             Statement(pattern='.*This install operation will reload the '
-                              'system\, continue\?.*\[yes\:no\]\:\[yes\].*',
+                              'system\, continue\?.*\[yes[:\/]no\]\:\[yes\].*',
                       action='sendline(yes)',
                       loop_continue=False,
                       continue_timer=False)])
