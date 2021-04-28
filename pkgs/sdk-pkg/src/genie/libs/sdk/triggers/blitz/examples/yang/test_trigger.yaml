@@ -1,0 +1,125 @@
+extends: test_trigger_extended.yaml
+
+# It's recommended that you clean up the device before the 
+# profile is executed. To do so, please make sure there's a
+# golden config file on your device, specify the path to that
+# config file below and add this test_prefix task to the job file.
+device_cleanup:
+  source:
+    pkg: genie.libs.sdk
+    class: triggers.blitz.blitz.Blitz
+  test_sections:
+    - apply_configuration:
+      - configure_replace:
+          device: uut
+          config: bootflash:/Golden_config
+
+          # Iteration and interval is used for a retry mechanism
+          iteration: 2  # optional, default is 2
+          interval: 30 # optional, default is 30
+      - sleep:
+          sleep_time: 5
+
+native_oper_interface_statistics_get:
+  source:
+    pkg: genie.libs.sdk
+    class: triggers.blitz.blitz.Blitz
+  test_sections:
+  - verify_yang_return_1:
+    - yang:
+        device: uut
+        connection: '%{ data.yang.connection }'
+        operation: get
+        protocol: '%{ data.yang.protocol }'
+        datastore: '%{ testbed.testbed.custom.datastore }'
+        format: '%{ data.yang.format.2 }'
+        content: '%{ data.yang.content.5 }'
+        returns: '%{ data.yang.returns.1 }'
+        banner: YANG GET
+
+openconfig_gnmi_fan_statistics_subscribe:
+  source:
+    pkg: genie.libs.sdk
+    class: triggers.blitz.blitz.Blitz
+  test_sections:
+  - verify_yang_return_1:
+    - yang:
+        device: uut
+        connection: gnmi
+        operation: subscribe
+        protocol: gnmi
+        datastore: '%{ testbed.testbed.custom.datastore }'
+        format: '%{ data.yang.format.1 }'
+        content: '%{ data.yang.content.1 }'
+        returns: '%{ data.yang.returns.2 }'
+        banner: YANG SUBSCRIBE
+    - execute:
+        device: uut
+        command: show run | sec hostname
+
+native_netconf_cpu_statistics_subscribe:
+  source:
+    pkg: genie.libs.sdk
+    class: triggers.blitz.blitz.Blitz
+  test_sections:
+  - verify_yang_return_1:
+    - yang:
+        device: uut
+        connection: netconf
+        operation: subscribe
+        protocol: netconf
+        datastore: '%{ testbed.testbed.custom.datastore }'
+        format: '%{ data.yang.format.1 }'
+        content: '%{ data.yang.content.2 }'
+        returns: '%{ data.yang.returns.3 }'
+        banner: YANG SUBSCRIBE
+    - execute:
+        device: uut
+        command: show run | sec hostname
+
+nexus_openconfig_gnmi_fan_statistics_subscribe:
+  source:
+    pkg: genie.libs.sdk
+    class: triggers.blitz.blitz.Blitz
+  test_sections:
+  - verify_yang_return_1:
+    - yang:
+        device: uut2
+        connection: gnmi
+        operation: subscribe
+        protocol: gnmi
+        datastore: '%{ testbed.testbed.custom.datastore }'
+        format: '%{ data.yang.format.4 }'
+        content: '%{ data.yang.content.3 }'
+        returns: '%{ data.yang.returns.4 }'
+        banner: YANG SUBSCRIBE
+    - execute:
+        device: uut2
+        command: show run | sec hostname
+
+nexus_netconf_interface_state_subscribe:
+  source:
+    pkg: genie.libs.sdk
+    class: triggers.blitz.blitz.Blitz
+  test_sections:
+  - verify_yang_return_1:
+    - configure:
+        device: uut2
+        command: |
+          int e1/1
+          shutdown
+    - yang:
+        device: uut2
+        connection: netconf
+        operation: subscribe
+        protocol: netconf
+        datastore: '%{ testbed.testbed.custom.datastore }'
+        format: '%{ data.yang.format.3 }'
+        content: '%{ data.yang.content.4 }'
+        returns: '%{ data.yang.returns.5 }'
+        banner: YANG SUBSCRIBE
+    - configure:
+        device: uut2
+        command: |
+          int e1/1
+          no shutdown

@@ -106,6 +106,13 @@ class Blitz(Trigger):
             # advanced actions examples, loop, run_condition, parallel
             ret_dict = self._check_advanced_actions(
                             steps, testbed, section, name, action_item)
+            
+            # if continue == false ...
+            if not section_continue and section.result != Passed:
+                section.failed(
+                    'Section results is NOT passed, Stopping the testcase',
+                    goto=['exit'])
+                    
             if ret_dict:
                 continue
 

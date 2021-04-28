@@ -118,7 +118,7 @@ class test_filetransferutils(unittest.TestCase):
     outputs['copy running-config ftp://10.1.6.242//auto/tftp-ssr/fake_config_2.tcl'] = \
         raw6
     outputs['sftp running-config myuser@1.1.1.1:/home/virl'] = raw7
-    def mapper(self, key, timeout=None, reply= None, prompt_recovery=False):
+    def mapper(self, key, timeout=None, reply= None, prompt_recovery=False, error_pattern=None):
         return self.outputs[key]
 
     def test_copyfile(self):

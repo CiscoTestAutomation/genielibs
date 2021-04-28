@@ -26,14 +26,15 @@ from genie.libs import sdk, parser
 logger = logging.getLogger(__name__)
 
 # Error patterns to be caught when executing cli on device
-FAIL_MSG = ['failed to copy', 'Unable to find', 'Error opening', 'Error', 'operation failed',
-            'Compaction is not supported', 'Copy failed', 'No route to host', 'Connection timed out', 'not found', 'No space',
-            'not a remote file', 'Could not resolve']
+FAIL_MSG = ['Permission denied', 'failed to copy', 'Unable to find', 'Error opening', 'Error', 'operation failed',
+            'Compaction is not supported', 'Copy failed', 'No route to host', 'Connection timed out', 'not found',
+            'No space', 'not a remote file', 'Could not resolve']
+
 
 class FileUtils(FileUtilsBase):
 
     def send_cli_to_device(self, cli, used_server=None, invalid=None,
-      timeout_seconds=300, **kwargs):
+                           timeout_seconds=300, **kwargs):
         """ Send command to a particular device and deal with its result
 
             Parameters
@@ -177,17 +178,16 @@ class FileUtils(FileUtilsBase):
                       continue_timer=False)
             ])
 
-        output = device.execute(cli, timeout=timeout_seconds, reply=dialog, prompt_recovery=True)
-
+        error_pattern = FAIL_MSG
         # Check if user passed extra error/fail patterns to be caught
         if invalid:
-            FAIL_MSG.extend(invalid)
+            error_pattern.extend(invalid)
 
-        # Checking for the error/fail patterns, raise an exception if found
-        for line in output.splitlines():
-            for word in FAIL_MSG:
-                if word in line:
-                    raise SubCommandFailure('Error message caught in the following line: "{line}"'.format(line=line))
+        output = device.execute(cli,
+                                timeout=timeout_seconds,
+                                reply=dialog,
+                                prompt_recovery=True,
+                                error_pattern=error_pattern)
 
         return output
 

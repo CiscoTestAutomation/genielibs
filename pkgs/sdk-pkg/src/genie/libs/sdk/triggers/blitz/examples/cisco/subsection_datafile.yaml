@@ -1,9 +1,0 @@
-####
-# See Genie User Guide: http://wwwin-pyats.cisco.com/cisco-shared/genie/latest
-setup:
-  sections:
-    connect: 
-      method: genie.harness.commons.connect
-  order: ['connect']
-cleanup: {}
-

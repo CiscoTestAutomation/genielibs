@@ -1,0 +1,19 @@
+testbed:
+  servers:
+    scp-1:
+        server: 127.0.0.1
+        type: scp
+        address: 127.0.0.1
+        credentials:
+            default:
+                username: test
+                password: test
+
+devices:
+  SW1:
+    os: nxos
+    alias: uut
+    type: switch
+    connections:
+      cli:
+        command: mock_device_cli --os nxos --state exec --hostname SW1

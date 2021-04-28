@@ -27,12 +27,12 @@ def callback_blitz_dispatcher_gen(self,
                                   section,
                                   data,
                                   loop_until=None,
-                                  parallel=None):
+                                  parallel=None,
+                                  name=''):
     """
     calling back the blitz dispatcher to run actions wrapped
     under advanced actions
     """
-
     # parsing the actions in loop and passing the action
     # keyword args to the self.dispatcher
     for action_item in data:
@@ -61,6 +61,7 @@ def callback_blitz_dispatcher_gen(self,
                 'steps': steps,
                 'testbed': testbed,
                 'section': section,
+                'name': name,
                 'data': [{
                     action: action_kwargs
                 }]
@@ -218,7 +219,8 @@ def _loop_iterator(self,
                   'section': section,
                   'data': actions,
                   'loop_until': loop_until,
-                  'parallel': parallel
+                  'parallel': parallel,
+                  'name': name,
                  }
 
         list_of_kwargs = list(callback_blitz_dispatcher_gen(**kwargs))

@@ -1,0 +1,19 @@
+testbed:
+  servers:
+    scp-1:
+        server: 127.0.0.1
+        type: scp
+        address: 127.0.0.1
+        credentials:
+            default:
+                username: test
+                password: test
+
+devices:
+  Router:
+    os: iosxe
+    alias: uut
+    type: switch
+    connections:
+      cli:
+        command: mock_device_cli --os iosxe --state general_enable

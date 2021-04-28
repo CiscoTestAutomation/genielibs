@@ -11,7 +11,7 @@ from pyats.utils.objects import R
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.ha.ha import \
                        TriggerReload as CommonReload, \
-                       TriggerReloadLc
+                       TriggerReloadLc, TriggerReloadFabric
 
 log = logging.getLogger(__name__)
 
@@ -74,6 +74,22 @@ class TriggerReload(CommonReload):
                                              'state', '(ok|active|standby)']],
                                     'exclude': platform_exclude}},
                       num_values={'rp': 'all', 'lc': 'all'})
+
+
+class TriggerReloadTor(CommonReload):
+    mapping = Mapping(requirements={'ops.platform.platform.Platform':{
+        'requirements': [
+            ['slot', 'rp', '(?P<rp>.*)',
+             'state', '(?P<status>active)'],
+        ],
+        'all_keys': True,
+        'exclude': platform_exclude}},
+        verify_ops={'ops.platform.platform.Platform':{
+            'requirements': [
+                ['slot', 'rp', '(?P<rp>.*)',
+                 'state', '(active)']],
+            'exclude': platform_exclude}},
+        num_values={'rp': 'all',})
 
 
 class TriggerReloadActiveSystemController(TriggerReloadLc):
@@ -184,7 +200,7 @@ class TriggerReloadStandbySystemController(TriggerReloadLc):
                       num_values={'oc': 1})
 
 
-class TriggerReloadFabricModule(TriggerReloadLc):
+class TriggerReloadFabricModule(TriggerReloadFabric):
     """Reload fabric module on device."""
 
     __description__ = """Reload fabric module on device.

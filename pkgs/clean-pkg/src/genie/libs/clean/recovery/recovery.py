@@ -329,25 +329,25 @@ def recovery_processor(
     after:
         None
     '''
+    log.info('Starting Device Recovery checks!')
 
     # Get device
-    log.info('Starting Global recovery processor')
-
     device = section.parameters['device']
+
+    recovery_is_required = True
+
     # Step 1 - Do we have connectivity to the device - Try to reconnect
     if device.api.verify_connectivity() or _disconnect_reconnect(device):
-        # All good!
-        log.info("Success - Device '{}' is still connected - "
-                 "No need to recover the device".format(device.name))
-        return
-    else:
+        recovery_is_required = False
+
+    if recovery_is_required:
         # Not good! Lets attempt recovery
-        log.warning("Device '{}' is unreachable - attempting recovery".\
+        log.warning("Device '{}' is unreachable. Attempting to recover.".\
                     format(device.name))
 
-    # Start Recovery Processor
-    log.info(banner('Recovery Processor'))
-    log.info('''\
+        # Start Recovery Processor
+        log.info(banner('Recovery Processor'))
+        log.info('''\
 Recovery Steps:
 1. Attempt to connect to the device - Failed
 2. Disconnect and reconnect from the device - Failed
@@ -355,39 +355,43 @@ Recovery Steps:
 4. Powercycler the device if provided
 5. From rommon, boot the device with golden image TFTP boot or type boot''')
 
-    try:
-        _connectivity(device, console_activity_pattern, console_breakboot_char,
-                      grub_activity_pattern, grub_breakboot_char, break_count, timeout,
-                      golden_image, tftp_boot, recovery_password, clear_line, powercycler,
-                      powercycler_delay, section, reconnect_delay)
-    except Exception as e:
-        # Could not recover the device!
-        log.error(banner("*** Terminating Genie Clean ***"))
-        section.parent.parameters['block_section'] = True
-        section.failed(from_exception=e)
+        try:
+            _connectivity(device, console_activity_pattern, console_breakboot_char,
+                          grub_activity_pattern, grub_breakboot_char, break_count, timeout,
+                          golden_image, tftp_boot, recovery_password, clear_line, powercycler,
+                          powercycler_delay, section, reconnect_delay)
+        except Exception as e:
+            # Could not recover the device!
+            log.error(banner("*** Terminating Genie Clean ***"))
+            section.parent.parameters['block_section'] = True
+            section.failed(from_exception=e)
 
-    if post_recovery_configuration:
-        log.info('Applying post recovery configuration to the device')
-        device.configure(post_recovery_configuration)
+        if post_recovery_configuration:
+            log.info('Applying post recovery configuration to the device')
+            device.configure(post_recovery_configuration)
 
-    # Did not fail to recover but still terminate run
-    # except if section is connect
-    if section.uid not in CONTINUE_RECOVERY:
+    if recovery_is_required and section.uid not in CONTINUE_RECOVERY:
+        # Did not fail to recover but still terminate clean because the stage
+        # was not in CONTINUE_RECOVERY.
         log.error(banner("*** Terminating Genie Clean ***"))
         section.parent.parameters['block_section'] = True
         section.failed("Device '{d}' has been recovered - "
                        "Terminating clean".format(d=device.name))
     else:
+        # Recovery either was not required or the stage was in CONTINUE_RECOVERY.
+        # Modify the original results to Passed as we want clean to continue.
         try:
-            # Modify Testcase and Kleenex to Passed
-            # This hack only works because connect is always
-            # run first
             section.result = Passed
             section.parent.result = Passed
             section.parent.parent.result = Passed
         except Exception:
             pass
-        section.passed("Device has been recovered - Continue with Genie Clean")
+
+    if recovery_is_required:
+        section.passed("Device has been recovered. Continuing with pyATS Clean.")
+    else:
+        section.passed("Device '{}' is still connected. No need to recover the "
+                       "device.".format(device.name))
 
 def block_section(section):
     if section.parent.parameters.get('block_section'):

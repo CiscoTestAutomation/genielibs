@@ -1,0 +1,76 @@
+testbed: # Add device related variable key/values under "custom".
+    name: ddmi-9500-2
+    custom:
+        datastore:
+            type: ''
+            lock: true
+            retry: 40
+        interface_name_1: 
+devices:
+    # WARNING: device name must match configured hostname
+    ddmi-9500-2:
+        type: iosxe
+        os: iosxe
+        alias: uut
+        credentials:
+            default:
+                username: admin
+                password: admin
+        connections:
+            cli:
+                class: unicon.Unicon
+                protocol: ssh
+                ip: 192.168.255.22
+                port: 22
+            yang1:
+                class: yang.connector.Netconf
+                protocol: netconf
+                host: 192.168.255.22
+                port: 830
+                # set all these to False if you have SSH key issues
+                hostkey_verify: False
+                look_for_keys: True
+                allow_agent: True
+            yang2:
+                class: yang.connector.Gnmi
+                protocol: gnmi
+                host: 192.168.255.22
+                # port: 50052
+                port: 9339
+                root_certificate: '/Users/example/certs/iosxe/ddmi-9500-2/rootCA.pem'
+                private_key: '/Users/example/certs/iosxe/ddmi-9500-2/client.key'
+                certificate_chain: '/Users/example/certs/iosxe/ddmi-9500-2/client.crt'
+                ssl_name_override: xe9k.cisco.com
+    nx-dmi-36:
+        type: n9k
+        os: nxos
+        alias: uut2
+        credentials:
+            default:
+                username: admin
+                password: admin
+        connections:
+            cli:
+                class: unicon.Unicon
+                protocol: ssh
+                ip: 192.168.255.36
+                port: 22
+            yang1:
+                class: yang.connector.Netconf
+                protocol: netconf
+                host: 192.168.255.36
+                port: 830
+                # set all these to False if you have SSH key issues
+                hostkey_verify: False
+                look_for_keys: True
+                allow_agent: True
+            yang2:
+                class: yang.connector.Gnmi
+                protocol: gnmi
+                host: 192.168.255.36
+                port: 50051
+                root_certificate: '/Users/example/certs/nxos/nx-dmi-36/server-cert-chain.pem'
+                private_key: ''
+                certificate_chain: ''
+                ssl_name_override: nx-dmi-36.cisco.com
+

@@ -4,6 +4,7 @@
 
 # python
 import yaml
+import json
 import importlib
 import logging
 import functools
@@ -17,6 +18,7 @@ from pyats.aetest.processors.decorator import ProcessorDecorator
 from genie import testbed
 from genie.utils import Dq
 from genie.harness.datafile.loader import TriggerdatafileLoader
+from genie.libs.health import health_yamls
 
 logger = logging.getLogger(__name__)
 
@@ -45,33 +47,49 @@ class HealthCheckPlugin(BasePlugin):
             health_sections = ['-health_sections']
             health_uids = ['-health_uids']
             health_groups = ['-health_groups']
+            health_config = ['-health_config']
         else:
             health_file = ['--health-file']
             health_sections = ['--health-sections']
             health_uids = ['--health-uids']
             health_groups = ['--health-groups']
-        
+            health_config = ['--health-config']
 
         pyats_health_grp.add_argument(*health_file,
                                       dest='health_file',
                                       default=None,
                                       help='Specify health yaml file')
 
-        pyats_health_grp.add_argument(*health_sections,
-                                      dest='health_sections',
-                                      default=None,
-                                      help='Specify sections where want to run pyATS Health Check. Regex is supported.')
+        pyats_health_grp.add_argument(
+            *health_sections,
+            dest='health_sections',
+            default=None,
+            help=
+            'Specify sections where want to run pyATS Health Check. Regex is supported.'
+        )
 
-        pyats_health_grp.add_argument(*health_uids,
-                                      dest='health_uids',
-                                      default=None,
-                                      help='Specify triggers uids where want to run pyATS Health Check. Regex is supported')
+        pyats_health_grp.add_argument(
+            *health_uids,
+            dest='health_uids',
+            default=None,
+            help=
+            'Specify triggers uids where want to run pyATS Health Check. Regex is supported'
+        )
 
-        pyats_health_grp.add_argument(*health_groups,
-                                      dest='health_groups',
-                                      default=None,
-                                      help='Specify groups where want to run pyATS Health Check. Regex is supported')
- 
+        pyats_health_grp.add_argument(
+            *health_groups,
+            dest='health_groups',
+            default=None,
+            help=
+            'Specify groups where want to run pyATS Health Check. Regex is supported'
+        )
+
+        pyats_health_grp.add_argument(
+            *health_config,
+            dest='health_config',
+            default=None,
+            help='Specify pyATS Health Check configuration yaml file')
+
         return parser
 
     def __init__(self, *args, **kwargs):
@@ -93,7 +111,8 @@ class HealthCheckPlugin(BasePlugin):
         if not runtime.testbed:
             if self.runtime.args.health_file:
                 # show message when testbed yaml only is missed
-                logger.info('testbed yaml was not given, so pyATS health will not run')
+                logger.info(
+                    'testbed yaml was not given, so pyATS health will not run')
             return
 
         # skip if no health_file
@@ -101,6 +120,17 @@ class HealthCheckPlugin(BasePlugin):
             return
 
         logger.info('Pre-Task %s: pyATS Health' % task.taskid)
+
+        # load health configuration
+        with open(self.runtime.args.health_config
+                  or health_yamls.health_config) as f:
+            health_config = yaml.safe_load(f)
+
+        if health_config:
+            with open(
+                    "{rundir}/health_results.json".format(
+                        rundir=self.runtime.directory), 'w') as f:
+                json.dump(health_config, f, ensure_ascii=False, indent=2)
 
         # convert from pyATS testbed to Genie testbed
         tb = testbed.load(runtime.testbed)
@@ -116,13 +146,13 @@ class HealthCheckPlugin(BasePlugin):
                     rundir=self.runtime.directory), 'w') as f:
             yaml.dump(health_loaded, f)
 
-
         # get `source` for pyATS Health processors and instantiate class
         source = health_loaded.get('pyats_health_processors',
                                    {}).get('source', {})
 
         # check `reconnect` flag/parameters
-        if 'reconnect' in health_loaded.setdefault('pyats_health_processors', {}):
+        if 'reconnect' in health_loaded.setdefault('pyats_health_processors',
+                                                   {}):
             reconnect = health_loaded['pyats_health_processors']['reconnect']
             if reconnect is None:
                 # `reconnect` in yaml, but no params. pass empty dict
@@ -130,53 +160,49 @@ class HealthCheckPlugin(BasePlugin):
         else:
             reconnect = None
 
-        if source:            
-            # get class name of testcase in health yaml
-            pkg_name = source.get('pkg', '')
-            class_name = source.get('class', '')
-            class_path_list = '.'.join([pkg_name, class_name]).split('.')
-            module = importlib.import_module('.'.join(class_path_list[:-1]))
-            class_ = getattr(module, class_path_list[-1])
-            # instantiate Health class which inherited from Blitz class
-            # `health_dispacher` function from Health class will be used as processor
-            health = class_()
-
-            # get section names for pyATS Health processors
-            section_names = Dq(health_loaded).get_values('test_sections')
-            if section_names:
-                processors = task.kwargs.setdefault('processors', {})
-
-                # loop by health items (sections)
-                for section in section_names:
-                    for section_name, section_data in section.items():
-                        # add processors to pyATS
-                        processor_decorator = ProcessorDecorator()
-                        processor_method = processor_decorator.context(
-                            func=health.health_dispatcher,
-                            name='pyATS Health Check {section_name}'.format(
-                                section_name=section_name))
-                        processor = functools.partial(
-                            processor_method,
-                            # enable processor report
-                            report = True,
-                            # params for health dispatcher
-                            parameters={
-                                'reconnect': reconnect,
-                                'name': section_name,
-                                'data': section_data
-                            }
-                        )
-                        processors.setdefault('context',
-                                              []).append(processor)
-
-            else:
-                # Block testcase when error is found
-                raise Exception("Couldn't find any 'test_sections'.")
-        else:
+        if not source:
             # Block testcase when error is found
             raise Exception(
                 "Couldn't find 'pyats_health_processors' section in health.yaml."
             )
+
+        # get class name of testcase in health yaml
+        pkg_name = source.get('pkg', '')
+        class_name = source.get('class', '')
+        class_path_list = '.'.join([pkg_name, class_name]).split('.')
+        module = importlib.import_module('.'.join(class_path_list[:-1]))
+        class_ = getattr(module, class_path_list[-1])
+        # instantiate Health class which inherited from Blitz class
+        # `health_dispacher` function from Health class will be used as processor
+        health = class_()
+
+        # get section names for pyATS Health processors
+        section_names = Dq(health_loaded).get_values('test_sections')
+        if not section_names:
+            # Block testcase when error is found
+            raise Exception("Couldn't find any 'test_sections'.")
+        processors = task.kwargs.setdefault('processors', {})
+
+        # loop by health items (sections)
+        for section in section_names:
+            for section_name, section_data in section.items():
+                # add processors to pyATS
+                processor_decorator = ProcessorDecorator()
+                processor_method = processor_decorator.context(
+                    func=health.health_dispatcher,
+                    name='pyATS Health Check {section_name}'.format(
+                        section_name=section_name))
+                processor = functools.partial(
+                    processor_method,
+                    # enable processor report
+                    report=True,
+                    # params for health dispatcher
+                    parameters={
+                        'reconnect': reconnect,
+                        'name': section_name,
+                        'data': section_data
+                    })
+                processors.setdefault('context', []).append(processor)
 
 
 # Custom Plugin Entrypoints

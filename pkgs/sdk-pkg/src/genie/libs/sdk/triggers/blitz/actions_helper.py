@@ -406,11 +406,12 @@ def _output_query_template(output,
 
     for query, style in keys:
 
-        if extra_kwargs.get('custom_verification_message'):
-            step_msg = extra_kwargs.pop('custom_verification_message')
-        else:
-            step_msg = "Verify that '{query}' is {style} in the output".\
+        step_msg = "Verify that '{query}' is {style} in the output".\
                         format(query=query, style=style)
+        if 'custom_verification_message' in extra_kwargs:
+            custom_message = extra_kwargs.pop('custom_verification_message')
+            if custom_message:
+                step_msg = custom_message
 
         # dict that would be sent with various data for inclusion/exclusion check
         kwargs = {}
@@ -923,7 +924,7 @@ def _evaluate_operator(result, operation=None, value=None):
                        'not_contains': operator.contains}
 
     elif type(result) == type(value):
-            # if strings just check  inclusion
+        # if strings just check  inclusion
         dict_of_ops = {'==': operator.eq, '!=': operator.ne}
     else:
         # if any other type return error
