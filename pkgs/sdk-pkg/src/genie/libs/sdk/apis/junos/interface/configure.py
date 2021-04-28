@@ -17,7 +17,7 @@ def default_interface(device, interfaces):
             device (`obj`): Device object
             interfaces (`list`): List of interfaces to be defaulted
         Returns:
-            None
+            Boolean
     """
     dialog = Dialog(
         [
@@ -31,18 +31,20 @@ def default_interface(device, interfaces):
     )
 
     for intf in interfaces:
-        config_cmd = ["edit interfaces {}".format(intf), "delete"]
+        config_cmd = [
+            "edit interfaces {}".format(intf), 
+            "delete", 
+            "exit"]
 
         try:
             device.configure(config_cmd, reply=dialog)
             log.info("Successfully defaulted {}".format(intf))
         except SubCommandFailure as e:
-            raise SubCommandFailure(
-                "Couldn't default {interface}. Error:\n{error}".format(
-                    interface=intf, error=e
-                )
-            )
-
+            log.warning("Couldn't default {interface}. Error:\n{error}".format(
+                    interface=intf, error=e))
+            return False
+    
+    return True
 
 def shut_interface(device, interface):
     """ Shut interface on device

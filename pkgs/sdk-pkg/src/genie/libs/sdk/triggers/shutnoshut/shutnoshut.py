@@ -2,7 +2,7 @@
 
 # import python
 import logging
-
+import time
 # import pyats
 from pyats import aetest
 
@@ -94,6 +94,12 @@ class TriggerShutNoShut(ShutNoShutTemplate):
         except Exception as e:
             self.failed('Failed to verify the '
                         "shut'd feature", from_exception=e)
+
+    @aetest.test
+    def wait_in_between(self, steps, wait_for=0):
+        with steps.start("Waiting in between shut and no shut for {} sec".format(wait_for)):
+            time.sleep(wait_for)
+
 
     @aetest.test
     def unshut(self, uut, abstract, steps):

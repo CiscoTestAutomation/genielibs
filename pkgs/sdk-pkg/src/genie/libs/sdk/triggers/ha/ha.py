@@ -405,7 +405,8 @@ class TriggerIssu(IssuTemplate):
         if not self.parameters['upgrade_image']:
             self.skipped("ISSU upgrade image not provided - skipping trigger",
                          goto=['next_tc'])
-        self.ha = abstract.sdk.libs.abstracted_libs.ha.HA(device=uut)
+        self.ha = abstract.sdk.libs.abstracted_libs.ha.HA(
+            device=uut, parameters=self.parameters)
         try:
             self.ha.prepare_issu(steps=steps,
                                  upgrade_image=self.parameters['upgrade_image'])
@@ -428,7 +429,8 @@ class TriggerIssu(IssuTemplate):
            Raises:
                pyATS Results
         '''
-        self.ha = abstract.sdk.libs.abstracted_libs.ha.HA(device=uut)
+        self.ha = abstract.sdk.libs.abstracted_libs.ha.HA(
+            device=uut, parameters=self.parameters)
         try:
             self.ha.perform_issu(steps=steps,
                                  upgrade_image=self.parameters['upgrade_image'])

@@ -135,8 +135,14 @@ class test_filetransferutils(unittest.TestCase):
     outputs['copy bootflash:/virtual-instance.conf '
         'ftp://10.1.0.214//auto/tftp-ssr/virtual-instance.conf vrf management'] = raw9
 
-    def mapper(self, key, timeout=None, reply= None, prompt_recovery=False):
-        return self.outputs[key]
+    def mapper(self, key, timeout=None, reply=None, prompt_recovery=False, error_pattern=None):
+        output = self.outputs[key]
+        if error_pattern:
+            for line in output.splitlines():
+                for word in error_pattern:
+                    if word in line:
+                        raise SubCommandFailure('Error message caught in the following line: "{line}"'.format(line=line))
+        return output
 
     def is_valid_ip_mapper(self, ip, device=None, vrf=None, cache_ip=None):
         return ip!='2.2.2.2'

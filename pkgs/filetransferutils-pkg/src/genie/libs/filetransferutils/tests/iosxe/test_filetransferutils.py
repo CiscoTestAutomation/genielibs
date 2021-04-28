@@ -121,7 +121,7 @@ class test_filetransferutils(unittest.TestCase):
     outputs['copy running-config tftp://10.1.7.250//auto/tftp-ssr/test_config.py'] = \
       raw7
 
-    def mapper(self, key, timeout=None, reply= None, prompt_recovery=False):
+    def mapper(self, key, timeout=None, reply= None, prompt_recovery=False, error_pattern=None):
         return self.outputs[key]
 
     def test_copyfile(self):

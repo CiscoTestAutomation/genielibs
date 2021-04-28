@@ -42,7 +42,7 @@ class test_filetransferutils(unittest.TestCase):
     outputs['file copy golden_config ftp://myuser@1.1.1.1:/test/']\
          = raw1
 
-    def mapper(self, key, timeout=None, reply= None, prompt_recovery=False):
+    def mapper(self, key, timeout=None, reply= None, prompt_recovery=False, error_pattern=None):
         return self.outputs[key]
 
     def test_copyfile(self):

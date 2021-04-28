@@ -11,11 +11,14 @@ pipeline {
     stages {
         stage('Clone repos') {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: '*/dev']], extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'genie']], userRemoteConfigs: [[credentialsId: 'e8a7354a-c71a-42cb-83ee-49ab5ad40085', url: 'https://wwwin-github.cisco.com/pyATS/genie.git']]])
+                checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'genie']], userRemoteConfigs: [[credentialsId: 'e8a7354a-c71a-42cb-83ee-49ab5ad40085', url: 'https://wwwin-github.cisco.com/pyATS/genie.git']]])
+                checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'unicon.plugins']], userRemoteConfigs: [[credentialsId: 'e8a7354a-c71a-42cb-83ee-49ab5ad40085', url: 'https://wwwin-github.cisco.com/pyATS/unicon.plugins.git']]])
                 script {
                     sh """
                     ls -l
-                    cd genie
+                    cd ${WORKSPACE}/genie
+                    git remote -v
+                    cd ${WORKSPACE}/unicon.plugins
                     git remote -v
                     """
                 }
@@ -24,28 +27,16 @@ pipeline {
 
 
         stage('Checkout branches') {
-            when { not { changeRequest() } }
             steps {
                 script {
                     sh """
-                    cd genie
+                    cd ${WORKSPACE}/genie
                     # checkout same branch on genie, if it exists
-                    git checkout ${BRANCH_NAME} || true
-                    """
-                }
-            }
-        }
-
-        stage('Checkout branches (PR)') {
-            when {
-                changeRequest()
-            }
-            steps {
-                script {
-                    sh """
-                    cd genie
-                    # checkout same branch on genie, if it exists
-                    git checkout origin/${CHANGE_BRANCH} || true
+                    git checkout ${env.CHANGE_BRANCH == null ? env.GIT_BRANCH : env.CHANGE_BRANCH} || git checkout dev
+                    git status
+                    cd ${WORKSPACE}/unicon.plugins
+                    # checkout same branch on unicon.plugins, if it exists
+                    git checkout ${env.CHANGE_BRANCH == null ? env.GIT_BRANCH : env.CHANGE_BRANCH} || git checkout dev
                     git status
                     """
                 }
@@ -67,6 +58,8 @@ pipeline {
                     pip install --upgrade pip setuptools
                     pip3 install --no-cache-dir wheel pytest pytest-xdist
                     pip3 install --no-cache-dir -i http://pyats-pypi.cisco.com/simple --trusted-host pyats-pypi.cisco.com cisco-distutils ats[full]
+                    cd $WORKSPACE/unicon.plugins
+                    make develop
                     cd $WORKSPACE/genie
                     make develop
                     cd ..

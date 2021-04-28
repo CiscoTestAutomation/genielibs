@@ -49,9 +49,6 @@ To develop this package, assuming you have Genie already installed in your
 environment, follow the commands below:
 
 ```bash
-# remove the packages
-bash$ pip uninstall -y genie.libs.conf genie.libs.ops genie.libs.sdk genie.libs.robot
-
 # clone this repo
 bash$ git clone https://github.com/CiscoTestAutomation/genielibs.git
 

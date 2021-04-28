@@ -1,34 +1,45 @@
 '''HA NXOS implement function'''
 
-# Python
-import os
-import time
-import logging
+# Parser
+from genie.abstract import Lookup
+from genie.libs import parser
+
+from unicon.core.errors import SubCommandFailure
+from unicon.eal.dialogs import Statement, Dialog
+from os.path import basename, getsize
 from datetime import datetime
+import re
+import logging
+import time
+import os
+from ..ha import HA as HA_main
+
+# genie
+from genie.libs.sdk.libs.utils.common import set_filetransfer_attributes
+from genie.utils.timeout import Timeout
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
+from genie.libs.sdk import apis
+from genie.libs.sdk.apis.execute import execute_copy_run_to_start
+from genie.libs.sdk.apis.utils import compare_config_dicts
+
+# pyats
+from pyats.utils.objects import R, find
+from pyats.utils.fileutils import FileUtils
 
 # unicon
 from unicon.eal.dialogs import Statement, Dialog
+from unicon.plugins.generic.statements import authentication_statement_list
 
 # Parsergen
 from genie.parsergen import oper_fill_tabular
 
-# parser
-from genie.libs.parser.nxos.show_platform import ShowModule
-from genie.libs.sdk.libs.utils.common import set_filetransfer_attributes
+# platform parser
+from genie.libs.parser.nxos.show_platform import ShowModule, Dir
 
-from pyats.utils.fileutils import FileUtils
-
-# module logger
 log = logging.getLogger(__name__)
-
-from ..ha import HA as HA_main
 
 
 class HA(HA_main):
-
-    def __init__(self, device=None, filetransfer=None):
-       self.device = device
-       self.filetransfer = filetransfer
 
     def capture_core(self):
         """Verify if any core on the device and
@@ -52,20 +63,20 @@ class HA(HA_main):
 
         cores = []
         # Execute command to check for cores
-        header = [ "VDC", "Module", "Instance",
-                    "Process-name", "PID", "Date\(Year-Month-Day Time\)" ]
+        header = ["VDC", "Module", "Instance",
+                  "Process-name", "PID", "Date\(Year-Month-Day Time\)"]
 
         if self.device.alias == 'uut':
             # In case of restarting process on a the main VDC
-            output = oper_fill_tabular(device = self.device,
-                                       show_command = 'show cores vdc-all',
-                                       header_fields = header, index = [5])
+            output = oper_fill_tabular(device=self.device,
+                                       show_command='show cores vdc-all',
+                                       header_fields=header, index=[5])
         else:
             # In case of restarting process on a sub-VDC
             self.device.disconnect()
-            output = oper_fill_tabular(device = self.device,
-                                       show_command = 'show cores',
-                                       header_fields = header, index = [5])
+            output = oper_fill_tabular(device=self.device,
+                                       show_command='show cores',
+                                       header_fields=header, index=[5])
 
         if not output.entries:
             log.info('No core found')
@@ -80,11 +91,11 @@ class HA(HA_main):
             date_ = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
 
             # Save core info
-            core_info = dict(module = row['Module'],
-                             pid = row['PID'],
-                             instance = row['Instance'],
-                             process = row['Process-name'],
-                             date = date.replace(" ", "_"))
+            core_info = dict(module=row['Module'],
+                             pid=row['PID'],
+                             instance=row['Instance'],
+                             process=row['Process-name'],
+                             date=date.replace(" ", "_"))
             cores.append(core_info)
 
         return cores
@@ -141,13 +152,13 @@ class HA(HA_main):
                                date='Dec 12 2017', process='bgp')
         """
         path = 'core_{pid}_{process}_{date}_{time}'.format(
-                                                   pid=pid,
-                                                   process=process,
-                                                   date=date,
-                                                   time=time.time())
+            pid=pid,
+            process=process,
+            date=date,
+            time=time.time())
 
         if instance:
-            pid = '{pid}/{instance}'.format(pid = pid, instance = instance)
+            pid = '{pid}/{instance}'.format(pid=pid, instance=instance)
         core = '//{module}/{pid}'.format(module=module, pid=pid)
         return (path, core)
 
@@ -194,14 +205,14 @@ class HA(HA_main):
             status = value['status']
             assert status in rp_expected_status, \
                 'Module "{0}" has state "{1}" instead of expected state "{2}"'\
-                    .format(rp, status, rp_expected_status)
+                .format(rp, status, rp_expected_status)
 
         for lc in output['slot']['lc']:
             (module_type, value), = output['slot']['lc'][lc].items()
             status = value['status']
             assert status in lc_expected_status, \
                 'Module "{0}" has state "{1}" instead of expected state "{2}"'\
-                    .format(lc, status, lc_expected_status)
+                .format(lc, status, lc_expected_status)
 
     def _switchover(self):
         """Do the switchover action for NXOS devices.
@@ -231,13 +242,13 @@ class HA(HA_main):
         # unicon
         dialog = Dialog([
             Statement(pattern=r'Proceed\[y\/n\]\?.*',
-                                action='sendline(y)',
-                                loop_continue=True,
-                                continue_timer=False),
+                      action='sendline(y)',
+                      loop_continue=True,
+                      continue_timer=False),
             Statement(pattern=r'\(y\/n\)\?.*',
-                                action='sendline(y)',
-                                loop_continue=True,
-                                continue_timer=False)
+                      action='sendline(y)',
+                      loop_continue=True,
+                      continue_timer=False)
         ])
         # Execute command to reload LC
         self.device.execute('reload module {}'.format(lc), reply=dialog)
@@ -252,7 +263,168 @@ class HA(HA_main):
         Example:
             >>> _reloadFabric()
         """
-        
+
         # Execute command to poweroff/on
-        self.device.configure('poweroff xbar {}\nno poweroff xbar {}'.format(fabric,fabric))
+        self.device.configure(
+            'poweroff xbar {}\nno poweroff xbar {}'.format(fabric, fabric))
+
+    ########################################################################
+    #                               ISSU                                   #
+    ########################################################################
+
+    def _prepare_issu(self, steps, upgrade_image):
+        """Prepare the device for ISSU:
+
+            1. Check currect image version and upgrade image version
+            2. Copy upgrade image to standby RP
+
+            NXOS:
+            1. Copy image onto the device
+
+        Raises:
+            Unicon errors
+            Exception
+
+        Example:
+            >>> _prepare_issu(steps=steps, upgrade_image='someimage')
+        """
+
+        # # Init
+        device = self.device
+
+        if not hasattr(self.device, 'filetransfer_attributes'):
+            filetransfer = FileUtils.from_device(self.device)
+            set_filetransfer_attributes(self, self.device, filetransfer)
+
+        disk = "bootflash:"
+        timeout_seconds = 600
+
+        with steps.start('Check available diskspace') as step:
+            dir_output = filetransfer.parsed_dir(disk, timeout_seconds, Dir)
+
+            if int(dir_output['disk_free_space']) < 3000000000:
+                step.failed(
+                    "Not enough free space available to copy over the image.Free up atleast 3GB of space on {}".format(disk))
+
+        with steps.start('Copy over the issu image') as step:
+            # Copy ISSU upgrade image to disk
+
+            from_url = '{protocol}://{address}/{upgrade_image}'.format(
+                protocol=device.filetransfer_attributes['protocol'],
+                address=device.filetransfer_attributes['server_address'],
+                upgrade_image=upgrade_image)
+            filetransfer.copyfile(source=from_url, destination=disk,
+                                  device=device, vrf='management', timeout_seconds=600)
+
+            # Verify location:<filename> exists
+            output = device.execute('dir {disk}{image}'.format(disk=disk,
+                                                               image=basename(upgrade_image)))
+
+            if 'No such file or directory' not in output:
+                log.info("Copied ISSU image to '{}'".format(disk))
+            else:
+                step.failed('Required ISSU image {} not found on disk. Transfer failed.'.format(
+                    basename(upgrade_image)))
+
+    def _perform_issu(self, steps, upgrade_image, timeout=300):
+        """Perform the ND-ISSU on NXOS device:
+
+            NXOS:
+            1. execute install all <> non-disruptive
+
+        Raises:
+            Unicon errors
+            Exception
+
+        Example:
+            >>> _perform_issu(steps=steps, upgrade_image='someimage')
+        """
+
+        # Init
+        lookup = Lookup.from_device(self.device)
         
+        statement_list = authentication_statement_list + \
+            [Statement(pattern=r'.*Do you want to continue with the installation\s*\(y/n\)\?\s*\[n\]',
+                       action='sendline(y)', loop_continue=True, continue_timer=False)]
+        dialog = Dialog(statement_list)
+
+        ctrlplane_downtime = self.parameters.get('ctrlplane_downtime')
+        user_boot_mode = self.parameters.get('mode')
+        with steps.start("Check boot mode on {}".format(self.device.hostname)) as step:
+            out = self.device.execute('show boot mode')
+            for line in out.splitlines():
+                line = line.rstrip()
+                p1 = re.compile(
+                    r'^Current\smode\sis\s(?P<mode>\w+)\.$')
+                m = p1.match(line)
+                if m:
+                    sys_boot_mode = m.groupdict()['mode']
+                    break
+
+            if sys_boot_mode.lower() != user_boot_mode.lower():
+                step.failed(
+                    "System boot mode {} does not match user expected boot mode {}".format(sys_boot_mode, user_boot_mode))
+            else:
+                step.passed(
+                    "System boot mode {} matches user expected boot mode {}".format(sys_boot_mode, user_boot_mode))
+
+        with steps.start("Take a running-config snapshot pre trigger on {}".format(self.device.hostname)):
+            pre_trig_config = self.device.api.get_running_config_dict()
+        with steps.start("Perform copy run start on {}".format(self.device.hostname)):
+            execute_copy_run_to_start(self.device)
+        with steps.start("Performing non disruptive issu on the device {}".format(self.device.hostname)):
+            image_name = basename(upgrade_image)
+            self.device.execute(
+                'install all nxos bootflash:{} non-disruptive'.format(image_name), timeout=1000, reply=dialog)
+
+        with steps.start("Reconnect back to device {} after ISSU".format(self.device.hostname)):
+            reconnect_timeout = Timeout(max_time=1200, interval=120)
+            self._reconnect(steps=steps, timeout=reconnect_timeout)
+
+        with steps.start("Verify image version on device {} after ISSU".format(self.device.hostname)):
+            version_dict = lookup.parser.show_platform.\
+                ShowVersion(device=self.device).parse()
+            # version check
+            rs = R(['platform', 'software', 'system_image_file',
+                    'bootflash:///{}'.format(image_name)])
+            ret = find([version_dict], rs, filter_=False, all_keys=True)
+            if not ret:
+                raise Exception(
+                    "Image version mismatch after ISSU on device {}".format(self.device.hostname))
+
+        with steps.start("Check CP downtime after on {} after ISSU".format(self.device.hostname)) as step:
+            if user_boot_mode.lower() == 'lxc':
+                step.passed("show install all time-stats detail unsupported on lxc mode and cp downtime is minimal")
+            else:
+                out = self.device.execute('show install all time-stats detail')
+                output_error = False
+                for line in out.splitlines():
+                    line = line.rstrip()
+                    p1 = re.compile(r'^ERROR:.*$')
+                    m = p1.match(line)
+                    if m:
+                        output_error = True
+                        break
+                    p2 = re.compile(
+                        r'^Total\s+.*?:\s(?P<cp_downtime>\d+)\s+seconds$')
+                    m = p2.match(line)
+                    if m:
+                        cp_downtime = m.groupdict()['cp_downtime']
+                        continue
+                if output_error:
+                    step.failed(
+                        "The output shows reset-reason as disruptive. ND ISSU was not performed properly.")
+                if int(cp_downtime) > int(ctrlplane_downtime):
+                    step.failed(
+                        "Control plane was down for {} seconds which is longer than user expected at {} seconds".format(cp_downtime,    ctrlplane_downtime))
+                else:
+                    step.passed(
+                        "Control plane was down for {} seconds which is within an user acceptable range of {} seconds".format(cp_downtime,    ctrlplane_downtime))
+
+        with steps.start("Compare post-trigger config with pre trigger config snapshot on {}".format(self.device.hostname)) as step:
+            post_trig_config = self.device.api.get_running_config_dict()
+            output = compare_config_dicts(
+                pre_trig_config, post_trig_config, [r'(boot|version)'])
+            if output:
+                step.failed(
+                    "Inconsistencies in running config post trigger:{}".format(output))

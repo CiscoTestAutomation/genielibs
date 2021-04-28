@@ -13,6 +13,7 @@ import time
 import random
 import copy
 import operator
+import psutil
 
 from time import strptime
 from datetime import datetime
@@ -2670,7 +2671,7 @@ def get_devices(testbed, os=None, regex=None, regex_key='os', pick_type='all'):
         raise Exception("Couldn't find any device from testbed object.")
 
 
-def get_interface_from_yaml(local, remote, value, *args, **kwargs):
+def get_interface_from_yaml(local, remote, value, testbed_topology, **kwargs):
     """ Get interface name from the testbed yaml file
 
         To be used within datafile
@@ -2679,7 +2680,7 @@ def get_interface_from_yaml(local, remote, value, *args, **kwargs):
             local (`str`): local device to get interface from
             remote (`str`): Remote device where the interface is connected to
             value (`str`): Either link name or a number and a link will be randomly chosen
-            args (`args`): testbed.topology
+            testbed_topology (`dict`): testbed.topology
 
         Raise:
             Exception
@@ -2696,10 +2697,10 @@ def get_interface_from_yaml(local, remote, value, *args, **kwargs):
     """
     # Put it back as a dictionary
 
-    if not isinstance(args[0], dict):
-        topology = ast.literal_eval(','.join(args).lstrip())
+    if not isinstance(testbed_topology, dict):
+        topology = ast.literal_eval(','.join(testbed_topology).lstrip())
     else:
-        topology = args[0]
+        topology = testbed_topology
     data = Dq(topology)
 
     # Get all the links for local
@@ -3231,3 +3232,75 @@ def get_structure_output(device, command=None, exclude=['!'], negative_keyword='
             log.debug(item)
 
     return ld_final.reconstruct()
+
+def get_single_interface(device,
+                         link_name=None,
+                         opposite=False,
+                         phy=False):
+    """"
+    Returns the single interface and fails if multiple interfaces
+    are found.
+
+    Args:
+        device (`obj`): device to use
+        link_name ('str'): link name
+        opposite ('bool'): find opposite device interface
+        phy ('bool'): find only physical interface
+
+    Raise:
+        N/A
+
+    Return:
+        Interface Object
+    """
+
+    interface = device.api.get_interfaces(link_name=link_name,
+                                          opposite=opposite,
+                                          phy=phy)
+
+    if interface == None:
+        log.warning(
+            "found no interface found on device {} with link {}".format(
+                device.name, link_name))
+        return None
+
+    if len(interface) != 1:
+        log.warning("{} interfaces on {} with link {} but expected 1".format(
+            len(interface), device.name, link_name))
+        return None
+
+    interface = interface[0]
+
+    try:
+        interface_name = interface.name
+    except AttributeError:
+        log.error('Interface object does not have attribute "name"')
+        return None
+
+    log.info("found the interface {}".format(interface_name))
+
+    return interface_name
+
+def get_local_ip(device, alias=None):
+    ''' Get the local IP address that is used to connect to devices.
+
+    Looks up the IP address via the spawn process ID.
+
+    Args:
+        device (Device): device object
+        alias (str): alias name of the connection
+
+    Returns:
+        IP address (str)
+    '''
+    if alias:
+        conn = getattr(device, alias)
+    else:
+        conn = device
+    p = psutil.Process(conn.spawn.pid)
+    conns = p.connections()
+    if conns:
+        conn = conns[0]
+        local_ip = conn.laddr.ip
+        log.info('Local IP: {}'.format(local_ip))
+        return local_ip

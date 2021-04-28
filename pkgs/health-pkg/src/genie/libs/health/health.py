@@ -147,22 +147,44 @@ class Health(Blitz):
                           device.name if hasattr(device, 'name') else device)
             if m:
                 var_name = m.groupdict()['var_name']
-                if 'loop_variable_name' in data and 'value' in data:
-                    # loop with list
-                    if var_name == data['loop_variable_name']:
-                        for dev in data['value']:
-                            if dev not in device_list:
-                                device_list.append(dev)
-                    # loop with dict for _keys/_values
-                    elif (var_name == data['loop_variable_name'] +
-                          '._keys') or (var_name
-                                        == data['loop_variable_name'] +
-                                        '._values'):
-                        if data['value']:
-                            for item in data['value']:
-                                for dev in item.keys():
-                                    if dev not in device_list:
-                                        device_list.append(dev)
+                if isinstance(data, dict):
+                    if 'loop_variable_name' in data and 'value' in data:
+                        # loop with list
+                        if var_name == data['loop_variable_name']:
+                            for dev in data['value']:
+                                if dev not in device_list:
+                                    device_list.append(dev)
+                        # loop with dict for _keys/_values
+                        elif (var_name == data['loop_variable_name'] +
+                              '._keys') or (var_name
+                                            == data['loop_variable_name'] +
+                                            '._values'):
+                            if data['value']:
+                                for item in data['value']:
+                                    for dev in item.keys():
+                                        if dev not in device_list:
+                                            device_list.append(dev)
+                else:
+                    if Dq(each_data).contains('loop_variable_name') and Dq(each_data).contains('value'):
+                        # loop with list
+                        if var_name == Dq(each_data).get_values('loop_variable_name', 0):
+                            loop_value = Dq(each_data).get_values('value', 0)
+                            m = re.search('%VARIABLES{(?P<dev_var_name>.*)}', loop_value)
+                            if m:
+                                 loop_value = self.parameters['save_variable_name'][m.groupdict()['dev_var_name']]
+                            for dev in loop_value:
+                                if dev not in device_list:
+                                    device_list.append(dev)
+                        # loop with dict for _keys/_values
+                        elif (var_name == Dq(each_data).get_values('loop_variable_name', 0) +
+                              '._keys') or (var_name
+                                            == Dq(each_data).get_values('loop_variable_name', 0) +
+                                            '._values'):
+                            if Dq(each_data).get_values('value', 0):
+                                for item in Dq(each_data).get_values('value', 0):
+                                    for dev in item.keys():
+                                        if dev not in device_list:
+                                            device_list.append(dev)
             else:
                 if device not in device_list:
                     device_list.append(device)
@@ -208,7 +230,6 @@ class Health(Blitz):
                                 reconnect_interval=reconnect.get('interval', 60))
                         if state and dev not in dev_list:
                             dev_list.append(dev)
-                            break
         return dev_list
 
     def _find_search_target(self, section, arg_name, search_keyword,
@@ -420,10 +441,15 @@ class Health(Blitz):
         # None if no device is defined in any actions
         all_devices_connected = None
 
+        common_api = False
+
         for each_data in self._get_actions(data):
             for key in each_data:
                 log.debug('processor_targets: {pt}'.format(pt=processor_targets))
                 log.debug('processor: {p}'.format(p=each_data[key].get('processor','both')))
+
+                common_api = each_data[key].get('common_api', False)
+
                 if each_data[key].get('processor',
                                       'both') in processor_targets:
                     # check if device for action is connected
@@ -484,7 +510,8 @@ class Health(Blitz):
             processor.reporter.remove_section(id_list=processor.uid.list)
 
         # if any device is not connected, processor will be skipped
-        if devices_connected:
+        # if common_api is True, will execute
+        if devices_connected or common_api:
             # instantiate Steps() to reset step number
             steps = Steps()
             # execute dispatcher in Blitz

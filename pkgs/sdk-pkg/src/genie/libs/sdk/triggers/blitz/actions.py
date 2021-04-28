@@ -1,19 +1,21 @@
+import os
 import json
 import time
 import json
 import logging
 from datetime import datetime
 
+# from pyats
+from pyats.easypy import runtime
+from pyats.log.utils import banner
+from pyats.utils.secret_strings import SecretString
+from pyats.reporter.server import LogLineCounter
+
 # from genie
 from genie.libs import sdk
 from genie.utils.diff import Diff
 from genie.ops.utils import get_ops_exclude
 from genie.harness.standalone import run_genie_sdk
-
-# from pyats
-from pyats.easypy import runtime
-from pyats.log.utils import banner
-from pyats.utils.secret_strings import SecretString
 
 from .maple import maple, maple_search
 from .yangexec import run_netconf, run_gnmi, notify_wait
@@ -30,65 +32,107 @@ def add_result_as_extra(func):
     def wrapper(*args, **kwargs):
         # adding extra is done only when it's pyATS health
         if kwargs['self'].__class__.__name__ == 'Health':
-            extra_action_result = {}
+            health_data = {}
 
             section = kwargs['section']
-            extra_action_result.setdefault('health_name', kwargs['name'])
-            extra_action_result.setdefault('action', func.__name__)
-
-            extra_action_result.setdefault(
-                'section',
-                json.loads(json.dumps(section.uid, default=lambda a: str(a))))
-            extra_action_result.setdefault(
-                'section_parent',
-                json.loads(
-                    json.dumps(section.parent.uid, default=lambda a: str(a))))
-            extra_action_result.setdefault('job', runtime.job.uid)
-            # action start time
-            action_start = datetime.now()
 
             # execute action for Health class
             action_output = func(*args, **kwargs)
 
-            # action stop time
-            action_stop = datetime.now()
-            # calculate delta (action_stop - action_start)
-            action_runtime = str(action_stop - action_start)
-            # date format change
-            action_start = action_start.isoformat()
-            action_stop = action_stop.isoformat()
+            # get section info
+            section_info = section.reporter.client.get_section()
 
-            extra_action_result.setdefault('starttime', action_start)
-            extra_action_result.setdefault('stoptime', action_stop)
-            extra_action_result.setdefault('runtime', action_runtime)
-            extra_action_result.setdefault('steps_result',
-                                           kwargs['steps'].result.name)
+            # if no output from blitz action, no point to execute
+            # for health_data and extra
+            if action_output:
+                # set attributes for health_data
+                fullid = section_info['fullid']
+                jobid = runtime.job.uid
+                # in case common api, device doesn't exist
+                if 'device' in kwargs:
+                    device_name = kwargs['device'].name
+                else:
+                    device_name = ''
+                testbed_name = runtime.testbed.name
+                health_name = kwargs['name']
+                timestamp = datetime.now()
+                health_type = 'processor'
+                # if health dedicated APIs, will get from action_output['health_data']
+                # if not, just grab return from API
+                if 'health_data' in action_output:
+                    health_output = action_output['health_data']
+                else:
+                    health_output = action_output
+                logs_logfile = section_info['logs']['file']
+                logs_begin = section_info['logs']['begin']
+                logs_begin_lines = logs_begin = section_info['logs']['begin_lines']
+                # calculating size and size_lines for logs
+                # because section is not done yet
+                logs_size = os.path.getsize(section_info['logfile']) - logs_begin
+                end_size = logs_begin + logs_size
+                ctx = section.reporter.client.get_section_ctx()
+                lc = LogLineCounter(ctx.logfile)
+                logs_size_lines = lc._get_lines(end_size)
 
-            # encode any action to protect contents such as password
-            if 'reply' in kwargs:
-                for reply in kwargs['reply']:
-                    for key, value in reply.items():
-                        if key == 'action':
-                            reply['action'] = '%ENC{{{action}}}'.format(
-                                action=SecretString.from_plaintext(value).data)
+                # build health_data
+                health_data = {
+                    'fullid': fullid,
+                    'jobid': jobid,
+                    'testbed': testbed_name,
+                    'device': device_name,
+                    'health_name': health_name,
+                    'timestamp': timestamp.isoformat(),
+                    'type': health_type,
+                    'health_output': health_output,
+                    'logs': {
+                        'file': logs_logfile,
+                        'begin': logs_begin,
+                        'begin_lines': logs_begin_lines,
+                        'size': logs_size,
+                        'size_lines': logs_size_lines
+                    }
+                }
 
-            # added `data` and `output` to ret_dict
-            extra_action_result.setdefault(
-                'kwargs',
-                json.loads(json.dumps(kwargs, default=lambda a: str(a))))
-            extra_action_result.setdefault('output', action_output)
+                # load from health_results.json
+                with open("{rundir}/health_results.json".format(rundir=runtime.directory),  'rt', encoding='utf-8') as f:
+                    health_results = json.load(f)
 
-            # add extra to testsuite
-            extra_args = {
-                'pyats_health_{action_start}'.format(action_start=action_start):
-                extra_action_result
-            }
+                # add health_data
+                if health_results:
+                    if 'health_data' not in health_results:
+                        health_results['health_data'] = []
+                    health_results['health_data'].append(health_data)
+                    log.debug('health_data to health_results.json:\n' +
+                          json.dumps(health_data, indent=2, sort_keys=True))
 
-            # add extra to processor
-            section.reporter.client.add_extra(**extra_args)
+                # save to health_results.json
+                with open("{rundir}/health_results.json".format(rundir=runtime.directory),  'wt', encoding='utf-8') as f:
+                    json.dump(health_results, f, ensure_ascii=False, indent=2)
 
-            log.debug('extra:\n' +
-                      json.dumps(extra_args, indent=2, sort_keys=True))
+                # add extra for pyATS Health Check result
+                extra_action_result = {}
+
+                health_result = kwargs['steps'].result.name
+
+                extra_action_result = {
+                    'fullid': fullid,
+                    'health_name': health_name,
+                    'type': health_type,
+                    'result': health_result
+                }
+
+                # add extra to testsuite
+                extra_args = {
+                    '_pyats_health_check_{timestamp}'.format(timestamp=timestamp):
+                    extra_action_result
+                }
+
+                # add extra to processor
+                section.reporter.client.add_extra(**extra_args)
+
+                log.debug('extra to section:\n' +
+                          json.dumps(extra_args, indent=2, sort_keys=True))
+
         else:
             # execute action for Blitz class
             action_output = func(*args, **kwargs)

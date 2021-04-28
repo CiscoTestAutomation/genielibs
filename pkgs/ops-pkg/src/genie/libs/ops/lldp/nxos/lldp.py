@@ -147,7 +147,7 @@ class Lldp(Base):
                     for port_id in self.info['interfaces'][intf]['port_id']:
                         for neighbors in self.info['interfaces'][intf]['port_id'][port_id]['neighbors']:
                             # if ipv6 is empty set type = ipv4
-                            if self.info['interfaces'][intf]['port_id'][port_id]['neighbors'][neighbors]['management_address_v6'] == 'not advertised':
+                            if self.info['interfaces'][intf]['port_id'][port_id]['neighbors'][neighbors].get('management_address_v6') == 'not advertised':
                                 self.info['interfaces'][intf]['port_id'][port_id][
                                     'neighbors'][neighbors]['management_address_type'] = 'ipv4'
                                 del self.info['interfaces'][intf]['port_id'][port_id]['neighbors'][neighbors]['management_address_v6']

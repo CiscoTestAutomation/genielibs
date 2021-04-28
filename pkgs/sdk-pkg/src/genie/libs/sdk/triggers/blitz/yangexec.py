@@ -526,7 +526,7 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
     rpc_data['datastore'] = ds
     rpc_data['operation'] = operation
 
-    if operation == 'rpc':
+    if operation in ['rpc', 'subscribe']:
         # Custom RPC represented in raw string form so check syntax
         try:
             et.fromstring(rpc_data['rpc'])
@@ -553,24 +553,10 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
             lock_retry=retry
         )
 
-    try:
-        for op, reply in result:
-            if op == 'traceback':
-                log.error('Failed to send using NETCONF')
-                break
-            log.info(
-                et.tostring(
-                    et.fromstring(
-                        reply.encode('utf-8'),
-                        parser=et.XMLParser(
-                            recover=True,
-                            encoding='utf-8')
-                    ),
-                    pretty_print=True
-                ).decode('utf-8')
-            )
-    except Exception as exc:
-        log.info('Pretty print failed: {0}'.format(str(exc)))
+    for op, reply in result:
+        if op == 'traceback':
+            log.error('Failed to send using NETCONF')
+            break
 
     # rpc-reply should show up in NETCONF log
     if not result:
@@ -580,13 +566,23 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
     errors = []
     for op, res in result:
         if '<rpc-error>' in res:
+            log.error(
+                et.tostring(
+                    et.fromstring(
+                        res.encode('utf-8'),
+                        parser=et.XMLParser(
+                            recover=True,
+                            encoding='utf-8')
+                    ),
+                    pretty_print=True
+                 ).decode('utf-8')
+            )
             errors.append(res)
         elif op == 'traceback':
             log.error('TRACEBACK: {0}'.format(str(res)))
             errors.append(res)
 
     if errors:
-        log.error(banner('NETCONF MESSAGE ERRORED'))
         return negative_test != False
 
     if rpc_data['operation'] == 'edit-config' and auto_validate:
@@ -632,7 +628,7 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
     elif rpc_data['operation'] == 'subscribe':
         # check if subscription id exists in rpc reply, subscribe to device if subscription id is found
         for op, res in result:
-            if '</subscription-id>' in res:
+            if '</subscription-id>' in res or 'rpc-reply' in res and '<ok/>' in res:
                 rpc_data['decode'] = rpc_verify.process_rpc_reply
                 rpc_data['verifier'] = rpc_verify.process_operational_state
                 rpc_data['format'] = format
@@ -641,7 +637,7 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
                 device.subscribe(rpc_data)
                 break
         else:
-            log.error(banner('NO SUBSCRIPTION-ID REPLY FROM DEVICE'))
+            log.error(banner('SUBSCRIPTION FAILED'))
             return negative_test != False
     return negative_test != True
 
@@ -694,12 +690,9 @@ def run_gnmi(operation, device, steps,
         return result
     elif operation == 'subscribe':
         rpc_data['format'] = format
-        if format.get('request_mode', 'STREAM') == 'ONCE':
-            response = device.subscribe(rpc_data)
-        else:
-            rpc_data['returns'] = returns
-            rpc_data['verifier'] = rpc_verify.process_operational_state
-            return device.subscribe(rpc_data)
+        rpc_data['returns'] = returns
+        rpc_data['verifier'] = rpc_verify.process_operational_state
+        return device.subscribe(rpc_data)
     elif operation == 'capabilities':
         if not returns:
             log.error(banner('No gNMI data to compare to GET'))
@@ -714,6 +707,9 @@ def run_gnmi(operation, device, steps,
 def notify_wait(steps, device):
     if hasattr(device, 'netconf'):
         if hasattr(device.netconf, 'notify_wait'):
-            return device.netconf.notify_wait(steps)
-    elif hasattr(device, 'notify_wait'):
-        return device.notify_wait(steps)
+            device.netconf.notify_wait(steps)
+    if hasattr(device, 'gnmi'):
+        if hasattr(device.gnmi, 'notify_wait'):
+            device.gnmi.notify_wait(steps)
+    if hasattr(device, 'notify_wait'):
+        device.notify_wait(steps)

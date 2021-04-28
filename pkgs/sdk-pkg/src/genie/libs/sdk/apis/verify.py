@@ -392,7 +392,7 @@ def verify_device_connection_state(device,
         # get state machine state on device to check device reachability
         # need to get state to detect if device reloading or
         # any other condition which cannot respond
-        if device.is_ha:
+        if hasattr(device, 'is_ha') and device.is_ha:
             for con in device.subconnections:
                 device.spawn.match = None
                 con.device.state_machine.detect_state(device.spawn)

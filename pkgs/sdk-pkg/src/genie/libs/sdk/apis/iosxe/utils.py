@@ -9,6 +9,7 @@ from genie.libs.sdk.apis.utils import get_config_dict
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.utils.timeout import Timeout
 from genie.libs.parser.iosxe.ping import Ping
+from genie.libs.filetransferutils import FileServer
 
 # unicon
 from unicon.eal.dialogs import Dialog, Statement
@@ -596,3 +597,111 @@ def ping(device,
     except Exception as e:
         log.warning(e)
         return {}
+
+
+def copy_to_script_host(device,
+                 filename,
+                 local_path=None,
+                 timeout=300):
+    """
+    Copy a file from the device to the local system where the script is running.
+    Uses HTTP. Only supported via telnet or SSH sessions.
+
+    Args:
+        device (Device): device object
+        filename (str): filename to copy
+        local_path (str): local path to copy the file to, defaults to '.'
+        timeout('int'): timeout value in seconds, default 300
+
+    Returns:
+        (boolean): True if successful, False if not
+
+    The local IP adddress will be determined from the spawned telnet or ssh session.
+    A temporary http server will be created and the show tech file will be sent
+    to the host where the script is running.
+
+    If the device is connected via proxy (unix jump host) and the proxy has
+    'socat' installed, the upload will be done via the proxy automatically.
+    """
+    local_path = local_path or '.'
+
+    tcp_output = device.execute('show tcp brief | inc .22 |.23 ')
+    # 0160C06C  5.25.26.9.22                5.25.24.1.51363             ESTAB
+    m = re.search(r'\w+ +(\S+)\.(22|23) +\S+\.\d+ +ESTAB', tcp_output)
+    if m:
+        mgmt_ip = m.group(1)
+    else:
+        log.error('Unable to find management session, unable to upload show tech')
+        return False
+
+    ip_int_brief = device.parse('show ip interface brief')
+    ip_to_int_map = {}
+    for intf, intf_data in ip_int_brief.get('interface', {}).items():
+        if intf_data['ip_address'] != 'unassigned':
+            ip_to_int_map.update({intf_data['ip_address']: intf})
+
+    mgmt_intf = ip_to_int_map.get(mgmt_ip)
+
+    if mgmt_intf:
+        log.info('Management interface: {}, IP {}'.format(mgmt_intf, mgmt_ip))
+        mgmt_intf_ip_info = device.parse('show ip interface {}'.format(mgmt_intf))
+        if mgmt_intf_ip_info.get(mgmt_intf, {}).get('vrf'):
+            log.error('Device management interface is configured with VRF, unable to upload file')
+            return False
+
+    mgmt_src_ip_addresses = re.findall(r'\w+ +\S+\.(?:22|23) +(\S+)\.\d+ +ESTAB', tcp_output)
+
+    # try figure out local IP address
+    local_ip = device.api.get_local_ip()
+
+    if local_ip in mgmt_src_ip_addresses:
+        mgmt_src_ip = local_ip
+    else:
+        mgmt_src_ip = None
+
+    with FileServer(protocol='http',
+                    address=local_ip,
+                    path=local_path) as fs:
+
+        local_port = fs.get('port')
+
+        proxy_port = None
+        # Check if we are connected via proxy device
+        proxy = device.connections[device.via].get('proxy')
+        if proxy and isinstance(proxy, str):
+            log.info('Setting up port relay via proxy')
+            proxy_dev = device.testbed.devices[proxy]
+            proxy_dev.connect()
+            proxy_port = proxy_dev.api.socat_relay(remote_ip=local_ip, remote_port=local_port)
+
+            ifconfig_output = proxy_dev.execute('ifconfig')
+            proxy_ip_addresses = re.findall(r'inet (?:addr:)?(\S+)', ifconfig_output)
+            mgmt_src_ip = None
+            for proxy_ip in proxy_ip_addresses:
+                if proxy_ip in mgmt_src_ip_addresses:
+                    mgmt_src_ip = proxy_ip
+                    break
+
+        copy_dialog = Dialog([
+            [r'Address or name of remote host', 'sendline()', None, True, False],
+            [r'Destination filename', 'sendline()', None, True, False],
+        ])
+
+        try:
+            if mgmt_src_ip and proxy_port:
+                device.execute('copy {} http://{}:{}'.format(
+                               filename, mgmt_src_ip, proxy_port),
+                               reply=copy_dialog, timeout=timeout, append_error_pattern=[r'%Error'])
+            elif mgmt_src_ip:
+                device.execute('copy {} http://{}:{}'.format(
+                               filename, mgmt_src_ip, local_port),
+                               reply=copy_dialog, timeout=timeout, append_error_pattern=[r'%Error'])
+            else:
+                log.error('Unable to determine management IP address to use to upload file')
+                return False
+
+        except Exception:
+            log.error('Failed to transfer file', exc_info=True)
+            return False
+
+    return True

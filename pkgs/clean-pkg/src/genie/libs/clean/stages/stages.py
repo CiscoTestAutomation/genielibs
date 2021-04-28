@@ -38,8 +38,8 @@ log = logging.getLogger(__name__)
 
 @clean_schema({
     Optional('timeout'): Or(str, int),
-    Optional('max_timeout'): Or(str, int, float),
-    Optional('interval'): Or(str, int, float),
+    Optional('retry_timeout'): Or(str, int, float),
+    Optional('retry_interval'): Or(str, int, float),
 })
 @aetest.test
 def connect(section,
@@ -249,6 +249,7 @@ def ping_server(section,
     Optional('append_hostname'): bool,
     Optional('image_length_limit'): int,
     Optional('copy_attempts'): int,
+    Optional('copy_attempts_sleep'): int,
     Optional('check_file_stability'): bool,
     Optional('unique_file_name'): bool,
     Optional('unique_number'): int,
@@ -267,6 +268,7 @@ def copy_to_linux(section,
                   append_hostname=False,
                   image_length_limit=63,
                   copy_attempts=1,
+                  copy_attempts_sleep=30,
                   check_file_stability=False,
                   unique_file_name=False,
                   unique_number=None,
@@ -277,24 +279,61 @@ def copy_to_linux(section,
     Stage Schema
     ------------
     copy_to_linux:
+
         origin:
-            files: <File location on remote server or local disk, 'list'> (Mandatory)
-            hostname: <Hostname or address of the server, if not provided the file will be treated as local. 'str'> (Optional)
+
+            files (list): Location of file on the origin server.
+
+            hostname (str, optional): Hostname or address of the origin server.
+                If not provided the file is treated as a local file on the
+                execution host.
+
         destination:
-            directory: <Location on the file server, 'str'> (Mandatory)
-            hostname: <Hostname or address of the file server, if not provided the directory will be treated as local.
-                        This value is optional only when the hostname under origin is also optional. 'str'> (Optional)
-        protocol: <Protocol used for copy operation, 'str', default sftp> (Optional)
-        overwrite: <overwrite the file if the same file already exists, 'bool', default False> (Optional)
-        timeout: <Copy operation timeout in seconds, default 300 'int'> (Optional)
-        check_image_length: <check if image length exceeds certain limit 'bool', default False> (Optional)
-        image_length_limit: <custom image length limit, defaults 63, 'int'>  (Optional)
-        append_hostname: <append device hostname to the end of image while copying 'bool', default False> (Optional)
-        copy_attempts: <number of times to retry if copy failed, default 1 (no retry) 'int'> (Optional)
-        check_file_stability: <Verify if the files are still being copied on the file server, 'bool' default False> (Optional)
-        unique_file_name: <Enable/Disable appending six-digit random number to the end of file name to make it unique, 'bool', default False> (Optional)
-        unique_number: <User provided six-digit random number to append to the end of file name to make it unique, 'int', default None> (Optional)
-        rename_images: <User provided new file name. If multiple files exist then we append an incrementing number 'str'> (Optional)
+
+            directory (str): Directory that the file will be copied to.
+
+            hostname (str, optional): Hostname or address of the origi server.
+                If not provided the directory is treated as a local directory on the
+                execution host. This key is only optional if the hostname under
+                origin is not provided.
+
+        protocol (str, optional): Protocol used for the copy operation. Defaults to
+            sftp.
+
+        overwrite (bool, optional): Overwrite the file if a file with the same
+            name already exists. Defaults to False.
+
+        timeout (int, optional): Copy operation timeout in seconds. Defaults to 300.
+
+        check_image_length (bool, optional): Check if the length of the image name
+            exceeds the image_length_limit. Defaults to False.
+
+        image_length_limit (int, optional): Maximum length of the image name.
+            Defaults to 63.
+
+        append_hostname (bool, optional): Append hostname to the end of the image
+            name during copy. Defaults to False.
+
+        copy_attempts (int, optional): Number of times to attempt copying image
+            files. Defaults to 1 (no retry).
+
+        copy_attempts_sleep (int, optional): Number of seconds to sleep between
+            copy_attempts. Defaults to 30.
+
+        check_file_stability (bool, optional): Verifies that the file size is not
+            changing. This ensures the image is not actively being copied.
+            Defaults to False.
+
+        unique_file_name (bool, optional): Appends a random six-digit number to
+            the end of the image name. Defaults to False.
+
+        unique_number: (int, optional): Appends the provided number to the end of
+            the image name. Defaults to None.
+
+        rename_images: (str, optional): Rename the image to the provided name.
+            If multiple files exist then an incrementing number is also appended.
+            Defaults to None
+
 
     Example
     -------
@@ -383,10 +422,10 @@ def copy_to_linux(section,
                         step.failed(
                             "Can not find file {} on server {}. Terminating clean"
                             .format(file, server_from))
-                    except Exception:
+                    except Exception as e:
                         log.warning(
-                            "Could not verify the size for file '{}'".format(
-                                file))
+                            "Could not verify the size for file '{}'.\nError: {}".format(
+                                file, e))
 
                 # file to copy is local
                 else:
@@ -395,10 +434,10 @@ def copy_to_linux(section,
                     except FileNotFoundError:
                         step.failed("Can not find file {} on local server."
                                     "Terminating clean".format(file))
-                    except Exception:
+                    except Exception as e:
                         log.warning(
-                            "Could not verify the size for file '{}'".format(
-                                file))
+                            "Could not verify the size for file '{}' due to {}".format(
+                                file, e))
 
                 if rename_images:
                     rename_images = rename_images + '_' + str(index)
@@ -559,6 +598,9 @@ def copy_to_linux(section,
                                     d=destination_hostname,
                                     e=e,
                                     iteration=i + 1))
+                            log.info("Sleeping for {} seconds before retrying"
+                                     .format(copy_attempts_sleep))
+                            time.sleep(copy_attempts_sleep)
                         else:
                             substep.failed("Could not copy '{file}' to '{d}'\n{e}"\
                                         .format(file=file, d=destination_hostname, e=e))
@@ -635,6 +677,7 @@ def copy_to_linux(section,
     Optional('overwrite'): bool,
     Optional('skip_deletion'): bool,
     Optional('copy_attempts'): int,
+    Optional('copy_attempts_sleep'): int,
     Optional('check_file_stability'): bool,
     Optional('stability_check_tries'): int,
     Optional('stability_check_delay'): int,
@@ -658,6 +701,7 @@ def copy_to_device(section,
                    overwrite=False,
                    skip_deletion=False,
                    copy_attempts=1,
+                   copy_attempts_sleep=30,
                    check_file_stability=False,
                    stability_check_tries=3,
                    stability_check_delay=2,
@@ -668,49 +712,63 @@ def copy_to_device(section,
     Stage Schema
     ------------
     copy_to_device:
+
         origin:
-            files ('list'): Image files location on the server (Mandatory)
-            hostname ('str'): Hostname or address of the server (Mandatory)
+            files (list): Image files location on the server.
+
+            hostname (str): Hostname or address of the server.
+
         destination:
-            directory ('str'): Location on the device to copy images (Mandatory)
-        protocol ('str'): Protocol used for copy operation (Mandatory)
-        verify_num_images ('bool'): Verify number of images provided by user
-                                  for clean is correct
-                                  Default True (Optional)
-        expected_num_images ('int'): Number of images expected to be provided
-                                   by user for clean
-                                   Default 1 (Optional)
-        vrf ('str'): Vrf name if applicable
-                    Default '' (empty string to use no vrf) (Optional)
-        timeout ('int'): Copy operation timeout in seconds
-                       Default 300 (Optional)
-        compact ('bool'): Compact copy mode if supported by the device
-                        Default False (Optional)
-        protected_files ('list'): File patterns that shouldn't be deleted
-                                Default None (Optional)
-        overwrite ('bool'): If image file already exists on device,
-                          still copy the file to the device
-                          Default False (Optional)
-        skip_deletion ('bool'): Do not delete any files even if there isn't
-                              any space on device
-                              Default False (Optional)
-        copy_attempts ('int'): Number of times to attempt copying image files
-                             Default 1 (no retry) (Optional)
-        check_file_stability ('bool'): Verify if the files are still being
-                                     copied on the file server
-                                     Default False (Optional)
-        stability_check_tries ('int'): Max number of checks that can be done
-                                     when checking file stability
-                                     Default 3 (Optional)
-        stability_check_delay ('int'): Delay between tries when checking file
-                                     stability in seconds
-                                     Default 2 (Optional)
-        min_free_space_percent ('int') : Minimum acceptable free disk space
-                                       percentage trying to reach by
-                                       deleting unprotected files
-                                       Default None (Optional)
-        use_kstack ('bool'): Use faster version of copy with limited options
-                           Default False (Optional)
+
+            directory (str): Location on the device to copy images.
+
+        protocol (str): Protocol used for copy operation.
+
+        verify_num_images (bool, optional): Verify number of images provided by
+            user for clean is correct. Defaults to True.
+
+        expected_num_images (int, optional): Number of images expected to be
+            provided by user for clean. Defaults to 1.
+
+        vrf (str, optional): Vrf used to copy. Defaults to an empty string.
+
+        timeout (int, optional): Copy operation timeout in seconds. Defaults to 300.
+
+        compact (bool, optional): Compact copy mode if supported by the device.
+            Defaults to False.
+
+        protected_files (list, optional): File patterns that should not be deleted.
+            Defaults to None.
+
+        overwrite (bool, optional): Overwrite the file if a file with the same
+            name already exists. Defaults to False.
+
+        skip_deletion (bool, optional): Do not delete any files even if there isn't
+            any space on device. Defaults to False.
+
+        copy_attempts (int, optional): Number of times to attempt copying image
+            files. Defaults to 1 (no retry).
+
+        copy_attempts_sleep (int, optional): Number of seconds to sleep between
+            copy_attempts. Defaults to 30.
+
+        check_file_stability (bool, optional): Verifies that the file size is not
+            changing. This ensures the image is not actively being copied.
+            Defaults to False.
+
+        stability_check_tries (int, optional): Max number of checks that can be
+            done when checking file stability. Defaults to 3.
+
+        stability_check_delay (int, optional): Delay between tries when checking
+            file stability in seconds. Defaults to 2.
+
+        min_free_space_percent ('int', optional) : Percentage of total disk space
+            that must be free. If specified the percentage is not free then the
+            stage will attempt to delete unprotected files to reach the minimum
+            percentage. Defaults to None.
+
+        use_kstack (bool, optional): Use faster version of copy with limited options.
+            Defaults to False.
 
     Example
     -------
@@ -723,7 +781,6 @@ def copy_to_device(section,
             directory: harddisk:/
         protocol: sftp
         timeout: 300
-
     """
 
     log.info("Section steps:\n1- Verify correct number of images provided"
@@ -975,6 +1032,9 @@ def copy_to_device(section,
                             if i < copy_attempts:
                                 log.warning("Attempt #{}: Unable to copy {} to '{} {}' due to:\n{}".\
                                             format(i, file, device.name, dest, e))
+                                log.info("Sleeping for {} seconds before retrying"
+                                         .format(copy_attempts_sleep))
+                                time.sleep(copy_attempts_sleep)
                                 continue
                             else:
                                 log.error(str(e))
@@ -1189,10 +1249,11 @@ def reload(section,
                 device.api.verify_module_status(
                     timeout=check_modules['timeout'],
                     interval=check_modules['interval'])
-            except Exception:
+            except Exception as e:
                 step.failed(
-                    "Modules on '{dev}' are not in stable state".format(
-                        dev=device.name))
+                    "Modules on '{dev}' are not in stable state.\n"
+                    "Error: {e}".format(
+                        dev=device.name, e=e))
             else:
                 step.passed("Modules on '{dev}' are in stable state".format(
                     dev=device.name))
@@ -1223,7 +1284,7 @@ def apply_configuration(section, steps, device, configuration=None,
     check_interval=60, configure_replace=False, skip_copy_run_start=False,
     copy_directly_to_startup=False):
 
-    """ Apply configuration on the device, either by providing a file and/or
+    """ Apply configuration on the device, either by providing a file or a
     raw configuration.
 
     Stage Schema
@@ -1247,8 +1308,6 @@ def apply_configuration(section, steps, device, configuration=None,
         configuration: |
             interface ethernet2/1
             no shutdown
-        file: bootflash:/ISSUCleanGolden.cfg
-        configure_replace: True
         config_timeout: 600
         config_stable_time: 10
         copy_vdc_all: True
@@ -1368,8 +1427,8 @@ verify_running_image:
 
             try:
                 server.connect()
-            except Exception:
-                step.failed("Failed to connect to {}.".format(hostname))
+            except Exception as e:
+                step.failed("Failed to connect to {}.\nError: {}".format(hostname, e))
 
             server_hashes = {}
 

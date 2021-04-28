@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 class HA(object):
     """Class to handle HA related actions"""
 
-    def __init__(self, device=None, filetransfer=None):
+    def __init__(self, device=None, filetransfer=None, **kwargs):
         """built-in __init__
 
         instantiates each HA.
@@ -31,6 +31,7 @@ class HA(object):
         """
         self.device = device
         self.filetransfer = filetransfer
+        self.parameters = kwargs.get('parameters', None)
 
     def get_debug_plugin(self, debug_plugin):
         pass
@@ -103,13 +104,13 @@ class HA(object):
             # unicon
             dialog = Dialog([
                 Statement(pattern=r'\(y\/n\) +\[n\].*',
-                                    action='sendline(y)',
-                                    loop_continue=True,
-                                    continue_timer=False),
+                          action='sendline(y)',
+                          loop_continue=True,
+                          continue_timer=False),
                 Statement(pattern=r'Save\? *\[yes\/no\]:.*',
-                                    action='sendline(y)',
-                                    loop_continue=True,
-                                    continue_timer=False)
+                          action='sendline(y)',
+                          loop_continue=True,
+                          continue_timer=False)
             ])
 
             # store original error pattern
@@ -117,29 +118,32 @@ class HA(object):
 
             # TODO - update more with issues when seeing
             # update the error pattern
-            self.device.settings.ERROR_PATTERN.append("Write failed: Broken pipe")
-            
+            self.device.settings.ERROR_PATTERN.append(
+                "Write failed: Broken pipe")
+
             try:
-                self.device.reload(dialog=dialog, 
+                self.device.reload(dialog=dialog,
                                    timeout=reload_timeout,
                                    config_lock_retry_sleep=config_lock_retry_sleep,
                                    config_lock_retries=config_lock_retries)
-                
+
             except SubCommandFailure:
                 # read the capture setting errors
                 try:
                     out = self.device.spawn.read()
                 except Exception:
-                    out = getattr(getattr(self.device, 'spawn', None), 'buffer', None)
+                    out = getattr(
+                        getattr(self.device, 'spawn', None), 'buffer', None)
 
                 if 'Write failed' in str(out):
-                    log.warning('Please Notice failures during reload: %s' % str(out))
+                    log.warning(
+                        'Please Notice failures during reload: %s' % str(out))
             except Exception as e:
                 raise Exception(str(e))
 
         # revert the error pattern
         self.device.settings.ERROR_PATTERN = origin_err_pat.copy()
-            
+
         self._reconnect(steps=steps, timeout=timeout)
 
     def reloadLc(self, steps, timeout, lc):
@@ -253,7 +257,6 @@ class HA(object):
                              max_time=180,
                              interval=15))
         """
-
         with steps.start('Prepare device for ISSU', continue_=True) as step:
             try:
                 self._prepare_issu(steps=steps, upgrade_image=upgrade_image)

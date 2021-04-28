@@ -61,3 +61,10 @@ class TestFileServer(unittest.TestCase):
                         testbed=testbed,
                         name='myserver') as fs:
             self.assertEqual(testbed.servers.myserver, fs)
+
+    def test_http(self):
+        with FileServer(protocol='http', subnet='127.0.0.1/32') as fs:
+            self.assertEqual(fs['address'], '127.0.0.1')
+            self.assertIn('port', fs)
+            self.assertEqual(fs['path'], '/')
+            self.assertEqual(fs['protocol'], 'http')

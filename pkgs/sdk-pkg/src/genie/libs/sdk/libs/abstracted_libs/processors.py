@@ -1393,28 +1393,55 @@ def post_execute_command(section,
                          max_retry=1,
                          save_to_file='',
                          zipped_folder='',
-                         valid_section_results = None,
+                         valid_section_results=None,
                          devices=None,
-                         server_to_store = None):
+                         server_to_store=None):
 
     '''
-    Execute commands as processors. This can be run only with specified condition and the log can be archived with text file or zip file.
+    Execute commands or APIs as processors. The CLI command output can be stored in
+    text files per device or per command and optionally archived in a zip file.
+
+    APIs are executed against devices in parallel. If API output is returned, it is logged
+    via info level. Returned API data is currently not stored in text files.
 
     Can be controlled via sections parameters which is provided by the datafile
 
     Args:
-        section (`obj`) : Aetest Subsection object.
-        devices (`obj`) : Device object.
-        sleep_time (`int`) : sleep after all commands (unit: seconds)
-        max_retry (`int`) : Retry issuing command in case any error (max_retry 1 by default)
-        save_to_file (`str`) : Set either one of below modes when show output needs to be saved as file. folder for the processor is generated and store files in the folder. (Disabled by default)
+        section (`obj`): Aetest Subsection object.
+        devices (`dict`): Devices dictionary from postprocessor definition.
+        sleep_time (`int`): sleep after all commands (unit: seconds)
+        max_retry (`int`): Retry issuing command in case any error (max_retry 1 by default)
+        save_to_file (`str`): Set either one of below modes when show output needs to be saved as file.
+                               Folder for the processor is generated and store files in the folder. (Disabled by default)
                                  per_device : file generated per device
                                  per_command : file generated per command
-        zipped_folder (`bool`) : Set if archive folder needs to be zipped.
-                                 If True, zip file generated and removed the folder with files. 
-        valid_section_results (`list`): if provided the section result should be in this list so commands 
-                                        gets executed
-        server_to_store ('dict'): name of the server that output would be store on on demand.
+        zipped_folder (`bool`): Set if archive folder needs to be zipped.
+                                 If True, a zip file will be generated and the folder with text files will be removed.
+        valid_section_results (`list`): If provided, the section result should be in this list
+                                        so commands and/or APIs get executed
+        server_to_store ('dict'): a dictionary with the following fields:
+                                {server_in_testbed: <name of the server that user want to store the log into.
+                                                    The server should be specified in testbed>
+                                 protocol: <protocol that'd be used, e.g. tftp, sftp, scp>
+                                 remote_path: <the path to the directory in the server that log would be stored on>}
+    Example:
+
+        processors:
+            post:
+                post_execute:
+                    method: genie.libs.sdk.libs.abstracted_libs.processors.post_execute_command
+                    parameters:
+                        valid_section_results:
+                        - 'failed'
+                        devices:
+                            uut:
+                                cmds:
+                                    - cmd: show version
+                                apis:
+                                    - api: get_show_tech
+                                      arguments:
+                                          remote_server: sftp-1
+                                          remote_path: /tmp/archive
 
     Returns:
         AETEST results
@@ -1422,17 +1449,26 @@ def post_execute_command(section,
     Raises:
         None
     '''
-    # If valid_section_results is defined and result isn't in it, 
+    # If valid_section_results is defined and result isn't in it,
     # log a warning message and don't run command
     if valid_section_results and section.result.name not in valid_section_results:
         log.warning('{result} not in {valid_section_results}. post_execute_command will not run'.format(
-            result = section.result.name,
-            valid_section_results = valid_section_results,
+            result=section.result.name,
+            valid_section_results=valid_section_results,
         ))
         return
-        
+
     # Init
     log.info(banner("processor: 'execute_command'"))
+
+    # Execute APIs against devices in in parallel
+    #
+    # Note: section.result is not passed down correctly to pcall
+    # (no result support for multiprocessing at this time)
+    # A failed status here is not reflected in _post_execute_api_device
+    pcall(_post_execute_device_api,
+          cargs=(section,),
+          iargs=[(dev, devices[dev]) for dev in devices])
 
     # sanitize arguments
     if save_to_file and save_to_file not in ['per_device', 'per_command']:
@@ -1553,7 +1589,7 @@ def post_execute_command(section,
                                             folder=folder_name))
                             if zipped_folder or server_to_store:
                                 file_list.update({file_name+'.txt': save_file_name})
-                            
+
                     except SubCommandFailure as e:
                         log.error(
                             'Failed to execute "{cmd}" on device {d}: {e}'.
@@ -1614,12 +1650,13 @@ def post_execute_command(section,
             "Sleeping for {sleep_time} seconds".format(sleep_time=sleep_time))
         time.sleep(sleep_time)
 
+
 def _store_in_server_func(section, server_to_store, file_list, devices):
-    
+
     '''
     section (`obj`): section of the testcase data
-    server_to_store (`dict`): a dictionary like : 
-                    {server_in_testbed: <name of the server that user want to store the log into. 
+    server_to_store (`dict`): a dictionary like :
+                    {server_in_testbed: <name of the server that user want to store the log into.
                                         The server should be specified in testbed>
                     protocol: <protocol that'd be used, e.g. tftp, sftp, scp>
                     remote_path: <the path to the directory in the server that log would be stored on>}
@@ -1651,15 +1688,90 @@ def _store_in_server_func(section, server_to_store, file_list, devices):
     # copying the files generated based on each device to the server
     for dev in devices:
 
-        # arguments that is individual for each parallel call 
+        # arguments that is individual for each parallel call
         ikwargs = []
         device = section.parameters['testbed'].devices[dev]
 
         for local_path, file_name in file_list.items():
             if dev in file_name:
-                ikwargs.append({'local_path': local_path}) 
+                ikwargs.append({'local_path': local_path})
 
         pcall(device.api.copy_to_server, ikwargs=ikwargs, ckwargs=ckwargs)
+
+
+def _post_execute_device_api(section, device, parameters):
+    """ Execute the API specified in the devices argument.
+    This is a helper method for the post_execute_command function.
+
+    If the API returns data, logs the returned data via info level.
+
+    Args:
+        section (TestSection): test section object with parameters
+        device (str): device name to execute against
+        parameters (dict): Device parameters, list of APIs and arguments for the APIs.
+
+    Returns:
+        None
+
+    Raises:
+        ValueError if API arguments field is specified but not a dictionary.
+    """
+    if device == 'uut':
+        device_obj = section.parameters['uut']
+    else:
+        if device in section.parameters[
+                'testbed'].devices.names or device in section.parameters[
+                    'testbed'].devices.aliases:
+            device_obj = section.parameters['testbed'].devices[device]
+        else:
+            log.error(
+                "Failed to find a device {device} in testbed yaml".format(
+                    device=device))
+            device_obj = None
+    # if device not in TB or not connected, then skip
+    if not device_obj or not device_obj.connected:
+        return
+    # Return if no APIs specified for this device
+    if not parameters.get('apis'):
+        return
+    log.info(banner("Post execute API for device '{}'".format(device_obj.name)))
+    # execute list of APIs given in yaml
+    for api in parameters.get('apis', []):
+        output = None
+        api_module = api.get('module')
+        if api_module:
+            exec_module = importlib.import_module(api_module)
+        else:
+            exec_module = None
+        exec_api = api.get('api')
+        exec_arguments = api.get('arguments')
+        if exec_api:
+            if exec_arguments and not isinstance(exec_arguments, dict):
+                raise ValueError('API arguments should be a dictionary')
+
+            if exec_module:
+                log.info(banner("{} executing api: '{}.{}'".format(
+                    device_obj.name, api_module, exec_api
+                )))
+                api_func = getattr(exec_module, exec_api)
+                if exec_arguments:
+                    output = api_func(device_obj, **exec_arguments)
+                else:
+                    output = api_func(device_obj)
+            else:
+                log.info(banner("{} executing api: '{}'".format(
+                    device_obj.name, exec_api
+                )))
+                api_method = getattr(device_obj, 'api')
+                api_func = getattr(api_method, exec_api)
+                if exec_arguments:
+                    output = api_func(**exec_arguments)
+                else:
+                    output = api_func()
+
+        if output:
+            log.info(output)
+
 
 # ==============================================================================
 # processor: skip_setup_if_stable

@@ -598,6 +598,9 @@ class RpcVerify():
             response = [response]
 
         for field in returns:
+            sel = field.get('selected', False)
+            if sel is False or str(sel).lower() == 'false':
+                continue
             if not self.process_one_operational_state(response, field, key):
                 result = False
 

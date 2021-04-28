@@ -1,9 +1,0 @@
---------------------------------------------------------------------------------
-                                      Fix                                       
---------------------------------------------------------------------------------
-
-* IOSXR
-    * Modified Install_Image_And_Packages in clean-pkg
-        * Fixed Regex Error
-        * Add support for complex filepath (using several folders)
-

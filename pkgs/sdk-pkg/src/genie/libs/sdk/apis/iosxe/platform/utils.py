@@ -1,6 +1,7 @@
 """Utility type functions for Platform"""
 
 # Python
+import re
 import time
 import logging
 
@@ -357,3 +358,16 @@ def write_erase_reload_device(
             "Successfully erased all device configurations with "
             "'write erase' and 'reload' on device '{}'".format(hostname)
         )
+
+
+def is_connected_via_vty(device, alias=None):
+    ''' Check if we are connected via VTY
+    '''
+    if alias:
+        conn = getattr(device, alias)
+    else:
+        conn = device
+    show_users = conn.execute(r'show users | inc \*')
+    if re.search(' vty', show_users):
+        return True
+    return False

@@ -1,0 +1,321 @@
+data:
+  configure: {}
+  execute: {}
+  variables:
+    interface_name_1: 'GigabitEthernet0/0'
+  yang:
+    connection: netconf
+    protocol: netconf
+    format:
+      1:
+        request_mode: STREAM
+        sub_mode: SAMPLE
+        encoding: JSON_IETF
+        sample_interval: 5
+        stream_max: 20
+      2:
+        auto_validate: true
+        negative_test: false
+        pause: 0
+        timeout: 30
+      3:
+        request_mode: ON_CHANGE
+        sub_mode: SAMPLE
+        encoding: JSON
+        sample_interval: 0
+        stream_max: 20
+      4:
+        request_mode: STREAM
+        sub_mode: SAMPLE
+        encoding: JSON
+        sample_interval: 5
+        stream_max: 20
+    namespace:
+      1:
+        interfaces-ios-xe-oper: http://cisco.com/ns/yang/Cisco-IOS-XE-interfaces-oper
+        openconfig-system: http://openconfig.net/yang/system
+        oc-platform: http://openconfig.net/yang/platform
+        oc-fan: http://openconfig.net/yang/platform/fan
+    xpath:
+      1: /interfaces-ios-xe-oper:interfaces/interfaces-ios-xe-oper:interface[name="%{ data.variables.interface_name_1 }"]
+      2: /openconfig-system:system/openconfig-system:state
+      3: /oc-platform:components/oc-platform:component[oc-platform:name="Fan1/1"]/oc-platform:fan/oc-platform:state/oc-fan:speed
+      4: /oc-platform:components/oc-platform:component[oc-platform:name="fan1/1"]/oc-platform:fan/oc-platform:state/oc-fan:speed
+    content:
+      1:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - nodetype: ''
+          datatype: ''
+          xpath: '%{ data.yang.xpath.3 }'
+      2:
+        rpc: |
+          <rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="101">
+            <establish-subscription xmlns="urn:ietf:params:xml:ns:yang:ietf-event-notifications">
+              <stream xmlns:yp="urn:ietf:params:xml:ns:yang:ietf-yang-push">yp:yang-push</stream>
+              <xpath-filter xmlns="urn:ietf:params:xml:ns:yang:ietf-yang-push">/process-cpu-ios-xe-oper:cpu-usage/cpu-utilization/five-minutes</xpath-filter>
+              <period xmlns="urn:ietf:params:xml:ns:yang:ietf-yang-push">500</period>
+            </establish-subscription>
+          </rpc>
+      3:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - nodetype: ''
+          datatype: ''
+          xpath: '%{ data.yang.xpath.4 }'
+      4:
+        rpc: |
+          <nc:rpc xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="urn:uuid:e2117597-03bb-48c5-9006-de94b1e9f4db">
+            <create-subscription xmlns="urn:ietf:params:xml:ns:yang:ietf-event-notifications">
+              <filter>
+                <System xmlns="http://cisco.com/ns/yang/cisco-nx-os-device">
+                  <intf-items>
+                    <phys-items>
+                      <PhysIf-list>
+                        <id>eth1/1</id>
+                          <phys-items>
+                            <adminSt/>
+                          </phys-items>
+                      </PhysIf-list>
+                    </phys-items>
+                  </intf-items>
+                </System>
+              </filter>
+            </create-subscription>
+          </nc:rpc>
+      5:
+        namespace: '%{ data.yang.namespace.1 }'
+        nodes:
+        - nodetype: 'list'
+          datatype: ''
+          xpath: '%{ data.yang.xpath.1 }'
+    returns:
+      2:
+      - datatype: uint16
+        default: ''
+        name: speed
+        nodetype: ''
+        op: '>'
+        selected: true
+        value: 39000
+        xpath: /components/component/fan/state/speed
+      3:
+      - datatype: uint16
+        default: ''
+        name: five-minutes
+        nodetype: ''
+        op: ==
+        selected: true
+        value: 0
+        xpath: /notification/push-update/datastore-contents-xml/cpu-usage/cpu-utilization/five-minutes
+      4:
+      - datatype: uint16
+        default: ''
+        name: speed
+        nodetype: ''
+        op: '>'
+        selected: true
+        value: 8000
+        xpath: /components/component/fan/state/speed
+      5:
+      - datatype: string
+        default: ''
+        name: adminSt
+        nodetype: ''
+        op: ==
+        selected: true
+        value: 'up'
+        xpath: /notification/event/System/intf-items/phys-items/PhysIf-list/phys-items/adminSt
+      1:
+      - datatype: string
+        default: ''
+        name: discontinuity-time
+        nodetype: ''
+        op: ==
+        selected: 'False'
+        value: '2021-04-07T21:46:25.041845'
+        xpath: /interfaces/interface/statistics/discontinuity-time
+      - datatype: uint64
+        default: ''
+        name: in-octets
+        nodetype: ''
+        op: '>'
+        selected: 'True'
+        value: 10000
+        xpath: /interfaces/interface/statistics/in-octets
+      - datatype: uint64
+        default: ''
+        name: in-unicast-pkts
+        nodetype: ''
+        op: '>'
+        selected: 'True'
+        value: 10000
+        xpath: /interfaces/interface/statistics/in-unicast-pkts
+      - datatype: uint64
+        default: ''
+        name: in-broadcast-pkts
+        nodetype: ''
+        op: '<'
+        selected: 'True'
+        value: '15'
+        xpath: /interfaces/interface/statistics/in-broadcast-pkts
+      - datatype: uint64
+        default: ''
+        name: in-multicast-pkts
+        nodetype: ''
+        op: '>'
+        selected: 'True'
+        value: '15'
+        xpath: /interfaces/interface/statistics/in-multicast-pkts
+      - datatype: uint32
+        default: ''
+        name: in-discards
+        nodetype: ''
+        op: ==
+        selected: 'True'
+        value: 0
+        xpath: /interfaces/interface/statistics/in-discards
+      - datatype: uint32
+        default: ''
+        name: in-errors
+        nodetype: ''
+        op: ==
+        selected: 'True'
+        value: 0
+        xpath: /interfaces/interface/statistics/in-errors
+      - datatype: uint32
+        default: ''
+        name: in-unknown-protos
+        nodetype: ''
+        op: ==
+        selected: 'True'
+        value: 0
+        xpath: /interfaces/interface/statistics/in-unknown-protos
+      - datatype: uint32
+        default: ''
+        name: out-octets
+        nodetype: ''
+        op: '>'
+        selected: 'True'
+        value: 10000
+        xpath: /interfaces/interface/statistics/out-octets
+      - datatype: uint64
+        default: ''
+        name: out-unicast-pkts
+        nodetype: ''
+        op: '>'
+        selected: 'True'
+        value: 10000
+        xpath: /interfaces/interface/statistics/out-unicast-pkts
+      - datatype: uint64
+        default: ''
+        name: out-broadcast-pkts
+        nodetype: ''
+        op: '<'
+        selected: 'True'
+        value: '15'
+        xpath: /interfaces/interface/statistics/out-broadcast-pkts
+      - datatype: uint64
+        default: ''
+        name: out-multicast-pkts
+        nodetype: ''
+        op: ==
+        selected: 'False'
+        value: '15'
+        xpath: /interfaces/interface/statistics/out-multicast-pkts
+      - datatype: uint64
+        default: ''
+        name: out-discards
+        nodetype: ''
+        op: ==
+        selected: 'False'
+        value: '15'
+        xpath: /interfaces/interface/statistics/out-discards
+      - datatype: uint64
+        default: ''
+        name: out-errors
+        nodetype: ''
+        op: ==
+        selected: 'False'
+        value: '15'
+        xpath: /interfaces/interface/statistics/out-errors
+      - datatype: uint64
+        default: ''
+        name: rx-pps
+        nodetype: ''
+        op: ==
+        selected: 'False'
+        value: '15'
+        xpath: /interfaces/interface/statistics/rx-pps
+      - datatype: uint64
+        default: ''
+        name: rx-kbps
+        nodetype: ''
+        op: ==
+        selected: 'False'
+        value: '15'
+        xpath: /interfaces/interface/statistics/rx-kbps
+      - datatype: uint64
+        default: ''
+        name: tx-pps
+        nodetype: ''
+        op: ==
+        selected: 'False'
+        value: '15'
+        xpath: /interfaces/interface/statistics/tx-pps
+      - datatype: uint64
+        default: ''
+        name: tx-kbps
+        nodetype: ''
+        op: ==
+        selected: 'False'
+        value: '15'
+        xpath: /interfaces/interface/statistics/tx-kbps
+      - datatype: uint64
+        default: ''
+        name: num-flaps
+        nodetype: ''
+        op: ==
+        selected: 'False'
+        value: '15'
+        xpath: /interfaces/interface/statistics/num-flaps
+      - datatype: uint64
+        default: ''
+        name: in-crc-errors
+        nodetype: ''
+        op: ==
+        selected: 'False'
+        value: '15'
+        xpath: /interfaces/interface/statistics/in-crc-errors
+      - datatype: uint64
+        default: ''
+        name: in-discards-64
+        nodetype: ''
+        op: ==
+        selected: 'False'
+        value: '15'
+        xpath: /interfaces/interface/statistics/in-discards-64
+      - datatype: uint64
+        default: ''
+        name: in-errors-64
+        nodetype: ''
+        op: ==
+        selected: 'False'
+        value: '15'
+        xpath: /interfaces/interface/statistics/in-errors-64
+      - datatype: uint64
+        default: ''
+        name: in-unknown-protos-64
+        nodetype: ''
+        op: ==
+        selected: 'False'
+        value: '15'
+        xpath: /interfaces/interface/statistics/in-unknown-protos-64
+      - datatype: uint64
+        default: ''
+        name: out-octets-64
+        nodetype: ''
+        op: ==
+        selected: 'False'
+        value: '15'
+        xpath: /interfaces/interface/statistics/out-octets-64

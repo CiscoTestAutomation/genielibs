@@ -31,13 +31,13 @@
 ################################################################################
 
 # Variables
-PKG_NAME      = genie.libs
 BUILD_DIR     = $(shell pwd)/__build__
 DIST_DIR      = $(BUILD_DIR)/dist
 BUILD_CMD     = python setup.py bdist_wheel --dist-dir=$(DIST_DIR)
 PROD_USER     = pyadm@pyats-ci
 PROD_PKGS     = /auto/pyats/packages
 STAGING_PKGS  = /auto/pyats/staging/packages
+STAGING_EXT_PKGS  = /auto/pyats/staging/packages_external
 PROD_SCRIPTS  = /auto/pyats/bin
 TESTCMD       = runAll
 WATCHERS      = asg-genie-dev@cisco.com
@@ -62,8 +62,8 @@ PYPI_PKGS      = health-pkg clean-pkg conf-pkg ops-pkg robot-pkg sdk-pkg filetra
 ALL_PKGS       = $(PYPI_PKGS)
 
 .PHONY: help docs distribute_docs clean check devnet\
-	develop undevelop distribute distribute_staging test install_build_deps \
-	uninstall_build_deps $(ALL_PKGS)
+	develop undevelop distribute distribute_staging distribute_staging_external\
+	test install_build_deps uninstall_build_deps $(ALL_PKGS)
 
 help:
 	@echo "Please use 'make <target>' where <target> is one of"
@@ -101,8 +101,11 @@ help:
 	@echo ""
 	@echo "     --- distributions to production environment ---"
 	@echo ""
-	@echo " distribute           distribute built pkgs to production server"
-	@echo " distribute_staging   distribute build pkgs to staging area"
+	@echo " distribute                    distribute built pkgs to production"
+	@echo "                               server"
+	@echo " distribute_staging            distribute build pkgs to staging area"
+	@echo " distribute_staging_external   distribute build pkgs to external"
+	@echo "                               staging area"
 	@echo ""
 	@echo "     --- redirects ---"
 	@echo " docs             create all documentation locally. This the same as"
@@ -199,8 +202,9 @@ distribute:
 	@echo "--------------------------------------------------------------------"
 	@echo "Copying all distributable to $(PROD_PKGS)"
 	@test -d $(DIST_DIR) || { echo "Nothing to distribute! Exiting..."; exit 1; }
-	@ssh -q $(PROD_USER) 'test -e $(PROD_PKGS)/$(PKG_NAME) || mkdir $(PROD_PKGS)/$(PKG_NAME)'
-	@scp $(DIST_DIR)/* $(PROD_USER):$(PROD_PKGS)/$(PKG_NAME)/
+	@echo "Organizing distributable into folders"
+	@organize_dist --dist $(DIST_DIR)
+	@rsync -rtlv --progress $(DIST_DIR)/* $(PROD_USER):$(PROD_PKGS)
 	@echo ""
 	@echo "Done."
 	@echo ""
@@ -210,8 +214,21 @@ distribute_staging:
 	@echo "--------------------------------------------------------------------"
 	@echo "Copying all distributable to $(STAGING_PKGS)"
 	@test -d $(DIST_DIR) || { echo "Nothing to distribute! Exiting..."; exit 1; }
-	@ssh -q $(PROD_USER) 'test -e $(STAGING_PKGS)/$(PKG_NAME) || mkdir $(STAGING_PKGS)/$(PKG_NAME)'
-	@scp $(DIST_DIR)/* $(PROD_USER):$(STAGING_PKGS)/$(PKG_NAME)/
+	@echo "Organizing distributable into folders"
+	@organize_dist --dist $(DIST_DIR)
+	@rsync -rtlv --progress $(DIST_DIR)/* $(PROD_USER):$(PROD_PKGS)
+	@echo ""
+	@echo "Done."
+	@echo ""
+
+distribute_staging_external:
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Copying all distributable to $(STAGING_EXT_PKGS)"
+	@test -d $(DIST_DIR) || { echo "Nothing to distribute! Exiting..."; exit 1; }
+	@echo "Organizing distributable into folders"
+	@organize_dist --dist $(DIST_DIR)
+	@rsync -rtlv --progress $(DIST_DIR)/* $(PROD_USER):$(PROD_PKGS)
 	@echo ""
 	@echo "Done."
 	@echo ""

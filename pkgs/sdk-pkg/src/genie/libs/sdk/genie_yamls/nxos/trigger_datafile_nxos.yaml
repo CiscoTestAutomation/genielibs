@@ -2703,6 +2703,25 @@ TriggerReload:
       interval: 60
     devices: ['uut']
 
+TriggerReloadTor:
+    groups: ['ha', 'reload', 'L3']
+    update_verifications: ['Verify_Module',
+                           'Verify_Boot',
+                           'Verify_Dir',
+                           'Verify_InstallActive',
+                           'Verify_Inventory',
+                           'Verify_RedundancyStatus',
+                           'Verify_SystemRedundancyStatus',
+                           'Verify_VdcCurrent',
+                           'Verify_VdcDetail',
+                           'Verify_VdcMembershipStatus',
+                           'Verify_Version']
+    update_pts_features: ['platform']
+    timeout:
+      max_time: 900
+      interval: 60
+    devices: ['uut']
+
 TriggerReloadFabricModule:
     groups: ['ha', 'reload', 'L3']
     fabricRole: oc
@@ -2792,3 +2811,40 @@ TriggerReloadStandbyRP:
     max_time: 900
     interval: 60
   devices: ["uut"]
+
+#===============================================================================
+#                               ISSU
+#===============================================================================
+
+TriggerIssuNative:
+    groups: ['ha', 'issu', 'L3']
+    update_verifications: ['Verify_Boot',
+                           'Verify_Dir',
+                           'Verify_Inventory',
+                           'Verify_Platform',
+                           'Verify_Redundancy',
+                           'Verify_Version']
+    update_pts_features: ['platform']
+    mode: 'native'
+    ctrlplane_downtime: 120
+    timeout:
+       max_time: 3600
+       interval: 60
+    devices: ['uut']
+
+TriggerIssuLxc:
+    groups: ['ha', 'issu', 'L3']
+    update_verifications: ['Verify_Boot',
+                           'Verify_Dir',
+                           'Verify_Inventory',
+                           'Verify_Platform',
+                           'Verify_Redundancy',
+                           'Verify_Version']
+    update_pts_features: ['platform']
+    mode: 'lxc'
+    ctrlplane_downtime: 120
+    timeout:
+       max_time: 3600
+       interval: 60
+    devices: ['uut']
+

@@ -1335,6 +1335,16 @@ TriggerIssu:
         pkg: genie.libs.sdk
         class: triggers.ha.issu.issu.TriggerIssu
 
+TriggerIssuNative:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.ha.issu.issu.TriggerIssuNative
+
+TriggerIssuLxc:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.ha.issu.issu.TriggerIssuLxc
+
 TriggerSwitchover:
     source:
         pkg: genie.libs.sdk
@@ -1344,6 +1354,11 @@ TriggerReload:
     source:
         pkg: genie.libs.sdk
         class: triggers.ha.reload.reload.TriggerReload
+
+TriggerReloadTor:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.ha.reload.reload.TriggerReloadTor
 
 TriggerReloadFabricModule:
     source:
