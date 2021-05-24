@@ -212,6 +212,7 @@ $(DEV_PKGS):
 	@echo ""
 	@echo "--------------------------------------------------------------------"
 	@echo "Setting up development environment"
+	@pip uninstall -y $(subst develop-,,genie.libs.$@) || true
 	@cd $(subst develop-,,pkgs/$@-pkg) && python setup.py develop -q --no-deps
 	@echo ""
 	@echo "Done."
