@@ -39,3 +39,45 @@ class FileUtils(FileUtilsDeviceBase):
         super().copyfile(source=source, destination=destination,
             timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,
             *args, **kwargs)
+
+    def deletefile(self, target, timeout_seconds=300, *args, **kwargs):
+        """ Delete a file
+
+            Parameters
+            ----------
+                target : `str`
+                    The URL of the file whose details are to be retrieved.
+
+                timeout_seconds : `int`
+                    The number of seconds to wait before aborting the operation.
+                    Default: 300 seconds
+
+            Returns
+            -------
+                None
+
+            Raises
+            ------
+            Exception
+                When a device object is not present or device execution encountered
+                an unexpected behavior.
+
+            Examples
+            --------
+                # FileUtils
+                >>> from pyats.utils.fileutils import FileUtils
+
+                # Instanciate a filetransferutils instance for NXOS device
+                >>> fu_device = FileUtils.from_device(device)
+
+                # delete a specific file on device directory 'flash:'
+                >>> directory_output = fu_device.deletefile(
+                ...     target='flash:memleak_bckp.tcl',
+                ...     timeout_seconds=300, device=device)
+
+        """
+
+        # rm -f /data/techsupport/local.tgz
+        cmd = 'rm -f {f}'.format(f=target)
+
+        self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds, **kwargs)

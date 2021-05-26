@@ -466,6 +466,7 @@ def validate_clean(clean_file, testbed_file, lint=True):
 
 
         for section in clean_data:
+
             # ignore sections that aren't true stages
             if section in sections_to_ignore:
                 continue
@@ -473,6 +474,9 @@ def validate_clean(clean_file, testbed_file, lint=True):
             if section == 'device_recovery':
                 schema.update({'device_recovery': recovery_processor.schema})
                 continue
+
+            clean_data[section].pop('change_order_if_fail', None)
+            clean_data[section].pop('change_order_if_pass', None)
 
             # when no data is provided under stage, change None to dict
             # this is needed for schema validation

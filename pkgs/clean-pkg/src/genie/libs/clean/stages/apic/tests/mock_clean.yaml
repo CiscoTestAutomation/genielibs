@@ -1,0 +1,11 @@
+cleaners:
+  PyatsDeviceClean:
+    module: genie.libs.clean
+    devices:
+      - ifc1
+
+devices:
+  ifc1:
+    images:
+      - /root/aci-apic-dk9.5.1.2e.iso
+      - /root/aci-n9000-dk9.15.1.2e.bin

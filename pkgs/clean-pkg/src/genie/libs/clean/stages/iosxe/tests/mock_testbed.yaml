@@ -23,7 +23,7 @@ testbed:
 
 
 devices:
-  PE1:
+  PE1: &device_pe1
     alias: uut
     os: iosxe
     type: asr1k
@@ -64,6 +64,10 @@ devices:
       configure_timeout: 250
       abstraction:
         order: [os, platform]
+
+  PE2:
+    <<: *device_pe1
+    alias: uut2
 
   the-terminal-server:
     connections:

@@ -213,7 +213,7 @@ def api_handler(step,
     except (AttributeError, TypeError) as e:
         # if could not find api or the kwargs is wrong for api
         if not expected_failure:
-            step.errored("Got an error with API {c}: {e}".format(c=command, e=e))
+            step.errored("Got an error with API {c}: {e}\nAPI arguments: {a}".format(c=command, e=e, a=arguments))
         else:
             step.passed('API failed as expected, the step test result is set as passed')
 
@@ -880,6 +880,16 @@ def _operation_to_style_map(style, operation, dict_of_log_msg):
 
 def _evaluate_operator(result, operation=None, value=None):
 
+    # convert list, dict from string
+    # when only value is given without operator
+    # ex. ) if: "$VARIABLES{test}"
+    if value == 'None':
+        try:
+            result = ast.literal_eval(result)
+            value = ast.literal_eval(value)
+        except ValueError:
+            pass
+
     # used to evaluate the operation results
     # if number 6 operations
     if isinstance(value, (float, int)) and isinstance(result, (float, int)):
@@ -930,6 +940,14 @@ def _evaluate_operator(result, operation=None, value=None):
         # if any other type return error
         return False
 
+    # if no operation is given, set '==' and 'True'
+    # and bool(result) then return result
+    if not operation:
+        operation = '=='
+        value = True
+        eval_oper = dict_of_ops[operation](bool(ast.literal_eval(result)), value)
+        log.debug('_evaluate_operator: {}'.format(eval_oper))
+        return eval_oper
     # if the operation is not valid errors the testcase
     if operation not in dict_of_ops:
         log.error('Operator {} is not supported'.format(operation))
@@ -939,7 +957,9 @@ def _evaluate_operator(result, operation=None, value=None):
     if operation in ['not_contains','not_contains_regex']:
         return not dict_of_ops[operation](result, value)
 
-    return dict_of_ops[operation](result, value)
+    eval_oper = dict_of_ops[operation](result, value)
+    log.debug('_evaluate_operator: {}'.format(eval_oper))
+    return eval_oper
 
 def _regex_in_list(result, value):
 
@@ -975,36 +995,50 @@ def _verify_dq_query_and_execute_include_exclude(action_output, style, key):
         return (Failed, message.format(k=key, s='not ' + style))
 
 def _condition_validator(items):
-
     # Checking condition useful for both condition work itself and action compare.
     # e.g: 2 > 1 or '%VARIABLES{ball}' == 'nine' and  '%VARIABLES{yall} > 12'
     pattern = re.compile(
-        r"(?P<right_hand_value>[^>=<!]+)(?P<ops_and_left_hand_value>[\S\s]+)")
+        r"^(?!None$)(?P<right_hand_value>[^>=<!]+)(?P<ops_and_left_hand_value>[\S\s]+)")
 
     # split on \(\) for cases with "%VARIABLES{name} == 22 and (%VARIABLES{nam} == 12 or %VARIABLES{am} == 32)"
-    items_splitted_on_bracket = re.split(r"\(|\)", items)
+    try:
+        items_splitted_on_bracket = re.split(r"\(|\)", items)
+    except TypeError:
+        # if the items is list or etc, just put in list
+        items_splitted_on_bracket = [items]
 
     for each_item_in_bracket in items_splitted_on_bracket:
 
         # split on and|or on each item
         # 12 > 11 and 'sia' == 'sia' --> [12>11, 'sia'=='sia']
-        items_list = re.split(r"\s+and\s+|\s+or\s+", each_item_in_bracket)
+        try:
+            items_list = re.split(r"\s+and\s+|\s+or\s+", each_item_in_bracket)
+        except TypeError:
+            # if no `and`/`or`, just put in list
+            items_list = [each_item_in_bracket]
         for item in items_list:
 
-            if not item.strip():
-                continue
+            try:
+                if not item.strip():
+                    continue
 
-            m = pattern.match(item)
-            if not m:
-                raise Exception('Wrong input')
+                m = pattern.match(item)
+                # ex.) if: "$VARIABLES{test} == 10"
+                if m:
+                    group = m.groupdict()
+                    right_hand_value = group['right_hand_value']
+                    ops_and_left_hand_value = group['ops_and_left_hand_value']
+                # ex.) if: "$VARIABLES{test}"
+                else:
+                    right_hand_value = item
+                    ops_and_left_hand_value = " == True"
 
-            group = m.groupdict()
-            right_hand_value = group['right_hand_value']
-            ops_and_left_hand_value = group['ops_and_left_hand_value']
-
+            except AttributeError:
+                right_hand_value = item
+                ops_and_left_hand_value = " == True"
             try:
                 right_hand_value = float(right_hand_value)
-            except ValueError:
+            except (ValueError, TypeError):
                 pass
 
             # Extracting right hand, left hand and operator for each comparision
@@ -1012,7 +1046,7 @@ def _condition_validator(items):
                                              ops_and_left_hand_value)
 
             right_hand = output['right_hand_value']
-            right_hand = right_hand if isinstance(right_hand, (float, int)) else right_hand.strip()
+            right_hand = right_hand.strip() if isinstance(right_hand, str) else right_hand
             operation = output['operation'].strip()
             left_hand = output['left_hand_value']
             left_hand = left_hand if isinstance(left_hand, (float, int)) else left_hand.strip()
@@ -1020,13 +1054,22 @@ def _condition_validator(items):
             result = _evaluate_operator(right_hand,
                                         operation=operation,
                                         value=left_hand)
-            items = items.replace(item, ' ' + str(result) + ' ')
+            try:
+                items = items.replace(item, ' ' + str(result) + ' ')
+            # keep dict/list as is
+            except AttributeError:
+                pass
 
     try:
         ret_val = _true_false_eval(items)
     except Exception as e:
         log.error("Invalid boolean expression {}.".format(str(e)))
         ret_val = False
+
+    try:
+        ret_val = bool(ret_val)
+    except Exception:
+        pass
 
     return ret_val
 
@@ -1042,7 +1085,10 @@ def _true_false_eval(bool_exp):
         _true_false_eval("True") == True
         _true_false_eval("True and (True and (True or False))") == True
     '''
-
+    # if empty, set to True. it means, without operator, just behave 
+    # like bool()
+    if not bool_exp:
+        bool_exp = ' True '
     dict_of_ops = {'or': operator.or_, 'and': operator.and_}
     dict_of_bools = {'True': True, 'False': False}
 

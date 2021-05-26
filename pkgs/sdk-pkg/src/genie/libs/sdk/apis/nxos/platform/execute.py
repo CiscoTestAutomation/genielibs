@@ -94,8 +94,9 @@ def execute_write_erase_boot(device, timeout=300):
         raise Exception(err)
 
 
-def delete_unprotected_files(device, directory, protected, files_to_delete=None, dir_output=None):
-    """delete all files not matching regex in the protected list
+def delete_unprotected_files(device, directory, protected, files_to_delete=None,
+                             dir_output=None, allow_failure=False):
+    """ Delete all files not matching regex in the protected list
         Args:
             device ('obj'): Device object
             directory ('str'): working directory to perform the operation
@@ -103,6 +104,7 @@ def delete_unprotected_files(device, directory, protected, files_to_delete=None,
                                 and ends with (), it will be considered as a regex
             files_to_delete('list') list of files that should be deleted unless they are not protected
             dir_output ('str'): output of dir command, if not provided execute the cmd on device to get the output
+            allow_failure (bool, optional): Allow the deletion of a file to silently fail. Defaults to False.
         Returns:
             None
             """
@@ -153,6 +155,11 @@ def delete_unprotected_files(device, directory, protected, files_to_delete=None,
             try:
                 fu_device.deletefile(directory+file, device=device)
             except Exception as e:
+                if allow_failure:
+                    log.info('Failed to delete file "{}" but ignoring and moving '
+                             'on due to "allow_failure=True"..'.format(file))
+                    continue
+
                 error_messages.append('Failed to delete file "{}" due '
                                       'to :{}'.format(file, str(e)))
         if error_messages:

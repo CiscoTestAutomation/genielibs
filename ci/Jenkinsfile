@@ -13,12 +13,15 @@ pipeline {
             steps {
                 checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'genie']], userRemoteConfigs: [[credentialsId: 'e8a7354a-c71a-42cb-83ee-49ab5ad40085', url: 'https://wwwin-github.cisco.com/pyATS/genie.git']]])
                 checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'unicon.plugins']], userRemoteConfigs: [[credentialsId: 'e8a7354a-c71a-42cb-83ee-49ab5ad40085', url: 'https://wwwin-github.cisco.com/pyATS/unicon.plugins.git']]])
+                checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'yang']], userRemoteConfigs: [[url: 'https://github.com/CiscoTestAutomation/yang.git']]])
                 script {
                     sh """
                     ls -l
                     cd ${WORKSPACE}/genie
                     git remote -v
                     cd ${WORKSPACE}/unicon.plugins
+                    git remote -v
+                    cd ${WORKSPACE}/yang
                     git remote -v
                     """
                 }
@@ -37,6 +40,10 @@ pipeline {
                     cd ${WORKSPACE}/unicon.plugins
                     # checkout same branch on unicon.plugins, if it exists
                     git checkout ${env.CHANGE_BRANCH == null ? env.GIT_BRANCH : env.CHANGE_BRANCH} || git checkout dev
+                    git status
+                    cd ${WORKSPACE}/yang
+                    # checkout same branch on yang, if it exists
+                    git checkout ${env.CHANGE_BRANCH == null ? env.GIT_BRANCH : env.CHANGE_BRANCH} || git checkout master
                     git status
                     """
                 }
@@ -58,6 +65,8 @@ pipeline {
                     pip install --upgrade pip setuptools
                     pip3 install --no-cache-dir wheel pytest pytest-xdist
                     pip3 install --no-cache-dir -i http://pyats-pypi.cisco.com/simple --trusted-host pyats-pypi.cisco.com cisco-distutils ats[full]
+                    cd $WORKSPACE/yang/connector
+                    make develop
                     cd $WORKSPACE/unicon.plugins
                     make develop
                     cd $WORKSPACE/genie

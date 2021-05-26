@@ -321,6 +321,13 @@ class Interface(genie.libs.conf.interface.Interface):
             configurations.append_line(
                 attributes.format(cfg_str))
 
+        # ip dhcp snooping trust
+        if attributes.value('dhcp_snooping'):
+            cfg_str = 'ip dhcp snooping trust'
+            configurations.append_line(
+                attributes.format(cfg_str))
+
+
         # medium  <medium >
         if attributes.value('medium'):
             configurations.append_line(

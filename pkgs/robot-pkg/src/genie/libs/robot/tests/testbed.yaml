@@ -1,0 +1,6 @@
+devices:
+  R1:
+    os: iosxe
+    connections:
+      cli:
+        command: mock_device_cli --os iosxe --state general_enable

@@ -6,8 +6,11 @@ log = logging.getLogger(__name__)
 
 DOC_LINK = 'https://pubhub.devnetcloud.com/media/genie-feature-browser/docs/#/apis/'
 
+
 class GenieRobotApis:
+
     ROBOT_LIBRARY_SCOPE = "TEST CASE"
+
     def __init__(self):
         self.builtin = BuiltIn()
         self.api = API()
@@ -25,7 +28,17 @@ class GenieRobotApis:
 
     def run_keyword(self, name, args, kwargs):
         try:
-            self.testbed = self.builtin.get_library_instance('genie.libs.robot.GenieRobot').testbed
+            try:
+                self.builtin.get_library_instance('pyats.robot.pyATSRobot')
+                ats_pyats = 'pyats.robot.pyATSRobot'
+            except RuntimeError:
+                self.builtin.get_library_instance('ats.robot.pyATSRobot')
+                ats_pyats = 'ats.robot.pyATSRobot'
+            except RuntimeError:
+                # No pyATS
+                pass
+
+            self.testbed = self.builtin.get_library_instance(ats_pyats).testbed
             device_name = kwargs.get('device')
 
             # if function takes device, pass device, if no then dont pass
@@ -48,4 +61,4 @@ class GenieRobotApis:
             raise KeyError("Unknown device {}".format(name))
         except AttributeError as e:
             raise AttributeError(
-                'No testbed found, did you use keyword "use genie testbed \"${testbed}\""?') from e
+                'No testbed found, did you use keyword "use testbed \"${testbed}\""?') from e

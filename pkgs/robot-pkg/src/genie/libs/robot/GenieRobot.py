@@ -69,6 +69,22 @@ class GenieRobot(object):
         finally:
             self._genie_testscript = TestScript(Testscript)
 
+        try:
+            self.builtin.get_library_instance('pyats.robot.pyATSRobot')
+            self.ats_pyats = 'pyats.robot.pyATSRobot'
+        except RuntimeError:
+            self.builtin.get_library_instance('ats.robot.pyATSRobot')
+            self.ats_pyats = 'ats.robot.pyATSRobot'
+        except RuntimeError:
+            # No pyATS
+            pass
+
+        self.testscript.parameters['testbed'] = self.testbed
+
+    @property
+    def testbed(self):
+        return self.builtin.get_library_instance(self.ats_pyats).testbed
+
     @property
     def testscript(self):
         try:
@@ -78,29 +94,8 @@ class GenieRobot(object):
 
     @keyword('use genie testbed "${testbed}"')
     def genie_testbed(self, testbed):
-        '''Create the genie testbed'''
-        try:
-            self.builtin.get_library_instance('pyats.robot.pyATSRobot')
-            ats_pyats = 'pyats.robot.pyATSRobot'
-        except RuntimeError:
-            self.builtin.get_library_instance('ats.robot.pyATSRobot')
-            ats_pyats = 'ats.robot.pyATSRobot'
-        except RuntimeError:
-            # No pyATS
-            pass
-
-        try:
-            # If pyATS, then call their use_testbed api, then convert
-            self.builtin.get_library_instance(ats_pyats).use_testbed(testbed)
-            testbed = self.builtin.get_library_instance(ats_pyats).testbed
-        except RuntimeError as e:
-            # No pyATS
-            self.testbed = loader.load(testbed)
-        else:
-            # Has pyATS, so converted and then save locally and also for pyATS
-            self.testbed = Genie.init(testbed)
-            self.builtin.get_library_instance(ats_pyats).testbed = self.testbed
-
+        '''*DEPRECATED* Please use the "use testbed "${testbed}" keyword instead.'''
+        self.builtin.get_library_instance(self.ats_pyats).use_testbed(testbed)
         self.testscript.parameters['testbed'] = self.testbed
 
         # Load Genie Datafiles (Trigger, Verification and PTS)
@@ -802,8 +797,9 @@ class GenieRobot(object):
         except KeyError:
             raise KeyError("Unknown device {}".format(name))
         except AttributeError as e:
-            raise AttributeError("It is mandatory to 'use genie testbed ' "
-                                 "command first.") from e
+            raise AttributeError(
+                "Unable to find device {}, testbed not loaded properly?".format(
+                    name)) from e
 
     def _load_genie_datafile(self):
         # Load the datafiles

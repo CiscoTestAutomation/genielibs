@@ -816,10 +816,10 @@ def copy_to_device(section,
         destinations = [destination_act]
 
     # Check remote server info present in testbed YAML
-    if not FileUtils.from_device(device).get_server_block(server):
+    if not file_utils.get_server_block(server):
         section.failed(
             "Server '{}' was provided in the clean yaml file but "
-            "doesn't exist in the testbed file.\n".format(server), )
+            "doesn't exist in the testbed file.\n".format(server))
 
     # Check image files provided
     if verify_num_images:
@@ -988,7 +988,8 @@ def copy_to_device(section,
                                 skip_deletion=skip_deletion,
                                 protected_files=protected_files,
                                 min_free_space_percent=min_free_space_percent,
-                                dir_output=dir_before)
+                                dir_output=dir_before,
+                                allow_deletion_failure=True)
                             if not free_space:
                                 step.failed("Unable to create enough space for "
                                                "image on device {} {}".\

@@ -380,7 +380,6 @@ def _check_user_input_error(step, action_item, loop_return_items):
     4 - needs at least one iterable or terminating condition
     5 - parallel in loop would not work with until, do_until and loop_until
     """
-
     keys = [(not 'actions' in action_item,
             "No actions was provided to be looped over."),
             ('range' in action_item and 'value' in action_item,
@@ -389,7 +388,7 @@ def _check_user_input_error(step, action_item, loop_return_items):
             'You only can have one terminating condition per loop.'),
             ((not 'range' in action_item and not 'value' in action_item) and
               not 'until' in action_item and not 'do_until' in action_item and
-              not 'loop_until' in action_item,
+              not 'loop_until' in action_item and not 'if' in action_item,
             'At least one iterable item or terminating condition should be in the loop'),
             (('until' in action_item or 'do_until' in action_item or
               'lop_until' in action_item) and 'parallel' in action_item,
@@ -414,7 +413,9 @@ def blitz_control(self, section, condition, key):
     # replace all the %VARIABLES{name}
     condition_dict = get_variable(**condition_dict)
     # function that validates conditions
-    return _condition_validator(condition_dict[key])
+    blitz_control = _condition_validator(condition_dict[key])
+    log.debug('blitz_control: {}'.format(blitz_control))
+    return blitz_control
 
 def _run_condition_with_optional_func(condition_bool,
                                       condition,

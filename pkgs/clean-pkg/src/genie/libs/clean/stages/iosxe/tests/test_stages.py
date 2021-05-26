@@ -3,7 +3,7 @@
 import os
 import logging
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 # pyATS
 from pyats.aetest.steps import Steps
@@ -62,7 +62,7 @@ class PositiveStages(unittest.TestCase):
 
     def test_stage_connect(self):
         self.device.connect = Mock(return_value=self.raw_output.connect)
-        
+
         # Execute stage: connect
         with self.assertRaises(AEtestPassedSignal):
             connect(self.section, self.device)
@@ -152,12 +152,32 @@ class PositiveStages(unittest.TestCase):
         self.device.destroy = Mock(return_value="")
         self.device.connect = Mock(return_value=self.raw_output.connect)
         self.device.execute = Mock(side_effect=pos_execute)
-        
+
         # Execute stage: apply_configuration
         with self.assertRaises(AEtestPassedSignal):
             apply_configuration(self.section, self.steps, self.device,
                                 **self.device.clean.apply_configuration)
 
+        self.device.configure.assert_has_calls([
+            call(self.device.clean.apply_configuration['configuration'], timeout=1)
+        ])
+
+    def test_stage_apply_configuration_copy_to_startup(self):
+        device = self.tb.devices['PE2']
+        device.configure = Mock(return_value="")
+        device.destroy = Mock(return_value="")
+        device.connect = Mock(return_value="")
+        device.execute = Mock(return_value="")
+        device.copy = Mock(return_value="")
+
+        # Execute stage: apply_configuration
+        with self.assertRaises(AEtestPassedSignal):
+            apply_configuration(self.section, self.steps, device,
+                                **device.clean.apply_configuration)
+
+        device.copy.assert_has_calls([
+            call(source='config.txt', dest='startup-config', timeout=60)
+        ])
 
     def test_stage_verify_running_image(self):
         self.device.parse = Mock(side_effect=pos_parsed)
@@ -327,7 +347,7 @@ class NegativeStages(unittest.TestCase):
         self.device.configure = Mock(side_effect=KeyError('negative test'))
         self.device.destroy = Mock(return_value="")
         self.device.connect = Mock(return_value=self.raw_output.connect)
-        
+
         # Execute stage: apply_configuration
         with self.assertRaises(TerminateStepSignal):
             apply_configuration(self.section, self.steps, self.device,
@@ -339,12 +359,11 @@ class NegativeStages(unittest.TestCase):
         self.device.destroy = Mock(return_value="")
         self.device.connect = Mock(return_value=self.raw_output.connect)
         self.device.execute = Mock(return_value="")
-        
+
         # Execute stage: apply_configuration
         with self.assertRaises(TerminateStepSignal):
             apply_configuration(self.section, self.steps, self.device,
                                 **self.device.clean.apply_configuration)
-
 
     def test_stage_verify_running_image(self):
         self.device.parse = Mock(side_effect=neg_parsed)

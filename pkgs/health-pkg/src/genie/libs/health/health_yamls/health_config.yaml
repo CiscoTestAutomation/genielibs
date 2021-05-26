@@ -1,42 +1,32 @@
 health_settings:
   health_name:
-    cpu:                    # matches with health_name under health_data
-      x: timestamp          # matches with field under health_data
-      y: value              # matches with field under health_data
-      x_legend: timestamp   # legend for x-axis
-      y_legend: CPU load    # legend for y-axis
-      graph_style: line     # type of graph
-      threshold: 90         # threshold
-      threshold_line: True  # flag to draw line for threshold
-      normal_color: green   # graph color before threshold
-      threshold_color: red  # graph color after threshold
+    cpu:                     # matches with health_name under health_data
+      x: timestamp           # matches with field under health_data
+      y: value               # matches with field under health_data
+      x_legend: timestamp    # legend for x-axis
+      y_legend: CPU load (%) # legend for y-axis
+      y_scale_min: 0         # minimum scale for y-axis (x_ is optional)
+      y_scale_max: 100       # maximum scale for y-axis
+      y_threshold: 90        # threshold for y-axis
+      y_threshold_line: True # flag to draw line for threshold
     memory:
       x: timestamp
       y: value
       x_legend: timestamp
-      y_legend: memory usage
-      graph_style: line
-      threshold: 90
-      threshold_line: True
-      normal_color: green
-      threshold_color: red
+      y_legend: Memory usage (%)
+      y_scale_min: 0
+      y_scale_max: 100
+      y_threshold: 90
+      y_threshold_line: True
     logging:
       x: timestamp
-      y: value
+      y: logs
       x_legend: timestamp
-      y_legend: logging
-      graph_style: line
-      threshold: 0
-      threshold_line: False
-      normal_color: green
-      threshold_color: red
+      y_legend: num of logging
+      y_data_source: line
     core:
       x: timestamp
-      y: value
+      y: corefiles
       x_legend: timestamp
-      y_legend: core
-      graph_style: line
-      threshold: 0
-      threshold_line: False
-      normal_color: green
-      threshold_color: red
+      y_legend: num of corefiles
+      y_data_source: filename

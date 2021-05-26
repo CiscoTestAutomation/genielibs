@@ -377,7 +377,7 @@ Recovery Steps:
         section.parent.parameters['block_section'] = True
         section.failed("Device '{d}' has been recovered - "
                        "Terminating clean".format(d=device.name))
-    else:
+    elif not recovery_is_required and section.uid in CONTINUE_RECOVERY:
         # Recovery either was not required or the stage was in CONTINUE_RECOVERY.
         # Modify the original results to Passed as we want clean to continue.
         try:
@@ -390,7 +390,7 @@ Recovery Steps:
     if recovery_is_required:
         section.passed("Device has been recovered. Continuing with pyATS Clean.")
     else:
-        section.passed("Device '{}' is still connected. No need to recover the "
+        log.info("Device '{}' is still connected. No need to recover the "
                        "device.".format(device.name))
 
 def block_section(section):

@@ -73,6 +73,7 @@ def add_result_as_extra(func):
                 ctx = section.reporter.client.get_section_ctx()
                 lc = LogLineCounter(ctx.logfile)
                 logs_size_lines = lc._get_lines(end_size)
+                lc.close()
 
                 # build health_data
                 health_data = {

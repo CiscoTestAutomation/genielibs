@@ -193,7 +193,6 @@ class TestCondition(unittest.TestCase):
                   command: aa
     """
 
-
     def setUp(self):
 
       dir_name = os.path.dirname(os.path.abspath(__file__))
@@ -307,11 +306,8 @@ class TestCondition(unittest.TestCase):
       self.blitz_obj.parameters['save_variable_name'] = {}
       self.blitz_obj.parameters['save_variable_name']['execute_id'] = 'id1'
       out = run_condition(**self.kwargs)
+      self.assertNotEqual(out['substeps'], [])
       self.assertEqual(out['run_condition_skipped'], False)
-
-
-
-
 
 if __name__ == '__main__':
     unittest.main()

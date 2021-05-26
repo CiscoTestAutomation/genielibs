@@ -77,7 +77,7 @@ class Vlan(ABC):
                 # nxos: vlan 1000 / vn-segment 4096
                 if attributes.value('vn_segment_id'):
                     configurations.append_line(
-                        attributes.format('vn-segment {vn_segment.vni_id}'))
+                        attributes.format('vn-segment {vn_segment_id}'))
 
             # nxos: vlan dot1q tag native
             # nxos: vlan dot1q tag native exclude control

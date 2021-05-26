@@ -26,6 +26,40 @@ def get_platform_default_dir(device, output=None):
 
     return default_dir
 
+def get_boot_variables(device, output=None):
+    '''Get the configured boot variables on the device
+        Args:
+            device (`obj`): Device object
+            output (`str`): output from show boot
+        Returns:
+            List of boot images or []
+    '''
+
+
+    boot_images = []
+    try:
+        boot_out = device.parse("show boot", output=output)
+    except SchemaEmptyParserError as e:
+        log.error("Command 'show boot' did not return any output\n{}".\
+                  format(str(e)))
+    else:
+        # Get configured
+        if boot_out.get("boot_path_list", {}):
+            boot_variables = boot_out.get("boot_path_list")
+
+        # Trim
+        if boot_variables:
+            for item in boot_variables.split(';'):
+                if not item:
+                    continue
+                if ',' in item:
+                    item, num = item.split(',')
+                if " " in item:
+                    item, discard = item.split(" ")
+                boot_images.append(item)
+
+    return boot_images
+
 def get_platform_core(device, default_dir, output=None, keyword=['.core.gz']):
     '''Get the default directory of this device
 

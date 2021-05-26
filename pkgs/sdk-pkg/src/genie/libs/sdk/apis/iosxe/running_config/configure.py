@@ -90,6 +90,12 @@ def restore_running_config(device, path, file, timeout=60):
                 action="sendline(y)",
                 loop_continue=True,
                 continue_timer=False,
+            ),
+            Statement(
+                pattern=r".*\[(yes|no)\].*",
+                action="sendline(y)",
+                loop_continue=True,
+                continue_timer=False,
             )
         ]
     )
