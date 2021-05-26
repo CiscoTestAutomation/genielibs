@@ -1,7 +1,7 @@
 cleaners:
   DeviceClean:
     module: genie.libs.clean
-    devices: [PE1]
+    devices: [PE1, PE2]
 
 devices:
   PE1:
@@ -111,3 +111,13 @@ devices:
       - 'reload'
       - 'apply_configuration'
       - 'verify_running_image'
+
+  PE2:
+    connect:
+    apply_configuration:
+        file: config.txt
+        copy_directly_to_startup: True
+        config_stable_time: 1
+    order:
+      - 'connect'
+      - 'apply_configuration'

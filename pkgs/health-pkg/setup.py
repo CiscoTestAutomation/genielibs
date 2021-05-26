@@ -87,7 +87,8 @@ setup(
 
     # additional package data files that goes into the package itself
     package_data={
-        '': ['*.json'],
+        '': ['health_yamls/*.yaml',
+             '*.json'],
     },
 
     # console entry point

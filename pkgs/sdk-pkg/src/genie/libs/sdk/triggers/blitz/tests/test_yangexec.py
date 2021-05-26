@@ -31,44 +31,11 @@ class TestYangExec(unittest.TestCase):
             cls.via = 'yang2'
 
     @patch('genie.libs.sdk.triggers.blitz.yangexec.netconf_send')
-    def test_run_netconf(self, netconf_send_mock):
-        """ Test if run_netconf successfully runs with subscribe action """
+    def test_run_netconf_subscribe_lxml(self, netconf_send_mock):
+        """ Test run_netconf subscribe action with lxml objects."""
         operation = 'subscribe'
         steps = "STEP 1: Starting action yang on device 'CSR1K-5'"
         datastore = {'lock': False, 'retry': 10, 'type': ''}
-        returns = [{
-            'id': 1,
-            'name': 'address',
-            'op': '==',
-            'selected': True,
-            'datatype': 'string',
-            'value': '10.24.69.26',
-            'xpath': '/notification/push-update/datastore-contents-xml/mdt-oper-data/mdt-subscriptions/mdt-receivers/address'
-        }, {
-            'id': 2,
-            'name': 'port',
-            'op': 'range',
-            'selected': True,
-            'datatype': 'uint16',
-            'value': '50000 - 60000',
-            'xpath': '/notification/push-update/datastore-contents-xml/mdt-oper-data/mdt-subscriptions/mdt-receivers/port'
-        }, {
-            'id': 3,
-            'name': 'protocol',
-            'op': '==',
-            'selected': True,
-            'datatype': 'string',
-            'value': 'netconf',
-            'xpath': '/notification/push-update/datastore-contents-xml/mdt-oper-data/mdt-subscriptions/mdt-receivers/protocol'
-        }, {
-            'id': 4,
-            'name': 'state',
-            'op': '==',
-            'selected': True,
-            'datatype': 'string',
-            'value': 'rcvr-state-connected',
-            'xpath': '/notification/push-update/datastore-contents-xml/mdt-oper-data/mdt-subscriptions/mdt-receivers/state'
-        }]
         rpc_data = {
             'namespace': {
                 'notif-bis': 'urn:ietf:params:xml:ns:yang:ietf-event-notifications',
@@ -125,9 +92,87 @@ class TestYangExec(unittest.TestCase):
             'sample_interval': 5,
             'stream_max': 15
         }
+        netconf_send_mock.return_value = [(
+            'subscribe',
+            '''<?xml version="1.0" encoding="UTF-8"?>\n
+            <rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:
+            base:1.0" message-id="urn:uuid:60a40a42-987d-4159-
+            89d6-c67252b20f42" xmlns:nc="urn:ietf:params:xml:
+            ns:netconf:base:1.0"><subscription-result xmlns=\'
+            urn:ietf:params:xml:ns:yang:ietf-event-notificati
+            ons\' xmlns:notif-bis="urn:ietf:params:xml:ns:yang:
+            ietf-event-notifications">notif-bis:ok</subscription
+            -result>\n<subscription-id xmlns=\'urn:ietf:params:
+            xml:ns:yang:ietf-event-notifications\'>2147483760
+            </subscription-id>\n</rpc-reply>\''''
+        )]
+        result = run_netconf(
+            operation,  # operation
+            self.instance,  # device
+            steps,  # steps
+            datastore,  # datastore
+            rpc_data,  # rpc_data
+            returns,  # returns
+            format=format  # format
+        )
 
-        rpc_data['operation'] = 'subscribe'
-        rpc_data['rpc'] = ''
+        self.assertEqual(result, True)
+
+    @patch('genie.libs.sdk.triggers.blitz.yangexec.netconf_send')
+    def test_run_netconf_subscribe_raw(self, netconf_send_mock):
+        """ Test run_netconf subscribe action with string rpc."""
+        operation = 'subscribe'
+        steps = "STEP 1: Starting action yang on device 'CSR1K-5'"
+        datastore = {'lock': False, 'retry': 10, 'type': ''}
+        returns = [{
+            'id': 1,
+            'name': 'address',
+            'op': '==',
+            'selected': True,
+            'datatype': 'string',
+            'value': '10.24.69.26',
+            'xpath': '/notification/push-update/datastore-contents-xml/mdt-oper-data/mdt-subscriptions/mdt-receivers/address'
+        }, {
+            'id': 2,
+            'name': 'port',
+            'op': 'range',
+            'selected': True,
+            'datatype': 'uint16',
+            'value': '50000 - 60000',
+            'xpath': '/notification/push-update/datastore-contents-xml/mdt-oper-data/mdt-subscriptions/mdt-receivers/port'
+        }, {
+            'id': 3,
+            'name': 'protocol',
+            'op': '==',
+            'selected': True,
+            'datatype': 'string',
+            'value': 'netconf',
+            'xpath': '/notification/push-update/datastore-contents-xml/mdt-oper-data/mdt-subscriptions/mdt-receivers/protocol'
+        }, {
+            'id': 4,
+            'name': 'state',
+            'op': '==',
+            'selected': True,
+            'datatype': 'string',
+            'value': 'rcvr-state-connected',
+            'xpath': '/notification/push-update/datastore-contents-xml/mdt-oper-data/mdt-subscriptions/mdt-receivers/state'
+        }]
+        format = {
+            'request_mode': 'STREAM',
+            'sub_mode': 'ON_CHANGE',
+            'encoding': 'JSON',
+            'sample_interval': 5,
+            'stream_max': 15
+        }
+
+        rpc_data = {'operation': 'subscribe',
+                    'rpc': """<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="101">
+  <establish-subscription xmlns="urn:ietf:params:xml:ns:yang:ietf-event-notifications">
+    <stream xmlns:yp="urn:ietf:params:xml:ns:yang:ietf-yang-push">yp:yang-push</stream>
+    <xpath-filter xmlns="urn:ietf:params:xml:ns:yang:ietf-yang-push">/mdt-oper:mdt-oper-data/mdt-subscriptions</xpath-filter>
+    <period xmlns="urn:ietf:params:xml:ns:yang:ietf-yang-push">1000</period>
+  </establish-subscription>
+</rpc>"""}
         netconf_send_mock.return_value = [(
             'subscribe',
             '''<?xml version="1.0" encoding="UTF-8"?>\n

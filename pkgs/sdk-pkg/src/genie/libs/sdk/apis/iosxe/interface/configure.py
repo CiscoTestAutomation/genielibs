@@ -881,26 +881,29 @@ def configure_interface_interfaces_on_port_channel(
     config_cmd = [
         "interface {interface}".format(interface=interface),
         "no shutdown",
-        "{channel_group} mode {mode}".format(
+        "channel-group {channel_group} mode {mode}".format(
             mode=mode, channel_group=channel_group
         ),
     ]
-
-    if interface == interfaces[3]:
+    
+    if len(interfaces) > 2:
+       if interface == interfaces[3]:
         config_cmd.append("lacp rate fast")
+    else:
+        pass
 
     try:
         device.configure(config_cmd)
         log.info(
             "Successfully added {intf} on "
-            "{channel_group} in {mode} mode".format(
+            "channel-group {channel_group} in {mode} mode".format(
                 intf=interface, mode=mode, channel_group=channel_group
             )
         )
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Couldn't add {intf} on "
-            "{channel_group} in {mode} mode. Error:\n{error}".format(
+            "channel-group {channel_group} in {mode} mode. Error:\n{error}".format(
                 intf=interface, mode=mode, channel_group=channel_group, error=e
             )
         )

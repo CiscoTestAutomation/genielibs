@@ -556,8 +556,8 @@ def install_image(section, steps, device, images, save_system_config=False,
                       action='sendline(y)',
                       loop_continue=True,
                       continue_timer=False),
-            Statement(pattern=r".*This operation may require a reload of the "
-                              r"system\. Do you want to proceed\? \[y\/n\]",
+            Statement(pattern=r".*reload of the system\. "
+                              r"Do you want to proceed\? \[y\/n\]",
                       action='sendline(y)',
                       loop_continue=True,
                       continue_timer=False),
@@ -566,7 +566,7 @@ def install_image(section, steps, device, images, save_system_config=False,
         try:
             device.execute('install add file {} activate commit'.format(images[0]),
                            reply=install_add_one_shot_dialog,
-                           error_pattern=['.*FAILED: install_add_activate_commit.*'],
+                           error_pattern=['FAILED:'],
                            timeout=install_timeout)
         except Exception as e:
             step.failed("Installing image '{img}' failed. Error: {e}"
@@ -649,7 +649,7 @@ def install_packages(section, steps, device, packages, save_system_config=False,
             try:
                 device.execute('install add file {} activate commit'.format(pkg),
                                reply=install_add_one_shot_dialog,
-                               error_pattern=['.*FAILED: install_add_activate_commit.*'],
+                               error_pattern=['FAILED:'],
                                timeout=install_timeout)
             except Exception as e:
                 step.failed("Installing package '{pkg}' failed. Error: {e}"

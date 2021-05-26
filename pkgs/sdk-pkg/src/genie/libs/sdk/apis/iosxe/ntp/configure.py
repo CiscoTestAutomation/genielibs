@@ -126,12 +126,13 @@ def configure_ntp_iburst(device, route):
         ) from e
 
 
-def configure_ntp_server(device, ntp_config):
+def configure_ntp_server(device, ntp_config, vrf=None):
     """ Configures ntp server
 
         Args:
             device ('obj'): device to configure on
             ntp_config ('list'): List containing server ip address
+            vrf ('str'): Optional VRF to be used during configuration
                 ex.)
                    ntp_config = [ 
                         '192.168.1.1',
@@ -148,7 +149,10 @@ def configure_ntp_server(device, ntp_config):
 
     config = []
     for ip in ntp_config:
-        config.append("ntp server {}".format(ip))
+        if vrf:
+            config.append("ntp server vrf {} {}".format(vrf, ip))
+        else:
+            config.append("ntp server {}".format(ip))
 
     try:
         device.configure("\n".join(config))

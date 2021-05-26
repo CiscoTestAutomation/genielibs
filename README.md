@@ -57,7 +57,8 @@ bash$ cd genielibs
 bash$ make develop
 ```
 
-Now you should be able to develop the files and see it reflected in your runs.
+Now you should be able to develop the files and see it reflected in your runs. You may need to run `make json`, for example if you've
+created a new API.
 
 # ChangeLog
 

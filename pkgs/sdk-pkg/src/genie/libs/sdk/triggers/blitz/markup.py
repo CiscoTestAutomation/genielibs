@@ -92,6 +92,7 @@ def get_variable(**kwargs):
     section = kwargs.get('section')
     _kwargs = _find_saved_variable(**kwargs)
     _kwargs.update({'self': self, 'section': section})
+    log.debug('get_variable: {}'.format(_kwargs))
     return _kwargs
 
 def _find_saved_variable(**kwargs):
@@ -134,7 +135,7 @@ def _find_saved_variable(**kwargs):
     return ret_dict
 
 def _load_saved_variable(self, section, val, key=None):
-
+    orig_val = val
     # Replace %VARIABLES{variables} with saved variables
     p = re.compile(r'%VARIABLES+\{(?P<var_name>[^{}]+)\}')
     group = {}
@@ -155,11 +156,11 @@ def _load_saved_variable(self, section, val, key=None):
         # if input with testscript. then var is saved in self.parent.parameters
         if 'testscript.' in blitz_val and \
             blitz_val != 'testscript.name':
-            saved_vars_dict = self.parent.parameters['save_variable_name']
+            saved_vars_dict = self.parent.parameters.setdefault('save_variable_name', {})
 
         # else it is self.parameters
         else:
-            saved_vars_dict = self.parameters['save_variable_name']
+            saved_vars_dict = self.parameters.setdefault('save_variable_name', {})
 
         #  Access object properties, list index, or dictionary value using key
         # '%VARIABLES{interface[0].name}'
@@ -170,14 +171,21 @@ def _load_saved_variable(self, section, val, key=None):
 
             var_value = _load_chained_saved_vars(saved_vars_dict, blitz_val)
         else:
-            var_value = saved_vars_dict[blitz_val]
+            try:
+                var_value = saved_vars_dict[blitz_val]
+            except KeyError:
+                var_value = None
 
         if blitz_key == val:
             val = var_value
         else:
             var_value = str(var_value).strip()
-            val = val.replace(blitz_key, var_value)
+            if var_value:
+                val = val.replace(blitz_key, var_value)
+            else:
+                val = val.replace(blitz_key, '')
 
+    log.debug("{} resolved to '{}'".format(orig_val, val))
     return key, val
 
 def _load_chained_saved_vars(last_attr, reuse_var_name):
@@ -223,7 +231,9 @@ def _load_chained_saved_vars(last_attr, reuse_var_name):
                     last_attr, attr.replace('_', ''))()
                 last_attr = next(iter(temp_value_holder))
             else:
-                raise KeyError
+                log.debug("The key '{}' doesn't exist in {}".format(attr, last_attr))
+                last_attr = ''
+                break
 
     return last_attr
 
@@ -252,7 +262,7 @@ def save_variable(self,
 
         # using AttrDict to save in parent and to retrieve
         save_variable_name = save_variable_name.replace('testscript.', '')
-        saved_vars = self.parent.parameters['save_variable_name']['testscript']
+        saved_vars = self.parent.parameters['save_variable_name'].setdefault('testscript', {})
     else:
         saved_vars = self.parameters['save_variable_name']
 

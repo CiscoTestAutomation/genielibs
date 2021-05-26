@@ -1,0 +1,54 @@
+
+devices:
+    ifc1:
+        os: apic
+        platform: aci
+        connections: {}
+        custom:
+            node_id: 1
+            abstraction:
+                order: [ 'os', 'platform' ]
+
+    Spine1: &device
+        os: nxos
+        platform: aci
+        connections: {}
+        custom: &custom
+          node_id: 201
+          abstraction:
+              order: [ 'os', 'platform' ]
+    Spine2:
+      <<: *device
+      custom:
+          <<: *custom
+          node_id: 202
+    Leaf1:
+      <<: *device
+      custom:
+          <<: *custom
+          node_id: 101
+    Leaf2:
+      <<: *device
+      custom:
+          <<: *custom
+          node_id: 102
+    Leaf4:
+      <<: *device
+      custom:
+          <<: *custom
+          node_id: 103
+    Leaf5:
+      <<: *device
+      custom:
+          <<: *custom
+          node_id: 104
+    Leaf6:
+      <<: *device
+      custom:
+          <<: *custom
+          node_id: 105
+    Leaf8:
+      <<: *device
+      custom:
+          <<: *custom
+          node_id: 106

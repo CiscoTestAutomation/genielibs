@@ -24,10 +24,10 @@ log = logging.getLogger(__name__)
 
 
 def execute_delete_boot_variable(device, boot_images, timeout=300):
-    ''' Set the boot variables
+    ''' Delete the boot variables
         Args:
             device ('obj'): Device object
-            boot_images ('str'): System image to delete as boot variable
+            boot_images ('list'): List of strings of system images to delete as boot variable
             timeout ('int'): Max time to delete boot vars in seconds
     '''
 
@@ -45,7 +45,7 @@ def execute_set_boot_variable(device, boot_images, timeout=300):
     ''' Set the boot variables
         Args:
             device ('obj'): Device object
-            boot_images ('str'): System image to set as boot variable
+            boot_images ('list'): List of strings of system images to set as boot variable
             timeout ('int'): Max time to set boot vars in seconds
     '''
 
@@ -265,7 +265,8 @@ def delete_unprotected_files(device,
                              directory,
                              protected,
                              files_to_delete=None,
-                             dir_output=None):
+                             dir_output=None,
+                             allow_failure=False):
     """delete all files not matching regex in the protected list
         Args:
             device ('obj'): Device object
@@ -274,6 +275,7 @@ def delete_unprotected_files(device,
                                 and ends with (), it will be considered as a regex
             files_to_delete('list') list of files that should be deleted unless they are not protected
             dir_output ('str'): output of dir command, if not provided execute the cmd on device to get the output
+            allow_failure (bool, optional): Allow the deletion of a file to silently fail. Defaults to False.
         Returns:
             None
             """
@@ -324,6 +326,11 @@ def delete_unprotected_files(device,
             try:
                 fu_device.deletefile(file, device=device)
             except Exception as e:
+                if allow_failure:
+                    log.info('Failed to delete file "{}" but ignoring and moving '
+                             'on due to "allow_failure=True".'.format(file))
+                    continue
+
                 error_messages.append('Failed to delete file "{}" due '
                                       'to :{}'.format(file, str(e)))
         if error_messages:

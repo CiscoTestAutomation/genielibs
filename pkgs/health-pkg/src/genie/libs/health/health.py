@@ -13,6 +13,7 @@ from genie.utils import Dq
 from genie.conf.utils.converter import Converter
 from genie.libs.sdk.triggers.blitz.blitz import Blitz
 from genie.libs.parser.utils.common import format_output
+from genie.libs.sdk.triggers.blitz.markup import _load_saved_variable
 
 log = logging.getLogger(__name__)
 
@@ -83,7 +84,15 @@ class Health(Blitz):
         new_data = []
         search_target = ''
 
+        # replicate search_keywords for further loop
+        search_keywords = copy.deepcopy(search_keywords)
+
         for search_keyword in search_keywords:
+            # save original `search_keyword` in `pre_search_keyword`
+            # which has `%VARIABLES{}`
+            pre_search_keyword = search_keyword
+            # load `%VARIABLES{} and replace in `search_keyword`
+            _, search_keyword = _load_saved_variable(self, section=section, val=search_keyword)
             # get search_target such as section.uid, section.groups from section
             search_target = self._find_search_target(section, arg_name,
                                                      search_keyword,
@@ -96,11 +105,21 @@ class Health(Blitz):
                     dq_item = self._find_item_by_search_keyword(
                         section, data, arg_name, search_target)
                 else:
-                    dq_item = Dq(data).contains(search_keyword,
+                    # in `data`, %VARIABLES doesn't need to be converted
+                    # so, need to use `pre_search_keyword`
+                    data_dq = Dq(data)
+                    dq_item = data_dq.contains(pre_search_keyword,
                                                 regex=True,
                                                 level=1).reconstruct()
+                    # for the case regex is used. need to do exact match
+                    # without `regex=True`
+                    if not dq_item:
+                        dq_item = data_dq.contains(pre_search_keyword,
+                                                    level=1).reconstruct()
                 if dq_item and dq_item not in new_data:
                     new_data.append(dq_item)
+
+        log.debug("new_data: {}".format(new_data))
         return new_data
 
     def _get_actions(self, data):
@@ -116,9 +135,13 @@ class Health(Blitz):
         """
         if data:
             if isinstance(data, list):
-                # parallel or normal actions
+                # parallel
                 if 'parallel' in data[0]:
                     return data[0]['parallel']
+                # run_condition
+                elif 'run_condition' in data[0]:
+                    return data[0]['run_condition']['actions']
+                # normal action
                 else:
                     return data
             elif isinstance(data, dict):
@@ -147,23 +170,22 @@ class Health(Blitz):
                           device.name if hasattr(device, 'name') else device)
             if m:
                 var_name = m.groupdict()['var_name']
-                if isinstance(data, dict):
-                    if 'loop_variable_name' in data and 'value' in data:
-                        # loop with list
-                        if var_name == data['loop_variable_name']:
-                            for dev in data['value']:
-                                if dev not in device_list:
-                                    device_list.append(dev)
-                        # loop with dict for _keys/_values
-                        elif (var_name == data['loop_variable_name'] +
-                              '._keys') or (var_name
-                                            == data['loop_variable_name'] +
-                                            '._values'):
-                            if data['value']:
-                                for item in data['value']:
-                                    for dev in item.keys():
-                                        if dev not in device_list:
-                                            device_list.append(dev)
+                if isinstance(data, dict) and 'loop_variable_name' in data and 'value' in data:
+                    # loop with list
+                    if var_name == data['loop_variable_name']:
+                        for dev in data['value']:
+                            if dev not in device_list:
+                                device_list.append(dev)
+                    # loop with dict for _keys/_values
+                    elif (var_name == data['loop_variable_name'] +
+                          '._keys') or (var_name
+                                        == data['loop_variable_name'] +
+                                        '._values'):
+                        if data['value']:
+                            for item in data['value']:
+                                for dev in item.keys():
+                                    if dev not in device_list:
+                                        device_list.append(dev)
                 else:
                     if Dq(each_data).contains('loop_variable_name') and Dq(each_data).contains('value'):
                         # loop with list
@@ -171,7 +193,22 @@ class Health(Blitz):
                             loop_value = Dq(each_data).get_values('value', 0)
                             m = re.search('%VARIABLES{(?P<dev_var_name>.*)}', loop_value)
                             if m:
-                                 loop_value = self.parameters['save_variable_name'][m.groupdict()['dev_var_name']]
+                                dev_var_name = m.groupdict()['dev_var_name']
+                                # for testscript variables
+                                if 'testscript.' in dev_var_name:
+                                    dev_var_name = dev_var_name.split('testscript.')[-1]
+                                    try:
+                                        loop_value = self.parent.parameters['save_variable_name'].setdefault('testscript', {}).get(dev_var_name, [])
+                                    # if no key yet, just put empty list as iterable
+                                    except (KeyError, AttributeError):
+                                        loop_value = []
+                                # testcase variables
+                                else:
+                                    try:
+                                        loop_value = self.parameters['save_variable_name'].get(dev_var_name, [])
+                                    # if no key yet, just put empty list as iterable
+                                    except KeyError:
+                                        loop_value = []
                             for dev in loop_value:
                                 if dev not in device_list:
                                     device_list.append(dev)
@@ -189,6 +226,7 @@ class Health(Blitz):
                 if device not in device_list:
                     device_list.append(device)
 
+        log.debug('device_list: {}'.format(device_list))
         return device_list
 
     def _check_all_devices_connected(self, testbed, data, reconnect):
@@ -248,6 +286,9 @@ class Health(Blitz):
         Returns:
             search_target (`str`) : found search target depending on arg_name
         """
+        # replicate search_keywords for further loop
+        search_keywords = copy.deepcopy(search_keywords)
+
         search_target = ''
         if arg_name == 'health_groups':
             search_target = getattr(section, 'groups', '')
@@ -269,6 +310,8 @@ class Health(Blitz):
                 uid=search_target))
         elif arg_name == 'health_uids':
             for kw in search_keywords:
+                # load `%VARIABLES{} and replace`
+                _, kw = _load_saved_variable(self, section=section, val=kw)
                 if re.search(kw, section.uid):
                     search_target = section.uid.split('.')[0]
                     log.debug(
@@ -445,13 +488,20 @@ class Health(Blitz):
 
         for each_data in self._get_actions(data):
             for key in each_data:
+                # get processor key from action. by default, `both`
+                each_data_dq = Dq(each_data)
+                processor_from_yaml = each_data_dq.contains(key).get_values('processor', 0)
+                if not processor_from_yaml:
+                    processor_from_yaml = 'both'
+
                 log.debug('processor_targets: {pt}'.format(pt=processor_targets))
-                log.debug('processor: {p}'.format(p=each_data[key].get('processor','both')))
+                log.debug('processor: {p}'.format(p=processor_from_yaml))
 
-                common_api = each_data[key].get('common_api', False)
+                # find `common_api` key and return True/False
+                common_api = any(each_data_dq.get_values('common_api'))
 
-                if each_data[key].get('processor',
-                                      'both') in processor_targets:
+
+                if processor_from_yaml in processor_targets:
                     # check if device for action is connected
                     all_devices_connected = None
                     for uut in self._get_device_names(orig_data, each_data):
@@ -486,7 +536,7 @@ class Health(Blitz):
         # until here, data contains only actions
         # for cases like `parallel`, `loop`, need to put the headers
         # from original data `orig_data`
-        if 'actions' in orig_data:
+        if 'actions' in orig_data and data:
             data = copy.deepcopy(orig_data)
             if temp_data:
                 data['actions'] = temp_data
@@ -494,13 +544,16 @@ class Health(Blitz):
             else:
                 data = []
         elif isinstance(orig_data, list):
-            if len(orig_data) > 0 and 'parallel' in orig_data[0]:
+            if len(orig_data) > 0 and 'parallel' in orig_data[0] and data:
                 data = copy.deepcopy(orig_data)[0]
                 if temp_data:
                     data['parallel'] = temp_data
                     data = [data]
                 else:
                     data = []
+            elif len(orig_data) > 0 and 'run_condition' in orig_data[0] and data:
+                data = copy.deepcopy(orig_data)[0]
+                data = [data]
             else:
                 data = temp_data
         else:

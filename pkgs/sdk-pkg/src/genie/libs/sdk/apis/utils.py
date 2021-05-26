@@ -3233,6 +3233,77 @@ def get_structure_output(device, command=None, exclude=['!'], negative_keyword='
 
     return ld_final.reconstruct()
 
+def arithmetic_operations(operation=None, operands=None):
+    """
+    Perform arithmetic operations on operands.
+
+    Args:
+        operation (`str`): string indicating the calculation method.
+                           'addition' is '+'
+                           'subtraction' is '-'
+                           'multiplication' is '*'
+                           'division' is '/'
+        operands (`list`): operands to be calculated.
+                           example: [1, 2]
+
+    Returns:
+        Numerical : Calculation result
+        None      : When an abnormality occurs during calculation
+    Raises:
+        N/A
+    """
+    # debug 
+    log.debug("operation: {}".format(operation))
+    log.debug("operands: {}".format(operands))
+
+    # Initialize
+    result = None
+
+    try:
+        # check operands list
+        if operands is None:
+            log.error("'operands' is not set.")
+            log.error("Please check 'operands' argument.")
+            result = None
+            return result
+
+        if len(operands) != 2:
+            log.error("Invalid argument: {}".format(operands))
+            log.error("Please check 'operands' argument.")
+            result = None
+            return result
+
+        # calculation
+        if operation == '+':
+            # addition
+            result = operands[0] + operands[1]
+        elif operation == '-':
+            # subtraction
+            result = operands[0] - operands[1] 
+        elif operation == '*':
+            # multiplication
+            result = operands[0] * operands[1]
+        elif operation == '/':
+            # division
+            result = operands[0] / operands[1]
+        else:
+            log.error("Invalid argument: {}".format(operation))
+            log.error("Please check 'operation' argument.")
+            result = None
+        
+    except (ValueError, ZeroDivisionError, TypeError, IndexError) as e:
+        # Calculation error
+        log.error("Calculation error has occurred : {}".format(e))
+        log.error("Please check 'operation' and 'operands' arguments.")
+        result = None
+    except Exception as e:
+        # Unexpected error
+        log.error("Unexpected error has occurred : {}".format(e))
+        result = None
+    finally:
+        log.debug("Calculation result: {}".format(result))
+        return result
+
 def get_single_interface(device,
                          link_name=None,
                          opposite=False,
@@ -3304,3 +3375,65 @@ def get_local_ip(device, alias=None):
         local_ip = conn.laddr.ip
         log.info('Local IP: {}'.format(local_ip))
         return local_ip
+
+def get_bool(value=None):
+    ''' Get boolean result against given value
+
+        Use-case:
+        %CALLABLE Markup doesn't support built-in function bool().
+        This API can be used when you want to get boolean result via %CALLABLE
+        or can directly calling this API with value in Blitz YAML or etc
+
+    Args:
+        device (Device): device object
+        value (`any`): any such as string, integer, list, dict etc.
+
+    Returns:
+        Bool: True or False
+    '''
+    return bool(value)
+
+def get_testcase_name(runtime=runtime):
+    ''' Get testcase name from runtime
+
+    Args:
+        runtime (`obj`, optional): easypy runtime object
+
+    Returns:
+        str: testcase name
+    '''
+    try:
+        testcase_name = runtime.reporter.client.get_section()['idlist'][1].split('.')[0]
+    except Exception:
+        testcase_name = ''
+        log.error("Couldn't get testcase name from easypy runtime object.")
+
+    return testcase_name
+
+def get_list_length(target_list):
+    """"
+    Returns length of target_list.
+
+    Args:
+        target_list (`list`): target list
+
+    Raise:
+        N/A
+
+    Return:
+        length of target list(int)
+    """
+
+    if type(target_list) != list:
+        log.error("{} is not list".format(target_list))
+        return None
+        
+    try:
+        list_length = len(target_list)
+    except AttributeError:
+        log.error("cannot get length of {}".format(target_list))
+        return None
+
+    log.info("lentgh of {} is {}".format(target_list, list_length))
+
+    return list_length

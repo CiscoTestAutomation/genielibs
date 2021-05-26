@@ -9,11 +9,12 @@ from unittest import mock
 from genie.utils.dq import Dq
 from genie.testbed import load
 from genie.libs.sdk.triggers.blitz.blitz import Blitz
-from genie.libs.sdk.triggers.blitz.markup import apply_dictionary_filter,\
-                                                 apply_regex_filter,\
-                                                 get_variable,\
-                                                 save_variable,\
-                                                 apply_list_filter
+from genie.libs.sdk.triggers.blitz.markup import (apply_dictionary_filter,
+                                                  apply_regex_filter,
+                                                  get_variable,
+                                                  save_variable,
+                                                  apply_list_filter,
+                                                  _load_saved_variable)
 
 
 from pyats.easypy import Task
@@ -235,11 +236,27 @@ class TestMarkup(unittest.TestCase):
         replaced_kwargs = get_variable(**kwargs)
         self.assertEqual(replaced_kwargs['a'], 'mock func returned val')
 
-    def test_save_variable(self):
+    def test_save_and_load_variable(self):
 
-        save_variable(self.blitz_obj, self.section, 'var1', 'aa')
+        saved_variable = 'var1'
+        saved_value = 'aa'
+        save_variable(self.blitz_obj, self.section, saved_variable, saved_value)
         self.assertEqual(
-            self.blitz_obj.parameters['save_variable_name']['var1'], 'aa')
+            self.blitz_obj.parameters['save_variable_name'][saved_variable], saved_value)
+
+        _, val = _load_saved_variable(self.blitz_obj, self.section, val=saved_value, key=saved_variable)
+        self.assertEqual(val, saved_value)
+
+    def test_save_and_load_variable_empty(self):
+
+        saved_variable = 'var2'
+        saved_value = ''
+        save_variable(self.blitz_obj, self.section, saved_variable, saved_value)
+        self.assertEqual(
+            self.blitz_obj.parameters['save_variable_name'][saved_variable], saved_value)
+
+        _, val = _load_saved_variable(self.blitz_obj, self.section, val=saved_value, key=saved_variable)
+        self.assertEqual(val, saved_value)
 
     def test_save_variable_append(self):
 

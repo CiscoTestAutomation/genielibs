@@ -526,7 +526,8 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
     rpc_data['datastore'] = ds
     rpc_data['operation'] = operation
 
-    if operation in ['rpc', 'subscribe']:
+    # operation may be raw rpc or well-formed lxml object
+    if 'rpc' in rpc_data and operation in ['rpc', 'subscribe']:
         # Custom RPC represented in raw string form so check syntax
         try:
             et.fromstring(rpc_data['rpc'])

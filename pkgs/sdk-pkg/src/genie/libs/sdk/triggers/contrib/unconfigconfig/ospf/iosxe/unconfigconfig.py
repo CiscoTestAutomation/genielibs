@@ -21,6 +21,7 @@ from pyats.utils.objects import Not, NotExists
 # Genie Libs
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.unconfigconfig.unconfigconfig import TriggerUnconfigConfig
+from genie.utils import Dq
 
 class TriggerUnconfigConfigOspfInteface(Trigger):
     ''' Unconfiguring  ospf under all interfaces'''
@@ -114,7 +115,7 @@ class unconfigconfigOspf(Trigger):
 
         #To verify if Ospf is configured
         output = uut.parse('show ip ospf')
-        if ospf_id in output:
+        if ospf_id not in Dq(output).get_values('instance'):
             self.skipped("Ospf id {id} is not showing in the "
             "output of the cmd, this is "
             "unexpected!".format(id=ospf_id))
@@ -151,11 +152,17 @@ class unconfigconfigOspf(Trigger):
     @aetest.test
     def Verify_unconfig(self,uut,ospf_id):
         # ''' Verify Ospf config worked or not '''
-        output = uut.parse('show ip ospf')
-        if ospf_id not in output:
+        try:
+            output = uut.parse('show ip ospf')
+        except Exception as err:
+            log.info('Schema parser is empty, this if only 1 OSPF instance is configured.')
+            output = ''
+        if ospf_id not in Dq(output).get_values('instance'):
             self.passed("Ospf is {id} is not showing anymore in the "
             "output of the cmd, this is "
             "expected!".format(id=ospf_id))
+        else:
+            self.failed("Ospf instance {id} is still in config".format(id=ospf_id))
 
     @aetest.test
     def Config(self,uut,ospf_id):
@@ -167,12 +174,12 @@ router ospf {id}'''.format(id=ospf_id))
     def Verify_config(self,uut,ospf_id):
         # ''' Verify Ospf config worked or not '''
         output = uut.parse('show ip ospf')
-        if int(ospf_id) in output:
-            self.passed("Ospf is {id} is not showing anymore in the "
+        if ospf_id in Dq(output).get_values('instance'):
+            self.passed("Ospf is {id} is showing in the "
             "output of the cmd, this is "
             "expected!".format(id=ospf_id))
         else:
-            self.failed("No ospf id is there")
+            self.failed("No ospf {id} is there".format(id=ospf_id))
 
     @aetest.test
     def restore_configuration(self, uut, method, abstract, steps):
@@ -202,7 +209,7 @@ class Triggeruserconfigentry(Trigger):
     @aetest.setup
     def prerequisites(self,uut,ospf_id):
         output = uut.parse('show ip ospf')
-        if ospf_id in output:
+        if ospf_id in Dq(output).get_values('instance'):
             self.skipped("Ospf id {id} is not showing in the "
             "output of the cmd, this is "
             "unexpected!".format(id=ospf_id))

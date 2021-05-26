@@ -150,7 +150,7 @@ def change_power_cycler_state(device, powercycler, state, outlets):
 
 def free_up_disk_space(device, destination, required_size, skip_deletion,
     protected_files, compact=False, min_free_space_percent=None,
-    dir_output=None):
+    dir_output=None, allow_deletion_failure=False):
 
     '''Delete files to create space on device except protected files
     Args:
@@ -167,6 +167,7 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
                                         Optional,
         dir_output ('str'): Output of 'dir' command
                             if not provided, executes the cmd on device
+        allow_deletion_failure (bool, optional): Allow the deletion of a file to silently fail. Defaults to False
     Returns:
          True if there is enough space after the operation, False otherwise
     '''
@@ -258,7 +259,8 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
             device.api.delete_unprotected_files(directory=destination,
                                                 protected=protected_files,
                                                 files_to_delete=[file],
-                                                dir_output=dir_out)
+                                                dir_output=dir_out,
+                                                allow_failure=allow_deletion_failure)
 
             if device.api.verify_enough_disk_space(required_size, destination):
                 log.info("Verified there is enough space on the device after "
