@@ -57,13 +57,16 @@ DEPENDENCIES += Cython requests ruamel.yaml
 # Internal variables.
 # (note - build examples & templates last because it will fail uploading to pypi
 #  due to duplicates, and we'll for now accept that error)
+DEV_PKGS       =   develop-health   develop-clean   develop-conf   develop-ops   develop-robot   develop-sdk   develop-filetransferutils
+UNDEV_PKGS     = undevelop-health undevelop-clean undevelop-conf undevelop-ops undevelop-robot undevelop-sdk undevelop-filetransferutils
 PYPI_PKGS      = health-pkg clean-pkg conf-pkg ops-pkg robot-pkg sdk-pkg filetransferutils-pkg
-
 ALL_PKGS       = $(PYPI_PKGS)
+
 
 .PHONY: help docs distribute_docs clean check devnet\
 	develop undevelop distribute distribute_staging distribute_staging_external\
-	test install_build_deps uninstall_build_deps $(ALL_PKGS)
+	test install_build_deps uninstall_build_deps $(ALL_PKGS) $(DEV_PKGS) 
+	$(UNDEV_PKGS)
 
 help:
 	@echo "Please use 'make <target>' where <target> is one of"
@@ -156,6 +159,14 @@ install_build_deps:
 uninstall_build_deps:
 	@echo "nothing to do"
 
+dependencies:
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Installing development dependencies"
+	@pip install $(DEPENDENCIES)
+	@echo "Done."
+	@echo ""
+
 docs:
 	@echo "No documentation to build for genie.libs"
 
@@ -193,6 +204,25 @@ undevelop:
 	@echo "--------------------------------------------------------------------"
 	@echo "Removing development environment"
 	@$(foreach dir,$(ALL_PKGS),(cd pkgs/$(dir) && python setup.py develop -q --no-deps --uninstall) &&) :
+	@echo ""
+	@echo "Done."
+	@echo ""
+
+$(DEV_PKGS):
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Setting up development environment"
+	@pip uninstall -y $(subst develop-,,genie.libs.$@) || true
+	@cd $(subst develop-,,pkgs/$@-pkg) && python setup.py develop -q --no-deps
+	@echo ""
+	@echo "Done."
+	@echo ""
+
+$(UNDEV_PKGS): 
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Removing development environment"
+	@cd $(subst undevelop-,,pkgs/$@-pkg) && python setup.py develop -q --no-deps --uninstall
 	@echo ""
 	@echo "Done."
 	@echo ""
