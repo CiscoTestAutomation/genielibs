@@ -1,0 +1,37 @@
+cleaners:
+  DeviceClean:
+    module: genie.libs.clean
+    devices: [C3650-CX-12PC]
+
+devices:
+  C3650-CX-12PC:
+    images:
+      - IOS-XE/3560cx/c3560cx-universalk9-mz.152-3.E1.bin
+
+    connect:
+
+    copy_to_device:
+      origin:
+        hostname: "cxuk-ftp"
+      destination:
+        directory: 'flash:'
+      protocol: ftp
+      overwrite: False
+      verify_num_images: False
+      check_file_stability: True
+      min_free_space_percent: 50
+
+    change_boot_variable:
+      write_memory: True
+      config_register: "0xF"
+
+    reload:
+
+    verify_running_image:
+
+    order:
+      - 'connect'
+      - 'copy_to_device'
+      - 'change_boot_variable'
+      - 'reload'
+      - 'verify_running_image'

@@ -882,6 +882,7 @@ def copy_to_device(section,
                             format(dest_file_path, device.name, dest)) as step:
                 # Check if file exists
                 try:
+                    breakpoint()
                     exist = device.api.verify_file_exists(
                         file=dest_file_path,
                         size=file_size,

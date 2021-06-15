@@ -16,6 +16,12 @@
     }
   },
   "change_boot_variable": {
+    "ios": {
+      "doc": " This stage configures the boot variables to the provided image in\n    preparation for the next device reload.\n\n    Stage Schema\n    ------------\n    change_boot_variable:\n        images (list): Images to copy\n\n        timeout (int, optional): Execute timeout in seconds. Defaults to 300.\n\n        max_time (int, optional): Maximum time to wait while saving\n            running-config to startup-config in seconds. Defaults to 300.\n\n        check_interval (int, optional): Time interval while checking save\n            running config to startup-config completed in seconds. Defaults to 30.\n\n        write_memory (bool, optional): Execute 'write memory' after\n            setting BOOT var. Defaults to False.\n\n        config_register (str, optional): Value to set config-register for\n            reload. Defaults to 0x2102.\n\n    Example\n    -------\n    change_boot_variable:\n        images:\n            - harddisk:/Genie-12351822-iedge-asr-uut\n        timeout: 150\n        max_time: 300\n        check_interval: 20\n\n    ",
+      "module_name": "stages.stages",
+      "uid": "change_boot_variable",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/ios/stages.py#L29"
+    },
     "iosxe": {
       "cat9500": {
         "doc": " This stage configures the boot variables to the provided image in\n    preparation for the next device reload.\n\n    Stage Schema\n    ------------\n    change_boot_variable:\n        images (list): Images to copy\n\n        timeout (int, optional): Execute timeout in seconds. Defaults to 300.\n\n        max_time (int, optional): Maximum time to wait while saving\n            running-config to startup-config in seconds. Defaults to 300.\n\n        check_interval (int, optional): Time interval while checking save\n            running-config to startup-config completed in seconds. Defaults to 30.\n\n        write_memory (bool, optional): Execute 'write memory' after setting\n            BOOT var. Defaults to False.\n\n    Example\n    -------\n    change_boot_variable:\n        images:\n            - harddisk:/Genie-12351822-iedge-asr-uut\n        timeout: 150\n        max_time: 300\n        check_interval: 20\n\n    ",
@@ -112,6 +118,12 @@
     }
   },
   "install_image": {
+    "ios": {
+      "doc": " This stage installs a provided image onto the device using the install\n    CLI. It also handles the automatic reloading of your device after the\n    install is complete.\n\n    Stage Schema\n    ------------\n    install_image:\n        images (list): Image to install\n\n        save_system_config (bool, optional): Whether or not to save the system\n            config if it was modified. Defaults to False.\n\n        install_timeout (int, optional): Maximum time to wait for install\n            process to finish. Defaults to 500.\n\n        reload_timeout (int, optional): Maximum time to wait for reload process\n            to finish. Defaults to 800.\n\n    Example\n    -------\n    install_image:\n        images:\n          - /auto/some-location/that-this/image/stay-isr-image.bin\n        save_system_config: True\n        install_timeout: 1000\n        reload_timeout: 1000\n\n    ",
+      "module_name": "stages.stages",
+      "uid": "install_image",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/ios/stages.py#L449"
+    },
     "iosxe": {
       "doc": " This stage installs a provided image onto the device using the install\n    CLI. It also handles the automatic reloading of your device after the\n    install is complete.\n\n    Stage Schema\n    ------------\n    install_image:\n        images (list): Image to install\n\n        save_system_config (bool, optional): Whether or not to save the system\n            config if it was modified. Defaults to False.\n\n        install_timeout (int, optional): Maximum time to wait for install\n            process to finish. Defaults to 500.\n\n        reload_timeout (int, optional): Maximum time to wait for reload process\n            to finish. Defaults to 800.\n\n    Example\n    -------\n    install_image:\n        images:\n          - /auto/some-location/that-this/image/stay-isr-image.bin\n        save_system_config: True\n        install_timeout: 1000\n        reload_timeout: 1000\n\n    ",
       "module_name": "stages.stages",
@@ -128,6 +140,12 @@
     }
   },
   "install_packages": {
+    "ios": {
+      "doc": " This stage installs the provided packages using the install CLI.\n\n    Stage Schema\n    ------------\n    install_packages:\n        packages (list): Packages to install.\n\n        save_system_config (bool, optional): Whether or not to save the system\n            config if it was modified. Defaults to False.\n\n        install_timeout (int, optional): Maximum time to wait for install\n            process to finish. Defaults to 300.\n\n    Example\n    -------\n    install_packages:\n        packages:\n          - /auto/some-location/that-this/image/stay-isr-image.bin\n        save_system_config: True\n        install_timeout: 1000\n\n    ",
+      "module_name": "stages.stages",
+      "uid": "install_packages",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/ios/stages.py#L595"
+    },
     "iosxe": {
       "doc": " This stage installs the provided packages using the install CLI.\n\n    Stage Schema\n    ------------\n    install_packages:\n        packages (list): Packages to install.\n\n        save_system_config (bool, optional): Whether or not to save the system\n            config if it was modified. Defaults to False.\n\n        install_timeout (int, optional): Maximum time to wait for install\n            process to finish. Defaults to 300.\n\n    Example\n    -------\n    install_packages:\n        packages:\n          - /auto/some-location/that-this/image/stay-isr-image.bin\n        save_system_config: True\n        install_timeout: 1000\n\n    ",
       "module_name": "stages.stages",
@@ -136,6 +154,12 @@
     }
   },
   "install_remove_inactive": {
+    "ios": {
+      "doc": " This stage removes partially installed packages/images left\n    on the device. If a super package is left partially installed,\n    we cannot attempt to install another until it is removed.\n\n    Stage Schema\n    ------------\n    install_image:\n        timeout (int, optional): Maximum time to wait for remove process to\n            finish. Defaults to 180.\n\n    Example\n    -------\n    install_remove_inactive:\n        timeout: 180\n\n    ",
+      "module_name": "stages.stages",
+      "uid": "install_remove_inactive",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/ios/stages.py#L411"
+    },
     "iosxe": {
       "doc": " This stage removes partially installed packages/images left\n    on the device. If a super package is left partially installed,\n    we cannot attempt to install another until it is removed.\n\n    Stage Schema\n    ------------\n    install_image:\n        timeout (int, optional): Maximum time to wait for remove process to\n            finish. Defaults to 180.\n\n    Example\n    -------\n    install_remove_inactive:\n        timeout: 180\n\n    ",
       "module_name": "stages.stages",
@@ -192,6 +216,12 @@
     }
   },
   "tftp_boot": {
+    "ios": {
+      "doc": " This stage boots a new image onto your device using the tftp booting\n    method.\n\n    Stage Schema\n    ------------\n    tftp_boot:\n        image (list): Image to boot with\n\n        ip_address (list): Management ip address to configure to reach to the\n            tftp server\n\n        subnet_mask (str): Management subnet mask\n\n        gateway (str): Management gateway\n\n        tftp_server (str): Tftp server that is reachable with management interface\n\n        recovery_password (str, optional): Enable password for device\n            required after bootup. Defaults to None.\n\n        save_system_config (bool, optional): Whether or not to save the\n            system config if it was modified. Defaults to True.\n\n        timeout (int, optional): Max time during which tftp boot must\n            complete. Defaults to 600.\n\n        config_reg_timeout (int, optional): Max time to set config-register.\n            Defaults to 30.\n\n    Example\n    -------\n    tftp_boot:\n        image:\n          - /auto/some-location/that-this/image/stay-isr-image.bin\n        ip_address: [10.1.7.126, 10.1.7.127]\n        gateway: 10.1.7.1\n        subnet_mask: 255.255.255.0\n        tftp_server: 11.1.7.251\n        recovery_password: nbv_12345\n        save_system_config: False\n        timeout: 600\n        config_reg_timeout: 10\n\n    There is more than one ip address, one for each supervisor.\n\n    ",
+      "module_name": "stages.stages",
+      "uid": "tftp_boot",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/ios/stages.py#L218"
+    },
     "iosxe": {
       "doc": " This stage boots a new image onto your device using the tftp booting\n    method.\n\n    Stage Schema\n    ------------\n    tftp_boot:\n        image (list): Image to boot with\n\n        ip_address (list): Management ip address to configure to reach to the\n            tftp server\n\n        subnet_mask (str): Management subnet mask\n\n        gateway (str): Management gateway\n\n        tftp_server (str): Tftp server that is reachable with management interface\n\n        recovery_password (str, optional): Enable password for device\n            required after bootup. Defaults to None.\n\n        save_system_config (bool, optional): Whether or not to save the\n            system config if it was modified. Defaults to True.\n\n        timeout (int, optional): Max time during which tftp boot must\n            complete. Defaults to 600.\n\n        config_reg_timeout (int, optional): Max time to set config-register.\n            Defaults to 30.\n\n    Example\n    -------\n    tftp_boot:\n        image:\n          - /auto/some-location/that-this/image/stay-isr-image.bin\n        ip_address: [10.1.7.126, 10.1.7.127]\n        gateway: 10.1.7.1\n        subnet_mask: 255.255.255.0\n        tftp_server: 11.1.7.251\n        recovery_password: nbv_12345\n        save_system_config: False\n        timeout: 600\n        config_reg_timeout: 10\n\n    There is more than one ip address, one for each supervisor.\n\n    ",
       "module_name": "stages.stages",
@@ -217,6 +247,7 @@
     "cat9500",
     "cat9k",
     "com",
+    "ios",
     "iosxe",
     "iosxr",
     "nxos"

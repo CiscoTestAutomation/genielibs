@@ -8393,6 +8393,13 @@
       "uid": "verify_file_exists",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/apic/platform/verify.py#L8"
     },
+    "ios": {
+      "doc": "Verify that the given file exist on device with the same name and size\n        Args:\n            device (`obj`): Device object\n            file ('str'): File path on the device, i.e. bootflash:/path/to/file\n            size('int'): Expected file size (Optional)\n            dir_output ('str'): Output of 'dir' command\n                            if not provided, executes the cmd on device\n        Returns:\n            Boolean value of whether file exists or not\n    ",
+      "module_name": "platform.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_file_exists",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/verify.py#L95"
+    },
     "iosxe": {
       "doc": "Verify that the given file exist on device with the same name and size\n        Args:\n            device (`obj`): Device object\n            file ('str'): File path on the device, i.e. bootflash:/path/to/file\n            size('int'): Expected file size (Optional)\n            dir_output ('str'): Output of 'dir' command\n                            if not provided, executes the cmd on device\n        Returns:\n            Boolean value of whether file exists or not\n    ",
       "module_name": "platform.verify",
@@ -11099,15 +11106,6 @@
       "package": "genie.libs.sdk.apis",
       "uid": "verify_specific_route",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/routing/verify.py#L829"
-    }
-  },
-  "verify_state": {
-    "iosxe": {
-      "doc": "Trigger Pre-Processor:\n        * verify state:\n    ",
-      "module_name": "prepostprocessor.processors",
-      "package": "genie.libs.sdk.apis",
-      "uid": "verify_state",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/prepostprocessor/processors.py#L49"
     }
   },
   "verify_static_arp": {
