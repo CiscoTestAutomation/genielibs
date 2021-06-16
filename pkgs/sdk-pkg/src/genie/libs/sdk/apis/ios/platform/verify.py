@@ -138,43 +138,43 @@ def verify_file_exists(device, file, size=None, dir_output=None):
         return True
 
 
-#def verify_boot_variable(device, boot_images, output=None):
-#    ''' Verifies given boot_images are set to the next-reload BOOT vars
-#        Args:
-#            device ('obj'): Device object
-#            boot_images ('str'): System images
-#    '''
-#
-#    if boot_images == device.api.get_boot_variables(boot_var='next', output=output):
-#        log.info("Given boot images '{}' are set to 'BOOT' variable".\
-#                 format(boot_images))
-#        return True
-#    else:
-#        log.info("Given boot images '{}' are not set to 'BOOT' variable".\
-#                 format(boot_images))
-#        return False
-#
-#
-#def verify_config_register(device, config_register, next_reload=False,
-#    output=None):
-#    ''' Check current config register value
-#        Args:
-#            device ('obj'): Device object
-#            config_reg ('str'): Hexadecimal value of config register
-#    '''
-#
-#    # Get config-register
-#    value = device.api.get_config_register(next_reload=next_reload, output=output)
-#    if config_register == value:
-#        log.info("Configuration register has been correctly set to '{}'".\
-#                 format(config_register))
-#        return True
-#    else:
-#        log.error("Configuration register value '{}' is incorrect".\
-#                  format(value))
-#        return False
-#
-#
+def verify_boot_variable(device, boot_images, output=None):
+    ''' Verifies given boot_images are set to the next-reload BOOT vars
+        Args:
+            device ('obj'): Device object
+            boot_images ('str'): System images
+    '''
+
+    if boot_images == device.api.get_boot_variables(output=output):
+        log.info("Given boot images '{}' are set to 'BOOT' variable".\
+                 format(boot_images))
+        return True
+    else:
+        log.info("Given boot images '{}' are not set to 'BOOT' variable".\
+                 format(boot_images))
+        return False
+
+
+def verify_config_register(device, config_register, next_reload=False,
+    output=None):
+    ''' Check current config register value
+        Args:
+            device ('obj'): Device object
+            config_reg ('str'): Hexadecimal value of config register
+    '''
+
+    # Get config-register
+    value = device.api.get_config_register(next_reload=next_reload, output=output)
+    if config_register == value:
+        log.info("Configuration register has been correctly set to '{}'".\
+                 format(config_register))
+        return True
+    else:
+        log.error("Configuration register value '{}' is incorrect".\
+                  format(value))
+        return False
+
+
 #def verify_module_status(device, timeout=180, interval=30):
 #    ''' Check status of slot using 'show platform'
 #        Args:

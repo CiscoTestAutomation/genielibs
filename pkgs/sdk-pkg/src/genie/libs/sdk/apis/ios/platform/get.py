@@ -1,8 +1,22 @@
 # Python
+import os
+import re
 import logging
 
+# pyATS
+from pyats.easypy import runtime
+from pyats.utils.objects import R, find
+
 # Genie
-from genie.metaparser.util.exceptions import SchemaEmptyParserError
+from genie.utils import Dq
+from genie.utils.diff import Diff
+from genie.utils.timeout import Timeout
+from genie.metaparser.util.exceptions import (SchemaEmptyParserError,
+                                              SchemaMissingKeyError)
+from genie.libs.parser.iosxe.show_logging import ShowLogging
+
+# Unicon
+from unicon.core.errors import SubCommandFailure
 
 # Logger
 log = logging.getLogger(__name__)
@@ -412,3 +426,154 @@ def get_platform_memory_usage_detail(device,
             memory_usage_dict.update({ps_item: memory_usage * 100})
 
     return memory_usage_dict
+
+
+def get_file_size(device, file, output=None):
+    '''Get file size on the device
+        Args:
+            device (`obj`): Device object
+            file (`str`): File name
+            output ('str'): Output of 'dir' command
+                            if not provided, executes the cmd on device
+        Returns:
+            file size in `int` type or None if file size is not available
+    '''
+
+    directory = ''.join([os.path.dirname(file), '/'])
+    filename = os.path.basename(file)
+    try:
+        dir_output = device.parse('dir {}'.format(directory), output=output)
+    except Exception as e:
+        log.error("Failed to parse the directory listing due to: {}".\
+                  format(str(e)))
+        return None
+
+    size = Dq(dir_output).contains(filename).get_values('size')
+    if size:
+        return int(size[0])
+    else:
+        log.error("File '{}' is not found on device".format(file))
+
+def get_config_register(device, next_reload=False, output=None):
+    '''Get current config-register setting on the device
+        Args:
+            device (`obj`): Device object
+            next_reload (`bool`): Determine if returning next-reload value
+        Returns:
+            config-register value or None
+    '''
+
+    try:
+        boot_out = device.parse("show boot", output=output)
+    except SchemaEmptyParserError as e:
+        log.error("Command 'show boot' did not return any output\n{}".\
+                  format(str(e)))
+        return None
+
+    # Set keys
+    nr_key = 'next_reload_configuration_register'
+    # Check if next_reload is set
+    if next_reload and nr_key in boot_out.get('active'):
+        return boot_out.get('active').get(nr_key)
+    else:
+        cr_key = 'configuration_register'
+        return boot_out.get('active').get(cr_key)
+
+def get_running_image(device):
+    '''Get running image on the device
+        Args:
+            device (`obj`): Device object
+        Returns:
+            Image or None
+    '''
+
+    output = {}
+    try:
+        # Execute 'show version'
+        output = device.parse("show version")
+    except SchemaEmptyParserError as e:
+        log.error("Command 'show version' did not return any results: {e}".format(e=e))
+    except SchemaMissingKeyError as e:
+        log.error("Missing key while parsing 'show version': {e}".format(e=e))
+    except Exception as e:
+        log.error("Failed to parse 'show version': {e}".format(e=e))
+
+    if not output:
+        return None
+
+    system_image = output.get('version', {}).get('system_image')
+
+    if 'packages.conf' in system_image:
+        directory = system_image.split(":")[0]
+
+        try:
+            output = device.execute("more {}".format(system_image))
+        except Exception as e:
+            log.error("Failed to check contents of {}".format(system_image))
+            return None
+
+        # more bootflash:packages.conf
+        # #! /usr/binos/bin/packages_conf.sh
+        #
+        # sha1sum: e4de49179e2b7fbd772888d0d8ce7fc57f830b80
+        # boot  rp 0 0   rp_boot       csr1000v-rpboot.16.12.01a.SPA.pkg
+        #
+        # iso   rp 0 0   rp_base       csr1000v-mono-universalk9.16.12.01a.SPA.pkg
+
+        for line in output.splitlines():
+            if line.startswith("boot"):
+                system_image = line.split()[-1]
+                system_image = directory + ":" + system_image
+                break
+
+    return system_image
+
+def get_available_space(device, directory='', output=None):
+    '''Gets available space on a given directory
+        Args:
+            device ('str'): Device object
+            directory ('str'): Directory to check space
+                               If not provided, checks current working directory
+                               i.e. media:/path/to/my/dir
+            output ('str'): Output of 'dir' command
+                            if not provided, executes the cmd on device
+        Returns:
+            space available in bytes in `int` type or 
+            None if failed to retrieve available space
+    '''
+
+    try:
+        dir_output = device.parse('dir {}'.format(directory), output=output)
+    except Exception as e:
+        log.error("Failed to parse the directory listing due to: {}".\
+                  format(str(e)))
+        return None
+
+    bytes_free = Dq(dir_output).get_values(key='bytes_free')
+    if bytes_free:
+        return int(bytes_free[0])
+    else:
+        log.error("Failed to get available space for {}".format(directory))
+
+def get_total_space(device, directory='', output=None):
+    '''Gets total space on a given directory
+        Args:
+            device ('str'): Device object
+            directory ('str'): Directory to check space
+                               If not provided, checks current working directory
+                               i.e. media:/path/to/my/dir
+            output ('str'): Output of 'dir' command
+                            if not provided, executes the cmd on device
+        Returns:
+            space available in bytes in `int` type or 
+            None if failed to retrieve available space
+    '''
+
+    try:
+        dir_output = device.parse('dir {}'.format(directory), output=output)
+    except Exception as e:
+        log.error("Failed to parse the directory listing due to: {}".\
+                  format(str(e)))
+        return None
+    else:
+        return int(Dq(dir_output).get_values('bytes_total')[0])

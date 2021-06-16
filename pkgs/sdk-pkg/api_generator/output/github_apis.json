@@ -1312,6 +1312,13 @@
       "uid": "delete_unprotected_files",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/apic/platform/utils.py#L38"
     },
+    "ios": {
+      "doc": "delete all files not matching regex in the protected list\n        Args:\n            device ('obj'): Device object\n            directory ('str'): working directory to perform the operation\n            protected ('list'): list of file patterns that won't be deleted. If it begins\n                                and ends with (), it will be considered as a regex\n            files_to_delete('list') list of files that should be deleted unless they are not protected\n            dir_output ('str'): output of dir command, if not provided execute the cmd on device to get the output\n            allow_failure (bool, optional): Allow the deletion of a file to silently fail. Defaults to False.\n        Returns:\n            None\n            ",
+      "module_name": "platform.execute",
+      "package": "genie.libs.sdk.apis",
+      "uid": "delete_unprotected_files",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/execute.py#L138"
+    },
     "iosxe": {
       "doc": "delete all files not matching regex in the protected list\n        Args:\n            device ('obj'): Device object\n            directory ('str'): working directory to perform the operation\n            protected ('list'): list of file patterns that won't be deleted. If it begins\n                                and ends with (), it will be considered as a regex\n            files_to_delete('list') list of files that should be deleted unless they are not protected\n            dir_output ('str'): output of dir command, if not provided execute the cmd on device to get the output\n            allow_failure (bool, optional): Allow the deletion of a file to silently fail. Defaults to False.\n        Returns:\n            None\n            ",
       "module_name": "platform.execute",
@@ -1609,6 +1616,13 @@
     }
   },
   "execute_delete_boot_variable": {
+    "ios": {
+      "doc": " Delete the boot variables\n        Args:\n            device ('obj'): Device object\n            boot_images ('list'): List of strings of system images to delete as boot variable\n            timeout ('int'): Max time to delete boot vars in seconds\n    ",
+      "module_name": "platform.execute",
+      "package": "genie.libs.sdk.apis",
+      "uid": "execute_delete_boot_variable",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/execute.py#L26"
+    },
     "iosxe": {
       "doc": " Delete the boot variables\n        Args:\n            device ('obj'): Device object\n            boot_images ('list'): List of strings of system images to delete as boot variable\n            timeout ('int'): Max time to delete boot vars in seconds\n    ",
       "module_name": "platform.execute",
@@ -1690,6 +1704,13 @@
     }
   },
   "execute_set_boot_variable": {
+    "ios": {
+      "doc": " Set the boot variables\n        Args:\n            device ('obj'): Device object\n            boot_images ('list'): List of strings of system images to set as boot variable\n            timeout ('int'): Max time to set boot vars in seconds\n    ",
+      "module_name": "platform.execute",
+      "package": "genie.libs.sdk.apis",
+      "uid": "execute_set_boot_variable",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/execute.py#L44"
+    },
     "iosxe": {
       "doc": " Set the boot variables\n        Args:\n            device ('obj'): Device object\n            boot_images ('list'): List of strings of system images to set as boot variable\n            timeout ('int'): Max time to set boot vars in seconds\n    ",
       "module_name": "platform.execute",
@@ -1699,6 +1720,13 @@
     }
   },
   "execute_set_config_register": {
+    "ios": {
+      "doc": "Set config register to load image in boot variable\n        Args:\n            device ('obj'): Device object\n            config_reg ('str'): Hexadecimal value to set the config register to\n            timeout ('int'): Max time to set config-register in seconds\n    ",
+      "module_name": "platform.execute",
+      "package": "genie.libs.sdk.apis",
+      "uid": "execute_set_config_register",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/execute.py#L62"
+    },
     "iosxe": {
       "doc": "Set config register to load image in boot variable\n        Args:\n            device ('obj'): Device object\n            config_reg ('str'): Hexadecimal value to set the config register to\n            timeout ('int'): Max time to set config-register in seconds\n    ",
       "module_name": "platform.execute",
@@ -1724,6 +1752,13 @@
     }
   },
   "execute_write_erase": {
+    "ios": {
+      "doc": " Execute 'write erase' on the device\n        Args:\n            device ('obj'): Device object\n            timeout ('int'): Max time to for write erase to complete in seconds\n    ",
+      "module_name": "platform.execute",
+      "package": "genie.libs.sdk.apis",
+      "uid": "execute_write_erase",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/execute.py#L80"
+    },
     "iosxe": {
       "doc": " Execute 'write erase' on the device\n        Args:\n            device ('obj'): Device object\n            timeout ('int'): Max time to for write erase to complete in seconds\n    ",
       "module_name": "platform.execute",
@@ -1749,6 +1784,13 @@
     }
   },
   "execute_write_memory": {
+    "ios": {
+      "doc": " Execute 'write memory' on the device\n        Args:\n            device ('obj'): Device object\n            timeout ('int'): Max time to for write memory to complete in seconds\n    ",
+      "module_name": "platform.execute",
+      "package": "genie.libs.sdk.apis",
+      "uid": "execute_write_memory",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/execute.py#L117"
+    },
     "iosxe": {
       "doc": " Execute 'write memory' on the device\n        Args:\n            device ('obj'): Device object\n            timeout ('int'): Max time to for write memory to complete in seconds\n    ",
       "module_name": "platform.execute",
@@ -1868,6 +1910,13 @@
       "package": "genie.libs.sdk.apis",
       "uid": "get_available_space",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/apic/platform/get.py#L7"
+    },
+    "ios": {
+      "doc": "Gets available space on a given directory\n        Args:\n            device ('str'): Device object\n            directory ('str'): Directory to check space\n                               If not provided, checks current working directory\n                               i.e. media:/path/to/my/dir\n            output ('str'): Output of 'dir' command\n                            if not provided, executes the cmd on device\n        Returns:\n            space available in bytes in `int` type or \n            None if failed to retrieve available space\n    ",
+      "module_name": "platform.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_available_space",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L531"
     },
     "iosxe": {
       "doc": "Gets available space on a given directory\n        Args:\n            device ('str'): Device object\n            directory ('str'): Directory to check space\n                               If not provided, checks current working directory\n                               i.e. media:/path/to/my/dir\n            output ('str'): Output of 'dir' command\n                            if not provided, executes the cmd on device\n        Returns:\n            space available in bytes in `int` type or \n            None if failed to retrieve available space\n    ",
@@ -2176,7 +2225,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_boot_variables",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L29"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L43"
     },
     "iosxe": {
       "cat9500": {
@@ -2475,6 +2524,13 @@
     }
   },
   "get_config_register": {
+    "ios": {
+      "doc": "Get current config-register setting on the device\n        Args:\n            device (`obj`): Device object\n            next_reload (`bool`): Determine if returning next-reload value\n        Returns:\n            config-register value or None\n    ",
+      "module_name": "platform.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_config_register",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L457"
+    },
     "iosxe": {
       "doc": "Get current config-register setting on the device\n        Args:\n            device (`obj`): Device object\n            next_reload (`bool`): Determine if returning next-reload value\n        Returns:\n            config-register value or None\n    ",
       "module_name": "platform.get",
@@ -2626,6 +2682,13 @@
     }
   },
   "get_file_size": {
+    "ios": {
+      "doc": "Get file size on the device\n        Args:\n            device (`obj`): Device object\n            file (`str`): File name\n            output ('str'): Output of 'dir' command\n                            if not provided, executes the cmd on device\n        Returns:\n            file size in `int` type or None if file size is not available\n    ",
+      "module_name": "platform.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_file_size",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L431"
+    },
     "iosxe": {
       "doc": "Get file size on the device\n        Args:\n            device (`obj`): Device object\n            file (`str`): File name\n            output ('str'): Output of 'dir' command\n                            if not provided, executes the cmd on device\n        Returns:\n            file size in `int` type or None if file size is not available\n    ",
       "module_name": "platform.get",
@@ -4219,7 +4282,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_platform_core",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L63"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L77"
     },
     "iosxe": {
       "doc": "Get the default directory of this device\n\n        Args:\n            device      (`obj`) : Device object\n            default_dir (`str` or `list`) : default directory where core or \n                                            system-report is generated on device\n                                            ex.) `bootflash:/core/`\n            output      (`str`) : Output of `dir` command\n            keyword     (`list`): List of keywords to search\n            num_of_cores (`bool`): flag to return number of core files\n                                   Default to False\n            remote_device (`str`): remote device in testbed yaml\n                                   Default to None\n            remote_path (`str`): path with/without file on remote device\n                                 Default to None\n            remote_via (`str`) : specify connection to get ip\n                                 Default to None\n            vrf (`str`): use vrf where scp find route to remote device\n                                 Default to None\n            archive     (`bool`): flag to save the decode output as file in archive\n                                  Defaults to False\n            delete_core (`bool`): flag to delete core files only when copying to\n                                  remove_device is successfully done\n                                  Defaults to False\n\n            ### CISCO INTERNAL ###\n            decode      (`bool`): flag to enable for decoding core\n                                  copy core file to remote_server and decode on remote_server\n            decode_timeout (`int`): timeout to execute decode script\n                                    Default to 300\n\n        Returns:\n            all_corefiles (`list`, `int`): List of found core files\n                                           or number of core files if num_of_cores=True\n    ",
@@ -4249,7 +4312,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_platform_cpu_load",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L136"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L150"
     },
     "iosxe": {
       "doc": "Get cpu load on device\n\n        Args:\n            device     (`obj`): Device object\n            command    (`str`): Override show command\n                                Default to `show processes cpu`\n            processes (`list`): List of processes to check\n            check_key  (`str`): Key to check in parsed output\n                                Default to `five_sec_cpu`\n            output     (`str`): Output of show command\n        Returns:\n            cpu_load   (`int`): Cpu load (5 secs average by default) on the device (percentage)\n                                If multiple processes are given, returns average.\n    ",
@@ -4279,7 +4342,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_platform_cpu_load_detail",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L192"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L206"
     },
     "iosxe": {
       "doc": "Get cpu load on device\n\n        Args:\n            device     (`obj`): Device object\n            command    (`str`): Override show command\n                                Default to `show processes cpu`\n            processes (`list`): List of processes to check\n                                if not specified, will return one ALL_PROCESSES \n                                with total cpu load\n            check_key  (`str`): Key to check in parsed output\n                                Default to `five_sec_cpu`\n            check_key_total (`str`): Key to check in parsed output for Total\n                                     Default to `five_sec_cpu_total`\n            output     (`str`): Output of show command\n        Returns:\n            cpu_load_dict  (`dict`): Cpu load dictionary on the device\n                                     example:\n                                     {\n                                         'OMP': 0.0,\n                                         'NAT-ROUTE': 0.0,\n                                     }\n    ",
@@ -4309,7 +4372,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_platform_default_dir",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L10"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L24"
     },
     "iosxe": {
       "doc": "Get the default directory of this device\n\n        Args:\n            device (`obj`): Device object\n            output (`str`): Output of `dir` command\n        Returns:\n            default_dir (`str`): Default directory of the system\n    ",
@@ -4346,7 +4409,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_platform_logging",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L98"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L112"
     },
     "iosxe": {
       "doc": "Get logging messages\n\n        Args:\n            device    (`obj`): Device object\n            command   (`str`): N/A\n            files    (`list`): Not applicable on this platform\n            keywords (`list`): List of keywords to match\n            output    (`str`): Output of show command\n            num_of_logs (`bool`): flag to return number of log messages\n                                  Default to False\n        Returns:\n            logs     (`list` or `int`): list of logging messages\n                                        OR or number of core files if num_of_logs=True\n    ",
@@ -4383,7 +4446,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_platform_memory_usage",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L250"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L264"
     },
     "iosxe": {
       "doc": "Get memory usage on device\n\n        Args:\n            device         (`obj`): Device object\n            command        (`str`): Override show command\n                                    Default to `show processes memory`\n            processes     (`list`): List of processes to check\n                                    If both processes and check_key are given,\n                                    processes are preferred.\n            check_key      (`str`): Key to check in parsed output\n                                    Default to `processor_pool`\n            output         (`str`): Output of show command\n        Returns:\n            memory_usage (`float`): memory usage on the device (percentage)\n                                    If multiple processes are given, returns average.\n    ",
@@ -4413,7 +4476,7 @@
       "module_name": "platform.get",
       "package": "genie.libs.sdk.apis",
       "uid": "get_platform_memory_usage_detail",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L328"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L342"
     },
     "iosxe": {
       "doc": null,
@@ -4938,6 +5001,13 @@
     }
   },
   "get_running_image": {
+    "ios": {
+      "doc": "Get running image on the device\n        Args:\n            device (`obj`): Device object\n        Returns:\n            Image or None\n    ",
+      "module_name": "platform.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_running_image",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L482"
+    },
     "iosxe": {
       "cat9500": {
         "doc": "Get running image on the device\n        Args:\n            device (`obj`): Device object\n        Returns:\n            Image or None\n    ",
@@ -5496,6 +5566,13 @@
     }
   },
   "get_total_space": {
+    "ios": {
+      "doc": "Gets total space on a given directory\n        Args:\n            device ('str'): Device object\n            directory ('str'): Directory to check space\n                               If not provided, checks current working directory\n                               i.e. media:/path/to/my/dir\n            output ('str'): Output of 'dir' command\n                            if not provided, executes the cmd on device\n        Returns:\n            space available in bytes in `int` type or \n            None if failed to retrieve available space\n    ",
+      "module_name": "platform.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_total_space",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/get.py#L558"
+    },
     "iosxe": {
       "doc": "Gets total space on a given directory\n        Args:\n            device ('str'): Device object\n            directory ('str'): Directory to check space\n                               If not provided, checks current working directory\n                               i.e. media:/path/to/my/dir\n            output ('str'): Output of 'dir' command\n                            if not provided, executes the cmd on device\n        Returns:\n            space available in bytes in `int` type or \n            None if failed to retrieve available space\n    ",
       "module_name": "platform.get",
@@ -7847,6 +7924,13 @@
     }
   },
   "verify_boot_variable": {
+    "ios": {
+      "doc": " Verifies given boot_images are set to the next-reload BOOT vars\n        Args:\n            device ('obj'): Device object\n            boot_images ('str'): System images\n    ",
+      "module_name": "platform.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_boot_variable",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/verify.py#L141"
+    },
     "iosxe": {
       "cat9k": {
         "doc": " Verifies given boot_images are set to the next-reload BOOT vars\n\n    Args:\n        device (obj): The device to execute on.\n\n        boot_images (list): The images that are expected to be configured\n            as the boot variable for the next reload.\n\n        output (str, optional): The device output from 'show boot'. If not\n            provided the API will gather it from the device automatically.\n            Defaults to None.\n\n    Returns:\n        True - if the expected images are configured\n        False - if the expected images are NOT configured\n\n    Raises:\n        N/A\n    ",
@@ -8244,6 +8328,13 @@
     }
   },
   "verify_config_register": {
+    "ios": {
+      "doc": " Check current config register value\n        Args:\n            device ('obj'): Device object\n            config_reg ('str'): Hexadecimal value of config register\n    ",
+      "module_name": "platform.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_config_register",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/verify.py#L158"
+    },
     "iosxe": {
       "doc": " Check current config register value\n        Args:\n            device ('obj'): Device object\n            config_reg ('str'): Hexadecimal value of config register\n    ",
       "module_name": "platform.verify",
