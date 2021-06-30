@@ -5,13 +5,16 @@ import unittest
 import tempfile
 
 from unittest import mock
+from unittest.mock import patch, mock_open
 
 from genie.utils.dq import Dq
 from genie.testbed import load
 from genie.libs.sdk.triggers.blitz.blitz import Blitz
 from genie.libs.sdk.triggers.blitz.markup import (apply_dictionary_filter,
+                                                  apply_regex_findall,
                                                   apply_regex_filter,
                                                   get_variable,
+                                                  save_output_to_file,
                                                   save_variable,
                                                   apply_list_filter,
                                                   _load_saved_variable)
@@ -21,7 +24,7 @@ from pyats.easypy import Task
 from pyats.easypy.job import Job
 from pyats.easypy import runtime
 from pyats.aetest.parameters import ParameterMap
-from pyats.easypy.tests.common_funcs import init_runtime
+from pyats.easypy.common_funcs import init_runtime
 from pyats.results import Passed, Failed, Errored, Skipped,\
                           Aborted, Passx, Blocked
 
@@ -184,6 +187,16 @@ class TestMarkup(unittest.TestCase):
         filtered_out = apply_regex_filter(self.blitz_obj, output=self.str_output)
         self.assertEqual(filtered_out, self.str_output)
 
+    def test_string_findall_match(self):
+        pattern = r"(\d{2}\/\d{2}\/\d{4})"
+        matches = apply_regex_findall(self, output=self.str_output, pattern=pattern)
+        self.assertEqual(matches, ['08/04/2015', '10/22/2019', '10/22/2019'])
+
+    def test_string_findall_no_match(self):
+        pattern = r"(\d{2}-\d{2}-\d{4})"
+        matches = apply_regex_findall(self, output=self.str_output, pattern=pattern)
+        self.assertEqual(matches, [])
+
     def test_get_variable_replace(self):
 
         kwargs = {'command': r"%VARIABLES{command}",
@@ -275,6 +288,32 @@ class TestMarkup(unittest.TestCase):
         save_variable(self.blitz_obj, self.section, 'list_item', 9000, append_in_list=True)
         self.assertEqual(
             self.blitz_obj.parameters['save_variable_name']['list_item'], [177,24,13,45, 9000])
+
+    @patch('builtins.open', new_callable=mock_open())
+    def test_save_output_write_to_file(self, mock_open_file):
+        test_content = ['CSR1000V']
+        file_name = 'filename.txt'
+
+        save_output_to_file(file_name, test_content)
+
+        file_path = os.path.join(runtime.directory, file_name)
+
+        mock_open_file.assert_called_once_with(file_path, "w")
+        mock_open_file.return_value.__enter__().\
+            write.assert_called_once_with("['CSR1000V']\n")
+
+    @patch('builtins.open', new_callable=mock_open(read_data='test1\n'))
+    def test_save_output_append_to_file(self, mock_open_file):
+        test_content = ['CSR1000V']
+        file_name = 'filename.txt'
+
+        save_output_to_file(file_name, test_content, append_to_file='True')
+
+        file_path = os.path.join(runtime.directory, file_name)
+
+        mock_open_file.assert_called_once_with(file_path, "a")
+        mock_open_file.return_value.__enter__().\
+            write.assert_called_once_with("['CSR1000V']\n")
 
 
 class MockFuncClass(object):

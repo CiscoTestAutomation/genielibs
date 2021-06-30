@@ -1,7 +1,6 @@
 """ NXOS ACI Specific Clean Stages """
 
 import os
-import json
 import logging
 import time
 
@@ -927,3 +926,47 @@ def copy_to_device(section,
                                 " but cannot verify file size".format(device.name))
 
     section.passed("Copy to device completed")
+
+
+@clean_schema({
+    "method": str,
+    Optional("rest_alias"): str,
+    Optional("rest_via"): str,
+    Optional("kwargs"): dict
+})
+@aetest.test
+def apply_configuration(section, steps, device, method='post',
+                        rest_alias='rest', rest_via='rest', kwargs={}):
+    """ This stage executes the REST API against the device.
+
+        Stage schema
+        ------------
+        apply_configuration:
+
+            method (str): the REST API method to call (get/put/post/delete)
+                          (default: post)
+
+            rest_alias (str, optional): the connection alias for the REST
+                                        connection. Default: rest
+
+            rest_via (str, optional): the connection name from the topology.
+                                      Default: rest
+
+            kwargs (dict, optional): the keyword arguments to pass to the REST API call.
+                                     Default: {}
+
+        Example
+        -------
+        apply_configuration:
+            method: get
+            kwargs:
+                dn: api/class/topSystem.json
+    """
+    with steps.start("Executing REST call {} via {}".format(method, rest_via)) as step:
+        try:
+            device.connect(via=rest_via, alias=rest_alias)
+            rest_api = getattr(device, rest_alias)
+            getattr(rest_api, method)(**kwargs)
+        except Exception as err:
+            log.error('Failed to execute REST API', exc_info=True)
+            step.failed('Failed to execute REST API')

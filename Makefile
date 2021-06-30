@@ -33,7 +33,7 @@
 # Variables
 BUILD_DIR     = $(shell pwd)/__build__
 DIST_DIR      = $(BUILD_DIR)/dist
-BUILD_CMD     = python setup.py bdist_wheel --dist-dir=$(DIST_DIR)
+BUILD_CMD     = python3 setup.py bdist_wheel --dist-dir=$(DIST_DIR)
 PROD_USER     = pyadm@pyats-ci
 PROD_PKGS     = /auto/pyats/packages
 STAGING_PKGS  = /auto/pyats/staging/packages
@@ -43,7 +43,7 @@ TESTCMD       = runAll
 WATCHERS      = asg-genie-dev@cisco.com
 HEADER        = [Watchdog]
 PYPIREPO      = pypitest
-PYTHON		  = python
+PYTHON		  = python3
 PYLINT_CMD	  = pylintAll
 CYTHON_CMD	  = compileAll
 
@@ -51,7 +51,7 @@ CYTHON_CMD	  = compileAll
 RELATED_PKGS = genie.libs.health genie.libs.clean genie.libs.conf genie.libs.ops genie.libs.robot genie.libs.sdk
 RELATED_PKGS += genie.libs.filetransferutils
 DEPENDENCIES = restview psutil Sphinx wheel asynctest pysnmp
-DEPENDENCIES += setproctitle  sphinx-rtd-theme pyftpdlib tftpy
+DEPENDENCIES += setproctitle  sphinx-rtd-theme pyftpdlib tftpy\<0.8.1
 DEPENDENCIES += Cython requests ruamel.yaml
 
 # Internal variables.
@@ -124,6 +124,7 @@ compile:
 	@echo ""
 	@echo "Compiling to C code"
 	@echo --------------------------
+	@pip install cisco-distutils --upgrade || true
 	@$(CYTHON_CMD) --exclude *iosxe/ip_precedence/verify.py *iosxe/udp/get.py
 	@echo "Done Compiling"
 	@echo ""
@@ -175,7 +176,7 @@ clean:
 	@echo "--------------------------------------------------------------------"
 	@echo "Removing make directory: $(BUILD_DIR)"
 	@rm -rf $(BUILD_DIR)
-	@$(foreach dir,$(ALL_PKGS),(cd pkgs/$(dir) && python setup.py clean) &&) :
+	@$(foreach dir,$(ALL_PKGS),(cd pkgs/$(dir) && python3 setup.py clean) &&) :
 	@echo "Removing *.pyc *.c and __pycache__/ files"
 	@find . -type f -name "*.pyc" | xargs rm -vrf
 	@find . -type f -name "*.c" | xargs rm -vrf
@@ -194,7 +195,7 @@ develop:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
 	@echo "Setting up development environment"
-	@$(foreach dir,$(ALL_PKGS),(cd pkgs/$(dir) && python setup.py develop --no-deps -q) &&) :
+	@$(foreach dir,$(ALL_PKGS),(cd pkgs/$(dir) && python3 setup.py develop --no-deps -q) &&) :
 	@echo ""
 	@echo "Done."
 	@echo ""
@@ -203,7 +204,7 @@ undevelop:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
 	@echo "Removing development environment"
-	@$(foreach dir,$(ALL_PKGS),(cd pkgs/$(dir) && python setup.py develop -q --no-deps --uninstall) &&) :
+	@$(foreach dir,$(ALL_PKGS),(cd pkgs/$(dir) && python3 setup.py develop -q --no-deps --uninstall) &&) :
 	@echo ""
 	@echo "Done."
 	@echo ""
@@ -246,7 +247,7 @@ distribute_staging:
 	@test -d $(DIST_DIR) || { echo "Nothing to distribute! Exiting..."; exit 1; }
 	@echo "Organizing distributable into folders"
 	@organize_dist --dist $(DIST_DIR)
-	@rsync -rtlv --progress $(DIST_DIR)/* $(PROD_USER):$(PROD_PKGS)
+	@rsync -rtlv --progress $(DIST_DIR)/* $(PROD_USER):$(STAGING_PKGS)
 	@echo ""
 	@echo "Done."
 	@echo ""
@@ -258,7 +259,7 @@ distribute_staging_external:
 	@test -d $(DIST_DIR) || { echo "Nothing to distribute! Exiting..."; exit 1; }
 	@echo "Organizing distributable into folders"
 	@organize_dist --dist $(DIST_DIR)
-	@rsync -rtlv --progress $(DIST_DIR)/* $(PROD_USER):$(PROD_PKGS)
+	@rsync -rtlv --progress $(DIST_DIR)/* $(PROD_USER):$(STAGING_EXT_PKGS)
 	@echo ""
 	@echo "Done."
 	@echo ""
@@ -305,7 +306,7 @@ check:
 	@echo "Checking setup.py consistency..."
 	@echo ""
 
-	@$(foreach dir,$(ALL_PKGS),(cd pkgs/$(dir) && python setup.py check) &&) :
+	@$(foreach dir,$(ALL_PKGS),(cd pkgs/$(dir) && python3 setup.py check) &&) :
 
 	@echo "Done."
 	@echo ""
@@ -315,7 +316,7 @@ json:
 	@echo "--------------------------------------------------------------------"
 	@echo "Generating libs json file"
 	@echo ""
-	@python -c "from genie.json.make_json import make_genielibs; make_genielibs()"
+	@python3 -c "from genie.json.make_json import make_genielibs; make_genielibs()"
 	@echo ""
 	@echo "Done."
 	@echo ""
@@ -325,19 +326,19 @@ changelogs:
 	@echo "--------------------------------------------------------------------"
 	@echo "Generating changelog file"
 	@echo ""
-	@python -c "from ciscodistutils.make_changelog import main; main('./pkgs/clean-pkg/changelog/undistributed', './pkgs/clean-pkg/changelog/undistributed.rst')"
+	@python3 -c "from ciscodistutils.make_changelog import main; main('./pkgs/clean-pkg/changelog/undistributed', './pkgs/clean-pkg/changelog/undistributed.rst')"
 	@echo "clean-pkg changelog done..."
-	@python -c "from ciscodistutils.make_changelog import main; main('./pkgs/health-pkg/changelog/undistributed', './pkgs/health-pkg/changelog/undistributed.rst')"
+	@python3 -c "from ciscodistutils.make_changelog import main; main('./pkgs/health-pkg/changelog/undistributed', './pkgs/health-pkg/changelog/undistributed.rst')"
 	@echo "health-pkg changelog done..."
-	@python -c "from ciscodistutils.make_changelog import main; main('./pkgs/conf-pkg/changelog/undistributed', './pkgs/conf-pkg/changelog/undistributed.rst')"
+	@python3 -c "from ciscodistutils.make_changelog import main; main('./pkgs/conf-pkg/changelog/undistributed', './pkgs/conf-pkg/changelog/undistributed.rst')"
 	@echo "conf-pkg changelog done..."
-	@python -c "from ciscodistutils.make_changelog import main; main('./pkgs/filetransferutils-pkg/changelog/undistributed', './pkgs/filetransferutils-pkg/changelog/undistributed.rst')"
+	@python3 -c "from ciscodistutils.make_changelog import main; main('./pkgs/filetransferutils-pkg/changelog/undistributed', './pkgs/filetransferutils-pkg/changelog/undistributed.rst')"
 	@echo "filetransferutils-pkg changelog done..."
-	@python -c "from ciscodistutils.make_changelog import main; main('./pkgs/ops-pkg/changelog/undistributed', './pkgs/ops-pkg/changelog/undistributed.rst')"
+	@python3 -c "from ciscodistutils.make_changelog import main; main('./pkgs/ops-pkg/changelog/undistributed', './pkgs/ops-pkg/changelog/undistributed.rst')"
 	@echo "ops-pkg changelog done..."
-	@python -c "from ciscodistutils.make_changelog import main; main('./pkgs/robot-pkg/changelog/undistributed', './pkgs/robot-pkg/changelog/undistributed.rst')"
+	@python3 -c "from ciscodistutils.make_changelog import main; main('./pkgs/robot-pkg/changelog/undistributed', './pkgs/robot-pkg/changelog/undistributed.rst')"
 	@echo "robot-pkg changelog done..."
-	@python -c "from ciscodistutils.make_changelog import main; main('./pkgs/sdk-pkg/changelog/undistributed', './pkgs/sdk-pkg/changelog/undistributed.rst')"
+	@python3 -c "from ciscodistutils.make_changelog import main; main('./pkgs/sdk-pkg/changelog/undistributed', './pkgs/sdk-pkg/changelog/undistributed.rst')"
 	@echo "sdk-pkg changelog done..."
 	@echo ""
 	@echo "Done."

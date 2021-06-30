@@ -7,6 +7,7 @@ import logging
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog, statement_decorator
+from unicon.plugins.generic.statements import buffer_settled
 from genie.libs.clean.recovery.dialogs import RommonDialog as TelnetDialog
 
 # Genie
@@ -21,7 +22,7 @@ class BreakBootDialog(TelnetDialog):
     def __init__(self):
 
         # Rommon >
-        self.add_statement(Statement(pattern=r'^(.*)(rommon(.*))+>.*$',
+        self.add_statement(Statement(pattern=r'^(.*)((rommon(.*))+>|switch *:).*$',
                                      action=print_message,
                                      args={'message': 'Device reached rommon prompt in break boot stage'},
                                      trim_buffer=False))
@@ -69,13 +70,6 @@ class RommonDialog(TelnetDialog):
                                      action='sendline(yes)',
                                      loop_continue=True))
 
-        # Press RETURN to get started
-        self.add_statement(Statement(pattern=r'^.*Press RETURN to get started.*',
-                                     action='sendline()',
-                                     loop_continue=True,
-                                     matched_retries=3,
-                                     matched_retry_sleep=30))
-
         # Exec Prompt (ex: 'Router>')
         self.add_statement(Statement(pattern=r'^(Router|Switch|ios|switch|.+[^>])(\\(standby\\))?(\\(-stby)\\)?(\\(boot\\))?>$',
                                      action='sendline(en)',
@@ -85,6 +79,21 @@ class RommonDialog(TelnetDialog):
         self.add_statement(Statement(pattern=r'^(Router|Switch|ios|switch|.+[^#])(\\(standby\\))?(\\(-stby)\\)?(\\(boot\\))?#$',
                                      action=print_message,
                                      args={'message': 'Device has reached privileged exec prompt'}))
+
+
+    # Press RETURN to get started
+    @statement_decorator(r'^.*Press RETURN to get started.*', loop_continue=True)
+    def press_return(spawn, session, context):
+        max_time = time.time() + spawn.settings.RELOAD_WAIT
+        while time.time() < max_time:
+            if buffer_settled(spawn, spawn.settings.CONSOLE_TIMEOUT):
+                spawn.sendline()
+                return
+        else:
+            log.warning("Buffer did not settle within {} seconds. "
+                        "Due to this, RETURN was never pressed."
+                        .format(spawn.settings.RELOAD_WAIT))
+
 
     # Please reset before booting
     @statement_decorator(r'.*(P|p)lease reset before booting.*', loop_continue=True)

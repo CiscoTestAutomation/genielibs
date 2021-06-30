@@ -1,7 +1,7 @@
 health_settings:
   health_name:
     cpu:                     # matches with health_name under health_data
-      x: timestamp           # matches with field under health_data
+      x: stoptime            # matches with field under health_data
       y: value               # matches with field under health_data
       x_legend: timestamp    # legend for x-axis
       y_legend: CPU load (%) # legend for y-axis
@@ -10,7 +10,7 @@ health_settings:
       y_threshold: 90        # threshold for y-axis
       y_threshold_line: True # flag to draw line for threshold
     memory:
-      x: timestamp
+      x: stoptime
       y: value
       x_legend: timestamp
       y_legend: Memory usage (%)
@@ -19,13 +19,13 @@ health_settings:
       y_threshold: 90
       y_threshold_line: True
     logging:
-      x: timestamp
+      x: stoptime
       y: logs
       x_legend: timestamp
       y_legend: num of logging
       y_data_source: line
     core:
-      x: timestamp
+      x: stoptime
       y: corefiles
       x_legend: timestamp
       y_legend: num of corefiles

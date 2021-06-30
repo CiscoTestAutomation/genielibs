@@ -478,6 +478,7 @@ def config_ip_on_interface(
     interface,
     ip_address,
     mask,
+    ipv6_address=None,
     eth_encap_type=None,
     eth_encap_val=None,
     sub_interface=None,
@@ -489,6 +490,7 @@ def config_ip_on_interface(
             interface (`str`): Interface to get address
             ip_address (`str`): IP addressed to be configured on interface
             mask (`str`): Mask address to be used in configuration
+            ipv6_address (`str`): IPv6 address with subnet mask
             eth_encap_type (`str`): Encapsulation type
             eth_encap_val (`str`): Encapsulation value
             sub_interface (`str`): Subinterface to be added to interface name
@@ -518,6 +520,13 @@ def config_ip_on_interface(
     cfg_str += "ip address {ip} {mask}\n".format(
         intf=interface_name, ip=ip_address, mask=mask
     )
+
+    # Add ipv6 address configuration
+    if ipv6_address:
+        cfg_str += "ipv6 enable\n" \
+                   "ipv6 address {ipv6}\n".format(
+            ipv6=ipv6_address
+        )
 
     # Configure device
     try:
@@ -958,7 +967,7 @@ def configure_lacp_on_interface(
 
 
 def default_interface(device, interfaces):
-    """ configure interface carrier delay on device
+    """ configure default interface on device
 
         Args:
             device (`obj`): Device object

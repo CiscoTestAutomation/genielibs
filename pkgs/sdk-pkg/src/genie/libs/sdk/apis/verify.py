@@ -34,8 +34,13 @@ def verify_connectivity(device):
         return True
 
 
-def verify_enough_server_disk_space(device, protocol, server=None, directory='.',
-    required_space=None, timeout=300, fu_session=None):
+def verify_enough_server_disk_space(device,
+                                    protocol,
+                                    server=None,
+                                    directory='.',
+                                    required_space=None,
+                                    timeout=300,
+                                    fu_session=None):
     """Verify there are enough space on the server
         Args:
             device ('obj'): Device object
@@ -51,22 +56,30 @@ def verify_enough_server_disk_space(device, protocol, server=None, directory='.'
         """
 
     if fu_session:
-        return _verify_enough_server_disk_space(device, protocol, server=server,
+        return _verify_enough_server_disk_space(device,
+                                                protocol,
+                                                server=server,
                                                 directory=directory,
                                                 required_space=required_space,
                                                 timeout=timeout,
                                                 fu_session=fu_session)
-    else:
-        with FileUtils(testbed=device.testbed) as fu:
-            return _verify_enough_server_disk_space(device, protocol, server=server,
-                                                    directory=directory,
-                                                    required_space=required_space,
-                                                    timeout=timeout,
-                                                    fu_session=fu)
+    with FileUtils(testbed=device.testbed) as fu:
+        return _verify_enough_server_disk_space(device,
+                                                protocol,
+                                                server=server,
+                                                directory=directory,
+                                                required_space=required_space,
+                                                timeout=timeout,
+                                                fu_session=fu)
 
 
-def _verify_enough_server_disk_space(device, protocol, fu_session, server=None,
-    directory='.', required_space=None, timeout=300):
+def _verify_enough_server_disk_space(device,
+                                     protocol,
+                                     fu_session,
+                                     server=None,
+                                     directory='.',
+                                     required_space=None,
+                                     timeout=300):
     """Verify there are enough space on the server
         Args:
             device ('obj'): Device object
@@ -93,19 +106,24 @@ def _verify_enough_server_disk_space(device, protocol, fu_session, server=None,
                 protocol)) from None
     except Exception as e:
         raise Exception(
-            "Failed to check disk space at location {} due to {}.".format(directory,
-                                                                          str(e)))
+            "Failed to check disk space at location {} due to {}.".format(
+                directory, str(e)))
 
-    log.info(
-        "Space required: {} bytes, Space available : {} bytes".format(
-            required_space if avail_space >= 0 else 'Unknown',
-            avail_space if avail_space >= 0 else 'Unknown'))
+    log.info("Space required: {} bytes, Space available : {} bytes".format(
+        required_space if avail_space >= 0 else 'Unknown',
+        avail_space if avail_space >= 0 else 'Unknown'))
 
     return avail_space > required_space
 
 
-def verify_file_exists_on_server(device, protocol, file, server=None, size=None,
-    timeout=300, fu_session=None, max_tries=1):
+def verify_file_exists_on_server(device,
+                                 protocol,
+                                 file,
+                                 server=None,
+                                 size=None,
+                                 timeout=300,
+                                 fu_session=None,
+                                 max_tries=1):
     """Verify there are enough space on the server
         Args:
             device ('obj'): Device object
@@ -124,17 +142,34 @@ def verify_file_exists_on_server(device, protocol, file, server=None, size=None,
 
     # global session
     if fu_session:
-        return _verify_file_exists_on_server(device, protocol, file, server=server, size=size,
-                                      timeout=timeout, fu_session=fu_session, max_tries=max_tries)
+        return _verify_file_exists_on_server(device,
+                                             protocol,
+                                             file,
+                                             server=server,
+                                             size=size,
+                                             timeout=timeout,
+                                             fu_session=fu_session,
+                                             max_tries=max_tries)
     # no global session, establish a local one
-    else:
-        with FileUtils(testbed=device.testbed) as fu:
-            return _verify_file_exists_on_server(device, protocol, file, server=server, size=size,
-                                          timeout=timeout, fu_session=fu, max_tries=max_tries)
+    with FileUtils(testbed=device.testbed) as fu:
+        return _verify_file_exists_on_server(device,
+                                             protocol,
+                                             file,
+                                             server=server,
+                                             size=size,
+                                             timeout=timeout,
+                                             fu_session=fu,
+                                             max_tries=max_tries)
 
 
-def _verify_file_exists_on_server(device, protocol, file, server=None,size=None,
-    timeout=300, fu_session=None, max_tries=1):
+def _verify_file_exists_on_server(device,
+                                  protocol,
+                                  file,
+                                  server=None,
+                                  size=None,
+                                  timeout=300,
+                                  fu_session=None,
+                                  max_tries=1):
     """Verify there are enough space on the server
         Args:
             device ('obj'): Device object
@@ -151,24 +186,17 @@ def _verify_file_exists_on_server(device, protocol, file, server=None,size=None,
             True if enough space, false otherwise
         """
     # file is local
-    if not server:
-        if os.path.exists(file):
-            log.info("Found the file '{}'".format(file))
-            file_size = os.path.getsize(file)
-        else:
-            log.info("File '{}' does not exist.".format(file))
-            return False
-
-    else:
+    if server:
         url = '{p}://{s}/{f}'.format(p=protocol, s=server, f=file)
         url = fu_session.validate_and_update_url(url)
         try:
-            fu_session.checkfile(target=url, max_tries=max_tries, timeout_seconds=timeout)
+            fu_session.checkfile(target=url,
+                                 max_tries=max_tries,
+                                 timeout_seconds=timeout)
         except NotImplementedError:
             raise NotImplementedError(
                 'The protocol {} does not support file listing, unable to verify file '
-                'existence.'.format(
-                    protocol)) from None
+                'existence.'.format(protocol)) from None
         except Exception:
             log.info("File '{}' does not exist.".format(file))
             return False
@@ -179,26 +207,38 @@ def _verify_file_exists_on_server(device, protocol, file, server=None,size=None,
             return True
 
         # if exist then check if size are the same
-        file_size = device.api.get_file_size_from_server(server=server, path=file,
+        file_size = device.api.get_file_size_from_server(server=server,
+                                                         path=file,
                                                          protocol=protocol,
                                                          timeout=timeout,
                                                          fu_session=fu_session)
 
-    log.info(
-        "Expected size: {} bytes, Actual size : {} bytes".format(
-            size if size > -1 else 'Unknown',
-            file_size if file_size > -1 else 'Unknown'))
+    elif os.path.exists(file):
+        log.info("Found the file '{}'".format(file))
+        file_size = os.path.getsize(file)
+    else:
+        log.info("File '{}' does not exist.".format(file))
+        return False
+
+    log.info("Expected size: {} bytes, Actual size : {} bytes".format(
+        size if size > -1 else 'Unknown',
+        file_size if file_size > -1 else 'Unknown'))
 
     if size > -1 and file_size > -1:
         return size == file_size
 
-    else:
-        log.warning("File name '{}' exist but size is unknown.")
-        return True
+    log.warning("File name '{}' exist but size is unknown.")
+    return True
 
 
-def verify_file_size_stable_on_server(device, protocol, file, server=None, max_tries=3,
-    delay=2, timeout=300, fu_session=None):
+def verify_file_size_stable_on_server(device,
+                                      protocol,
+                                      file,
+                                      server=None,
+                                      max_tries=3,
+                                      delay=2,
+                                      timeout=300,
+                                      fu_session=None):
     """Verify size stability of given file on the server
         Args:
             device ('obj'): Device object
@@ -214,22 +254,36 @@ def verify_file_size_stable_on_server(device, protocol, file, server=None, max_t
             True if file size is stable, false otherwise
         """
 
-
     # global session
     if fu_session:
-        return _verify_file_size_stable_on_server(device, protocol, file, server=server,
-                                                  max_tries=max_tries, delay=delay,
-                                                  timeout=timeout, fu_session=fu_session)
+        return _verify_file_size_stable_on_server(device,
+                                                  protocol,
+                                                  file,
+                                                  server=server,
+                                                  max_tries=max_tries,
+                                                  delay=delay,
+                                                  timeout=timeout,
+                                                  fu_session=fu_session)
     # no global session, establish a local one
-    else:
-        with FileUtils(testbed=device.testbed) as fu:
-            return _verify_file_size_stable_on_server(device, protocol, file, server=server,
-                                                      max_tries=max_tries, delay=delay,
-                                                      timeout=timeout, fu_session=fu)
+    with FileUtils(testbed=device.testbed) as fu:
+        return _verify_file_size_stable_on_server(device,
+                                                  protocol,
+                                                  file,
+                                                  server=server,
+                                                  max_tries=max_tries,
+                                                  delay=delay,
+                                                  timeout=timeout,
+                                                  fu_session=fu)
 
 
-def _verify_file_size_stable_on_server(device, protocol, file, server=None, max_tries=3,
-    delay=2, timeout=300, fu_session=None):
+def _verify_file_size_stable_on_server(device,
+                                       protocol,
+                                       file,
+                                       server=None,
+                                       max_tries=3,
+                                       delay=2,
+                                       timeout=300,
+                                       fu_session=None):
     """Verify size stability of given file on the server
         Args:
             device ('obj'): Device object
@@ -245,17 +299,21 @@ def _verify_file_size_stable_on_server(device, protocol, file, server=None, max_
             True if file size is stable, false otherwise
         """
     if not server:
-        return _verify_local_file_size_stable(file, max_tries=max_tries, delay_seconds=delay)
+        return _verify_local_file_size_stable(file,
+                                              max_tries=max_tries,
+                                              delay_seconds=delay)
     url = '{p}://{s}/{f}'.format(p=protocol, s=server, f=file)
     url = fu_session.validate_and_update_url(url)
     try:
-        fu_session.checkfile(target=url, timeout_seconds=timeout, max_tries=max_tries,
-                             delay_seconds=delay, check_stability=True)
+        fu_session.checkfile(target=url,
+                             timeout_seconds=timeout,
+                             max_tries=max_tries,
+                             delay_seconds=delay,
+                             check_stability=True)
     except NotImplementedError:
         raise NotImplementedError(
             'The protocol {} does not support file listing, unable to verify file '
-            'size stability.'.format(
-                protocol)) from None
+            'size stability.'.format(protocol)) from None
     except Exception:
         log.warning("The size of the given file is not stable")
         return False
@@ -282,7 +340,9 @@ def _verify_local_file_size_stable(file, max_tries=3, delay_seconds=2):
         try:
             result = os.path.getsize(file)
             if not result:
-                log.warning("Failed to get file size for file :'{file}'".format(file=file))
+                log.warning(
+                    "Failed to get file size for file :'{file}'".format(
+                        file=file))
                 return False
         except Exception as exc:
             log.warning("Failed to get file size for file '{file}'"
@@ -334,19 +394,22 @@ def verify_current_image(device, images):
     if len(images) != len(running_images):
         raise Exception("Retrieved running image(s) '{}' are not of the same "
                         "length as the image(s) to be verified '{}'".format(
-                        running_images, images))
+                            running_images, images))
 
-    if set(images) == set(running_images):
-        log.info("Successfully loaded the following images on device '{}':".\
-                 format(device.name))
-        for i in running_images: log.info(i)
-    else:
+    if set(images) != set(running_images):
         raise Exception("Running images '{}' do not match list of the "
                         "expected images '{}'".format(running_images, images))
+    log.info("Successfully loaded the following images on device '{}':".\
+             format(device.name))
+    for i in running_images:
+        log.info(i)
     return
 
 
-def verify_enough_disk_space(device, required_size, directory='', dir_output=None):
+def verify_enough_disk_space(device,
+                             required_size,
+                             directory='',
+                             dir_output=None):
     '''Verify there are enough space on the disk
         Args:
             device ('obj'): Device Object
@@ -364,16 +427,16 @@ def verify_enough_disk_space(device, required_size, directory='', dir_output=Non
         available_space = -1
 
     log.info("Space required: {} bytes,\nSpace available : {} bytes".format(
-             required_size if required_size > -1 else 'Unknown',
-             available_space if available_space > -1 else 'Unknown'))
+        required_size if required_size > -1 else 'Unknown',
+        available_space if available_space > -1 else 'Unknown'))
 
     return available_space > int(required_size)
 
 
 def verify_device_connection_state(device,
-                        reconnect=False,
-                        reconnect_max_time=900,
-                        reconnect_interval=60):
+                                   reconnect=False,
+                                   reconnect_max_time=900,
+                                   reconnect_interval=60):
     '''Verify device's Unicon machine state
         Args:
             device ('obj'): Device Object
@@ -406,8 +469,8 @@ def verify_device_connection_state(device,
             timeout = Timeout(max_time=reconnect_max_time,
                               interval=reconnect_interval)
             while timeout.iterate():
-                log.info('could not detect machine state for {d}'.format(
-                    d=device))
+                log.info(
+                    'could not detect machine state for {d}'.format(d=device))
 
                 # save via info for current connection
                 via = device.via
@@ -431,3 +494,49 @@ def verify_device_connection_state(device,
         return None
     else:
         return device.state_machine.current_state
+
+
+def verify_device_connection(device,
+                             reconnect=False,
+                             reconnect_max_time=900,
+                             reconnect_interval=60):
+    '''Verify device connectivity and reconnect if needed
+        Args:
+            device ('obj'): Device Object
+            reconnect ('bool'): flag to reconnect in case device is not connected
+            reconnect_max_time ('int'): maximum time to reconnect
+                                        Default to 900 secs
+            reconnect_interval ('int'): interval of sleep after detecting device is not connected
+                            if not provided, executes the cmd on device
+    Returns:
+        (`bool`) : Return True(device is connected)/False(device is not connected)
+    '''
+
+    # check if device is connected
+    if not device.connected and reconnect:
+        timeout = Timeout(max_time=reconnect_max_time,
+                          interval=reconnect_interval)
+        while timeout.iterate():
+            log.info('could not detect machine state for {d}'.format(d=device))
+
+            # save via info for current connection
+            via = device.via
+            log.info('disconnecting {d}'.format(d=device))
+            # disconnect(destroy) device
+            device.destroy()
+            # reconnect to device
+            log.info('reconnecting device {d}'.format(d=device))
+            try:
+                if via:
+                    device.connect(via=via)
+                else:
+                    device.connect()
+            except Exception as e:
+                log.info('could not login to {d}'.format(d=device))
+                timeout.sleep()
+            else:
+                return device.connected
+
+    # returning device.connected
+    # device is connected or device couldn't be connected even after reconnect
+    return device.connected

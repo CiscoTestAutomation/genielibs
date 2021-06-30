@@ -29,3 +29,5 @@ Changelog
    2021/january
    2021/february
    2021/april
+   2021/may
+   2021/june

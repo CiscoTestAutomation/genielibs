@@ -17,7 +17,7 @@ from pyats.easypy import runtime
 from pyats.aetest.steps import Steps
 from pyats.aetest.parameters import ParameterMap
 from pyats.aetest.signals import AEtestFailedSignal
-from pyats.easypy.tests.common_funcs import init_runtime
+from pyats.easypy.common_funcs import init_runtime
 from pyats.results import Passed, Failed, Errored, Skipped,\
                           Aborted, Passx, Blocked
 
@@ -121,6 +121,23 @@ class TestBlitz(unittest.TestCase):
                       command: show vrf
     '''
 
+    yaml5 = '''
+        test:
+          groups: ['test']
+          description: Modifying the testcase description
+          source:
+              pkg: genie.libs.sdk
+              class: triggers.blitz.blitz.Blitz
+          devices: ['PE1']
+          test_sections:
+              - section:
+                  - execute:
+                      save:
+                        - variable_name: execute_output
+                          regex_findall: ([a-z]+)
+                      device: PE1
+                      command: show version
+    '''
 
     bad_yaml1 = '''
         test:
@@ -276,6 +293,7 @@ class TestBlitz(unittest.TestCase):
                                        self.testbed,
                                        new_section,
                                        section.parameters['data'])
+
     def test_invalid_action(self):
       self._initiate_blitz_cls(self.bad_yaml2)
       blitz_discoverer = self.blitz_cls()._discover()
@@ -288,18 +306,57 @@ class TestBlitz(unittest.TestCase):
                                        self.testbed,
                                        new_section,
                                        section.parameters['data'])
-    def test_empty_kwargs(self):
-      self._initiate_blitz_cls(self.bad_yaml3)
+
+    def test_save_findall(self):
+      self._initiate_blitz_cls(self.yaml5)
       blitz_discoverer = self.blitz_cls()._discover()
       for section in blitz_discoverer:
+
         new_section = section.__testcls__(section)
         steps = Steps()
+        blitz_obj = self.blitz_cls()
+        self.uid = blitz_obj.uid
+        blitz_obj.parent = self
+        blitz_obj.parent.parameters = mock.Mock()
 
-        with self.assertRaises(Exception):
-           self.blitz_cls().dispatcher(steps,
-                                       self.testbed,
-                                       new_section,
-                                       section.parameters['data'])
+        output = blitz_obj.dispatcher(steps,
+                                      self.testbed,
+                                      new_section,
+                                      section.parameters['data'])
+
+        self.assertEqual(output, {
+                          'action': 'execute',
+                          'device': 'PE1',
+                          'alias': None,
+                          'continue_': True,
+                          'description': '',
+                          'saved_vars': {
+                            'execute_output': [
+                              'host', 'execute', 'output'
+                            ]
+                          },
+                          'step_result': Passed
+                        })
+
+    def test_save_regex_var(self):
+      self._initiate_blitz_cls(self.yaml1)
+      blitz_discoverer = self.blitz_cls()._discover()
+      for section in blitz_discoverer:
+
+        new_section = section.__testcls__(section)
+        steps = Steps()
+        blitz_obj = self.blitz_cls()
+        self.uid = blitz_obj.uid
+        blitz_obj.parent = self
+        blitz_obj.parent.parameters = mock.Mock()
+
+        output = blitz_obj.dispatcher(steps,
+                                      self.testbed,
+                                      new_section,
+                                      section.parameters['data'])
+
+        self.assertEqual(output['saved_vars'], {'host': 'host'})
+        self.assertEqual(output['filters'], '(?P<host>host).*')
 
     def test_invalid_device(self):
       self._initiate_blitz_cls(self.bad_yaml4)
