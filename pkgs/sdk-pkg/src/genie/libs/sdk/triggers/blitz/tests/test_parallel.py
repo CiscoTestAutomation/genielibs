@@ -20,7 +20,7 @@ from pyats.easypy.job import Job
 from pyats.easypy import runtime
 from pyats.aetest.steps import Steps
 from pyats.aetest.parameters import ParameterMap
-from pyats.easypy.tests.common_funcs import init_runtime
+from pyats.easypy.common_funcs import init_runtime
 from pyats.results import Passed, Failed, Errored, Skipped,\
                           Aborted, Passx, Blocked
 

@@ -107,7 +107,7 @@ def get_show_tech(device,
 
     else:
 
-        if device.api.copy_to_script_host(filename, local_path=remote_path):
+        if device.api.copy_from_device(local_path=filename, remote_path=remote_path):
             device.execute('delete {}'.format(filename), reply=delete_dialog)
         else:
             log.error('Failed to copy show tech, keeping file on {}'.format(device_dir))

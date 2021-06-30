@@ -1163,7 +1163,7 @@ def get_bgp_neighbors_in_state(device, address_family, state, in_state=True):
             list of bgp neighbor ip_addresses
                 ex: ['192.168.0.1', '192.168.0.2', ...]
     """
-    p1 = re.compile("".format(state))
+    p1 = re.compile(state)
     state = state.lower()
     neighbor_addresses = []
 

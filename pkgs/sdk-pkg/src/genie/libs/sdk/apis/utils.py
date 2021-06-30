@@ -14,6 +14,7 @@ import random
 import copy
 import operator
 import psutil
+import pathlib
 
 from time import strptime
 from datetime import datetime
@@ -27,6 +28,7 @@ from pyats.utils.fileutils import FileUtils
 from pyats.utils.secret_strings import to_plaintext
 from pyats.datastructures.logic import Not
 from pyats.datastructures import ListDict
+from pyats.aetest.utils.interaction import WebInteraction
 
 # Genie
 from genie.utils.config import Config
@@ -36,6 +38,7 @@ from genie.conf.base import Device
 from genie.utils import Dq
 from genie.libs.sdk.libs.utils.normalize import merge_dict
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
+from genie.libs.filetransferutils import FileServer
 
 # unicon
 from unicon.eal.dialogs import Dialog, Statement
@@ -44,7 +47,6 @@ from unicon.plugins.generic.statements import default_statement_list
 from unicon import Connection
 
 log = logging.getLogger(__name__)
-
 
 
 def _cli(device, cmd, timeout, prompt):
@@ -63,15 +65,11 @@ def _cli(device, cmd, timeout, prompt):
     pattern = device.state_machine.get_state(state).pattern
 
     device.send(cmd)
-    statements = []
-    statements.append(prompt)
-    statements.append(Statement(pattern=pattern))
+    statements = [prompt, Statement(pattern=pattern)]
     statements.extend(device.state_machine.default_dialog)
     statements.extend(default_statement_list)
     dialog = Dialog(statements)
-    output = dialog.process(device.spawn, timeout=timeout)
-
-    return output
+    return dialog.process(device.spawn, timeout=timeout)
 
 
 def tabber(device, cmd, expected, timeout=20):
@@ -107,7 +105,7 @@ def tabber(device, cmd, expected, timeout=20):
     trim_output = output.splitlines()[1]
     trim_output = trim_output[trim_output.find(cmd):].strip()
 
-    if not expected == trim_output:
+    if expected != trim_output:
         raise Exception("'{e}' is not in output".format(e=expected))
 
 
@@ -304,9 +302,7 @@ def copy_pcap_file(testbed, filename, command=None):
         raise Exception("Issue while copying pcap file to runtime directory"
                         " '{loc}'".format(loc=runtime.directory))
 
-    pcap = "{loc}/{file}".format(file=filename, loc=runtime.directory)
-
-    return pcap
+    return "{loc}/{file}".format(file=filename, loc=runtime.directory)
 
 
 def get_neighbor_address(ip):
@@ -323,11 +319,7 @@ def get_neighbor_address(ip):
     ip_list = ip.split(".")
     last = int(ip_list[-1])
 
-    if last % 2 == 0:
-        ip_list[-1] = str(last - 1)
-    else:
-        ip_list[-1] = str(last + 1)
-
+    ip_list[-1] = str(last - 1) if last % 2 == 0 else str(last + 1)
     return ".".join(ip_list)
 
 
@@ -343,9 +335,8 @@ def has_configuration(configuration_dict, configuration):
     for k, v in configuration_dict.items():
         if configuration in k:
             return True
-        if isinstance(v, dict):
-            if has_configuration(v, configuration):
-                return True
+        if isinstance(v, dict) and has_configuration(v, configuration):
+            return True
     return False
 
 
@@ -359,7 +350,7 @@ def int_to_mask(mask_int):
     bin_arr = ["0" for i in range(32)]
     for i in range(int(mask_int)):
         bin_arr[i] = "1"
-    tmpmask = ["".join(bin_arr[i * 8: i * 8 + 8]) for i in range(4)]
+    tmpmask = ["".join(bin_arr[i * 8:i * 8 + 8]) for i in range(4)]
     tmpmask = [str(int(tmpstr, 2)) for tmpstr in tmpmask]
     return ".".join(tmpmask)
 
@@ -478,9 +469,7 @@ def copy_file_from_tftp_ftp(testbed, filename, pro):
         raise Exception("Issue while copying file to runtime directory"
                         " '{loc}'".format(loc=runtime.directory))
 
-    path = "{loc}/{file}".format(file=filename, loc=runtime.directory)
-
-    return path
+    return "{loc}/{file}".format(file=filename, loc=runtime.directory)
 
 
 def load_jinja(
@@ -517,7 +506,7 @@ def load_jinja(
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=path))
 
     template = env.get_template(file)
-    out = template.render(
+    return template.render(
         vrf_name=vrf_name,
         bandwidth=bandwidth,
         packet_size=packet_size,
@@ -528,8 +517,6 @@ def load_jinja(
         ipp0_bw_percent=ipp0_bw_percent,
         interface=interface,
     )
-
-    return out
 
 
 def get_time_source_from_output(output):
@@ -608,38 +595,39 @@ def analyze_rate(rate):
     parse = re.compile(
         r"^(?P<original_rate>[0-9\.]+)(?P<rate_unit>[A-Za-z\%]+)?$")
     m = parse.match(rate)
-    if m:
-        parsed_rate = m.groupdict()["original_rate"]
-        try:
-            original_rate = int(parsed_rate)
-        except BaseException:
-            original_rate = float(parsed_rate)
-
-        if m.groupdict()["rate_unit"]:
-            rate_unit = m.groupdict()["rate_unit"]
-            if "M" in rate_unit:
-                rate_unit = "Mbps"
-                rate = original_rate * 1000000
-            elif "K" in rate_unit:
-                rate_unit = "Kbps"
-                rate = original_rate * 1000
-            elif "G" in rate_unit:
-                rate_unit = "Gbps"
-                rate = original_rate * 1000000000
-            elif "%" in rate_unit:
-                rate = original_rate
-        elif no_unit:
-            # Case when recreating policy map on other interfaces
-            # Bandwidth was already converetd before
-            rate_unit = None
-            rate = int(rate)
-        else:
-            rate_unit = None
-
-        return rate, rate_unit, original_rate
-    else:
+    if not m:
         raise Exception("The provided rate is not in the correct "
                         "format in the trigger data file")
+
+    parsed_rate = m.groupdict()["original_rate"]
+    try:
+        original_rate = int(parsed_rate)
+    except BaseException:
+        original_rate = float(parsed_rate)
+
+    if m.groupdict()["rate_unit"]:
+        rate_unit = m.groupdict()["rate_unit"]
+        if "M" in rate_unit:
+            rate_unit = "Mbps"
+            rate = original_rate * 1000000
+        elif "K" in rate_unit:
+            rate_unit = "Kbps"
+            rate = original_rate * 1000
+        elif "G" in rate_unit:
+            rate_unit = "Gbps"
+            rate = original_rate * 1000000000
+        elif "%" in rate_unit:
+            rate = original_rate
+    elif no_unit:
+        # Case when recreating policy map on other interfaces
+        # Bandwidth was already converetd before
+        rate_unit = None
+        rate = int(rate)
+    else:
+        rate_unit = None
+
+    return rate, rate_unit, original_rate
+
 
 def unit_convert(value, unit=None):
     """ Get value with given corresponding unit.
@@ -664,42 +652,48 @@ def unit_convert(value, unit=None):
     """
 
     if unit not in ['K', 'M', 'G'] and unit is not None:
-        raise Exception('Provided unit `{u}` is incorrect. Please provide either `K`, `M` or `G`.'.format(u=unit))
+        raise Exception(
+            'Provided unit `{u}` is incorrect. Please provide either `K`, `M` or `G`.'
+            .format(u=unit))
 
     parse = re.compile(
         r"^(?P<original_value>[0-9\.]+)(?P<original_unit>[A-Za-z]+)?$")
     m = parse.match(value)
-    if m:
-        parsed_rate = m.groupdict()["original_value"]
-        try:
-            original_value = int(parsed_rate)
-        except BaseException:
-            original_value = float(parsed_rate)
+    if not m:
+        raise Exception(
+            "The provided value `{v}` is incorrect "
+            "format. Please make sure the value is like `10M`.".format(
+                v=value))
 
-        new_value = None
-        if m.groupdict()["original_unit"]:
-            value_unit = m.groupdict()["original_unit"]
-            if value_unit not in ['K', 'M', 'G']:
-                raise Exception('Unit with value `{v}` is incorrect. Please provide either `K`, `M` or `G`.'.format(v=value_unit))
-            if "M" == value_unit:
-                new_value = original_value * 1000000
-            elif "K" == value_unit:
-                new_value = original_value * 1000
-            elif "G" == value_unit:
-                new_value = original_value * 1000000000
+    parsed_rate = m.groupdict()["original_value"]
+    try:
+        original_value = int(parsed_rate)
+    except BaseException:
+        original_value = float(parsed_rate)
 
-        if new_value:
-            if "M" == unit:
-                new_value = new_value / 1000000
-            elif "K" == unit:
-                new_value = new_value / 1000
-            elif "G" == unit:
-                new_value = new_value / 1000000000
+    new_value = None
+    if m.groupdict()["original_unit"]:
+        value_unit = m.groupdict()["original_unit"]
+        if value_unit not in ['K', 'M', 'G']:
+            raise Exception(
+                'Unit with value `{v}` is incorrect. Please provide either `K`, `M` or `G`.'
+                .format(v=value_unit))
+        if value_unit == "G":
+            new_value = original_value * 1000000000
 
-        return float(new_value)
-    else:
-        raise Exception("The provided value `{v}` is incorrect "
-                        "format. Please make sure the value is like `10M`.".format(v=value))
+        elif value_unit == "K":
+            new_value = original_value * 1000
+        elif value_unit == "M":
+            new_value = original_value * 1000000
+    if new_value:
+        if unit == "G":
+            new_value = new_value / 1000000000
+
+        elif unit == "K":
+            new_value = new_value / 1000
+        elif unit == "M":
+            new_value = new_value / 1000000
+    return float(new_value)
 
 
 def reconnect_device_with_new_credentials(
@@ -844,9 +838,9 @@ def bits_to_netmask(bits):
 
 def copy_to_device(device,
                    remote_path,
-                   local_path,
-                   server,
-                   protocol,
+                   local_path=None,
+                   server=None,
+                   protocol='http',
                    vrf=None,
                    timeout=300,
                    compact=False,
@@ -854,107 +848,276 @@ def copy_to_device(device,
                    fu=None,
                    **kwargs):
     """
-    Copy file from linux server to device
-        Args:
-            device ('Device'): Device object
-            remote_path ('str'): remote file path on the server
-            local_path ('str'): local file path to copy to on the device
-            server ('str'): hostname or address of the server
-            protocol('str'): file transfer protocol to be used
-            vrf ('str'): vrf to use (optional)
-            timeout('int'): timeout value in seconds, default 300
-            compact('bool'): compress image option for n9k, defaults False
-            fu('obj'): FileUtils object to use instead of creating one. Defaults to None.
-            use_kstack('bool'): Use faster version of copy, defaults False
-                                Not supported with a file transfer protocol
-                                prompting for a username and password
-        Returns:
-            None
+    Copy file from linux server to the device.
+
+    Args:
+        device (Device): Device object
+        remote_path (str): remote file path on the server
+        local_path (str): local file path to copy to on the device (default: flash:)
+        server (str): hostname or address of the server (default: None)
+        protocol(str): file transfer protocol to be used (default: http)
+        vrf (str): vrf to use (optional)
+        timeout(int): timeout value in seconds, default 300
+        compact(bool): compress image option for n9k, defaults False
+        fu(obj): FileUtils object to use instead of creating one. Defaults to None.
+        use_kstack(bool): Use faster version of copy, defaults False
+                            Not supported with a file transfer protocol
+                            prompting for a username and password
+    Returns:
+        None
+
+    If the server is not specified, a HTTP server will be spawned
+    on the local system and serve the directory of the file
+    specified via remote_path and the copy operation will use http.
+
+    If the device is connected via CLI proxy (unix jump host) and the proxy has
+    'socat' installed, the transfer will be done via the proxy automatically.
     """
+    local_path = local_path or 'flash:'
+
     if not fu:
-        fu = FileUtils.from_device(device)
+        fu = FileUtils.from_device(device, protocol=protocol)
 
-    if vrf is not None:
-        server = fu.get_hostname(server, device, vrf=vrf)
-    else:
-        server = fu.get_hostname(server, device)
+    if server:
 
-    # build the source address
-    source = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
-    try:
         if vrf is not None:
+            server = fu.get_hostname(server, device, vrf=vrf)
+        else:
+            server = fu.get_hostname(server, device)
+
+        # build the source address
+        source = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
+        try:
+            if vrf is not None:
+                return fu.copyfile(source=source,
+                                   destination=local_path,
+                                   device=device,
+                                   vrf=vrf,
+                                   timeout_seconds=timeout,
+                                   compact=compact,
+                                   use_kstack=use_kstack,
+                                   protocol=protocol,
+                                   **kwargs)
+            else:
+                return fu.copyfile(source=source,
+                                   destination=local_path,
+                                   device=device,
+                                   timeout_seconds=timeout,
+                                   compact=compact,
+                                   use_kstack=use_kstack,
+                                   protocol=protocol,
+                                   **kwargs)
+        except Exception:
+            if compact or use_kstack:
+                log.info("Failed to copy with compact/use-kstack option, "
+                         "retrying again without compact/use-kstack")
+                return fu.copyfile(source=source,
+                                   destination=local_path,
+                                   device=device,
+                                   vrf=vrf,
+                                   timeout_seconds=timeout,
+                                   protocol=protocol,
+                                   **kwargs)
+            else:
+                raise
+
+    mgmt_ip, mgmt_src_ip_addresses = device.api.get_mgmt_ip_and_mgmt_src_ip_addresses()
+
+    mgmt_interface = device.api.get_mgmt_interface(mgmt_ip=mgmt_ip)
+
+    # try figure out local IP address
+    local_ip = device.api.get_local_ip()
+
+    if local_ip in mgmt_src_ip_addresses:
+        mgmt_src_ip = local_ip
+    else:
+        mgmt_src_ip = None
+
+    remote_path_parent = str(pathlib.PurePath(remote_path).parent)
+
+    with FileServer(protocol='http',
+                    address=local_ip,
+                    path=remote_path_parent) as fs:
+
+        local_port = fs.get('port')
+
+        proxy_port = None
+        # Check if we are connected via proxy device
+        proxy = device.connections[device.via].get('proxy')
+        if proxy and isinstance(proxy, str):
+            log.info('Setting up port relay via proxy')
+            proxy_dev = device.testbed.devices[proxy]
+            proxy_dev.connect()
+            proxy_port = proxy_dev.api.socat_relay(remote_ip=local_ip, remote_port=local_port)
+
+            ifconfig_output = proxy_dev.execute('ifconfig')
+            proxy_ip_addresses = re.findall(r'inet (?:addr:)?(\S+)', ifconfig_output)
+            mgmt_src_ip = None
+            for proxy_ip in proxy_ip_addresses:
+                if proxy_ip in mgmt_src_ip_addresses:
+                    mgmt_src_ip = proxy_ip
+                    break
+
+        if mgmt_src_ip and proxy_port:
+            source = 'http://{}:{}/{}'.format(mgmt_src_ip, proxy_port, remote_path)
+        elif mgmt_src_ip:
+            source = 'http://{}:{}/{}'.format(mgmt_src_ip, local_port, remote_path)
+        else:
+            log.error('Unable to determine management IP address to use to download file')
+            return False
+
+        try:
+            fu.validate_and_update_url = lambda url, *args, **kwargs: url  # override to avoid url changes
+            fu.get_server = lambda *args, **kwargs: None  # override to suppress log messages
             fu.copyfile(source=source,
                         destination=local_path,
+                        timeout_seconds=timeout,
                         device=device,
                         vrf=vrf,
-                        timeout_seconds=timeout,
-                        compact=compact,
-                        use_kstack=use_kstack,
-                        protocol=protocol,
-                        **kwargs)
-        else:
-            fu.copyfile(source=source,
-                        destination=local_path,
-                        device=device,
-                        timeout_seconds=timeout,
-                        compact=compact,
-                        use_kstack=use_kstack,
-                        protocol=protocol,
-                        **kwargs)
-    except Exception as e:
-        if compact or use_kstack:
-            log.info("Failed to copy with compact/use-kstack option, "
-                     "retrying again without compact/use-kstack")
-            fu.copyfile(source=source,
-                        destination=local_path,
-                        device=device,
-                        vrf=vrf,
-                        timeout_seconds=timeout,
-                        protocol=protocol,
-                        **kwargs)
-        else:
-            raise
+                        interface=mgmt_interface)
+
+        except Exception:
+            log.error('Failed to transfer file', exc_info=True)
+            return False
+
+    return True
 
 
 def copy_from_device(device,
-                     remote_path,
                      local_path,
-                     server,
-                     protocol,
+                     remote_path=None,
+                     server=None,
+                     protocol='http',
                      vrf=None,
                      timeout=300,
+                     timestamp=False,
                      **kwargs):
     """
-    Copy file from device to linux server (Works for sftp and ftp)
-        Args:
-            device ('Device'): Device object
-            remote_path ('str'): remote file path to copy to on the server
-            local_path ('str'): local file path to copy from the device
-            server ('str'): hostname or address of the server
-            protocol('str'): file transfer protocol to be used
-            vrf ('str'): vrf to use (optional)
-            timeout('int'): timeout value in seconds, default 300
-        Returns:
-            None
+    Copy a file from the device to the server or local system (where the script is running).
+    Local system copy uses HTTP and is only supported via telnet or SSH sessions.
+
+    Args:
+        device (Device): device object
+        local_path (str): local path from the device (path including filename)
+        remote_path (str): Path on the server (default: .) (optionally include filename)
+        server (str): Server to copy file to (optional)
+        protocol (str): Protocol to use to copy (default: http)
+        vrf (str): VRF to use for copying (default: None)
+        timeout('int'): timeout value in seconds, default 300
+        timestamp (bool): include timestamp in filename (default: False)
+
+    Returns:
+        (boolean): True if successful, False if not
+
+    If the server is not specified, below logic applies.
+
+    If no filename is specified, the filename will be based on the device hostname
+    and slugified name of the file determined from the local_path.
+
+    The local IP adddress will be determined from the spawned telnet or ssh session.
+    A temporary http server will be created and the show tech file will be sent
+    to the host where the script is running.
+
+    If the device is connected via proxy (unix jump host) and the proxy has
+    'socat' installed, the upload will be done via the proxy automatically.
+
+    Note: if the file already exists, it will be overwritten.
     """
 
-    fu = FileUtils.from_device(device)
+    fu = FileUtils.from_device(device, protocol=protocol)
 
-    # build the source address
-    destination = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
-    if vrf is not None:
-        fu.copyfile(source=local_path,
-                    destination=destination,
-                    device=device,
-                    vrf=vrf,
-                    timeout_seconds=timeout,
-                    **kwargs)
+    if server:
+
+        # build the source address
+        destination = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
+        if vrf is not None:
+            return fu.copyfile(source=local_path,
+                               destination=destination,
+                               device=device,
+                               vrf=vrf,
+                               timeout_seconds=timeout,
+                               **kwargs)
+        else:
+            return fu.copyfile(source=local_path,
+                               destination=destination,
+                               device=device,
+                               timeout_seconds=timeout,
+                               **kwargs)
+
+    remote_path = remote_path or '.'
+
+    if not pathlib.Path(remote_path).is_dir():
+        filename = pathlib.PurePath(remote_path).name
+        remote_path = pathlib.Path(remote_path).parent
     else:
-        fu.copyfile(source=local_path,
-                    destination=destination,
-                    device=device,
-                    timeout_seconds=timeout,
-                    **kwargs)
+        filename = None
+
+    mgmt_ip, mgmt_src_ip_addresses = device.api.get_mgmt_ip_and_mgmt_src_ip_addresses()
+
+    mgmt_interface = device.api.get_mgmt_interface(mgmt_ip=mgmt_ip)
+
+    # try figure out local IP address
+    local_ip = device.api.get_local_ip()
+
+    if local_ip in mgmt_src_ip_addresses:
+        mgmt_src_ip = local_ip
+    else:
+        mgmt_src_ip = None
+
+    if not filename:
+        filename = pathlib.Path(os.path.basename(local_path.split(':')[-1]))
+        filename = '{}_{}'.format(device.hostname, slugify(filename.stem) + filename.suffix)
+
+    if timestamp:
+        ts = datetime.utcnow().strftime('%Y%m%dT%H%M%S%f')[:-3]
+        filename = '{}_{}'.format(filename, ts)
+
+    with FileServer(protocol='http',
+                    address=local_ip,
+                    path=remote_path) as fs:
+
+        local_port = fs.get('port')
+
+        proxy_port = None
+        # Check if we are connected via proxy device
+        proxy = device.connections[device.via].get('proxy')
+        if proxy and isinstance(proxy, str):
+            log.info('Setting up port relay via proxy')
+            proxy_dev = device.testbed.devices[proxy]
+            proxy_dev.connect()
+            proxy_port = proxy_dev.api.socat_relay(remote_ip=local_ip, remote_port=local_port)
+
+            ifconfig_output = proxy_dev.execute('ifconfig')
+            proxy_ip_addresses = re.findall(r'inet (?:addr:)?(\S+)', ifconfig_output)
+            mgmt_src_ip = None
+            for proxy_ip in proxy_ip_addresses:
+                if proxy_ip in mgmt_src_ip_addresses:
+                    mgmt_src_ip = proxy_ip
+                    break
+
+        if mgmt_src_ip and proxy_port:
+            destination = 'http://{}:{}/{}'.format(mgmt_src_ip, proxy_port, filename)
+        elif mgmt_src_ip:
+            destination = 'http://{}:{}/{}'.format(mgmt_src_ip, local_port, filename)
+        else:
+            log.error('Unable to determine management IP address to use to upload file')
+            return False
+
+        try:
+            fu.validate_and_update_url = lambda url, *args, **kwargs: url  # override to avoid url changes
+            fu.get_server = lambda *args, **kwargs: None  # override to suppress log messages
+            fu.copyfile(source=local_path,
+                        destination=destination,
+                        timeout_seconds=timeout,
+                        device=device,
+                        vrf=vrf,
+                        interface=mgmt_interface)
+
+        except Exception:
+            log.error('Failed to transfer file', exc_info=True)
+            return False
+
+    return True
 
 
 def get_file_size_from_server(device,
@@ -980,13 +1143,12 @@ def get_file_size_from_server(device,
                                           protocol,
                                           timeout=timeout,
                                           fu_session=fu_session)
-    else:
-        with FileUtils(testbed=device.testbed) as fu:
-            return _get_file_size_from_server(server,
-                                              path,
-                                              protocol,
-                                              timeout=timeout,
-                                              fu_session=fu)
+    with FileUtils(testbed=device.testbed) as fu:
+        return _get_file_size_from_server(server,
+                                          path,
+                                          protocol,
+                                          timeout=timeout,
+                                          fu_session=fu)
 
 
 def _get_file_size_from_server(server,
@@ -1156,13 +1318,12 @@ def delete_file_on_server(testbed,
                                       protocol=protocol,
                                       timeout=timeout,
                                       fu_session=fu_session)
-    else:
-        with FileUtils(testbed=testbed) as fu:
-            return _delete_file_on_server(server,
-                                          path,
-                                          protocol=protocol,
-                                          timeout=timeout,
-                                          fu_session=fu)
+    with FileUtils(testbed=testbed) as fu:
+        return _delete_file_on_server(server,
+                                      path,
+                                      protocol=protocol,
+                                      timeout=timeout,
+                                      fu_session=fu)
 
 
 def _delete_file_on_server(server,
@@ -1194,21 +1355,18 @@ def convert_server_to_linux_device(device, server):
         server_block = fu.get_server_block(server)
         hostname = fu.get_hostname(server)
 
-    device_obj = Device(
-        name=server,
-        os='linux',
-        credentials=server_block.credentials,
-        connections={'linux': {
-            'ip': hostname,
-            'protocol': 'ssh'
-        }},
-        custom={'abstraction': {
-            'order': ['os']
-        }},
-        type='linux',
-        testbed=device.testbed)
-
-    return device_obj
+    return Device(name=server,
+                  os='linux',
+                  credentials=server_block.credentials,
+                  connections={'linux': {
+                      'ip': hostname,
+                      'protocol': 'ssh'
+                  }},
+                  custom={'abstraction': {
+                      'order': ['os']
+                  }},
+                  type='linux',
+                  testbed=device.testbed)
 
 
 def get_username_password(device, username=None, password=None, creds=None):
@@ -1438,10 +1596,7 @@ def number_to_string(number):
     # if string, try to convert to number(string)
     if isinstance(number, str):
         try:
-            if '.' in number:
-                number = float(number)
-            else:
-                number = int(number)
+            number = float(number) if '.' in number else int(number)
         except Exception:
             try:
                 number = float(number)
@@ -1450,18 +1605,17 @@ def number_to_string(number):
                     "'{number}' could not be converted to string from number.".
                     format(number=number))
 
-    if isinstance(number, int) or isinstance(number, float):
-        try:
-            ret_str = str(number)
-        except Exception:
-            raise Exception(
-                "'{number}' could not be converted to string from number.".
-                format(number=number))
-    else:
+    if not isinstance(number, (int, float)):
         raise Exception(
             "'{number}' could not be converted to string from number.".format(
                 number=number))
 
+    try:
+        ret_str = str(number)
+    except Exception:
+        raise Exception(
+            "'{number}' could not be converted to string from number.".format(
+                number=number))
     return ret_str
 
 
@@ -1500,22 +1654,17 @@ def get_list_items(name, index, index_end='', to_num=False, to_str=False):
 
     """
 
-    if isinstance(name, list):
-        try:
-            if index_end:
-                ret_item = name[index:index_end + 1]
-            else:
-                ret_item = name[index]
-        except BaseException:
-            raise Exception(
-                "Could not get the item from {name}".format(name=name))
-        if to_num:
-            ret_item = string_to_number(ret_item)
-        elif to_str:
-            ret_item = number_to_string(ret_item)
-    else:
+    if not isinstance(name, list):
         raise Exception("{name} was not list.".format(name=name))
 
+    try:
+        ret_item = name[index:index_end + 1] if index_end else name[index]
+    except BaseException:
+        raise Exception("Could not get the item from {name}".format(name=name))
+    if to_num:
+        ret_item = string_to_number(ret_item)
+    elif to_str:
+        ret_item = number_to_string(ret_item)
     return ret_item
 
 
@@ -1606,48 +1755,43 @@ def get_dict_items(name,
 
     ret_item = []
 
-    if isinstance(name, dict):
-        if contains:
-            if isinstance(contains, list):
-                name2 = {}
-                for item in contains:
-                    name2 = merge_dict(
-                        name2,
-                        Dq(name).contains(item, regex=regex).reconstruct())
-                name = name2
-            else:
-                name = Dq(name).contains(contains, regex=regex).reconstruct()
-        if isinstance(keys, list):
-            ret_item.append(keys)
-            value_lists = []
-            for key in keys:
-                value_list = []
-                dq_list = Dq(name).get_values(key)
-                if len(keys) != len(dq_list):
-                    dq_list = sorted(set(dq_list), key=dq_list.index)
-                for value in dq_list:
-                    value_list.append(value)
-                value_lists.append(value_list)
-            for i in range(len(value_list)):
-                item_row = []
-                for item_column in value_lists:
-                    item_row.append(item_column[i])
-                ret_item.append(item_row)
-        else:
-            ret_item.append([keys])
-            # get values by Dq
-            dq_list = Dq(name).get_values(keys)
-            dq_list = sorted(set(dq_list), key=dq_list.index)
-            for value in dq_list:
-                if to_num:
-                    ret_item.append([string_to_number(value)])
-                elif to_str:
-                    ret_item.append([number_to_string(value)])
-                else:
-                    ret_item.append([value])
-    else:
+    if not isinstance(name, dict):
         raise Exception("{name} was not dict.".format(name=name))
 
+    if contains:
+        if isinstance(contains, list):
+            name2 = {}
+            for item in contains:
+                name2 = merge_dict(
+                    name2,
+                    Dq(name).contains(item, regex=regex).reconstruct())
+            name = name2
+        else:
+            name = Dq(name).contains(contains, regex=regex).reconstruct()
+    if isinstance(keys, list):
+        ret_item.append(keys)
+        value_lists = []
+        for key in keys:
+            dq_list = Dq(name).get_values(key)
+            if len(keys) != len(dq_list):
+                dq_list = sorted(set(dq_list), key=dq_list.index)
+            value_list = [value for value in dq_list]
+            value_lists.append(value_list)
+        for i in range(len(value_list)):
+            item_row = [item_column[i] for item_column in value_lists]
+            ret_item.append(item_row)
+    else:
+        ret_item.append([keys])
+        # get values by Dq
+        dq_list = Dq(name).get_values(keys)
+        dq_list = sorted(set(dq_list), key=dq_list.index)
+        for value in dq_list:
+            if to_num:
+                ret_item.append([string_to_number(value)])
+            elif to_str:
+                ret_item.append([number_to_string(value)])
+            else:
+                ret_item.append([value])
     if headers is False:
         ret_item.pop(0)
     # special case. if only one item, return just one without list for ease of
@@ -1692,8 +1836,8 @@ def get_interfaces(device, link_name=None, opposite=False, phy=False, num=0):
     #                         type: ethernet
     if link_name:
         try:
-            link = device.testbed.find_links(interfaces__device__name=device.name,
-                name=link_name).pop()
+            link = device.testbed.find_links(
+                interfaces__device__name=device.name, name=link_name).pop()
         except Exception as e:
             log.error(str(e))
             return None
@@ -1882,6 +2026,7 @@ def repeat_command_save_output(device, command, command_interval,
 
     return path
 
+
 def send_email(from_email,
                to_email,
                subject='',
@@ -1914,6 +2059,7 @@ def send_email(from_email,
                      html_email, html_body)
     email.send()
 
+
 def get_tolerance_min_max(value, expected_tolerance):
     """
        Get minimum and maximum tolerance range
@@ -1940,7 +2086,8 @@ def get_tolerance_min_max(value, expected_tolerance):
     return (min_value, max_value)
 
 
-def verify_mpls_experimental_bits(pcap_location, expected_dst_address, expected_bit_value):
+def verify_mpls_experimental_bits(pcap_location, expected_dst_address,
+                                  expected_bit_value):
     """ Verify the first packet to have expected_dst_address has the
         MPLS experiement bits set to expected_bit_value
 
@@ -1973,7 +2120,8 @@ def verify_mpls_experimental_bits(pcap_location, expected_dst_address, expected_
     return False
 
 def verify_pcap_dscp_bits(pcap_location, expected_bits, position=0, expected_protocol=None,
-                          expected_dst_port_number=None, expected_src_address=None, check_all=False,
+                          expected_protocol_message_type=None, expected_dst_port_number=None,
+                          expected_src_address=None, expected_dst_address=None, check_all=True,
                           expected_src_port_number=None, port_and_or='and'):
     """Verifies the dscp bits of packets in a capture file
 
@@ -1982,8 +2130,11 @@ def verify_pcap_dscp_bits(pcap_location, expected_bits, position=0, expected_pro
         expected_bits (str/int): Expeceted bits to find / Integer to be converted to bits
         position (int, optional): Which packet to check. Defaults to 0.
         expected_protocol (str, optional): Expected protocol to verify against. Defaults to None
+        expected_protocol_message_type (str, optional): Expected protocol message type. Defaults to None
+                                                        Eg.BGPOpen, BGPUpdate, BGPKeepAlive
         expected_dst_port_number (int, optional): Expected destination port number to verify again. Defaults to None
         expected_src_address (str, optional): Expected source IP address. Defaults to None
+        expected_dst_address (str, optional): Expected destination IP address. Defaults to None
         check_all (bool, optional): Ignore position and check all packets until one is found that meets criteria. Defaults to False
         expected_src_port_number (int, optional): Expected source port number to verify again. Defaults to None
         port_and_or (str, optional): Whether to and/or the expected port number results. Defaults to 'and'
@@ -1991,7 +2142,6 @@ def verify_pcap_dscp_bits(pcap_location, expected_bits, position=0, expected_pro
     Returns:
         bool: True or False
     """
-
     # Defines whether to check for one or both port numbers
     if port_and_or.lower() == 'and':
         port_and_or_op = operator.and_
@@ -2005,19 +2155,24 @@ def verify_pcap_dscp_bits(pcap_location, expected_bits, position=0, expected_pro
         expected_bits = format(expected_bits, '#010b')[4:]
 
     # Converts CS# into bit string, IE, CS7 == '111000'
-    dscp_options_ = {'cs' + str(num): format(num, '#010b')[7:] for num in range(8)}
+    dscp_options_ = {
+        'cs' + str(num): format(num, '#010b')[7:]
+        for num in range(8)
+    }
     if expected_bits.lower() in dscp_options_:
         expected_bits = dscp_options_.get(expected_bits.lower())
 
     # Import modules from scapy
     try:
-        from scapy.all import rdpcap, IP, IPv6, UDP, Raw, TCP
+        from scapy.all import rdpcap, IP, IPv6, UDP, Raw, TCP, load_contrib
         from scapy.contrib.ospf import OSPF_Hdr, OSPF_Hello
+        from scapy.contrib.bgp import BGPKeepAlive, BGPOpen, BGPUpdate, BGP
         from scapy.contrib.rsvp import RSVP
+        load_contrib("mpls")
+
     except ImportError:
-        log.info(
-            'scapy is not installed, please install it by running: '
-            'pip install scapy')
+        log.info('scapy is not installed, please install it by running: '
+                 'pip install scapy')
         return False
 
     # If expected_protocol is an int, convert it to its respective protocol string
@@ -2025,7 +2180,9 @@ def verify_pcap_dscp_bits(pcap_location, expected_bits, position=0, expected_pro
         protocols_ = {46: 'rsvp'}
         expected_protocol = protocols_.get(expected_protocol)
         if not expected_protocol:
-            raise Exception("Supplied protocol integer is not currently available, please supply string representation instead")
+            raise Exception(
+                "Supplied protocol integer is not currently available, please supply string representation instead"
+            )
 
     pcap_object = rdpcap(pcap_location)
 
@@ -2042,7 +2199,8 @@ def verify_pcap_dscp_bits(pcap_location, expected_bits, position=0, expected_pro
 
         # Handles looking for protocols
         try:
-            if str(expected_protocol).lower() == 'ospf' and OSPF_Hello not in OSPF_Hdr(packet[Raw]):
+            if str(expected_protocol).lower(
+            ) == 'ospf' and OSPF_Hello not in OSPF_Hdr(packet[Raw]):
                 continue
         except Exception:
             pass
@@ -2056,13 +2214,19 @@ def verify_pcap_dscp_bits(pcap_location, expected_bits, position=0, expected_pro
         if str(expected_protocol).lower() == 'tcp' and TCP not in packet:
             continue
 
+        if str(expected_protocol_message_type).lower() == 'bgpkeepalive' and BGPKeepAlive not in packet:
+            continue
 
+        if str(expected_protocol_message_type).lower() == 'bgpopen' and BGPOpen not in packet:
+            continue
+
+        if str(expected_protocol_message_type).lower() == 'bgpupdate' and BGPUpdate not in packet:
+            continue
 
         # Handles port numbers
         if expected_dst_port_number and expected_src_port_number:
-            if not port_and_or_op(
-                expected_dst_port_number == packet.dport,
-                expected_src_port_number == packet.sport):
+            if not port_and_or_op(expected_dst_port_number == packet.dport,
+                                  expected_src_port_number == packet.sport):
                 continue
         else:
             if expected_dst_port_number and expected_dst_port_number != packet.dport:
@@ -2071,11 +2235,20 @@ def verify_pcap_dscp_bits(pcap_location, expected_bits, position=0, expected_pro
             if expected_src_port_number and expected_src_port_number != packet.sport:
                 continue
 
-        # Handles IPv4/IPv6 addresses
+        # Handles src IPv4/IPv6 addresses
         if expected_src_address:
-            if IP in packet and packet[IP].src != expected_src_address.split('/')[0]:
+            if IP in packet and packet[IP].src != expected_src_address.split(
+                    '/')[0]:
                 continue
-            if IPv6 in packet and packet[IPv6].src != expected_src_address.split('/')[0]:
+            if IPv6 in packet and packet[
+                    IPv6].src != expected_src_address.split('/')[0]:
+                continue
+
+        # Handles dst IPv4/IPv6 addresses
+        if expected_dst_address:
+            if IP in packet and packet[IP].dst != expected_dst_address.split('/')[0]:
+                continue
+            if IPv6 in packet and packet[IPv6].dst != expected_dst_address.split('/')[0]:
                 continue
 
         if bits_ and bits_.startswith(str(expected_bits)):
@@ -2085,6 +2258,7 @@ def verify_pcap_dscp_bits(pcap_location, expected_bits, position=0, expected_pro
             break
 
     return False
+
 
 def verify_pcap_packet_type(pcap_location, expected_type, position=0):
     """Verifies expected type of a packet
@@ -2101,9 +2275,8 @@ def verify_pcap_packet_type(pcap_location, expected_type, position=0):
     try:
         from scapy.all import rdpcap, IP
     except ImportError:
-        log.info(
-            'scapy is not installed, please install it by running: '
-            'pip install scapy')
+        log.info('scapy is not installed, please install it by running: '
+                 'pip install scapy')
         return False
 
     pcap_object = rdpcap(pcap_location)
@@ -2114,6 +2287,7 @@ def verify_pcap_packet_type(pcap_location, expected_type, position=0):
         return True
 
     return False
+
 
 def verify_pcap_packet_protocol(pcap_location, expected_protocol, position=0):
     """Verifies expected protocol of a packet
@@ -2130,9 +2304,8 @@ def verify_pcap_packet_protocol(pcap_location, expected_protocol, position=0):
     try:
         from scapy.all import rdpcap, IP
     except ImportError:
-        log.info(
-            'scapy is not installed, please install it by running: '
-            'pip install scapy')
+        log.info('scapy is not installed, please install it by running: '
+                 'pip install scapy')
         return False
 
     pcap_object = rdpcap(pcap_location)
@@ -2144,7 +2317,10 @@ def verify_pcap_packet_protocol(pcap_location, expected_protocol, position=0):
 
     return False
 
-def verify_pcap_packet_source_port(pcap_location, expected_source_port, position=0):
+
+def verify_pcap_packet_source_port(pcap_location,
+                                   expected_source_port,
+                                   position=0):
     """Verifies expected source port of a packet
 
     Args:
@@ -2159,9 +2335,8 @@ def verify_pcap_packet_source_port(pcap_location, expected_source_port, position
     try:
         from scapy.all import rdpcap, IP
     except ImportError:
-        log.info(
-            'scapy is not installed, please install it by running: '
-            'pip install scapy')
+        log.info('scapy is not installed, please install it by running: '
+                 'pip install scapy')
         return False
 
     pcap_object = rdpcap(pcap_location)
@@ -2173,7 +2348,10 @@ def verify_pcap_packet_source_port(pcap_location, expected_source_port, position
 
     return False
 
-def verify_pcap_packet_destination_port(pcap_location, expected_destination_port, position=0):
+
+def verify_pcap_packet_destination_port(pcap_location,
+                                        expected_destination_port,
+                                        position=0):
     """Verifies expected destination port of a packet
 
     Args:
@@ -2188,9 +2366,8 @@ def verify_pcap_packet_destination_port(pcap_location, expected_destination_port
     try:
         from scapy.all import rdpcap, IP
     except ImportError:
-        log.info(
-            'scapy is not installed, please install it by running: '
-            'pip install scapy')
+        log.info('scapy is not installed, please install it by running: '
+                 'pip install scapy')
         return False
 
     pcap_object = rdpcap(pcap_location)
@@ -2203,17 +2380,24 @@ def verify_pcap_packet_destination_port(pcap_location, expected_destination_port
     return False
 
 def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_dst_address=None,
+    expected_src_port_number=None, expected_dst_port_number=None, port_and_or='and',
     expected_inner_exp_bits=None, expected_outer_exp_bits=None, expected_tos=None,
-    expected_mpls_label=None, check_all=False, ipv6_flag=False):
+    expected_protocol_message_type=None, expected_mpls_label=None,
+    check_all=False, ipv6_flag=False):
     """ Verify pcap mpls packets values
 
     Args:
         pcap_location (obj): PCAP file location
         expected_src_address (str): Source IP address to search for
         expected_dst_address (str): Destination IP address to search for
+        expected_src_port_number(int): Expected source port number to verify again. Defaults to None
+        expected_dst_port_number (int): Expected destination port number to verify again. Defaults to None
+        port_and_or (str, optional): Whether to and/or the expected port number results. Defaults to 'and'
         expected_inner_exp_bits (int): Expected inner Exp bits
         expected_outer_exp_bits (int): Expected outer Exp bits
         expected_tos (int): Expected tos value
+        expected_protocol_message_type (str, optional): Expected protocol message type. Defaults to None
+                                                        Eg.BGPOpen, BGPUpdate, BGPKeepAlive
         expected_mpls_label (str): Expected mpls label
         check_all (bool): Check all matching packets
 
@@ -2221,9 +2405,18 @@ def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_d
         bool: True or False
     """
 
+    # Defines whether to check for one or both port numbers
+    if port_and_or.lower() == 'and':
+        port_and_or_op = operator.and_
+    elif port_and_or.lower() == 'or':
+        port_and_or_op = operator.or_
+    else:
+        raise Exception("port_and_or must be either 'and' or 'or'")
+
     try:
         from scapy.contrib.mpls import MPLS
         from scapy.all import rdpcap, IP, IPv6, load_contrib
+        from scapy.contrib.bgp import BGPKeepAlive, BGPOpen, BGPUpdate
         load_contrib("mpls")
     except ImportError:
         raise ImportError(
@@ -2258,6 +2451,44 @@ def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_d
                 if src != expected_src_address:
                     continue
 
+
+            # Handles port numbers
+            if expected_dst_port_number and expected_src_port_number:
+                if getattr(packet, "sport", None) and getattr(packet, "dport", None):
+                    if not port_and_or_op(
+                            expected_dst_port_number == packet.dport,
+                            expected_src_port_number == packet.sport):
+                        continue
+            else:
+                # To check the destination port. Here "continue" helps in checking all the packets with
+                # destination port, If port is matched it returns True at the end of loop. If none of the
+                # port matches, it goes out of loop and return False at the end of api.
+                if expected_dst_port_number:
+                    if getattr(packet, "dport", None):
+                        if expected_dst_port_number != packet.dport:
+                            continue
+                    else:
+                        continue
+
+                #To check the source port
+                if expected_src_port_number:
+                    if getattr(packet, "sport", None):
+                         if expected_src_port_number != packet.sport:
+                            continue
+                    else:
+                        continue
+
+
+            # Handles looking for protocol message types
+            if str(expected_protocol_message_type).lower() == 'bgpkeepalive' and BGPKeepAlive not in packet:
+                continue
+
+            if str(expected_protocol_message_type).lower() == 'bgpopen' and BGPOpen not in packet:
+                continue
+
+            if str(expected_protocol_message_type).lower() == 'bgpupdate' and BGPUpdate not in packet:
+                continue
+
             if expected_outer_exp_bits:
                 if not packet.haslayer(MPLS):
                     continue
@@ -2268,7 +2499,6 @@ def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_d
                     if check_all:
                         return False
                     continue
-
 
             if expected_mpls_label:
                 if not packet.haslayer(MPLS):
@@ -2302,7 +2532,6 @@ def verify_pcap_mpls_packet(pcap_location, expected_src_address=None, expected_d
                     if check_all:
                         return False
                     continue
-
             return True
 
     return False
@@ -2342,6 +2571,7 @@ def verify_no_mpls_header(pcap_location, expected_dst_address=None):
 
     return False
 
+
 def save_dict_to_json_file(data, filename):
     """ merge a list of Python dictionaries into one dictionary
         and save the dictionary to a JSON file
@@ -2375,13 +2605,15 @@ def save_dict_to_json_file(data, filename):
             if isinstance(dict_, dict):
                 output.update(dict_)
             else:
-                raise Exception('{dict_} is not dictionary.'.format(dict_=dict_))
+                raise Exception(
+                    '{dict_} is not dictionary.'.format(dict_=dict_))
         with open(filename, 'w+') as f:
             f.write(json.dumps(output))
     else:
         raise Exception('`data` {data} is not list.'.format(data=data))
 
     return output
+
 
 def load_dict_from_json_file(filename):
     """ load python dictionary from a JSON file
@@ -2410,9 +2642,17 @@ def load_dict_from_json_file(filename):
 
     return output
 
-def verify_pcap_packet(pcap_location, expected_src_address=None, expected_dst_address=None,
-    expected_protocol=None, expected_dst_port_number=None, expected_tos=None,
-    expected_src_port_number=None, expected_traffic_class=None, check_all=False):
+
+def verify_pcap_packet(pcap_location,
+                       expected_src_address=None,
+                       expected_dst_address=None,
+                       expected_protocol=None,
+                       expected_dst_port_number=None,
+                       expected_tos=None,
+                       expected_src_port_number=None,
+                       expected_traffic_class=None,
+                       expected_fragment_flag=None,
+                       check_all=False):
     """ Verify pcap mpls packets values
 
     Args:
@@ -2422,8 +2662,9 @@ def verify_pcap_packet(pcap_location, expected_src_address=None, expected_dst_ad
         expected_protocol (str): Expected protocol in packet
         expected_dst_port_number (int): Expected destination port number
         expected_src_port_number (int): Expected source port number
-        expected_tos (int): Expected tos value
+        expected_tos (int): Expected type of service(tos) value
         expected_traffic_class (str): Expected traffic class
+        expected_fragment_flag (bool): Expected Fragment flag
         check_all (bool): Check all matching packets
 
     Returns:
@@ -2442,50 +2683,86 @@ def verify_pcap_packet(pcap_location, expected_src_address=None, expected_dst_ad
     pcap_object = rdpcap(pcap_location)
 
     for packet in pcap_object:
-
         if IP in packet or IPv6 in packet:
-            ip_packet = packet.getlayer(IP) if IP in packet else packet.getlayer(IPv6)
+            #To check the packet is IPv4 or Ipv6
+            ip_packet = packet.getlayer(
+                IP) if IP in packet else packet.getlayer(IPv6)
 
+            #To check the expected destination address
             if expected_dst_address:
-
                 dst = ip_packet.dst
                 if dst != expected_dst_address:
                     continue
 
+            # To check the expected source address
             if expected_src_address:
                 src = ip_packet.src
                 if src != expected_src_address:
                     continue
 
-
+            #Type of Service
             if expected_tos is not None:
-                ip_tos = ip_packet.tos
-
-                if not bin(ip_tos).startswith(bin(expected_tos)):
-                    if check_all:
-                        return False
+                if getattr(ip_packet, "tos", None):
+                    ip_tos = ip_packet.tos
+                    if not bin(ip_tos).startswith(bin(expected_tos)):
+                        if check_all:
+                            return False
+                        continue
+                else:
                     continue
 
-            if expected_protocol and expected_protocol.lower() == 'tcp' and TCP not in packet:
+            #To check the expected protocols eg: tcp, udp
+            if expected_protocol and expected_protocol.lower(
+            ) == 'tcp' and TCP not in packet:
                 continue
 
-            if expected_protocol and expected_protocol.lower() == 'udp' and UDP not in packet:
+            if expected_protocol and expected_protocol.lower(
+            ) == 'udp' and UDP not in packet:
                 continue
 
-            if expected_dst_port_number and expected_dst_port_number != packet.dport:
-                continue
+            #To check the destination port. Here "continue" helps in checking all the packets with
+            #destination port, If port is matched it returns True at the end of loop. If none of the
+            #port matches, it goes out of loop and return False at the end of api.
+            if expected_dst_port_number:
+                if getattr(packet, "dport", None):
+                    if expected_dst_port_number != packet.dport:
+                        continue
+                else:
+                    continue
 
-            if expected_src_port_number and expected_src_port_number != packet.sport:
-                continue
+            #To check the source port
+            if expected_src_port_number:
+                if getattr(packet, "sport", None):
+                    if expected_src_port_number != packet.sport:
+                        continue
+                else:
+                    continue
 
+            #To check the Traffic class for IPv6
             if expected_traffic_class is not None:
-
                 if IPv6 in packet and ip_packet.tc != expected_traffic_class:
                     continue
 
+            #To check the fragmented packet
+            if expected_fragment_flag is not None:
+                if IP in packet:
+                    #For fragment packet
+                    # The More Fragments(MF) flag should be non zero.
+                    if str(ip_packet.flags
+                           ) != "MF" and ip_packet.flags.value == 0:
+                        continue
+
+                if IPv6 in packet:
+                    #Here 44 denotes the IPv6 Fragment extension header
+                    #https://www.iana.org/assignments/ipv6-parameters/ipv6-parameters.xhtml
+                    next_header = ip_packet.fields.get('nh', None)
+                    if next_header != 44:
+                        continue
+                log.info(f'The fragmented packet is {ip_packet.fields}')
             return True
 
     return False
+
 
 def verify_login_with_credentials(device,
                                   hostname,
@@ -2518,24 +2795,35 @@ def verify_login_with_credentials(device,
     op = operator.eq if not invert else operator.ne
 
     try:
-        terminal = Connection(hostname=hostname, learn_hostname=learn_hostname,
+        terminal = Connection(hostname=hostname,
+                              learn_hostname=learn_hostname,
                               start=start_cmd,
-                              credentials={'default': {'username': username, 'password': password}},
-                              os=device.os, timeout=300, prompt_recovery=True, proxy_connections=proxy_connections)
+                              credentials={
+                                  'default': {
+                                      'username': username,
+                                      'password': password
+                                  }
+                              },
+                              os=device.os,
+                              timeout=300,
+                              prompt_recovery=True,
+                              proxy_connections=proxy_connections)
         terminal.connect()
     except Exception as ex:
-        log.warning(f"Executing {start_cmd} with {username}(username) and {password}(password) "
-                    f"failed with error {ex}")
+        log.warning(
+            f"Executing {start_cmd} with {username}(username) and {password}(password) "
+            f"failed with error {ex}")
 
     return op(terminal.connected, True)
 
+
 def get_connection(device,
-                      hostname,
-                      username,
-                      password,
-                      start_cmd,
-                      learn_hostname=False,
-                      proxy_connections=None):
+                   hostname,
+                   username,
+                   password,
+                   start_cmd,
+                   learn_hostname=False,
+                   proxy_connections=None):
     """
         Get connection object.
 
@@ -2555,19 +2843,34 @@ def get_connection(device,
     """
 
     try:
-        terminal = Connection(hostname=hostname, learn_hostname=learn_hostname,
+        terminal = Connection(hostname=hostname,
+                              learn_hostname=learn_hostname,
                               start=start_cmd,
-                              credentials={'default': {'username': username, 'password': password}},
-                              os=device.os, timeout=300, prompt_recovery=True, proxy_connections=proxy_connections)
+                              credentials={
+                                  'default': {
+                                      'username': username,
+                                      'password': password
+                                  }
+                              },
+                              os=device.os,
+                              timeout=300,
+                              prompt_recovery=True,
+                              proxy_connections=proxy_connections)
     except Exception as ex:
-        log.warning(f"Get connection object for {start_cmd} with {username}(username) and {password}(password) "
-                    f"failed with error {ex}")
+        log.warning(
+            f"Get connection object for {start_cmd} with {username}(username) and {password}(password) "
+            f"failed with error {ex}")
 
     return terminal
 
 
-
-def get_devices(testbed, os=None, regex=None, regex_key='os', pick_type='all'):
+def get_devices(testbed,
+                os=None,
+                regex=None,
+                regex_key='os',
+                pick_type='all',
+                only_connected=False,
+                with_os=False):
     """ Get devices from testbed object
         Args:
             testbed (`obj`): testbed object
@@ -2586,13 +2889,22 @@ def get_devices(testbed, os=None, regex=None, regex_key='os', pick_type='all'):
                                                 return device name as string
                                   `random_order`: randomize order of devices
                                                   return device names as list
+            only_connected (`bool`) : check if device is connected and return 
+                                      only connected ones
+            with_os (`bool`): return dict with device name and os as key/value pair
 
         Raise:
             Exception
         Returns:
-            picked_devices (`list` or `str`): list of device names
+            picked_devices (`list` or `str`, or dict): list of device names
                                               device name as string in case of
                                               `first_one` or `random_one`
+                                              if with_os is True, will return dict with os
+                                              ex.)
+                                              {
+                                                  'R1_xe': 'iosxe',
+                                                  'R2_xr': 'iosxr',
+                                              }
 
         Example:
 
@@ -2641,6 +2953,15 @@ def get_devices(testbed, os=None, regex=None, regex_key='os', pick_type='all'):
         ['internet-rtr01', 'dist-rtr01', 'dist-rtr02']
 
     """
+    def _create_dict_with_os(testbed, picked_devices):
+        dev_dict = {}
+        for dev in picked_devices:
+            os = Dq(testbed.raw_config).contains_key_value('devices',
+                                                           dev).get_values(
+                                                               'os', 0)
+            dev_dict.update({dev: os})
+        return dev_dict
+
     picked_devices = None
     if os:
         if regex and regex_key:
@@ -2657,6 +2978,14 @@ def get_devices(testbed, os=None, regex=None, regex_key='os', pick_type='all'):
         else:
             picked_devices = Dq(testbed.raw_config).get_values('devices')
 
+    # check if device is connected or not from picked_devices
+    if only_connected:
+        connected_devices = [
+            dev for dev in picked_devices if testbed.devices[dev].connected
+        ]
+        # overwrite picked_devices by connected_devices
+        picked_devices = connected_devices
+
     if picked_devices:
         if pick_type == 'first_one':
             return picked_devices[0]
@@ -2664,8 +2993,12 @@ def get_devices(testbed, os=None, regex=None, regex_key='os', pick_type='all'):
             return random.choice(picked_devices)
         elif pick_type == 'random_order':
             random.shuffle(picked_devices)
+            if with_os:
+                picked_devices = _create_dict_with_os(testbed, picked_devices)
             return picked_devices
         else:
+            if with_os:
+                picked_devices = _create_dict_with_os(testbed, picked_devices)
             return picked_devices
     else:
         raise Exception("Couldn't find any device from testbed object.")
@@ -2718,7 +3051,7 @@ def get_interface_from_yaml(local, remote, value, testbed_topology, **kwargs):
     # if value is an int
     if isinstance(value, int) or value.isnumeric():
         try:
-            value =  common_links[int(value)]
+            value = common_links[int(value)]
         except Exception as e:
             raise Exception("Link '{n}' between '{l}' and "
                             "'{r}' does not exists; there is only '{m}' links "
@@ -2728,10 +3061,13 @@ def get_interface_from_yaml(local, remote, value, testbed_topology, **kwargs):
                                                   m=len(common_links)))
 
     # Get interface related to it
-    interface = data.contains(value).contains(local.strip()).get_values('interfaces', 0)
+    interface = data.contains(value).contains(local.strip()).get_values(
+        'interfaces', 0)
     if isinstance(interface, list):
-        raise Exception("Could not find an interface for device '{d}'".format(d=local))
+        raise Exception(
+            "Could not find an interface for device '{d}'".format(d=local))
     return interface
+
 
 def get_device_connections_info(device):
     """ Get connection information of a device from testbed file.
@@ -2742,6 +3078,7 @@ def get_device_connections_info(device):
     """
 
     return device.connections
+
 
 def get_running_config_all(device):
     """ Return raw running configuration
@@ -2761,11 +3098,12 @@ def get_running_config_all(device):
     log.info("Device doesn't have 'show running-config all'...")
     return device.execute("show running-config")
 
+
 def verify_pcap_as_path(
-        pcap_location,
-        layer,
-        expected_as_path,
-    ):
+    pcap_location,
+    layer,
+    expected_as_path,
+):
     """ Verify pcap AS path values
     Args:
         pcap_location (obj): PCAP file location
@@ -2781,7 +3119,7 @@ def verify_pcap_as_path(
         from scapy.contrib.bgp import BGPPathAttr, BGP
     except ImportError:
         log.info('scapy is not installed, please install it by running: '
-            'pip install scapy')
+                 'pip install scapy')
         return False
 
     pcap_packets = rdpcap(pcap_location)
@@ -2793,10 +3131,12 @@ def verify_pcap_as_path(
         if ':' in layer:
             try:
                 packet_26 = IPv6(packet.load[26:])
-                log.info(f"IPv6(packet.load[26:]) is \n {packet_26.show()}\n\n")
+                log.info(
+                    f"IPv6(packet.load[26:]) is \n {packet_26.show()}\n\n")
                 try:
                     packet_36 = IPv6(packet.load[36:])
-                    log.info(f"IPv6(packet.load[36:]) is \n {packet_36.show()}\n\n")
+                    log.info(
+                        f"IPv6(packet.load[36:]) is \n {packet_36.show()}\n\n")
                 except Exception:
                     continue
             except IndexError:
@@ -2827,8 +3167,11 @@ def verify_pcap_as_path(
                     path_attr_lists_26 = packet_26.path_attr
                     for path_attr_item in path_attr_lists_26:
                         try:
-                            if path_attr_item.attribute.nlri[0].prefix == layer:
-                                if (expected_as_path).to_bytes(4, byteorder='big') in pcap_packets[i].load:
+                            if path_attr_item.attribute.nlri[
+                                    0].prefix == layer:
+                                if (expected_as_path).to_bytes(
+                                        4, byteorder='big'
+                                ) in pcap_packets[i].load:
                                     return True
                         except AttributeError:
                             continue
@@ -2836,16 +3179,22 @@ def verify_pcap_as_path(
                     path_attr_lists_36 = packet_36.path_attr
                     for path_attr_item in path_attr_lists_36:
                         try:
-                            if path_attr_item.attribute.nlri[0].prefix == layer:
-                                if (expected_as_path).to_bytes(4, byteorder='big') in pcap_packets[i].load:
+                            if path_attr_item.attribute.nlri[
+                                    0].prefix == layer:
+                                if (expected_as_path).to_bytes(
+                                        4, byteorder='big'
+                                ) in pcap_packets[i].load:
                                     return True
                         except AttributeError:
                             continue
                 # IPv4
                 else:
                     if packet_26.nlri[0].prefix or packet_36.nlri[0].prefix:
-                        if packet_26.nlri[0].prefix == layer or packet_36.nlri[0].prefix == layer:
-                            if (expected_as_path).to_bytes(4, byteorder='big') in pcap_packets[i].load:
+                        if packet_26.nlri[0].prefix == layer or packet_36.nlri[
+                                0].prefix == layer:
+                            if (expected_as_path).to_bytes(
+                                    4,
+                                    byteorder='big') in pcap_packets[i].load:
                                 return True
 
             except AttributeError:
@@ -2855,11 +3204,11 @@ def verify_pcap_as_path(
 
 
 def verify_pcap_capability(
-        pcap_location,
-        source,
-        destination,
-        expected_capability,
-    ):
+    pcap_location,
+    source,
+    destination,
+    expected_capability,
+):
     """ Verify pcap AS path values
     Args:
         pcap_location (obj): PCAP file location
@@ -2873,47 +3222,80 @@ def verify_pcap_capability(
     # verify code or name
     # reference: https://www.iana.org/assignments/capability-codes/capability-codes.xhtml
     capabilities_dict = {
-        '0': 'Reserved',
-        '1': 'Multiprotocol Extensions for BGP-4',
-        '10-63': 'Unassigned',
-        '128': 'Prestandard Route Refresh (deprecated)',
-        '129': 'Prestandard Outbound Route Filtering (deprecated), prestandard '
-                'Routing Policy Distribution (deprecated)',
-        '130': 'Prestandard Outbound Route Filtering (deprecated)',
-        '131': 'Prestandard Multisession (deprecated)',
-        '132-183': 'Unassigned',
-        '184': 'Prestandard FQDN (deprecated)',
-        '185': 'Prestandard OPERATIONAL message (deprecated)',
-        '186-238': 'Unassigned',
-        '2': 'Route Refresh Capability for BGP-4',
-        '239-254': 'Reserved for Experimental Use',
-        '255': 'Reserved',
-        '3': 'Outbound Route Filtering Capability',
-        '4': 'Multiple routes to a destination capability (deprecated)',
-        '5': 'Extended Next Hop Encoding',
-        '6': 'BGP Extended Message',
-        '64': 'Graceful Restart Capability',
-        '65': 'Support for 4-octet AS number capability',
-        '66': 'Deprecated (2003-03-06)',
-        '67': 'Support for Dynamic Capability (capability specific)',
-        '68': 'Multisession BGP Capability',
-        '69': 'ADD-PATH Capability',
-        '7': 'BGPsec Capability',
-        '70': 'Enhanced Route Refresh Capability',
-        '71': 'Long-Lived Graceful Restart (LLGR) Capability',
-        '72': 'Routing Policy Distribution',
-        '73': 'FQDN Capability',
-        '74-127': 'Unassigned',
-        '8': 'Multiple Labels Capability',
-        '9': 'BGP Role (TEMPORARY - registered 2018-03-29, extension registered '
-            '2020-03-20, expires 2021-03-29)'}
+        '0':
+        'Reserved',
+        '1':
+        'Multiprotocol Extensions for BGP-4',
+        '10-63':
+        'Unassigned',
+        '128':
+        'Prestandard Route Refresh (deprecated)',
+        '129':
+        'Prestandard Outbound Route Filtering (deprecated), prestandard '
+        'Routing Policy Distribution (deprecated)',
+        '130':
+        'Prestandard Outbound Route Filtering (deprecated)',
+        '131':
+        'Prestandard Multisession (deprecated)',
+        '132-183':
+        'Unassigned',
+        '184':
+        'Prestandard FQDN (deprecated)',
+        '185':
+        'Prestandard OPERATIONAL message (deprecated)',
+        '186-238':
+        'Unassigned',
+        '2':
+        'Route Refresh Capability for BGP-4',
+        '239-254':
+        'Reserved for Experimental Use',
+        '255':
+        'Reserved',
+        '3':
+        'Outbound Route Filtering Capability',
+        '4':
+        'Multiple routes to a destination capability (deprecated)',
+        '5':
+        'Extended Next Hop Encoding',
+        '6':
+        'BGP Extended Message',
+        '64':
+        'Graceful Restart Capability',
+        '65':
+        'Support for 4-octet AS number capability',
+        '66':
+        'Deprecated (2003-03-06)',
+        '67':
+        'Support for Dynamic Capability (capability specific)',
+        '68':
+        'Multisession BGP Capability',
+        '69':
+        'ADD-PATH Capability',
+        '7':
+        'BGPsec Capability',
+        '70':
+        'Enhanced Route Refresh Capability',
+        '71':
+        'Long-Lived Graceful Restart (LLGR) Capability',
+        '72':
+        'Routing Policy Distribution',
+        '73':
+        'FQDN Capability',
+        '74-127':
+        'Unassigned',
+        '8':
+        'Multiple Labels Capability',
+        '9':
+        'BGP Role (TEMPORARY - registered 2018-03-29, extension registered '
+        '2020-03-20, expires 2021-03-29)'
+    }
 
     try:
         from scapy.all import rdpcap, IP, IPv6
         from scapy.contrib.bgp import BGPPathAttr, BGP
     except ImportError:
         log.info('scapy is not installed, please install it by running: '
-            'pip install scapy')
+                 'pip install scapy')
         return False
 
     # read pcap file
@@ -2940,10 +3322,12 @@ def verify_pcap_capability(
         if ':' in source:
             try:
                 packet_26 = IPv6(packet.load[26:])
-                log.info(f"IPv6(packet.load[26:]) is \n {packet_26.show()}\n\n")
+                log.info(
+                    f"IPv6(packet.load[26:]) is \n {packet_26.show()}\n\n")
                 try:
                     packet_36 = IPv6(packet.load[36:])
-                    log.info(f"IPv6(packet.load[36:]) is \n {packet_36.show()}\n\n")
+                    log.info(
+                        f"IPv6(packet.load[36:]) is \n {packet_36.show()}\n\n")
                 except Exception:
                     continue
             except IndexError:
@@ -2959,17 +3343,20 @@ def verify_pcap_capability(
             # IPv6
             # (Pdb) IPv6(pcap_packets[449].load[36:]).show()
             if ':' in source:
-                opt_params_lst = packet_26[IPv6].opt_params or packet_36[IPv6].opt_params
+                opt_params_lst = packet_26[IPv6].opt_params or packet_36[
+                    IPv6].opt_params
 
             # IPv4:
             else:
-                opt_params_lst = packet_26[IP].opt_params or packet_36[IP].opt_params
+                opt_params_lst = packet_26[IP].opt_params or packet_36[
+                    IP].opt_params
 
             for opt_param in opt_params_lst:
 
                 # Given capability code, find its context
                 if type(expected_capability) == int:
-                    expected_capability = capabilities_dict[str(expected_capability)]
+                    expected_capability = capabilities_dict[str(
+                        expected_capability)]
 
                 # packet_26[IP].opt_params[0].param_value.name
                 # -> 'Multiprotocol Extensions for BGP-4'
@@ -2980,6 +3367,7 @@ def verify_pcap_capability(
             continue
 
     return False
+
 
 def get_connected_alias(device):
     """ Get connected alias from device object
@@ -3050,7 +3438,12 @@ def verify_keywords_in_output(device,
 
     return False
 
-def get_structure_output(device, command=None, exclude=['!'], negative_keyword='no', output=None):
+
+def get_structure_output(device,
+                         command=None,
+                         exclude=['!'],
+                         negative_keyword='no',
+                         output=None):
     """
     Get structure output from any test data. Data will be divided by space
     and generate structure data.
@@ -3233,6 +3626,7 @@ def get_structure_output(device, command=None, exclude=['!'], negative_keyword='
 
     return ld_final.reconstruct()
 
+
 def arithmetic_operations(operation=None, operands=None):
     """
     Perform arithmetic operations on operands.
@@ -3252,7 +3646,7 @@ def arithmetic_operations(operation=None, operands=None):
     Raises:
         N/A
     """
-    # debug 
+    # debug
     log.debug("operation: {}".format(operation))
     log.debug("operands: {}".format(operands))
 
@@ -3279,7 +3673,7 @@ def arithmetic_operations(operation=None, operands=None):
             result = operands[0] + operands[1]
         elif operation == '-':
             # subtraction
-            result = operands[0] - operands[1] 
+            result = operands[0] - operands[1]
         elif operation == '*':
             # multiplication
             result = operands[0] * operands[1]
@@ -3290,7 +3684,7 @@ def arithmetic_operations(operation=None, operands=None):
             log.error("Invalid argument: {}".format(operation))
             log.error("Please check 'operation' argument.")
             result = None
-        
+
     except (ValueError, ZeroDivisionError, TypeError, IndexError) as e:
         # Calculation error
         log.error("Calculation error has occurred : {}".format(e))
@@ -3304,10 +3698,8 @@ def arithmetic_operations(operation=None, operands=None):
         log.debug("Calculation result: {}".format(result))
         return result
 
-def get_single_interface(device,
-                         link_name=None,
-                         opposite=False,
-                         phy=False):
+
+def get_single_interface(device, link_name=None, opposite=False, phy=False):
     """"
     Returns the single interface and fails if multiple interfaces
     are found.
@@ -3352,6 +3744,7 @@ def get_single_interface(device,
 
     return interface_name
 
+
 def get_local_ip(device, alias=None):
     ''' Get the local IP address that is used to connect to devices.
 
@@ -3372,9 +3765,10 @@ def get_local_ip(device, alias=None):
     conns = p.connections()
     if conns:
         conn = conns[0]
-        local_ip = conn.laddr.ip
+        local_ip = conn.laddr[0]
         log.info('Local IP: {}'.format(local_ip))
         return local_ip
+
 
 def get_bool(value=None):
     ''' Get boolean result against given value
@@ -3393,6 +3787,7 @@ def get_bool(value=None):
     '''
     return bool(value)
 
+
 def get_testcase_name(runtime=runtime):
     ''' Get testcase name from runtime
 
@@ -3403,12 +3798,14 @@ def get_testcase_name(runtime=runtime):
         str: testcase name
     '''
     try:
-        testcase_name = runtime.reporter.client.get_section()['idlist'][1].split('.')[0]
+        testcase_name = runtime.reporter.client.get_section(
+        )['idlist'][1].split('.')[0]
     except Exception:
         testcase_name = ''
         log.error("Couldn't get testcase name from easypy runtime object.")
 
     return testcase_name
+
 
 def get_list_length(target_list):
     """"
@@ -3427,7 +3824,7 @@ def get_list_length(target_list):
     if type(target_list) != list:
         log.error("{} is not list".format(target_list))
         return None
-        
+
     try:
         list_length = len(target_list)
     except AttributeError:
@@ -3437,3 +3834,153 @@ def get_list_length(target_list):
     log.info("lentgh of {} is {}".format(target_list, list_length))
 
     return list_length
+
+
+def web_interaction(subject, message, section_name, **kwargs):
+    """
+    Returns result of user choice after changes in physical world.
+
+    Use-case:
+
+    There are rare cases when a result must be manually determined by a human.
+    Such as a test that relies upon changes that happen in the physical world.
+    For these cases this utility that allows a user to decide the result.
+
+    This api web_interaction can pause test execution and notify a user via email
+    that input is required. This email has a link to a webpage hosted by WebInteraction
+    that has a form for the user to submit to give a result.
+
+    Args:
+        subject (str) : A brief description of the interaction.
+        message (str) : This is the message that describes to the
+                        user what the test is and how they determine
+                        the result.
+        section_name (ref) : Reference to section or step that called interaction.
+                        This provides the name of the test to the user,
+                        as well as the APIs to return a test result.
+
+        [optional args]
+        from_address(str): The email address that the notification will be sent from.
+                           Defaults to the user login.
+        to_address(str): The email address that the notification will be sent to.
+                         Defaults to the user login.
+
+    Returns:
+        result (str)
+        Eg. aborted, blocked, errored, failed, passed, passx, skipped
+
+    Note:
+        You can apply additional arguments to webinteraction api.
+        List of arguments for the api can be found at the link below:
+        https://pubhub.devnetcloud.com/media/pyats/docs/aetest/results.html?highlight=webinteraction#interaction-results
+        In this api, section_name is equal to section in the above docs.
+
+    Blitz example:
+
+        - api:
+              function: web_interaction
+              common_api: True
+              alias: To wait, till manual work is done.
+              arguments:
+                subject: "Testing web interaction api"
+                message: "Message for the user about how to assess this test"
+                section_name: "%VARIABLES{section}"  #section ref can be passed like this.
+                from_address: "example@cisco.com"
+              result_status: "passx"
+              include:
+                  - "passx"
+    """
+
+    #To get the WebInteraction object
+    web_int = WebInteraction(subject=subject,
+                             message=message,
+                             section=section_name,
+                             **kwargs)
+
+    # Set up any prerequisites for the interaction loop
+    web_int._setup_interact()
+
+    if not web_int.email_disabled:
+        # Send an email notification
+        web_int._send_email()
+
+    # Instantiate empty results from interaction
+    results = None
+
+    # Calculate timeout target
+    timeout_target = time.time() + web_int.timeout
+
+    while not results:
+        # Attempt to get results from interaction
+        results = web_int._check_interact()
+
+        # Check if timeout has passed. If timeout is 'inf', this will always
+        # return false
+        if time.time() > timeout_target:
+            break
+
+    #When Timelimit is exceeded the result is set to blocked.
+    if web_int.timeout and results is None:
+        results = {'choice': 'blocked'}
+        log.warning('The time limit {} exceeded for the '
+                    'web_interation api '.format(web_int.timeout))
+
+    # Teardown any allocated resources
+    web_int._teardown_interact()
+
+    return results.get('choice', None)
+
+
+def verify_pcap_ldp_packet(pcap_location,
+                           expected_ldp_hello=None,
+                           expected_ldp_keepalive=None):
+    """Verifies expected type of a packet
+    Args:
+        pcap_location (str): Location of pcap file
+        expected_ldp_hello (bool): Expected LDPHello
+        expected_ldp_keepalive (bool): Expected LDPKeepAlive
+    Returns:
+        bool: True or False
+    """
+
+    try:
+        from scapy.all import rdpcap, IP
+        from scapy.contrib.ldp import LDP, LDPKeepAlive, LDPHello
+    except ImportError:
+        log.warning('scapy is not installed, please install it by running: '
+                    'pip install scapy')
+        return False
+
+    # To check the params are given
+    if not expected_ldp_hello and not expected_ldp_keepalive:
+        log.warning(
+            'expected_ldp_hello or expected_ldp_keepalive must be True')
+        return False
+
+    #Load pcap file
+    pcap_object = rdpcap(pcap_location)
+
+    for packet in pcap_object:
+
+        #Check LDP layer in packet
+        if LDP in packet:
+            ldp_packet = packet.getlayer(LDP)
+            ip_packet = packet.getlayer(IP)
+
+            #To check the expected LDPHello packet
+            if expected_ldp_hello:
+                if LDPHello not in ldp_packet:
+                    continue
+
+            #To check the expected LDPKeepAlive packet
+            if expected_ldp_keepalive:
+                if LDPKeepAlive not in ldp_packet:
+                    continue
+
+            log.info(f'The matched LDP packet is {ldp_packet.fields}')
+            log.info(f'The IP layer of matched packet is {ip_packet.fields}')
+            return True
+
+    log.warning(
+        "No matching packets found in the Pcap file {}".format(pcap_location))
+    return False

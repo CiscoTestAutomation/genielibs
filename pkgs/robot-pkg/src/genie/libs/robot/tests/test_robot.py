@@ -30,3 +30,8 @@ class TestGenieRobot(unittest.TestCase):
                 output += line
 
         self.assertEqual(p.returncode, 0)
+
+    def test_libdoc_generation(self):
+        from robot.libdoc import LibraryDocumentation
+        lib = LibraryDocumentation('genie.libs.robot.GenieRobot')
+        assert len(lib.keywords)

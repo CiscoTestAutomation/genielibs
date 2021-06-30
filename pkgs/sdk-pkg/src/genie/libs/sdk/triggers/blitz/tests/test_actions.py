@@ -327,6 +327,7 @@ class TestActions(unittest.TestCase):
         Blitz.parameters['testbed'] = self.testbed
         self.blitz_obj = Blitz()
         self.dev = Device( name='PE1', os='iosxe')
+        setattr(self.dev, 'ssh', Mock())
         self.dev.custom = {'abstraction': {'order': ['os']}}
         self.blitz_obj.parameters['test_sections'] = [{'section1': [{'action': {'command': 'a'}}]}]
         sections = self.blitz_obj._discover()
@@ -334,14 +335,25 @@ class TestActions(unittest.TestCase):
                        'section': sections[0],
                        'name': ''}
 
-
     def test_configure(self):
 
         self.dev.configure = Mock(side_effect=['passing cmd'])
-        steps =  Steps()
+        steps = Steps()
         self.kwargs.update({'device': self.dev,
                             'steps': steps,
                             'command': 'conf t'})
+
+        configure(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+
+    def test_configure_with_connection_alias(self):
+
+        self.dev.configure = Mock(side_effect=['passing cmd'])
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'conf t',
+                            'connection_alias': 'ssh'})
 
         configure(**self.kwargs)
         self.assertEqual(steps.result, Passed)
@@ -409,6 +421,20 @@ class TestActions(unittest.TestCase):
         configure_dual(**self.kwargs)
         self.assertEqual(steps.result, Failed)
 
+    def test_configure_dual_with_connection_alias(self):
+
+        self.dev.configure_dual = Mock(side_effect=Exception)
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'action': 'configure_dual',
+                            'command': 'conf t\ncommit',
+                            'connection_alias': 'ssh'
+                            })
+
+        configure_dual(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+
     def test_parse(self):
 
         self.dev.parse = Mock(side_effect = [self.parser_output])
@@ -416,6 +442,32 @@ class TestActions(unittest.TestCase):
         self.kwargs.update({'device': self.dev,
                             'steps': steps,
                             'command': 'cmd'})
+
+        parse(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+
+    def test_parse_with_connection_alias(self):
+
+        self.dev.parse = Mock(side_effect = [self.parser_output])
+        steps =  Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'cmd',
+                            'connection_alias': 'ssh',
+                            })
+
+        parse(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+
+    def test_parse_with_context(self):
+
+        self.dev.parse = Mock(side_effect = [self.parser_output])
+        steps =  Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'cmd',
+                            'context': 'ssh',
+                            })
 
         parse(**self.kwargs)
         self.assertEqual(steps.result, Passed)
@@ -545,6 +597,18 @@ class TestActions(unittest.TestCase):
       execute(**self.kwargs)
       self.assertEqual(steps.result, Passed)
 
+    def test_execute_with_connection_alias(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_output])
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'cmd',
+                            'connection_alias': 'ssh'})
+
+        execute(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+
     def test_execute_fail(self):
 
       self.dev.execute = Mock(side_effect = Exception)
@@ -615,6 +679,41 @@ class TestActions(unittest.TestCase):
 
       execute(**self.kwargs)
       self.assertEqual(steps.result, Passed)
+
+    def test_execute_with_result_status(self):
+        self.dev.execute = Mock(side_effect=[self.execute_output])
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'cmd',
+                            'result_status': 'passx'})
+
+        execute(**self.kwargs)
+        self.assertEqual(steps.result, Passx)
+
+    def test_execute_fail_with_result_status(self):
+        self.dev.execute = Mock(side_effect=Exception)
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'cmd',
+                            'result_status': 'passx'})
+
+        execute(**self.kwargs)
+        self.assertEqual(steps.result, Failed)
+
+    def test_execute_exclude_with_result_status(self):
+
+        self.dev.execute = Mock(side_effect=[self.execute_output])
+        steps = Steps()
+        self.kwargs.update({'device': self.dev,
+                            'steps': steps,
+                            'command': 'cmd',
+                            'exclude': ['TESTSTSTS'],
+                            'result_status': 'passx'})
+
+        execute(**self.kwargs)
+        self.assertEqual(steps.result, Passx)
 
     def test_learn(self):
 

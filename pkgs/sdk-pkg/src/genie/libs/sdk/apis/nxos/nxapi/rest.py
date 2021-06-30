@@ -1,13 +1,15 @@
 import logging
 import json
-import copy
+import time
 
 # Logger
 log = logging.getLogger(__name__)
 
+
 def nxapi_method_nxapi_rest(device, action, commands='', input_type='cli',
                             dn='/api/mo/sys.json', rest_method='POST',
-                            timeout=30, alias='cli', expected_return_code=None):
+                            timeout=30, alias='cli', expected_return_code=None,
+                            retries=3, retry_wait=10, **kwargs):
     """ NX-API Method: NXAPI-REST (DME)
 
         Args:
@@ -34,6 +36,13 @@ def nxapi_method_nxapi_rest(device, action, commands='', input_type='cli',
 
             # Optional
             expected_return_code (str): used for negative testing.
+
+            # Optional
+            retries (int): number of retries (default: 3)
+
+            # Optional
+            retry_wait (int): number of seconds to wait before retrying
+                              (default: 10)
     """
     try:
         rest = getattr(device, alias)
@@ -59,7 +68,7 @@ def nxapi_method_nxapi_rest(device, action, commands='', input_type='cli',
         rest_method = 'post'
         # overriding user input as all convert
         # actions get sent to /ins
-        dn='/ins'
+        dn = '/ins'
 
         if input_type == 'cli':
             method = 'cli_rest'
@@ -84,11 +93,11 @@ def nxapi_method_nxapi_rest(device, action, commands='', input_type='cli',
         raise Exception("'{action}' is an invalid action for NXAPI-REST "
                         "(DME)".format(action=action))
 
-    kwargs = {
+    kwargs.update({
         'dn': dn,
         'timeout': timeout,
         'headers': {'Content-Type': 'application/json-rpc'}
-    }
+    })
 
     if rest_method == 'post':
         kwargs.update({'payload': payload})
@@ -97,13 +106,22 @@ def nxapi_method_nxapi_rest(device, action, commands='', input_type='cli',
         kwargs.update({'expected_return_code': expected_return_code})
 
     # send rest request
-    try:
-        output = getattr(rest, rest_method)(**kwargs)
-    except AttributeError as e:
-        raise Exception("The rest_method '{rest_method}' does not exist "
-                        "in the connector with the alias '{alias}'."
-                        .format(rest_method=rest_method,
-                                alias=alias)) from e
+    for _ in range(retries):
+        try:
+            output = getattr(rest, rest_method)(**kwargs)
+            break
+        except AttributeError as e:
+            raise Exception("The rest_method '{rest_method}' does not exist "
+                            "in the connector with the alias '{alias}'."
+                            .format(rest_method=rest_method,
+                                    alias=alias)) from e
+        except Exception:
+            log.warning('Request {} to {} failed. '
+                        'Waiting {} seconds before retrying\n'.
+                        format(method, dn, retry_wait), exc_info=True)
+            time.sleep(retry_wait)
+    else:
+        raise ConnectionError('Request {} to {} failed'.format(method, dn))
 
     # Return as is if the method is get
     if rest_method == 'get':
@@ -125,6 +143,7 @@ def nxapi_method_nxapi_rest(device, action, commands='', input_type='cli',
     # returning the message rather than the entire payload because
     # this is what the gui does
     return output
+
 
 def nxapi_method_nxapi_cli(device, action, commands, message_format='json_rpc',
               command_type='cli', error_action=None, chunk=False,
@@ -215,6 +234,7 @@ def nxapi_method_nxapi_cli(device, action, commands, message_format='json_rpc',
         raise Exception("The rest_method 'post' does not exist "
                         "in the connector with the alias '{alias}'."
                         .format(alias=alias)) from e
+
 
 def nxapi_method_restconf(device, action, commands,
                           dn='restconf/data/Cisco-NX-OS-device:System/',
@@ -333,6 +353,7 @@ def nxapi_method_restconf(device, action, commands,
         output = ''.join(lines)
 
     return output
+
 
 def _nxapi_payload_builder(
         commands, payload_format, method, error_action=None,

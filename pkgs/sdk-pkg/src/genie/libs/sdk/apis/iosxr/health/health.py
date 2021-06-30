@@ -1,16 +1,13 @@
-'''Common get info functions for platform'''
+'''Common get info functions for iosxr'''
 # Python
-import re
 import logging
-import os
 
 # pyATS
 from pyats.easypy import runtime
 
 # Genie
-from genie.utils import Dq
-from genie.metaparser.util.exceptions import SchemaEmptyParserError,\
-                                             SchemaMissingKeyError
+from genie.metaparser.util.exceptions import (SchemaEmptyParserError,
+                                              InvalidCommandError)
 
 log = logging.getLogger(__name__)
 
@@ -111,6 +108,7 @@ def health_cpu(device,
 
     return cpu_load_dict
 
+
 def health_memory(device,
                   command='show processes memory detail',
                   processes=None,
@@ -157,9 +155,9 @@ def health_memory(device,
         return None
 
     # get all `phy_tot` and calculate the total
-    physical_total = 0
-    for phy_tot in parsed.q.get_values('phy_tot'):
-        physical_total += device.api.unit_convert(phy_tot)
+    physical_total = sum(
+        device.api.unit_convert(phy_tot)
+        for phy_tot in parsed.q.get_values('phy_tot'))
 
     all_processes = parsed.q.get_values('process')
     if isinstance(processes, list):
@@ -236,7 +234,7 @@ def health_memory(device,
 def health_logging(device,
                    command='show logging',
                    files=None,
-                   keywords=None,
+                   keywords=['traceback', 'Traceback', 'TRACEBACK'],
                    output=None,
                    num_of_logs=False,
                    health=True):
@@ -247,6 +245,7 @@ def health_logging(device,
             command   (`str`): N/A
             files    (`list`): Not applicable on this platform
             keywords (`list`): List of keywords to match
+                               Default to ['traceback', 'Traceback', 'TRACEBACK']
             output    (`str`): Output of show command
             num_of_logs (`bool`): flag to return number of log messages
                                   Default to False
@@ -299,15 +298,16 @@ def health_logging(device,
 
 
 def health_core(device,
-                default_dir,
+                default_dir=['/misc/scratch/core', 'harddisk:/dumper/'],
                 output=None,
-                keyword=['.x86.'],
+                keyword=['.x86.', '.core.'],
                 num_of_cores=False,
                 decode=False,
                 decode_timeout=300,
                 remote_device=None,
                 remote_path=None,
                 remote_via=None,
+                protocol='scp',
                 vrf=None,
                 archive=False,
                 delete_core=False,
@@ -329,6 +329,7 @@ def health_core(device,
                                  Default to None
             remote_via (`str`) : specify connection to get ip
                                  Default to None
+            protocol (`str`): protocol for copy. Default to scp
             vrf (`str`): use vrf where scp find route to remote device
                                  Default to None
             archive     (`bool`): flag to save the decode output as file in archive
@@ -391,17 +392,22 @@ def health_core(device,
     dirs.extend(stby_dirs)
 
     # convert from device name to device object
+    fileutils = False
     if remote_device:
-        if remote_device in device.testbed.devices:
+        if remote_device in device.testbed.testbed.servers:
+            fileutils = True
+        elif remote_device in device.testbed.devices:
             remote_device = device.testbed.devices[remote_device]
         else:
             raise Exception(
                 'remote device {rd} was not found.'.format(rd=remote_device))
 
         # check connected_alias for remote_device
-        remote_device_alias = [
-            i for i in remote_device.api.get_connected_alias().keys()
-        ]
+        if not fileutils:
+            remote_device_alias = [
+                device_alias for device_alias in
+                remote_device.api.get_connected_alias().keys()
+            ]
 
     for storage in dirs:
         corefiles = []
@@ -424,12 +430,14 @@ def health_core(device,
         except SchemaEmptyParserError:
             # empty is possible. so pass instead of exception
             pass
-
+        except InvalidCommandError as e:
+            if health != True:
+                raise InvalidCommandError(e)
         if parsed:
             location_alias = parsed.q.get_values('dir_name', 0)
             for file in parsed.q.get_values('files'):
                 for kw in keyword:
-                    if kw in file:
+                    if kw in file and file not in all_corefiles:
                         # corefiles in current storage
                         log.debug('core file {f} is found'.format(f=file))
                         corefiles.append(file)
@@ -443,23 +451,49 @@ def health_core(device,
         if remote_device:
             for corefile in corefiles:
                 copy_success = False
-                log.info('Copying {s} to remote device {rd}'.format(
-                    s=corefile, rd=remote_device.name))
+                if fileutils:
+                    log.info('Copying {s} to remote device {rd} via FileUtils'.
+                             format(s=corefile, rd=remote_device))
+                else:
+                    log.info(
+                        'Copying {s} to remote device {rd} via API'.format(
+                            s=corefile, rd=remote_device.name))
 
-                if not remote_device or not remote_path:
+                if not fileutils and (not remote_device or not remote_path):
                     log.warn(
                         '`remote_device` or/and `remote_path` are missing')
                 local_path = "{la}/{fn}".format(la=location_alias, fn=corefile)
-                if (remote_device and remote_path) and not device.api.scp(local_path=local_path,
-                                      remote_path=remote_path,
-                                      remote_device=remote_device.name,
-                                      remote_via=remote_via,
-                                      vrf=vrf):
-                    log.warn(
-                        'SCP has failed to copy core file to remote device {rd}'
-                        .format(rd=remote_device.name))
-                else:
-                    copy_success = True
+                # execute by FileUtils
+                if fileutils:
+                    # import remote_pdb; remote_pdb.set_trace()
+                    try:
+                        device.api.copy_from_device(protocol=protocol,
+                                                    server=remote_device,
+                                                    remote_path=remote_path,
+                                                    local_path=local_path,
+                                                    vrf=vrf)
+                        copy_success = True
+                    except Exception as e:
+                        log.warn(
+                            '{p} has failed to copy core file to remote device {rd}: {e}'
+                            .format(p=protocol, rd=remote_device, e=e))
+                # execute by API
+                if not fileutils and (remote_device and remote_path):
+                    if protocol == 'scp':
+                        if not device.api.scp(local_path=local_path,
+                                              remote_path=remote_path,
+                                              remote_device=remote_device.name,
+                                              remote_via=remote_via,
+                                              vrf=vrf):
+                            log.warn(
+                                'SCP has failed to copy core file to remote device {rd}'
+                                .format(rd=remote_device.name))
+                        else:
+                            copy_success = True
+                    else:
+                        log.error(
+                            'protocol {p} is not implemented by API'.format(
+                                p=protocol))
 
                 # TODO: waiting for enhancement of decoder
                 # # decode core file
@@ -472,14 +506,14 @@ def health_core(device,
                 #             remote_device.connect()
                 #         except Exception as e:
                 #             log.warn(
-                #                 "Remote device {d} was not connected and failed to  connect   : {e}"
+                #                 "Remote device {d} was not connected and failed to connect : {e}"
                 #                 .format(d=remote_device.name, e=e))
                 #             return len(dirs) if num_of_cores else dirs
 
                 #     try:
                 #         # archive decode output
                 #         if archive:
-                #             fullpath = corefile if remote_path in corefile else remote_path   + '/'+ corefile
+                #             fullpath = corefile if remote_path in corefile else remote_path + '/'+ corefile
                 #             decode_output = remote_device.api.decode_core(
                 #                 corefile="{fp}".format(fp=fullpath),
                 #                 timeout=decode_timeout)
@@ -515,13 +549,20 @@ def health_core(device,
     if health:
         health_data = {}
         health_data.setdefault('health_data', {})
-        health_data['health_data'].setdefault('num_of_cores', len(all_corefiles))
+        health_data['health_data'].setdefault('num_of_cores',
+                                              len(all_corefiles))
         health_data['health_data'].setdefault('corefiles', [])
         for filename in health_corefiles:
             if 'decode' in health_corefiles[filename]:
-                health_data['health_data']['corefiles'].append({'filename': filename, 'decode': health_corefiles[filename]['decode']})
+                health_data['health_data']['corefiles'].append({
+                    'filename':
+                    filename,
+                    'decode':
+                    health_corefiles[filename]['decode']
+                })
             else:
-                health_data['health_data']['corefiles'].append({'filename': filename})
+                health_data['health_data']['corefiles'].append(
+                    {'filename': filename})
         return health_data
 
     if num_of_cores:

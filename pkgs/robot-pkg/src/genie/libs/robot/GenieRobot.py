@@ -1,29 +1,21 @@
 import re
 import os
-import yaml
-import inspect
 import logging
 import importlib
-from collections import ChainMap
 from copy import deepcopy
 from collections import namedtuple
 
 from robot.api.deco import keyword
 from robot.libraries.BuiltIn import BuiltIn, RobotNotRunningError
 
-from genie.abstract import Lookup
-
 from pyats.utils.objects import find, R
-from pyats.aetest import executer, reporter
+from pyats.aetest import executer
 from pyats.datastructures.logic import Or
 from pyats.results import (Passed, Failed, Aborted, Errored,
                          Skipped, Blocked, Passx)
 
-from genie.conf import Genie
 from genie.utils.dq import Dq
 from genie.utils.diff import Diff
-from genie.conf.base import loader
-from genie.conf.base import Testbed
 from genie.utils.config import Config
 from genie.harness.script import TestScript
 from genie.utils.loadattr import load_attribute
@@ -52,38 +44,26 @@ class GenieRobot(object):
         # save builtin so we dont have to re-create then everytime
         self.builtin = BuiltIn()
 
-        # Need to create a testscript
         try:
-            self._pyats_testscript = self.builtin.get_library_instance('pyats.robot.'
-                                                                       'pyATSRobot').testscript
+            self.ats_pyats = self.builtin.get_library_instance('pyats.robot.pyATSRobot')
         except RobotNotRunningError:
-            # during libdoc generation
-            pass
+            # return early during libdoc generation
+            return
         except RuntimeError:
             try:
-                self._pyats_testscript = self.builtin.get_library_instance('ats.robot.'
-                                                                           'pyATSRobot').testscript
+                self.ats_pyats = self.builtin.get_library_instance('ats.robot.pyATSRobot')
             except RuntimeError:
-                # no pyATS
-                pass
-        finally:
-            self._genie_testscript = TestScript(Testscript)
+                # No pyATS
+                raise RuntimeError(
+                    "Missing mandatory 'Library  pyats.robot.pyATSRobot' in the Setting section")
 
-        try:
-            self.builtin.get_library_instance('pyats.robot.pyATSRobot')
-            self.ats_pyats = 'pyats.robot.pyATSRobot'
-        except RuntimeError:
-            self.builtin.get_library_instance('ats.robot.pyATSRobot')
-            self.ats_pyats = 'ats.robot.pyATSRobot'
-        except RuntimeError:
-            # No pyATS
-            pass
-
+        self._genie_testscript = TestScript(Testscript)
+        self._pyats_testscript = self.ats_pyats.testscript
         self.testscript.parameters['testbed'] = self.testbed
 
     @property
     def testbed(self):
-        return self.builtin.get_library_instance(self.ats_pyats).testbed
+        return self.ats_pyats.testbed
 
     @property
     def testscript(self):
@@ -95,7 +75,7 @@ class GenieRobot(object):
     @keyword('use genie testbed "${testbed}"')
     def genie_testbed(self, testbed):
         '''*DEPRECATED* Please use the "use testbed "${testbed}" keyword instead.'''
-        self.builtin.get_library_instance(self.ats_pyats).use_testbed(testbed)
+        self.ats_pyats.use_testbed(testbed)
         self.testscript.parameters['testbed'] = self.testbed
 
         # Load Genie Datafiles (Trigger, Verification and PTS)
@@ -490,7 +470,7 @@ class GenieRobot(object):
             self.builtin.fail("No synchronized server could be found! Was "
                               "expected '{}' to be synchronized".format(server))
 
-        if not output[0][0] == server:
+        if output[0][0] != server:
             self.builtin.fail("Expected synchronized server to be '{}', but "
                               "found '{}'".format(server, output[0][0]))
 

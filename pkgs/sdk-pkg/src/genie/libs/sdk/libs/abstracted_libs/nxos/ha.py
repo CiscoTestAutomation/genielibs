@@ -350,6 +350,7 @@ class HA(HA_main):
 
         ctrlplane_downtime = self.parameters.get('ctrlplane_downtime')
         user_boot_mode = self.parameters.get('mode')
+        issu_timeout = self.parameters.get('issu_timeout')
         with steps.start("Check boot mode on {}".format(self.device.hostname)) as step:
             out = self.device.execute('show boot mode')
             for line in out.splitlines():
@@ -375,7 +376,7 @@ class HA(HA_main):
         with steps.start("Performing non disruptive issu on the device {}".format(self.device.hostname)):
             image_name = basename(upgrade_image)
             self.device.execute(
-                'install all nxos bootflash:{} non-disruptive'.format(image_name), timeout=1000, reply=dialog)
+                'install all nxos bootflash:{} non-disruptive'.format(image_name), timeout=issu_timeout, reply=dialog)
 
         with steps.start("Reconnect back to device {} after ISSU".format(self.device.hostname)):
             reconnect_timeout = Timeout(max_time=1200, interval=120)

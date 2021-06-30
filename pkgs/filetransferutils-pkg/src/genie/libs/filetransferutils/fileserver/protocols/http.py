@@ -1,6 +1,6 @@
 import os
+import time
 import logging
-import requests
 import threading
 import http.server
 
@@ -71,10 +71,11 @@ class FileServer(BaseFileServer):
         httpd.directory = local_dir
         local_port = httpd.server_port
 
-        # Start http server in background thread
-        t = threading.Thread(target=httpd.serve_forever)
-        t.start()
+        # Send new info back to parent process
         self.queue.put({'port': local_port, 'path': local_dir})
+
+        # Keep process alive
+        httpd.serve_forever()
 
     def verify_server(self):
         """ No verification is done.

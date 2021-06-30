@@ -1,8 +1,6 @@
-
 import logging
 
 from .markup import get_variable
-from .markup import save_variable
 
 from pyats.async_ import pcall
 from .advanced_actions_helper import callback_blitz_dispatcher_gen,\
@@ -15,7 +13,6 @@ from .advanced_actions_helper import callback_blitz_dispatcher_gen,\
 log = logging.getLogger()
 
 
-
 def loop(self, steps, testbed, section, name, action_item):
     """
     Running actions in loop
@@ -25,6 +22,11 @@ def loop(self, steps, testbed, section, name, action_item):
 
     if action_item.get('custom_substep_message'):
         msg = action_item.pop('custom_substep_message')
+
+        kwargs = {'msg': msg, 'self': self, 'section': section}
+
+        replaced_kwargs = get_variable(**kwargs)
+        msg = replaced_kwargs['msg']
 
     elif action_item.get('loop_until'):
         msg = "Executing actions in a loop with loop_until: '{l}'"\
@@ -43,13 +45,8 @@ def loop(self, steps, testbed, section, name, action_item):
 
         # check if loop is blitz or maple loop and then dispatch
         # to proper function
-        func, action_item = _loop_dispatcher(self,
-                                             step,
-                                             testbed,
-                                             section,
-                                             action_item,
-                                             ret_list,
-                                             name)
+        func, action_item = _loop_dispatcher(self, step, testbed, section,
+                                             action_item, ret_list, name)
 
         loop_return_items = func(**action_item)
 
@@ -61,7 +58,7 @@ def loop(self, steps, testbed, section, name, action_item):
         # loop until pass/fail
         if action_item.get('loop_until'):
 
-            prev_loop_result  = loop_return_items[-1]['step_result']
+            prev_loop_result = loop_return_items[-1]['step_result']
 
             loop_until_msg = "The loop_until was set to '{0}'"\
                              " and last attempted action in the"\
@@ -77,11 +74,15 @@ def loop(self, steps, testbed, section, name, action_item):
                     loop_until_msg.\
                     format(action_item.get('loop_until'), loop_until_step_result))
 
-    return {'action': 'loop',
-            'step_result': step.result,
-            'substeps': loop_return_items if not action_item.get('loop_until') else [],
-            'advanced_action': True,
-            'loop_until': action_item.get('loop_until')}
+    return {
+        'action': 'loop',
+        'step_result': step.result,
+        'substeps':
+        loop_return_items if not action_item.get('loop_until') else [],
+        'advanced_action': True,
+        'loop_until': action_item.get('loop_until')
+    }
+
 
 def parallel(self, steps, testbed, section, name, data):
     """
@@ -92,13 +93,14 @@ def parallel(self, steps, testbed, section, name, data):
     pcall_returns = []
     with steps.start('Executing actions in parallel', continue_=True) as steps:
 
-        kwargs = {'self': self,
-          'steps': steps,
-          'testbed': testbed,
-          'section': section,
-          'data': data,
-          'parallel': True
-         }
+        kwargs = {
+            'self': self,
+            'steps': steps,
+            'testbed': testbed,
+            'section': section,
+            'data': data,
+            'parallel': True
+        }
 
         # call generator and store all action kwargs into pcall_payload
         for action_kwargs in callback_blitz_dispatcher_gen(**kwargs):
@@ -106,6 +108,7 @@ def parallel(self, steps, testbed, section, name, data):
 
         pcall_returns = pcall(self.dispatcher, ikwargs=pcall_payloads)
         return _parallel(self, section, pcall_returns, steps)
+
 
 def run_condition(self, steps, testbed, section, name, action_item):
     """
@@ -123,12 +126,14 @@ def run_condition(self, steps, testbed, section, name, action_item):
     desc = action_item.get('description', '')
 
     condition_bool = blitz_control(self, section, condition, 'if')
-    kwargs = {'self': self,
-              'steps': steps,
-              'testbed': testbed,
-              'section': section,
-              'data': actions,
-            }
+    kwargs = {
+        'self': self,
+        'steps': steps,
+        'testbed': testbed,
+        'section': section,
+        'name': name,
+        'data': actions,
+    }
 
     if not function:
         return _run_condition_with_optional_func(condition_bool,
@@ -143,9 +148,10 @@ def run_condition(self, steps, testbed, section, name, action_item):
 
         if condition_bool:
 
-            getattr(step, function)("{c} is equal True. The run_condition "
-                                    "step result is set to {f}"
-                                    .format(c=condition, f=function))
+            getattr(step,
+                    function)("{c} is equal True. The run_condition "
+                              "step result is set to {f}".format(c=condition,
+                                                                 f=function))
 
         kwargs.update({'steps': step})
         ret_list = list(callback_blitz_dispatcher_gen(**kwargs))[0]
@@ -153,13 +159,15 @@ def run_condition(self, steps, testbed, section, name, action_item):
     # should be added to this dict to return
     # mainly useful to be unpacked in parallel
 
-    return {'action': 'run_condition',
-            'step_result': step.result,
-            'substeps': ret_list,
-            'advanced_action': True,
-            'run_condition_skipped': condition_bool,
-            'condition': condition
-           }
+    return {
+        'action': 'run_condition',
+        'step_result': step.result,
+        'substeps': ret_list,
+        'advanced_action': True,
+        'run_condition_skipped': condition_bool,
+        'condition': condition
+    }
+
 
 advanced_actions = {
     'parallel': parallel,

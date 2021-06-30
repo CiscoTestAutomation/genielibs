@@ -2,5 +2,6 @@
 
 from ..fileutils import FileUtils as FileUtilsNXBase
 
+
 class FileUtils(FileUtilsNXBase):
 	pass
