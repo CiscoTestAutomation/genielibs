@@ -17,7 +17,9 @@ def health_cpu(device,
                command='show processes cpu',
                processes=None,
                check_key='one_sec',
+               check_key_total='five_sec_cpu_total',
                output=None,
+               add_total=False,
                health=True):
     '''Get cpu load on device
 
@@ -28,6 +30,9 @@ def health_cpu(device,
             processes (`list`): List of processes to check
             check_key  (`str`): Key to check in parsed output
                                 Default to `one_sec`
+            check_key_total (`str`): Key to check in parsed output for Total
+                                     Default to `five_sec_cpu_total`
+            add_total (`bool`): If True, add total cpu load
             output     (`str`): Output of show command
         Returns:
             cpu_load_dict  (`dict`): Cpu load dictionary on the device
@@ -101,9 +106,16 @@ def health_cpu(device,
     if health:
         health_data = {}
         health_data.setdefault('health_data', [])
+        health_data['health_data'].append({
+            'process': 'ALL_PROCESSES',
+            'value': float(parsed['five_sec_cpu_total'])
+        })
         for k, v in cpu_load_dict.items():
             health_data['health_data'].append({'process': k, 'value': v})
-        cpu_load_dict = health_data
+        return health_data
+
+    if add_total:
+        cpu_load_dict = {'ALL_PROCESSES': float(parsed['five_sec_cpu_total'])}
 
     return cpu_load_dict
 
@@ -112,7 +124,9 @@ def health_memory(device,
                   command='top -n 1',
                   processes=None,
                   check_key=None,
+                  check_key_total=None,
                   output=None,
+                  add_total=False,
                   health=True):
     '''Get memory usage on device
 
@@ -124,6 +138,8 @@ def health_memory(device,
                                     If both processes and check_key are given,
                                     processes are preferred.
             check_key      (`str`): N/A. not used for NXOS
+            check_key_total (`str`): N/A. not used for NXOS
+            add_total    (`bool`): If True, add total memory usage
             output         (`str`): Output of show command
         Returns:
             memory_usage_dict (`dict`): memory usage dict on the device (percentage)
@@ -155,6 +171,7 @@ def health_memory(device,
 
     all_processes = parsed.q.get_values('command')
 
+    total_memory_usage = 0
     if processes or all_processes:
         for ps_item in processes or all_processes:
             # To get process(command)
@@ -176,9 +193,11 @@ def health_memory(device,
             process_total_res = 0
             process_total_shr = 0
             for pid in pids:
-                    process_total_res += parsed['pids'][pid]['res']
-                    process_total_shr += parsed['pids'][pid]['shr']
-            memory_usage_dict[ps_item] = ((process_total_res - process_total_shr) / total_res) * 100
+                process_total_res += parsed['pids'][pid]['res']
+                process_total_shr += parsed['pids'][pid]['shr']
+            memory_usage_percent = ((process_total_res - process_total_shr) / total_res) * 100
+            memory_usage_dict[ps_item] = memory_usage_percent
+            total_memory_usage += memory_usage_percent
 
     # if health is True, change the dict
     # from:
@@ -202,9 +221,16 @@ def health_memory(device,
     if health:
         health_data = {}
         health_data.setdefault('health_data', [])
+        health_data['health_data'].append({
+            'process': 'ALL_PROCESSES',
+            'value': total_memory_usage
+        })
         for k, v in memory_usage_dict.items():
             health_data['health_data'].append({'process': k, 'value': v})
-        memory_usage_dict = health_data
+        return health_data
+
+    if add_total:
+        memory_usage_dict.update({'ALL_PROCESSES': total_memory_usage})
 
     return memory_usage_dict
 
@@ -376,7 +402,7 @@ def health_core(device,
 
     # convert from device name to device object
     fileutils = False
-    if remote_device:
+    if remote_device and protocol != 'http':
         if remote_device in device.testbed.testbed.servers:
             fileutils = True
         elif remote_device in device.testbed.devices:
@@ -393,113 +419,130 @@ def health_core(device,
     # initialize health_corefiles again to store with core file name
     if health:
         health_corefiles = {}
+
+    # in case of HTTP, will use FileUtils
+    if protocol == 'http':
+        fileutils = True
+
     # copy core file to remote device
-    for corefile in dirs and remote_device:
-        if fileutils:
-            log.info('Copying {s} to remote device {rd} via FileUtils'.format(
-                s=corefile, rd=remote_device))
-        else:
-            log.info('Copying {s} to remote device {rd} via API'.format(
-                s=corefile, rd=remote_device.name))
-
-        if not fileutils and not (remote_device and remote_path):
-            log.warn('`remote_device` or/and `remote_path` are missing')
-            return len(dirs) if num_of_cores else dirs
-        local_path = "core://{cf}".format(cf=corefile)
-        # execute by FileUtils
-        if fileutils:
-            try:
-                output = device.api.copy_from_device(protocol=protocol,
-                                                     server=remote_device,
-                                                     remote_path=remote_path,
-                                                     local_path=local_path,
-                                                     vrf=vrf)
-                copied_files = list(
-                    set(
-                        re.findall(
-                            r"(?P<filename>\d\S+)\s+\d+%\s+\d+\S+\s+\d+\.\d+\S+\s+",
-                            output)))
-                # cannot see filename with FTP, so use local_path
-                if not copied_files:
-                    copied_files = [local_path]
-            except Exception as e:
-                log.warn(
-                    '{p} has failed to copy core file to remote device {rd}: {e}'
-                    .format(p=protocol, rd=remote_device, e=e))
-        # execute by API
-        if not fileutils and (remote_device and remote_path):
-            if protocol == 'scp':
-                copied_files = device.api.scp(local_path=local_path,
-                                              remote_path=remote_path,
-                                              remote_device=remote_device.name,
-                                              remote_via=remote_via,
-                                              vrf=vrf,
-                                              return_filename=True)
-                if not copied_files:
-                    log.warn(
-                        'SCP has failed to copy core file to remote device {rd}.'
-                        .format(rd=remote_device.name))
+    if remote_device or protocol == 'http':
+        for corefile in dirs:
+            if fileutils:
+                log.info('Copying {s} via FileUtils'.format(
+                    s=corefile))
             else:
-                log.error('protocol {p} is not implemented by API'.format(
-                    p=protocol))
+                log.info('Copying {s} to remote device {rd} via API'.format(
+                    s=corefile, rd=remote_device.name))
 
-        if health:
-            health_corefiles.setdefault(copied_files[0], {})
-        # decode core file
-        if decode:
-            # connect to remote_device if not connected
-            if not remote_device_alias:
-                # if no connected alias, connect
+            if not fileutils and not (remote_device and remote_path):
+                log.warn('`remote_device` or/and `remote_path` are missing')
+                return len(dirs) if num_of_cores else dirs
+            local_path = "core://{cf}".format(cf=corefile)
+            # execute by FileUtils
+            if fileutils:
                 try:
-                    remote_device.connect()
+                    # if protocol is 'http', will use FileUtils only with local_path
+                    # proxy of device will be detected automatically. if proxy,
+                    # proxy will be used as remote_device
+                    if protocol == 'http':
+                        output = device.api.copy_from_device(local_path, vrf=vrf)
+                    else:
+                        output = device.api.copy_from_device(protocol=protocol,
+                                                             server=remote_device,
+                                                             remote_path=remote_path,
+                                                             local_path=local_path,
+                                                             vrf=vrf)
+                    copied_files = list(
+                        set(
+                            re.findall(
+                                r"(?P<filename>\d\S+)\s+\d+%\s+\d+\S+\s+\d+\.\d+\S+\s+",
+                                output)))
+                    # cannot see filename with FTP, so use local_path
+                    if not copied_files:
+                        copied_files = [local_path]
                 except Exception as e:
                     log.warn(
-                        "Remote device {d} was not connected and failed to connect : {e}"
-                        .format(d=remote_device.name, e=e))
-                    return len(dirs) if num_of_cores else dirs
-            for core in copied_files:
+                        '{p} has failed to copy core file to remote device {rd}: {e}'
+                        .format(p=protocol, rd=remote_device, e=e))
+            # execute by API
+            if not fileutils and (remote_device and remote_path):
+                if protocol == 'scp':
+                    copied_files = device.api.scp(local_path=local_path,
+                                                  remote_path=remote_path,
+                                                  remote_device=remote_device.name,
+                                                  remote_via=remote_via,
+                                                  vrf=vrf,
+                                                  return_filename=True)
+                    if not copied_files:
+                        log.warn(
+                            'SCP has failed to copy core file to remote device {rd}.'
+                            .format(rd=remote_device.name))
+                else:
+                    log.error('protocol {p} is not implemented by API'.format(
+                        p=protocol))
+
+            if health:
+                health_corefiles.setdefault(copied_files[0], {})
+            # decode core file
+            if decode:
+                if protocol != 'http':
+                    # connect to remote_device if not connected
+                    if not remote_device_alias:
+                        # if no connected alias, connect
+                        try:
+                            remote_device.connect()
+                        except Exception as e:
+                            log.warn(
+                                "Remote device {d} was not connected and failed to connect : {e}"
+                                .format(d=remote_device.name, e=e))
+                            return len(dirs) if num_of_cores else dirs
+                    for core in copied_files:
+                        try:
+                            fullpath = "{rp}/{core}".format(rp=remote_path, core=core)
+                            decode_output = remote_device.api.analyze_core_by_ucd(
+                                core_file="{fp}".format(fp=fullpath),
+                                timeout=decode_timeout)
+                            if health:
+                                health_corefiles[core].setdefault(
+                                    'decode', decode_output)
+                            # archive decode output
+                            if archive:
+                                with open(
+                                        '{folder}/{fn}'.format(
+                                            folder=runtime.directory,
+                                            fn='core_decode_{file}'.format(file=core)),
+                                        'w') as f:
+                                    print(decode_output, file=f)
+                                    log.info(
+                                        'Saved decode output as archive:{folder}/{fn}'.
+                                        format(
+                                            folder=runtime.directory,
+                                            fn='core_decode_{file}'.format(file=core)))
+                        except Exception as e:
+                            log.warning('decode core file is failed : {e}'.format(e=e))
+                else:
+                    # decode is not supported by http because http transfer output
+                    # doesn't have file name. so don't know file name
+                    log.warning('decode is not supported with protocol `http`.')
+            # delete core files
+            if delete_core:
+                module = corefile.split('/')[0]
+                pid = corefile.split('/')[1]
                 try:
-                    fullpath = "{rp}/{core}".format(rp=remote_path, core=core)
-                    decode_output = remote_device.api.analyze_core_by_ucd(
-                        core_file="{fp}".format(fp=fullpath),
-                        timeout=decode_timeout)
-                    if health:
-                        health_corefiles[core].setdefault(
-                            'decode', decode_output)
-                    # archive decode output
-                    if archive:
-                        with open(
-                                '{folder}/{fn}'.format(
-                                    folder=runtime.directory,
-                                    fn='core_decode_{file}'.format(file=core)),
-                                'w') as f:
-                            print(decode_output, file=f)
-                            log.info(
-                                'Saved decode output as archive:{folder}/{fn}'.
-                                format(
-                                    folder=runtime.directory,
-                                    fn='core_decode_{file}'.format(file=core)))
+                    log.info(
+                        'Deleting copied file on module-{m}/core/*{p}*.'.format(
+                            m=module, p=pid))
+                    device.execute(
+                        'delete logflash://module-{m}/core/*{p}* no-prompt'.format(
+                            m=module, p=pid))
+                    log.info(
+                        'Core files on module-{m}/core/*{p}* was successfully deleted'
+                        .format(m=module, p=pid))
                 except Exception as e:
-                    log.warning('decode core file is failed : {e}'.format(e=e))
-        # delete core files
-        if delete_core:
-            module = corefile.split('/')[0]
-            pid = corefile.split('/')[1]
-            try:
-                log.info(
-                    'Deleting copied file on module-{m}/core/*{p}*.'.format(
-                        m=module, p=pid))
-                device.execute(
-                    'delete logflash://module-{m}/core/*{p}* no-prompt'.format(
-                        m=module, p=pid))
-                log.info(
-                    'Core files on module-{m}/core/*{p}* was successfully deleted'
-                    .format(m=module, p=pid))
-            except Exception as e:
-                log.warn(
-                    'deleting core files on module-{m}/core/*{p} failed. {e}'.
-                    format(m=module, p=pid, e=e))
-                return []
+                    log.warn(
+                        'deleting core files on module-{m}/core/*{p} failed. {e}'.
+                        format(m=module, p=pid, e=e))
+                    return []
 
     # clear show cores history
     if copied_files:

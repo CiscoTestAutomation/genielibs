@@ -13,6 +13,7 @@ pipeline {
             steps {
                 checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'pyats']], userRemoteConfigs: [[credentialsId: 'e8a7354a-c71a-42cb-83ee-49ab5ad40085', url: 'https://wwwin-github.cisco.com/pyATS/pyats.git']]])
                 checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'genie']], userRemoteConfigs: [[credentialsId: 'e8a7354a-c71a-42cb-83ee-49ab5ad40085', url: 'https://wwwin-github.cisco.com/pyATS/genie.git']]])
+                checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'genieparser']], userRemoteConfigs: [[credentialsId: 'e8a7354a-c71a-42cb-83ee-49ab5ad40085', url: 'https://wwwin-github.cisco.com/pyATS/genieparser.git']]])
                 checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'unicon.plugins']], userRemoteConfigs: [[credentialsId: 'e8a7354a-c71a-42cb-83ee-49ab5ad40085', url: 'https://wwwin-github.cisco.com/pyATS/unicon.plugins.git']]])
                 checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'yang']], userRemoteConfigs: [[url: 'https://github.com/CiscoTestAutomation/yang.git']]])
                 script {
@@ -21,6 +22,8 @@ pipeline {
                     cd ${WORKSPACE}/pyats
                     git remote -v
                     cd ${WORKSPACE}/genie
+                    git remote -v
+                    cd ${WORKSPACE}/genieparser
                     git remote -v
                     cd ${WORKSPACE}/unicon.plugins
                     git remote -v
@@ -44,6 +47,10 @@ pipeline {
                     # checkout same branch on genie, if it exists
                     git checkout ${env.CHANGE_BRANCH == null ? env.GIT_BRANCH : env.CHANGE_BRANCH} || git checkout dev
                     git status
+                    cd ${WORKSPACE}/genieparser
+                    # checkout same branch on genieparser, if it exists
+                    git checkout ${env.CHANGE_BRANCH == null ? env.GIT_BRANCH : env.CHANGE_BRANCH} || git checkout dev
+                    git status
                     cd ${WORKSPACE}/unicon.plugins
                     # checkout same branch on unicon.plugins, if it exists
                     git checkout ${env.CHANGE_BRANCH == null ? env.GIT_BRANCH : env.CHANGE_BRANCH} || git checkout dev
@@ -65,6 +72,7 @@ pipeline {
                     pip list
                     pip freeze
                     export PIP_DOWNLOAD_CACHE=/scratch/pip_download_cache
+                    export LC_ALL=C.UTF-8
                     rm -rf /scratch/genielibs-env
                     cd /scratch
                     /usr/bin/python3.6 -m venv genielibs-env
@@ -77,6 +85,8 @@ pipeline {
                     cd $WORKSPACE/unicon.plugins
                     make develop
                     cd $WORKSPACE/genie
+                    make develop
+                    cd $WORKSPACE/genieparser
                     make develop
                     cd $WORKSPACE/pyats
                     make develop

@@ -75,6 +75,10 @@ def get_show_tech(device,
         log.error('Could not find archive filename')
         return False
 
+    delete_dialog = Dialog([
+        [r'Delete .*\[confirm\]\s*$', 'sendline()', None, True, False]
+    ])
+
     if remote_server is not None:
         assert remote_path is not None, 'remote_path should be specified'
 
@@ -89,6 +93,7 @@ def get_show_tech(device,
                                    fname=os.path.basename(filename)
                                ),
                                timeout_seconds=timeout, device=device)
+            device.execute('delete {}'.format(filename), reply=delete_dialog)
         except Exception:
             log.error('Failed to copy show tech, keeping file on filesystem')
             return False
@@ -96,9 +101,6 @@ def get_show_tech(device,
     else:
 
         if device.api.copy_from_device(local_path=filename, remote_path=remote_path):
-            delete_dialog = Dialog([
-                [r'Delete .*\[confirm\]\s*$', 'sendline()', None, True, False]
-            ])
             device.execute('delete {}'.format(filename), reply=delete_dialog)
         else:
             log.error('Failed to copy show tech, keeping file on filesystem')

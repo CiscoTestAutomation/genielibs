@@ -1,5 +1,6 @@
 # 2021
 
+* [July](2021/July.rst)
 * [June](2021/JUNE.rst)
 * [May](2021/MAY.rst)
 * [April](2021/APRIL.rst)

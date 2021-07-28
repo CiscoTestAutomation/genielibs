@@ -43,6 +43,10 @@ class Vrf(ABC):
                 if attributes.value('vni'):
                     configurations.append_line(attributes.format('vni {vni}'))
 
+                # nxos: vrf context vrf1 / vni 1-16777214 l3
+                if attributes.value('vni_mode_l3'):
+                    configurations.append_line(attributes.format('vni {vni_mode_l3} l3'))
+
                 # nxos: vrf context vrf1 / address-family ipv4 unicast (config-vrf-af-ipv4)
                 # nxos: vrf context vrf1 / address-family ipv6 unicast (config-vrf-af-ipv6)
                 for key, sub, attributes2 in attributes.mapping_items(

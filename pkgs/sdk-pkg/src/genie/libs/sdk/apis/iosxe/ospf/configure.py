@@ -295,3 +295,234 @@ def configure_ospf_networks(device, ospf_process_id, ip_address, netmask, area):
                    .format(ip_address=ip, netmask=netmask, area=area))
 
     device.configure(cmd)
+
+
+def configure_ospf_routing(device, ospf_process_id, router_id):
+    """ Configures ospf and ip routing on device
+
+        Args:
+            device ('obj'): Device to use
+            ospf_process_id ('str'): Process id for ospf process
+            router_id ('str'): Router id to use
+
+        Returns:
+            N/A
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+                'router ospf {ospf_process_id}'.format(ospf_process_id=ospf_process_id),
+                'router-id {router_id}'.format(router_id=router_id)
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure the device {device} "
+            "with OSPF process id {ospf_process_id}, Error: {error}".format(
+                ospf_process_id=ospf_process_id,
+                device=device.name, error=e
+            )
+        )
+
+
+def configure_ospf_routing_on_interface(device, interface, ospf_process_id, areaid):
+    """ Configures ospf and ip routing on Interface
+
+        Args:
+            device ('obj'): Device to use
+            interface ('str'): Interface to use
+            ospf_process_id ('str'): Process id for ospf process
+            areaid ('str'): Area id to use
+
+        Returns:
+            N/A
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+                'interface {interface}'.format(interface=interface),
+                'ip ospf {ospf_process_id} area {areaid}'.format(ospf_process_id=ospf_process_id, areaid=areaid)
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure the interface {interface} "
+            "with OSPF process id {ospf_process_id} and area {areaid}, "
+            "Error: {error}".format(
+                interface=interface,
+                ospf_process_id=ospf_process_id,
+                areaid=areaid, error=e
+            )
+        )
+
+def unconfigure_ospf_on_device(device, ospf_process_id):
+    """ Unconfigures ospf and ip routing on device
+
+        Args:
+            device ('obj'): Device to use
+            ospf_process_id ('str'): Process id for ospf process
+
+        Returns:
+            N/A
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure('no router ospf {ospf_process_id}'.format(
+            ospf_process_id=ospf_process_id))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+                "Failed to unconfigure router ospf {ospf_process_id} "
+                "on device, Error: {error}".format(
+                    ospf_process_id=ospf_process_id, error=e))
+
+
+def configure_ospf_message_digest_key(device, interface, message_digest_key, md5, key):
+    """configure ospf message digest key
+
+        Args:
+            device (`obj`): Device object
+            key (`str`): key value
+            message_digest_key (`str`): message digest key value
+            md5 (`str`): md5 value
+            interface (`str`): interface to configure
+            ex.)
+                interface = 'tenGigabitEthernet0/4/0'
+
+        Return:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+                "interface {interface}".format(interface=interface),
+                "ip ospf message-digest-key {message_digest_key} md5 "
+                "{md5} {key}".format(
+                    message_digest_key=message_digest_key,md5=md5,key=key)
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Ospf message-digest-key {key} is not configured on device"
+            " {device} for interface {interface}, Error: {error}".format(
+                key=key, device=device, interface=interface, error=e
+            )
+        )
+
+
+def configure_ospf_network_point(device, interface):
+    """configure ospf point to point network
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): interface to configure
+            ex.)
+                interface = 'tenGigabitEthernet0/4/0'
+
+        Return:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+                "interface {}".format(interface),
+                 "ip ospf network point-to-point"
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Ospf network point-to-point is not configured on device"
+            " {device} for interface {interface}, Error: {error}".format(
+               device=device.name, interface=interface, error=e
+            )
+        )
+
+
+def configure_ospf_bfd(device, interface):
+    """configure ospf ip bfd
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): interface to configure
+            ex.)
+                interface = 'tenGigabitEthernet0/4/0'
+
+        Return:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+               "interface {interface}".format(interface=interface),
+               "ip ospf bfd" 
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Ospf bfd is not configured on device"
+            " {device} for interface {interface}, Error: {error}".format(
+               device=device.name, interface=interface, error=e
+            )
+        )
+
+def configure_ospfv3(device, pid):
+    """configure ospf ip bfd
+
+        Args:
+            device (`obj`): Device object
+            pid (`str`): Ospfv3 process id
+
+        Return:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure("router ospfv3 {pid}".format(pid=pid))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Ospfv3 is not configured on device"
+            " {device}, Error: {error}".format(
+               device=device.name, error=e
+            )
+        )
+
+def unconfigure_ospfv3(device, pid):
+    """Unconfigure ospf ip bfd
+
+        Args:
+            device (`obj`): Device object
+            pid (`str`): Ospfv3 process id
+
+        Return:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure("no router ospfv3 {pid}".format(pid=pid))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Ospfv3 is not unconfigured on device"
+            " {device}, Error: {error}".format(
+               device=device.name, error=e
+            )
+        )

@@ -152,7 +152,7 @@ def get_available_space(device, directory='', output=None):
                 bytes_free = reg.group(1)
         else:
             bytes_free = reg.group(1)
-        return bytes_free
+        return int(bytes_free)
     else:
         log.error("Failed to get available space for {}".format(directory))
 
@@ -179,7 +179,7 @@ def get_total_space(device, directory='', output=None):
     else:
         bytes_in_total = Dq(dir_output).get_values(key='total_bytes')
         total_bytes = int(re.search(r'\d+', bytes_in_total[0]).group(0))
-        return total_bytes
+        return int(total_bytes)
 
 def get_current_active_pies(device):
 

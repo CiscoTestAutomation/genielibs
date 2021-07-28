@@ -279,139 +279,100 @@ class VrfOutput(object):
     }
 
     VrfInfo = {
-        'vrfs': {
-            "VRF1": {
-                "route_distinguisher": "100:1",
-                "address_family": {
-                    "ipv4 unicast": {
-                        "export_to_global": {
-                            "export_to_global_map": "export_to_global_map",
-                        },
-                        "import_from_global": {
-                            "import_from_global_map": "import_from_global_map"
-                        },
-                        "routing_table_limit": {
-                            "routing_table_limit_action": {
-                                "enable_alert_limit_number": {
-                                    "alert_limit_number": 10000
-                                }
-                            }
-                        },
-                        "route_targets": {
-                            "200:1": {
-                                "rt_type": "both",
-                                "route_target": "200:1"
-                            },
-                            "100:1": {
-                                "rt_type": "both",
-                                "route_target": "100:1"
-                            }
-                        },
+    "vrfs": {
+        "VRF2": {
+            "route_distinguisher": "6000:1",
+            "address_family": {
+                "ipv6 unicast": {
+                    "route_targets": {
+                        "100:1": {"route_target": "100:1", "rt_type": "export"},
+                        "300:1": {"route_target": "300:1", "rt_type": "export"},
+                        "200:1": {"route_target": "200:1", "rt_type": "import"},
+                        "400:1": {"route_target": "400:1", "rt_type": "import"},
                     },
-                    "ipv6 unicast": {
-                        "export_to_global": {
-                            "export_to_global_map": "export_to_global_map",
-                        },
-                        "routing_table_limit": {
-                            "routing_table_limit_action": {
-                                "enable_alert_percent": {
-                                    "alert_percent_value": 70
-                                },
-                                "enable_alert_limit_number": {
-                                    "alert_limit_number": 7000
-                                }
-                            },
-                            "routing_table_limit_number": 10000
-                        },
-                        "route_targets": {
-                            "200:1": {
-                                "rt_type": "import",
-                                "route_target": "200:1"
-                            },
-                            "400:1": {
-                                "rt_type": "import",
-                                "route_target": "400:1"
-                            },
-                            "300:1": {
-                                "rt_type": "export",
-                                "route_target": "300:1"
-                            },
-                            "100:1": {
-                                "rt_type": "export",
-                                "route_target": "100:1"
-                            }
-                        }
-                    }
-                }
-            },
-            "VRF2": {
-                "route_distinguisher": "6000:1",
-                "address_family": {
-                    "ipv4 unicast": {
-                        "export_to_global": {
-                            "export_to_global_map": "export_to_global_map",
-                        },
-                        "import_from_global": {
-                            "import_from_global_map": "import_from_global_map"
-                        },
-                        "routing_table_limit": {
-                            "routing_table_limit_action": {
-                                "enable_alert_limit_number": {
-                                    "alert_limit_number": 10000
-                                }
-                            }
-                        },
-                        "route_targets": {
-                            "200:1": {
-                                "rt_type": "both",
-                                "route_target": "200:1"
-                            },
-                            "100:1": {
-                                "rt_type": "both",
-                                "route_target": "100:1"
-                            }
-                        },
+                    "table_id": "0x1E000001",
+                    "export_to_global": {
+                        "export_to_global_map": "export_to_global_map"
                     },
-                    "ipv6 unicast": {
-                        "export_to_global": {
-                            "export_to_global_map": "export_to_global_map",
+                    "routing_table_limit": {
+                        "routing_table_limit_action": {
+                            "enable_alert_percent": {"alert_percent_value": 70},
+                            "enable_alert_limit_number": {"alert_limit_number": 7000},
                         },
-                        "routing_table_limit": {
-                            "routing_table_limit_action": {
-                                "enable_alert_percent": {
-                                    "alert_percent_value": 70
-                                },
-                                "enable_alert_limit_number": {
-                                    "alert_limit_number": 7000
-                                }
-                            },
-                            "routing_table_limit_number": 10000
-                        },
-                        "route_targets": {
-                            "200:1": {
-                                "rt_type": "import",
-                                "route_target": "200:1"
-                            },
-                            "400:1": {
-                                "rt_type": "import",
-                                "route_target": "400:1"
-                            },
-                            "300:1": {
-                                "rt_type": "export",
-                                "route_target": "300:1"
-                            },
-                            "100:1": {
-                                "rt_type": "export",
-                                "route_target": "100:1"
-                            }
+                        "routing_table_limit_number": 10000,
+                    },
+                },
+                "ipv4 unicast": {
+                    "route_targets": {
+                        "100:1": {"route_target": "100:1", "rt_type": "both"},
+                        "200:1": {"route_target": "200:1", "rt_type": "both"},
+                    },
+                    "import_from_global": {
+                        "import_from_global_map": "import_from_global_map"
+                    },
+                    "table_id": "0x1",
+                    "export_to_global": {
+                        "export_to_global_map": "export_to_global_map"
+                    },
+                    "routing_table_limit": {
+                        "routing_table_limit_action": {
+                            "enable_alert_limit_number": {"alert_limit_number": 10000}
                         }
-                    }
-                }
+                    },
+                },
             },
-
-        }
-
+        },
+        "VRF1": {
+            "route_distinguisher": "100:1",
+            "address_family": {
+                "ipv6 unicast": {
+                    "route_targets": {
+                        "100:1": {"route_target": "100:1", "rt_type": "export"},
+                        "300:1": {"route_target": "300:1", "rt_type": "export"},
+                        "200:1": {"route_target": "200:1", "rt_type": "import"},
+                        "400:1": {"route_target": "400:1", "rt_type": "import"},
+                    },
+                    "table_id": "0x1E000001",
+                    "export_to_global": {
+                        "export_to_global_map": "export_to_global_map"
+                    },
+                    "routing_table_limit": {
+                        "routing_table_limit_action": {
+                            "enable_alert_percent": {"alert_percent_value": 70},
+                            "enable_alert_limit_number": {"alert_limit_number": 7000},
+                        },
+                        "routing_table_limit_number": 10000,
+                    },
+                },
+                "ipv4 unicast": {
+                    "route_targets": {
+                        "100:1": {"route_target": "100:1", "rt_type": "both"},
+                        "200:1": {"route_target": "200:1", "rt_type": "both"},
+                    },
+                    "import_from_global": {
+                        "import_from_global_map": "import_from_global_map"
+                    },
+                    "table_id": "0x1",
+                    "export_to_global": {
+                        "export_to_global_map": "export_to_global_map"
+                    },
+                    "routing_table_limit": {
+                        "routing_table_limit_action": {
+                            "enable_alert_limit_number": {"alert_limit_number": 10000}
+                        }
+                    },
+                },
+            },
+        },
+        "Mgmt-vrf": {
+            "address_family": {
+                "ipv6 unicast": {"table_id": "0x1E000001"},
+                "ipv4 unicast": {"table_id": "0x1"},
+            }
+        },
     }
+}
+
     showVrfDetail_all = '''
         VRF VRF1 (VRF Id = 1); default RD 100:1; default VPNID <not set>
           New CLI format, supports multiple address-families
@@ -534,72 +495,50 @@ class VrfOutput(object):
           VRF label allocation mode: per-prefix
         Address family ipv4 multicast not active
         '''
-    VrfCustomInfo = {
-        'vrfs': {
-            "VRF2": {
-                "route_distinguisher": "6000:1",
-                "address_family": {
-                    "ipv4 unicast": {
-                        "export_to_global": {
-                            "export_to_global_map": "export_to_global_map",
-                        },
-                        "import_from_global": {
-                            "import_from_global_map": "import_from_global_map"
-                        },
-                        "routing_table_limit": {
-                            "routing_table_limit_action": {
-                                "enable_alert_limit_number": {
-                                    "alert_limit_number": 10000
-                                }
-                            }
-                        },
-                        "route_targets": {
-                            "200:1": {
-                                "rt_type": "both",
-                                "route_target": "200:1"
-                            },
-                            "100:1": {
-                                "rt_type": "both",
-                                "route_target": "100:1"
-                            }
-                        },
-                    },
-                    "ipv6 unicast": {
-                        "export_to_global": {
-                            "export_to_global_map": "export_to_global_map",
-                        },
-                        "routing_table_limit": {
-                            "routing_table_limit_action": {
-                                "enable_alert_percent": {
-                                    "alert_percent_value": 70
-                                },
-                                "enable_alert_limit_number": {
-                                    "alert_limit_number": 7000
-                                }
-                            },
-                            "routing_table_limit_number": 10000
-                        },
-                        "route_targets": {
-                            "200:1": {
-                                "rt_type": "import",
-                                "route_target": "200:1"
-                            },
-                            "400:1": {
-                                "rt_type": "import",
-                                "route_target": "400:1"
-                            },
-                            "300:1": {
-                                "rt_type": "export",
-                                "route_target": "300:1"
-                            },
-                            "100:1": {
-                                "rt_type": "export",
-                                "route_target": "100:1"
-                            }
-                        }
-                    }
-                }
-            },
 
+    VrfCustomInfo = {
+    "vrfs": {
+        "VRF2": {
+            "route_distinguisher": "6000:1",
+            "address_family": {
+                "ipv6 unicast": {
+                    "route_targets": {
+                        "100:1": {"route_target": "100:1", "rt_type": "export"},
+                        "300:1": {"route_target": "300:1", "rt_type": "export"},
+                        "200:1": {"route_target": "200:1", "rt_type": "import"},
+                        "400:1": {"route_target": "400:1", "rt_type": "import"},
+                    },
+                    "table_id": "0x1E000001",
+                    "export_to_global": {
+                        "export_to_global_map": "export_to_global_map"
+                    },
+                    "routing_table_limit": {
+                        "routing_table_limit_action": {
+                            "enable_alert_percent": {"alert_percent_value": 70},
+                            "enable_alert_limit_number": {"alert_limit_number": 7000},
+                        },
+                        "routing_table_limit_number": 10000,
+                    },
+                },
+                "ipv4 unicast": {
+                    "route_targets": {
+                        "100:1": {"route_target": "100:1", "rt_type": "both"},
+                        "200:1": {"route_target": "200:1", "rt_type": "both"},
+                    },
+                    "import_from_global": {
+                        "import_from_global_map": "import_from_global_map"
+                    },
+                    "table_id": "0x1",
+                    "export_to_global": {
+                        "export_to_global_map": "export_to_global_map"
+                    },
+                    "routing_table_limit": {
+                        "routing_table_limit_action": {
+                            "enable_alert_limit_number": {"alert_limit_number": 10000}
+                        }
+                    },
+                },
+            },
         }
+    }
 }

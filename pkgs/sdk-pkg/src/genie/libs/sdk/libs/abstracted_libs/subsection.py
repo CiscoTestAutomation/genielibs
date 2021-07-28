@@ -305,24 +305,28 @@ def load_config_as_string(self, testbed, steps, configs, connect=False):
 
 
 @aetest.subsection
-def configure_replace(self, testbed, steps, devices, timeout=60):
+def configure_replace(self, testbed, steps, devices, include_os=None,
+                      exclude_os=None, include_devices=None, exclude_devices=None,
+                      timeout=60):
 
-    for name, dev in devices.items():
-        log.info("Executing 'configure_replace' subsection on '{dev}'"
-                 .format(dev=name))
+    if exclude_devices:
+        log.info("Excluded devices by exclude_devices: {exclude_devices}".format(
+            exclude_devices=exclude_devices))
 
-        if name not in testbed.devices:
-            log.warning("Skipping '{dev}' as it does not exist in the testbed"
-                        .format(dev=name))
-            continue
+    if include_devices:
+        log.info("Included devices by include_devices: {include_devices}".format(
+            include_devices=include_devices))
 
-        device = testbed.devices[name]
+    if include_os:
+        log.info("Included OS by include_os: {include_os}"
+                 .format(include_os=include_os))
 
-        if not device.is_connected():
-            log.warning("Skipping '{dev}' as it is not connected"
-                        .format(dev=name))
-            continue
+    if exclude_os:
+        log.info("Excluded OS by exclude_os: {exclude_os}"
+                 .format(exclude_os=exclude_os))
 
+    #Utility function
+    def _configure_replace_util(device, dev, device_name):
         try:
             file_name = None
             file_location = None
@@ -330,12 +334,12 @@ def configure_replace(self, testbed, steps, devices, timeout=60):
             if 'file_location' in dev:
                 file_location = dev['file_location']
             else:
-                file_location = lookup.sdk.libs.\
+                file_location = lookup.sdk.libs. \
                     abstracted_libs.subsection.get_default_dir(
-                        device=device)
+                    device=device)
                 if 'file_name' not in dev:
-                    log.error('Missing file_name for device {}'.format(name))
-                    continue
+                    log.error('Missing file_name for device {}'.format(device_name))
+                    return
             if 'file_name' in dev:
                 file_name = dev['file_name']
             lookup.sdk.libs.abstracted_libs.subsection.configure_replace(
@@ -343,7 +347,65 @@ def configure_replace(self, testbed, steps, devices, timeout=60):
                     'timeout', timeout), file_name=file_name)
         except Exception as e:
             self.failed("Failed to replace config : {}".format(str(e)))
-        log.info("Configure replace is done for device {}".format(name))
+        log.info("Configure replace is done for device {}".format(device_name))
+
+
+    if not None in [exclude_devices, include_devices]:
+        if set(exclude_devices).intersection(include_devices):
+            raise ValueError("Same device is specified in both include and exclude devices filter. "
+                             "Use only one filter. Both are not allowed")
+
+    if not None in [exclude_os, include_os]:
+        if set(exclude_os).intersection(include_os):
+            raise ValueError("Same os is specified in both include and exclude os filter. "
+                             "Use only one filter. Both are not allowed")
+
+    for name, dev in devices.items():
+        if name == 'all':
+            for device_name in list(testbed.devices.keys()):
+
+                if exclude_devices and device_name in exclude_devices:
+                    continue
+
+                if include_devices and device_name not in include_devices:
+                    continue
+
+                # Find device from testbed yaml file based on device name
+                device = testbed.devices[device_name]
+
+                if include_os and device.os not in include_os:
+                    continue
+
+                if exclude_os and device.os in exclude_os:
+                    continue
+
+                if not device.is_connected():
+                    log.warning("Skipping '{dev}' as it is not connected"
+                                .format(dev=device_name))
+                    continue
+
+                log.info("Executing 'configure_replace' subsection on '{dev}'"
+                         .format(dev=device_name))
+
+                _configure_replace_util(device=device, dev=dev, device_name=device_name)
+
+        else:
+            log.info("Executing 'configure_replace' subsection on '{dev}'"
+                     .format(dev=name))
+
+            if name not in testbed.devices:
+                log.warning("Skipping '{dev}' as it does not exist in the testbed"
+                            .format(dev=name))
+                continue
+
+            device = testbed.devices[name]
+
+            if not device.is_connected():
+                log.warning("Skipping '{dev}' as it is not connected"
+                            .format(dev=name))
+                continue
+
+            _configure_replace_util(device=device, dev=dev, device_name=name)
 
 
 @aetest.subsection

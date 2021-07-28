@@ -1,7 +1,5 @@
 import ftplib
 import logging
-import os
-import random
 import signal
 
 from pyats.topology.credentials import Credentials
@@ -93,7 +91,3 @@ class FileServer(BaseFileServer):
         # Get list of files from FTP server
         client.dir(lambda x: None)
         client.quit()
-
-    def _generate_credential(self):
-        # Generate a random string to use as credentials if none are given
-        return ''.join([random.choice(ALPHA) for x in range(10)])

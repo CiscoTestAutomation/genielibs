@@ -10,6 +10,7 @@ from datetime import datetime
 from unicon.eal.dialogs import Dialog
 
 from pyats.utils.fileutils import FileUtils
+from pyats.utils.secret_strings import to_plaintext
 
 from genie.libs.sdk.apis.utils import slugify
 from genie.libs.filetransferutils import FileServer
@@ -28,6 +29,7 @@ def copy_to_device(device,
                    compact=False,
                    use_kstack=False,
                    fu=None,
+                   http_auth=True,
                    **kwargs):
     """
     Copy file from linux server to the device.
@@ -45,6 +47,8 @@ def copy_to_device(device,
         use_kstack(bool): Use faster version of copy, defaults False
                             Not supported with a file transfer protocol
                             prompting for a username and password
+        http_auth (bool): Use http authentication (default: True)
+
     Returns:
         None
 
@@ -116,7 +120,8 @@ def copy_to_device(device,
 
     with FileServer(protocol='http',
                     address=local_ip,
-                    path=remote_path_parent) as fs:
+                    path=remote_path_parent,
+                    http_auth=http_auth) as fs:
 
         local_port = fs.get('port')
 
@@ -142,25 +147,31 @@ def copy_to_device(device,
             [r'Destination filename', 'sendline()', None, True, False],
         ])
 
+        cmd = 'curl'
+
+        if http_auth:
+            username = fs.get('credentials', {}).get('http', {}).get('username', '')
+            password = to_plaintext(fs.get('credentials', {}).get('http', {}).get('password', ''))
+            cmd += ' -u {}:{}'.format(username, password)
+
+        if mgmt_src_ip and proxy_port:
+            cmd += ' http://{}:{}/{}'.format(mgmt_src_ip, proxy_port, remote_path)
+        elif mgmt_src_ip:
+            cmd += ' http://{}:{}/{}'.format(mgmt_src_ip, local_port, remote_path)
+        else:
+            log.error('Unable to determine management IP address to use to download file')
+            return False
+
+        if local_path:
+            cmd += ' -o {}'.format(local_path)
+        else:
+            cmd += ' -O'
+
+        if vrf:
+            cmd += ' vrf {}'.format(vrf)
+
         try:
-            if mgmt_src_ip and proxy_port:
-                cmd = 'curl http://{}:{}/{}'.format(mgmt_src_ip, proxy_port, remote_path)
-            elif mgmt_src_ip:
-                cmd = 'curl http://{}:{}/{}'.format(mgmt_src_ip, local_port, remote_path)
-            else:
-                log.error('Unable to determine management IP address to use to download file')
-                return False
-
-            if local_path:
-                cmd += ' -o {}'.format(local_path)
-            else:
-                cmd += ' -O'
-
-            if vrf:
-                cmd += ' vrf {}'.format(vrf)
-
             device.execute(cmd, reply=copy_dialog, timeout=timeout, append_error_pattern=[r'%\s*Error', r'%\s*Invalid'])
-
         except Exception:
             log.error('Failed to transfer file', exc_info=True)
             return False
@@ -176,6 +187,7 @@ def copy_from_device(device,
                      vrf=None,
                      timeout=300,
                      timestamp=False,
+                     http_auth=True,
                      **kwargs):
     """
     Copy a file from the device to the server or local system (where the script is running).
@@ -190,6 +202,7 @@ def copy_from_device(device,
         vrf (str): VRF to use for copying (default: None)
         timeout('int'): timeout value in seconds, default 300
         timestamp (bool): include timestamp in filename (default: False)
+        http_auth (bool): Use http authentication (default: True)
 
     Returns:
         (boolean): True if successful, False if not
@@ -257,7 +270,8 @@ def copy_from_device(device,
 
     with FileServer(protocol='http',
                     address=local_ip,
-                    path=remote_path) as fs:
+                    path=remote_path,
+                    http_auth=http_auth) as fs:
 
         local_port = fs.get('port')
 
@@ -283,22 +297,28 @@ def copy_from_device(device,
             [r'Destination filename', 'sendline()', None, True, False],
         ])
 
+        cmd = 'curl --upload-file {} '.format(local_path)
+
+        if http_auth:
+            username = fs.get('credentials', {}).get('http', {}).get('username', '')
+            password = to_plaintext(fs.get('credentials', {}).get('http', {}).get('password', ''))
+            cmd += '-u {}:{} '.format(username, password)
+
+        if mgmt_src_ip and proxy_port:
+            cmd += 'http://{}:{}/{}'.format(
+                    mgmt_src_ip, proxy_port, filename)
+        elif mgmt_src_ip:
+            cmd += 'http://{}:{}/{}'.format(
+                    mgmt_src_ip, local_port, filename)
+        else:
+            log.error('Unable to determine management IP address to use to upload file')
+            return False
+
+        if vrf:
+            cmd += ' vrf {}'.format(vrf)
+
         try:
-            if mgmt_src_ip and proxy_port:
-                cmd = 'curl --upload-file {} http://{}:{}/{}'.format(
-                      local_path, mgmt_src_ip, proxy_port, filename)
-            elif mgmt_src_ip:
-                cmd = 'curl --upload-file {} http://{}:{}/{}'.format(
-                      local_path, mgmt_src_ip, local_port, filename)
-            else:
-                log.error('Unable to determine management IP address to use to upload file')
-                return False
-
-            if vrf:
-                cmd += ' vrf {}'.format(vrf)
-
             device.execute(cmd, reply=copy_dialog, timeout=timeout, append_error_pattern=[r'%\s*Error', r'%\s*Invalid'])
-
         except Exception:
             log.error('Failed to transfer file', exc_info=True)
             return False

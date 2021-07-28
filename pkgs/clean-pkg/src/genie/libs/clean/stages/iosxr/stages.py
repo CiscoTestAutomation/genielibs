@@ -12,6 +12,7 @@ import re
 from pyats import aetest
 from pyats.async_ import pcall
 from pyats.log.utils import banner
+from pyats.utils.fileutils import FileUtils
 
 # Genie
 from genie.libs import clean
@@ -293,12 +294,17 @@ def tftp_boot(section, steps, device, ip_address, subnet_mask, gateway,
 @clean_schema({
     Optional('image'): list,
     Optional('packages'): list,
+    Optional('tftp_server'): str,
+    Optional('remove_inactive_pkgs'): bool,
     Optional('install_timeout'): int,
-    Optional('reload_timeout'): int
+    Optional('reload_timeout'): int,
+    Optional('commit_sleep'): int
 })
 @aetest.test
 def install_image_and_packages(section, steps, device, image, packages,
-                           install_timeout=300, reload_timeout=900):
+                               tftp_server=None,remove_inactive_pkgs=True,
+                               install_timeout=300, reload_timeout=900,
+                               commit_sleep=180):
     """ This stage installs the provided image and optional packages onto
     your device using the install CLI. The stage will also handle the
     automatic reload.
@@ -311,8 +317,12 @@ def install_image_and_packages(section, steps, device, image, packages,
         packages:
             - <package to install> (Optional)
             - <package to install> (Optional)
+        tftp_server: tftp_server (Optional)
+        remove_inactive_pkgs: <to remove inactive packages, 'bool', Default True (Optional)
         install_timeout: <timeout used for install operations, 'int', Default 300> (Optional)
         reload_timeout: <timeout used for device reloads, 'int', Default 900> (Optional)
+        commit_sleep: <sleep before doing install commit, 'int', Default 180> (Optional)
+
 
 
     Example
@@ -323,9 +333,20 @@ def install_image_and_packages(section, steps, device, image, packages,
         packages:
             - flash:package.rpm
 
-    """
+    or 
 
-    
+    install_image_and_packages:
+        image:
+            - /tftp_path/image.iso
+        packages:
+            - /tftp_path/package.rpm
+        tftp_server: tftp_server_1
+        remove_inactive_pkgs: True
+        install_timeout: 2700
+        reload_timeout: 800
+        commit_sleep: 180
+
+    """
     def _getFileNameFromPath(str):
         """ Internal Method to retrieve fileame from an XR path.
         Work with the following format : 
@@ -350,47 +371,94 @@ def install_image_and_packages(section, steps, device, image, packages,
         return dirname, filename
     
     # Commonly used patterns
-    error_patterns = [
-        r".*Could not start this install operation.*",
-        r".*Install operation \d+ aborted.*"]
+    could_not_start_install_pattern = r".*Could not start this install operation.*"
+    install_operation_aborted_pattern = r".*Install operation (?P<id>\d+) aborted.*"
+    error_patterns = [ 
+        could_not_start_install_pattern,
+        install_operation_aborted_pattern 
+        ]
 
     successful_operation_string = \
         r".*Install operation (?P<id>\d+) finished successfully.*"
 
-    if ':' not in image[0]:
-        section.failed("The image provided is not in the format '<dir>:<image>'"
-                        "or '<dir>:<folder>/<image>'.")
+    # Get Ip address of tftp server if tftp_server is provided
+    if tftp_server :
+        if not hasattr(device.testbed, 'servers'):
+            section.failed("Cannot find any servers in the testbed")
+        fu = FileUtils(testbed=device.testbed)
+        tftp_server = fu.get_hostname(tftp_server)
 
     with steps.start("Running install commit to clear any in progress "
                      "installs") as step:
 
         try:
             device.execute("install commit")
-            device.expect(
-                [successful_operation_string],
+            output = device.expect(
+                [successful_operation_string, install_operation_aborted_pattern],
                 timeout=install_timeout)
+            error = re.search(install_operation_aborted_pattern, output.match_output) 
+            if error :
+                device.execute("show install log "+ error.groupdict()['id'])
+                step.failed("The command 'install commit' aborted ")
         except Exception as e:
             step.failed("The command 'install commit' failed. Reason: "
                         "{}".format(str(e)))
 
+    # Remove inactive packages to avoid installation errors
+    if remove_inactive_pkgs :
+        with steps.start("Running install remove inactive packages"
+                " to avoid installation errors") as step:
+            try:
+                device.execute("install remove inactive all",
+                            error_pattern=error_patterns)
+                output = device.expect(
+                    [successful_operation_string, install_operation_aborted_pattern],
+                    timeout=install_timeout)
+                error = re.search(install_operation_aborted_pattern, output.match_output) 
+                if error :
+                    device.execute("show install log "+ error.groupdict()['id'])
+                    step.passx("The command 'install remove inactive all' aborted ")
+            except Exception as e:
+                step.passx("The command 'install remove inactive all' failed. Reason: "
+                            "{}".format(str(e)))
+
     with steps.start("Adding image and any provided packages to the "
                      "install repository") as step:
 
-        # Separate directory and image
-        directory, image = _getFileNameFromPath(image[0])
-
-        # Get packages and remove directories
-        # pkgs = ' pkg1 pkg2 pkg3 ...'
-        pkgs = ''
-        for pkg in packages:
-            _, pkg = _getFileNameFromPath(pkg)
-            pkgs += ' '+pkg
+        try :
+            # Get Image Files from install_image_and_packages
             
-        # install add source flash: <image> <pkg1> <pkg2>
-        cmd = 'install add source {dir} {image} {packages}'.format(
-            dir=directory, image=image, packages=pkgs)
+            # Get Image Files from TFTP path if tftp_server is provided
+            if tftp_server :
+                # Separate directory and image
+                directory, image = _getFileNameFromPath(image[0])
+                pkgs = ''
+                for pkg in packages:
+                    _, pkg = _getFileNameFromPath(pkg)
+                    pkgs += ' '+pkg
+            
+                directory = '{p}://{s}/{f}'.format(p='tftp', s=tftp_server, f=directory)
 
-        try:
+            # Get Image Files in device location
+            elif ':' in image[0]:
+                # Separate directory and image
+                directory, image = _getFileNameFromPath(image[0])
+                # Get packages and remove directories
+                # pkgs = ' pkg1 pkg2 pkg3 ...'
+                pkgs = ''
+                for pkg in packages:
+                    _, pkg = _getFileNameFromPath(pkg)
+                    pkgs += ' '+pkg
+            
+            else :
+                section.failed("The image provided is not in the format '<dir>:<image>'"
+                    "or '<dir>:<folder>/<image>' or '/tftp_path/image.iso'.")
+                
+            # install add tftp://tftp_server_ip/tftp_path/ <image> <pkg1> <pkg2> or
+            # install add source flash: <image> <pkg1> <pkg2> 
+            cmd = 'install add source {dir} {image} {packages}'.format(
+                dir=directory, image=image, packages=pkgs)
+        
             device.execute(
                 cmd,
                 timeout=install_timeout,
@@ -468,16 +536,22 @@ def install_image_and_packages(section, steps, device, image, packages,
 
         step.failed("Could not connect to {dev}. Error: {e}"
                     .format(dev=device.hostname, e=str(connection_error)))
-
+                       
     with steps.start("Completing install") as step:
 
         try:
+            log.info("Sleeping for {sleep} seconds to wait for all nodes to come up"
+                    .format(sleep=str(commit_sleep)))
+            time.sleep(commit_sleep)
             device.execute("install commit")
 
-            device.expect(
-                [successful_operation_string],
+            output = device.expect(
+                [successful_operation_string, install_operation_aborted_pattern],
                 trim_buffer=False,
                 timeout=install_timeout)
+            error = re.search(install_operation_aborted_pattern, output.match_output) 
+            if error :
+                device.execute("show install log "+ error.groupdict()['id'])
+                step.failed("The command 'install commit' aborted ")
         except Exception as e:
             step.failed("The command 'install commit' failed. Reason: {}".format(str(e)))
-

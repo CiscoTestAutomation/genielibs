@@ -339,3 +339,24 @@ def delete_unprotected_files(device,
         log.info(
             "No files will be deleted, the following files are protected:\n{}".
             format('\n'.join(protected_set)))
+
+def execute_card_OIR(device, card_number):
+    ''' Execute 'hw-module subslot <slot> oir power-cycle' on the device
+        Args:
+            device ('obj'): Device object
+            card_number ('str'): Card number on which OIR has to be performed
+    '''
+    log.info("Executing 'hw-module subslot <slot> oir power-cycle' on the device")
+
+    try:
+        output = device.transmit('hw-module subslot {card_number} oir power-cycle'.format(card_number=card_number)) 
+        device.transmit('\r')
+        device.transmit('\r')
+    except Exception as err:
+        log.error("Failed to execute 'hw-module subslot <slot> oir power-cycle'\n{err}".format(err=err))
+        raise Exception(err)
+
+    if 'True' in output:
+        log.info("Successfully executed 'hw-module subslot <slot> oir power-cycle'")
+    else:
+        raise Exception("Failed to execute 'hw-module subslot <slot> oir power-cycle'")
