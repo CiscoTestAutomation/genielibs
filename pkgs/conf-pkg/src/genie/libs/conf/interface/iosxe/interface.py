@@ -125,6 +125,13 @@ class Interface(genie.libs.conf.interface.Interface):
         type=(None, managedattribute.test_istype(str)),
         doc= 'vrf_downstream ')
 
+    dhcp_snooping = managedattribute(
+        name='dhcp_snooping',
+        default=None,
+        type=(None, managedattribute.test_istype(str)),
+        doc= 'Enabling IP DHCP Snooping trust on the interface')
+
+
     class ENCAPSULATION(Enum):
         dot1q = 'dot1q'
 

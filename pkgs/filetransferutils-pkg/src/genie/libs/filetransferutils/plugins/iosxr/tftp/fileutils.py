@@ -2,11 +2,10 @@
 
 from ..fileutils import FileUtils as FileUtilsXRBase
 
-class FileUtils(FileUtilsXRBase):
-    COPY_CONFIG_TEMPLATE = '''\
-tftp client source-interface {interface}
-'''
 
-    COPY_CONFIG_VRF_TEMPLATE = '''\
-tftp client vrf {vrf} source-interface {interface}
-'''
+class FileUtils(FileUtilsXRBase):
+    COPY_CONFIG_TEMPLATE = ['tftp client source-interface {interface}']
+
+    COPY_CONFIG_VRF_TEMPLATE = [
+        'tftp client vrf {vrf} source-interface {interface}'
+    ]

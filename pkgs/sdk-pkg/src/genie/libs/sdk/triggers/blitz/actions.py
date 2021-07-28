@@ -153,9 +153,10 @@ def add_result_as_extra(func):
                     runtime.health_results['health_data'] = all_health_data
 
                 # send webex notification in case not passed or passx
-                if runtime.args.health_webex and health_result not in [
-                        'passed', 'passx'
-                ]:
+                if (runtime.args.health_notify_webex or
+                        runtime.args.health_webex) and health_result not in [
+                            'passed', 'passx'
+                        ]:
                     # get pid
                     pid = os.getpid()
                     # assume as forked process and build filename
@@ -282,6 +283,9 @@ def configure(self,
               health_sections=None,
               **kwargs):
 
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
+
     # checking if custom msg else default msg will be written
     msg = kwargs.pop('custom_substep_message',
                      "Configuring '{device}'".format(device=device.name))
@@ -320,6 +324,9 @@ def configure_dual(self,
                    health_groups=None,
                    health_sections=None,
                    **kwargs):
+
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
 
     # checking if custom msg else default msg will be written
     msg = kwargs.pop(
@@ -368,6 +375,9 @@ def parse(self,
           health_sections=None,
           *args,
           **kwargs):
+
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
 
     # checking if custom msg else default msg will be written
     msg = kwargs.pop('custom_substep_message',
@@ -424,6 +434,9 @@ def execute(self,
             health_sections=None,
             **kwargs):
 
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
+
     # checking if custom msg else default msg will be written
     msg = kwargs.pop(
         'custom_substep_message',
@@ -475,6 +488,9 @@ def api(self,
         health_sections=None,
         alias=None,
         **kwargs):
+
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
 
     # action api
     output = None
@@ -531,6 +547,9 @@ def learn(self,
           health_sections=None,
           **kwargs):
 
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
+
     msg = kwargs.pop(
         'custom_substep_message',
         "Learning '{f}' on '{d}'".format(f=feature, d=device.name))
@@ -568,6 +587,9 @@ def compare(self,
             health_groups=None,
             health_sections=None,
             **kwargs):
+
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
 
     # action compare
     if not items:
@@ -614,6 +636,9 @@ def sleep(self,
           *args,
           **kwargs):
 
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
+
     log.info('Sleeping for {s} seconds'.format(s=sleep_time))
     time.sleep(float(sleep_time))
 
@@ -646,6 +671,9 @@ def rest(self,
          health_sections=None,
          *args,
          **kwargs):
+
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
 
     msg = kwargs.pop('custom_substep_message',
                      "Submitting a '{m}' call to a REST API on '{d}'".\
@@ -693,6 +721,9 @@ def yang(self,
          health_sections=None,
          *args,
          **kwargs):
+
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
 
     if connection:
         device = getattr(device, connection)
@@ -753,7 +784,12 @@ def configure_replace(self,
                       processor='',
                       health_uids=None,
                       health_groups=None,
-                      health_sections=None):
+                      health_sections=None,
+                      **kwargs):
+
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
+
     restore = sdk.libs.abstracted_libs.restore.Restore(device=device)
 
     # lib.to_url is normally saved via restore.save_configuration()
@@ -791,7 +827,12 @@ def save_config_snapshot(self,
                          processor='',
                          health_uids=None,
                          health_groups=None,
-                         health_sections=None):
+                         health_sections=None,
+                         **kwargs):
+
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
+
     # setup restore object for device
     if not hasattr(self, 'restore'):
         self.restore = {}
@@ -841,7 +882,10 @@ def restore_config_snapshot(self,
                             processor='',
                             health_uids=None,
                             health_groups=None,
-                            health_sections=None):
+                            health_sections=None,
+                            **kwargs):
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
 
     if not hasattr(self, 'restore') or device not in self.restore:
         steps.errored("Must use action 'save_config_snapshot' first.\n\n")
@@ -935,6 +979,9 @@ def genie_sdk(self,
               health_sections=None,
               **kwargs):
 
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
+
     # This is to remove the uut dependency of genie standalone.
     # Since the device we are running the sdk on is in the
     # kwargs we just pass the first device found as the 'uut'
@@ -1015,6 +1062,9 @@ def diff(self,
          feature=None,
          mode=None,
          **kwargs):
+
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
 
     msg = kwargs.pop('custom_substep_message',
                      "Perform Diff for '{device}'".format(device=device.name))

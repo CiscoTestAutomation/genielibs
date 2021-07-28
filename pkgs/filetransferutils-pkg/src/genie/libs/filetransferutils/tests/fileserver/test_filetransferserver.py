@@ -68,3 +68,20 @@ class TestFileServer(unittest.TestCase):
             self.assertIn('port', fs)
             self.assertEqual(fs['path'], '/')
             self.assertEqual(fs['protocol'], 'http')
+
+    def test_http_auth(self):
+        with FileServer(protocol='http',
+                        subnet='127.0.0.1/32',
+                        http_auth=True,
+                        credentials=dict(http=dict(
+                            username='test',
+                            password='test123'
+                        ))
+                        ) as fs:
+            self.assertEqual(fs['address'], '127.0.0.1')
+            self.assertIn('port', fs)
+            self.assertEqual(fs['path'], '/')
+            self.assertEqual(fs['protocol'], 'http')
+            self.assertEqual(fs['credentials']['http']['username'], 'test')
+            self.assertEqual(
+                to_plaintext(fs['credentials']['http']['password']), 'test123')

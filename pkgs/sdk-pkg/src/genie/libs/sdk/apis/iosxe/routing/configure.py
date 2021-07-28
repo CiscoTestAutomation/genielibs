@@ -188,3 +188,131 @@ def enable_routing_debug_static_route(device, route, mask):
         raise SubCommandFailure(
             "Could not enable debug on static route. Error:\n{}".format(e)
         )
+
+
+def enable_ip_routing(device):
+    """ Enables ip routing on device
+
+        Args:
+            device ('str'): Device str
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        'Enabling ip routing on device '
+    )
+
+    try:
+        device.configure(
+            "ip routing"
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not enable ip routing on device. Error:\n{e}".format(e=e)
+        )
+
+def enable_ipv6_unicast_routing(device):
+    """ Enables ipv6 unicast routing on device
+
+        Args:
+            device ('str'): Device str
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        'Enabling ipv6 unicast routing on device '
+    )
+
+    try:
+        device.configure(
+            "ipv6 unicast-routing"
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not enable ipv6 unicast routing on device. Error:\n{e}".format(e=e)
+        )
+
+def disable_ip_routing(device):
+    """ Disables ip routing on device
+
+        Args:
+            device ('str'): Device str
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        'Disabling ip routing on device '
+    )
+
+    try:
+        device.configure(
+            "no ip routing"
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not disable ip routing on device. Error:\n{e}".format(e=e)
+        )
+
+
+def set_system_mtu(device, mtu_value):
+    """ Sets mtu value on device
+
+        Args:
+            device ('str'): Device str
+            mtu_value ('str'): MTU value to be set
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        'Setting mtu value on device '
+    )
+
+    try:
+        device.configure(
+            "system mtu {mtu_value}".format(mtu_value=mtu_value)
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not set mtu value on device. Error:\n{e}".format(e=e)
+        )
+
+
+def disable_keepalive_on_interface(device, interface):
+    """ Disables keepalive on interface 
+
+        Args:
+            device ('str'): Device str
+            interface ('str'): MTU value to be configured
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        'Disabling keepalive on interface '
+    )
+
+    try:
+        device.configure(["interface {interface}".format(interface=interface), "no keepalive"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not disable keepalive on interface {interface}. Error:\n{error}".format(interface=interface, error=e)
+        )

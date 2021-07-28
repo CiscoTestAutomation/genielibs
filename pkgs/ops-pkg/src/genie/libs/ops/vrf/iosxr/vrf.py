@@ -20,10 +20,18 @@ class Vrf(SuperVrf):
         src = '[(?P<vrf>.*)][address_family][(?P<af>.*)][route_target]'
         dest = 'info[vrfs][(?P<vrf>.*)][address_family][(?P<af>.*)][route_targets]'
 
+        # route_distinguisher
         self.add_leaf(cmd=ShowVrfAllDetail,
                       src='[(?P<vrf>.*)][route_distinguisher]',
                       dest='info[vrfs][(?P<vrf>.*)][route_distinguisher]',
                       vrf=vrf)
+
+        # description
+        self.add_leaf(cmd=ShowVrfAllDetail,
+                      src= '[(?P<vrf>.*)][description]',
+                      dest= 'info[vrfs][(?P<vrf>.*)][description]',
+                      vrf=vrf)
+
         self.add_leaf(cmd=ShowVrfAllDetail,
                       src=src,
                       dest=dest,

@@ -130,6 +130,8 @@ class CleanTestcase(Testcase):
                           "is changed to:\n- " + "\n- ".join(pass_order)
                     log.warning(msg)
                     order = pass_order
+                    if self.image_handler:
+                        self.image_handler.update_image_references(section)
                     break
 
                 fail_order = self.stages[stage]['change_order_if_fail']

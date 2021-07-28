@@ -4,10 +4,6 @@ from ..fileutils import FileUtils as FileUtilsXEBase
 
 
 class FileUtils(FileUtilsXEBase):
-    COPY_CONFIG_TEMPLATE = '''\
-ip ftp source-interface {interface}
-'''
+    COPY_CONFIG_TEMPLATE = ['ip ftp source-interface {interface}']
 
-    COPY_CONFIG_VRF_TEMPLATE = '''\
-ip ftp source-interface {interface}
-'''
+    COPY_CONFIG_VRF_TEMPLATE = ['ip ftp source-interface {interface}']

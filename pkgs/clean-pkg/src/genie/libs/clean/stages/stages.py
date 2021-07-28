@@ -1144,14 +1144,16 @@ def write_erase(section, steps, device, timeout=300):
         Optional('reload_creds'): str,
         Optional('prompt_recovery'): bool,
         Any(): Any()
-    }
+    },
+    Optional('via'): str,
 })
 @aetest.test
 def reload(section,
            steps,
            device,
            reload_service_args=None,
-           check_modules=None):
+           check_modules=None,
+           reconnect_via=None):
     """ This stage reloads the device.
 
     Stage Schema
@@ -1168,6 +1170,8 @@ def reload(section,
             timeout: <timeout value to verify modules are in stable state, default 180 seconds. 'int'> (Optional)
             interval: <interval value between checks for verifying module status, default 30 seconds. 'int'> (Optional)
 
+        reconnect_via: <specify which connection to connect to. 'str'> (Optional)
+
 
     Example
     -------
@@ -1177,6 +1181,7 @@ def reload(section,
             reload_creds: clean_reload_creds
             prompt_recovery: True
             reconnect_sleep: 200 (Unicon NXOS reload service argument)
+            reconnect_via: specify which connection to connect to
 
         check_modules:
             check: False
@@ -1231,9 +1236,15 @@ def reload(section,
     # Reconnect to device
     with steps.start("Reconnect to '{dev}'".format(dev=device.name)) as step:
         try:
-            device.connect(
-                learn_hostname=True,
-                prompt_recovery=reload_service_args['prompt_recovery'])
+            if reconnect_via:
+                device.connect(
+                    learn_hostname=True,
+                    prompt_recovery=reload_service_args['prompt_recovery'],
+                    via=reconnect_via)
+            else:
+                device.connect(
+                    learn_hostname=True,
+                    prompt_recovery=reload_service_args['prompt_recovery'])
         except Exception as e:
             step.failed("Could not reconnect to '{dev}':\nError: {e}".format(
                 dev=device.name, e=str(e)))

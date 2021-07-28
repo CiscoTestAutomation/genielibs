@@ -16,7 +16,9 @@ def health_cpu(device,
                command='show processes cpu',
                processes=None,
                check_key='one_min_cpu',
+               check_key_total='one_min_cpu',
                output=None,
+               add_total=False,
                health=True):
     '''Get cpu load on device
 
@@ -28,6 +30,9 @@ def health_cpu(device,
                                 Default to None
             check_key  (`str`): Key to check in parsed output
                                 Default to `one_min_cpu`
+            check_key_total (`str`): Key to check in parsed output
+                                     for Total. Default to `one_min_cpu`
+            add_total    (`bool`): If True, add total cpu load
             output     (`str`): Output of show command
                                 Default to None
         Returns:
@@ -58,7 +63,7 @@ def health_cpu(device,
 
     all_processes = parsed.q.get_values('process')
 
-    if processes or all_processes:
+    if (processes or all_processes):
         for ps_item in processes or all_processes:
             # To get process id based on check_key
             # {
@@ -99,12 +104,22 @@ def health_cpu(device,
     #     }
     #   ]
     # }
+    total_load = float(
+        parsed.q.not_contains('index').get_values(check_key_total, 0))
     if health:
         health_data = {}
         health_data.setdefault('health_data', [])
+        if add_total:
+            health_data['health_data'].append({
+                'process': 'ALL_PROCESSES',
+                'value': total_load
+            })
         for k, v in cpu_load_dict.items():
             health_data['health_data'].append({'process': k, 'value': v})
-        cpu_load_dict = health_data
+        return health_data
+
+    if add_total:
+        cpu_load_dict.update({'ALL_PROCESSES': total_load})
 
     return cpu_load_dict
 
@@ -114,6 +129,7 @@ def health_memory(device,
                   processes=None,
                   check_key='dynamic',
                   output=None,
+                  add_total=False,
                   health=True):
     '''Get memory usage on device
 
@@ -127,6 +143,7 @@ def health_memory(device,
                                     Default to None
             check_key      (`str`): Key to check in parsed output
                                     Default to `dynamic`
+            add_total    (`bool`): If True, add total memory usage
             output         (`str`): Output of show command
                                     Deault to None
         Returns:
@@ -167,6 +184,8 @@ def health_memory(device,
 
     if regex_items:
         processes = regex_items
+
+    total_memory_usage = 0
     if processes or all_processes:
         for ps_item in (sorted(processes) if isinstance(processes, list) else
                         processes) or (sorted(all_processes) if isinstance(
@@ -200,7 +219,10 @@ def health_memory(device,
                     memory_holding += device.api.unit_convert(dynamic)
 
             memory_usage = 0 if physical_total == 0 else memory_holding / physical_total
-            memory_usage_dict.update({ps_item: memory_usage * 100})
+            memory_usage_percent = memory_usage * 100
+            memory_usage_dict.update({ps_item: memory_usage_percent})
+            if add_total:
+                total_memory_usage += memory_usage_percent
 
     # if health is True, change the dict
     # from:
@@ -224,9 +246,16 @@ def health_memory(device,
     if health:
         health_data = {}
         health_data.setdefault('health_data', [])
+        health_data['health_data'].append({
+            'process': 'ALL_PROCESSES',
+            'value': total_memory_usage
+        })
         for k, v in memory_usage_dict.items():
             health_data['health_data'].append({'process': k, 'value': v})
-        memory_usage_dict = health_data
+        return health_data
+
+    if add_total:
+        memory_usage_dict.update({'ALL_PROCESSES': total_memory_usage})
 
     return memory_usage_dict
 
@@ -447,13 +476,17 @@ def health_core(device,
                         if health:
                             health_corefiles.setdefault(file, {})
 
+        # in case of HTTP, will use FileUtils
+        if protocol == 'http':
+            fileutils = True
+
         # copy core file to remote device
-        if remote_device:
+        if remote_device or protocol == 'http':
             for corefile in corefiles:
                 copy_success = False
                 if fileutils:
-                    log.info('Copying {s} to remote device {rd} via FileUtils'.
-                             format(s=corefile, rd=remote_device))
+                    log.info('Copying {s} via FileUtils'.
+                             format(s=corefile))
                 else:
                     log.info(
                         'Copying {s} to remote device {rd} via API'.format(
@@ -465,13 +498,18 @@ def health_core(device,
                 local_path = "{la}/{fn}".format(la=location_alias, fn=corefile)
                 # execute by FileUtils
                 if fileutils:
-                    # import remote_pdb; remote_pdb.set_trace()
                     try:
-                        device.api.copy_from_device(protocol=protocol,
-                                                    server=remote_device,
-                                                    remote_path=remote_path,
-                                                    local_path=local_path,
-                                                    vrf=vrf)
+                        # if protocol is 'http', will use FileUtils only with local_path
+                        # proxy of device will be detected automatically. if proxy,
+                        # proxy will be used as remote_device
+                        if protocol == 'http':
+                            device.api.copy_from_device(local_path, vrf=vrf)
+                        else:
+                            device.api.copy_from_device(protocol=protocol,
+                                                        server=remote_device,
+                                                        remote_path=remote_path,
+                                                        local_path=local_path,
+                                                        vrf=vrf)
                         copy_success = True
                     except Exception as e:
                         log.warn(

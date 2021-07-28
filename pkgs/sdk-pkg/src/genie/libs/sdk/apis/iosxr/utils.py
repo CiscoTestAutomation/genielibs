@@ -242,6 +242,7 @@ def copy_to_device(device,
                    compact=False,
                    use_kstack=False,
                    fu=None,
+                   http_auth=True,
                    **kwargs):
     """
     Copy file from linux server to the device.
@@ -259,6 +260,8 @@ def copy_to_device(device,
         use_kstack(bool): Use faster version of copy, defaults False
                             Not supported with a file transfer protocol
                             prompting for a username and password
+        http_auth (bool): Use http authentication (default: True)
+
     Returns:
         None
 
@@ -279,6 +282,7 @@ def copy_to_device(device,
                                   compact=compact,
                                   use_kstack=use_kstack,
                                   fu=fu,
+                                  http_auth=http_auth,
                                   **kwargs)
 
 

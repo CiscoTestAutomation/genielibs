@@ -42,7 +42,7 @@ class TestUtilsApi(unittest.TestCase):
         device.api.get_local_ip = Mock(return_value='127.0.0.1')
         device.execute = Mock()
         copy_from_device(device, local_path='flash:test.txt')
-        assert re.search(r'copy flash:test.txt http://127.0.0.1:\d+/router_test.txt', str(device.execute.call_args))
+        assert re.search(r'copy flash:test.txt http://\w+:\w+@127.0.0.1:\d+/router_test.txt', str(device.execute.call_args))
 
     def test_copy_from_device_via_proxy(self):
         device = MagicMock()
@@ -56,7 +56,7 @@ class TestUtilsApi(unittest.TestCase):
         device.api.get_local_ip = Mock(return_value='127.0.0.1')
         device.execute = Mock()
         copy_from_device(device, local_path='flash:test.txt')
-        assert re.search(r'copy flash:test.txt http://127.0.0.2:2000/router_test.txt', str(device.execute.call_args))
+        assert re.search(r'copy flash:test.txt http://\w+:\w+@127.0.0.2:2000/router_test.txt', str(device.execute.call_args))
 
     def test_copy_to_device(self):
         device = MagicMock()
@@ -66,7 +66,7 @@ class TestUtilsApi(unittest.TestCase):
         device.api.get_local_ip = Mock(return_value='127.0.0.1')
         device.execute = Mock()
         copy_to_device(device, remote_path='/tmp/test.txt')
-        assert re.search(r'copy http://127.0.0.1:\d+//tmp/test.txt flash:', str(device.execute.call_args))
+        assert re.search(r'copy http://\w+:\w+@127.0.0.1:\d+//tmp/test.txt flash:', str(device.execute.call_args))
 
     def test_copy_to_device_via_proxy(self):
         device = MagicMock()
@@ -79,4 +79,4 @@ class TestUtilsApi(unittest.TestCase):
         device.api.get_local_ip = Mock(return_value='127.0.0.1')
         device.execute = Mock()
         copy_to_device(device, remote_path='/tmp/test.txt')
-        assert re.search(r'copy http://127.0.0.2:2000//tmp/test.txt flash:', str(device.execute.call_args))
+        assert re.search(r'copy http://\w+:\w+@127.0.0.2:2000//tmp/test.txt flash:', str(device.execute.call_args))

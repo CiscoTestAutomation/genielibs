@@ -168,6 +168,7 @@ def copy_to_device(device,
                    compact=False,
                    use_kstack=False,
                    fu=None,
+                   http_auth=True,
                    **kwargs):
     """
     Copy file from linux server to the device.
@@ -185,6 +186,8 @@ def copy_to_device(device,
         use_kstack(bool): Use faster version of copy, defaults False
                             Not supported with a file transfer protocol
                             prompting for a username and password
+        http_auth (bool): Use http authentication (default: True)
+
     Returns:
         None
 
@@ -205,6 +208,7 @@ def copy_to_device(device,
                               compact=compact,
                               use_kstack=use_kstack,
                               fu=fu,
+                              http_auth=http_auth,
                               **kwargs)
 
 
@@ -216,6 +220,7 @@ def copy_from_device(device,
                      vrf=None,
                      timeout=300,
                      timestamp=False,
+                     http_auth=True,
                      **kwargs):
     """
     Copy a file from the device to the server or local system (where the script is running).
@@ -230,6 +235,7 @@ def copy_from_device(device,
         vrf (str): VRF to use for copying (default: None)
         timeout('int'): timeout value in seconds, default 300
         timestamp (bool): include timestamp in filename (default: False)
+        http_auth (bool): Use http authentication (default: True)
 
     Returns:
         (boolean): True if successful, False if not
@@ -256,6 +262,7 @@ def copy_from_device(device,
                                 vrf=vrf,
                                 timeout=timeout,
                                 timestamp=timestamp,
+                                http_auth=http_auth,
                                 **kwargs)
 
 

@@ -16,6 +16,7 @@ from genie.libs.parser.iosxe.show_vrf import ShowVrfDetail
 outputs = {}
 outputs['show vrf detail VRF2'] = VrfOutput.showVrfDetail_vrf2
 outputs['show vrf detail'] = VrfOutput.showVrfDetail_all
+outputs['show vrf detail Mgmt-vrf'] = VrfOutput.ShowVrfDetail_Mgmt
 
 def mapper(key):
     return outputs[key]
@@ -32,6 +33,7 @@ class test_vrf(unittest.TestCase):
         # Give the device as a connection type
         # This is done in order to call the parser on the output provided
         self.device.connectionmgr.connections['cli'] = self.device
+
     def test_complete_output(self):
         vrf = Vrf(device=self.device)
 
@@ -58,6 +60,19 @@ class test_vrf(unittest.TestCase):
 
         # Verify Ops was created successfully
         self.assertEqual(vrf.info, VrfOutput.VrfCustomInfo)
+
+    def test_custom_vrf_output1(self):
+        vrf = Vrf(device=self.device)
+        vrf.maker.outputs[ShowVrfDetail] = {'': VrfOutput.ShowVrfDetailCustom1}
+        # Set outputs
+        self.device.execute = Mock()
+        self.device.execute.side_effect = mapper
+        # Learn the feature
+        vrf.learn(vrf='Mgmt-vrf')
+        self.maxDiff = None
+
+        # Verify Ops was created successfully
+        self.assertEqual(vrf.info, VrfOutput.VrfCustomInfo1)
 
     def test_selective_attribute(self):
         vrf = Vrf(device=self.device)

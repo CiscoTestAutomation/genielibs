@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 # Error patterns to be caught when executing cli on device
 FAIL_MSG = ['Permission denied', 'failed to copy', 'Unable to find', 'Error opening', 'Error', 'operation failed',
             'Compaction is not supported', 'Copy failed', 'No route to host', 'Connection timed out', 'not found',
-            'No space', 'not a remote file', 'Could not resolve', 'Invalid URI']
+            'No space', 'not a remote file', 'Could not resolve', 'Invalid URI', "couldn't connect to host"]
 
 
 class FileUtils(FileUtilsBase):
@@ -223,31 +223,31 @@ class FileUtils(FileUtilsBase):
         else:
             copy_config = getattr(self, 'COPY_CONFIG_TEMPLATE', None)
 
-        if copy_config:
-            cfg_include = '|'.join([
-                line.split('{')[0] for line in copy_config.splitlines()])
-
-        if interface and copy_config:
-            copy_config = copy_config.format(
-                vrf=vrf,
-                interface=interface)
-        else:
+        if not (interface and copy_config):
             copy_config = None
 
         config_restore = None
         if copy_config:
             try:
-                output = device.execute(
-                    'show running-config | include {}'.format(cfg_include))
-                output = re.sub(r'.*Building configuration...', '', output, flags=re.S)
-                if copy_config.strip() not in output:
-                    # Configure device for file copy if not already present
-                    device.configure(copy_config)
-                    config_restore = '\n'.join([
-                        'no ' + line for line in copy_config.splitlines()])
-                    config_restore += '\n' + output
-                else:
-                    config_restore = None
+                config_send = []
+                config_restore = []
+                for each_config in copy_config:
+                    cfg_include = each_config.split('{')[0]
+                    if interface:
+                        each_config = each_config.format(vrf=vrf,
+                                                         interface=interface,
+                                                         blocksize=8192)
+                    output = device.execute(
+                        'show running-config | include {}'.format(cfg_include))
+                    output = re.sub(r'.*Building configuration...',
+                                    '',
+                                    output,
+                                    flags=re.S)
+                    if cfg_include not in output:
+                        # prepare configure config and restore config
+                        config_send.append(each_config)
+                        config_restore.append('no ' + each_config)
+                device.configure(config_send)
             except Exception:
                 logger.warning(
                     'Failed to apply configuration on %s' % str(device),
