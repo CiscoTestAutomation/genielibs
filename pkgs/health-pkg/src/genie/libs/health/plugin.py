@@ -16,6 +16,7 @@ from pyats.easypy import runtime
 from pyats.easypy.plugins.bases import BasePlugin
 from pyats.aetest.processors.decorator import ProcessorDecorator
 from pyats import configuration as cfg
+from pyats.utils import parser as argparse
 
 # genie
 from genie import testbed
@@ -82,7 +83,8 @@ class HealthCheckPlugin(BasePlugin):
             health_core_default_dir = ['-health_core_default_dir']
             health_checks = ['-health_checks']
             health_devices = ['-health_devices']
-            health_webex = ['-health_webex']
+            health_webex = ['-health_webex']  # deprecated
+            health_notify_webex = ['-health_notify_webex']
         else:
             health_file = ['--health-file']
             health_sections = ['--health-sections']  # deprecated
@@ -99,20 +101,19 @@ class HealthCheckPlugin(BasePlugin):
             health_core_default_dir = ['--health-core-default-dir']
             health_checks = ['--health-checks']
             health_devices = ['--health-devices']
-            health_webex = ['--health-webex']
+            health_webex = ['--health-webex']  # deprecated
+            health_notify_webex = ['--health-notify-webex']
 
         pyats_health_grp.add_argument(*health_file,
                                       dest='health_file',
                                       default=None,
                                       help='Specify health yaml file')
 
-        pyats_health_grp.add_argument(
-            *health_sections,
-            dest='health_sections',
-            default=None,
-            help=
-            '(DEPRECATED. PLEASE USE --health-section-uids which is equivalent)'
-        )
+        # DEPRECATED
+        pyats_health_grp.add_argument(*health_sections,
+                                      dest='health_sections',
+                                      default=None,
+                                      help=argparse.SUPPRESS)
 
         pyats_health_grp.add_argument(
             *health_tc_sections,
@@ -122,12 +123,11 @@ class HealthCheckPlugin(BasePlugin):
             'Specify sections where want to run pyATS Health Check. Regex is supported.'
         )
 
-        pyats_health_grp.add_argument(
-            *health_uids,
-            dest='health_uids',
-            default=None,
-            help='(DEPRECATED. PLEASE USE --health-tc-uids which is equivalent)'
-        )
+        # DEPRECATED
+        pyats_health_grp.add_argument(*health_uids,
+                                      dest='health_uids',
+                                      default=None,
+                                      help=argparse.SUPPRESS)
 
         pyats_health_grp.add_argument(
             *health_tc_uids,
@@ -137,12 +137,11 @@ class HealthCheckPlugin(BasePlugin):
             'Specify triggers uids where want to run pyATS Health Check. Regex is supported'
         )
 
-        pyats_health_grp.add_argument(
-            *health_groups,
-            dest='health_groups',
-            default=None,
-            help=
-            '(DEPRECATED. PLEASE USE --health-tc-groups which is equivalent)')
+        # DEPRECATED
+        pyats_health_grp.add_argument(*health_groups,
+                                      dest='health_groups',
+                                      default=None,
+                                      help=argparse.SUPPRESS)
 
         pyats_health_grp.add_argument(
             *health_tc_groups,
@@ -206,8 +205,15 @@ class HealthCheckPlugin(BasePlugin):
             nargs='*',
             help='Specify devices which checks run against')
 
+        # DEPRECATED
         pyats_health_grp.add_argument(*health_webex,
                                       dest='health_webex',
+                                      default=False,
+                                      action='store_true',
+                                      help=argparse.SUPPRESS)
+
+        pyats_health_grp.add_argument(*health_notify_webex,
+                                      dest='health_notify_webex',
                                       default=False,
                                       action='store_true',
                                       help='Flag to send webex notification')
@@ -221,6 +227,25 @@ class HealthCheckPlugin(BasePlugin):
 
     # pre-task
     def pre_task(self, task):
+
+        # warnings for deprecated arguments
+        if self.runtime.args.health_sections:
+            logger.warning(
+                'DeprecationWarning: --health-sections is deprecated in 21.6. Use --health-tc-sections'
+            )
+        if self.runtime.args.health_uids:
+            logger.warning(
+                'DeprecationWarning: --health-uids is deprecated in 21.6. Use --health-tc-uids'
+            )
+        if self.runtime.args.health_groups:
+            logger.warning(
+                'DeprecationWarning: --health-groups is deprecated in 21.6. Use --health-tc-groups'
+            )
+        if self.runtime.args.health_webex:
+            logger.warning(
+                'DeprecationWarning: --health-webex is deprecated in 21.7. Use --health-notify-webex'
+            )
+
         # after loading health file, add all the sections/actions in health yaml
         # will be added as global context processors to pyATS job.
         # In `health.py`, `health_dispatcher` is the code of context processor.
@@ -274,8 +299,7 @@ class HealthCheckPlugin(BasePlugin):
         health_loaded = None
         # load via --health-file
         if self.runtime.args.health_file:
-            with open(self.runtime.args.health_file) as f:
-                health_loaded = loader.load(f.read())
+            health_loaded = loader.load(self.runtime.args.health_file)
         # load default template via --health-checks
         if self.runtime.args.health_checks and not health_loaded:
             with open(health_yamls.pyats_health_yaml) as f:
@@ -421,15 +445,24 @@ class HealthCheckPlugin(BasePlugin):
                 "Wrong format was given to `--health-devices`. Format would be R1_xe:iosxe,R2_xr:iosxr,R3_nx:nxos`."
             )
 
+        # DEPRECATED. keep for backward compatibility
         _evaluate_arguments(
             self.runtime.args.health_webex,
+            health_settings,
+            'webex',
+            exception_msg=
+            "(DEPRECATED. PLEASE USE --health-notify-webex which is equivalent)"
+        )
+
+        _evaluate_arguments(
+            self.runtime.args.health_notify_webex,
             health_settings,
             'webex',
             exception_msg=
             "Wrong format was given to `--health-webex`. No value required. This is flag. If provide, Tru(webex notification enabled)."
         )
 
-        if self.runtime.args.health_webex:
+        if self.runtime.args.health_notify_webex or self.runtime.args.health_webex:
             runtime.health_webex = {}
             runtime.health_webex[
                 'token'] = self.runtime.args.webex_token or cfg.get(

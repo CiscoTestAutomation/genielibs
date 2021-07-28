@@ -1151,3 +1151,62 @@ def get_interfaces_status(device):
     #           'status': 'up'},
 
     return {key:val.get('status') for key, val in out.get('interface', {}).items()}
+
+def get_interface_description(device,interface):                                
+    """Get description of an interface                                          
+                                                                                
+    Args:                                                                       
+        device ('obj'): device object                                           
+        interface ('str'): Interface name                                       
+                                                                                
+    Returns:                                                                    
+        Interface description string                                            
+                                                                                
+    Raises:                                                                     
+        None                                                                    
+    """  
+    
+    try:                                                                        
+        out = device.parse("show interfaces " + interface + " description")     
+    except SchemaEmptyParserError:                                              
+        log.info("Command has not returned any results")                        
+        return {}                                                               
+    desc = out["interfaces"][interface]["description"]                          
+    return desc                                                                                                                                  
+                                                                                
+def get_interface_type(device,interface):                                       
+    """Get type of an interface                                                 
+                                                                                
+    Args:                                                                       
+        device ('obj'): device object                                           
+        interface ('str'): Interface name                                       
+                                                                                
+    Returns:                                                                    
+        Interface type string                                                   
+                                                                                
+    Raises:                                                                     
+        None                                                                    
+    """     
+    
+    mapping = {                                                                 
+    'FastEthernet': 'ianaift:ethernetCsmacd',                                   
+    'GigabitEthernet': 'ianaift:EthernetCsmacd',                                
+    'TwoGigabitEthernet': 'ianaift:ethernetCsmacd',                             
+    'FiveGigabitEthernet': 'ianaift:ethernetCsmacd',                            
+    'TenGigabitEthernet': 'ianaift:ethernetCsmacd',                             
+    'TwentyFiveGigE': 'ianaift:ethernetCsmacd',                                 
+    'FortyGigabitEthernet': 'ianaift:ethernetCsmacd',                           
+    'HundredGigE': 'ianaift:ethernetCsmacd',                                    
+    'LISP': 'ianaift:propVirtual',                                              
+    'Loopback': 'ianaift:softwareLoopback',                                     
+    'Port-channel': 'ianaift:propVirtual',                                      
+    'Tunnel': 'ianaift:tunnel',                                                 
+    'Vlan': 'ianaift:l3ipvla',                                                  
+    'VirtualPortGroup': 'ianaift:propVirtual'                                   
+    }   
+    
+    for k, v in mapping.items():                                                
+        if k in interface:                                                      
+            return mapping[k]                                                   
+                                                                                
+    return 'ianaift:other'

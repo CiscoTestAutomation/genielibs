@@ -432,21 +432,20 @@ class RpcVerify():
                             r2 = int(r2)
                             # change value to int type for subsequent compare operation
                             value = int(value)
-                        elif datatype in ['decimal64', 'float']:
+                        else:
                             r1 = float(r1)
                             r2 = float(r2)
                             # change value to float type for subsequent compare operation
                             value = float(value)
-                        else:
-                            raise TypeError
                     else:
                         r1 = float(r1)
                         r2 = float(r2)
                         # change value to float type for subsequent compare operation
                         value = float(value)
                 except TypeError:
-                    log_msg = 'OPERATION VALUE {0}: invalid range {1}{2}'.format(
+                    log_msg = 'OPERATION VALUE {0}: range datatype "{1}" {2}{3}'.format(
                         field['xpath'],
+                        datatype,
                         str(field['value']),
                         ' FAILED'
                     )
@@ -487,8 +486,14 @@ class RpcVerify():
                             eval_text = str(v1) + ' ' + field['op'] + ' '
                             eval_text += str(v2)
                         except (TypeError, ValueError):
-                            eval_text = '"' + value + '" ' + field['op']
-                            eval_text += ' "' + fval + '"'
+                            if value.startswith('"') and value.endswith('"'):
+                                eval_text = value + ' ' + field['op']
+                            else:
+                                eval_text = '"' + value + '" ' + field['op']
+                            if fval.startswith('"') and fval.endswith('"'):
+                                eval_text += ' ' + fval
+                            else:
+                                eval_text += ' "' + fval + '"'
                     if eval(eval_text):
                         log_msg = 'OPERATION VALUE {0}: {1} SUCCESS'.format(
                                 field['xpath'], eval_text
@@ -552,7 +557,7 @@ class RpcVerify():
                     name = self.et.QName(reply).localname
                 else:
                     # GNMI response
-                    value = reply
+                    value = reply or 'empty'
                     name = reply_xpath[reply_xpath.rfind('/') + 1:]
                 if 'xpath' in field and field['xpath'] == reply_xpath and \
                         name == field['name']:

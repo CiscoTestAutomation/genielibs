@@ -49,9 +49,11 @@ pyats_health_processors:
     - api:
         common_api: true
         function: get_testcase_name
-        health_sections:
+        arguments:
+          escape_regex_chars: True
+        health_tc_sections:
         - ^(?!common_).*
-        health_uids:
+        health_tc_uids:
         - ^(?!common_).*
         hide_processor: true
         processor: pre
@@ -70,10 +72,10 @@ pyats_health_processors:
               with_os: true
             common_api: true
             function: get_devices
-            health_sections:
-            - ^(?!common_)%VARIABLES{testcase_name}\..*
-            health_uids:
-            - ^(?!common_)%VARIABLES{testcase_name}.*
+            health_tc_sections:
+            - ^(?!common_)%VARIABLES{testcase_name}(\..*)? # ()? for pyATS run. Genie Harness has device alias, but pyATS not
+            health_tc_uids:
+            - ^(?!common_)%VARIABLES{testcase_name}(.*)?
             hide_processor: true
             save:
             - variable_name: testscript.health_settings.devices
@@ -87,17 +89,18 @@ pyats_health_processors:
                   arguments:
                     processes:
                     - .*
+                    add_total: True
                   device: '%VARIABLES{dev._keys}'
                   function: health_cpu
-                  health_sections:
-                  - ^(?!common_)%VARIABLES{testcase_name}\..*
-                  health_uids:
-                  - ^(?!common_)%VARIABLES{testcase_name}.*
+                  health_tc_sections:
+                  - ^(?!common_)%VARIABLES{testcase_name}(\..*)?
+                  health_tc_uids:
+                  - ^(?!common_)%VARIABLES{testcase_name}(.*)?
                   include:
-                  - sum_value_operator('value', '<', "%VARIABLES{testscript.health_settings.threshold.cpu}")
+                  - contains('ALL_PROCESSES', level=-1).sum_value_operator('value', '<', "%VARIABLES{testscript.health_settings.threshold.cpu}")
                   save:
                     - variable_name: health_value # filter is opposite because show value in case of failure
-                      filter: sum_value_operator('value', '>', "%VARIABLES{testscript.health_settings.threshold.memory}").get_values('value', 0)
+                      filter: contains('ALL_PROCESSES', level=-1).sum_value_operator('value', '>', "%VARIABLES{testscript.health_settings.threshold.cpu}").get_values('value', 0)
                   processor: post
               loop_variable_name: dev
               parallel: true
@@ -112,17 +115,18 @@ pyats_health_processors:
                   arguments:
                     processes:
                     - .*
+                    add_total: True
                   device: '%VARIABLES{dev._keys}'
                   function: health_memory
-                  health_sections:
-                  - ^(?!common_)%VARIABLES{testcase_name}\..*
-                  health_uids:
-                  - ^(?!common_)%VARIABLES{testcase_name}.*
+                  health_tc_sections:
+                  - ^(?!common_)%VARIABLES{testcase_name}(\..*)?
+                  health_tc_uids:
+                  - ^(?!common_)%VARIABLES{testcase_name}(.*)?
                   include:
-                  - sum_value_operator('value', '<', "%VARIABLES{testscript.health_settings.threshold.memory}")
+                  - contains('ALL_PROCESSES', level=-1).sum_value_operator('value', '<', "%VARIABLES{testscript.health_settings.threshold.memory}")
                   save:
                     - variable_name: health_value
-                      filter: sum_value_operator('value', '>', "%VARIABLES{testscript.health_settings.threshold.memory}").get_values('value', 0)
+                      filter: contains('ALL_PROCESSES', level=-1).sum_value_operator('value', '>', "%VARIABLES{testscript.health_settings.threshold.memory}").get_values('value', 0)
                   processor: post
               loop_variable_name: dev
               parallel: true
@@ -138,10 +142,10 @@ pyats_health_processors:
                     keywords: '%VARIABLES{testscript.health_settings.show_logging_keywords.%VARIABLES{dev._values}}'
                   device: '%VARIABLES{dev._keys}'
                   function: health_logging
-                  health_sections:
-                  - ^(?!common_)%VARIABLES{testcase_name}\..*
-                  health_uids:
-                  - ^(?!common_)%VARIABLES{testcase_name}.*
+                  health_tc_sections:
+                  - ^(?!common_)%VARIABLES{testcase_name}(\..*)?
+                  health_tc_uids:
+                  - ^(?!common_)%VARIABLES{testcase_name}(.*)?
                   include:
                   - value_operator('num_of_logs', '==', 0)
                   save:
@@ -169,10 +173,10 @@ pyats_health_processors:
                     vrf: '%VARIABLES{testscript.health_settings.mgmt_vrf.%VARIABLES{dev._values}}'
                   device: '%VARIABLES{dev._keys}'
                   function: health_core
-                  health_sections:
-                  - ^(?!common_)%VARIABLES{testcase_name}\..*
-                  health_uids:
-                  - ^(?!common_)%VARIABLES{testcase_name}.*
+                  health_tc_sections:
+                  - ^(?!common_)%VARIABLES{testcase_name}(\..*)?
+                  health_tc_uids:
+                  - ^(?!common_)%VARIABLES{testcase_name}(.*)?
                   include:
                   - value_operator('num_of_cores', '==', 0)
                   save:

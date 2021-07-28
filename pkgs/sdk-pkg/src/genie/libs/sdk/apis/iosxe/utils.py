@@ -678,3 +678,37 @@ def get_mgmt_interface(device, mgmt_ip=None):
     result = out.q.contains_key_value(key='ip_address', value=mgmt_ip).get_values('interface')
     if result:
         return result[0]
+
+
+def get_show_output_line_count(device, command, filter, output=None):
+    """ Count number of lines from show command.
+
+        The command string is created using "{command} | count {filter}"
+
+        Args:
+            device (`obj`): Device object
+            command (`str`): show command
+            filter (`str`): filter expression
+            output (`str`): output of show command. (optional) Default to None
+
+        Returns:
+            line_count (`int`): number of lines based on show command output
+
+        Raises:
+            N/A
+    """
+    command += ' | count {}'.format(filter)
+    if output is None:
+        output = device.execute(command)
+
+    p = re.compile(r'^Number of lines which match regexp = (?P<line_count>\d+)')
+
+    for line in output.splitlines():
+        line = line.strip()
+
+        m = p.match(line)
+        if m:
+            return int(m.groupdict()['line_count'])
+
+    log.warn("Couldn't get line count properly.")
+    return 0

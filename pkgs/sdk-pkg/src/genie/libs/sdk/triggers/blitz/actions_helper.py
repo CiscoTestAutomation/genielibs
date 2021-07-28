@@ -1031,7 +1031,7 @@ def _verify_dq_query_and_execute_include_exclude(action_output, style, key):
     # otherwise the key itself usually for execute action
 
     msg_style = ''
-    message = "'Dq filtered result {dq_result}' is {ms} from action output."
+    message = "'{style}' criteria is {ms}."
 
     if (style == "included" and
         action_output or
@@ -1039,12 +1039,12 @@ def _verify_dq_query_and_execute_include_exclude(action_output, style, key):
         not action_output):
 
         # change the msg_style depending on style
-        msg_style = "found" if style == "included" else "not found"
-        return (Passed, message.format(dq_result=action_output, ms=msg_style))
+        msg_style = "satisfied" if style == "included" else "not satisfied"
+        return (Passed, message.format(style=style[:-1], ms=msg_style))
     else:
         # change the msg_style depending on style
-        msg_style = "found" if style == "excluded" else "not found"
-        return (Failed, message.format(dq_result=action_output, ms=msg_style))
+        msg_style = "satisfied" if style == "excluded" else "not satisfied"
+        return (Failed, message.format(style=style[:-1], ms=msg_style))
 
 def _condition_validator(items):
 

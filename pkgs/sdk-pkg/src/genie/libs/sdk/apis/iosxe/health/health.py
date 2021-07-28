@@ -20,6 +20,7 @@ def health_cpu(device,
                check_key='five_sec_cpu',
                check_key_total='five_sec_cpu_total',
                output=None,
+               add_total=False,
                health=True):
     '''Get cpu load on device
 
@@ -34,6 +35,7 @@ def health_cpu(device,
                                 Default to `five_sec_cpu`
             check_key_total (`str`): Key to check in parsed output for Total
                                      Default to `five_sec_cpu_total`
+            add_total (`bool`): If True, add total cpu load
             output     (`str`): Output of show command
         Returns:
             cpu_load_dict  (`dict`): Cpu load dictionary on the device
@@ -78,8 +80,6 @@ def health_cpu(device,
                     parsed['sort'][index]['process']:
                     parsed['sort'][index][check_key]
                 })
-    else:
-        cpu_load_dict.update({'ALL_PROCESSES': float(parsed[check_key_total])})
 
     # if health is True, change the dict
     # from:
@@ -103,9 +103,19 @@ def health_cpu(device,
     if health:
         health_data = {}
         health_data.setdefault('health_data', [])
+        if add_total:
+            health_data['health_data'].append({
+                'process':
+                'ALL_PROCESSES',
+                'value':
+                float(parsed[check_key_total])
+            })
         for k, v in cpu_load_dict.items():
             health_data['health_data'].append({'process': k, 'value': v})
-        cpu_load_dict = health_data
+        return health_data
+
+    if add_total:
+        cpu_load_dict.update({'ALL_PROCESSES': float(parsed[check_key_total])})
 
     return cpu_load_dict
 
@@ -115,6 +125,7 @@ def health_memory(device,
                   processes=None,
                   check_key='processor_pool',
                   output=None,
+                  add_total=False,
                   health=True):
     '''Get memory usage on device
 
@@ -127,6 +138,7 @@ def health_memory(device,
                                     processes are preferred.
             check_key      (`str`): Key to check in parsed output
                                     Default to `processor_pool`
+            add_total    (`bool`): If True, add total memory usage
             output         (`str`): Output of show command
         Returns:
             memory_usage_dict (`dict`): memory usage dict on the device (percentage)
@@ -207,11 +219,6 @@ def health_memory(device,
                 memory_usage = memory_holding / parsed[check_key]['total']
 
             memory_usage_dict.update({ps_item: memory_usage * 100})
-    else:
-        memory_usage_dict.update({
-            'ALL_PROCESSES':
-            (parsed[check_key]['used'] / parsed[check_key]['total']) * 100
-        })
 
     # if health is True, change the dict
     # from:
@@ -235,9 +242,20 @@ def health_memory(device,
     if health:
         health_data = {}
         health_data.setdefault('health_data', [])
+        if add_total:
+            health_data['health_data'].append({
+                'process': 'ALL_PROCESSES',
+                'value': (parsed[check_key]['used'] / parsed[check_key]['total']) * 100
+            })
         for k, v in memory_usage_dict.items():
             health_data['health_data'].append({'process': k, 'value': v})
-        memory_usage_dict = health_data
+        return health_data
+
+    if add_total:
+        memory_usage_dict.update({
+            'ALL_PROCESSES':
+            (parsed[check_key]['used'] / parsed[check_key]['total']) * 100
+        })
 
     return memory_usage_dict
 
@@ -448,14 +466,17 @@ def health_core(device,
                         if health:
                             health_corefiles.setdefault(file, {})
 
+        # in case of HTTP, will use FileUtils
+        if protocol == 'http':
+            fileutils = True
+
         # copy core file to remote device
-        if remote_device:
+        if remote_device or protocol == 'http':
             for corefile in corefiles:
                 copy_success = False
                 if fileutils:
-                    log.info(
-                        'Copying {corefile} to remote device {rd} via FileUtils'
-                        .format(corefile=corefile, rd=remote_device))
+                    log.info('Copying {corefile} via FileUtils'.format(
+                        corefile=corefile))
                 else:
                     log.info(
                         'Copying {corefile} to remote device {rd} via API'.
@@ -467,11 +488,18 @@ def health_core(device,
                 # execute by FileUtils
                 if fileutils:
                     try:
-                        device.api.copy_from_device(protocol=protocol,
-                                                    server=remote_device,
-                                                    remote_path=remote_path,
-                                                    local_path=local_path,
-                                                    vrf=vrf)
+                        # if protocol is 'http', will use FileUtils only with local_path
+                        # proxy of device will be detected automatically. if proxy,
+                        # proxy will be used as remote_device
+                        if protocol == 'http':
+                            device.api.copy_from_device(local_path)
+                        else:
+                            device.api.copy_from_device(protocol=protocol,
+                                                        server=remote_device,
+                                                        remote_path=remote_path,
+                                                        local_path=local_path,
+                                                        vrf=vrf)
+
                         copy_success = True
                     except Exception as e:
                         log.warn(

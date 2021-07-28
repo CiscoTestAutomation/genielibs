@@ -101,6 +101,7 @@ def get_show_tech(device,
                                ),
                                vrf=vrf,
                                timeout_seconds=timeout, device=device)
+            device.execute('delete {}'.format(filename), reply=delete_dialog)
         except Exception:
             log.error('Failed to copy show tech, keeping file on {}'.format(device_dir))
             return False

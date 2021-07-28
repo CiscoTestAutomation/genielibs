@@ -80,6 +80,7 @@ def get_show_tech(device,
                                    fname=os.path.basename(filename)
                                ),
                                timeout_seconds=timeout, device=device)
+            device.execute('rm -f {}'.format(filename))
         except Exception:
             log.error('Failed to copy show tech, keeping file on filesystem')
             return False

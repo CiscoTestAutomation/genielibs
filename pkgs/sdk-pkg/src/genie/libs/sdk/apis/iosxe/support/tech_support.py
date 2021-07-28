@@ -75,6 +75,11 @@ def get_show_tech(device,
     # Capture show tech to flash
     device.execute('{} | redirect {}'.format(show_tech_command, filename), timeout=timeout)
 
+    delete_dialog = Dialog([
+        [r'Delete filename .*\?\s*$', 'sendline()', None, True, False],
+        [r'Delete .*\[confirm\]\s*$', 'sendline()', None, True, False]
+    ])
+
     if remote_server is not None:
         assert remote_path is not None, 'remote_path should be specified'
 
@@ -89,16 +94,13 @@ def get_show_tech(device,
                                    fname='{}show_tech_{}.txt'.format(prefix, timestamp)
                                ),
                                timeout_seconds=timeout, device=device)
+            device.execute('delete flash:{}show_tech_{}.txt'.format(prefix, timestamp), service_dialog=delete_dialog)
         except Exception:
             log.error('Failed to copy show tech, keeping file on bootflash')
             return False
 
     else:
         if device.api.copy_from_device(local_path=filename, remote_path=remote_path):
-            delete_dialog = Dialog([
-                [r'Delete filename .*\?\s*$', 'sendline()', None, True, False],
-                [r'Delete .*\[confirm\]\s*$', 'sendline()', None, True, False]
-            ])
             device.execute('delete flash:{}show_tech_{}.txt'.format(prefix, timestamp), service_dialog=delete_dialog)
         else:
             log.error('Failed to copy show tech, keeping file on {}'.format(device_dir))

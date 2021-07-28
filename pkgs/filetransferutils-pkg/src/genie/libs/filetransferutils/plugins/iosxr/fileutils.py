@@ -502,7 +502,8 @@ class FileUtils(FileUtilsDeviceBase):
             return output
 
         # Check for successful copy pattern
-        if 'bytes copied' in output or 'lines built' in output or 'OK' in output:
+        if any(c in output for c in
+               ['bytes copied', 'lines built', 'OK', 'Successfully copied']):
             return output
         else:
             raise SubCommandFailure('File was not successfully copied')
