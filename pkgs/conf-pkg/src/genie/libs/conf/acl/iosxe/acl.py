@@ -13,7 +13,7 @@ class Acl(ABC):
 
     class DeviceAttributes(ABC):
 
-        def build_config(self, apply=True, attributes=None, unconfig=False,
+        def build_config(self, apply=False, attributes=None, unconfig=False,
                          **kwargs):
             assert not kwargs, kwargs
             attributes = AttributesHelper(self, attributes)
