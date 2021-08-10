@@ -29,16 +29,22 @@ def configure_handler(step, device, command, expected_failure=False, **kwargs):
 
     # checking to see if action is 'configure' or 'configure_handler'
     action = kwargs.pop('action', 'configure')
+    connection_alias = kwargs.get('connection_alias', None)
+    result_status = kwargs.get('result_status', None)
+
 
     # configure dual commands should be entered as a list
     if action == 'configure_dual':
         command = command.splitlines()
 
     if 'reply' in kwargs:
-
         kwargs.update({'reply': _prompt_handler(kwargs['reply'])})
     try:
-        output = getattr(device, action)(command, **kwargs)
+        if connection_alias and (action == "configure" or action == "configure_dual"):
+            connection_alias_obj = getattr(device, connection_alias)
+            output = connection_alias_obj.configure(command, **kwargs)
+        else:
+            output = getattr(device, action)(command, **kwargs)
 
     except Exception as e:
         if 'maple' in kwargs:
@@ -49,6 +55,14 @@ def configure_handler(step, device, command, expected_failure=False, **kwargs):
             step.passed(
                 '{} failed as expected, the step test result is set as passed'.format(action))
 
+    # steps.result will only change to result_status if it is passed.
+    if result_status and step.result == Passed:
+        result_status_message = 'The {} result status is changed from passed to {}' \
+                                ' based on the result_status'.format(action, result_status)
+        log.warning('The {} result status is changed from passed to {}' \
+                    ' based on the result_status'.format(action, result_status))
+        getattr(step, result_status)(result_status_message)
+
     return output
 
 def parse_handler(step,
@@ -57,6 +71,7 @@ def parse_handler(step,
                   expected_failure=False,
                   include=None,
                   exclude=None,
+                  result_status=None,
                   max_time=None,
                   check_interval=None,
                   continue_=True,
@@ -69,11 +84,15 @@ def parse_handler(step,
         log.info('Arguments passed:\n{}'.format('\n'.join(
             '{}:\n{}'.format(k,v) for k,v in arguments.items())))
 
+    context=extra_kwargs.get('context', None)
+    connection_alias=extra_kwargs.get('connection_alias', None)
+
     kwargs = {'steps': step,
               'device': device,
               'command': command,
               'include': include,
               'exclude': exclude,
+              'result_status': result_status,
               'max_time': max_time,
               'check_interval': check_interval,
               'continue_': continue_,
@@ -83,8 +102,15 @@ def parse_handler(step,
 
     # handeling parse command
     try:
+        if None not in (context, connection_alias):
+            output = device.parse(command, context=context, alias=connection_alias, **arguments)
+        elif context is not None:
+            output = device.parse(command, context=context, **arguments)
+        elif connection_alias is not None:
+            output = device.parse(command, alias=connection_alias, **arguments)
+        else:
+            output = device.parse(command, **arguments)
 
-        output = device.parse(command, **arguments)
 
     # check if the parser is empty then return an empty dictionary
     except SchemaEmptyParserError:
@@ -105,6 +131,7 @@ def execute_handler(step,
                     expected_failure=False,
                     include=None,
                     exclude=None,
+                    result_status=None,
                     max_time=None,
                     check_interval=None,
                     continue_=True,
@@ -113,10 +140,16 @@ def execute_handler(step,
     if 'reply' in extra_kwargs:
         extra_kwargs.update({'reply': _prompt_handler(extra_kwargs['reply'])})
 
+    connection_alias=extra_kwargs.get('connection_alias', None)
+
     output = ''
     # handeling execute command
     try:
-        output = device.execute(command, **extra_kwargs)
+        if connection_alias:
+            connection_alias_obj = getattr(device, connection_alias)
+            output = connection_alias_obj.execute(command, **extra_kwargs)
+        else:
+            output = device.execute(command, **extra_kwargs)
     except Exception as e:
         if not expected_failure:
             step.failed("Step failed because of this error: {e}".format(e=e))
@@ -129,6 +162,7 @@ def execute_handler(step,
               'command': command,
               'include': include,
               'exclude': exclude,
+              'result_status':result_status,
               'max_time': max_time,
               'check_interval': check_interval,
               'continue_': continue_,
@@ -144,6 +178,7 @@ def learn_handler(step,
                   expected_failure=False,
                   include=None,
                   exclude=None,
+                  result_status=None,
                   max_time=None,
                   check_interval=None,
                   continue_=True,
@@ -160,6 +195,7 @@ def learn_handler(step,
               'command': command,
               'include': include,
               'exclude': exclude,
+              'result_status':result_status,
               'max_time': max_time,
               'check_interval': check_interval,
               'continue_': continue_,
@@ -175,6 +211,7 @@ def api_handler(step,
                 expected_failure=False,
                 include=None,
                 exclude=None,
+                result_status=None,
                 max_time=None,
                 check_interval=None,
                 continue_=True,
@@ -230,6 +267,7 @@ def api_handler(step,
               'command': command,
               'include': include,
               'exclude': exclude,
+              'result_status': result_status,
               'max_time': max_time,
               'check_interval': check_interval,
               'continue_': continue_,
@@ -250,14 +288,15 @@ def _api_device_update(arguments, testbed, step, command, device=None, common_ap
 
     # if api and arguments both contains device, need to make sure
     # that the device in the arguments is as same as the one in api
-    if arguments.get('device') and device:
+    if (
+        arguments.get('device')
+        and device
+        and arguments.get('device') not in [device.name, device.alias]
+    ):
 
-        if arguments.get('device') != device.name and\
-           arguments.get('device') != device.alias:
-
-            step.errored('Device provided in the arguments {} '
-                         'is not as same as the one provided in api {}'
-                         .format(arguments['device'], device))
+        step.errored('Device provided in the arguments {} '
+                     'is not as same as the one provided in api {}'
+                     .format(arguments['device'], device))
     if device:
 
         return device
@@ -288,6 +327,7 @@ def bash_console_handler(device,
                          expected_failure=False,
                          include=None,
                          exclude=None,
+                         result_status=None,
                          max_time=None,
                          check_interval=None,
                          continue_=True,
@@ -312,6 +352,7 @@ def bash_console_handler(device,
               'command': command,
               'include': include,
               'exclude': exclude,
+              'result_status': result_status,
               'max_time': max_time,
               'check_interval': check_interval,
               'continue_': continue_,
@@ -328,6 +369,7 @@ def rest_handler(device,
                  continue_=True,
                  include=None,
                  exclude=None,
+                 result_status=None,
                  max_time=None,
                  check_interval=None,
                  connection_alias='rest',
@@ -365,6 +407,7 @@ def rest_handler(device,
               'command': method,
               'include': include,
               'exclude': exclude,
+              'result_status':result_status,
               'max_time': max_time,
               'check_interval': check_interval,
               'continue_': continue_,
@@ -391,6 +434,7 @@ def _output_query_template(output,
                            check_interval,
                            continue_,
                            action,
+                           result_status=None,
                            arguments=None,
                            rest_device_alias=None,
                            expected_failure=False,
@@ -459,7 +503,13 @@ def _output_query_template(output,
                 if expected_failure and step_result == Failed:
                     substep.passed(message)
                 if not expected_failure and step_result == Passed:
-                    substep.passed(message)
+                    # step_result will only change to result_status if it is passed.
+                    if result_status:
+                        log.warning('The result status is changed from passed to {}' \
+                                    ' based on the result_status'.format(result_status))
+                        getattr(substep, result_status)(message)
+                    else:
+                        substep.passed(message)
 
                 send_cmd = True
                 timeout.sleep()
@@ -467,9 +517,12 @@ def _output_query_template(output,
                     break
 
             # failing logic in case of timeout
-            if not expected_failure and step_result == Failed:
-                substep.failed(message)
-            elif expected_failure and step_result == Passed:
+            if (
+                not expected_failure
+                and step_result == Failed
+                or expected_failure
+                and step_result == Passed
+            ):
                 substep.failed(message)
             else:
                 log.info(
@@ -477,19 +530,26 @@ def _output_query_template(output,
                 )
 
     # If no keys, if expected failure, steps results has to be reversed
-    if not keys:
-        if expected_failure:
-            if steps.result == Passed:
-                steps.failed(
-                        '{} did not failed as expected, the step test result is set as failed'
-                        .format(action)
-                        )
-            else:
-                steps.passed(
-                        '{} did failed as expected, the step test result is set as passed'
-                        .format(action)
-                        )
+    if not keys and expected_failure:
+        if steps.result == Passed:
+            steps.failed(
+                    '{} did not failed as expected, the step test result is set as failed'
+                    .format(action)
+                    )
+        else:
 
+            steps.passed(
+                    '{} did failed as expected, the step test result is set as passed'
+                    .format(action)
+                    )
+
+    # steps.result will only change to result_status if it is passed.
+    if result_status and steps.result == Passed:
+        result_status_message = 'The {} result status is changed from passed to {}' \
+                                ' based on the result_status'.format(action, result_status)
+        log.warning('The {} result status is changed from passed to {}' \
+                    ' based on the result_status'.format(action, result_status))
+        getattr(steps, result_status)(result_status_message)
     return output
 
 def _include_exclude_list(include, exclude):
@@ -546,11 +606,7 @@ def _send_command(command,
     if action == 'api':
         if not arguments:
             arguments = {}
-        if device.os == 'ixianative':
-            api_func = device
-        else:
-            api_func = device.api
-
+        api_func = device if device.os == 'ixianative' else device.api
         return getattr(api_func, command)(**arguments)
 
     # if learn
@@ -879,7 +935,6 @@ def _operation_to_style_map(style, operation, dict_of_log_msg):
     return (operation, dict_of_log_msg)
 
 def _evaluate_operator(result, operation=None, value=None):
-
     # convert list, dict from string
     # when only value is given without operator
     # ex. ) if: "$VARIABLES{test}"
@@ -958,7 +1013,7 @@ def _evaluate_operator(result, operation=None, value=None):
         return not dict_of_ops[operation](result, value)
 
     eval_oper = dict_of_ops[operation](result, value)
-    log.debug('_evaluate_operator: {}'.format(eval_oper))
+    log.debug('return of _evaluate_operator: {}'.format(eval_oper))
     return eval_oper
 
 def _regex_in_list(result, value):
@@ -966,12 +1021,7 @@ def _regex_in_list(result, value):
     # loop over each item in a list
     # regex match against each of them
     # if matched anything return True
-    for item in result:
-
-        if re.search(value, str(item)):
-            return True
-
-    return False
+    return any(re.search(value, str(item)) for item in result)
 
 def _verify_dq_query_and_execute_include_exclude(action_output, style, key):
 
@@ -979,22 +1029,27 @@ def _verify_dq_query_and_execute_include_exclude(action_output, style, key):
 
     # if key is a query of type (contains('status')) then we show the resulted output
     # otherwise the key itself usually for execute action
-    if not key:
-        key = action_output
 
-    message = "'{k}' is {s} in the output"
+    msg_style = ''
+    message = "'{style}' criteria is {ms}."
 
     if (style == "included" and
         action_output or
         style == 'excluded' and
         not action_output):
 
-        return (Passed, message.format(k=key, s=style))
+        # change the msg_style depending on style
+        msg_style = "satisfied" if style == "included" else "not satisfied"
+        return (Passed, message.format(style=style[:-1], ms=msg_style))
     else:
-        # change the style if it is not included for reporting
-        return (Failed, message.format(k=key, s='not ' + style))
+        # change the msg_style depending on style
+        msg_style = "satisfied" if style == "excluded" else "not satisfied"
+        return (Failed, message.format(style=style[:-1], ms=msg_style))
 
 def _condition_validator(items):
+
+    log.debug('_condition_validator items: {}'.format(items))
+
     # Checking condition useful for both condition work itself and action compare.
     # e.g: 2 > 1 or '%VARIABLES{ball}' == 'nine' and  '%VARIABLES{yall} > 12'
     pattern = re.compile(
@@ -1032,14 +1087,16 @@ def _condition_validator(items):
                 else:
                     right_hand_value = item
                     ops_and_left_hand_value = " == True"
-
+            # ex.) True (no operator, no left_hand_value)
             except AttributeError:
                 right_hand_value = item
                 ops_and_left_hand_value = " == True"
-            try:
-                right_hand_value = float(right_hand_value)
-            except (ValueError, TypeError):
-                pass
+
+            if not isinstance(right_hand_value, bool):
+                try:
+                    right_hand_value = float(right_hand_value)
+                except (ValueError, TypeError):
+                    pass
 
             # Extracting right hand, left hand and operator for each comparision
             output = _string_query_validator(right_hand_value,
@@ -1051,6 +1108,7 @@ def _condition_validator(items):
             left_hand = output['left_hand_value']
             left_hand = left_hand if isinstance(left_hand, (float, int)) else left_hand.strip()
 
+            log.debug('right_hand: {}, operation {}, left_hand'.format(right_hand, operation, left_hand))
             result = _evaluate_operator(right_hand,
                                         operation=operation,
                                         value=left_hand)
@@ -1074,7 +1132,6 @@ def _condition_validator(items):
     return ret_val
 
 def _true_false_eval(bool_exp):
-
     '''
     This function is an alternative to eval
     Type of input that works with function are:
@@ -1085,10 +1142,6 @@ def _true_false_eval(bool_exp):
         _true_false_eval("True") == True
         _true_false_eval("True and (True and (True or False))") == True
     '''
-    # if empty, set to True. it means, without operator, just behave 
-    # like bool()
-    if not bool_exp:
-        bool_exp = ' True '
     dict_of_ops = {'or': operator.or_, 'and': operator.and_}
     dict_of_bools = {'True': True, 'False': False}
 
@@ -1114,6 +1167,10 @@ def _true_false_eval(bool_exp):
         # only contains True/False
         for item in bool_exp_list:
             if item.strip() not in list(dict_of_bools.keys()):
+                # empty string ('') handling. 
+                # The case is that VARIABLE is not initialized. Return False
+                if bool_exp == '':
+                    return False
                 raise Exception("{} is an invalid boolean expression. "
                                 "A boolean expression only contains of True/False".format(bool_exp))
 
@@ -1149,7 +1206,6 @@ def _true_false_eval(bool_exp):
 
 def _get_exclude(command, device):
 
-    exclude = None
     if command:
         try:
             # Try parser

@@ -13,7 +13,7 @@ from genie.libs.sdk.triggers.blitz.maple_converter.testsuite_converter import Te
 
 from pyats.easypy.job import Job
 from pyats.easypy import runtime
-from pyats.easypy.tests.common_funcs import init_runtime
+from pyats.easypy.common_funcs import init_runtime
 
 def check_maple_env():
    if not os.environ.get('MAPLE_PATH'):

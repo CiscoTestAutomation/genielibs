@@ -1,15 +1,14 @@
 """Utility type functions that do not fit into another category"""
 
 # Python
-import logging
 import re
+import logging
 
 # Genie
 from genie.libs.sdk.apis.utils import get_config_dict
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.utils.timeout import Timeout
 from genie.libs.parser.iosxe.ping import Ping
-from genie.libs.filetransferutils import FileServer
 
 # unicon
 from unicon.eal.dialogs import Dialog, Statement
@@ -599,109 +598,117 @@ def ping(device,
         return {}
 
 
-def copy_to_script_host(device,
-                 filename,
-                 local_path=None,
-                 timeout=300):
-    """
-    Copy a file from the device to the local system where the script is running.
-    Uses HTTP. Only supported via telnet or SSH sessions.
-
-    Args:
-        device (Device): device object
-        filename (str): filename to copy
-        local_path (str): local path to copy the file to, defaults to '.'
-        timeout('int'): timeout value in seconds, default 300
+def get_mgmt_src_ip_addresses(device):
+    """ Get the source IP addresses connected via SSH or telnet to the device.
 
     Returns:
-        (boolean): True if successful, False if not
-
-    The local IP adddress will be determined from the spawned telnet or ssh session.
-    A temporary http server will be created and the show tech file will be sent
-    to the host where the script is running.
-
-    If the device is connected via proxy (unix jump host) and the proxy has
-    'socat' installed, the upload will be done via the proxy automatically.
+        List of IP addresses or []
     """
-    local_path = local_path or '.'
+    tcp_output = device.execute('show tcp brief | inc .22 |.23 ')
+    # 0160C06C  5.25.26.9.22                5.25.24.1.51363             ESTAB
+    mgmt_src_ip_addresses = set(re.findall(r'\w+ +\S+\.(?:22|23) +(\S+)\.\d+ +ESTAB', tcp_output))
+    if not mgmt_src_ip_addresses:
+        log.error('Unable to find management session, cannot determine management IP addresses')
+        return []
 
+    return mgmt_src_ip_addresses
+
+
+def get_mgmt_ip(device):
+    """ Get the management IP address of the device.
+
+    Returns:
+        IP address string or None
+    """
     tcp_output = device.execute('show tcp brief | inc .22 |.23 ')
     # 0160C06C  5.25.26.9.22                5.25.24.1.51363             ESTAB
     m = re.search(r'\w+ +(\S+)\.(22|23) +\S+\.\d+ +ESTAB', tcp_output)
     if m:
         mgmt_ip = m.group(1)
     else:
-        log.error('Unable to find management session, unable to upload show tech')
-        return False
+        log.error('Unable to find management session, cannot determine IP address')
+        return None
 
-    ip_int_brief = device.parse('show ip interface brief')
-    ip_to_int_map = {}
-    for intf, intf_data in ip_int_brief.get('interface', {}).items():
-        if intf_data['ip_address'] != 'unassigned':
-            ip_to_int_map.update({intf_data['ip_address']: intf})
+    return mgmt_ip
 
-    mgmt_intf = ip_to_int_map.get(mgmt_ip)
 
-    if mgmt_intf:
-        log.info('Management interface: {}, IP {}'.format(mgmt_intf, mgmt_ip))
-        mgmt_intf_ip_info = device.parse('show ip interface {}'.format(mgmt_intf))
-        if mgmt_intf_ip_info.get(mgmt_intf, {}).get('vrf'):
-            log.error('Device management interface is configured with VRF, unable to upload file')
-            return False
+def get_mgmt_ip_and_mgmt_src_ip_addresses(device):
+    """ Get the management IP address and management source addresses.
 
-    mgmt_src_ip_addresses = re.findall(r'\w+ +\S+\.(?:22|23) +(\S+)\.\d+ +ESTAB', tcp_output)
+    Returns:
+        Tuple of mgmt_ip and list of IP address (mgmt_ip, [mgmt_src_addrs]) or None
+    """
+    tcp_output = device.execute('show tcp brief | inc .22 |.23 ')
 
-    # try figure out local IP address
-    local_ip = device.api.get_local_ip()
+    # 0160C06C  5.25.26.9.22                5.25.24.1.51363             ESTAB
+    mgmt_src_ip_addresses = set(re.findall(r'\w+ +\S+\.(?:22|23) +(\S+)\.\d+ +ESTAB', tcp_output))
+    if not mgmt_src_ip_addresses:
+        log.error('Unable to find management session, cannot determine management IP addresses')
 
-    if local_ip in mgmt_src_ip_addresses:
-        mgmt_src_ip = local_ip
+    m = re.search(r'\w+ +(\S+)\.(22|23) +\S+\.\d+ +ESTAB', tcp_output)
+    if m:
+        mgmt_ip = m.group(1)
     else:
-        mgmt_src_ip = None
+        log.error('Unable to find management session, cannot determine IP address')
+        mgmt_ip = None
 
-    with FileServer(protocol='http',
-                    address=local_ip,
-                    path=local_path) as fs:
+    if not mgmt_ip or not mgmt_src_ip_addresses:
+        return None
 
-        local_port = fs.get('port')
+    log.info('Device management IP: {}'.format(mgmt_ip))
+    log.info('Device management source IP addresses: {}'.format(mgmt_src_ip_addresses))
 
-        proxy_port = None
-        # Check if we are connected via proxy device
-        proxy = device.connections[device.via].get('proxy')
-        if proxy and isinstance(proxy, str):
-            log.info('Setting up port relay via proxy')
-            proxy_dev = device.testbed.devices[proxy]
-            proxy_dev.connect()
-            proxy_port = proxy_dev.api.socat_relay(remote_ip=local_ip, remote_port=local_port)
+    return (mgmt_ip, mgmt_src_ip_addresses)
 
-            ifconfig_output = proxy_dev.execute('ifconfig')
-            proxy_ip_addresses = re.findall(r'inet (?:addr:)?(\S+)', ifconfig_output)
-            mgmt_src_ip = None
-            for proxy_ip in proxy_ip_addresses:
-                if proxy_ip in mgmt_src_ip_addresses:
-                    mgmt_src_ip = proxy_ip
-                    break
 
-        copy_dialog = Dialog([
-            [r'Address or name of remote host', 'sendline()', None, True, False],
-            [r'Destination filename', 'sendline()', None, True, False],
-        ])
+def get_mgmt_interface(device, mgmt_ip=None):
+    """ Get the name of the management interface.
 
-        try:
-            if mgmt_src_ip and proxy_port:
-                device.execute('copy {} http://{}:{}'.format(
-                               filename, mgmt_src_ip, proxy_port),
-                               reply=copy_dialog, timeout=timeout, append_error_pattern=[r'%Error'])
-            elif mgmt_src_ip:
-                device.execute('copy {} http://{}:{}'.format(
-                               filename, mgmt_src_ip, local_port),
-                               reply=copy_dialog, timeout=timeout, append_error_pattern=[r'%Error'])
-            else:
-                log.error('Unable to determine management IP address to use to upload file')
-                return False
+    if the mgmt_ip is provided, will use that for the lookup. If not, will
+    call the get_mgmt_ip API to get the IP.
 
-        except Exception:
-            log.error('Failed to transfer file', exc_info=True)
-            return False
+    Args:
+        mgmt_ip: (str) IP address of the management interface (optional)
 
-    return True
+    Returns:
+        String with interface name
+    """
+    mgmt_ip = mgmt_ip or device.api.get_mgmt_ip()
+    out = device.parse('show ip interface brief')
+    result = out.q.contains_key_value(key='ip_address', value=mgmt_ip).get_values('interface')
+    if result:
+        return result[0]
+
+
+def get_show_output_line_count(device, command, filter, output=None):
+    """ Count number of lines from show command.
+
+        The command string is created using "{command} | count {filter}"
+
+        Args:
+            device (`obj`): Device object
+            command (`str`): show command
+            filter (`str`): filter expression
+            output (`str`): output of show command. (optional) Default to None
+
+        Returns:
+            line_count (`int`): number of lines based on show command output
+
+        Raises:
+            N/A
+    """
+    command += ' | count {}'.format(filter)
+    if output is None:
+        output = device.execute(command)
+
+    p = re.compile(r'^Number of lines which match regexp = (?P<line_count>\d+)')
+
+    for line in output.splitlines():
+        line = line.strip()
+
+        m = p.match(line)
+        if m:
+            return int(m.groupdict()['line_count'])
+
+    log.warn("Couldn't get line count properly.")
+    return 0

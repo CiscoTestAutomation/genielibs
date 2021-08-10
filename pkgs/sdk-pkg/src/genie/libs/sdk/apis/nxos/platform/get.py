@@ -277,7 +277,7 @@ def get_platform_cpu_load_detail(device,
 def get_platform_memory_usage(device,
                               command='show processes memory',
                               processes=None,
-                              check_key='all_mem_alloc',
+                              check_key=None,
                               output=None):
     '''Get memory usage on device
 
@@ -288,8 +288,7 @@ def get_platform_memory_usage(device,
             processes     (`list`): List of processes to check
                                     If both processes and check_key are given,
                                     processes are preferred.
-            check_key      (`str`): Key to check in parsed output
-                                    Default to `all_mem_alloc`
+            check_key      (`str`): N/A. Not used for NXOS
             output         (`str`): Output of show command
         Returns:
             memory_usage (`float`): memory usage on the device (percentage)
@@ -345,7 +344,7 @@ def get_platform_memory_usage(device,
 def get_platform_memory_usage_detail(device,
                                      command='show processes memory',
                                      processes=None,
-                                     check_key='all_mem_alloc',
+                                     check_key=None,
                                      output=None):
     '''Get memory usage on device
 
@@ -356,8 +355,7 @@ def get_platform_memory_usage_detail(device,
             processes     (`list`): List of processes to check
                                     If both processes and check_key are given,
                                     processes are preferred.
-            check_key      (`str`): Key to check in parsed output
-                                    Default to `all_mem_alloc`
+            check_key      (`str`): N/A. Not used for NXOS
             output         (`str`): Output of show command
         Returns:
             memory_usage_dict (`dict`): memory usage dict on the device (percentage)

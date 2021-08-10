@@ -31,10 +31,9 @@ logger = logging.getLogger(__name__)
 
 
 class FileUtils(FileUtilsCommonDeviceBase):
-
     def copyfile(self, source, destination, timeout_seconds, cmd, used_server,
-        *args, **kwargs):
-        """ Copy a file to/from NXOS device
+                 *args, interface=None, **kwargs):
+        """ Copy a file to/from device
 
             Copy any file to/from a device to any location supported on the
             device and on the running-configuration.
@@ -89,8 +88,8 @@ class FileUtils(FileUtilsCommonDeviceBase):
                 ...     timeout_seconds='300', device=device)
         """
 
-        with self.file_transfer_config(used_server, **kwargs):
-            self.send_cli_to_device(cli=cmd,
+        with self.file_transfer_config(used_server, interface=interface, **kwargs):
+            return self.send_cli_to_device(cli=cmd,
                                     timeout_seconds=timeout_seconds,
                                     used_server=used_server,
                                     **kwargs)
@@ -156,9 +155,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
         # Call the parser
 
         obj = dir_output(device=device)
-        parsed_output = obj.parse()
-
-        return parsed_output
+        return obj.parse()
 
     def stat(self, target, timeout_seconds, dir_output, *args, **kwargs):
         """ Retrieve file details such as length and permissions.
@@ -213,10 +210,10 @@ class FileUtils(FileUtilsCommonDeviceBase):
             raise AttributeError("Device object is missing, can't proceed with"
                                  " execution")
 
-        parsed_output = self.parsed_dir(target=target,
-            timeout_seconds=timeout_seconds, dir_output=dir_output, **kwargs)
-
-        return parsed_output
+        return self.parsed_dir(target=target,
+                               timeout_seconds=timeout_seconds,
+                               dir_output=dir_output,
+                               **kwargs)
 
     def deletefile(self, target, timeout_seconds, *args, **kwargs):
         """ Delete a file
@@ -257,12 +254,12 @@ class FileUtils(FileUtilsCommonDeviceBase):
         # delete flash:memleak.tcl
         cmd = 'delete {f}'.format(f=target)
 
+        self.send_cli_to_device(cli=cmd,
+                                timeout_seconds=timeout_seconds,
+                                **kwargs)
 
-        self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds,**kwargs)
-
-
-    def renamefile(self, source, destination, timeout_seconds, cmd,
-        *args, **kwargs):
+    def renamefile(self, source, destination, timeout_seconds, cmd, *args,
+                   **kwargs):
         """ Rename a file
 
             Parameters
@@ -301,8 +298,9 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
         """
 
-        self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds,**kwargs)
-
+        self.send_cli_to_device(cli=cmd,
+                                timeout_seconds=timeout_seconds,
+                                **kwargs)
 
     def chmod(self, target, mode, timeout_seconds, *args, **kwargs):
         """ Change file permissions
@@ -330,9 +328,15 @@ class FileUtils(FileUtilsCommonDeviceBase):
         # libstat.filemode(mode)
 
         raise NotImplementedError("The fileutils module {} "
-            "does not implement chmod.".format(self.__module__))
+                                  "does not implement chmod.".format(
+                                      self.__module__))
 
-    def validateserver(self, cmd, target, timeout_seconds=300, *args, **kwargs):
+    def validateserver(self,
+                       cmd,
+                       target,
+                       timeout_seconds=300,
+                       *args,
+                       **kwargs):
         """ Make sure that the given server information is valid
 
             Function that verifies if the server information given is valid, and if
@@ -372,13 +376,15 @@ class FileUtils(FileUtilsCommonDeviceBase):
                 ...     timeout_seconds=300, device=device)
         """
 
-        logger.info('Verifying if server can be reached and if a temp file can '
-                    'be created')
+        logger.info(
+            'Verifying if server can be reached and if a temp file can '
+            'be created')
 
         # Send the command
         try:
-            self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds,
-                **kwargs)
+            self.send_cli_to_device(cli=cmd,
+                                    timeout_seconds=timeout_seconds,
+                                    **kwargs)
         except Exception as e:
             raise type(e)('TFTP/FTP server is unreachable') from e
 
@@ -400,8 +406,14 @@ class FileUtils(FileUtilsCommonDeviceBase):
         # Great success!
         logger.info("Server is ready to be used")
 
-    def copyconfiguration(self, source, destination, cmd, used_server,
-        timeout_seconds=300, *args, **kwargs):
+    def copyconfiguration(self,
+                          source,
+                          destination,
+                          cmd,
+                          used_server,
+                          timeout_seconds=300,
+                          *args,
+                          **kwargs):
         """ Copy configuration to/from device
 
             Copy configuration on the device or between locations supported on the
@@ -456,6 +468,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
                 ...     timeout_seconds='300', device=device)
         """
 
-
-        self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds,
-            used_server=used_server, **kwargs)
+        self.send_cli_to_device(cli=cmd,
+                                timeout_seconds=timeout_seconds,
+                                used_server=used_server,
+                                **kwargs)

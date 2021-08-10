@@ -350,6 +350,7 @@ class HA(HA_main):
 
         ctrlplane_downtime = self.parameters.get('ctrlplane_downtime')
         user_boot_mode = self.parameters.get('mode')
+        issu_timeout = self.parameters.get('issu_timeout')
         with steps.start("Check boot mode on {}".format(self.device.hostname)) as step:
             out = self.device.execute('show boot mode')
             for line in out.splitlines():
@@ -375,7 +376,7 @@ class HA(HA_main):
         with steps.start("Performing non disruptive issu on the device {}".format(self.device.hostname)):
             image_name = basename(upgrade_image)
             self.device.execute(
-                'install all nxos bootflash:{} non-disruptive'.format(image_name), timeout=1000, reply=dialog)
+                'install all nxos bootflash:{} non-disruptive'.format(image_name), timeout=issu_timeout, reply=dialog)
 
         with steps.start("Reconnect back to device {} after ISSU".format(self.device.hostname)):
             reconnect_timeout = Timeout(max_time=1200, interval=120)
@@ -398,6 +399,7 @@ class HA(HA_main):
             else:
                 out = self.device.execute('show install all time-stats detail')
                 output_error = False
+                cp_downtime = None
                 for line in out.splitlines():
                     line = line.rstrip()
                     p1 = re.compile(r'^ERROR:.*$')
@@ -414,7 +416,10 @@ class HA(HA_main):
                 if output_error:
                     step.failed(
                         "The output shows reset-reason as disruptive. ND ISSU was not performed properly.")
-                if int(cp_downtime) > int(ctrlplane_downtime):
+                elif cp_downtime is None:
+                    step.failed(
+                        "garbled output for show install all time-stats detail so cp_downtime was not calculated properly.")
+                elif int(cp_downtime) > int(ctrlplane_downtime):
                     step.failed(
                         "Control plane was down for {} seconds which is longer than user expected at {} seconds".format(cp_downtime,    ctrlplane_downtime))
                 else:

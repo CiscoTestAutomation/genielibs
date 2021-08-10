@@ -72,7 +72,7 @@ class test_vrf(unittest.TestCase):
         vrf.learn()
 
         # Test specific attributes in info
-        self.assertEqual(vrf.info['vrfs']['VRF1']['address_family']['ipv6'], {})
+        self.assertEqual(vrf.info['vrfs']['VRF1']['address_family']['ipv6'], {'table_id': '0x80000003'})
 
     def test_empty_output(self):
         vrf = Vrf(device=self.device)

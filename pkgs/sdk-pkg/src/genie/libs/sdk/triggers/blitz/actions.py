@@ -8,7 +8,6 @@ from datetime import datetime
 # from pyats
 from pyats.easypy import runtime
 from pyats.log.utils import banner
-from pyats.utils.secret_strings import SecretString
 from pyats.reporter.server import LogLineCounter
 
 # from genie
@@ -17,11 +16,19 @@ from genie.utils.diff import Diff
 from genie.ops.utils import get_ops_exclude
 from genie.harness.standalone import run_genie_sdk
 
+from pkg_resources import get_distribution
 from .maple import maple, maple_search
 from .yangexec import run_netconf, run_gnmi, notify_wait
 from .actions_helper import configure_handler, api_handler, learn_handler,\
                             parse_handler, execute_handler,_get_exclude,\
                             _condition_validator, rest_handler, bash_console_handler
+
+# skip in case pyats.contrib is not installed
+try:
+    import requests
+    from requests_toolbelt.multipart.encoder import MultipartEncoder
+except Exception:
+    pass
 
 log = logging.getLogger(__name__)
 
@@ -35,6 +42,9 @@ def add_result_as_extra(func):
             health_data = {}
 
             section = kwargs['section']
+
+            # starttime
+            starttime = datetime.now()
 
             # execute action for Health class
             action_output = func(*args, **kwargs)
@@ -55,60 +65,41 @@ def add_result_as_extra(func):
                     device_name = ''
                 testbed_name = runtime.testbed.name
                 health_name = kwargs['name']
-                timestamp = datetime.now()
+                stoptime = datetime.now()
                 health_type = 'processor'
                 # if health dedicated APIs, will get from action_output['health_data']
                 # if not, just grab return from API
-                if 'health_data' in action_output:
+                if isinstance(action_output,
+                              dict) and 'health_data' in action_output:
                     health_output = action_output['health_data']
                 else:
                     health_output = action_output
                 logs_logfile = section_info['logs']['file']
                 logs_begin = section_info['logs']['begin']
-                logs_begin_lines = logs_begin = section_info['logs']['begin_lines']
-                # calculating size and size_lines for logs
-                # because section is not done yet
-                logs_size = os.path.getsize(section_info['logfile']) - logs_begin
-                end_size = logs_begin + logs_size
-                ctx = section.reporter.client.get_section_ctx()
-                lc = LogLineCounter(ctx.logfile)
-                logs_size_lines = lc._get_lines(end_size)
-                lc.close()
+                logs_begin_lines = section_info['logs']['begin_lines']
 
                 # build health_data
+                # at this point, size/size_lines are not available
+                # because we might show debug logging after
                 health_data = {
                     'fullid': fullid,
                     'jobid': jobid,
                     'testbed': testbed_name,
                     'device': device_name,
                     'health_name': health_name,
-                    'timestamp': timestamp.isoformat(),
+                    'starttime': starttime.isoformat(),
+                    'stoptime': stoptime.isoformat(),
                     'type': health_type,
                     'health_output': health_output,
                     'logs': {
                         'file': logs_logfile,
                         'begin': logs_begin,
                         'begin_lines': logs_begin_lines,
-                        'size': logs_size,
-                        'size_lines': logs_size_lines
                     }
                 }
 
-                # load from health_results.json
-                with open("{rundir}/health_results.json".format(rundir=runtime.directory),  'rt', encoding='utf-8') as f:
-                    health_results = json.load(f)
-
-                # add health_data
-                if health_results:
-                    if 'health_data' not in health_results:
-                        health_results['health_data'] = []
-                    health_results['health_data'].append(health_data)
-                    log.debug('health_data to health_results.json:\n' +
+                log.debug('health_data to health_results.json:\n' +
                           json.dumps(health_data, indent=2, sort_keys=True))
-
-                # save to health_results.json
-                with open("{rundir}/health_results.json".format(rundir=runtime.directory),  'wt', encoding='utf-8') as f:
-                    json.dump(health_results, f, ensure_ascii=False, indent=2)
 
                 # add extra for pyATS Health Check result
                 extra_action_result = {}
@@ -117,22 +108,153 @@ def add_result_as_extra(func):
 
                 extra_action_result = {
                     'fullid': fullid,
+                    'starttime': starttime.isoformat(),
+                    'stoptime': stoptime.isoformat(),
                     'health_name': health_name,
                     'type': health_type,
                     'result': health_result
                 }
 
-                # add extra to testsuite
-                extra_args = {
-                    '_pyats_health_check_{timestamp}'.format(timestamp=timestamp):
-                    extra_action_result
-                }
-
                 # add extra to processor
-                section.reporter.client.add_extra(**extra_args)
+                add_extra_args = {
+                    "%EXTEND_LIST{health}": [extra_action_result]
+                }
+                section.reporter.client.add_extra(**add_extra_args)
 
                 log.debug('extra to section:\n' +
-                          json.dumps(extra_args, indent=2, sort_keys=True))
+                          json.dumps({'health': [extra_action_result]},
+                                     indent=2,
+                                     sort_keys=True))
+
+                # calculating size and size_lines for logs
+                # because section is not done yet
+                logs_size = os.path.getsize(
+                    section_info['logfile']) - logs_begin
+                end_size = logs_begin + logs_size
+                ctx = section.reporter.client.get_section_ctx()
+                lc = LogLineCounter(ctx.logfile)
+                logs_end_lines = lc._get_lines(end_size)
+                logs_size_lines = logs_end_lines - logs_begin_lines
+                lc.close()
+
+                # update health_data with latest size and size_lines
+                # need to update latest size after having debug message
+                health_data['logs'].update({
+                    'size': logs_size,
+                    'size_lines': logs_size_lines,
+                })
+                # added health_result to health_data
+                health_data.update({'result': health_result})
+
+                # add health_data to runtime.health_results
+                if health_data:
+                    all_health_data = runtime.health_results['health_data']
+                    all_health_data.append(health_data)
+                    runtime.health_results['health_data'] = all_health_data
+
+                # send webex notification in case not passed or passx
+                if (runtime.args.health_notify_webex or
+                        runtime.args.health_webex) and health_result not in [
+                            'passed', 'passx'
+                        ]:
+                    # get pid
+                    pid = os.getpid()
+                    # assume as forked process and build filename
+                    forked_logname = section_info['logfile']+':pid-'+str(pid)
+                    # check if forked log filename exist or not
+                    if os.path.isfile(forked_logname):
+                        logfile = forked_logname
+                    else:
+                        logfile = section_info['logfile']
+
+                    health_value = None
+                    # save variable to use saved variable 'health_value' in webex notification template
+                    if 'save' in kwargs:
+                        updated_ret_dict = kwargs[
+                            'self']._filter_and_save_action_output(
+                                section, kwargs['ret_dict'], kwargs['save'],
+                                action_output)
+                        health_value = updated_ret_dict['saved_vars'].get(
+                            'health_value', None)
+                    # no save variable is configured in YAML
+                    else:
+                        health_value = 'N/A. No save_variable `health_value` in pyATS Health yaml'
+
+                    # get information for webex notification template
+                    host = runtime.env.host.name
+                    host_os = runtime.env.host.distro
+                    python_env = runtime.env.prefix
+                    python_ver = runtime.env.python.version
+                    try:
+                        pyats_ver = get_distribution('ats').version
+                    except Exception:
+                        pyats_ver = get_distribution('pyats').version
+                    # Build payload
+                    # Device        : {device_name}
+                    # Health Name   : {health_name}
+                    # Health Type   : {health_type}
+                    # Health Result : {health_result}
+                    # Health Value  : {health_value}
+
+                    # Job ID        : {jobid}
+                    # Host          : {host} ({host_os})
+                    # Python Env    : {python_env} / pyATS {pyats_ver} / Python {python_ver}
+                    # Full-ID       : {fullid}
+                    # Testbed       : {testbed_name}
+                    # Start Time    : {starttime}
+                    # Stop Time     : {stoptime}
+
+                    # build payload for webex notification template
+                    payload = {
+                        'markdown':
+                        runtime.health_webex['msg'].format(
+                            device_name=device_name,
+                            health_name=health_name,
+                            health_type=health_type,
+                            health_result=health_result,
+                            health_value=health_value,
+                            jobid=jobid,
+                            host=host,
+                            host_os=host_os,
+                            python_env=python_env,
+                            pyats_ver=pyats_ver,
+                            python_ver=python_ver,
+                            fullid=fullid,
+                            testbed_name=testbed_name,
+                            starttime=starttime,
+                            stoptime=stoptime)
+                    }
+
+
+                    # set destination space or person
+                    if runtime.health_webex['space']:
+                        payload['roomId'] = runtime.health_webex['space']
+                    elif runtime.health_webex['email']:
+                        payload['toPersonEmail'] = runtime.health_webex[
+                            'email']
+
+                    with open(logfile, 'r') as f:
+                        log_content = f.read()
+
+                    payload['files'] = (logfile, log_content, 'text/plain')
+                    try:
+                        multipart_data = MultipartEncoder(payload)
+                    except NameError as e:
+                        raise Exception("pyats.contrib package might not be installed yet. Please check and install by 'pip install pyats.contrib': {}".format(e))
+                    runtime.health_webex['headers']['Content-Type'] = multipart_data.content_type
+                    log.info('Sending pyATS Health Check Webex notification')
+                    try:
+                        # Attempt POST
+                        r = requests.post(
+                            runtime.health_webex['url'],
+                            data=multipart_data,
+                            headers=runtime.health_webex['headers'])
+                        log.debug('notification status: %s' % r.status_code)
+                        log.debug(r.text)
+                    except Exception:
+                        log.exception(
+                            'Failed to send pyATS Health Check Webex notification:'
+                        )
 
         else:
             # execute action for Blitz class
@@ -142,6 +264,7 @@ def add_result_as_extra(func):
 
     return wrapper
 
+
 @add_result_as_extra
 def configure(self,
               device,
@@ -150,6 +273,8 @@ def configure(self,
               name,
               command,
               alias=None,
+              connection_alias=None,
+              result_status=None,
               expected_failure=False,
               continue_=True,
               processor='',
@@ -158,10 +283,12 @@ def configure(self,
               health_sections=None,
               **kwargs):
 
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
+
     # checking if custom msg else default msg will be written
     msg = kwargs.pop('custom_substep_message',
-                     "Configuring '{device}'"
-                    .format(device=device.name))
+                     "Configuring '{device}'".format(device=device.name))
 
     # default output set to none in case of an exception
     output = None
@@ -170,6 +297,8 @@ def configure(self,
         kwargs.update({'step': step,
                        'device': device,
                        'command': command,
+                       'connection_alias': connection_alias,
+                       'result_status': result_status,
                        'expected_failure': expected_failure})
 
         output = configure_handler(**kwargs)
@@ -177,6 +306,7 @@ def configure(self,
     notify_wait(steps, device)
 
     return output
+
 
 @add_result_as_extra
 def configure_dual(self,
@@ -189,15 +319,20 @@ def configure_dual(self,
                    expected_failure=False,
                    continue_=True,
                    processor='',
+                   result_status=None,
                    health_uids=None,
                    health_groups=None,
                    health_sections=None,
                    **kwargs):
 
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
+
     # checking if custom msg else default msg will be written
-    msg = kwargs.pop('custom_substep_message',
-                     "Configuring '{device}' in (config-dual-stage) prompt".
-                     format(device=device.name))
+    msg = kwargs.pop(
+        'custom_substep_message',
+        "Configuring '{device}' in (config-dual-stage) prompt".format(
+            device=device.name))
 
     # default output set to none in case of an exception
     output = None
@@ -207,6 +342,7 @@ def configure_dual(self,
                        'device': device,
                        'command': command,
                        'action': 'configure_dual',
+                       'result_status': result_status,
                        'expected_failure': expected_failure})
 
         output = configure_handler(**kwargs)
@@ -214,6 +350,7 @@ def configure_dual(self,
     notify_wait(steps, device)
 
     return output
+
 
 @add_result_as_extra
 def parse(self,
@@ -223,9 +360,12 @@ def parse(self,
           name,
           command,
           expected_failure=False,
+          connection_alias=None,
           alias=None,
+          context=None,
           include=None,
           exclude=None,
+          result_status=None,
           max_time=None,
           check_interval=None,
           continue_=True,
@@ -236,10 +376,13 @@ def parse(self,
           *args,
           **kwargs):
 
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
+
     # checking if custom msg else default msg will be written
     msg = kwargs.pop('custom_substep_message',
-                     "Parsing '{c}' on '{d}'".
-                     format(c=command, d=device.name))
+                     "Parsing '{c}' on '{d}'".format(c=command, d=device.name))
+    context = kwargs.pop('context', None)
 
     # action parse
     output = {}
@@ -249,8 +392,12 @@ def parse(self,
         handler_kwargs = {'step': step,
                           'device': device,
                           'command': command,
+                          'context': context,
+                          'alias': alias,
+                          'connection_alias': connection_alias,
                           'include': include,
                           'exclude': exclude,
+                          'result_status': result_status,
                           'max_time': max_time,
                           'check_interval': check_interval,
                           'continue_': continue_,
@@ -264,6 +411,7 @@ def parse(self,
 
     return output
 
+
 @add_result_as_extra
 def execute(self,
             device,
@@ -273,8 +421,10 @@ def execute(self,
             command,
             expected_failure=False,
             alias=None,
+            connection_alias=None,
             include=None,
             exclude=None,
+            result_status=None,
             max_time=None,
             check_interval=None,
             continue_=True,
@@ -284,30 +434,38 @@ def execute(self,
             health_sections=None,
             **kwargs):
 
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
+
     # checking if custom msg else default msg will be written
-    msg = kwargs.pop('custom_substep_message',
-                     "Executing '{c}' on '{d}'".
-                     format(c=command, d=device.name))
+    msg = kwargs.pop(
+        'custom_substep_message',
+        "Executing '{c}' on '{d}'".format(c=command, d=device.name))
 
     # action execute
     output = None
     with steps.start(msg, continue_=continue_) as step:
 
-        kwargs.update({'step': step,
-                       'device': device,
-                       'command': command,
-                       'include': include,
-                       'exclude': exclude,
-                       'max_time': max_time,
-                       'check_interval': check_interval,
-                       'continue_': continue_,
-                       'expected_failure': expected_failure})
+        kwargs.update({
+            'step': step,
+            'device': device,
+            'command': command,
+            'connection_alias': connection_alias,
+            'include': include,
+            'exclude': exclude,
+            'result_status': result_status,
+            'max_time': max_time,
+            'check_interval': check_interval,
+            'continue_': continue_,
+            'expected_failure': expected_failure
+        })
 
         output = execute_handler(**kwargs)
 
     notify_wait(steps, device)
 
     return output
+
 
 @add_result_as_extra
 def api(self,
@@ -320,6 +478,7 @@ def api(self,
         arguments=None,
         include=None,
         exclude=None,
+        result_status=None,
         max_time=None,
         check_interval=None,
         continue_=True,
@@ -330,13 +489,17 @@ def api(self,
         alias=None,
         **kwargs):
 
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
+
     # action api
     output = None
 
     if not device:
         default_msg = "Calling API {f}".format(f=function)
     else:
-        default_msg = "Calling API '{f}' on '{d}'".format(f=function, d=device.name)
+        default_msg = "Calling API '{f}' on '{d}'".format(f=function,
+                                                          d=device.name)
 
     msg = kwargs.pop('custom_substep_message', default_msg)
 
@@ -347,6 +510,7 @@ def api(self,
                        'command': function,
                        'include': include,
                        'exclude': exclude,
+                       'result_status': result_status,
                        'max_time': max_time,
                        'check_interval': check_interval,
                        'continue_': continue_,
@@ -361,6 +525,7 @@ def api(self,
     log.debug('api return value: {o}'.format(o=output))
     return output
 
+
 @add_result_as_extra
 def learn(self,
           device,
@@ -371,6 +536,7 @@ def learn(self,
           alias=None,
           include=None,
           exclude=None,
+          result_status=None,
           max_time=None,
           check_interval=None,
           expected_failure=False,
@@ -381,9 +547,12 @@ def learn(self,
           health_sections=None,
           **kwargs):
 
-    msg = kwargs.pop('custom_substep_message',
-                     "Learning '{f}' on '{d}'".
-                     format(f=feature, d=device.name))
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
+
+    msg = kwargs.pop(
+        'custom_substep_message',
+        "Learning '{f}' on '{d}'".format(f=feature, d=device.name))
     # action learn
     output = None
     with steps.start(msg, continue_=continue_) as step:
@@ -393,6 +562,7 @@ def learn(self,
                         'command': feature,
                         'include': include,
                         'exclude': exclude,
+                        'result_status': result_status,
                         'max_time': max_time,
                         'check_interval': check_interval,
                         'continue_': continue_,
@@ -402,6 +572,7 @@ def learn(self,
 
     return output
 
+
 @add_result_as_extra
 def compare(self,
             steps,
@@ -410,11 +581,15 @@ def compare(self,
             items,
             continue_=True,
             alias=None,
+            result_status=None,
             processor='',
             health_uids=None,
             health_groups=None,
             health_sections=None,
             **kwargs):
+
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
 
     # action compare
     if not items:
@@ -433,8 +608,18 @@ def compare(self,
 
             condition = _condition_validator(comp_item)
             result = 'passed' if condition else 'failed'
-            getattr(step, result)('The following arithmetic statement {} is {}'.
-                                   format(comp_item,condition))
+            getattr(step, result)(
+                'The following arithmetic statement {} is {}'.format(
+                    comp_item, condition))
+
+
+    # steps.result will only change to result_status if it is passed.
+    if result_status and steps.result.name == "passed":
+        result_status_message = 'The compare result status is changed from passed to {}' \
+                                ' based on the result_status'.format(result_status)
+        log.warning('The compare result status is changed from passed to {}' \
+                    ' based on the result_status'.format(result_status))
+        getattr(steps, result_status)(result_status_message)
 
 @add_result_as_extra
 def sleep(self,
@@ -447,11 +632,23 @@ def sleep(self,
           health_uids=None,
           health_groups=None,
           health_sections=None,
+          result_status=None,
           *args,
           **kwargs):
 
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
+
     log.info('Sleeping for {s} seconds'.format(s=sleep_time))
     time.sleep(float(sleep_time))
+
+    # steps.result will only change to result_status if it is passed.
+    if result_status and steps.result.name=="passed":
+        result_status_message = 'The sleep result status is changed from passed to {}' \
+                                ' based on the result_status'.format(result_status)
+        log.warning('The sleep result status is changed from passed to {}' \
+                    ' based on the result_status'.format(result_status))
+        getattr(steps, result_status)(result_status_message)
 
 @add_result_as_extra
 def rest(self,
@@ -464,6 +661,7 @@ def rest(self,
          continue_=True,
          include=None,
          exclude=None,
+         result_status=None,
          max_time=None,
          check_interval=None,
          connection_alias='rest',
@@ -473,6 +671,9 @@ def rest(self,
          health_sections=None,
          *args,
          **kwargs):
+
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
 
     msg = kwargs.pop('custom_substep_message',
                      "Submitting a '{m}' call to a REST API on '{d}'".\
@@ -489,6 +690,7 @@ def rest(self,
                        'continue_':continue_,
                        'include':include,
                        'exclude':exclude,
+                       'result_status':result_status,
                        'max_time':max_time,
                        'check_interval':check_interval,
                        'connection_alias':connection_alias})
@@ -496,6 +698,7 @@ def rest(self,
         output = rest_handler(**kwargs)
 
     return output
+
 
 @add_result_as_extra
 def yang(self,
@@ -510,6 +713,7 @@ def yang(self,
          continue_=True,
          connection=None,
          returns=None,
+         result_status=None,
          alias=None,
          processor='',
          health_uids=None,
@@ -517,6 +721,9 @@ def yang(self,
          health_sections=None,
          *args,
          **kwargs):
+
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
 
     if connection:
         device = getattr(device, connection)
@@ -550,7 +757,17 @@ def yang(self,
     if operation != 'subscribe':
         notify_wait(steps, device)
 
+
+    # steps.result will only change to result_status if it is passed.
+    if result_status and steps.result.name == "passed":
+        result_status_message = 'The yang result status is changed from passed to {}' \
+                                ' based on the result_status'.format(result_status)
+        log.warning('The yang result status is changed from passed to {}' \
+                    ' based on the result_status'.format(result_status))
+        getattr(steps, result_status)(result_status_message)
+
     return result
+
 
 @add_result_as_extra
 def configure_replace(self,
@@ -561,12 +778,18 @@ def configure_replace(self,
                       config,
                       continue_=True,
                       alias=None,
+                      result_status=None,
                       iteration=2,
                       interval=30,
                       processor='',
                       health_uids=None,
                       health_groups=None,
-                      health_sections=None):
+                      health_sections=None,
+                      **kwargs):
+
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
+
     restore = sdk.libs.abstracted_libs.restore.Restore(device=device)
 
     # lib.to_url is normally saved via restore.save_configuration()
@@ -582,6 +805,15 @@ def configure_replace(self,
         interval=interval,
         delete_after_restore=False,
     )
+    # steps.result will only change to result_status if it is passed.
+    if result_status and steps.result.name == "passed":
+        result_status_message = 'The configure_replace result status is changed from ' \
+                                'passed to {}' \
+                                ' based on the result_status'.format(result_status)
+        log.warning('The configure_replace result status is changed from passed to {}' \
+                    ' based on the result_status'.format(result_status))
+        getattr(steps, result_status)(result_status_message)
+
 
 @add_result_as_extra
 def save_config_snapshot(self,
@@ -590,11 +822,17 @@ def save_config_snapshot(self,
                          section,
                          name,
                          alias=None,
+                         result_status=None,
                          continue_=True,
                          processor='',
                          health_uids=None,
                          health_groups=None,
-                         health_sections=None):
+                         health_sections=None,
+                         **kwargs):
+
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
+
     # setup restore object for device
     if not hasattr(self, 'restore'):
         self.restore = {}
@@ -622,6 +860,15 @@ def save_config_snapshot(self,
     # To keep track of snapshots (whether they are deleted or not)
     self.restore[device].snapshot_deleted = False
 
+    # steps.result will only change to result_status if it is passed.
+    if result_status and steps.result.name == "passed":
+        result_status_message = 'The save_config_snapshot result status is changed ' \
+                                'from passed to {}' \
+                                ' based on the result_status'.format(result_status)
+        log.warning('The save_config_snapshot result status is changed from passed to {}' \
+                    ' based on the result_status'.format(result_status))
+        getattr(steps, result_status)(result_status_message)
+
 @add_result_as_extra
 def restore_config_snapshot(self,
                             device,
@@ -631,10 +878,14 @@ def restore_config_snapshot(self,
                             continue_=True,
                             delete_snapshot=True,
                             alias=None,
+                            result_status=None,
                             processor='',
                             health_uids=None,
                             health_groups=None,
-                            health_sections=None):
+                            health_sections=None,
+                            **kwargs):
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
 
     if not hasattr(self, 'restore') or device not in self.restore:
         steps.errored("Must use action 'save_config_snapshot' first.\n\n")
@@ -660,6 +911,15 @@ def restore_config_snapshot(self,
     if delete_snapshot:
         self.restore[device].snapshot_deleted = True
 
+    # steps.result will only change to result_status if it is passed.
+    if result_status and steps.result.name == "passed":
+        result_status_message = 'The restore_config_snapshot result status is changed ' \
+                                'from passed to {}' \
+                                ' based on the result_status'.format(result_status)
+        log.warning('The restore_config_snapshot result status is changed from passed to {}' \
+                    ' based on the result_status'.format(result_status))
+        getattr(steps, result_status)(result_status_message)
+
 @add_result_as_extra
 def bash_console(self,
                  device,
@@ -670,6 +930,7 @@ def bash_console(self,
                  expected_failure=False,
                  include=None,
                  exclude=None,
+                 result_status=None,
                  max_time=None,
                  check_interval=None,
                  continue_=True,
@@ -682,6 +943,10 @@ def bash_console(self,
 
     # action bash_console
     output = None
+
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
+
     with steps.start("Executing bash commands on '{d}'".\
                     format(d=device.name), continue_=continue_) as step:
 
@@ -690,6 +955,7 @@ def bash_console(self,
                        'commands': commands,
                        'include': include,
                        'exclude': exclude,
+                       'result_status': result_status,
                        'max_time': max_time,
                        'check_interval': check_interval,
                        'continue_': continue_,
@@ -699,17 +965,22 @@ def bash_console(self,
 
     return output
 
+
 @add_result_as_extra
 def genie_sdk(self,
               steps,
               section,
               name,
               continue_=True,
+              result_status=None,
               processor='',
               health_uids=None,
               health_groups=None,
               health_sections=None,
               **kwargs):
+
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
 
     # This is to remove the uut dependency of genie standalone.
     # Since the device we are running the sdk on is in the
@@ -722,6 +993,16 @@ def genie_sdk(self,
     sdks = list(kwargs.keys())
     run_genie_sdk(self, steps, sdks, uut=uut, parameters=kwargs)
 
+    # steps.result will only change to result_status if it is passed.
+    if result_status and steps.result.name == "passed":
+        result_status_message = 'The genie_sdk result status is changed ' \
+                                'from passed to {}' \
+                                ' based on the result_status'.format(result_status)
+        log.warning('The genie_sdk result status is changed from passed to {}' \
+                    ' based on the result_status'.format(result_status))
+        getattr(steps, result_status)(result_status_message)
+
+
 @add_result_as_extra
 def print_(self,
           steps,
@@ -729,6 +1010,7 @@ def print_(self,
           name,
           continue_=True,
           processor='',
+          result_status=None,
           health_uids=None,
           health_groups=None,
           health_sections=None,
@@ -739,16 +1021,25 @@ def print_(self,
         kwargs.pop('steps')
 
     for key, value in kwargs.items():
-        if value.get('type') == 'banner':
+        if key not in ['ret_dict']:
+            if value.get('type') == 'banner':
 
-            print_value = 'printing message: {k}\n{v}'.format(
-                k=key, v=banner(str(value['value'])))
-        else:
-            print_value = 'The value of {k}: {v}'.format(k=key,
-                                                         v=value['value'])
+                print_value = 'printing message: {k}\n{v}'.format(
+                    k=key, v=banner(str(value['value'])))
+            else:
+                print_value = 'The value of {k}: {v}'.format(k=key,
+                                                             v=value['value'])
 
         log.info(print_value)
 
+    # steps.result will only change to result_status if it is passed.
+    if result_status and steps.result.name == "passed":
+        result_status_message = 'The print result status is changed ' \
+                                'from passed to {}' \
+                                ' based on the result_status'.format(result_status)
+        log.warning('The print result status is changed from passed to {}' \
+                    ' based on the result_status'.format(result_status))
+        getattr(steps, result_status)(result_status_message)
 
 @add_result_as_extra
 def diff(self,
@@ -764,12 +1055,16 @@ def diff(self,
          command=None,
          exclude=None,
          processor='',
+         result_status=None,
          health_uids=None,
          health_groups=None,
          health_sections=None,
          feature=None,
          mode=None,
          **kwargs):
+
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
 
     msg = kwargs.pop('custom_substep_message',
                      "Perform Diff for '{device}'".format(device=device.name))
@@ -808,6 +1103,15 @@ def diff(self,
         else:
             step.passed('{pre} and {post} are identical'.format(pre=pre,
                                                                 post=post))
+    # steps.result will only change to result_status if it is passed.
+    if result_status and steps.result.name == "passed":
+        result_status_message = 'The diff result status is changed ' \
+                                'from passed to {}' \
+                                ' based on the result_status'.format(result_status)
+        log.warning('The diff result status is changed from passed to {}' \
+                    ' based on the result_status'.format(result_status))
+        getattr(steps, result_status)(result_status_message)
+
 
 actions = {
     'configure': configure,

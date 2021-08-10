@@ -488,12 +488,12 @@ def get_ospf_session_count(device):
     return ospf_session_count
 
 
-def get_ospf_interfaces(device, bgp_as):
-    """ Retrieve interface for ospf using BGP AS number
+def get_ospf_interfaces(device, bgp_as=None, ospf_process_id=None):
+    """ Retrieve interface for ospf using OSPF Process ID
 
         Args:
             device ('obj'): Device object
-            bgp_as ('int'): BGP AS number
+            ospf_process_id ('int'): OSPF Process ID
 
         Returns:
             List of interfaces
@@ -501,13 +501,21 @@ def get_ospf_interfaces(device, bgp_as):
         Raises:
             SchemaEmptyParserError
     """
+    # added 'ospf_process_id' after. so keep having 'bgp_as' for backward compatibility
+    if (
+        (isinstance(bgp_as, int) or isinstance(ospf_process_id, int))
+        and bgp_as
+        and not ospf_process_id
+    ):
+        ospf_process_id = bgp_as
+
     try:
         out = device.parse("show ip ospf interface brief")
     except SchemaEmptyParserError:
         return None
 
     try:
-        areas_dict = out["instance"][str(bgp_as)]["areas"]
+        areas_dict = out["instance"][str(ospf_process_id)]["areas"]
     except KeyError:
         return None
 

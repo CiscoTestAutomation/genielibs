@@ -1,0 +1,189 @@
+pyats_health_processors:
+  health_settings:
+    checks:
+      cpu: True
+      memory: True
+      logging: True
+      core: True
+    core_default_dir:
+      iosxe:
+      - bootflash:/core/
+      - harddisk:/core/
+      iosxr:
+      - /misc/scratch/core
+      # - disk0:/core/ # use /misc/scratch/core. scp command cannot use this
+      - harddisk:/dumper/
+      nxos: []
+    show_logging_keywords:
+      iosxe:
+      - traceback
+      - Traceback
+      - TRACEBACK
+      iosxr:
+      - traceback
+      - Traceback
+      - TRACEBACK
+      nxos:
+      - traceback
+      - Traceback
+      - TRACEBACK
+    mgmt_vrf:
+      iosxe: Mgmt-intf
+      iosxr: management
+      nxos: management
+    # remote_device: # no need to have default but keep as example
+    #   name: jump_host
+    #   path: /tmp
+    #   via: scp
+    threshold:
+      cpu: 90
+      memory: 90
+  reconnect:
+    interval: 45
+    max_time: 360
+  source:
+    class: health.Health
+    pkg: genie.libs.health
+  test_sections:
+  - get_testcase_name:
+    - api:
+        common_api: true
+        function: get_testcase_name
+        arguments:
+          escape_regex_chars: True
+        health_tc_sections:
+        - ^(?!common_).*
+        health_tc_uids:
+        - ^(?!common_).*
+        hide_processor: true
+        processor: pre
+        save:
+        - variable_name: testcase_name
+  - get_devices:
+    - run_condition:
+        if: "%VARIABLES{testscript.health_settings.devices} == {}"
+        actions:
+        - api:
+            arguments:
+              only_connected: true
+              regex: (iosxe|iosxr|nxos)
+              regex_key: os
+              testbed: '%VARIABLES{runtime.testbed}'
+              with_os: true
+            common_api: true
+            function: get_devices
+            health_tc_sections:
+            - ^(?!common_)%VARIABLES{testcase_name}(\..*)? # ()? for pyATS run. Genie Harness has device alias, but pyATS not
+            health_tc_uids:
+            - ^(?!common_)%VARIABLES{testcase_name}(.*)?
+            hide_processor: true
+            save:
+            - variable_name: testscript.health_settings.devices
+  - cpu:
+    - run_condition:
+        if: "%VARIABLES{testscript.health_settings.checks[cpu]}" # need to be [cpu] and no quote
+        actions:
+          - loop:
+              actions:
+              - api:
+                  arguments:
+                    processes:
+                    - .*
+                    add_total: True
+                  device: '%VARIABLES{dev._keys}'
+                  function: health_cpu
+                  health_tc_sections:
+                  - ^(?!common_)%VARIABLES{testcase_name}(\..*)?
+                  health_tc_uids:
+                  - ^(?!common_)%VARIABLES{testcase_name}(.*)?
+                  include:
+                  - contains('ALL_PROCESSES', level=-1).sum_value_operator('value', '<', "%VARIABLES{testscript.health_settings.threshold.cpu}")
+                  save:
+                    - variable_name: health_value # filter is opposite because show value in case of failure
+                      filter: contains('ALL_PROCESSES', level=-1).sum_value_operator('value', '>', "%VARIABLES{testscript.health_settings.threshold.cpu}").get_values('value', 0)
+                  processor: post
+              loop_variable_name: dev
+              parallel: true
+              value: '%VARIABLES{testscript.health_settings.devices}'
+  - memory:
+    - run_condition:
+        if: "%VARIABLES{testscript.health_settings.checks[memory]} == True" 
+        actions:
+          - loop:
+              actions:
+              - api:
+                  arguments:
+                    processes:
+                    - .*
+                    add_total: True
+                  device: '%VARIABLES{dev._keys}'
+                  function: health_memory
+                  health_tc_sections:
+                  - ^(?!common_)%VARIABLES{testcase_name}(\..*)?
+                  health_tc_uids:
+                  - ^(?!common_)%VARIABLES{testcase_name}(.*)?
+                  include:
+                  - contains('ALL_PROCESSES', level=-1).sum_value_operator('value', '<', "%VARIABLES{testscript.health_settings.threshold.memory}")
+                  save:
+                    - variable_name: health_value
+                      filter: contains('ALL_PROCESSES', level=-1).sum_value_operator('value', '>', "%VARIABLES{testscript.health_settings.threshold.memory}").get_values('value', 0)
+                  processor: post
+              loop_variable_name: dev
+              parallel: true
+              value: '%VARIABLES{testscript.health_settings.devices}'
+  - logging:
+    - run_condition:
+        if: "%VARIABLES{testscript.health_settings.checks[logging]} == True" 
+        actions:
+          - loop:
+              actions:
+              - api:
+                  arguments:
+                    keywords: '%VARIABLES{testscript.health_settings.show_logging_keywords.%VARIABLES{dev._values}}'
+                  device: '%VARIABLES{dev._keys}'
+                  function: health_logging
+                  health_tc_sections:
+                  - ^(?!common_)%VARIABLES{testcase_name}(\..*)?
+                  health_tc_uids:
+                  - ^(?!common_)%VARIABLES{testcase_name}(.*)?
+                  include:
+                  - value_operator('num_of_logs', '==', 0)
+                  save:
+                    - variable_name: health_value
+                      filter: get_values('logs')
+                  processor: post
+              loop_variable_name: dev
+              parallel: true
+              value: '%VARIABLES{testscript.health_settings.devices}'
+  - core:
+    - run_condition:
+        if: "%VARIABLES{testscript.health_settings.checks[core]} == True"
+        actions:
+          - loop:
+              actions:
+              - api:
+                  arguments:
+                    default_dir: '%VARIABLES{testscript.health_settings.core_default_dir.%VARIABLES{dev._values}}'
+                    delete_core: true
+                    num_of_cores: true
+                    remote_device: '%VARIABLES{testscript.health_settings.remote_device.name}'
+                    remote_path: '%VARIABLES{testscript.health_settings.remote_device.path}'
+                    remote_via: '%VARIABLES{testscript.health_settings.remote_device.via}'
+                    protocol: '%VARIABLES{testscript.health_settings.remote_device.protocol}'
+                    vrf: '%VARIABLES{testscript.health_settings.mgmt_vrf.%VARIABLES{dev._values}}'
+                  device: '%VARIABLES{dev._keys}'
+                  function: health_core
+                  health_tc_sections:
+                  - ^(?!common_)%VARIABLES{testcase_name}(\..*)?
+                  health_tc_uids:
+                  - ^(?!common_)%VARIABLES{testcase_name}(.*)?
+                  include:
+                  - value_operator('num_of_cores', '==', 0)
+                  save:
+                    - variable_name: health_value
+                      filter: get_values('filename')
+                  processor: post
+              loop_variable_name: dev
+              parallel: true
+              value: '%VARIABLES{testscript.health_settings.devices}'
+

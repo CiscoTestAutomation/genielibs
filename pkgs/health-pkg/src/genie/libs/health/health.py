@@ -7,50 +7,51 @@ import logging
 from pyats.easypy import runtime
 from pyats.results import Passed, Passx, Errored
 from pyats.aetest.steps import Steps
+from pyats.async_ import pcall
 
 # Genie
 from genie.utils import Dq
 from genie.conf.utils.converter import Converter
 from genie.libs.sdk.triggers.blitz.blitz import Blitz
 from genie.libs.parser.utils.common import format_output
-from genie.libs.sdk.triggers.blitz.markup import _load_saved_variable
+from genie.libs.sdk.triggers.blitz.markup import (_load_saved_variable,
+                                                  save_variable)
 
 log = logging.getLogger(__name__)
 
 
 class Health(Blitz):
-
     def _find_item_by_search_keyword(self, section, data, arg_name,
                                      search_keyword):
         """
-        This function will be called when `health_sections`, `health_uids` or
-        `health_groups` is given to pyats run command.
+        This function will be called when `health_tc_sections`, `health_tc_uids` or
+        `health_tc_groups` is given to pyats run command.
         Search `search_keyword` in item based on givin arg_name such as
-        `health_sections`, `health_uids` and `health_groups` in search_keyword
+        `health_tc_sections`, `health_tc_uids` and `health_tc_groups` in search_keyword
 
         Arguments:
             section (`obj`) : Aetest Subsection object.
             data (`dict`) : data of section 
             arg_name (`str`) : one the way to narrow down such as 
-                                    `health_sections`, `health_uids` or 
-                                    `health_groups` 
+                                    `health_tc_sections`, `health_tc_uids` or 
+                                    `health_tc_groups` 
             search_keyword (`str`) : keyword to search which supports regex
 
         Returns:
             data (`dict`) : item if search_keyword can be found in item
                             Otherwise, return empty dict
         """
-        # arg health_sections given
-        if arg_name == 'health_sections':
+        # arg health_tc_sections given
+        if arg_name in ['health_tc_sections', 'health_sections']:
             if re.search(search_keyword, section.uid):
                 return data
-        # arg health_uids given
-        elif arg_name == 'health_uids':
+        # arg health_tc_uids given
+        elif arg_name in ['health_tc_uids', 'health_uids']:
             if re.search(search_keyword, section.uid) or re.search(
                     search_keyword, section.parent.uid):
                 return data
-        # arg health_groups given
-        elif arg_name == 'health_groups':
+        # arg health_tc_groups given
+        elif arg_name in ['health_tc_groups', 'health_groups']:
             # groups location is different depending on
             # where the section is in commonSetup/Cleanup or Testcase
             # check `section.groups` first, if not, check `section.parent.groups`
@@ -67,14 +68,14 @@ class Health(Blitz):
     def _select_health(self, section, data, search_keywords, arg_name):
         """
         check if pyATS Health Check processor meets criteria 
-        via `health_sections`, `health_uids` and `health_groups`
+        via `health_tc_sections`, `health_tc_uids` and `health_tc_groups`
 
         Arguments:
             section (`obj`) : Aetest Subsection object.
             data (`dict`) : data of section
             search_keywords (`list`) :  list of search keywords
-            arg_name (`str`) : `health_sections`, `health_uids` or 
-                               `health_groups` 
+            arg_name (`str`) : `health_tc_sections`, `health_tc_uids` or 
+                               `health_tc_groups` 
 
         Returns:
             new_data (`list`) : Updated data which meets args criteria
@@ -92,7 +93,9 @@ class Health(Blitz):
             # which has `%VARIABLES{}`
             pre_search_keyword = search_keyword
             # load `%VARIABLES{} and replace in `search_keyword`
-            _, search_keyword = _load_saved_variable(self, section=section, val=search_keyword)
+            _, search_keyword = _load_saved_variable(self,
+                                                     section=section,
+                                                     val=search_keyword)
             # get search_target such as section.uid, section.groups from section
             search_target = self._find_search_target(section, arg_name,
                                                      search_keyword,
@@ -109,45 +112,103 @@ class Health(Blitz):
                     # so, need to use `pre_search_keyword`
                     data_dq = Dq(data)
                     dq_item = data_dq.contains(pre_search_keyword,
-                                                regex=True,
-                                                level=1).reconstruct()
+                                               regex=True,
+                                               level=1).reconstruct()
                     # for the case regex is used. need to do exact match
                     # without `regex=True`
                     if not dq_item:
                         dq_item = data_dq.contains(pre_search_keyword,
-                                                    level=1).reconstruct()
+                                                   level=1).reconstruct()
                 if dq_item and dq_item not in new_data:
                     new_data.append(dq_item)
 
         log.debug("new_data: {}".format(new_data))
         return new_data
 
-    def _get_actions(self, data):
+    def _get_actions(self, data, processor_targets=None):
         """
         get action items only from any Blitz sections such as parallel and loop
 
         Arguments:
             data   (`dict`) : data of section
+            processor_targets (`list`) : list of `processor_flag which ones 
+                                         will be run as pre/post processors
+                                         Defaults to ['pre', 'post', 'both']
 
         Returns:
             (`dict`): only actions from data
-
         """
+        def _check_processor(actions, processor_targets):
+            """
+            check `processor` in pyats health yaml should be executed or not
+
+              test_sections:
+              - get_testcase_name:
+                - api:
+                    common_api: true
+                    function: get_testcase_name
+                    health_sections:
+                    - ^(?!common_).*
+                    health_uids:
+                    - ^(?!common_).*
+                    hide_processor: true
+                    processor: pre # <- check this
+                    save:
+                    - variable_name: testcase_name
+
+            Arguments:
+                actions (`dict`): action data
+                processor_targets (`list`) : list of `processor` which ones 
+                                             will be run as pre/post processors
+
+            Returns:
+                (`list`): list of action data which is supposed to be executed
+            """
+            return_actions = []
+            # example of actions
+            # actions = [{
+            #     'api': {
+            #         'common_api': True,
+            #         'function': 'get_testcase_name',
+            #         'health_sections': ['^(?!common_).*'],
+            #         'health_uids': ['^(?!common_).*'],
+            #         'hide_processor': True,
+            #         'processor': 'pre',
+            #         'save': [{
+            #             'variable_name': 'testcase_name'
+            #         }]
+            #     }
+            # }]
+            for each_action in actions:
+                processor = Dq(each_action).get_values('processor', 0)
+                if not processor:
+                    processor = 'both'
+                if processor in processor_targets:
+                    return_actions.append(each_action)
+            return return_actions
+
+        if processor_targets is None:
+            processor_targets = ['pre', 'post', 'both', 'post_if_pre_execute']
         if data:
+            # parsing YAML if data is list or dict
+            # Dq doesn't support list at first level, so having this check
             if isinstance(data, list):
                 # parallel
                 if 'parallel' in data[0]:
-                    return data[0]['parallel']
+                    return _check_processor(data[0]['parallel'],
+                                            processor_targets)
                 # run_condition
                 elif 'run_condition' in data[0]:
-                    return data[0]['run_condition']['actions']
+                    return _check_processor(
+                        data[0]['run_condition']['actions'], processor_targets)
                 # normal action
                 else:
-                    return data
+                    return _check_processor(data, processor_targets)
             elif isinstance(data, dict):
                 # loop
                 if Dq(data).contains('actions'):
-                    return Dq(data).get_values('actions')
+                    return _check_processor(
+                        Dq(data).get_values('actions'), processor_targets)
 
         # for case section doesn't have loop/parallel
         # return data as is.
@@ -165,74 +226,134 @@ class Health(Blitz):
             device_list (`list`): list of devices
         """
         device_list = []
+        # before running health check, analyze actions and check/resolve
+        # device name from %VARIABLES and loop_variable_name for device connectivity check
         for device in Dq(each_data).get_values('device'):
             m = re.search('%VARIABLES{(?P<var_name>.*)}',
                           device.name if hasattr(device, 'name') else device)
             if m:
                 var_name = m.groupdict()['var_name']
-                if isinstance(data, dict) and 'loop_variable_name' in data and 'value' in data:
+                if isinstance(
+                        data, dict
+                ) and 'loop_variable_name' in data and 'value' in data:
                     # loop with list
                     if var_name == data['loop_variable_name']:
                         for dev in data['value']:
                             if dev not in device_list:
                                 device_list.append(dev)
-                    # loop with dict for _keys/_values
-                    elif (var_name == data['loop_variable_name'] +
-                          '._keys') or (var_name
-                                        == data['loop_variable_name'] +
-                                        '._values'):
+                    elif var_name in [
+                            data['loop_variable_name'] + '._keys',
+                            data['loop_variable_name'] + '._values',
+                    ]:
                         if data['value']:
                             for item in data['value']:
                                 for dev in item.keys():
                                     if dev not in device_list:
                                         device_list.append(dev)
-                else:
-                    if Dq(each_data).contains('loop_variable_name') and Dq(each_data).contains('value'):
-                        # loop with list
-                        if var_name == Dq(each_data).get_values('loop_variable_name', 0):
-                            loop_value = Dq(each_data).get_values('value', 0)
-                            m = re.search('%VARIABLES{(?P<dev_var_name>.*)}', loop_value)
-                            if m:
-                                dev_var_name = m.groupdict()['dev_var_name']
-                                # for testscript variables
-                                if 'testscript.' in dev_var_name:
-                                    dev_var_name = dev_var_name.split('testscript.')[-1]
+                elif Dq(each_data).contains('loop_variable_name') and Dq(
+                        each_data).contains('value'):
+                    # loop with list
+                    if var_name == Dq(each_data).get_values(
+                            'loop_variable_name', 0):
+                        loop_value = Dq(each_data).get_values('value', 0)
+                        m = re.search('%VARIABLES{(?P<dev_var_name>.*)}',
+                                      loop_value)
+                        if m:
+                            dev_var_name = m.groupdict()['dev_var_name']
+                            # for testscript variables
+                            if dev_var_name.startswith('testscript.'):
+                                dev_var_name = dev_var_name[len('testscript.'
+                                                                ):]
+                                try:
+                                    loop_value = self.parent.parameters[
+                                        'save_variable_name'].setdefault(
+                                            'testscript',
+                                            {}).get(dev_var_name, [])
+                                # if no key yet, just put empty list as iterable
+                                except (KeyError, AttributeError):
+                                    loop_value = []
+                            # testcase variables
+                            else:
+                                try:
+                                    loop_value = self.parameters[
+                                        'save_variable_name'].get(
+                                            dev_var_name, [])
+                                # if no key yet, just put empty list as iterable
+                                except KeyError:
+                                    loop_value = []
+                        for dev in loop_value:
+                            if dev not in device_list:
+                                device_list.append(dev)
+                    elif var_name in [
+                            Dq(each_data).get_values('loop_variable_name', 0) +
+                            '._keys',
+                            Dq(each_data).get_values('loop_variable_name', 0) +
+                            '._values',
+                    ]:
+                        loop_value = Dq(each_data).get_values('value', 0)
+                        m = re.search('%VARIABLES{(?P<dev_var_name>.*)}',
+                                      loop_value)
+                        if m:
+                            dev_var_name = m.groupdict()['dev_var_name']
+                            markup_variable_value = self.parent.parameters[
+                                'save_variable_name'].setdefault(
+                                    'testscript', {})
+                            # for testscript variables
+                            if dev_var_name.startswith('testscript.'):
+                                dev_var_name = dev_var_name[len('testscript.'
+                                                                ):]
+                                if isinstance(
+                                        markup_variable_value.setdefault(
+                                            dev_var_name, None), dict):
                                     try:
-                                        loop_value = self.parent.parameters['save_variable_name'].setdefault('testscript', {}).get(dev_var_name, [])
-                                    # if no key yet, just put empty list as iterable
+                                        if '_keys' in var_name:
+                                            loop_value = markup_variable_value.get(
+                                                dev_var_name, []).keys()
+                                        else:
+                                            loop_value = markup_variable_value.get(
+                                                dev_var_name, []).values()
                                     except (KeyError, AttributeError):
                                         loop_value = []
-                                # testcase variables
+                                elif isinstance(
+                                        markup_variable_value.setdefault(
+                                            dev_var_name, None), list):
+                                    loop_value = markup_variable_value[
+                                        dev_var_name]
                                 else:
-                                    try:
-                                        loop_value = self.parameters['save_variable_name'].get(dev_var_name, [])
-                                    # if no key yet, just put empty list as iterable
-                                    except KeyError:
-                                        loop_value = []
-                            for dev in loop_value:
-                                if dev not in device_list:
-                                    device_list.append(dev)
-                        # loop with dict for _keys/_values
-                        elif (var_name == Dq(each_data).get_values('loop_variable_name', 0) +
-                              '._keys') or (var_name
-                                            == Dq(each_data).get_values('loop_variable_name', 0) +
-                                            '._values'):
-                            if Dq(each_data).get_values('value', 0):
-                                for item in Dq(each_data).get_values('value', 0):
-                                    for dev in item.keys():
-                                        if dev not in device_list:
-                                            device_list.append(dev)
-            else:
-                if device not in device_list:
-                    device_list.append(device)
+                                    # return empty in case none of above matched
+                                    loop_value = []
+                            elif isinstance(
+                                    markup_variable_value[dev_var_name], dict):
+                                try:
+                                    if '_keys' in var_name:
+                                        loop_value = markup_variable_value.get(
+                                            dev_var_name, []).keys()
+                                    elif '_values' in var_name:
+                                        loop_value = markup_variable_value.get(
+                                            dev_var_name, []).values()
+                                # if no key yet, just put empty list as iterable
+                                except KeyError:
+                                    loop_value = []
+                            elif isinstance(
+                                    markup_variable_value[dev_var_name], list):
+                                loop_value = markup_variable_value[
+                                    dev_var_name]
+                            else:
+                                # return empty in case none of above matched
+                                loop_value = []
+                        for dev in loop_value:
+                            if dev not in device_list:
+                                device_list.append(dev)
+            elif device not in device_list:
+                device_list.append(device)
 
         log.debug('device_list: {}'.format(device_list))
         return device_list
 
     def _check_all_devices_connected(self, testbed, data, reconnect):
         """
-        find search target depending on arg_name (health_uids/health_groups/health_sections)
-        for `health_groups`, this function get `groups` from the triggers.
+        find search target depending on arg_name (health_tc_uids/health_tc_groups/health_tc_sections)
+        for `health_tc_groups`, this function get `groups` from the triggers.
 
         Arguments:
             testbed (`obj`) : testbed object
@@ -247,39 +368,75 @@ class Health(Blitz):
         Returns:
             dev_list (`list`): device list which is connected
         """
+        def _connectivity_check(device, testbed, reconnect):
+            """
+            check device connectivity and retry if needed
+
+            Arguments:
+                device (`obj`): device object
+                testbed (`obj`) : testbed object
+                reconnect (`dict` or None) : parameters for reconnect
+                                             ex.)
+                                             {
+                                                 'max_time': 900, # maximum time to reconnect
+                                                 'interval': 60,  # sleep before retry
+                                             }
+
+            Returns:
+                (`string`): device name if connected. return empty string if not connected
+            """
+            # check if device object, or not
+            if hasattr(device, 'name'):
+                device = device.name
+            dev_obj = testbed.devices[device]
+            # check if device exists in testbed and if device is connected
+            if dev_obj.name in testbed.devices and dev_obj.connected:
+                if reconnect is None:
+                    state = dev_obj.api.verify_device_connection()
+                else:
+                    state = dev_obj.api.verify_device_connection(
+                        reconnect=True,
+                        reconnect_max_time=reconnect.get('max_time', 900),
+                        reconnect_interval=reconnect.get('interval', 60))
+                # verify_device_connection returns True(device connected)/False
+                if state:
+                    return dev_obj.name
+            return ''
+
         dev_list = []
-        device_checked = []
+        device_check_list = []
+        # build device_check_list for pcall
         for each_data in self._get_actions(data):
             for dev in self._get_device_names(data, each_data):
-                if dev not in device_checked:
-                    device_checked.append(dev)
-                    # check if device object, or not
-                    if hasattr(dev, 'name'):
-                        dev = dev.name
-                    dev_obj = testbed.devices[dev]
-                    # check if device exists in testbed and if connected
-                    if dev in testbed.devices and dev_obj.connected:
-                        if reconnect is None:
-                            state = dev_obj.api.verify_device_connection_state()
-                        else:
-                            state = dev_obj.api.verify_device_connection_state(
-                                reconnect=True,
-                                reconnect_max_time=reconnect.get('max_time', 900),
-                                reconnect_interval=reconnect.get('interval', 60))
-                        if state and dev not in dev_list:
-                            dev_list.append(dev)
+                if dev not in device_check_list:
+                    device_check_list.append(dev)
+
+        # check connectivity in parallel by pcall
+        log.debug('device_check_list: {}'.format(device_check_list))
+        if device_check_list:
+            # check device connectivity via pcall
+            dev_list = pcall(
+                _connectivity_check,
+                device=set(device_check_list),
+                testbed=[testbed for i in range(len(set(device_check_list)))],
+                reconnect=[
+                    reconnect for i in range(len(set(device_check_list)))
+                ])
+
+        # return confirmed connected device list
+        log.debug('connected device list: {}'.format(dev_list))
         return dev_list
 
     def _find_search_target(self, section, arg_name, search_keyword,
                             search_keywords):
         """
-        find search target depending on arg_name (health_uids/health_groups/health_sections)
-        for `health_groups`, this function get `groups` from the triggers.
+        find search target depending on arg_name (health_tc_uids/health_tc_groups/health_tc_sections)
+        for `health_tc_groups`, this function get `groups` from the triggers.
 
         Arguments:
             section (`obj`) : Aetest Subsection object.
-            arg_name (`str`) : `health_sections`, `health_uids` or 
-                               `health_groups`
+            arg_name (`str`) : `health_tc_sections`, `health_tc_uids` or 
+                               `health_tc_groups`
             search_keyword (`str`): a keyword to search
             search_keywords (`list`): list of search keywords
         
@@ -290,7 +447,7 @@ class Health(Blitz):
         search_keywords = copy.deepcopy(search_keywords)
 
         search_target = ''
-        if arg_name == 'health_groups':
+        if arg_name in ['health_tc_groups', 'health_groups']:
             search_target = getattr(section, 'groups', '')
             if not search_target:
                 search_target = getattr(section.parent, 'groups', '')
@@ -302,26 +459,25 @@ class Health(Blitz):
                 for st_item in search_target:
                     search_target = st_item if re.search(
                         search_keyword, st_item) else ''
-                    log.debug("health_groups/search_target: {uid}".format(
-                        uid=search_target))
-        elif arg_name == 'health_sections':
+                    log.debug("{ag}/search_target: {uid}".format(
+                        ag=arg_name, uid=search_target))
+        elif arg_name in ['health_tc_sections', 'health_sections']:
             search_target = section.uid
-            log.debug("health_sections/search_target: {uid}".format(
-                uid=search_target))
-        elif arg_name == 'health_uids':
+            log.debug("{ag}/search_target: {uid}".format(ag=arg_name,
+                                                         uid=search_target))
+        elif arg_name in ['health_tc_uids', 'health_uids']:
             for kw in search_keywords:
                 # load `%VARIABLES{} and replace`
                 _, kw = _load_saved_variable(self, section=section, val=kw)
                 if re.search(kw, section.uid):
                     search_target = section.uid.split('.')[0]
-                    log.debug(
-                        "health_uids/search_target(section.uid): {uid}".format(
-                            uid=section.uid))
+                    log.debug("{ag}/search_target(section.uid): {uid}".format(
+                        ag=arg_name, uid=section.uid))
                 elif re.search(kw, section.parent.uid):
                     search_target = section.parent.uid.split('.')[0]
                     log.debug(
-                        "health_uids/search_target(section.parent.uid): {uid}".
-                        format(uid=section.parent.uid))
+                        "{ag}/search_target(section.parent.uid): {uid}".format(
+                            ag=arg_name, uid=section.parent.uid))
         return search_target
 
     def _pre_post_processors(self,
@@ -330,10 +486,11 @@ class Health(Blitz):
                              section,
                              data,
                              name,
-                             devices_connected,
+                             reconnect,
                              processor_targets,
                              processor_type,
-                             pre_processor_result=Passed):
+                             pre_processor_result=Passed,
+                             health_settings=None):
         """
         execute pre/post processors and return if pre-processor runs and processor result
 
@@ -343,7 +500,7 @@ class Health(Blitz):
             section (`obj`): Aetest Section object
             data (`list`) : data of section
             name (`str`) : name of section in health yaml
-            devices_connected (`list`) : list of connected devices
+            reconnect (`dict` or None) : parameters for reconnect
             processor_targets (`list`) : list of `processor_flag which ones 
                                          will be run as pre/post processors
             processor_type (`str`) : processor type `pre` or `post`
@@ -353,6 +510,7 @@ class Health(Blitz):
             pre_processor_run (`bool`) : if pre processor runs or not
             pre_processor_result (`obj`) : return processor result (Result obj)
         """
+        devices_connected = []
         new_data_dict = {}
         selected_options = 0
         list_of_args = []
@@ -365,20 +523,26 @@ class Health(Blitz):
         orig_data = copy.deepcopy(data)
 
         # check if health arguments are given to pyats command
-        for arg_name in ['health_sections', 'health_uids', 'health_groups']:
+        for arg_name in [
+                'health_tc_sections', 'health_tc_uids', 'health_tc_groups',
+                'health_sections', 'health_uids', 'health_groups'
+        ]:
             if getattr(runtime.args, arg_name):
                 args_flag = True
-            for item in self._get_actions(data):
+            for item in self._get_actions(data, processor_targets):
                 if Dq(item).contains(
-                        'health_sections|health_uids|health_groups',
+                        'health_tc_sections|health_tc_uids|health_tc_groups|health_sections|health_uids|health_groups',
                         regex=True):
                     args_in_yaml_flag = True
 
-        for arg_name in ['health_sections', 'health_uids', 'health_groups']:
+        for arg_name in [
+                'health_tc_sections', 'health_tc_uids', 'health_tc_groups',
+                'health_sections', 'health_uids', 'health_groups'
+        ]:
             log.debug('Checking {an}'.format(an=arg_name))
             selected = None
             selected_options = 0
-            for item in self._get_actions(data):
+            for item in self._get_actions(data, processor_targets):
                 # from argument
 
                 arg_search_keyword = getattr(runtime.args, arg_name)
@@ -407,12 +571,16 @@ class Health(Blitz):
                         # ex.)
                         # - api:               # only section1
                         #     function: func1
-                        #     health_sections: section1
+                        #     health_tc_sections: section1
                         # - api:               # all sections
                         #     function: func2
-                        if (args_in_yaml_flag and arg_name == 'health_sections'
-                            ) and (not Dq(item).get_values('health_sections')
-                                   and not Dq(item).get_values('health_uids')):
+                        if (args_in_yaml_flag and arg_name
+                                in ['health_tc_sections', 'health_sections']
+                                and
+                            ((not Dq(item).get_values('health_tc_sections')
+                              or not Dq(item).get_values('health_sections'))
+                             and (not Dq(item).get_values('health_tc_uids')
+                                  or not Dq(item).get_values('health_uids')))):
                             search_keywords = ['.*']
                         else:
                             search_keywords = None
@@ -439,7 +607,8 @@ class Health(Blitz):
                 value = ''
                 log.debug(
                     'num of health args: {n}'.format(n=len(set(list_of_args))))
-                log.debug('num of new_data_dict: {n}'.format(n=len(new_data_dict)))
+                log.debug(
+                    'num of new_data_dict: {n}'.format(n=len(new_data_dict)))
                 if len(set(list_of_args)) == len(new_data_dict):
                     for key, value_ in new_data_dict.items():
                         if value == value_:
@@ -461,19 +630,19 @@ class Health(Blitz):
         if new_data_flag:
             temp_data = []
             # override data because meeting criteria by `arg_name`s
-            for key in new_data_dict:
-                for idx in new_data_dict[key]:
-                    temp_data.append(new_data_dict[key][idx].pop())
+            for key, value__ in new_data_dict.items():
+                for idx in value__:
+                    # data from each health arg should be same
+                    # so remove redundant data by overwriting
+                    temp_data = [new_data_dict[key][idx].pop()]
                 data = temp_data
-        else:
-            if (not new_data_dict or len(set(list_of_args)) !=
-                    len(new_data_dict)) and len(set(list_of_args)) != 0:
-                data = []
+        elif (not new_data_dict or len(set(list_of_args)) != len(new_data_dict)
+              ) and len(set(list_of_args)) != 0:
+            data = []
         # processor start message
         log.debug('{type}-processor {name} started'.format(
             name=name, type=processor_type.capitalize()))
         pre_processor_run = True
-
 
         # check if `processor` tag matches processor_targets and
         # if device for action is connected
@@ -486,24 +655,30 @@ class Health(Blitz):
 
         common_api = False
 
-        for each_data in self._get_actions(data):
+        if new_data_dict and new_data_flag:
+            # get connected devices list
+            devices_connected = self._check_all_devices_connected(
+                testbed, data, reconnect)
+        for each_data in self._get_actions(data, processor_targets):
             for key in each_data:
                 # get processor key from action. by default, `both`
                 each_data_dq = Dq(each_data)
-                processor_from_yaml = each_data_dq.contains(key).get_values('processor', 0)
+                processor_from_yaml = each_data_dq.contains(key).get_values(
+                    'processor', 0)
                 if not processor_from_yaml:
                     processor_from_yaml = 'both'
 
-                log.debug('processor_targets: {pt}'.format(pt=processor_targets))
+                log.debug(
+                    'processor_targets: {pt}'.format(pt=processor_targets))
                 log.debug('processor: {p}'.format(p=processor_from_yaml))
 
                 # find `common_api` key and return True/False
                 common_api = any(each_data_dq.get_values('common_api'))
 
-
                 if processor_from_yaml in processor_targets:
                     # check if device for action is connected
                     all_devices_connected = None
+                    devices_not_connected = []
                     for uut in self._get_device_names(orig_data, each_data):
                         if uut not in device_checked:
                             device_checked.append(uut)
@@ -515,28 +690,33 @@ class Health(Blitz):
                                     all_devices_connected = True
                                 else:
                                     all_devices_connected = False
-                                    log.info(
-                                        'Device {d} is not connected.'.format(
-                                            d=testbed.devices[uut].name))
-                                    break
+                                    devices_not_connected.append(uut)
+                            elif (uut.name in devices_connected) or (
+                                    uut.alias in devices_connected):
+                                all_devices_connected = True
                             else:
-                                if (uut.name in devices_connected) or (
-                                        uut.alias in devices_connected):
-                                    all_devices_connected = True
-                                else:
-                                    all_devices_connected = False
-                                    log.info(
-                                        'Device {d} is not connected.'.format(
-                                            d=testbed.devices[uut].name))
-                                    break
-                    if (all_devices_connected == True
-                            or all_devices_connected is None):
+                                all_devices_connected = False
+                                devices_not_connected.append(uut)
+                    if devices_not_connected:
+                        log.warning("devices are not connected: {}".format(
+                            devices_not_connected))
+                    force_all_connected = health_settings.get(
+                        'force_all_connected', True)
+                    if device_checked and not force_all_connected and devices_connected:
+                        log.warning(
+                            "force_all_connected is False. Executing even though some of devices might not be connected."
+                        )
+                    # date will be created if all devices are connected or
+                    # if force_all_connected == False and one of devices is connected
+                    if (all_devices_connected == True or all_devices_connected
+                            is None) or (force_all_connected == False
+                                         and devices_connected):
                         temp_data.append(each_data)
 
         # until here, data contains only actions
         # for cases like `parallel`, `loop`, need to put the headers
         # from original data `orig_data`
-        if 'actions' in orig_data and data:
+        if 'actions' in orig_data and data and temp_data:
             data = copy.deepcopy(orig_data)
             if temp_data:
                 data['actions'] = temp_data
@@ -544,14 +724,16 @@ class Health(Blitz):
             else:
                 data = []
         elif isinstance(orig_data, list):
-            if len(orig_data) > 0 and 'parallel' in orig_data[0] and data:
+            if len(orig_data
+                   ) > 0 and 'parallel' in orig_data[0] and data and temp_data:
                 data = copy.deepcopy(orig_data)[0]
                 if temp_data:
                     data['parallel'] = temp_data
                     data = [data]
                 else:
                     data = []
-            elif len(orig_data) > 0 and 'run_condition' in orig_data[0] and data:
+            elif len(orig_data) > 0 and 'run_condition' in orig_data[
+                    0] and data and temp_data:
                 data = copy.deepcopy(orig_data)[0]
                 data = [data]
             else:
@@ -559,8 +741,10 @@ class Health(Blitz):
         else:
             data = temp_data
         # remove section if no data
+        removed_section = False
         if not data:
             processor.reporter.remove_section(id_list=processor.uid.list)
+            removed_section = True
 
         # if any device is not connected, processor will be skipped
         # if common_api is True, will execute
@@ -569,6 +753,17 @@ class Health(Blitz):
             steps = Steps()
             # execute dispatcher in Blitz
             result = self.dispatcher(steps, testbed, section, data, name)
+
+            if isinstance(data, list):
+                hide_processor = any(
+                    Dq(data[0]).get_values('hide_processor', 0) == True
+                    for each_data in data)
+
+            else:
+                hide_processor = Dq(data[0]).get_values('hide_processor', 0)
+
+            if hide_processor and not removed_section:
+                removed_section = self._remove_section(processor)
             try:
                 log.debug('Blitz section return:\n{result}'.format(
                     result=json.dumps(result, indent=2, sort_keys=True)))
@@ -580,6 +775,12 @@ class Health(Blitz):
                 section_result=section.result.name))
             log.debug('steps result: {steps_result}'.format(
                 steps_result=steps.result.name))
+
+            # if section is skipped by run_condition, remove section
+            if (isinstance(result, dict) and 'run_condition_skipped' in result
+                    and not removed_section
+                    and result['run_condition_skipped'] == True):
+                removed_section = self._remove_section(processor)
             if processor_type == 'pre' and steps.result != Passed and steps.result != Passx:
                 log.info(
                     "Pre-processor pyATS Health {name} was failed, but continue section and Post-processor"
@@ -593,30 +794,33 @@ class Health(Blitz):
                 section.result = section.result + processor.result + self.pre_processor_result
 
                 return pre_processor_run, pre_processor_result
-        else:
-            if processor_type == 'pre':
-                pre_processor_run = False
-                # processor is skipped. but call passed to move forward     for this case
-                log.info(
-                    "Pre-processor pyATS Health '{name}' is skipped because devices are not connected."
-                    .format(name=name))
-                return pre_processor_run, pre_processor_result
-            elif processor_type == 'post':
-                # for the case only pre-processors runs
-                if section.result == pre_processor_result:
-                    log.info(
-                        'Only Pre-processor runs. Section result and '
-                        'Pre-processor result are different.Reflecting '
-                        'Post-processor result to Section.'
-                    )
-                    # reflect processor results to section
-                    section.result = section.result + processor.result + self.pre_processor_result
-                log.info(
-                    "Post-processor pyATS Health '{name}' was skipped because devices are not connected."
-                    .format(name=name))
-                return pre_processor_run, pre_processor_result
+        elif processor_type == 'pre':
+            pre_processor_run = False
+            # processor is skipped. but call passed to move forward     for this case
+            log.info(
+                "Pre-processor pyATS Health '{name}' is skipped because devices are not connected."
+                .format(name=name))
+            return pre_processor_run, pre_processor_result
+        elif processor_type == 'post':
+            # for the case only pre-processors runs
+            if section.result == pre_processor_result:
+                log.info('Only Pre-processor runs. Section result and '
+                         'Pre-processor result are different.Reflecting '
+                         'Post-processor result to Section.')
+                # reflect processor results to section
+                section.result = section.result + processor.result + self.pre_processor_result
+            log.info(
+                "Post-processor pyATS Health '{name}' was skipped because devices are not connected."
+                .format(name=name))
+            return pre_processor_run, pre_processor_result
 
         return pre_processor_run, pre_processor_result
+
+    def _remove_section(self, processor):
+        processor.reporter.remove_section(id_list=processor.uid.list)
+        log.debug('removed section: {}'.format(processor.uid.list))
+
+        return True
 
     def health_dispatcher(self,
                           steps,
@@ -685,13 +889,22 @@ class Health(Blitz):
             # convert testbed from pyATS to Genie
             testbed = Converter.convert_tb(runtime.testbed)
 
+        if 'health_settings' in kwargs:
+            health_settings = kwargs['health_settings']
+        else:
+            health_settings = {}
+
+        # save `health_settings` as testscript variable
+        save_variable(self, section, 'testscript.health_settings',
+                      health_settings)
+        # handling for `health_settings.devices`. TODO; AttrDict support
+        if 'devices' in health_settings:
+            save_variable(self, section, 'testscript.health_settings.devices',
+                          health_settings['devices'])
+
         # ---------------------
         # pre-context processor
         # ---------------------
-
-        # get connected devices list
-        devices_connected = self._check_all_devices_connected(
-            testbed, data, reconnect)
 
         # execute pre-processor and received result in self.pre_processor_result
         self.pre_processor_run, self.pre_processor_result = self._pre_post_processors(
@@ -700,28 +913,27 @@ class Health(Blitz):
             section,
             data,
             name,
-            devices_connected,
+            reconnect,
             processor_targets=['pre', 'both'],
-            processor_type='pre')
+            processor_type='pre',
+            health_settings=health_settings)
 
         try:
             yield
         except Exception as e:
             # make section Errored when exception happens
-            section.result = Errored.clone('Caught exception in %s' % str(section),
-                               data = {'traceback': e})
+            section.result = Errored.clone('Caught exception in %s' %
+                                           str(section),
+                                           data={'traceback': e})
 
         # ----------------------
         # post-context processor
         # ----------------------
-
-        post_if_pre_execute_flag = True
-        # check `post_if_pre_execute` and if pre-processor is executed
-        for each_data in self._get_actions(data):
-            if Dq(each_data).get_values(
-                    'processor',
-                    0) == 'post_if_pre_execute' and not self.pre_processor_run:
-                post_if_pre_execute_flag = False
+        post_if_pre_execute_flag = not any(
+            Dq(each_data).get_values('processor', 0) == 'post_if_pre_execute'
+            and not self.pre_processor_run
+            for each_data in self._get_actions(data)
+        )
 
         if not post_if_pre_execute_flag:
             log.info(
@@ -735,10 +947,6 @@ class Health(Blitz):
                 # for the case devices are connected after pre-processor
                 testbed = Converter.convert_tb(runtime.testbed)
 
-            # get connected devices list
-            devices_connected = self._check_all_devices_connected(
-                testbed, data, reconnect)
-
             # execute post-processor
             self._pre_post_processors(
                 testbed,
@@ -746,7 +954,8 @@ class Health(Blitz):
                 section,
                 data,
                 name,
-                devices_connected,
+                reconnect,
                 processor_targets=['post', 'post_if_pre_execute', 'both'],
                 processor_type='post',
-                pre_processor_result=self.pre_processor_result)
+                pre_processor_result=self.pre_processor_result,
+                health_settings=health_settings)

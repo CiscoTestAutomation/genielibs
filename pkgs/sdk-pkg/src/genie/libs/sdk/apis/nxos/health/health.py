@@ -1,19 +1,14 @@
-"""Common health functions for platform"""
+"""Common health functions for nxos"""
 
 # Python
-import os
-import logging
 import re
+import logging
 
 # pyATS
 from pyats.easypy import runtime
 
 # Genie
-from genie.metaparser.util.exceptions import SchemaEmptyParserError, SchemaMissingKeyError
-from genie.utils import Dq
-
-# Unicon
-from unicon.core.errors import SubCommandFailure
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 log = logging.getLogger(__name__)
 
@@ -22,7 +17,9 @@ def health_cpu(device,
                command='show processes cpu',
                processes=None,
                check_key='one_sec',
+               check_key_total='five_sec_cpu_total',
                output=None,
+               add_total=False,
                health=True):
     '''Get cpu load on device
 
@@ -33,6 +30,9 @@ def health_cpu(device,
             processes (`list`): List of processes to check
             check_key  (`str`): Key to check in parsed output
                                 Default to `one_sec`
+            check_key_total (`str`): Key to check in parsed output for Total
+                                     Default to `five_sec_cpu_total`
+            add_total (`bool`): If True, add total cpu load
             output     (`str`): Output of show command
         Returns:
             cpu_load_dict  (`dict`): Cpu load dictionary on the device
@@ -106,18 +106,27 @@ def health_cpu(device,
     if health:
         health_data = {}
         health_data.setdefault('health_data', [])
+        health_data['health_data'].append({
+            'process': 'ALL_PROCESSES',
+            'value': float(parsed['five_sec_cpu_total'])
+        })
         for k, v in cpu_load_dict.items():
             health_data['health_data'].append({'process': k, 'value': v})
-        cpu_load_dict = health_data
+        return health_data
+
+    if add_total:
+        cpu_load_dict = {'ALL_PROCESSES': float(parsed['five_sec_cpu_total'])}
 
     return cpu_load_dict
 
 
 def health_memory(device,
-                  command='show processes memory',
+                  command='top -n 1',
                   processes=None,
-                  check_key='all_mem_alloc',
+                  check_key=None,
+                  check_key_total=None,
                   output=None,
+                  add_total=False,
                   health=True):
     '''Get memory usage on device
 
@@ -128,8 +137,9 @@ def health_memory(device,
             processes     (`list`): List of processes to check
                                     If both processes and check_key are given,
                                     processes are preferred.
-            check_key      (`str`): Key to check in parsed output
-                                    Default to `all_mem_alloc`
+            check_key      (`str`): N/A. not used for NXOS
+            check_key_total (`str`): N/A. not used for NXOS
+            add_total    (`bool`): If True, add total memory usage
             output         (`str`): Output of show command
         Returns:
             memory_usage_dict (`dict`): memory usage dict on the device (percentage)
@@ -137,18 +147,17 @@ def health_memory(device,
                                         {
                                             "health_data": [
                                                 {
-                                                    "process": "libvirtd",
-                                                    "value": 0.0012294695662956926,
+                                                    "process": "/opt/mtx/bin/grpc -i 2626 -I",
+                                                    "value": 0.0,
                                                 },
                                                 {
-                                                    "process": "inotifywait",
-                                                    "value": 0.0012294695662956926,
+                                                    "process": "/sbin/klogd -2 -x -c 1",
+                                                    "value": 0.0,
                                                 }
                                             ]
                                         }
     '''
 
-    process = ''
     regex_items = []
     memory_usage_dict = {}
     try:
@@ -158,72 +167,70 @@ def health_memory(device,
                   format(cmd=command, msg=str(e)))
         return None
 
-    all_processes = parsed.q.get_values('process')
-    if isinstance(processes, list):
-        for item in processes:
-            regex_items += parsed.q.contains_key_value(
-                'process', item, value_regex=True).get_values('process')
+    total_res = sum(parsed.q.get_values('res'))
 
-    if regex_items:
-        processes = regex_items
+    all_processes = parsed.q.get_values('command')
 
+    total_memory_usage = 0
     if processes or all_processes:
         for ps_item in processes or all_processes:
-            # To get process id
+            # To get process(command)
             # {
-            #   'all_mem_alloc': 4646178816,
             #   'pid': {
-            #     1: {
-            #       'index': {
-            #         1: {
-            #           'mem_alloc': 188416,
-            #           'mem_limit': 0,
-            #           'mem_used': 4308992,
-            #           'pid': 1,
-            #           'process': 'init',
-            #           'stack_base_ptr': 'ffffffff/ffffffff'
-            #           (snip)
+            #     7329: {
+            #       'stat': 'Ssl',
+            #       'majflt': 157,
+            #       'trs': 0,
+            #       'rss': 217428,
+            #       'vsz': 1052196,
+            #       'mem_percent': 3.7,
+            #       'command': '/opt/mtx/bin/grpc -i 2626 -I',
+            #       'tty': '?',
+            #       'time': '00:01:43'
+            #     }
             pids = parsed.q.contains_key_value(
-                'process', ps_item, value_regex=True).get_values('pid')
-            memory_holding = 0
+                'command', ps_item, value_regex=True).get_values('pids')
+            process_total_res = 0
+            process_total_shr = 0
             for pid in pids:
-                # use `sum` because it's possible one pid returns multiple `holding`
-                memory_holding += sum(
-                    parsed.q.contains_key_value('pid',
-                                                pid).get_values('mem_alloc'))
-
-            if parsed.get(check_key, 0) == 0:
-                memory_usage = 0
-            else:
-                memory_usage = memory_holding / parsed[check_key]
-
-            memory_usage_dict.update({ps_item: memory_usage * 100})
+                process_total_res += parsed['pids'][pid]['res']
+                process_total_shr += parsed['pids'][pid]['shr']
+            memory_usage_percent = ((process_total_res - process_total_shr) / total_res) * 100
+            memory_usage_dict[ps_item] = memory_usage_percent
+            total_memory_usage += memory_usage_percent
 
     # if health is True, change the dict
     # from:
     # memory_usage_dict = {
-    #   "libvirtd": 0.0012294695662956926,
-    #   "inotifywait": 0.0012294695662956926,
+    #   "/opt/mtx/bin/grpc -i 2626 -I": 0.0,
+    #   "/sbin/klogd -2 -x -c 1": 0.0,
     # }
     # to:
     # memory_usage_dict = {
     #   "health_data": [
     #     {
-    #       "process": "libvirtd",
-    #       "value": 0.0012294695662956926,
+    #       "process": "/opt/mtx/bin/grpc -i 2626 -I",
+    #       "value": 0.0,
     #     },
     #     {
-    #       "process": "inotifywait",
-    #       "value": 0.0012294695662956926,
+    #       "process": "/sbin/klogd -2 -x -c 1",
+    #       "value": 0.0,
     #     }
     #   ]
     # }
     if health:
         health_data = {}
         health_data.setdefault('health_data', [])
+        health_data['health_data'].append({
+            'process': 'ALL_PROCESSES',
+            'value': total_memory_usage
+        })
         for k, v in memory_usage_dict.items():
             health_data['health_data'].append({'process': k, 'value': v})
-        memory_usage_dict = health_data
+        return health_data
+
+    if add_total:
+        memory_usage_dict.update({'ALL_PROCESSES': total_memory_usage})
 
     return memory_usage_dict
 
@@ -231,7 +238,7 @@ def health_memory(device,
 def health_logging(device,
                    command='show logging logfile',
                    files=None,
-                   keywords=None,
+                   keywords=['traceback', 'Traceback', 'TRACEBACK'],
                    output=None,
                    num_of_logs=False,
                    health=True):
@@ -240,7 +247,8 @@ def health_logging(device,
             device    (`obj`): Device object
             command   (`str`): show command. Default to 'show logging logfile'
             files    (`list`): Not applicable on this platform
-            keywords (`list`): List of keywords to match. Default to None
+            keywords (`list`): List of keywords to match.
+                               Default to ['traceback', 'Traceback', 'TRACEBACK']
             output    (`str`): Output of show command. Default to None
             num_of_logs (`bool`): flag to return number of log messages
                                   Default to False
@@ -298,6 +306,7 @@ def health_core(device,
                 remote_device=None,
                 remote_path=None,
                 remote_via=None,
+                protocol='scp',
                 vrf=None,
                 archive=False,
                 delete_core=False,
@@ -318,6 +327,7 @@ def health_core(device,
                                  Default to None
             remote_via (`str`) : specify connection to get ip
                                  Default to None
+            protocol (`str`): protocol for copy. Default to scp
             vrf (`str`): use vrf where scp find route to remote device
                                  Default to None
             archive     (`bool`): flag to save the decode output as file in archive
@@ -347,13 +357,10 @@ def health_core(device,
                                         }
                                     }
     '''
-    # store found core file name
-    all_corefiles = []
     # store core file name which is successfully copied
     copied_files = []
     # store found core file location
     dirs = []
-    health_data = {}
     health_corefiles = {}
     remote_device_alias = []
 
@@ -393,94 +400,148 @@ def health_core(device,
 
     log.debug('dirs: {dirs}'.format(dirs=dirs))
 
-    if remote_device:
-        # convert from device name to device object
-        if remote_device in device.testbed.devices:
+    # convert from device name to device object
+    fileutils = False
+    if remote_device and protocol != 'http':
+        if remote_device in device.testbed.testbed.servers:
+            fileutils = True
+        elif remote_device in device.testbed.devices:
             remote_device = device.testbed.devices[remote_device]
             # check connected_alias for remote_device
             remote_device_alias = [
-                i for i in remote_device.api.get_connected_alias().keys()
+                device_alias for device_alias in
+                remote_device.api.get_connected_alias().keys()
             ]
         else:
             log.warn(
                 'remote device {rd} was not found.'.format(rd=remote_device))
 
-    corefiles = []
-
     # initialize health_corefiles again to store with core file name
     if health:
         health_corefiles = {}
+
+    # in case of HTTP, will use FileUtils
+    if protocol == 'http':
+        fileutils = True
+
     # copy core file to remote device
-    for corefile in dirs:
-        log.info('Copying {s} to remote device {rd}'.format(s=corefile,
-                                                            rd=remote_device))
-        if not (remote_device and remote_path):
-            log.warn('`remote_device` or/and `remote_path` are missing')
-            return len(dirs) if num_of_cores else dirs
-        local_path = "core://{cf}".format(cf=corefile)
-        copied_files = device.api.scp(local_path=local_path,
-                                      remote_path=remote_path,
-                                      remote_device=remote_device.name,
-                                      remote_via=remote_via,
-                                      vrf=vrf,
-                                      return_filename=True)
-        if not copied_files:
-            log.warn('SCP has failed to copy core file to remote device {rd}.'.
-                     format(rd=remote_device.name))
-        if health:
-            health_corefiles.setdefault(copied_files[0], {})
-        # decode core file
-        if decode:
-            # connect to remote_device if not connected
-            if not remote_device_alias:
-                # if no connected alias, connect
+    if remote_device or protocol == 'http':
+        for corefile in dirs:
+            if fileutils:
+                log.info('Copying {s} via FileUtils'.format(
+                    s=corefile))
+            else:
+                log.info('Copying {s} to remote device {rd} via API'.format(
+                    s=corefile, rd=remote_device.name))
+
+            if not fileutils and not (remote_device and remote_path):
+                log.warn('`remote_device` or/and `remote_path` are missing')
+                return len(dirs) if num_of_cores else dirs
+            local_path = "core://{cf}".format(cf=corefile)
+            # execute by FileUtils
+            if fileutils:
                 try:
-                    remote_device.connect()
+                    # if protocol is 'http', will use FileUtils only with local_path
+                    # proxy of device will be detected automatically. if proxy,
+                    # proxy will be used as remote_device
+                    if protocol == 'http':
+                        output = device.api.copy_from_device(local_path, vrf=vrf)
+                    else:
+                        output = device.api.copy_from_device(protocol=protocol,
+                                                             server=remote_device,
+                                                             remote_path=remote_path,
+                                                             local_path=local_path,
+                                                             vrf=vrf)
+                    copied_files = list(
+                        set(
+                            re.findall(
+                                r"(?P<filename>\d\S+)\s+\d+%\s+\d+\S+\s+\d+\.\d+\S+\s+",
+                                output)))
+                    # cannot see filename with FTP, so use local_path
+                    if not copied_files:
+                        copied_files = [local_path]
                 except Exception as e:
                     log.warn(
-                        "Remote device {d} was not connected and failed to connect : {e}"
-                        .format(d=remote_device.name, e=e))
-                    return len(dirs) if num_of_cores else dirs
-            for core in copied_files:
-                try:
-                    fullpath = "{rp}/{core}".format(rp=remote_path, core=core)
-                    decode_output = remote_device.api.analyze_core_by_ucd(
-                        core_file="{fp}".format(fp=fullpath),
-                        timeout=decode_timeout)
-                    if health:
-                        health_corefiles[core].setdefault('decode', decode_output)
-                    # archive decode output
-                    if archive:
-                        with open(
-                                '{folder}/{fn}'.format(
-                                    folder=runtime.directory,
-                                    fn='core_decode_{file}'.format(file=core)),
-                                'w') as f:
-                            print(decode_output, file=f)
-                            log.info(
-                                'Saved decode output as archive:{folder}/{fn}'
-                                .format(
-                                    folder=runtime.directory,
-                                    fn='core_decode_{file}'.format(file=core)))
-                except Exception as e:
-                    log.warning('decode core file is failed : {e}'.format(e=e))
-        # delete core files
-        if delete_core:
-            for corefile in dirs:
+                        '{p} has failed to copy core file to remote device {rd}: {e}'
+                        .format(p=protocol, rd=remote_device, e=e))
+            # execute by API
+            if not fileutils and (remote_device and remote_path):
+                if protocol == 'scp':
+                    copied_files = device.api.scp(local_path=local_path,
+                                                  remote_path=remote_path,
+                                                  remote_device=remote_device.name,
+                                                  remote_via=remote_via,
+                                                  vrf=vrf,
+                                                  return_filename=True)
+                    if not copied_files:
+                        log.warn(
+                            'SCP has failed to copy core file to remote device {rd}.'
+                            .format(rd=remote_device.name))
+                else:
+                    log.error('protocol {p} is not implemented by API'.format(
+                        p=protocol))
+
+            if health:
+                health_corefiles.setdefault(copied_files[0], {})
+            # decode core file
+            if decode:
+                if protocol != 'http':
+                    # connect to remote_device if not connected
+                    if not remote_device_alias:
+                        # if no connected alias, connect
+                        try:
+                            remote_device.connect()
+                        except Exception as e:
+                            log.warn(
+                                "Remote device {d} was not connected and failed to connect : {e}"
+                                .format(d=remote_device.name, e=e))
+                            return len(dirs) if num_of_cores else dirs
+                    for core in copied_files:
+                        try:
+                            fullpath = "{rp}/{core}".format(rp=remote_path, core=core)
+                            decode_output = remote_device.api.analyze_core_by_ucd(
+                                core_file="{fp}".format(fp=fullpath),
+                                timeout=decode_timeout)
+                            if health:
+                                health_corefiles[core].setdefault(
+                                    'decode', decode_output)
+                            # archive decode output
+                            if archive:
+                                with open(
+                                        '{folder}/{fn}'.format(
+                                            folder=runtime.directory,
+                                            fn='core_decode_{file}'.format(file=core)),
+                                        'w') as f:
+                                    print(decode_output, file=f)
+                                    log.info(
+                                        'Saved decode output as archive:{folder}/{fn}'.
+                                        format(
+                                            folder=runtime.directory,
+                                            fn='core_decode_{file}'.format(file=core)))
+                        except Exception as e:
+                            log.warning('decode core file is failed : {e}'.format(e=e))
+                else:
+                    # decode is not supported by http because http transfer output
+                    # doesn't have file name. so don't know file name
+                    log.warning('decode is not supported with protocol `http`.')
+            # delete core files
+            if delete_core:
                 module = corefile.split('/')[0]
+                pid = corefile.split('/')[1]
                 try:
                     log.info(
-                        'Deleting copied file on module-{m}.'.format(m=module))
+                        'Deleting copied file on module-{m}/core/*{p}*.'.format(
+                            m=module, p=pid))
                     device.execute(
-                        'delete logflash://module-{m}/core/* no-prompt'.format(
-                            m=module))
+                        'delete logflash://module-{m}/core/*{p}* no-prompt'.format(
+                            m=module, p=pid))
                     log.info(
-                        'Core files on module-{m} was successfully deleted'.
-                        format(m=module))
+                        'Core files on module-{m}/core/*{p}* was successfully deleted'
+                        .format(m=module, p=pid))
                 except Exception as e:
                     log.warn(
-                        'deleting core files on module-{m} failed. {e}'.format(
-                            m=module, e=e))
+                        'deleting core files on module-{m}/core/*{p} failed. {e}'.
+                        format(m=module, p=pid, e=e))
                     return []
 
     # clear show cores history
@@ -495,14 +556,21 @@ def health_core(device,
         log.info('No core file was copied. So `clear cores` was not executed.')
 
     if health:
+        health_data = {}
         health_data.setdefault('health_data', {})
         health_data['health_data'].setdefault('num_of_cores', len(dirs))
         health_data['health_data'].setdefault('corefiles', [])
         for filename in health_corefiles:
             if 'decode' in health_corefiles[filename]:
-                health_data['health_data']['corefiles'].append({'filename': filename, 'decode': health_corefiles[filename]['decode']})
+                health_data['health_data']['corefiles'].append({
+                    'filename':
+                    filename,
+                    'decode':
+                    health_corefiles[filename]['decode']
+                })
             else:
-                health_data['health_data']['corefiles'].append({'filename': filename})
+                health_data['health_data']['corefiles'].append(
+                    {'filename': filename})
         return health_data
 
     if num_of_cores:

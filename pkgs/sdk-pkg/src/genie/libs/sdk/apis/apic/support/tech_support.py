@@ -80,13 +80,14 @@ def get_show_tech(device,
                                    fname=os.path.basename(filename)
                                ),
                                timeout_seconds=timeout, device=device)
+            device.execute('rm -f {}'.format(filename))
         except Exception:
             log.error('Failed to copy show tech, keeping file on filesystem')
             return False
 
     else:
 
-        if device.api.copy_to_script_host(filename, local_path=remote_path):
+        if device.api.copy_from_device(local_path=filename, remote_path=remote_path):
             device.execute('rm -f {}'.format(filename))
         else:
             log.error('Failed to copy show tech, keeping file on filesystem')

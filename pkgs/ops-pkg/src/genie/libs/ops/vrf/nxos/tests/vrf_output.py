@@ -105,45 +105,38 @@ class VrfOutput(object):
     }
 
     VrfInfo = {
-        'vrfs': {
-            "management": {
-                "address_family": {
-                    "ipv6": {
-                    },
-                    "ipv4": {
-                    }
-                },
-                "route_distinguisher": "0:0"
+    "vrfs": {
+        "management": {
+            "route_distinguisher": "0:0",
+            "address_family": {
+                "ipv4": {"table_id": "0x00000002"},
+                "ipv6": {"table_id": "0x80000002"},
             },
-            "default": {
-                "address_family": {
-                    "ipv6": {
-                    },
-                    "ipv4": {
-                    }
-                },
-                "route_distinguisher": "0:0"
+        },
+        "default": {
+            "route_distinguisher": "0:0",
+            "address_family": {
+                "ipv4": {"table_id": "0x00000001"},
+                "ipv6": {"table_id": "0x80000001"},
             },
-            "VRF2": {
-                "address_family": {
-                    "ipv6": {
-                    },
-                    "ipv4": {
-                    }
-                },
-                "route_distinguisher": "400:1"
+        },
+        "VRF2": {
+            "route_distinguisher": "400:1",
+            "address_family": {
+                "ipv4": {"table_id": "0x00000004"},
+                "ipv6": {"table_id": "0x80000004"},
             },
-            "VRF1": {
-                "address_family": {
-                    "ipv6": {
-                    },
-                    "ipv4": {
-                    }
-                },
-                "route_distinguisher": "300:1"
-            }
-        }
+        },
+        "VRF1": {
+            "route_distinguisher": "300:1",
+            "address_family": {
+                "ipv4": {"table_id": "0x00000003"},
+                "ipv6": {"table_id": "0x80000003"},
+            },
+        },
     }
+}
+
     showVrfDetail_default = '''
 VRF-Name: default, VRF-ID: 1, State: Up
         VPNID: unknown
@@ -183,15 +176,17 @@ VRF-Name: default, VRF-ID: 1, State: Up
     '''
 
     VrfCustomInfo = {
-        'vrfs': {
-            "default": {
-                "address_family": {
-                    "ipv6": {
-                    },
-                    "ipv4": {
-                    }
-                },
-                "route_distinguisher": "0:0"
+    "vrfs": {
+        "default": {
+            "route_distinguisher": "0:0",
+            "address_family": {
+                "ipv4": {"table_id": "0x00000001"},
+                "ipv6": {"table_id": "0x80000001"},
             },
         }
     }
+}
+
+
+
+

@@ -1,5 +1,6 @@
 """ File utils base class for filetransferutils package. """
 
+import re
 import logging
 import contextlib
 import time
@@ -28,7 +29,7 @@ logger = logging.getLogger(__name__)
 # Error patterns to be caught when executing cli on device
 FAIL_MSG = ['Permission denied', 'failed to copy', 'Unable to find', 'Error opening', 'Error', 'operation failed',
             'Compaction is not supported', 'Copy failed', 'No route to host', 'Connection timed out', 'not found',
-            'No space', 'not a remote file', 'Could not resolve']
+            'No space', 'not a remote file', 'Could not resolve', 'Invalid URI', "couldn't connect to host"]
 
 
 class FileUtils(FileUtilsBase):
@@ -192,16 +193,19 @@ class FileUtils(FileUtilsBase):
         return output
 
     @contextlib.contextmanager
-    def file_transfer_config(self, server, **kwargs):
+    def file_transfer_config(self, server=None, interface=None, **kwargs):
         """ Context manager to try configuring a device for an upcoming file
             transfer. Saves a configuration checkpoint, applies configuration,
-            and upon exit reverts the configuration. Requires the device to have
-            custom values for `default_gateway` and `file_transfer_interface`.
+            and upon exit reverts the configuration.
 
             Arguments
             ---------
             server: `str`
                 The server address to copy files to or from.
+
+            interface: `str`
+                Device interface to use as source interface (will apply
+                protocol source interface configuration to the device if provided)
 
         """
 
@@ -211,40 +215,39 @@ class FileUtils(FileUtilsBase):
                                  " configuration")
         # device might be a connection, get actual device
         device = device.device
-        # get genie abstract for this device OS
-        abstract = Lookup.from_device(device,
-                                      packages={'sdk': sdk,
-                                                'parser': parser},
-                                      default_tokens=['os'])
+
         vrf = kwargs.get('vrf')
         # Retrieve correct config template for this OS
         if vrf:
             copy_config = getattr(self, 'COPY_CONFIG_VRF_TEMPLATE', None)
         else:
             copy_config = getattr(self, 'COPY_CONFIG_TEMPLATE', None)
-        default_gateway = device.custom.get('default_gateway')
-        interface = device.custom.get('file_transfer_interface')
-        if default_gateway and interface and copy_config:
-            copy_config = copy_config.format(
-                vrf=vrf,
-                server=server,
-                default_gateway=default_gateway,
-                interface=interface)
-        else:
+
+        if not (interface and copy_config):
             copy_config = None
 
         config_restore = None
         if copy_config:
             try:
-                # Save config checkpoint
-                config_restore = abstract.sdk.libs.abstracted_libs.\
-                    restore.Restore()
-                default_dir = abstract.sdk.libs.abstracted_libs.\
-                    subsection.get_default_dir(device=device)
-                config_restore.save_configuration(device, 'checkpoint',
-                                                  abstract, default_dir)
-                # Configure device for file copy
-                device.configure(copy_config)
+                config_send = []
+                config_restore = []
+                for each_config in copy_config:
+                    cfg_include = each_config.split('{')[0]
+                    if interface:
+                        each_config = each_config.format(vrf=vrf,
+                                                         interface=interface,
+                                                         blocksize=8192)
+                    output = device.execute(
+                        'show running-config | include {}'.format(cfg_include))
+                    output = re.sub(r'.*Building configuration...',
+                                    '',
+                                    output,
+                                    flags=re.S)
+                    if cfg_include not in output:
+                        # prepare configure config and restore config
+                        config_send.append(each_config)
+                        config_restore.append('no ' + each_config)
+                device.configure(config_send)
             except Exception:
                 logger.warning(
                     'Failed to apply configuration on %s' % str(device),
@@ -258,10 +261,7 @@ class FileUtils(FileUtilsBase):
         finally:
             if config_restore:
                 try:
-                    # Restore configuration on device
-                    config_restore.restore_configuration(device,
-                                                         'checkpoint',
-                                                         abstract)
+                    device.configure(config_restore)
                     # If specified, wait for a period of time after restoring
                     # configuration to let it settle
                     wait_time = kwargs.get('wait_after_restore', 1)
@@ -270,7 +270,6 @@ class FileUtils(FileUtilsBase):
                     logger.warning(
                         'Failed to restore configuration on %s' % str(device),
                         exc_info=True)
-
 
     def parse_url(self, url):
         """ Parse the given url

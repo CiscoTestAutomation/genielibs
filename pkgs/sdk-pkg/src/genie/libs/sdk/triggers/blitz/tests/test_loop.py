@@ -15,6 +15,7 @@ from genie.conf.base import Testbed, Device
 from genie.libs.sdk.triggers.blitz.blitz import Blitz
 from genie.libs.sdk.triggers.blitz.actions import actions
 from genie.libs.sdk.triggers.blitz.advanced_actions import loop
+from genie.libs.sdk.triggers.blitz.markup import get_variable
 from genie.libs.ops.platform.nxos.platform import Platform
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
@@ -24,7 +25,7 @@ from pyats.easypy.job import Job
 from pyats.easypy import runtime
 from pyats.aetest.steps import Steps
 from pyats.aetest.parameters import ParameterMap
-from pyats.easypy.tests.common_funcs import init_runtime
+from pyats.easypy.common_funcs import init_runtime
 from pyats.results import Passed, Failed, Errored, Skipped,\
                           Aborted, Passx, Blocked
 
@@ -183,6 +184,28 @@ class TestLoop(unittest.TestCase):
             loop_variable_name: var_name
             value: ['cmd', 'amd', 'show vrf']
             loop_until: passed
+            actions:
+              - execute:
+                  command: "%VARIABLES{var_name}"
+                  device: PE1
+            """
+
+    loop_until_custom_msg = """
+            loop_variable_name: var_name
+            value: ['cmd', 'amd', 'show vrf']
+            custom_substep_message: test_message
+            loop_until: passed
+            actions:
+              - execute:
+                  command: "%VARIABLES{var_name}"
+                  device: PE1
+            """
+
+    loop_until_custom_msg_var = """
+            loop_variable_name: var_name
+            value: ['cmd', 'amd', 'show vrf']
+            loop_until: passed
+            custom_substep_message: "message with %VARIABLES{var_name}"
             actions:
               - execute:
                   command: "%VARIABLES{var_name}"
@@ -418,7 +441,7 @@ class TestLoop(unittest.TestCase):
       self.kwargs.update({'self': self.blitz_obj,
                           'steps': steps,
                           'action_item': data})
-      
+
       out = loop(**self.kwargs)
 
       func = self.testbed.devices['PE1'].parse
@@ -529,6 +552,17 @@ class TestLoop(unittest.TestCase):
       self.testbed.devices['PE1'].side_effect = [Exception, Exception, 'oop']
       steps = Steps()
       data = yaml.safe_load(self.loop_until)
+      self.kwargs.update({'steps': steps, 'action_item': data})
+      out = loop(**self.kwargs)
+      self.assertEqual(out['substeps'], [])
+      self.assertEqual(steps.result, Passed)
+
+    def test_loop_until_custom_substep_message(self):
+
+      self.testbed.devices['PE1'].side_effect = [Exception, Exception, 'oop']
+      steps = Steps()
+      data = yaml.safe_load(self.loop_until_custom_msg)
+      self.assertEqual(data['custom_substep_message'], 'test_message')
       self.kwargs.update({'steps': steps, 'action_item': data})
       out = loop(**self.kwargs)
       self.assertEqual(out['substeps'], [])

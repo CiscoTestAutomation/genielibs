@@ -324,6 +324,11 @@ class Vrf(DeviceFeature):
         default=None,
         type=(None, managedattribute.test_istype(int)))
 
+    vni_mode_l3 = managedattribute(
+        name='vni_mode_l3',
+        default=None,
+        type=(None, managedattribute.test_istype(int)))
+
     class DeviceAttributes(DeviceSubAttributes):
 
         @property
@@ -491,12 +496,16 @@ class Vrf(DeviceFeature):
         maker.add_leaf(cmd=cmd,
                        src='[vrf][(?P<vrf>.*)][rd]',
                        dest='vrf[vrf][(?P<vrf>.*)][rd]')
-
         maker.add_leaf(cmd=cmd,
                        src='[vrf][(?P<vrf>.*)]'
                            '[vni]',
                        dest='vrf[vrf][(?P<vrf>.*)]'
                             '[vni]')
+        maker.add_leaf(cmd=cmd,
+                       src='[vrf][(?P<vrf>.*)]'
+                           '[vni_mode_l3] l3',
+                       dest='vrf[vrf][(?P<vrf>.*)]'
+                            '[vni_mode_l3] l3')
         maker.add_leaf(cmd=cmd,
                        src='[vrf][(?P<vrf>.*)]'
                            '[vrf_name]',

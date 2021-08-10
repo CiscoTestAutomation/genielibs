@@ -113,6 +113,7 @@ class VrfOutput(object):
         'vrfs': {
             "VRF2": {
                 "route_distinguisher": "200:2",
+                "description": "not set",
                 "address_family": {
                     "ipv4 unicast": {
                         "route_targets": {
@@ -206,72 +207,44 @@ VRF VRF2; RD 200:2; VPN ID not set
     '''
 
     VrfInfo = {
-        "vrfs": {
-            "VRF2": {
-                "route_distinguisher": "200:2",
-                "address_family": {
-                    "ipv4 unicast": {
-                        "route_targets": {
-                            "200:2": {
-                                "rt_type": "both",
-                                "route_target": "200:2"
-                            }
-                        }
-                    },
-                    "ipv6 unicast": {
-                        "route_targets": {
-                            "200:2": {
-                                "rt_type": "both",
-                                "route_target": "200:2"
-                            }
-                        }
+    "vrfs": {
+        "VRF2": {
+            "route_distinguisher": "200:2",
+            "description": "not set",
+            "address_family": {
+                "ipv6 unicast": {
+                    "route_targets": {
+                        "200:2": {"route_target": "200:2", "rt_type": "both"}
                     }
-                }
+                },
+                "ipv4 unicast": {
+                    "route_targets": {
+                        "200:2": {"route_target": "200:2", "rt_type": "both"}
+                    }
+                },
             },
-            "VRF1": {
-                "route_distinguisher": "200:1",
-                "address_family": {
-                    "ipv4 unicast": {
-                        "route_targets": {
-                            "400:1": {
-                                "rt_type": "import",
-                                "route_target": "400:1"
-                            },
-                            "300:1": {
-                                "rt_type": "import",
-                                "route_target": "300:1"
-                            },
-                            "200:1": {
-                                "rt_type": "both",
-                                "route_target": "200:1"
-                            },
-                            "200:2": {
-                                "rt_type": "import",
-                                "route_target": "200:2"
-                            }
-                        }
-                    },
-                    "ipv6 unicast": {
-                        "route_targets": {
-                            "400:1": {
-                                "rt_type": "import",
-                                "route_target": "400:1"
-                            },
-                            "300:1": {
-                                "rt_type": "import",
-                                "route_target": "300:1"
-                            },
-                            "200:1": {
-                                "rt_type": "both",
-                                "route_target": "200:1"
-                            },
-                            "200:2": {
-                                "rt_type": "import",
-                                "route_target": "200:2"
-                            }
-                        }
+        },
+        "VRF1": {
+            "route_distinguisher": "200:1",
+            "description": "not set",
+            "address_family": {
+                "ipv6 unicast": {
+                    "route_targets": {
+                        "200:1": {"route_target": "200:1", "rt_type": "both"},
+                        "200:2": {"route_target": "200:2", "rt_type": "import"},
+                        "300:1": {"route_target": "300:1", "rt_type": "import"},
+                        "400:1": {"route_target": "400:1", "rt_type": "import"},
                     }
-                }
-            }
-        }
+                },
+                "ipv4 unicast": {
+                    "route_targets": {
+                        "200:1": {"route_target": "200:1", "rt_type": "both"},
+                        "200:2": {"route_target": "200:2", "rt_type": "import"},
+                        "300:1": {"route_target": "300:1", "rt_type": "import"},
+                        "400:1": {"route_target": "400:1", "rt_type": "import"},
+                    }
+                },
+            },
+        },
     }
+}

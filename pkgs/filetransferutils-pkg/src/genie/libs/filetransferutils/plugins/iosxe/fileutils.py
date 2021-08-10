@@ -12,20 +12,9 @@ except ImportError:
 
 
 class FileUtils(FileUtilsDeviceBase):
-    COPY_CONFIG_TEMPLATE = '''\
-ip route {server} 255.255.255.255 {default_gateway}
-ip ftp source-interface {interface}
-ip tftp source-interface {interface}
-ip tftp blocksize 8192'''
-
-    COPY_CONFIG_VRF_TEMPLATE = '''\
-ip route vrf {vrf} {server} 255.255.255.255 {default_gateway}
-ip ftp source-interface {interface}
-ip tftp source-interface {interface}
-ip tftp blocksize 8192'''
 
     def copyfile(self, source, destination, timeout_seconds=300,
-        vrf=None, *args, **kwargs):
+                 vrf=None, *args, **kwargs):
         """ Copy a file to/from IOSXE device
 
             Copy any file to/from a device to any location supported on the
@@ -102,8 +91,7 @@ ip tftp blocksize 8192'''
         else:
             # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
             if vrf:
-                cmd = 'copy {f} {t} vrf {vrf_value}'.format(f=source,
-                    t=destination, vrf_value=vrf)
+                cmd = 'copy {f} {t} vrf {vrf_value}'.format(f=source, t=destination, vrf_value=vrf)
             else:
                 cmd = 'copy {f} {t}'.format(f=source, t=destination)
 
@@ -111,8 +99,8 @@ ip tftp blocksize 8192'''
         used_server = self.get_server(source, destination)
 
         super().copyfile(source=source, destination=destination,
-            timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,
-            vrf=vrf, *args, **kwargs)
+                         timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,
+                         vrf=vrf, *args, **kwargs)
 
     def dir(self, target, timeout_seconds=300, *args, **kwargs):
         """ Retrieve filenames contained in a directory.

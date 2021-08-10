@@ -8,30 +8,22 @@ try:
     from genie.libs.parser.iosxr.show_platform import Dir
 except ImportError:
     # For apidoc building only
-    from unittest.mock import Mock; Dir=Mock()
+    from unittest.mock import Mock
+    Dir = Mock()
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
 
 
 class FileUtils(FileUtilsDeviceBase):
-    COPY_CONFIG_TEMPLATE = '''\
-router static
-  address-family ipv4 unicast
-    {server}/32 {default_gateway}
-tftp client source-interface {interface}
-ftp client source-interface {interface}'''
 
-    COPY_CONFIG_VRF_TEMPLATE = '''\
-router static
-  vrf {vrf}
-    address-family ipv4 unicast
-      {server}/32 {default_gateway}
-tftp client vrf {vrf} source-interface {interface}
-ftp client vrf {vrf} source-interface {interface}'''
-
-    def copyfile(self, source, destination, timeout_seconds=300,
-        vrf=None, *args, **kwargs):
+    def copyfile(self,
+                 source,
+                 destination,
+                 timeout_seconds=300,
+                 vrf=None,
+                 *args,
+                 **kwargs):
         """ Copy a file to/from IOSXR device
 
             Copy any file to/from a device to any location supported on the
@@ -105,7 +97,11 @@ ftp client vrf {vrf} source-interface {interface}'''
         ssh_protocol = {'scp', 'sftp'}
 
         # if protocol is scp or sftp
-        p = self.get_protocol(source, destination)
+        # get_protocol will not return both result from source and destination
+        # so checking both here.
+        p = self.get_protocol(source)
+        if p not in ssh_protocol:
+            p = self.get_protocol(destination)
         if p in ssh_protocol:
             s = source.replace('{}://'.format(p), '').replace('//', ':/')
             d = destination.replace('{}://'.format(p), '').replace('//', ':/')
@@ -116,17 +112,21 @@ ftp client vrf {vrf} source-interface {interface}'''
                                                            vrf_value=vrf)
             else:
                 cmd = '{p} {s} {d}'.format(p=p, s=s, d=d)
+        elif vrf:
+            cmd = 'copy {f} {t} vrf {vrf_value}'.format(f=source,
+                                                        t=destination,
+                                                        vrf_value=vrf)
         else:
-            if vrf:
-                cmd = 'copy {f} {t} vrf {vrf_value}'.format(f=source,
-                                                            t=destination,
-                                                            vrf_value=vrf)
-            else:
-                cmd = 'copy {f} {t}'.format(f=source, t=destination)
+            cmd = 'copy {f} {t}'.format(f=source, t=destination)
 
-        super().copyfile(source=source, destination=destination,
-            timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,
-            vrf=vrf, *args, **kwargs)
+        super().copyfile(source=source,
+                         destination=destination,
+                         timeout_seconds=timeout_seconds,
+                         cmd=cmd,
+                         used_server=used_server,
+                         vrf=vrf,
+                         *args,
+                         **kwargs)
 
     def dir(self, target, timeout_seconds=300, *args, **kwargs):
         """ Retrieve filenames contained in a directory.
@@ -177,8 +177,8 @@ ftp client vrf {vrf} source-interface {interface}'''
 
         """
 
-        dir_output = super().parsed_dir(target, timeout_seconds,
-            Dir, *args, **kwargs)
+        dir_output = super().parsed_dir(target, timeout_seconds, Dir, *args,
+                                        **kwargs)
 
         # Extract the files location requested
         output = self.parse_url(target)
@@ -187,12 +187,7 @@ ftp client vrf {vrf} source-interface {interface}'''
         directory = output.scheme + ":/"
 
         # Create a new list to return
-        new_list = []
-
-        for key in dir_output['dir']['files']:
-            new_list.append(directory+key)
-
-        return new_list
+        return [directory + key for key in dir_output['dir']['files']]
 
     def stat(self, target, timeout_seconds=300, *args, **kwargs):
         """ Retrieve file details such as length and permissions.
@@ -239,15 +234,12 @@ ftp client vrf {vrf} source-interface {interface}'''
 
         """
 
-        files = super().stat(target, timeout_seconds, Dir, *args,
-            **kwargs)
+        files = super().stat(target, timeout_seconds, Dir, *args, **kwargs)
 
         # Extract the file name requested
         output = self.parse_url(target)
         directory = output.scheme + ":/"
-        file_details = files['dir']['files'][output.path]
-
-        return file_details
+        return files['dir']['files'][output.path]
 
     def deletefile(self, target, timeout_seconds=300, *args, **kwargs):
         """ Delete a file
@@ -287,8 +279,12 @@ ftp client vrf {vrf} source-interface {interface}'''
 
         super().deletefile(target, timeout_seconds, *args, **kwargs)
 
-    def renamefile(self, source, destination, timeout_seconds=300, *args,
-        **kwargs):
+    def renamefile(self,
+                   source,
+                   destination,
+                   timeout_seconds=300,
+                   *args,
+                   **kwargs):
         """ Rename a file
 
             Parameters
@@ -328,7 +324,8 @@ ftp client vrf {vrf} source-interface {interface}'''
         """
 
         raise NotImplementedError("The fileutils module {} "
-            "does not implement renamefile.".format(self.__module__))
+                                  "does not implement renamefile.".format(
+                                      self.__module__))
 
     def chmod(self, target, mode, timeout_seconds=300, *args, **kwargs):
         """ Change file permissions
@@ -351,7 +348,8 @@ ftp client vrf {vrf} source-interface {interface}'''
         """
 
         raise NotImplementedError("The fileutils module {} "
-            "does not implement chmod.".format(self.__module__))
+                                  "does not implement chmod.".format(
+                                      self.__module__))
 
     def validateserver(self, target, timeout_seconds=300, *args, **kwargs):
         ''' Make sure that the given server information is valid
@@ -398,12 +396,20 @@ ftp client vrf {vrf} source-interface {interface}'''
         # show clock | file ftp://10.1.6.242//auto/tftp-ssr/show_clock
         cmd = "show clock | file {e}".format(e=target)
 
-        super().validateserver(cmd=cmd, target=target,
-            timeout_seconds=timeout_seconds, used_server=used_server, *args,
-            **kwargs)
+        super().validateserver(cmd=cmd,
+                               target=target,
+                               timeout_seconds=timeout_seconds,
+                               used_server=used_server,
+                               *args,
+                               **kwargs)
 
-    def copyconfiguration(self, source, destination, timeout_seconds=300,
-        vrf=None, *args, **kwargs):
+    def copyconfiguration(self,
+                          source,
+                          destination,
+                          timeout_seconds=300,
+                          vrf=None,
+                          *args,
+                          **kwargs):
         """ Copy configuration to/from device
 
             Copy configuration on the device or between locations supported on the
@@ -470,22 +476,34 @@ ftp client vrf {vrf} source-interface {interface}'''
         # Example - copy running-configuration bootflash:tempfile1
         cmd = 'copy {f} {t}'.format(f=source, t=destination)
 
-        super().copyconfiguration(source=source, destination=destination,
-            timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,
-            *args, **kwargs)
+        super().copyconfiguration(source=source,
+                                  destination=destination,
+                                  timeout_seconds=timeout_seconds,
+                                  cmd=cmd,
+                                  used_server=used_server,
+                                  *args,
+                                  **kwargs)
 
-    def send_cli_to_device(self, cli, used_server=None, invalid=None,
-      timeout_seconds=300, **kwargs):
+    def send_cli_to_device(self,
+                           cli,
+                           used_server=None,
+                           invalid=None,
+                           timeout_seconds=300,
+                           **kwargs):
 
-        output = super().send_cli_to_device(cli=cli, used_server=used_server,
-            invalid=invalid, timeout_seconds=timeout_seconds, **kwargs)
+        output = super().send_cli_to_device(cli=cli,
+                                            used_server=used_server,
+                                            invalid=invalid,
+                                            timeout_seconds=timeout_seconds,
+                                            **kwargs)
 
         # Only check if cli sent to device was not delete
-        if 'delete' not in cli:
-            # Check for successful copy pattern
-            if 'bytes copied' in output or 'lines built' in output or 'OK' in output:
-                return output
-            else:
-                raise SubCommandFailure('File was not successfully copied')
-        else:
+        if 'delete' in cli:
             return output
+
+        # Check for successful copy pattern
+        if any(c in output for c in
+               ['bytes copied', 'lines built', 'OK', 'Successfully copied']):
+            return output
+        else:
+            raise SubCommandFailure('File was not successfully copied')

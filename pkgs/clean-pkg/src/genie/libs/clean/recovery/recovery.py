@@ -243,7 +243,8 @@ def recovery_processor(
         powercycler=True,
         powercycler_delay=30,
         reconnect_delay=60,
-        post_recovery_configuration=None):
+        post_recovery_configuration=None,
+        ):
 
     '''
     Clean yaml file schema:
@@ -377,7 +378,7 @@ Recovery Steps:
         section.parent.parameters['block_section'] = True
         section.failed("Device '{d}' has been recovered - "
                        "Terminating clean".format(d=device.name))
-    elif not recovery_is_required and section.uid in CONTINUE_RECOVERY:
+    elif recovery_is_required and section.uid in CONTINUE_RECOVERY:
         # Recovery either was not required or the stage was in CONTINUE_RECOVERY.
         # Modify the original results to Passed as we want clean to continue.
         try:

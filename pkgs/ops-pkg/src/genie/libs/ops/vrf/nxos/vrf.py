@@ -26,11 +26,21 @@ class Vrf(SuperVrf):
 
         src = '[(?P<vrf>.*)][address_family]'
         dest = 'info[vrfs][(?P<vrf>.*)][address_family]'
+        keys = ['[table_id]']
 
+        # route_distinguisher
         self.add_leaf(cmd=ShowVrfDetail,
                       src='[(?P<vrf>.*)][route_distinguisher]',
                       dest='info[vrfs][(?P<vrf>.*)][route_distinguisher]',
                       vrf=vrf)
+
+
+        for key in keys:
+            self.add_leaf(cmd=ShowVrfDetail,
+                          src='[(?P<vrf>.*)][address_family][(?P<af>.*)]' + '{key}'.format(key=key),
+                          dest='info[vrfs][(?P<vrf>.*)][address_family][(?P<af>.*)]' + '{key}'.format(key=key),
+                          vrf=vrf)
+
         self.add_leaf(cmd=ShowVrfDetail,
                       src=src,
                       dest=dest,

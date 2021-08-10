@@ -8,10 +8,6 @@ import logging
 # pyATS
 from pyats import aetest
 from pyats.utils.fileutils import FileUtils
-try:
-    from ats.datastructures.logic import Or
-except ImportError:
-    from pyats.datastructures.logic import Or
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
@@ -26,7 +22,7 @@ from genie.libs.clean.utils import (_apply_configuration, find_clean_variable,
                                     remove_string_from_image)
 
 # MetaParser
-from genie.metaparser.util.schemaengine import Optional, Any
+from genie.metaparser.util.schemaengine import Optional, Any, Or
 
 # Logger
 log = logging.getLogger(__name__)
@@ -37,6 +33,7 @@ log = logging.getLogger(__name__)
 
 
 @clean_schema({
+    Optional('via'): str,
     Optional('timeout'): Or(str, int),
     Optional('retry_timeout'): Or(str, int, float),
     Optional('retry_interval'): Or(str, int, float),
@@ -44,6 +41,7 @@ log = logging.getLogger(__name__)
 @aetest.test
 def connect(section,
             device,
+            via=None,
             timeout=200,
             retry_timeout=0,
             retry_interval=0,
@@ -53,6 +51,7 @@ def connect(section,
     Stage Schema
     ------------
     connect:
+        via (str, optional): Connection name in testbed file. Uses the connection default if not specified.
         timeout (int, optional): Connection timeout. Defaults to 200.
         retry_timeout (int, optional): Overall timeout for retry mechanism. Defaults to 0 which means no retry.
         retry_interval (int, optional): Interval for retry mechanism. Defaults to 0 which means no retry.
@@ -74,7 +73,8 @@ def connect(section,
         # If the device is in rommon, just raise an exception
         device.instantiate(connection_timeout=timeout,
                            learn_hostname=True,
-                           prompt_recovery=True)
+                           prompt_recovery=True,
+                           via=via)
 
         rommon = Statement(
             pattern=r'^(.*)(rommon(.*)|loader(.*))+>.*$',
@@ -1144,14 +1144,16 @@ def write_erase(section, steps, device, timeout=300):
         Optional('reload_creds'): str,
         Optional('prompt_recovery'): bool,
         Any(): Any()
-    }
+    },
+    Optional('via'): str,
 })
 @aetest.test
 def reload(section,
            steps,
            device,
            reload_service_args=None,
-           check_modules=None):
+           check_modules=None,
+           reconnect_via=None):
     """ This stage reloads the device.
 
     Stage Schema
@@ -1168,6 +1170,8 @@ def reload(section,
             timeout: <timeout value to verify modules are in stable state, default 180 seconds. 'int'> (Optional)
             interval: <interval value between checks for verifying module status, default 30 seconds. 'int'> (Optional)
 
+        reconnect_via: <specify which connection to connect to. 'str'> (Optional)
+
 
     Example
     -------
@@ -1177,6 +1181,7 @@ def reload(section,
             reload_creds: clean_reload_creds
             prompt_recovery: True
             reconnect_sleep: 200 (Unicon NXOS reload service argument)
+            reconnect_via: specify which connection to connect to
 
         check_modules:
             check: False
@@ -1231,9 +1236,15 @@ def reload(section,
     # Reconnect to device
     with steps.start("Reconnect to '{dev}'".format(dev=device.name)) as step:
         try:
-            device.connect(
-                learn_hostname=True,
-                prompt_recovery=reload_service_args['prompt_recovery'])
+            if reconnect_via:
+                device.connect(
+                    learn_hostname=True,
+                    prompt_recovery=reload_service_args['prompt_recovery'],
+                    via=reconnect_via)
+            else:
+                device.connect(
+                    learn_hostname=True,
+                    prompt_recovery=reload_service_args['prompt_recovery'])
         except Exception as e:
             step.failed("Could not reconnect to '{dev}':\nError: {e}".format(
                 dev=device.name, e=str(e)))
@@ -1728,7 +1739,7 @@ def delete_backup_from_device(section,
 @clean_schema({
     Optional('server'): str,
     Optional('files'): list,
-    Optional('protocol'): str,
+    Optional('protocol'): Or('ftp', 'sftp'),
 })
 @aetest.test
 def delete_files_from_server(section,
@@ -1737,14 +1748,15 @@ def delete_files_from_server(section,
                              server=None,
                              files=None,
                              protocol='sftp'):
-    """ This stage deletes files from a server.
+    """ This stage deletes files from a server. 
 
     Stage Schema
     ------------
     delete_files_from_server:
         server ('str'): <Hostname or address of the server> (optional)
         files ('list'): <list of images to delete> (Optional)
-        protocol ('str'): <protocol used for deletion, Default value is sftp> (Optional)
+        protocol ('str'): <protocol used for deletion. only ftp or sftp is
+                          supported, Default value is sftp> (Optional)
 
     Example
     -------

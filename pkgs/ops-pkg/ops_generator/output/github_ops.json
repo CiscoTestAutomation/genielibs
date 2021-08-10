@@ -93,7 +93,7 @@
       "doc": "BGP Genie Ops Object",
       "module_name": "bgp.bgp",
       "uid": "bgp",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/bgp/nxos/xml/bgp.py#L13",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/bgp/nxos/bgp.py#L28",
       "xml": {
         "class_name": "Bgp",
         "doc": "BGP Genie Ops Object",
@@ -266,7 +266,7 @@
       "doc": "Interface Genie Ops Object",
       "module_name": "interface.interface",
       "uid": "interface",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/interface/iosxe/asr1k/interface.py#L14"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/interface/iosxe/interface.py#L20"
     },
     "iosxr": {
       "class_name": "Interface",
@@ -609,10 +609,10 @@
   "platform": {
     "ios": {
       "class_name": "Platform",
-      "doc": "Platform Ops Object",
-      "module_name": "platform.platform",
+      "doc": "\n    Platform ops object\n    ",
+      "module_name": "platform.cat6k.platform",
       "uid": "platform",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/ios/platform.py#L6"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/ios/cat6k/platform.py#L11"
     },
     "iosxe": {
       "asr900": {
@@ -640,7 +640,7 @@
       "doc": "Platform Ops Object",
       "module_name": "platform.platform",
       "uid": "platform",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/platform.py#L13"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/c8200/platform.py#L13"
     },
     "iosxr": {
       "class_name": "Platform",

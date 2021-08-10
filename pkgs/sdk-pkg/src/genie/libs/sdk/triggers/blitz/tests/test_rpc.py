@@ -3,7 +3,8 @@ import sys
 import unittest
 import logging
 from time import time
-
+import base64
+from yang.connector.gnmi import Gnmi
 from genie.libs.sdk.triggers.blitz import yangexec
 from genie.libs.sdk.triggers.blitz.rpcverify import RpcVerify
 
@@ -44,6 +45,35 @@ operstate = """<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" \
     </interfaces-state>
   </data>
 </rpc-reply>"""
+
+
+class TestGnmi(Gnmi):
+    def __init__(self, *args, **kwargs):
+        pass
+
+
+operstate_gnmi = {
+    "timestamp": 1625231480325470151,
+    "update": {
+        "path": {
+            "elem": [
+                {
+                    "name": "interfaces-state"
+                },
+                {
+                    "name": "interface",
+                    "key": {
+                        "key": "name",
+                        "value": "GigabitEthernet2"
+                    }
+                }
+            ]
+        },
+        "val": {
+            "jsonIetfVal": ''
+        }
+    }
+}
 
 multilist = """<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" \
     xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" \
@@ -110,6 +140,7 @@ no_data_rpc_reply = """<rpc-reply message-id="101" xmlns="urn:ietf:params:xml:ns
   <data/>
 </rpc-reply>"""
 
+
 class TestRpcVerify(unittest.TestCase):
     """Test cases for the rpcverify.RpcVerify methods."""
 
@@ -120,6 +151,23 @@ class TestRpcVerify(unittest.TestCase):
 basic-mode=explicit&also-supported=report-all-tagged']
         cls.rpcv = RpcVerify(log=cls.log, capabilities=cls.cap)
         cls.operstate = operstate
+        cls.gnmi = TestGnmi()
+        cls.operstate_gnmi = operstate_gnmi
+        cls.jsonIetfVal = ""
+
+    def setUp(self):
+        self.jsonIetfVal = """{"statistics": {"in-octets": 330, \
+"in-unicast-pkts": 5, "in-broadcast-pkts": 6, \
+"in-multicast-pkts": 7, "in-discards": 8, "in-errors": 9, \
+"in-unknown-protos": 10, "out-octets": 11, \
+"out-unicast-pkts": 12, "out-broadcast-pkts": 13, \
+"out-multicast-pkts": 14, "out-discards": 17, \
+"out-errors": 16}}"""
+
+    def _base64encode(self):
+        self.operstate_gnmi['update']['val']['jsonIetfVal'] = base64.encodebytes(
+            bytes(self.jsonIetfVal, encoding='utf-8')
+        )
 
     def test_operational_state_pass(self):
         """Process rpc-reply and check opfields for match."""
@@ -145,6 +193,11 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'xpath': '/interfaces-state/interface/statistics/out-errors',
              'value': '16',
              'op': '=='}]
+
+        self._base64encode()
+        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
 
         resp = self.rpcv.process_rpc_reply(operstate)
         result = self.rpcv.process_operational_state(resp, opfields)
@@ -175,7 +228,218 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'value': '16',
              'op': '=='}]
 
+        self._base64encode()
+        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertFalse(result)
+
         resp = self.rpcv.process_rpc_reply(self.operstate)
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertFalse(result)
+
+    def test_operational_state_in_range(self):
+        """Process rpc-reply and check opfield in specified range."""
+        # xpath used for match instead of ID.
+        opfields = [
+            {'selected': 'true',
+             'name': 'in-unicast-pkts',
+             'xpath': '/interfaces-state/interface/statistics/in-unicast-pkts',
+             'value': '5',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'in-octets',
+             'xpath': '/interfaces-state/interface/statistics/in-octets',
+             'value': '300-400',
+             'op': 'range'},
+            {'selected': 'true',
+             'name': 'out-discards',
+             'xpath': '/interfaces-state/interface/statistics/out-discards',
+             'value': '17',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'out-errors',
+             'xpath': '/interfaces-state/interface/statistics/out-errors',
+             'value': '16',
+             'op': '=='}]
+
+        self._base64encode()
+        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
+        resp = self.rpcv.process_rpc_reply(operstate)
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
+    def test_operational_state_in_range_typedef_datatype(self):
+        """Process rpc-reply and check opfield range with typedef datatype."""
+        # xpath used for match instead of ID.
+        opfields = [
+            {'selected': 'true',
+             'name': 'in-unicast-pkts',
+             'xpath': '/interfaces-state/interface/statistics/in-unicast-pkts',
+             'value': '5',
+             'op': '=='},
+            {'datatype': 'oc-types:ieeefloat32',
+             'selected': 'true',
+             'name': 'in-octets',
+             'xpath': '/interfaces-state/interface/statistics/in-octets',
+             'value': '300-400',
+             'op': 'range'},
+            {'selected': 'true',
+             'name': 'out-discards',
+             'xpath': '/interfaces-state/interface/statistics/out-discards',
+             'value': '17',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'out-errors',
+             'xpath': '/interfaces-state/interface/statistics/out-errors',
+             'value': '16',
+             'op': '=='}]
+
+        self._base64encode()
+        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
+        resp = self.rpcv.process_rpc_reply(operstate)
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
+    def test_operational_state_in_range_invalid_datatype(self):
+        """Process rpc-reply and check opfield range wrong datatype."""
+        # xpath used for match instead of ID.
+        opfields = [
+            {'selected': 'true',
+             'name': 'in-unicast-pkts',
+             'xpath': '/interfaces-state/interface/statistics/in-unicast-pkts',
+             'value': '5',
+             'op': '=='},
+            {'datatype': 'int',
+             'selected': 'true',
+             'name': 'in-octets',
+             'xpath': '/interfaces-state/interface/statistics/in-octets',
+             'value': '300.0-400.0',
+             'op': 'range'},
+            {'selected': 'true',
+             'name': 'out-discards',
+             'xpath': '/interfaces-state/interface/statistics/out-discards',
+             'value': '17',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'out-errors',
+             'xpath': '/interfaces-state/interface/statistics/out-errors',
+             'value': '16',
+             'op': '=='}]
+
+        self._base64encode()
+        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertFalse(result)
+
+        resp = self.rpcv.process_rpc_reply(operstate)
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertFalse(result)
+
+    def test_operational_state_in_range_space_format(self):
+        """Process rpc-reply and check opfield in "n - n" range."""
+        # xpath used for match instead of ID.
+        opfields = [
+            {'selected': 'true',
+             'name': 'in-unicast-pkts',
+             'xpath': '/interfaces-state/interface/statistics/in-unicast-pkts',
+             'value': '5',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'in-octets',
+             'xpath': '/interfaces-state/interface/statistics/in-octets',
+             'value': '300 - 400',
+             'op': 'range'},
+            {'selected': 'true',
+             'name': 'out-discards',
+             'xpath': '/interfaces-state/interface/statistics/out-discards',
+             'value': '17',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'out-errors',
+             'xpath': '/interfaces-state/interface/statistics/out-errors',
+             'value': '16',
+             'op': '=='}]
+
+        self._base64encode()
+        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
+        resp = self.rpcv.process_rpc_reply(operstate)
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
+    def test_operational_state_over_range(self):
+        """Process rpc-reply and check opfield over specified range."""
+        # xpath used for match instead of ID.
+        opfields = [
+            {'selected': 'true',
+             'name': 'in-unicast-pkts',
+             'xpath': '/interfaces-state/interface/statistics/in-unicast-pkts',
+             'value': '5',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'in-octets',
+             'xpath': '/interfaces-state/interface/statistics/in-octets',
+             'value': '340-400',
+             'op': 'range'},
+            {'selected': 'true',
+             'name': 'out-discards',
+             'xpath': '/interfaces-state/interface/statistics/out-discards',
+             'value': '17',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'out-errors',
+             'xpath': '/interfaces-state/interface/statistics/out-errors',
+             'value': '16',
+             'op': '=='}]
+
+        self._base64encode()
+        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertFalse(result)
+
+        resp = self.rpcv.process_rpc_reply(operstate)
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertFalse(result)
+
+    def test_operational_state_under_range(self):
+        """Process rpc-reply and check opfield under specified range."""
+        # xpath used for match instead of ID.
+        opfields = [
+            {'selected': 'true',
+             'name': 'in-unicast-pkts',
+             'xpath': '/interfaces-state/interface/statistics/in-unicast-pkts',
+             'value': '5',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'in-octets',
+             'xpath': '/interfaces-state/interface/statistics/in-octets',
+             'value': '200-300',
+             'op': 'range'},
+            {'selected': 'true',
+             'name': 'out-discards',
+             'xpath': '/interfaces-state/interface/statistics/out-discards',
+             'value': '17',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'out-errors',
+             'xpath': '/interfaces-state/interface/statistics/out-errors',
+             'value': '16',
+             'op': '=='}]
+
+        self._base64encode()
+        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertFalse(result)
+
+        resp = self.rpcv.process_rpc_reply(operstate)
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertFalse(result)
 
@@ -206,6 +470,11 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'value': '16',
              'datatype': 'uint8',
              'op': '=='}]
+
+        self._base64encode()
+        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
 
         resp = self.rpcv.process_rpc_reply(self.operstate)
         result = self.rpcv.process_operational_state(resp, opfields)
@@ -241,6 +510,17 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'value': 7000000000,
              'datatype': 'int64',
              'op': '=='}]
+
+        oper_gnmi = self.jsonIetfVal.replace('330', '30000')
+        oper_gnmi = oper_gnmi.replace('17', '70000')
+        oper_gnmi = oper_gnmi.replace('16', '7000000000')
+        self.jsonIetfVal = oper_gnmi
+        self._base64encode()
+
+        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
         resp = self.rpcv.process_rpc_reply(oper)
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
@@ -277,6 +557,17 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'datatype': 'int64',
              'op': '=='}]
 
+        oper_gnmi = self.jsonIetfVal.replace('5', '-5')
+        oper_gnmi = oper_gnmi.replace('330', '-3000')
+        oper_gnmi = oper_gnmi.replace('17', '-70000')
+        oper_gnmi = oper_gnmi.replace('16', '-7000000000')
+        self.jsonIetfVal = oper_gnmi
+        self._base64encode()
+
+        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
         resp = self.rpcv.process_rpc_reply(oper)
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
@@ -311,6 +602,16 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'value': 18446744073709551614,
              'datatype': 'uint64',
              'op': '=='}]
+
+        oper_gnmi = self.jsonIetfVal.replace('330', '30000')
+        oper_gnmi = oper_gnmi.replace('17', '70000')
+        oper_gnmi = oper_gnmi.replace('16', '18446744073709551614')
+        self.jsonIetfVal = oper_gnmi
+        self._base64encode()
+
+        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
 
         resp = self.rpcv.process_rpc_reply(oper)
         result = self.rpcv.process_operational_state(resp, opfields)
@@ -348,6 +649,17 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'datatype': 'pattern',
              'op': '=='}]
 
+        oper_gnmi = self.jsonIetfVal.replace('5', '""')
+        oper_gnmi = oper_gnmi.replace('330', '"true"')
+        oper_gnmi = oper_gnmi.replace('17', '"false"')
+        oper_gnmi = oper_gnmi.replace('16', '"abc[123]DEFghblahblah"')
+        self.jsonIetfVal = oper_gnmi
+        self._base64encode()
+
+        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
         resp = self.rpcv.process_rpc_reply(oper)
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
@@ -384,6 +696,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'datatype': 'boolean',
              'op': '=='}]
 
+        self._base64encode()
         resp = self.rpcv.process_rpc_reply(oper)
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
@@ -420,6 +733,7 @@ basic-mode=explicit&also-supported=report-all-tagged']
              'datatype': 'identityref',
              'op': '=='}]
 
+        self._base64encode()
         resp = self.rpcv.process_rpc_reply(oper)
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)

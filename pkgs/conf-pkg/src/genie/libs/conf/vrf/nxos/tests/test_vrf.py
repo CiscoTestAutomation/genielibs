@@ -28,6 +28,7 @@ class test_vrf(TestCase):
         vrf_conf = Vrf('VRF1')
         self.dev1.add_feature(vrf_conf)
         vrf_conf.device_attr[self.dev1].vni = 4092
+        vrf_conf.device_attr[self.dev1].vni_mode_l3 = 4091
         cfgs = vrf_conf.build_config(apply=False)
 
         # Check config built correctly
@@ -36,6 +37,7 @@ class test_vrf(TestCase):
             '\n'.join([
                 'vrf context VRF1',
                 ' vni 4092',
+                ' vni 4091 l3',
                 ' exit',
             ]))
 
@@ -44,6 +46,7 @@ class test_vrf(TestCase):
                                        attributes={'device_attr': {
                                            self.dev1: {
                                                'vni': None,
+                                               'vni_mode_l3': None,
                                                    }}})
         # Check config correctly unconfigured
         self.assertMultiLineEqual(
@@ -51,6 +54,7 @@ class test_vrf(TestCase):
             '\n'.join([
                 'vrf context VRF1',
                 ' no vni 4092',
+                ' no vni 4091 l3',
                 ' exit',
             ]))
 
@@ -444,11 +448,22 @@ vrf context vni_10100
     route-target both auto mvpn
     route-target both auto evpn
  '''}
+        golden_output2 = {'return_value': '''
+R2# show run vrf vni_10100 | sec '^vrf'
+vrf context vni_10100
+  vni 10100 l3
+  rd auto
+  address-family ipv4 unicast
+    route-target both auto
+    route-target both auto mvpn
+    route-target both auto evpn
+ '''}
 
         vrf = Vrf('vni_10100')
 
         # Return outputs above as inputs to parser when called
         dev.execute = Mock(**golden_output)
+        dev.execute = Mock(**golden_output2)
 
         vrf.device_attr[dev]
 

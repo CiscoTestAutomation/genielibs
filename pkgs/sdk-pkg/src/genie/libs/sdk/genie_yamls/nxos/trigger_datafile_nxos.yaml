@@ -2827,6 +2827,7 @@ TriggerIssuNative:
     update_pts_features: ['platform']
     mode: 'native'
     ctrlplane_downtime: 120
+    issu_timeout: 1800
     timeout:
        max_time: 3600
        interval: 60
@@ -2843,6 +2844,7 @@ TriggerIssuLxc:
     update_pts_features: ['platform']
     mode: 'lxc'
     ctrlplane_downtime: 120
+    issu_timeout: 1800
     timeout:
        max_time: 3600
        interval: 60

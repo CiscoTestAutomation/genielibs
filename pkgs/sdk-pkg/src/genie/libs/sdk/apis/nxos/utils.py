@@ -7,7 +7,6 @@ import re
 # Genie
 from genie.libs.sdk.apis.utils import get_config_dict
 from genie.libs.parser.nxos.ping import Ping
-from genie.libs.filetransferutils import FileServer
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # unicon
@@ -204,97 +203,53 @@ def ping(device,
         return {}
 
 
-def copy_to_script_host(device,
-                 filename,
-                 local_path=None,
-                 timeout=300,
-                 vrf='management'):
-    """
-    Copy a file from the device to the local system where the script is running.
-    Uses HTTP. Only supported via telnet or SSH sessions.
-
-    Args:
-        device (Device): device object
-        filename (str): filename to copy
-        local_path (str): local path to copy the file to, defaults to '.'
-        timeout('int'): timeout value in seconds, default 300
-        vrf (str): vrf name to use (default: management)
+def get_mgmt_src_ip_addresses(device):
+    """ Get the source IP addresses connected via SSH to the device.
 
     Returns:
-        (boolean): True if successful, False if not
-
-    The local IP adddress will be determined from the spawned telnet or ssh session.
-    A temporary http server will be created and the show tech file will be sent
-    to the host where the script is running.
-
-    If the device is connected via proxy (unix jump host) and the proxy has
-    'socat' installed, the upload will be done via the proxy automatically.
+        List of IP addresses or []
     """
-    local_path = local_path or '.'
-
-    # Can only retrieve the file if this is a VTY connection
-    if not device.api.is_connected_via_vty():
-        log.error('Not on VTY terminal, cannot retrieve show tech file')
-        return False
-
     # tcp      ESTABLISHED  0         5.25.25.5(23)
     #          management   0         5.25.24.1(54062)
     show_sockets_output = device.execute('show sockets connection tcp')
-    mgmt_src_ip_addresses = re.findall(r'management +\d+ +(\S+)\(\d+\)', show_sockets_output)
+    mgmt_src_ip_addresses = set(re.findall(
+        r'tcp\s+ESTABLISHED\s+0\s+\S+\((?:22|23)\).+management +\d+ +(\S+)\(\d+\)',
+        show_sockets_output, re.S))
+    if not mgmt_src_ip_addresses:
+        log.error('Unable to find management session, cannot determine management IP addresses')
+        return []
 
-    # try figure out local IP address
-    local_ip = device.api.get_local_ip()
+    log.info('Device management source IP addresses: {}'.format(mgmt_src_ip_addresses))
 
-    if local_ip in mgmt_src_ip_addresses:
-        mgmt_src_ip = local_ip
+    return mgmt_src_ip_addresses
+
+
+def get_mgmt_ip_and_mgmt_src_ip_addresses(device):
+    """ Get the management IP and source IP addresses connected via SSH to the device.
+
+    Returns:
+        List of IP addresses or []
+    """
+    # tcp      ESTABLISHED  0         5.25.25.5(23)
+    #          management   0         5.25.24.1(54062)
+    show_sockets_output = device.execute('show sockets connection tcp')
+    mgmt_addresses = re.findall(
+        r'tcp\s+ESTABLISHED\s+0\s+(\S+)\((?:22|23)\).+management +\d+ +(\S+)\(\d+\)',
+        show_sockets_output, re.S)
+    if mgmt_addresses:
+        mgmt_ip = [m[0] for m in mgmt_addresses][0]
+        mgmt_src_ip_addresses = set([m[1] for m in mgmt_addresses])
     else:
-        mgmt_src_ip = None
+        log.error('Unable to find management session, cannot determine management IP addresses')
+        return []
 
-    with FileServer(protocol='http',
-                    address=local_ip,
-                    path=local_path) as fs:
+    log.info('Device management IP: {}'.format(mgmt_ip))
+    log.info('Device management source IP addresses: {}'.format(mgmt_src_ip_addresses))
 
-        local_port = fs.get('port')
+    return (mgmt_ip, mgmt_src_ip_addresses)
 
-        proxy_port = None
-        # Check if we are connected via proxy device
-        proxy = device.connections[device.via].get('proxy')
-        if proxy and isinstance(proxy, str):
-            log.info('Setting up port relay via proxy')
-            proxy_dev = device.testbed.devices[proxy]
-            proxy_dev.connect()
-            proxy_port = proxy_dev.api.socat_relay(remote_ip=local_ip, remote_port=local_port)
 
-            ifconfig_output = proxy_dev.execute('ifconfig')
-            proxy_ip_addresses = re.findall(r'inet (?:addr:)?(\S+)', ifconfig_output)
-            mgmt_src_ip = None
-            for proxy_ip in proxy_ip_addresses:
-                if proxy_ip in mgmt_src_ip_addresses:
-                    mgmt_src_ip = proxy_ip
-                    break
-
-        copy_dialog = Dialog([
-            [r'Address or name of remote host', 'sendline()', None, True, False],
-            [r'Destination filename', 'sendline()', None, True, False],
-        ])
-
-        try:
-            if mgmt_src_ip and proxy_port:
-                device.execute('copy {} http://{}:{} vrf {}'.format(
-                            filename, mgmt_src_ip, proxy_port, vrf),
-                            reply=copy_dialog, timeout=timeout,
-                            append_error_pattern=[r'%\s*Error', r'%\s*Invalid'])
-            elif mgmt_src_ip:
-                device.execute('copy {} http://{}:{} vrf {}'.format(
-                            filename, mgmt_src_ip, local_port, vrf),
-                            reply=copy_dialog, timeout=timeout,
-                            append_error_pattern=[r'%\s*Error', r'%\s*Invalid'])
-            else:
-                log.error('Unable to determine management IP address to use to upload file')
-                return False
-
-        except Exception:
-            log.error('Failed to transfer file', exc_info=True)
-            return False
-
-    return True
+def get_mgmt_interface(device, mgmt_ip=None):
+    """ Get the management interface name.
+    """
+    return 'mgmt0'

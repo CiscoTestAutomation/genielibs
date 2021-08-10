@@ -22,7 +22,7 @@ def create_dhcp_pool(
         Returns:
             None
         Raises:
-            SubCommandFailure: Failed configuring bfd on interface
+            SubCommandFailure: Failed creating dhcp pool
     """
     log.info(
         "Configuring DHCP pool with name={}, network={}, mask={}, and "
@@ -56,7 +56,7 @@ def remove_dhcp_pool(
         Returns:
             None
         Raises:
-            SubCommandFailure: Failed configuring bfd on interface
+            SubCommandFailure: Failed removing dhcp pool
     """
     log.info(
         "Removing DHCP pool with name={}".format(pool_name)
@@ -95,6 +95,25 @@ def enable_dhcp_snooping_vlan(device, vlan):
             "Could not enable DHCP snooping on vlan {vlan}".format(
                 vlan=vlan
             )
+        )
+
+def enable_dhcp_snooping(device):
+    """ Enable DHCP snooping 
+        Args:
+            device ('obj'): device to use
+            
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring DHCP snooping
+    """
+    log.info("Enabling DHCP snooping")
+    try:
+        device.configure(["ip dhcp snooping"])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not enable DHCP snooping"
+                  
         )
 		
 def disable_dhcp_snooping_vlan(device, vlan):
@@ -137,21 +156,21 @@ def exclude_ip_dhcp(device, ip):
             )
         )
 
-def disable_dhcp_snooping_info(device):
-    """ Disable DHCP snooping information
+def disable_dhcp_snooping_option_82(device):
+    """ Disable DHCP snooping Option 82
         Args:
             device ('obj'): device to use
         Returns:
             None
         Raises:
-            SubCommandFailure: Failed disabling DHCP snooping information
+            SubCommandFailure: Failed disabling DHCP snooping Option 82
     """
-    log.info("Disabling DHCP snooping information")
+    log.info("Disabling DHCP snooping Option 82")
     try:
         device.configure(["no ip dhcp snooping information option"])
     except SubCommandFailure:
         raise SubCommandFailure(
-            "Could not disable DHCP snooping information"
+            "Could not disable DHCP snooping Option 82"
             )
         
 def remove_dhcp_snooping_binding(
@@ -164,7 +183,7 @@ def remove_dhcp_snooping_binding(
         Returns:
             None
         Raises:
-            SubCommandFailure: Failed configuring bfd on interface
+            SubCommandFailure: Failed removing dhcp snooping binding
     """
     log.info(
         "Removing DHCP snooping binding with vlan = {}".format(vlan)
@@ -183,4 +202,46 @@ def remove_dhcp_snooping_binding(
                 vlan = vlan
             )
         )
+def enable_ip_dhcp_snooping_trust(device, interface):
+    """ Enable DHCP snooping trust on interface
+        Configure 'ip dhcp snooping trust' on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed enabling DHCP snooping trust on interface
+    """
+    log.info("Enabling DHCP snooping trust on interface")
+    try:
+        device.configure(
+            [
+             "interface {}".format(interface),
+	         "ip dhcp snooping trust",
+            ]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not enable DHCP snooping trust on interface {interface}".format(
+                interface=interface
+            )
+        )
+
+def enable_dhcp_snooping_option_82(device):
+    """ Enable DHCP snooping Option 82
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed enabling DHCP snooping Option 82
+    """
+    log.info("Enabling DHCP snooping Option 82")
+    try:
+        device.configure(["ip dhcp snooping information option"])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not enable DHCP snooping Option 82"
+            )
 

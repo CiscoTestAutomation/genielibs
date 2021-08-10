@@ -1,11 +1,9 @@
 import importlib
 import logging
 import multiprocessing
-import os
 import queue
 import socket
-import sys
-import time
+import random
 
 import netaddr
 import psutil
@@ -190,3 +188,7 @@ class FileServer:
             self.server_proc.terminate()
             self.server_proc.join()
             self.server_proc = None
+
+    def _generate_credential(self):
+        # Generate a random string to use as credentials if none are given
+        return ''.join([random.choice(ALPHA) for x in range(10)])

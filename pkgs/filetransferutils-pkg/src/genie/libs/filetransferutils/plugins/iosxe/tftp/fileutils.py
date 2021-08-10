@@ -2,5 +2,12 @@
 
 from ..fileutils import FileUtils as FileUtilsXEBase
 
+
 class FileUtils(FileUtilsXEBase):
-	pass
+    COPY_CONFIG_TEMPLATE = [
+        'ip tftp source-interface {interface}', 'ip tftp blocksize {blocksize}'
+    ]
+
+    COPY_CONFIG_VRF_TEMPLATE = [
+        'ip tftp source-interface {interface}', 'ip tftp blocksize {blocksize}'
+    ]

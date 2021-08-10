@@ -478,6 +478,7 @@ def config_ip_on_interface(
     interface,
     ip_address,
     mask,
+    ipv6_address=None,
     eth_encap_type=None,
     eth_encap_val=None,
     sub_interface=None,
@@ -489,6 +490,7 @@ def config_ip_on_interface(
             interface (`str`): Interface to get address
             ip_address (`str`): IP addressed to be configured on interface
             mask (`str`): Mask address to be used in configuration
+            ipv6_address (`str`): IPv6 address with subnet mask
             eth_encap_type (`str`): Encapsulation type
             eth_encap_val (`str`): Encapsulation value
             sub_interface (`str`): Subinterface to be added to interface name
@@ -518,6 +520,13 @@ def config_ip_on_interface(
     cfg_str += "ip address {ip} {mask}\n".format(
         intf=interface_name, ip=ip_address, mask=mask
     )
+
+    # Add ipv6 address configuration
+    if ipv6_address:
+        cfg_str += "ipv6 enable\n" \
+                   "ipv6 address {ipv6}\n".format(
+            ipv6=ipv6_address
+        )
 
     # Configure device
     try:
@@ -885,7 +894,7 @@ def configure_interface_interfaces_on_port_channel(
             mode=mode, channel_group=channel_group
         ),
     ]
-    
+
     if len(interfaces) > 2:
        if interface == interfaces[3]:
         config_cmd.append("lacp rate fast")
@@ -958,7 +967,7 @@ def configure_lacp_on_interface(
 
 
 def default_interface(device, interfaces):
-    """ configure interface carrier delay on device
+    """ configure default interface on device
 
         Args:
             device (`obj`): Device object
@@ -1160,6 +1169,14 @@ def configure_interface_monitor_session(device, monitor_config):
             config.append("erspan-id {}\n".format(mc["erspan_id"]))
             config.append("ip address {}\n".format(mc["ip_address"]))
 
+        if 'description' in mc:
+            config.append("description {}\n".format(mc["description"]))
+        if 'source_vlan' in mc:
+            config.append("source vlan {}\n".format(mc["source_vlan"]))
+        if 'mtu' in mc:
+            config.append("mtu {}\n".format(mc["mtu"]))
+        if 'vrf' in mc:
+            config.append("vrf {}\n".format(mc["vrf"]))
         config.append("exit\n")
         config.append("no shutdown\n")
 
@@ -1172,6 +1189,31 @@ def configure_interface_monitor_session(device, monitor_config):
                 )
             )
 
+def unconfigure_interface_monitor_session(device, session_name, session_type):
+    """ configure monitor session on device
+        Args:
+            device (`obj`): Device object
+            session_name (`str`): session_name
+            session_type (`str`): session_type
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            "no monitor session {session_name} type {session_type}".format(
+                session_name=session_name,
+                session_type=session_type))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure monitor session. Error:\n{error}".format(
+                error=e
+            )
+        )
+            
 
 def configure_subinterfaces_for_vlan_range(device, interface, vlan_id_start, vlan_id_step,
                                            vlan_id_count, network_start, network_step,
@@ -1220,3 +1262,446 @@ def configure_subinterfaces_for_vlan_range(device, interface, vlan_id_start, vla
     device.configure(cmds)
 
     return interfaces
+
+def configure_ipv4_dhcp_relay_helper(device, interface, ip_address):
+    """ Configure helper IP on an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to get address
+            ip_address (`str`): helper IP address to be configured on interface
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    cmd_1 = "interface {intf}".format(intf=interface)
+    cmd_2 = "ip helper-address {ip}".format(ip=ip_address)
+
+    # Configure device
+    try:
+        device.configure([cmd_1, cmd_2])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure helper IP address {ip} on interface "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                ip=ip_address,
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def attach_ipv6_raguard_policy_to_interface(device, interface, policy_name):
+    """ Attach IPv6 RA Guard Policy to an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to attach policy
+            policy_name (`str`): Policy name to be attached to interface
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    cmd_1 = "interface {intf}".format(intf=interface)
+    cmd_2 = "ipv6 nd raguard attach-policy {policy_name}".format(policy_name=policy_name)
+
+    # Configure device
+    try:
+        device.configure([cmd_1, cmd_2])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to attach IPv6 RA Guard policy {policy_name} on interface "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                policy_name=policy_name,
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def remove_interface_ip(device, interface):
+    """ Remove ip on interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Removing ip on interface {interface}".format(
+            interface=interface
+        )
+    )
+    try:
+        device.configure(
+            [
+                "interface {interface}".format(interface=interface),
+                "no ip address",
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfig ip address on interface {interface}. Error:\n{error}".format(
+                interface=interface, error=e
+            )
+        )
+
+def configure_ipv6_dhcp_relay(device, interface, dest_ipv6, vlan):
+    """ Configure IPv6 DHCP Relay
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface to be configured
+            dest_ipv6 ('str'): IPv6 destination address
+            vlan ('int'): vlan number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring IPv6 DHCP Relay
+    """
+    log.info(
+        "Configuring IPv6 DHCP Relay on int={int}, for dest_ipv6={dest_ipv6} and vlan={vlan} "
+        .format(int=int,dest_ipv6=dest_ipv6,vlan=vlan)
+    )
+
+    try:
+       device.configure(
+            [
+            "interface {interface}\n".format(interface=interface),
+            "ipv6 dhcp relay destination {dest_ipv6} {vlan}".format(dest_ipv6=dest_ipv6,vlan=vlan)
+            ]
+        )
+
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not configure IPv6 DHCP Relay on int={int}, for dest_ipv6={dest_ipv6} and vlan={vlan} ".format(
+                int=int,dest_ipv6=dest_ipv6,vlan=vlan
+            )
+        )
+
+def configure_ipv6_nd(device, interface, lifetime, pref_lifetime, router_pref, ra_lifetime,ra_interval):
+    """ Configure IPv6 ND parameters
+        Args:
+            device ('obj'): device to use
+            interface ('str'): name of the interface to be configured
+            lifetime ('int') : Valid Lifetime in secs
+            pref_lifetime ('int') : Preferred Lifetime in secs
+            router_pref ('str') : default router preference
+            ra_lifetime ('int') : IPv6 Router Advertisement Lifetime
+            ra_interval ('int') : IPv6 Router Advertisement Interval
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring IPv6 DHCP ND parameters
+    """
+    log.info(
+        "Configuring IPv6 DHCP ND parameters on int={int} "
+        .format(int=interface)
+    )
+
+    try:
+       device.configure(
+            [
+            "interface {interface}\n".format(interface=interface),
+            "ipv6 nd prefix default {} {}".format(lifetime, pref_lifetime),
+            "ipv6 nd router-preference {}".format(router_pref),
+            "ipv6 nd ra lifetime {}".format(ra_lifetime),
+            "ipv6 nd ra interval {}".format(ra_interval)
+            ]
+        )
+
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not configure IPv6 DHCP ND parameters on int={int}".format(int=interface)
+        )
+
+def attach_dhcpv6_guard_policy_to_interface(device, interface, policy_name):
+    """ Attach DHCPv6 Guard Policy to an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to attach policy
+            policy_name (`str`): Policy name to be attached to interface
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd_1 = "interface {intf}".format(intf=interface)
+    cmd_2 = "ipv6 dhcp guard attach-policy {policy_name}".format(policy_name=policy_name)
+
+    # Configure device
+    try:
+        device.configure([cmd_1, cmd_2])
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to attach DHCPv6 Guard policy {policy_name} on interface "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                policy_name=policy_name,
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def enable_ipv6_dhcp_server(device, interface, pool_name):
+    """ Enable IPv6 DHCP server on an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to enable IPv6 DHCP server
+            pool_name (`str`): Pool name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd_1 = "interface {intf}".format(intf=interface)
+    cmd_2 = "ipv6 dhcp server {pool_name} rapid-commit".format(pool_name=pool_name)
+
+    # Configure device
+    try:
+        device.configure([cmd_1, cmd_2])
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to enable IPv6 DHCP server for {pool_name} on interface "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                pool_name=pool_name,
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def detach_dhcpv6_guard_policy_to_interface(device, interface, policy_name):
+    """ Detach DHCPv6 Guard Policy from an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to attach policy
+            policy_name (`str`): Policy name to be attached to interface
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd_1 = "interface {intf}".format(intf=interface)
+    cmd_2 = "no ipv6 dhcp guard attach-policy {policy_name}".format(policy_name=policy_name)
+
+    # Configure device
+    try:
+        device.configure([cmd_1, cmd_2])
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to detach DHCPv6 Guard policy {policy_name} on interface "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                policy_name=policy_name,
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def detach_ipv6_raguard_policy_to_interface(device,interface,policy_name):
+    """ Detach IPv6 RA Guard Policy from an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to detach policy
+            policy_name (`str`): Policy name to be attached to interface
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd_1 = "interface {intf}".format(intf=interface)
+    cmd_2 = "no ipv6 nd raguard attach-policy {policy_name}".format(policy_name=policy_name)
+
+    # Configure device
+    try:
+        device.configure([cmd_1, cmd_2])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to detach IPv6 RA Guard policy {policy_name} on interface "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                policy_name=policy_name,
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def attach_ipv6_raguard_policy_to_vlan(device, vlan, policy_name):
+    """ Attach IPv6 RA Guard Policy to a vlan
+
+        Args:
+            device (`obj`): Device object
+            vlan (`str`): vlan to attach policy
+            policy_name (`str`): Policy name to be attached to interface
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd_1 = "vlan configuration {vlan}".format(vlan=vlan)
+    cmd_2 = "ipv6 nd raguard attach-policy {policy_name}".format(policy_name=policy_name)
+
+    # Configure device
+    try:
+        device.configure([cmd_1, cmd_2])
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to attach IPv6 RA Guard policy {policy_name} on vlan "
+            "{vlan} on device {dev}. Error:\n{error}".format(
+                policy_name=policy_name,
+                vlan=vlan,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def detach_ipv6_raguard_policy_to_vlan(device, vlan, policy_name):
+    """ Detach IPv6 RA Guard Policy from Vlan
+
+        Args:
+            device (`obj`): Device object
+            vlan (`str`): vlan to detach policy
+            policy_name (`str`): Policy name to be attached to interface
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd_1 = "vlan configuration {vlan}".format(vlan=vlan)
+    cmd_2 = "no ipv6 nd raguard attach-policy {policy_name}".format(policy_name=policy_name)
+
+    # Configure device
+    try:
+        device.configure([cmd_1, cmd_2])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to detach IPv6 RA Guard policy {policy_name} on vlan "
+            "{vlan} on device {dev}. Error:\n{error}".format(
+                policy_name=policy_name,
+                vlan=vlan,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def remove_channel_group_from_interface(device, interface, channel_group, mode):
+    """ Remove channel group from an Interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface on which the channel group command is to be applied
+            channel_group (`str`): Channel group number
+            mode (`str`): Channel group mode
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        device.configure(
+            [
+                "interface {interface}".format(interface=interface),
+                "no channel-group {channel_group} mode {mode}".format(
+                    channel_group=channel_group, mode=mode)
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Couldn't remove channel group {channel_group} "
+            "from interface {interface}. Error:\n{error}".format(
+                channel_group=channel_group, interface=interface, error=e)
+        )
+
+
+def remove_port_channel_interface(device, port_channel):
+    """ Remove port channel interface
+
+        Args:
+            device (`obj`): Device object
+            port_channel (`str`): Port channel to be removed
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        device.configure("no interface port-channel{port_channel}".format(
+            port_channel=port_channel))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Couldn't remove port channel {port_channel} from device. "
+            "Error:\n{error}".format(port_channel=port_channel, error=e)
+        )
+
+
+def config_edge_trunk_on_interface(device, interface):
+    """ Configure spanning portf edge trunk on Interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface on which the edge trunk config to be applied
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        device.configure(
+            [
+                "interface {interface}".format(interface=interface),
+                "spanning portf edge trunk"
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Couldn't configure spanning portf edge trunk "
+            "on interface {interface}. Error:\n{error}".format(
+                interface=interface, error=e)
+        )

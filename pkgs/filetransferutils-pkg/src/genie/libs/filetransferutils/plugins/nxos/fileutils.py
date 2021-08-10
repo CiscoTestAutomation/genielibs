@@ -14,17 +14,8 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-class FileUtils(FileUtilsDeviceBase):
-    COPY_CONFIG_TEMPLATE = '''\
-ip route {server}/32 {default_gateway}
-ip tftp source-interface {interface}
-ip ftp source-interface {interface}'''
 
-    COPY_CONFIG_VRF_TEMPLATE = '''\
-vrf context {vrf}
-  ip route {server}}/32 {default_gateway}
-ip tftp source-interface {interface} vrf {vrf}
-ip ftp source-interface {interface} vrf {vrf}'''
+class FileUtils(FileUtilsDeviceBase):
 
     def copyfile(self, source, destination, timeout_seconds=300,
         vrf=None, compact=False, use_kstack=False, *args, **kwargs):
@@ -128,8 +119,7 @@ ip ftp source-interface {interface} vrf {vrf}'''
 
         # Extract the server address to be used later for authentication
         used_server = self.get_server(source, destination)
-
-        super().copyfile(source=source, destination=destination,
+        return super().copyfile(source=source, destination=destination,
             timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,
             vrf=vrf, *args, **kwargs)
 
