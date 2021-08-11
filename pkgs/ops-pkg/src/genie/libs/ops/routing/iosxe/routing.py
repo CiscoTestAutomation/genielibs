@@ -18,31 +18,34 @@ class Routing(SuperRouting):
             return list(item.keys())
         return []
 
-    def learn(self, address_family=None, protocol=None, route=None, interface=None):
+    def learn(self, address_family=None, vrf=None, protocol=None, route=None, interface=None):
         '''Learn Routing object'''
 
-        self.add_leaf(cmd=ShowVrfDetail,
-                      src='',
-                      dest='list_of_vrfs',
-                      action=self.keys)
-        # when show vrf details return nothing
-        # initial vrf list
-        try:
-            self.make()
-        except Exception:
-            self.list_of_vrfs = []
+        if vrf:
+            self.list_of_vrfs = [vrf]
+        else:
+            self.add_leaf(cmd=ShowVrfDetail,
+                        src='',
+                        dest='list_of_vrfs',
+                        action=self.keys)
 
-        # incase attribtues are specified that show vrf won't be executed
-        if not hasattr(self, 'list_of_vrfs'):
-            self.list_of_vrfs = []
+            # Initialize vrf list if 'show vrf details' return nothing
+            try:
+                self.make()
+            except Exception:
+                self.list_of_vrfs = []
 
-        # loop for vrfs
+            # incase attribtues are specified that show vrf won't be executed
+            if not hasattr(self, 'list_of_vrfs'):
+                self.list_of_vrfs = []
+
+            self.list_of_vrfs.append('default')
         
-
         kwargs = {k: v for k, v in locals().items() if v}
         [kwargs.pop(x, None) for x in ['address_family', 'self']]
 
-        for vrf in self.list_of_vrfs + ['default']:
+        # Loop through vrfs
+        for vrf in self.list_of_vrfs:
             if route:
                 src_routing_route = '[entry][(?P<entry>.*)]'
                 dest_routing_route = 'info[vrf][{vrf}][address_family][{address_family}]' \
