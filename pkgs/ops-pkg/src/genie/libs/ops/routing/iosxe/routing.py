@@ -39,7 +39,8 @@ class Routing(SuperRouting):
             if not hasattr(self, 'list_of_vrfs'):
                 self.list_of_vrfs = []
 
-            self.list_of_vrfs.append('default')
+            if 'default' not in self.list_of_vrfs:
+                self.list_of_vrfs.append('default')
         
         kwargs = {k: v for k, v in locals().items() if v}
         [kwargs.pop(x, None) for x in ['address_family', 'self']]
