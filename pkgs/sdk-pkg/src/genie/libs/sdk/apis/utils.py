@@ -371,7 +371,8 @@ def copy_to_server(testbed,
                    remote_path,
                    timeout=300,
                    fu_session=None,
-                   quiet=False):
+                   quiet=False,
+                   **kwargs):
     """ Copy file from directory to server
 
         Args:
@@ -397,7 +398,8 @@ def copy_to_server(testbed,
                         remote_path,
                         timeout=timeout,
                         fu_session=fu_session,
-                        quiet=quiet)
+                        quiet=quiet,
+                        **kwargs)
 
     else:
         with FileUtils(testbed=testbed) as fu:
@@ -407,7 +409,8 @@ def copy_to_server(testbed,
                             remote_path,
                             timeout=timeout,
                             fu_session=fu,
-                            quiet=quiet)
+                            quiet=quiet,
+                            **kwargs)
 
 
 def _copy_to_server(protocol,
@@ -416,7 +419,8 @@ def _copy_to_server(protocol,
                     remote_path,
                     timeout=300,
                     fu_session=None,
-                    quiet=False):
+                    quiet=False,
+                    **kwargs):
     remote = "{p}://{s}/{f}".format(p=protocol, s=server, f=remote_path)
     remote = fu_session.validate_and_update_url(remote)
 
@@ -426,7 +430,8 @@ def _copy_to_server(protocol,
     fu_session.copyfile(source=local_path,
                         destination=remote,
                         timeout_seconds=timeout,
-                        quiet=quiet)
+                        quiet=quiet,
+                        **kwargs)
 
 
 def copy_file_from_tftp_ftp(testbed, filename, pro):
@@ -909,7 +914,11 @@ def copy_to_device(device,
                                    use_kstack=use_kstack,
                                    protocol=protocol,
                                    **kwargs)
-        except Exception:
+        except Exception as e:
+            log.info('Failed to copy file to device: {e}'.format(
+                e = e
+            ))
+            
             if compact or use_kstack:
                 log.info("Failed to copy with compact/use-kstack option, "
                          "retrying again without compact/use-kstack")
@@ -1128,11 +1137,11 @@ def copy_from_device(device,
             fu.validate_and_update_url = lambda url, *args, **kwargs: url  # override to avoid url changes
             fu.get_server = lambda *args, **kwargs: None  # override to suppress log messages
             return fu.copyfile(source=local_path,
-                        destination=destination,
-                        timeout_seconds=timeout,
-                        device=device,
-                        vrf=vrf,
-                        interface=mgmt_interface)
+                               destination=destination,
+                               timeout_seconds=timeout,
+                               device=device,
+                               vrf=vrf,
+                               interface=mgmt_interface)
 
         except Exception:
             log.error('Failed to transfer file', exc_info=True)
@@ -1235,6 +1244,8 @@ def modify_filename(device,
             limit ('int'): character limit of the url, default 63
             unique_file_name ('bool'): append a six digit random number to the end of
                                         file name to make it unique
+            unique_number ('int'): provide a number to be used with unique_file_name
+                                    instead of a random one
             new_name ('str'): replace original file name with new_name
 
         Raises:

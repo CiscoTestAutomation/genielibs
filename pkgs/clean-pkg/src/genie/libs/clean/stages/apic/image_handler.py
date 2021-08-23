@@ -12,11 +12,14 @@ class ImageLoader(object):
     EXPECTED_IMAGE_STRUCTURE_MSG = """\
 Expected one of the following structures for 'images' in the clean yaml
 
+Other images are optional other files, in structure #1, if one image is provided it will be used for both controller and switch, otherwise controller must come first
+
 Structure #1
 ------------
 images:
 - /path/to/controller_image.bin
 - /path/to/switch_image.bin
+- /path/to/other/images.bin   <<< optional
 
 Structure #2
 ------------
@@ -25,6 +28,8 @@ images:
   - /path/to/controller_image.bin
   switch:
   - /path/to/switch_image.bin
+  other:   <<< optional
+  - /path/to/other/images.bin
 
 Structure #3
 ------------
@@ -35,6 +40,9 @@ images:
   switch:
     file:
     - /path/to/switch_image.bin
+  other:   <<< optional
+    file:
+    - /path/to/other/images.bin
 
 But got the following structure
 -------------------------------
@@ -64,9 +72,10 @@ But got the following structure
             setattr(self, 'controller', images)
             setattr(self, 'switch', images)
             return True
-        if len(images) == 2:
+        if len(images) >= 2:
             setattr(self, 'controller', images[:1])
-            setattr(self, 'switch', images[1:])
+            setattr(self, 'switch', images[1:2])
+            setattr(self, 'other', images[2:])
             return True
         else:
             return False
@@ -75,7 +84,8 @@ But got the following structure
 
         schema = {
             Optional('controller'): ListOf(str),
-            Optional('switch'): ListOf(str)
+            Optional('switch'): ListOf(str),
+            Optional('other'): ListOf(str)
         }
 
         try:
@@ -89,16 +99,19 @@ But got the following structure
                 len(images['switch']) == 1):
             setattr(self, 'controller', images['controller'])
             setattr(self, 'switch', images['switch'])
+            setattr(self, 'other', images.get('other', []))
             return True
 
         elif ('controller' in images and
               len(images['controller']) == 1):
             setattr(self, 'controller', images['controller'])
+            setattr(self, 'other', images.get('other', []))
             return True
 
         elif ('switch' in images and
                 len(images['switch']) == 1):
             setattr(self, 'switch', images['switch'])
+            setattr(self, 'other', images.get('other', []))
             return True
 
         else:
@@ -111,6 +124,9 @@ But got the following structure
                 'file': ListOf(str)
             },
             Optional('switch'): {
+                'file': ListOf(str)
+            },
+            Optional('other'): {
                 'file': ListOf(str)
             }
         }
@@ -126,16 +142,19 @@ But got the following structure
                 len(images['switch']['file']) == 1):
             setattr(self, 'controller', images['controller']['file'])
             setattr(self, 'switch', images['switch']['file'])
+            setattr(self, 'other', images.get('other', {}).get('file', []))
             return True
 
         elif ('controller' in images and
               len(images['controller']['file']) == 1):
             setattr(self, 'controller', images['controller']['file'])
+            setattr(self, 'other', images.get('other', {}).get('file', []))
             return True
 
         elif ('switch' in images and
               len(images['switch']['file']) == 1):
             setattr(self, 'switch', images['switch']['file'])
+            setattr(self, 'other', images.get('other', {}).get('file', []))
             return True
         else:
             return False
@@ -148,6 +167,7 @@ class ImageHandler(BaseImageHandler, ImageLoader):
         # Set defaults
         self.controller = []
         self.switch = []
+        self.other = []
 
         # Check if images is one of the valid structures and
         # load into a consolidated structure
@@ -158,6 +178,9 @@ class ImageHandler(BaseImageHandler, ImageLoader):
             self.controller = [self.controller[0].replace('file://', '')]
         if self.switch:
             self.switch = [self.switch[0].replace('file://', '')]
+
+        if hasattr(self, 'other'):
+            self.other = [x.replace('file://', '') for x in self.other]
 
         super().__init__(device, images, *args, **kwargs)
 
@@ -175,6 +198,10 @@ class ImageHandler(BaseImageHandler, ImageLoader):
                 self.switch[index] = section.parameters['image_mapping'].get(
                     image, self.switch[index])
 
+            if hasattr(self, 'other'):
+                for index,image in enumerate(self.other):
+                    self.other[index] = section.parameters['image_mapping'].get(image, self.other[index])
+
     def update_copy_to_linux(self, number=''):
         '''Update clean section 'copy_to_linux' with image information'''
         files = self.device.clean.setdefault('copy_to_linux'+number, {}).\
@@ -182,7 +209,7 @@ class ImageHandler(BaseImageHandler, ImageLoader):
 
         # Update the same object id
         files.clear()
-        files.extend(self.controller + self.switch)
+        files.extend(self.controller + self.switch + self.other)
 
     def update_copy_to_device(self, number=''):
         '''Update clean stage 'copy_to_device' with image information'''
@@ -191,7 +218,7 @@ class ImageHandler(BaseImageHandler, ImageLoader):
 
         # Update the same object id
         files.clear()
-        files.extend(self.controller + self.switch)
+        files.extend(self.controller + self.switch + self.other)
 
     def update_fabric_upgrade(self, number=''):
         '''Update clean stage 'fabric_upgrade' with image information'''

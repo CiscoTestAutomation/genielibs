@@ -1653,3 +1653,158 @@ def device_tracking_unit_test(device, options=None):
         raise SubCommandFailure(
             "Failed to perform device-tracking unit-test"
         )
+
+
+def configure_device_tracking_binding(device, vlan, address, interface, mac, tracking="default"):
+    """Adds static entry to binding table
+    Args:
+        device ('obj'): device object
+        vlan ('str'): vlan id
+        address ('str'): ip address (v4 or v6)
+        interface ('str'): interface for entry - Eg. TWE 1/0/1
+        mac ('str'): entry's mac address
+        tracking ('str', optional): Set the tracking for the device - Eg. "enable", "disable", or "default" . Defaults to "default.
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to add static entry
+    """
+    cmd = "device-tracking binding vlan {vlan} {address} interface {interface} {mac} tracking {tracking}"
+    cmd = cmd.format(vlan=vlan, address=address, interface=interface, mac=mac, tracking=tracking)
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+        log.warning("Failed to add static entry")
+        raise
+
+
+def configure_ipv6_destination_guard_attach_policy(device, policy, interface=None, vlan=None):
+    """ Attach ipv6 destination-guard policy
+    Args:
+        device ('obj'): device object
+        policy ('str'): policy name
+        interace ('str', optional): interface name. Defaults to None
+        vlan ('str', optional): vlan id list - Eg. "1-10,15". Defaults to None.
+    Returns:
+        None
+    Raises:
+         SubCommandFailure: Failed to attach ipv6 destination-guard policy
+    """
+    if interface is None and vlan is None:
+        raise ValueError("There is no specified target to attach policy." \
+                         "Ensure there is either an interface or a vlan as input")
+
+    config = []
+    if interface:
+        config.append("interface {interface}".format(interface=interface))
+    elif vlan:
+        config.append("vlan config {vlan}".format(vlan=vlan))
+
+    config.append("ipv6 destination-guard attach-policy {policy}".format(policy=policy))
+
+    try:
+        device.configure(config)
+    except SubCommandFailure:
+        log.warning("Failed to attach ipv6 destination-guard policy")
+        raise
+
+
+def configure_ipv6_destination_guard_detach_policy(device, policy, interface=None, vlan=None):
+    """ Detach ipv6 destination-guard policy
+    Args:
+        device ('obj'): device object
+        policy ('str'): policy name
+        interace ('str', optional): interface name. Defaults to None
+        vlan ('str', optional): vlan id list - Eg. "1-10,15". Defaults to None.
+    Returns:
+        None
+    Raises:
+         SubCommandFailure: Failed to detach ipv6 destination-guard policy
+    """
+    if interface is None and vlan is None:
+        raise ValueError("There is no specified target to attach policy." \
+                         "Ensure there is either an interface or a vlan as input")
+
+    config = []
+    if interface:
+        config.append("interface {interface}".format(interface=interface))
+    elif vlan:
+        config.append("vlan config {vlan}".format(vlan=vlan))
+
+    config.append("no ipv6 destination-guard attach-policy {policy}".format(policy=policy))
+
+    try:
+        device.configure(config)
+    except SubCommandFailure:
+        log.warning("Failed to deattach ipv6 destination-guard policy")
+        raise
+
+
+def configure_ipv6_destination_guard_policy(device, policy_name, enforcement=None):
+    """ Configure ipv6 destination-guard policy
+    Args:
+        device ("obj"): The device to configure the policy on
+        policy_name ("str"): the name of the policy
+        enforcement ("str", optional): The enforcement policy to set - Eg. "always" or "stressed". Defaults to None.
+    Raises:
+        SubCommandFailure: Failed to configure ipv6 destination-guard policy {policy_name}
+    """
+    config_cmds = []
+    config_cmds.append("ipv6 destination-guard policy {policy_name}".format(policy_name=policy_name))
+    if enforcement:
+        config_cmds.append("enforcement {enforcement}".format(enforcement=enforcement))
+
+    try:
+        device.configure(config_cmds)
+    except SubCommandFailure:
+        log.warning("Failed to configure ipv6 destination-guard policy {policy_name}"
+            .format(policy_name=policy_name))
+        raise
+
+
+def unconfigure_ipv6_destination_guard_policy(device, policy_name):
+    """ Unconfigure ipv6 destination_guard policy
+    Args:
+        device ("obj"): the device to unconfigure the policy on
+        policy_name ("str"): The name of the policy
+
+    Raises:
+        SubCommandFailure: Failed to unconfigure ipv6 destination-guard {policy_name}
+    """
+    try:
+        device.configure([
+            "ipv6 destination-guard policy {policy_name}".format(policy_name=policy_name),
+            "no enforcement"
+        ])
+    except SubCommandFailure:
+        log.warning("Failed to unconfigure ipv6 destination-guard {policy_name}"
+            .format(policy_name=policy_name))
+        raise
+
+
+def configure_device_tracking_tracking(device, auto_source=None, retry_interval=None):
+    """ Configure device-tracking tracking
+
+    Args:
+        device ("obj"): The device to configure
+        auto_source ("str", optional): The configuration for auto_source - either override or failback address. Defaults to None.
+        retry_interval ("str", optional): Device-tracking retry-interval in seconds. Defaults to None.
+
+    Raises:
+        SubCommandFailure: Failed to configure device-tracking tracking
+    """
+    config_cmds = []
+    if auto_source:
+        if auto_source != "override":
+            config_cmds.append("device-tracking tracking auto-source fallback {fallback_addr}".format(fallback_addr=auto_source))
+        else:
+            config_cmds.append("device-tracking tracking auto-source override")
+    if retry_interval:
+        config_cmds.append("device-tracking tracking retry-interval {retry_interval}".format(retry_interval=retry_interval))
+
+    try:
+        device.configure(config_cmds)
+    except SubCommandFailure:
+        log.warning("Failed to configure device-tracking tracking")
+        raise

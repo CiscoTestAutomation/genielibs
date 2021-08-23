@@ -7,6 +7,13 @@ from functools import partial
 from genie.libs.sdk.libs.utils.mapping import Mapping
 from genie.libs.sdk.triggers.clear.clear import TriggerClear, verify_clear_callable
 from genie.libs.sdk.libs.utils.triggeractions import CompareUptime
+from genie.harness.base import Trigger
+from ats import aetest
+from genie.utils.timeout import Timeout
+import logging
+log = logging.getLogger(__name__)
+
+
 
 # Ignore keys when doing the diff with Ops objects for save_snapshot and
 # verify_clear, it will be used for LearnPollDiff.ops_diff callable
@@ -51,6 +58,62 @@ class TriggerClearBgp(TriggerClear):
 
 class TriggerClearBgpAll(TriggerClearBgp):
     pass
+
+class TriggerClearIpv4BGPSoft(Trigger):
+    '''
+    trigger_datafile:
+           Mandatory:
+               timeout:
+                   max_time (`int`): Maximum wait time for the trigger,
+                                   in second. Default: 180
+                   interval (`int`): Wait time between iteration when looping is needed,
+                                   in second. Default: 15
+                devices ([`uut`]): List of devices for the trigger to run.
+    '''
+    @aetest.setup
+    def prerequisites(self, uut):
+        bgp_session = uut.parse('show ip bgp all summary')
+        if not bgp_session:
+            self.failed('No BGP session active to soft clear')
+
+    @aetest.test
+    def bgp_soft_reset(self, uut, timeout):
+        timeout_obj = Timeout(timeout.max_time, timeout.interval)
+        while timeout_obj.iterate():
+            try:
+                uut.execute('clear ip bgp * soft')
+            except:
+                log.error('clear ip bgp * soft command not executed')
+                timeout_obj.sleep()
+            break
+
+class TriggerClearIpv4BGPHard(Trigger):
+    '''
+    trigger_datafile:
+           Mandatory:
+               timeout:
+                   max_time (`int`): Maximum wait time for the trigger,
+                                   in second. Default: 180
+                   interval (`int`): Wait time between iteration when looping is needed,
+                                   in second. Default: 15
+                devices ([`uut`]): List of devices for the trigger to run.
+    '''
+    @aetest.setup
+    def prerequisites(self, uut):
+        bgp_session = uut.parse('show ip bgp all summary')
+        if not bgp_session:
+            self.failed('No BGP session active to soft clear')
+
+    @aetest.test
+    def bgp_hard_reset(self, uut, timeout):
+        timeout_obj = Timeout(timeout.max_time, timeout.interval)
+        while timeout_obj.iterate():
+            try:
+                uut.execute('clear ip bgp *')
+            except:
+                log.error('clear ip bgp * command not executed')
+                timeout_obj.sleep()
+            break
 
 class TriggerClearIpBgpSoft(TriggerClear):
 

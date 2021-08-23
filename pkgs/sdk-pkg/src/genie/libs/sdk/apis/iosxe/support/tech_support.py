@@ -30,6 +30,9 @@ def get_show_tech(device,
         protocol (str): protocol to use to copy (default: scp)
         timeout (int): timeout to copy file (default: 600s)
 
+    Returns
+        True on success, False on failure
+
     The filename is based the prefix + show_tech + timestamp.
 
     The default prefix is the device name.
@@ -73,7 +76,11 @@ def get_show_tech(device,
     timestamp = datetime.utcnow().strftime('%Y%m%dT%H%M%S%f')[:-3]
     filename = '{}{}show_tech_{}.txt'.format(device_dir, prefix, timestamp)
     # Capture show tech to flash
-    device.execute('{} | redirect {}'.format(show_tech_command, filename), timeout=timeout)
+    try:
+        device.execute('{} | redirect {}'.format(show_tech_command, filename), timeout=timeout)
+    except Exception:
+        log.exception('Failed to collect show tech')
+        return False
 
     delete_dialog = Dialog([
         [r'Delete filename .*\?\s*$', 'sendline()', None, True, False],

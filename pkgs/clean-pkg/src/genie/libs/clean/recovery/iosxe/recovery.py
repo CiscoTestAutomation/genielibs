@@ -11,9 +11,10 @@ from unicon.eal.dialogs import Statement
 
 # Genie
 from genie.libs.clean.utils import print_message
-from genie.libs.clean.recovery.iosxe.dialogs import (BreakBootDialog,
-                                                     RommonDialog,
-                                                     TftpRommonDialog)
+from genie.libs.clean.recovery.iosxe.dialogs import (
+    BreakBootDialog,
+    RommonDialog,
+    TftpRommonDialog)
 
 # Logger
 log = logging.getLogger(__name__)

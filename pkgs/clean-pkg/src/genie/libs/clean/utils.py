@@ -10,16 +10,19 @@ import json
 import importlib
 from functools import wraps
 from unittest.mock import patch
-from copy import deepcopy
+from pkg_resources import iter_entry_points
 
 # Genie
 from genie.libs import clean
+from genie.clean.extend import ExtendClean
 from genie.abstract import Lookup
 from genie.harness.utils import load_class
-from genie.metaparser.util.schemaengine import Schema, Optional, Any, Use, And, Or
-from genie.metaparser.util.exceptions import SchemaMissingKeyError,\
-                                             SchemaTypeError,\
-                                             SchemaUnsupportedKeyError
+from genie.metaparser.util.schemaengine import Schema, Optional, Any, Or
+from genie.metaparser.util.exceptions import (
+    SchemaMissingKeyError,
+    SchemaTypeError,
+    SchemaUnsupportedKeyError)
+from genie.metaparser.util import merge_dict
 
 # pyATS
 from pyats.topology.loader import load as testbed_loader
@@ -30,11 +33,12 @@ from pyats.utils.schemaengine import Use as PyatsUse
 from pyats.utils.commands import do_lint
 
 # Unicon
-from unicon.core.errors import (SubCommandFailure, TimeoutError,
-                                StateMachineError)
+from unicon.core.errors import StateMachineError
 
 # Logger
 log = logging.getLogger(__name__)
+
+CLEAN_PLUGIN_ENTRYPOINT = 'genie.libs.clean'
 
 
 def clean_schema(schema):
@@ -209,6 +213,24 @@ def load_clean_json():
         # Open all the parsers in json file
         with open(functions) as f:
             clean_data = json.load(f)
+
+    for entry in iter_entry_points(group=CLEAN_PLUGIN_ENTRYPOINT):
+        log.info('Loading clean APIs from {}'.format(entry.module_name))
+
+        ext = ExtendClean(entry.module_name)
+        ext.extend()
+        ext.output.pop('tokens', None)
+        log.info("{} clean API count: {}".format(
+            entry.module_name,
+            len(ext.output.keys())))
+        log.debug('{} clean APIs {}'.format(
+            entry.module_name,
+            json.dumps(ext.output, indent=4)
+        ))
+
+        plugin_clean_data = ext.output
+        clean_data = merge_dict(clean_data, plugin_clean_data, update=True)
+
     return clean_data
 
 def get_clean_function(clean_name, clean_data, device):
@@ -216,23 +238,36 @@ def get_clean_function(clean_name, clean_data, device):
 
     # Support calling multiple time the same section
     name = clean_name.split('__')[0]
+
+    # For legacy reasons support calling stage by camelcase or snakecase.
+    # Example: ChangeBootVariable or change_boot_variable
+    if '_' in name or name == name.lower():
+        name = ''.join(word.title() for word in name.split('_'))
+
     try:
         data = clean_data[name]
     except KeyError:
         raise Exception("Could not find a clean stage called '{c}'".format(
             c=name)) from None
 
-    # Load SDK abstraction
-    lookup = Lookup.from_device(device, packages={"clean": clean})
+    # Load abstraction
+    tokens = Lookup.tokens_from_device(device)
 
     # if this is true after below loop, it means the function not under any os
     is_com = True
 
     # find the token in the lowest level of the json
-    for token in lookup._tokens:
+    for token in tokens:
         if token in data:
             data = data[token]
             is_com = False
+
+    pkg_name = data.get('package')
+    if pkg_name:
+        pkg = importlib.import_module(pkg_name)
+        lookup = Lookup.from_device(device, packages={"clean": pkg})
+    else:
+        lookup = Lookup.from_device(device, packages={"clean": clean})
 
     # if not found, search under 'com' token
     if is_com:
@@ -240,7 +275,6 @@ def get_clean_function(clean_name, clean_data, device):
 
     try:
         mod = getattr(_get_submodule(lookup.clean, data["module_name"]), name)
-        mod.__name__ = clean_name
         return mod
 
     except Exception:
@@ -523,7 +557,10 @@ def remove_string_from_image(images, string):
 
     regex = re.compile(r'.*{}.*'.format(string))
 
-    return [item.replace(string, "") if regex.match(item) else item for item in images]
+    if not string or string == "/":
+        return images
+    else:
+        return [item.replace(string, "") if regex.match(item) else item for item in images]
 
 def get_image_handler(device):
     if device.clean.get('images'):

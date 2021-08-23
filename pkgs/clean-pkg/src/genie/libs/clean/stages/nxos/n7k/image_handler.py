@@ -4,7 +4,7 @@ import yaml
 
 from genie.libs.clean.stages.image_handler import BaseImageHandler
 
-from pyats.utils.schemaengine import Schema, ListOf
+from pyats.utils.schemaengine import Schema, ListOf, Optional
 
 
 class ImageLoader(object):
@@ -12,11 +12,14 @@ class ImageLoader(object):
     EXPECTED_IMAGE_STRUCTURE_MSG = """\
 Expected one of the following structures for 'images' in the clean yaml
 
+Other images are optional other files, in structure #1 the kickstart image must always come first, system image must always come second
+
 Structure #1
 ------------
 images:
 - /path/to/kickstart.bin
 - /path/to/system.bin
+- /path/to/other/images.bin   <<< optional
 
 Structure #2
 ------------
@@ -25,6 +28,8 @@ images:
   - /path/to/kickstart.bin
   system:
   - /path/to/system.bin
+  other:   <<< optional
+  - /path/to/other/images.bin
 
 Structure #3
 ------------
@@ -35,6 +40,9 @@ images:
   system:
     file:
     - /path/to/system.bin
+  other:   <<< optional
+    file:
+    - /path/to/other/images.bin
     
 But got the following structure
 -------------------------------
@@ -57,18 +65,20 @@ But got the following structure
         except Exception:
             return False
 
-        if len(images) == 2:
-            setattr(self, 'kickstart', images[:1])
-            setattr(self, 'system', images[1:])
-            return True
-        else:
+        if len(images) < 2:
             return False
+        else:
+            setattr(self, 'kickstart', [images[0]])
+            setattr(self, 'system', [images[1]])
+            setattr(self, 'other', images[2:])
+            return True
 
     def valid_structure_2(self, images):
 
         schema = {
             'kickstart': ListOf(str),
-            'system': ListOf(str)
+            'system': ListOf(str),
+            Optional('other'): ListOf(str)
         }
 
         try:
@@ -79,6 +89,7 @@ But got the following structure
         if len(images['kickstart']) == 1 and len(images['system']) == 1:
             setattr(self, 'kickstart', images['kickstart'])
             setattr(self, 'system', images['system'])
+            setattr(self, 'other', images.get('other', []))
             return True
         else:
             return False
@@ -91,6 +102,9 @@ But got the following structure
             },
             'system': {
                 'file': ListOf(str)
+            },
+            Optional('other'): {
+                'file': ListOf(str)
             }
         }
 
@@ -99,10 +113,10 @@ But got the following structure
         except Exception:
             return False
 
-        if (len(images['kickstart']['file']) == 1 and
-                len(images['system']['file']) == 1):
+        if len(images['kickstart']['file']) == 1 and len(images['system']['file']) == 1:
             setattr(self, 'kickstart', images['kickstart']['file'])
             setattr(self, 'system', images['system']['file'])
+            setattr(self, 'other', images.get('other', {}).get('file', []))
             return True
         else:
             return False
@@ -112,6 +126,8 @@ class ImageHandler(BaseImageHandler, ImageLoader):
 
     def __init__(self, device, images, *args, **kwargs):
 
+        self.other = []
+
         # Check if images is one of the valid structures and
         # load into a consolidated structure
         ImageLoader.load(self, images)
@@ -119,6 +135,9 @@ class ImageHandler(BaseImageHandler, ImageLoader):
         # Temp workaround for XPRESSO
         self.system = [self.system[0].replace('file://', '')]
         self.kickstart = [self.kickstart[0].replace('file://', '')]
+
+        if hasattr(self, 'other'):
+            self.other = [x.replace('file://', '') for x in self.other]
 
         self.original_system = [self.system[0].replace('file://', '')]
         self.original_kickstart = [self.kickstart[0].replace('file://', '')]
@@ -138,6 +157,10 @@ class ImageHandler(BaseImageHandler, ImageLoader):
                 # change the saved image to the new image name/path
                 self.kickstart[index] = section.parameters['image_mapping'].get(image, image)
 
+            if hasattr(self, 'other'):
+                for index,image in enumerate(self.other):
+                    self.other[index] = section.parameters['image_mapping'].get(image, self.other[index])
+
     def update_tftp_boot(self, number=''):
         '''Update clean section 'tftp_boot' with image information'''
         image = self.device.clean.setdefault('tftp_boot'+number, {}).setdefault('image', [])
@@ -153,7 +176,7 @@ class ImageHandler(BaseImageHandler, ImageLoader):
 
         # Update the same object id
         files.clear()
-        files.extend(self.kickstart + self.system)
+        files.extend(self.kickstart + self.system + self.other)
 
     def update_copy_to_device(self, number=''):
         '''Update clean stage 'copy_to_device' with image information'''
@@ -162,7 +185,7 @@ class ImageHandler(BaseImageHandler, ImageLoader):
 
         # Update the same object id
         files.clear()
-        files.extend(self.kickstart + self.system)
+        files.extend(self.kickstart + self.system + self.other)
 
     def update_change_boot_variable(self, number=''):
         '''Update clean stage 'change_boot_variable' with image information'''

@@ -12,6 +12,7 @@ import re
 import logging
 import time
 import os
+import stat
 from ..ha import HA as HA_main
 
 # genie
@@ -20,11 +21,12 @@ from genie.utils.timeout import Timeout
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.libs.sdk import apis
 from genie.libs.sdk.apis.execute import execute_copy_run_to_start
-from genie.libs.sdk.apis.utils import compare_config_dicts
+from genie.libs.sdk.apis.utils import compare_config_dicts, get_config_dict
 
 # pyats
 from pyats.utils.objects import R, find
 from pyats.utils.fileutils import FileUtils
+from pyats.easypy import runtime
 
 # unicon
 from unicon.eal.dialogs import Statement, Dialog
@@ -35,6 +37,9 @@ from genie.parsergen import oper_fill_tabular
 
 # platform parser
 from genie.libs.parser.nxos.show_platform import ShowModule, Dir
+
+run_path = runtime.directory
+os.chmod(run_path, os.stat(run_path)[stat.ST_MODE] | stat.S_IWOTH)
 
 log = logging.getLogger(__name__)
 
@@ -302,9 +307,9 @@ class HA(HA_main):
         with steps.start('Check available diskspace') as step:
             dir_output = filetransfer.parsed_dir(disk, timeout_seconds, Dir)
 
-            if int(dir_output['disk_free_space']) < 3000000000:
+            if int(dir_output['disk_free_space']) < 4500000000:
                 step.failed(
-                    "Not enough free space available to copy over the image.Free up atleast 3GB of space on {}".format(disk))
+                    "Not enough free space available to copy over the image.Free up atleast 4.5GB of space on {}".format(disk))
 
         with steps.start('Copy over the issu image') as step:
             # Copy ISSU upgrade image to disk
@@ -342,35 +347,67 @@ class HA(HA_main):
 
         # Init
         lookup = Lookup.from_device(self.device)
-        
+        filetransfer = FileUtils.from_device(self.device)
+
         statement_list = authentication_statement_list + \
             [Statement(pattern=r'.*Do you want to continue with the installation\s*\(y/n\)\?\s*\[n\]',
-                       action='sendline(y)', loop_continue=True, continue_timer=False)]
+                       action='sendline(y)', loop_continue=True, continue_timer=False)] + \
+            [Statement(pattern=r'.*Do you want to overwrite\s*\(yes/no\)\?\s* \[no\]',
+                       action='sendline(yes)', loop_continue=True, continue_timer=False)]
         dialog = Dialog(statement_list)
 
         ctrlplane_downtime = self.parameters.get('ctrlplane_downtime')
         user_boot_mode = self.parameters.get('mode')
         issu_timeout = self.parameters.get('issu_timeout')
+        cfg_transfer = self.parameters.get('cfg_transfer')
+        cfg_timeout = self.parameters.get('cfg_timeout')
         with steps.start("Check boot mode on {}".format(self.device.hostname)) as step:
+            invalid_cmd = False
             out = self.device.execute('show boot mode')
+            # p1 matches line "Current mode is <native/lxc>."
+            p1 = re.compile(
+                r'^Current\smode\sis\s(?P<mode>\w+)\.$')
+            # p2 matches line "% Invalid command at '^' marker."
+            p2 = re.compile(r'.*?\'\^ \'\smarker\.')
             for line in out.splitlines():
-                line = line.rstrip()
-                p1 = re.compile(
-                    r'^Current\smode\sis\s(?P<mode>\w+)\.$')
+                line = line.strip()
                 m = p1.match(line)
                 if m:
                     sys_boot_mode = m.groupdict()['mode']
                     break
-
+                m = p2.match(line)
+                if m:
+                    invalid_cmd = True
+                    break
             if sys_boot_mode.lower() != user_boot_mode.lower():
                 step.failed(
                     "System boot mode {} does not match user expected boot mode {}".format(sys_boot_mode, user_boot_mode))
+            elif invalid_cmd and user_boot_mode.lower() != 'lxc':
+                step.failed("System only supports lxc mode. Invalid user expected boot mode input {}".format(
+                    user_boot_mode))
             else:
                 step.passed(
                     "System boot mode {} matches user expected boot mode {}".format(sys_boot_mode, user_boot_mode))
 
         with steps.start("Take a running-config snapshot pre trigger on {}".format(self.device.hostname)):
-            pre_trig_config = self.device.api.get_running_config_dict()
+            if cfg_transfer:
+                self.device.execute('show run > {}_pre_issu_trig.cfg'.format(self.device.hostname),
+                                    timeout=cfg_timeout, reply=dialog)
+                to_url = '{protocol}://{address}/{path}'.format(
+                    protocol=self.device.filetransfer_attributes['protocol'],
+                    address=self.device.filetransfer_attributes['server_address'],
+                    path=runtime.directory)
+                filetransfer.copyfile(source='bootflash:/{}_pre_issu_trig.cfg'.format(self.device.hostname), destination=to_url,
+                                      device=self.device, vrf='management', timeout_seconds=600)
+                try:
+                    with open("{}/{}_pre_issu_trig.cfg".format(runtime.directory, self.device.hostname), "r") as pre_trig_file:
+                        pre_cfg_str = pre_trig_file.read()
+                except IOError:
+                    step.failed(
+                        "file not found.Please check path/content of the file")
+                pre_trig_config = get_config_dict(pre_cfg_str)
+            else:
+                pre_trig_config = self.device.api.get_running_config_dict()
         with steps.start("Perform copy run start on {}".format(self.device.hostname)):
             execute_copy_run_to_start(self.device)
         with steps.start("Performing non disruptive issu on the device {}".format(self.device.hostname)):
@@ -393,9 +430,27 @@ class HA(HA_main):
                 raise Exception(
                     "Image version mismatch after ISSU on device {}".format(self.device.hostname))
 
+        with steps.start("Verify module status and config load status on device {} after ISSU".format(self.device.hostname)):
+            self.device.api.verify_module_status()
+            config_timeout = Timeout(max_time=180, interval=30)
+            while config_timeout.iterate():
+                try:
+                    parsed = self.device.parse(
+                        "show logging logfile | include 'System ready'")
+                except SchemaEmptyParserError as e:
+                    log.info(
+                        "command did not return any output\n{}".format(str(e)))
+                    config_timeout.sleep()
+                    continue
+                if parsed is not None:
+                    log.info("{}".format(parsed.q.get_values('logs', -1)))
+                    break
+                config_timeout.sleep()
+
         with steps.start("Check CP downtime after on {} after ISSU".format(self.device.hostname)) as step:
             if user_boot_mode.lower() == 'lxc':
-                step.passed("show install all time-stats detail unsupported on lxc mode and cp downtime is minimal")
+                step.passed(
+                    "show install all time-stats detail unsupported on lxc mode and cp downtime is minimal")
             else:
                 out = self.device.execute('show install all time-stats detail')
                 output_error = False
@@ -427,7 +482,24 @@ class HA(HA_main):
                         "Control plane was down for {} seconds which is within an user acceptable range of {} seconds".format(cp_downtime,    ctrlplane_downtime))
 
         with steps.start("Compare post-trigger config with pre trigger config snapshot on {}".format(self.device.hostname)) as step:
-            post_trig_config = self.device.api.get_running_config_dict()
+            if cfg_transfer:
+                self.device.execute('show run > {}_post_issu_trig.cfg'.format(self.device.hostname),
+                                    timeout=cfg_timeout, reply=dialog)
+                to_url = '{protocol}://{address}/{path}'.format(
+                    protocol=self.device.filetransfer_attributes['protocol'],
+                    address=self.device.filetransfer_attributes['server_address'],
+                    path=runtime.directory)
+                filetransfer.copyfile(source='bootflash:/{}_post_issu_trig.cfg'.format(self.device.hostname), destination=to_url,
+                                      device=self.device, vrf='management', timeout_seconds=600)
+                try:
+                    with open("{}/{}_post_issu_trig.cfg".format(runtime.directory, self.device.hostname), "r") as post_trig_file:
+                        post_cfg_str = post_trig_file.read()
+                except IOError:
+                    step.failed(
+                        "file not found. Please check path/content of the file")
+                post_trig_config = get_config_dict(post_cfg_str)
+            else:
+                post_trig_config = self.device.api.get_running_config_dict()
             output = compare_config_dicts(
                 pre_trig_config, post_trig_config, [r'(boot|version)'])
             if output:

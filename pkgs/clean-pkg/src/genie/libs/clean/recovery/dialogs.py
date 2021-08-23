@@ -1,11 +1,10 @@
 '''Common Unicon Statement/Dialogs'''
 
 # Python
-import re
 import time
 
 # Unicon
-from unicon.eal.dialogs import Statement, DialogMaker, statement_decorator
+from unicon.eal.dialogs import DialogMaker, statement_decorator
 
 
 class BreakBootDialog(DialogMaker):

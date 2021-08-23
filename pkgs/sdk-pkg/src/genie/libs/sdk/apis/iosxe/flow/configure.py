@@ -117,3 +117,131 @@ def clear_flow_monitor_statistics(device):
             'Could not clear flow monitor statistics'
         )
 
+def configure_fnf_exporter(device, exporter_name, dest_ip, source_int,
+                           udp_port, timeout):
+    
+    """ Config Flow Exporter on Device 
+        Args:
+            device (`obj`): Device object
+            exporter_name (`str`): Flow exporter name
+            dest_ip (`str`): Destination IP
+            source_int('str'): Interface
+            udp_port (`str`): UDP port
+            timeout ('int'): Timeout
+            
+        Return:
+            None
+            
+        Raise:
+            SubCommandFailure: Failed configuring fnf exporter
+    """
+    try:
+        device.configure([
+                          "flow exporter {exporter_name}".
+                          format(exporter_name=exporter_name),
+                          "destination {dest_ip}".format(dest_ip=dest_ip),
+                          "source {int}".format(int=source_int),
+                          "transport udp {udp_port}".format(udp_port=udp_port),
+                          "template data timeout {timeout}".
+                          format(timeout=timeout),
+                          "option vrf-table timeout {timeout}".
+                          format(timeout=timeout),
+                          "option sampler-table timeout {timeout}".
+                          format(timeout=timeout),
+                          ])
+
+    except SubCommandFailure:
+        raise SubCommandFailure(
+                'Could not configure fnf exporter {exporter_name}'.
+                format(exporter_name=exporter_name)
+        )
+
+def unconfigure_flow_exporter_monitor_record(device, exporter_name, monitor_name,
+                                          record_name):
+    
+    """ Unconfigures Flow Exporter,Monitor and Record on Device
+        Args:
+            device (`obj`): Device object
+            exporter_name (`str`): Flow exporter name
+            monitor_name (`str`): Flow monitor name
+            record_name (`str`): Flow record name
+            
+        Return:
+            None
+            
+        Raise:
+            SubCommandFailure: Failed unconfiguring Flow Exporter,monitor,record
+    """
+
+    try:
+        device.configure(["no flow monitor {monitor_name}".
+                           format(monitor_name=monitor_name),
+                          "no flow exporter {exporter_name}".
+                           format(exporter_name=exporter_name),
+                          "no flow record {record_name}".
+                           format(record_name=record_name)
+                        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure flow exporter {exporter_name} and flow'
+            'monitor {monitor_name} and flow record {record_name}'.
+            format(exporter_name=exporter_name, monitor_name=monitor_name,
+                   record_name=record_name)
+        )
+
+def configure_fnf_monitor_on_interface(device, interface, monitor_name, direction):
+    
+    """ Config Fnf Monitor on Interface
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to be configured
+            monitor_name (`str`): Flow monitor name
+            direction ('str'): Direction of monitor (input/output)
+            
+        Return:
+            None
+            
+        Raise:
+            SubCommandFailure: Failed configuring interface with flow monitor
+    """
+
+    try:
+        device.configure([
+                          "interface {interface}".format(interface=interface),
+                          "ip flow monitor {monitor_name} {direction}".
+                          format(monitor_name=monitor_name, direction=direction)])
+
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure fnf monitor {monitor_name} on'
+            'interface {interface}'.format(monitor_name=monitor_name,
+                                          interface=interface)
+        )
+
+
+def unconfigure_fnf_monitor_on_interface(device, interface, monitor_name):
+    """ Unconfig Flow Monitor on Interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to be unconfigured
+            monitor_name (`str`): Flow monitor name
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed unconfiguring interface with flow monitor
+    """
+
+    try:
+        device.configure([
+                          "interface {interface}".format(interface=interface),
+                          "no ip flow monitor {monitor_name} input".
+                          format(monitor_name=monitor_name)])
+
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure flow monitor {monitor_name} on'
+            'interface {interface}'.format(monitor_name=monitor_name,
+                                          interface=interface)
+        )
+        

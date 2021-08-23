@@ -1,4 +1,5 @@
 import re
+import json
 import copy
 import logging
 import itertools
@@ -611,9 +612,15 @@ class Mapping(object):
         ret = find([ops], *rs, filter_=False, all_keys=all_keys)
         # If missing is True, then we expect it to be missing, aka ret empty
         if not ret and not missing:
+            log.error(f"requirements: {requirements}")
+            for attr in ops.attributes:
+                log.error("{attr}: \n{ops}".format(attr=attr, ops=json.dumps(getattr(ops, attr), indent=2, sort_keys=True)))
             raise Exception("'{req}' does not exists in "
                             "'{o}'".format(req=requirements, o=ops))
         if ret and missing:
+            log.error(f"requirements: {requirements}")
+            for attr in ops.attributes:
+                log.error("{attr}: \n{ops}".format(attr=attr, ops=json.dumps(getattr(ops, attr), indent=2, sort_keys=True)))
             # It should be missing
             raise Exception("'{req}' exists in "
                             "'{o}' and it should not "

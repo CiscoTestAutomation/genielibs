@@ -7,7 +7,7 @@ import logging
 
 # Unicon
 from unicon.eal.expect import Spawn
-from unicon.eal.dialogs import Dialog, Statement
+from unicon.eal.dialogs import Statement
 from unicon.plugins.iosxr.patterns import IOSXRPatterns
 
 # Genie

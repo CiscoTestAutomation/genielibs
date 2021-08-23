@@ -245,3 +245,19 @@ def enable_dhcp_snooping_option_82(device):
             "Could not enable DHCP snooping Option 82"
             )
 
+def disable_dhcp_snooping(device):
+    """ Disable DHCP snooping globally
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed disabling DHCP snooping globally
+    """
+    log.info("Disabling DHCP snooping globally")
+    try:
+        device.configure(["no ip dhcp snooping"])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not disable DHCP snooping globally"
+            )

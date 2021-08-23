@@ -1,6 +1,8 @@
 import os
+import email
 import base64
 import logging
+import pathlib
 import http.server
 
 from pyats.topology.credentials import Credentials
@@ -14,6 +16,30 @@ log = logging.getLogger(__name__)
 
 
 class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
+
+    def receive_multipart(self, filename):
+        data = self.rfile.read(self.length)
+        content_header = 'Content-Type: ' + self.headers.get('Content-Type') + '\n\n'
+        data = content_header.encode() + data
+        msg = email.message_from_bytes(data)
+        if msg.is_multipart():
+            for x, part in enumerate(msg.get_payload()):
+                if x > 0:
+                    new_filename = '{stem}_{x}{suffix}' \
+                        .format(
+                            stem=pathlib.Path(filename).stem,
+                            x=x, suffix=pathlib.Path(filename).suffix)
+                else:
+                    new_filename = filename
+                new_filename = os.path.join(self.server.directory, new_filename)
+                payload = part.get_payload(decode=True)
+                fname = part.get_param('filename', header='content-disposition')
+                log.info('Saving file {} as {}'.format(fname, new_filename))
+                with open(new_filename, 'wb') as f:
+                    f.write(payload)
+        else:
+            log.error('Unable to decode payload with content type {}'.format(
+                self.headers.get('Content-Type')))
 
     def do_AUTHHEAD(self):
         self.send_response(401)
@@ -33,11 +59,15 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             # get filename from path
             fname = os.path.basename(path)
             filename = os.path.join(self.server.directory, fname)
-            length = int(self.headers['Content-Length'])
-            with open(filename, 'wb') as f:
-                f.write(self.rfile.read(length))
+            self.length = int(self.headers['Content-Length'])
+            if 'multipart' in self.headers.get('Content-Type', ''):
+                self.receive_multipart(fname)
+            else:
+                with open(filename, 'wb') as f:
+                    f.write(self.rfile.read(self.length))
             self.send_response(201, "Created")
             self.end_headers()
+
         except Exception:
             log.error('Unable to receive file', exc_info=True)
 
@@ -53,16 +83,20 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             # get filename from path
             fname = os.path.basename(path)
             filename = os.path.join(self.server.directory, fname)
-            length = int(self.headers['Content-Length'])
+            self.length = int(self.headers['Content-Length'])
             # Signal to device that we are ready to receive the file data
             if self.headers.get('Expect', '') == '100-continue':
                 self.send_response_only(100)
                 self.end_headers()
-            # receive data and store in file
-            with open(filename, 'wb') as f:
-                f.write(self.rfile.read(length))
+            if 'multipart' in self.headers.get('Content-Type', ''):
+                self.receive_multipart(fname)
+            else:
+                # receive data and store in file
+                with open(filename, 'wb') as f:
+                    f.write(self.rfile.read(self.length))
             self.send_response(201, "Created")
             self.end_headers()
+
         except Exception:
             log.error('Unable to receive file', exc_info=True)
 

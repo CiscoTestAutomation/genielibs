@@ -3,6 +3,7 @@
 # Python
 import logging
 import re
+import yaml
 
 # Genie
 from genie.libs.sdk.apis.utils import get_config_dict
@@ -253,3 +254,57 @@ def get_mgmt_interface(device, mgmt_ip=None):
     """ Get the management interface name.
     """
     return 'mgmt0'
+
+
+def check_if_device_in_testbed_yaml(device_name, yaml_file):
+    """ Check if the given device name is part of the devices yaml file
+
+        Args:
+            device_name ('str'): Name of the device to be found as a string
+            yaml_file ('str'): Name(path) of the yaml file where the device
+                       is to be found as a string
+        Return value:
+            Boolean. True, if found. False, if error/not found
+
+    """
+    try:
+        with open(yaml_file, 'r') as myYamlFile:
+            data = yaml.load(myYamlFile, Loader=yaml.FullLoader)
+        for devices in data:
+            if device_name in data[devices]:
+                return True
+    except Exception as e:
+        log.warning("Failed to open/read {f}. Error: {e}".format(f=yaml_file, e=e))
+    return False
+
+
+def add_device_to_testbed_yaml_file(device_name, device_ip, yaml_file):
+    """ Add device details to the devices yaml file
+
+        Args:
+            device_name ('str'): Name of the device to be added as a string
+            device_ip ('str'): IP address of the device to be added as a string
+            yaml_file ('str'): Name(path) of the yaml file where the device
+                       is to be added as a string
+        Return value:
+            None
+
+    """
+    try:
+        with open(yaml_file, 'r') as myYamlFile:
+            data = yaml.safe_load(myYamlFile)
+    except Exception as e:
+        log.warning("Failed to open/read {f}. Error: {e}".format(f=yaml_file, e=e))
+        return
+
+    if "devices" in data:
+        dict_contents = {'type': 'router', 'os': 'nxos', 'platform': 'n9k', 'alias': device_name, 'credentials': {'default': {'username': 'admin', 'password': 'insieme'}},
+            'connections': {'cli': {'protocol': 'telnet', 'ip': device_ip}}}
+        data['devices'][device_name] = dict_contents
+
+    try:
+        with open(yaml_file, 'w+') as write_file:
+            yaml.safe_dump(data, write_file)
+    except Exception as e:
+        log.warning("Failed to open/write {f}. Error: {e}".format(f=yaml_file, e=e))
+    return

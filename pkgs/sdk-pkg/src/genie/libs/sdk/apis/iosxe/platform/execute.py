@@ -339,24 +339,38 @@ def delete_unprotected_files(device,
         log.info(
             "No files will be deleted, the following files are protected:\n{}".
             format('\n'.join(protected_set)))
-
-def execute_card_OIR(device, card_number):
+def execute_card_OIR(device, card_number, timeout=60):
     ''' Execute 'hw-module subslot <slot> oir power-cycle' on the device
         Args:
             device ('obj'): Device object
             card_number ('str'): Card number on which OIR has to be performed
+            timeout ('int',optional): Max time for card oir execution to complete in seconds.Defaults to 60
     '''
+
     log.info("Executing 'hw-module subslot <slot> oir power-cycle' on the device")
 
+    # Unicon Statement/Dialog
+    dialog = Dialog([
+             Statement(
+             pattern=r"Proceed with power cycle of module? [confirm]",
+             action='sendline()',
+             loop_continue=True,
+             continue_timer=False)
+             ])
+    command = 'hw-module subslot ' + card_number + ' oir power-cycle'
+
     try:
-        output = device.transmit('hw-module subslot {card_number} oir power-cycle'.format(card_number=card_number)) 
-        device.transmit('\r')
-        device.transmit('\r')
+       output = device.execute(
+                command,
+                reply=dialog,
+                timeout=timeout,
+                append_error_pattern=['.*Command cannot be executed.*'])
     except Exception as err:
-        log.error("Failed to execute 'hw-module subslot <slot> oir power-cycle'\n{err}".format(err=err))
+        log.error("Failed to execute 'hw-module subslot <slot> oir power-cycle': {err}".format(err=err))
         raise Exception(err)
 
-    if 'True' in output:
+    if output:
         log.info("Successfully executed 'hw-module subslot <slot> oir power-cycle'")
     else:
         raise Exception("Failed to execute 'hw-module subslot <slot> oir power-cycle'")
+

@@ -51,7 +51,7 @@ CYTHON_CMD	  = compileAll
 RELATED_PKGS = genie.libs.health genie.libs.clean genie.libs.conf genie.libs.ops genie.libs.robot genie.libs.sdk
 RELATED_PKGS += genie.libs.filetransferutils
 DEPENDENCIES = restview psutil Sphinx wheel asynctest pysnmp
-DEPENDENCIES += setproctitle  sphinx-rtd-theme pyftpdlib tftpy\<0.8.1
+DEPENDENCIES += sphinx-rtd-theme pyftpdlib tftpy\<0.8.1
 DEPENDENCIES += Cython requests ruamel.yaml
 
 # Internal variables.

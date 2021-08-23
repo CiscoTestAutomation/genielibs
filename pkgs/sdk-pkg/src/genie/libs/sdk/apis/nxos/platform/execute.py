@@ -33,7 +33,7 @@ def execute_change_boot_variable(device, system, kickstart=None, timeout=300):
             device.configure('boot system {i}'.format(i=system),
                 timeout=timeout)
         else:
-            # N9K
+            # N9K or N3K
             device.configure('boot nxos {i}'.format(i=system),
                 timeout=timeout)
     except Exception as e:

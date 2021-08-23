@@ -162,6 +162,83 @@ class test_vxlan(TestCase):
             ' exit',
         ]))
 
+    def test_vxlan_evpn_msite_advertise_pip(self):
+        Genie.testbed = testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='nxos')
+
+        vxlan = Vxlan()
+        vxlan.device_attr[dev1].evpn_msite_attr[11111].evpn_msite_dci_advertise_pip = True
+        self.assertIs(vxlan.testbed, testbed)
+        dev1.add_feature(vxlan)
+
+        cfgs = vxlan.build_config(apply=False)
+        self.assertCountEqual(cfgs.keys(), [dev1.name])
+        self.maxDiff = None
+        print(str(cfgs[dev1.name]))
+        self.assertMultiLineEqual(str(cfgs[dev1.name]), '\n'.join(
+            ['evpn multisite border-gateway 11111',
+             ' dci-advertise-pip',
+             ' exit'
+             ]))
+
+        uncfgs = vxlan.build_unconfig(apply=False)
+        self.assertCountEqual(uncfgs.keys(), [dev1.name])
+        self.maxDiff = None
+        self.assertMultiLineEqual(str(uncfgs[dev1.name]), '\n'.join(
+            ['no evpn multisite border-gateway 11111'
+             ]))
+        # uncfg with attributes
+        uncfgs_1 = vxlan.build_unconfig(apply=False,
+                                        attributes={'device_attr': {
+                                            dev1: {
+                                                'evpn_msite_attr': {
+                                                    '*': {
+                                                        'evpn_msite_dci_advertise_pip': True
+                                                    }}}}})
+        self.assertMultiLineEqual(str(uncfgs_1[dev1.name]), '\n'.join([
+            'evpn multisite border-gateway 11111',
+            ' no dci-advertise-pip',
+            ' exit',
+        ]))
+
+    def test_vxlan_evpn_msite_split_horizon(self):
+        Genie.testbed = testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='nxos')
+
+        vxlan = Vxlan()
+        vxlan.device_attr[dev1].evpn_msite_attr[11111].evpn_msite_split_horizon_per_site = True
+        self.assertIs(vxlan.testbed, testbed)
+        dev1.add_feature(vxlan)
+
+        cfgs = vxlan.build_config(apply=False)
+        self.assertCountEqual(cfgs.keys(), [dev1.name])
+        self.maxDiff = None
+        self.assertMultiLineEqual(str(cfgs[dev1.name]), '\n'.join(
+            ['evpn multisite border-gateway 11111',
+             ' split-horizon per-site',
+             ' exit'
+             ]))
+
+        uncfgs = vxlan.build_unconfig(apply=False)
+        self.assertCountEqual(uncfgs.keys(), [dev1.name])
+        self.maxDiff = None
+        self.assertMultiLineEqual(str(uncfgs[dev1.name]), '\n'.join(
+            ['no evpn multisite border-gateway 11111'
+             ]))
+        # uncfg with attributes
+        uncfgs_1 = vxlan.build_unconfig(apply=False,
+                                        attributes={'device_attr': {
+                                            dev1: {
+                                                'evpn_msite_attr': {
+                                                    '*': {
+                                                        'evpn_msite_split_horizon_per_site': True
+                                                    }}}}})
+        self.assertMultiLineEqual(str(uncfgs_1[dev1.name]), '\n'.join([
+            'evpn multisite border-gateway 11111',
+            ' no split-horizon per-site',
+            ' exit',
+        ]))
+
     def test_vxlan_evpn(self):
         Genie.testbed = testbed = Testbed()
         dev1 = Device(testbed=testbed, name='PE1', os='nxos')

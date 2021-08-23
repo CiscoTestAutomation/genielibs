@@ -1,9 +1,0 @@
-cleaners:
-  DeviceClean:
-    module: genie.libs.clean
-    devices: [PE1]
-
-devices:
-  PE1:
-    order:
-      - 'change_boot_variable'

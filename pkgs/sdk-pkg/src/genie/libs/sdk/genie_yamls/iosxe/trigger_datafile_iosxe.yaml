@@ -304,6 +304,14 @@ TriggerUnconfigConfigBgp:
     tgn_delay: 10
     devices: ['uut']
 
+TriggerUnconfigConfigBgpVpnRd:
+    groups: ['unconfig-config', 'bgp', 'L3']
+    method: 'checkpoint'
+    timeout:
+      max_time: 600
+      interval: 60
+    devices: ['uut']
+
 TriggerUnconfigConfigOspfInteface:
     groups: ['unconfig-config', 'ospf', 'L3']
     method: 'checkpoint'

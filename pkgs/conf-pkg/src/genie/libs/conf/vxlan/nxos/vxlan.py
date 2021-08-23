@@ -115,6 +115,17 @@ class Vxlan(ABC):
                         configurations.append_line(\
                             attributes.format('delay-restore time {evpn_msite_bgw_delay_restore_time}'))
 
+                    # nxos : dci-advertise-pip
+                    if attributes.value('evpn_msite_dci_advertise_pip'):
+                        configurations.append_line( \
+                            attributes.format('dci-advertise-pip'))
+
+                    # nxos: split-horizon per-site
+                    if attributes.value('evpn_msite_split_horizon_per_site'):
+                        configurations.append_line( \
+                            attributes.format('split-horizon per-site'))
+
+
                 return str(configurations)
 
             def build_unconfig(self, apply=True, attributes=None, **kwargs):
@@ -232,4 +243,3 @@ class Vxlan(ABC):
                         return self.build_config(apply=apply,
                                                  attributes=attributes,
                                                  unconfig=True, **kwargs)
-

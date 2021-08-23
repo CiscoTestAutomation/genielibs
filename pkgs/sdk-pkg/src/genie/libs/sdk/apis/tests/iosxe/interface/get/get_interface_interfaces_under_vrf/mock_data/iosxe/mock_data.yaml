@@ -1,0 +1,54 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: R1_xe(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: R1_xe(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    show version: ''
+    show vrf VRF1: "  Name                             Default RD            Protocols\
+      \   Interfaces\r\n  VRF1                             65000:1               ipv4,ipv6\
+      \   Tu1\r\n                                                                \
+      \     Lo300\r\n                                                            \
+      \         Gi2.390\r\n                                                      \
+      \               Gi2.410\r\n                                                \
+      \                     Gi2.415\r\n                                          \
+      \                           Gi2.420\r\n                                    \
+      \                                 Gi3.390\r\n                              \
+      \                                       Gi3.410\r\n                        \
+      \                                             Gi3.415\r\n                  \
+      \                                                   Gi3.420\r\n            \
+      \                                                         Tu3\r\n          \
+      \                                                           Tu4\r\n        \
+      \                                                             Tu6\r\n      \
+      \                                                               Tu8"
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: R1_xe#

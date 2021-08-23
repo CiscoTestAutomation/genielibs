@@ -1,0 +1,24 @@
+default:
+  arguments:
+    # <add test argument values here>
+    interface: GigabitEthernet1
+    # values added here will be available to all API calls
+    # unless you add a key with the api name and a list of arguments, like below:
+get_interface_carrier_delay:
+  # <add test arguments that will be used for this API call only>
+  arguments:
+    # if you wish to create multiple tests for one API, you can add arguments as a list
+    # The example below will generate 2 tests and each test has its own list of arguments:
+    - delay_type: up
+      expected_output: null
+      # expected_output can be used to compare the return of the call
+      # it only creates the test if the results match
+    - delay_type: down
+      expected_output: null
+    # All arguments listed for an API will be merged with the ones listed as default, so there is no need to declare them again
+exclude:
+  - api_name
+  - another_api_name
+  # this optional item can be used to list APIs that should not be processed
+  # instead of a list, you can provide a regex:
+  regex: get_

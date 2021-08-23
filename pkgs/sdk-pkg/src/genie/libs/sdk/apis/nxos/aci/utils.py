@@ -347,3 +347,43 @@ def get_mgmt_src_ip_addresses(device):
         return []
 
     return mgmt_src_ip_addresses
+
+
+def delete_files(device, locations, filenames):
+    """ Delete local file
+
+        Args:
+            device (`obj`): Device object
+            locations (`list`): list of locations
+                                  ex.) bootflash:/core/
+            filenames (`list`): file name. regular expression is supported
+        Returns:
+            deleted_files (`list`): list of deleted files
+    """
+    deleted_files = []
+
+    # loop by given locations
+    for location in locations:
+        if location[-1] != '/':
+            location += '/'
+
+        log.info('Checking {location}...'.format(location=location))
+        parsed = device.parse('ls -l {location}'.format(location=location))
+
+        # loop by given filenames
+        for filename in filenames:
+
+            # find target files by using Dq with regex
+            matched_files = parsed.q.contains_key_value(
+                'files', filename, value_regex=True).get_values('files')
+            log.debug('Matched files to delete: {matched_files}'.format(
+                matched_files=matched_files))
+            # delete files which were found
+            for file in matched_files:
+                device.execute('rm -f {location}{file}'.format(
+                    location=location, file=file))
+                # build up list for return
+                deleted_files.append('{location}{file}'.format(
+                    location=location, file=file))
+
+    return deleted_files
