@@ -1164,6 +1164,13 @@ class EthernetInterface(PhysicalInterface):
         type=(None, managedattribute.test_istype(str)),
         doc='Set trunking native characteristics when interface is in trunking mode')
 
+    # dot1_access_vlan
+    dot1q_access_vlan = managedattribute(
+        name='dot1q_access_vlan',
+        default=None,
+        type=(None, managedattribute.test_istype(str)),
+        doc='Set access mode characteristics of the dot1q tunnel interface')
+
     # auto_negotiate
     auto_negotiate = managedattribute(
         name='auto_negotiate',
@@ -1607,6 +1614,12 @@ class VniInterface(NveInterface):
         default=None,
         type=(None, managedattribute.test_istype(str)),
         doc='Nve vni mcast group')
+
+    nve_vni_multisite_mcast_group = managedattribute(
+        name='nve_vni_multisite_mcast_group',
+        default=None,
+        type=(None, managedattribute.test_istype(str)),
+        doc='Enable Mcast group for DCI underlay')
 
     @abc.abstractmethod
     def __init__(self, *args, **kwargs):

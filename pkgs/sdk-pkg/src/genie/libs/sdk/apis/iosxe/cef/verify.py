@@ -55,7 +55,8 @@ def is_routing_repair_path_in_cef(
     return False
 
 
-def verify_cef_internal_label_stack(device, vrf, prefix, stack, max_time=60, check_interval=15):
+def verify_cef_internal_label_stack(device, vrf, prefix, stack, max_time=60, 
+                                    check_interval=15):
     """ Verify stack is programmed for prefix
 
         Args:
@@ -91,7 +92,8 @@ def verify_cef_internal_label_stack(device, vrf, prefix, stack, max_time=60, che
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
         try:
-            out = device.parse('show ip cef vrf {vrf} {prefix} internal'.format(vrf=vrf, prefix=prefix))
+            out = device.parse('show ip cef vrf {vrf} {prefix} internal'\
+                        .format(vrf=vrf, prefix=prefix))
         except SchemaEmptyParserError:
             log.info("Parser output is empty")
             timeout.sleep()
@@ -116,8 +118,56 @@ def verify_cef_internal_label_stack(device, vrf, prefix, stack, max_time=60, che
                 if not stack_copy:
                     return True
                 else:
-                    log.info('The following labels are not in the output: {labels}'
-                             .format(labels=stack_copy))
+                    log.info(
+                        'The following labels are not in the output: {labels}'
+                            .format(labels=stack_copy))
 
+        timeout.sleep()
+    return False
+
+def verify_cef_outgoing_interface(device, vrf, dst_pfx, out_intf,
+                                   max_time=15, check_interval=5):
+    """Verify outgoing interfaces for a particular prefix in cef
+
+        Args:
+            device (`obj`): Device object
+            vrf (`str`): Vrf
+            dst_pfx (`str`): destination prefix
+            out_intf(`list`): List of outgoing interface to be checked,
+            max_time (int): Maximum wait time for the trigger,
+                            in second. Default: 15
+            check_interval (int): Wait time between iterations when looping is needed,
+                            in second. Default: 5
+            
+        Returns:
+            True
+            False
+        True if outgoing interfaces is as expected, false in all other cases
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        out = None
+        res=1
+        try:
+            out = device.parse("show ip cef vrf {vrf} {dst_pfx}"\
+                        .format(vrf=vrf, dst_pfx=dst_pfx))
+        except SchemaEmptyParserError:
+            pass
+        if out:
+            try:
+                intfs=out.q.get_values('outgoing_interface')
+                for intf in out_intf:
+                    if intf in intfs:
+                        log.info(
+                            "Got the expected outgoing interface {intf}"\
+                                .format(intf=intf))
+                    else:
+                        log.info("Outgoing interface {intf} not found"\
+                            .format(intf=intf))
+                        continue
+                return True
+            except KeyError:
+                pass
         timeout.sleep()
     return False

@@ -1,3 +1,5 @@
+from unittest.mock import Mock
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 class StageOutputs:
 
@@ -524,17 +526,30 @@ class StageOutputs:
                     'system_image_file': 'bootflash:nxos.9.3.1_N95.bin',
                     'system_version': '7.0(3)I7(1)'}}},
 
-        'show boot': {
-            'current_boot_variable':
-                {'sup_number':
-                    {'sup-1':
-                        {'boot_poap': 'Disabled',
-                        'system_variable': 'bootflash:nxos.9.3.1_N95.bin'}}},
-            'next_reload_boot_variable':
-                {'sup_number':
-                    {'sup-1':
-                        {'boot_poap': 'Disabled',
-                        'system_variable': 'bootflash:nxos.9.3.1_N95.bin'}}}},
+        'show boot': Mock(side_effect=[
+
+            SchemaEmptyParserError(''),
+
+            {
+                'current_boot_variable': {
+                    'sup_number': {
+                        'sup-1': {
+                            'boot_poap': 'Disabled',
+                            'system_variable': 'bootflash:nxos.9.3.1_N95.bin'
+                        }
+                    }
+                },
+                'next_reload_boot_variable': {
+                    'sup_number': {
+                        'sup-1': {
+                            'boot_poap': 'Disabled',
+                            'system_variable': 'bootflash:nxos.9.3.1_N95.bin'
+                        }
+                    }
+                }
+            }
+
+        ]),
 
         'dir bootflash:/': {
             'dir': 'bootflash:',
@@ -596,6 +611,7 @@ class StageOutputs:
 
     config_outputs = {
         'boot nxos bootflash:nxos.9.3.1_N95.bin': '',
+        'no boot nxos': '',
     }
 
 
@@ -603,10 +619,20 @@ def get_execute_output(arg, **kwargs):
     '''Return the execute output of the given show command'''
     return StageOutputs.execute_outputs[arg]
 
-
 def get_parsed_output(arg, **kwargs):
     '''Return the parsed output of the given show command '''
-    return StageOutputs.parsed_outputs[arg]
+    output = StageOutputs.parsed_outputs[arg]
+
+    try:
+        # incase the output is a callable object, for example, a Mock object.
+        output = output()
+    except Exception as e:
+        if isinstance(e, SchemaEmptyParserError):
+            raise
+        else:
+            pass
+
+    return output
 
 
 def get_config_output(arg, **kwargs):

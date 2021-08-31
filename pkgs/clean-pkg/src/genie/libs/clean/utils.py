@@ -11,15 +11,19 @@ import importlib
 from functools import wraps
 from unittest.mock import patch
 from copy import deepcopy
+from pkg_resources import iter_entry_points
 
 # Genie
 from genie.libs import clean
+from genie.clean.extend import ExtendClean
 from genie.abstract import Lookup
 from genie.harness.utils import load_class
 from genie.metaparser.util.schemaengine import Schema, Optional, Any, Use, And, Or
 from genie.metaparser.util.exceptions import SchemaMissingKeyError,\
                                              SchemaTypeError,\
                                              SchemaUnsupportedKeyError
+
+from genie.metaparser.util import merge_dict
 
 # pyATS
 from pyats.topology.loader import load as testbed_loader
@@ -35,6 +39,8 @@ from unicon.core.errors import (SubCommandFailure, TimeoutError,
 
 # Logger
 log = logging.getLogger(__name__)
+
+CLEAN_PLUGIN_ENTRYPOINT = 'genie.libs.clean'
 
 
 def clean_schema(schema):
@@ -191,6 +197,7 @@ def initialize_clean_sections(image_handler, order):
     for section in order:
         getattr(image_handler, 'update_section')(section)
 
+
 def load_clean_json():
     """get all clean data in json file"""
     try:
@@ -209,7 +216,26 @@ def load_clean_json():
         # Open all the parsers in json file
         with open(functions) as f:
             clean_data = json.load(f)
+
+    for entry in iter_entry_points(group=CLEAN_PLUGIN_ENTRYPOINT):
+        log.info('Loading clean APIs from {}'.format(entry.module_name))
+
+        ext = ExtendClean(entry.module_name)
+        ext.extend()
+        ext.output.pop('tokens', None)
+        log.info("{} clean API count: {}".format(
+            entry.module_name,
+            len(ext.output.keys())))
+        log.debug('{} clean APIs {}'.format(
+            entry.module_name,
+            json.dumps(ext.output, indent=4)
+        ))
+
+        plugin_clean_data = ext.output
+        clean_data = merge_dict(clean_data, plugin_clean_data, update=True)
+
     return clean_data
+
 
 def get_clean_function(clean_name, clean_data, device):
     """From a clean function and device, return the function object"""
@@ -222,17 +248,24 @@ def get_clean_function(clean_name, clean_data, device):
         raise Exception("Could not find a clean stage called '{c}'".format(
             c=name)) from None
 
-    # Load SDK abstraction
-    lookup = Lookup.from_device(device, packages={"clean": clean})
+    # Load abstraction
+    tokens = Lookup.tokens_from_device(device)
 
     # if this is true after below loop, it means the function not under any os
     is_com = True
 
     # find the token in the lowest level of the json
-    for token in lookup._tokens:
+    for token in tokens:
         if token in data:
             data = data[token]
             is_com = False
+
+    pkg_name = data.get('package')
+    if pkg_name:
+        pkg = importlib.import_module(pkg_name)
+        lookup = Lookup.from_device(device, packages={"clean": pkg})
+    else:
+        lookup = Lookup.from_device(device, packages={"clean": clean})
 
     # if not found, search under 'com' token
     if is_com:

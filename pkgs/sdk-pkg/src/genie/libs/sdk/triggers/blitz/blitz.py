@@ -16,6 +16,7 @@ from pyats.aetest.parameters import ParameterDict
 from pyats.aetest.loop import loopable, get_iterations
 from pyats.results import Passed, Failed, Errored, Skipped,\
                           Aborted, Passx, Blocked
+from pyats.aetest.signals import TerminateStepSignal                          
 
 from .actions import actions
 from .advanced_actions import advanced_actions
@@ -26,7 +27,6 @@ from .markup import get_variable, apply_regex_filter,\
                                   apply_list_filter, \
                                   save_output_to_file, \
                                   save_variable
-
 log = logging.getLogger(__name__)
 
 
@@ -150,7 +150,10 @@ class Blitz(Trigger):
                         # to save variable in action
                         ret_dict.update({'action': action, 'saved_vars': {}})
                         # Call the action with all the arguments
-                        action_output = actions[action](**kwargs)
+                        try:
+                            action_output = actions[action](**kwargs)
+                        except TerminateStepSignal:
+                            action_output = ""
                     else:
                         # Call custom action
                         _self = kwargs.pop('self')
@@ -163,6 +166,8 @@ class Blitz(Trigger):
                                 "or it should be a custom action.".format(
                                     action=action,
                                     actions=list(actions.keys())))
+                        except TerminateStepSignal:
+                            action_output = None
 
                         kwargs['self'] = _self
 
@@ -195,6 +200,12 @@ class Blitz(Trigger):
                     # Then save the filtered output in the value
                     self._filter_and_save_action_output(
                         section, ret_dict, save, action_output)
+
+                    # if continue == false ...
+                    if not kwargs.get('continue_', True) and section.result != Passed:
+                        section.failed(
+                            'Action results is NOT passed, Stopping the testcase',
+                            goto=['exit'])
 
         # strictly because of use in maple
         save_variable(self, section,
@@ -267,8 +278,18 @@ class Blitz(Trigger):
 
         # Giving action aliases
         action_alias = kwargs.get('alias')
+
         # Giving user ability to change step message
         custom_msg = kwargs.pop('custom_start_step_message', None)
+
+        msg_kwargs = {
+            'msg': custom_msg,
+            'self': self,
+            'section': section
+        }
+
+        replaced_kwargs = get_variable(**msg_kwargs)
+        custom_msg = replaced_kwargs['msg']
 
         if custom_msg:
             step_msg = custom_msg
@@ -345,8 +366,20 @@ class Blitz(Trigger):
         # for pyATS Health Check
         kwargs['section'] = section
 
+        #Skipping get_variable for save_as_dict
+        save_as_dict = {}
+        if 'save' in kwargs:
+            for elem in kwargs['save']:
+                if 'as_dict' in elem:
+                    save_as_dict = kwargs.pop('save')
+                    break
+
         # Checking to replace variables and get those arguments
         kwargs = get_variable(**kwargs)
+
+        #Updating save_as_dict:
+        if save_as_dict:
+            kwargs.update({'save': save_as_dict})
 
         # updating step to the newly created step
         # section/name is added to kwargs for extra decorator
@@ -357,7 +390,6 @@ class Blitz(Trigger):
             'section': section,
             'name': name
         })
-
         return kwargs
 
     def _filter_and_save_action_output(self, section, ret_dict, save,
@@ -411,6 +443,29 @@ class Blitz(Trigger):
                                     output,
                                     append_to_file=file_append)
 
+            #To save variable as dictionary
+            if item.get('as_dict'):
+
+                #To save the action_output
+                save_variable(self, section, 'action_output', action_output)
+
+                #To update the action_output
+                as_dict_kwargs = {
+                    'self': self,
+                    'section': section,
+                    'as_dict': item.get('as_dict')
+                }
+                output = get_variable(**as_dict_kwargs)
+                output = output['as_dict']
+                log.info("The saved dictionary is {}".format(output))
+
+                #Dq filter for the dict
+                if filter_:
+                    output = apply_dictionary_filter(self,
+                                                     output,
+                                                     filters=filter_)
+                    log.info("The saved variable after filter is {}".format(output))
+
             if item.get('variable_name'):
                 save_variable_name = item.get('variable_name')
                 save_dict.update({save_variable_name: output})
@@ -421,7 +476,8 @@ class Blitz(Trigger):
                               save_variable_name,
                               output,
                               append=item.get('append'),
-                              append_in_list=item.get('append_in_list'))
+                              append_in_list=item.get('append_in_list'),
+                              append_in_dict=item.get('as_dict_append'))
             if filter_:
                 log.debug('Applied filter: {} to the action {} output'.format(
                     filter_, ret_dict['action']))
@@ -430,7 +486,6 @@ class Blitz(Trigger):
 
             # updating the return dictionary with the saved value
             ret_dict['saved_vars'].update(save_dict)
-
         # return ret_dict for pyATS Health Check
         return ret_dict
 

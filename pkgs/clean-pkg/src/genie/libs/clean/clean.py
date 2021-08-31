@@ -192,6 +192,7 @@ class CleanTestcase(Testcase):
             self.device_recovery_processor = partial(
                 recovery_processor, **self.device.clean['device_recovery'])
 
+        clean_json = load_clean_json()
         # Verify schema and load each stage
         for stage in self.device.clean:
             if stage in NOT_A_STAGE:
@@ -203,7 +204,6 @@ class CleanTestcase(Testcase):
             stage_data = self.device.clean[stage] or {}
             if 'source' not in stage_data:
                 # Attempt to load from clean json
-                clean_json = load_clean_json()
                 stage_func = get_clean_function(stage, clean_json, self.device)
             else:
                 # Attempt to load from the provided source

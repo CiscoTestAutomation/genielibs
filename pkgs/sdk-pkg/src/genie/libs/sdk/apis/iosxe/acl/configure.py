@@ -121,3 +121,42 @@ def config_acl_on_interface(device, interface, acl_name, inbound=True):
                 acl=acl_name, interface=interface
             )
         )
+
+def unconfig_extended_acl(device,acl_name):
+    """ Unconfigure the extended acls
+        Args:
+            device ('obj'): device to use
+            acl_name ('str'): name of acl
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(["no ip access-list extended {acl_name}".format(acl_name=acl_name)])
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Could not unconfigure extended acl. Error:\n{error}".format(error=e))
+
+def scale_accesslist_config(device,acl_name,acl_list):
+    """ Configure the huge(more than 1k static acl) extended acls
+        Args:
+            device ('obj'): device to use
+            acl_name ('str'): name of acl
+            acl_list ('str') : acl_lists
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config = "ip access-list extended {}\n".format(acl_name)
+    cmd = "{}\n".format(acl_list)
+    config += cmd
+    try:
+        out = device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Could not configure extended acl. Error:\n{error}".format(error=e))
+
+    if "% Duplicate sequence" in out or "%Failed" in out:
+        raise SubCommandFailure("Failed to configure access-list")
+
+    return out

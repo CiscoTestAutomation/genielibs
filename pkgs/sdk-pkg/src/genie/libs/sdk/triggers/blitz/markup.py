@@ -308,7 +308,8 @@ def save_variable(self,
                   save_variable_name,
                   output=None,
                   append=None,
-                  append_in_list=None):
+                  append_in_list=None,
+                  append_in_dict=None):
 
     # for pyATS Health Check
     # use section.parent for self.parent
@@ -349,6 +350,13 @@ def save_variable(self,
                 saved_val.append(output)
                 saved_vars.update({save_variable_name: saved_val})
                 log.debug('Appended {} to list variable {}'.format(
+                    str(output), save_variable_name_str))
+
+        elif append_in_dict:
+            if isinstance(saved_val, dict):
+                saved_val.update(output)
+                saved_vars.update({save_variable_name: saved_val})
+                log.debug('Appended {} to dict variable {}'.format(
                     str(output), save_variable_name_str))
         else:
             saved_vars.update(

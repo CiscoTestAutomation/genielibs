@@ -18,7 +18,7 @@ from pyats.aetest.steps import Steps
 from pyats.results import Passed, Failed, Errored, Skipped,\
                           Aborted, Passx, Blocked
 
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 def callback_blitz_dispatcher_gen(self,

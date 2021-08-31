@@ -316,3 +316,61 @@ def disable_keepalive_on_interface(device, interface):
         raise SubCommandFailure(
             "Could not disable keepalive on interface {interface}. Error:\n{error}".format(interface=interface, error=e)
         )
+
+
+def configure_routing_ip_route_vrf(
+    device,
+    ip_address,
+    mask,
+    vrf,
+    interface=None,
+    dest_add=None
+    ):
+    """ Configure ip route on device
+
+        Args:
+            device ('str'): Device str
+            ip_address ('str'): ip address to reach
+            mask (str): mask the ip address
+            vrf(str)  : vrf name
+            interface ('str'): interface name to configure,default is None.
+            dest_add('str'): gateway address to configure,default is None.
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        if interface and dest_add:
+            device.configure(
+                "ip route vrf {vrf} {ip_address} {mask} {interface} {dest_add}".format(
+                vrf=vrf,ip_address=ip_address,mask=mask,interface=interface,dest_add=dest_add               
+                )
+            )
+        elif interface:
+            device.configure(
+                "ip route vrf {vrf} {ip_address} {mask} {interface}".format(
+                vrf=vrf,ip_address=ip_address,mask=mask,interface=interface              
+                )
+            )
+        elif dest_add:
+            device.configure(
+                "ip route vrf {vrf} {ip_address} {mask} {dest_add}".format(
+                vrf=vrf,ip_address=ip_address,mask=mask,dest_add=dest_add               
+                )
+            )
+        log.info(
+            "Configuration successful for {ip_address} ".format(
+                ip_address=ip_address
+            )
+        )
+    except SubCommandFailure:
+        log.error('Failed to configure the vrf static route')
+        raise
+
+
+
+
+

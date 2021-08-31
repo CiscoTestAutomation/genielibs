@@ -20,6 +20,8 @@ from pyats.aetest.signals import AEtestFailedSignal
 from pyats.easypy.common_funcs import init_runtime
 from pyats.results import Passed, Failed, Errored, Skipped,\
                           Aborted, Passx, Blocked
+from genie.libs.sdk.triggers.blitz.markup import get_variable
+
 
 
 
@@ -139,6 +141,29 @@ class TestBlitz(unittest.TestCase):
                       command: show version
     '''
 
+    yaml6 = '''
+            test:
+              groups: ['test']
+              description: Modifying the testcase description
+              source:
+                  pkg: genie.libs.sdk
+                  class: triggers.blitz.blitz.Blitz
+              devices: ['PE1']
+              test_sections:
+                  - section:
+                      - description: "section description"
+                      - execute:
+                          device: PE1
+                          command: show version
+                          save:
+                              - variable_name: execute_action_output
+                                as_dict:
+                                  rt_2_if2:
+                                    rt_22: "%VARIABLES{action_output}"         
+        '''
+
+
+
     bad_yaml1 = '''
         test:
           groups: ['test']
@@ -211,6 +236,7 @@ class TestBlitz(unittest.TestCase):
 
       self.assertEqual(self.blitz_cls().uid, 'test.PE1')
       self.assertEqual(self.blitz_cls().description, 'Modifying the testcase description')
+
 
     def test_dispatcher_1(self):
 
@@ -400,6 +426,40 @@ class TestBlitz(unittest.TestCase):
             setattr(self.testbed.devices[dev], action, mock.Mock())
             setattr(getattr(self.testbed.devices[dev], action), 'side_effect', side_effects[action])
 
+    def test_custom_start_step_messsage_with_variable(self):
+        #saved variable
+        Blitz.parameters['save_variable_name'] = {'command': 'sh version'}
+        self.blitz_obj = Blitz()
+        self.blitz_obj.parameters['test_sections'] = [{'section1': [{'action': {'command': 'a'}}]}]
+        sections = self.blitz_obj._discover()
+        self.section = sections[0].__testcls__(sections[0])
+
+        self.kwargs = {
+            'self': self.blitz_obj,
+            'section': self.section,
+            'custom_start_step_message': 'test command: %VARIABLES{command}'
+        }
+
+        #To get the saved variable
+        replaced_kwargs = get_variable(**self.kwargs)
+        self.assertEqual(replaced_kwargs['custom_start_step_message'], 'test command: sh version')
+
+    def test_save_as_dict(self):
+        self._initiate_blitz_cls(self.yaml6)
+        blitz_discoverer = self.blitz_cls()._discover()
+        for section in blitz_discoverer:
+            new_section = section.__testcls__(section)
+            steps = Steps()
+            blitz_obj = self.blitz_cls()
+            self.uid = blitz_obj.uid
+            blitz_obj.parent = self
+            blitz_obj.parent.parameters = mock.Mock()
+
+            output = blitz_obj.dispatcher(steps,
+                                          self.testbed,
+                                          new_section,
+                                          section.parameters['data'])
+            self.assertEqual(output['saved_vars']['execute_action_output'], {'rt_2_if2': {'rt_22': 'host execute output'}})
 
 if __name__ == '__main__':
     unittest.main()

@@ -79,6 +79,18 @@ def get_inserted_interface_by_media_type(device, media_type):
                   intf=list(interfaces)))
         return None
 
+def get_yaml_device_interface(device):
+    """Gets the interface and interfaces's alias connected to devices, as per yaml file.
+        Args:
+            device (`obj`): Device object
+
+        Returns:
+            alias (`str`): interface name
+    """
+    interface_dict={}
+    for intf in device.interfaces:
+        interface_dict[device.interfaces[intf].alias]=intf
+    return interface_dict
 
 def get_neighbor_interface_and_device(device, interface_alias):
     """ Get neighbor interface and device from topology
@@ -1152,61 +1164,205 @@ def get_interfaces_status(device):
 
     return {key:val.get('status') for key, val in out.get('interface', {}).items()}
 
-def get_interface_description(device,interface):                                
-    """Get description of an interface                                          
-                                                                                
-    Args:                                                                       
-        device ('obj'): device object                                           
-        interface ('str'): Interface name                                       
-                                                                                
-    Returns:                                                                    
-        Interface description string                                            
-                                                                                
-    Raises:                                                                     
-        None                                                                    
-    """  
-    
-    try:                                                                        
-        out = device.parse("show interfaces " + interface + " description")     
-    except SchemaEmptyParserError:                                              
-        log.info("Command has not returned any results")                        
-        return {}                                                               
-    desc = out["interfaces"][interface]["description"]                          
-    return desc                                                                                                                                  
-                                                                                
-def get_interface_type(device,interface):                                       
-    """Get type of an interface                                                 
-                                                                                
-    Args:                                                                       
-        device ('obj'): device object                                           
-        interface ('str'): Interface name                                       
-                                                                                
-    Returns:                                                                    
-        Interface type string                                                   
-                                                                                
-    Raises:                                                                     
-        None                                                                    
-    """     
-    
-    mapping = {                                                                 
-    'FastEthernet': 'ianaift:ethernetCsmacd',                                   
-    'GigabitEthernet': 'ianaift:EthernetCsmacd',                                
-    'TwoGigabitEthernet': 'ianaift:ethernetCsmacd',                             
-    'FiveGigabitEthernet': 'ianaift:ethernetCsmacd',                            
-    'TenGigabitEthernet': 'ianaift:ethernetCsmacd',                             
-    'TwentyFiveGigE': 'ianaift:ethernetCsmacd',                                 
-    'FortyGigabitEthernet': 'ianaift:ethernetCsmacd',                           
-    'HundredGigE': 'ianaift:ethernetCsmacd',                                    
-    'LISP': 'ianaift:propVirtual',                                              
-    'Loopback': 'ianaift:softwareLoopback',                                     
-    'Port-channel': 'ianaift:propVirtual',                                      
-    'Tunnel': 'ianaift:tunnel',                                                 
-    'Vlan': 'ianaift:l3ipvla',                                                  
-    'VirtualPortGroup': 'ianaift:propVirtual'                                   
-    }   
-    
-    for k, v in mapping.items():                                                
-        if k in interface:                                                      
-            return mapping[k]                                                   
-                                                                                
+def get_interface_description(device,interface):
+    """Get description of an interface
+
+    Args:
+        device ('obj'): device object
+        interface ('str'): Interface name
+
+    Returns:
+        Interface description string
+
+    Raises:
+        None
+    """
+
+    try:
+        out = device.parse("show interfaces " + interface + " description")
+    except SchemaEmptyParserError:
+        log.info("Command has not returned any results")
+        return {}
+    desc = out["interfaces"][interface]["description"]
+    return desc
+
+def get_interface_type(device,interface):
+    """Get type of an interface
+
+    Args:
+        device ('obj'): device object
+        interface ('str'): Interface name
+
+    Returns:
+        Interface type string
+
+    Raises:
+        None
+    """
+
+    mapping = {
+    'FastEthernet': 'ianaift:ethernetCsmacd',
+    'GigabitEthernet': 'ianaift:EthernetCsmacd',
+    'TwoGigabitEthernet': 'ianaift:ethernetCsmacd',
+    'FiveGigabitEthernet': 'ianaift:ethernetCsmacd',
+    'TenGigabitEthernet': 'ianaift:ethernetCsmacd',
+    'TwentyFiveGigE': 'ianaift:ethernetCsmacd',
+    'FortyGigabitEthernet': 'ianaift:ethernetCsmacd',
+    'HundredGigE': 'ianaift:ethernetCsmacd',
+    'LISP': 'ianaift:propVirtual',
+    'Loopback': 'ianaift:softwareLoopback',
+    'Port-channel': 'ianaift:propVirtual',
+    'Tunnel': 'ianaift:tunnel',
+    'Vlan': 'ianaift:l3ipvla',
+    'VirtualPortGroup': 'ianaift:propVirtual'
+    }
+
+    for k, v in mapping.items():
+        if k in interface:
+            return mapping[k]
+
     return 'ianaift:other'
+
+def get_interface_oper_yang_status(device, interface):
+    """Get the current operational state of the interface
+
+    Args:
+        device ('obj'): device object
+        interface ('str'): Interface name
+
+    Returns:
+        Interface type string
+
+    Raises:
+        None
+    """
+
+    out = device.parse("show interfaces {}".format(interface))
+    out_detail = device.execute("show interfaces {}".format(interface))
+    operStatus = out[interface]["oper_status"]
+    if operStatus == "down":
+        if re.search("Hardware is not present", out_detail):
+            operStatus = "NOT_PRESENT"
+        elif out[interface]["line_protocol"] == "down"  and re.search(
+        "(notconnect)", out_detail):
+            operStatus = "LOWER_LAYER_DOWN"
+        else:
+            operStatus = "DOWN"
+    return operStatus.upper()
+
+def get_interface_admin_status(device, interface):
+    """Get admin status of an interface
+
+    Args:
+        device ('obj'): device object
+        interface ('str'): Interface name
+
+    Returns:
+        Interface type string
+
+    Raises:
+        None
+    """
+
+    out = device.parse("show interfaces {}".format(interface))
+    out_detail = device.execute("show interfaces {}".format(interface))
+    status = out[interface]["oper_status"]
+    if status == "down":
+        if re.search("administratively down", out_detail):
+            log.info("### Interface is administratively down ###")
+        else:
+            log.info("### Interface is up ###")
+            status = "up"
+    return status.upper()
+
+def get_interface_last_state_timestamp(device, interface):
+    """Get interface last state up/down time value in nanosecond using 'show log'
+
+    Args:
+        device ('obj'): device object
+        interface ('str'): Interface name
+
+    Returns:
+        Interface timestamp integer value
+
+    Raises:
+        None
+    """
+
+    MAX_TIME_VARIATION = 2000000000
+    out = device.execute(
+    "show log last 10 | inc UPDOWN: Interface {}, changed s"
+    "tate to up".format(interface))
+    if out:
+        log.info("Interface {} is  up".format(interface))
+    else:
+        out = device.execute(
+        "show log last 10 | inc CHANGED: Interface {}, changed state to a"
+        "dministratively down".format(interface))
+
+    if out == '':
+        log.info("## Log is empty for {}".format(interface))
+        return
+    my_clock = device.execute("show clock")
+    sys_date = my_clock.split()[-1]
+    if out[0].isalpha():
+        new_str = sys_date + '-' + out[0:]
+    else:
+        new_str = sys_date + '-' + out[1:]
+    date_time = new_str.split('.')[0]
+    pattern = '%Y-%b %d %H:%M:%S'
+    epoch = int(time.mktime(time.strptime(date_time, pattern)))
+    if re.search("UTC", my_clock):
+        TIME_UTC_DIFF = 19800*1000000000 + 55000000000
+    else:
+        TIME_UTC_DIFF = 0 #it is local time
+    time_count = epoch*1000000000 + MAX_TIME_VARIATION + TIME_UTC_DIFF
+    return time_count
+
+def get_interface_ifindex(device, interface):
+    """Get  snmp ifindex of an interface
+
+    Args:
+        device ('obj'): device object
+        interface ('str'): Interface name
+
+    Returns:
+        Interface ifindex integer value
+
+    Raises:
+        None
+    """
+    out = device.execute("show snmp mib ifmib ifindex {}".format(interface))
+    ifIndex = out.split('Ifindex =')[1]
+    return ifIndex
+
+def get_interface_counter(device, interface, counter_name,
+    variation=20):
+    """Get interface counters and status
+
+    Args:
+        device ('obj'): device object
+        interface ('str'): Interface name
+        counter_name('str'): Counter/status parameter
+
+    Returns:
+        Counter parameter value of an interface
+
+    Raises:
+        None
+    """
+
+    out = device.parse("show interfaces {}".format(interface))
+
+    if re.search("total_output_drop", counter_name):
+        my_count = out[interface]["queues"]["total_output_drop"]
+    elif re.search("input_queue_drops", counter_name):
+        my_count = out[interface]["queues"]["input_queue_drops"]
+    else:
+        my_count = get_interface_packet_counter(device, interface, counter_name, None)
+        if re.search("in_pkts", counter_name) or re.search(
+        "out_pkts", counter_name):
+            my_count = my_count + variation
+
+    return int(my_count)
+ 

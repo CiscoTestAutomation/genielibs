@@ -693,12 +693,18 @@ class EthernetInterface(PhysicalInterface, genie.libs.conf.interface.EthernetInt
         configurations.append_line(
             attributes.format('speed {port_speed.value}'),
             unconfig_cmd='no speed')
-
         # access port
         if self.switchport_mode == L2_type.ACCESS.name.lower():
             # switchport access vlan <access_vlan>
             configurations.append_line(
                 attributes.format('switchport access vlan {access_vlan}'),
+                unconfig_cmd='no switchport access vlan')
+
+        #dot1q port
+        if self.switchport_mode == L2_type.DOT1Q_TUNNEL.value.lower():
+            # switchport access vlan <dot1q_access_vlan>
+            configurations.append_line(
+                attributes.format('switchport access vlan {dot1q_access_vlan}'),
                 unconfig_cmd='no switchport access vlan')
 
         # trunk port
@@ -1244,6 +1250,11 @@ class NveInterface(VirtualInterface, genie.libs.conf.interface.NveInterface):
                             attributes.format('mcast-group {nve_vni_mcast_group}'),
                             unconfig_cmd='no mcast-group')
 
+                    if attributes.value('nve_vni_multisite_mcast_group'):
+                        configurations.append_line(
+                            attributes.format('multisite mcast-group {nve_vni_multisite_mcast_group}'),
+                            unconfig_cmd='no multisite mcast-group')
+
         else:
             req_attr = getattr(attributes,'attributes', None)
             vni_attr = attributes.value('vni_map')
@@ -1279,6 +1290,11 @@ class NveInterface(VirtualInterface, genie.libs.conf.interface.NveInterface):
                           configurations.append_line(
                             attributes.format('mcast-group {}'.format(vni_config_dict[key].get('nve_vni_mcast_group',None))),
                             unconfig_cmd='no mcast-group')
+
+                      if vni_config_dict[key].get('nve_vni_multisite_mcast_group'):
+                          configurations.append_line(
+                            attributes.format('multisite mcast-group {}'.format(vni_config_dict[key].get('nve_vni_multisite_mcast_group',None))),
+                            unconfig_cmd='no multisite mcast-group')
         # -- NVE
         # nxos: interface <intf> / auto-remap-replication-servers
         # nxos: interface <intf> / host-reachability protocol

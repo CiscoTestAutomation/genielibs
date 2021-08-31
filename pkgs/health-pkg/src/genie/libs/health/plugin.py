@@ -38,8 +38,8 @@ Health Result : {health_result}
 Health Value  : {health_value}
 
 Job ID        : {jobid}
-Host          : {host} ({host_os}) 
-pyATS Env     : {python_env} / pyATS {pyats_ver} / Python {python_ver} 
+Host          : {host} ({host_os})
+pyATS Env     : {python_env} / pyATS {pyats_ver} / Python {python_ver}
 Full-ID       : {fullid}
 Testbed       : {testbed_name}
 Start Time    : {starttime}
@@ -119,8 +119,10 @@ class HealthCheckPlugin(BasePlugin):
             *health_tc_sections,
             dest='health_tc_sections',
             default=None,
-            help=
-            'Specify sections where want to run pyATS Health Check. Regex is supported.'
+            help='Specify sections where to run pyATS Health Check. '
+                 'Regex is supported. '
+                 'You can also filter based on class type. e.g. '
+                 ' type:TestCase'
         )
 
         # DEPRECATED
@@ -133,8 +135,8 @@ class HealthCheckPlugin(BasePlugin):
             *health_tc_uids,
             dest='health_tc_uids',
             default=None,
-            help=
-            'Specify triggers uids where want to run pyATS Health Check. Regex is supported'
+            help='Specify triggers uids where to run pyATS Health Check. '
+                 'Regex is supported'
         )
 
         # DEPRECATED
@@ -147,8 +149,8 @@ class HealthCheckPlugin(BasePlugin):
             *health_tc_groups,
             dest='health_tc_groups',
             default=None,
-            help=
-            'Specify groups where want to run pyATS Health Check. Regex is supported'
+            help='Specify groups where to run pyATS Health Check. '
+                 'Regex is supported'
         )
 
         pyats_health_grp.add_argument(
@@ -176,7 +178,7 @@ class HealthCheckPlugin(BasePlugin):
             dest='health_threshold',
             default=None,
             nargs='*',
-            help='Specify threshold for cpu, memory and etc')
+            help='Specify threshold for cpu, memory')
 
         pyats_health_grp.add_argument(
             *health_show_logging_keywords,
@@ -190,7 +192,7 @@ class HealthCheckPlugin(BasePlugin):
             dest='health_core_default_dir',
             default=None,
             nargs='*',
-            help='Specify directories where searching core file or etc')
+            help='Specify directories where to search for core files')
 
         pyats_health_grp.add_argument(*health_checks,
                                       dest='health_checks',

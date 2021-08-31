@@ -188,15 +188,19 @@ def ping_server(section,
                     output = device.ping(server, vrf=vrf, timeout=timeout)
                 else:
                     output = device.ping(server, timeout=timeout)
-            except SubCommandFailure:
-                # Success rate is 0%
-                log.warning(
-                    'Server {} is not reachable from device {}\nUnable '
-                    'to meet minimum ping success rate of {}%\nRetrying'
-                    ' after {} seconds'.format(server, device.name,
-                                               min_success_rate, interval))
-                time.sleep(interval)
-                continue
+            except SubCommandFailure as err:
+                if 'Requested protocol was not running during ping' in str(err):
+                    step.failed('Server {server} is not reachable from device {device_name}\n'
+                                'No IP routing (or other relevant protocol) '
+                                'configured, not retrying'.format(server=server,
+                                                                  device_name=device.name))
+                else:
+                    # Success rate is 0%
+                    log.warning(
+                        'Server {} is not reachable from device {}\nUnable '
+                        'to ping with minimum success rate for unkown reason'.format(server, device.name))
+                    time.sleep(interval)
+                    continue
             else:
                 # Check if success rate was minimum success rate
                 m1 = re.search(p1, output)
@@ -333,7 +337,6 @@ def copy_to_linux(section,
         rename_images: (str, optional): Rename the image to the provided name.
             If multiple files exist then an incrementing number is also appended.
             Defaults to None
-
 
     Example
     -------
@@ -682,6 +685,7 @@ def copy_to_linux(section,
     Optional('stability_check_tries'): int,
     Optional('stability_check_delay'): int,
     Optional('min_free_space_percent'): int,
+    Optional('interface'): str,
 })
 @aetest.test
 def copy_to_device(section,
@@ -706,6 +710,7 @@ def copy_to_device(section,
                    stability_check_tries=3,
                    stability_check_delay=2,
                    min_free_space_percent=None,
+                   interface=None,
                    **kwargs):
     """ This stage will copy an image to a device from a networked location.
 
@@ -714,13 +719,17 @@ def copy_to_device(section,
     copy_to_device:
 
         origin:
+
             files (list): Image files location on the server.
 
             hostname (str): Hostname or address of the server.
 
         destination:
 
-            directory (str): Location on the device to copy images.
+            directory (str): Directory on the device to copy the images to.
+
+            standby_directory (str, optional): Standby directory on the device
+                to copy the images to. Defaults to None.
 
         protocol (str): Protocol used for copy operation.
 
@@ -769,6 +778,10 @@ def copy_to_device(section,
 
         use_kstack (bool, optional): Use faster version of copy with limited options.
             Defaults to False.
+
+        interface (str, optional): The interface to use for file transfers, may be needed
+            for copying files on some IOSXE platforms, such as ASR1K when using a VRF
+            Defaults to None
 
     Example
     -------
@@ -1027,6 +1040,7 @@ def copy_to_device(section,
                                                timeout=timeout,
                                                compact=compact,
                                                use_kstack=use_kstack,
+                                               interface=interface,
                                                **kwargs)
                         except Exception as e:
                             # Retry attempt if user specified
@@ -1081,10 +1095,21 @@ def copy_to_device(section,
                                                "not the same as remote server filesize".\
                                                format(device.name))
                             else:
+                                file_name = os.path.basename(file)
+                                if file_name not in protected_files:
+                                    protected_files.append(file_name)
+                                log.info('{file_name} added to protected list'.format(file_name=file_name))
+
                                 substep.passed("Size of image file copied to device {} is "
                                                "the same as image filesize on remote server".\
                                                format(device.name))
+
                         else:
+                            file_name = os.path.basename(file)
+                            if file_name not in protected_files:
+                                protected_files.append(file_name)
+                            log.info('{file_name} added to protected list'.format(file_name=file_name))
+
                             substep.skipped(
                                 "Image file has been copied to device {} correctly"
                                 " but cannot verify file size".format(device.name))
