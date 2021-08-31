@@ -16,6 +16,7 @@ pipeline {
                 checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'genieparser']], userRemoteConfigs: [[credentialsId: 'e8a7354a-c71a-42cb-83ee-49ab5ad40085', url: 'https://wwwin-github.cisco.com/pyATS/genieparser.git']]])
                 checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'unicon.plugins']], userRemoteConfigs: [[credentialsId: 'e8a7354a-c71a-42cb-83ee-49ab5ad40085', url: 'https://wwwin-github.cisco.com/pyATS/unicon.plugins.git']]])
                 checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'yang']], userRemoteConfigs: [[url: 'https://github.com/CiscoTestAutomation/yang.git']]])
+                checkout([$class: 'GitSCM', branches: [[name: '*/dev'], [name: '*/main']], extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'genielibs.cisco']], userRemoteConfigs: [[credentialsId: 'e8a7354a-c71a-42cb-83ee-49ab5ad40085', url: 'https://wwwin-github.cisco.com/pyATS/genielibs.cisco.git']]])
                 script {
                     sh """
                     ls -l
@@ -24,6 +25,8 @@ pipeline {
                     cd ${WORKSPACE}/genie
                     git remote -v
                     cd ${WORKSPACE}/genieparser
+                    git remote -v
+                    cd ${WORKSPACE}/genielibs.cisco
                     git remote -v
                     cd ${WORKSPACE}/unicon.plugins
                     git remote -v
@@ -49,6 +52,10 @@ pipeline {
                     git status
                     cd ${WORKSPACE}/genieparser
                     # checkout same branch on genieparser, if it exists
+                    git checkout ${env.CHANGE_BRANCH == null ? env.GIT_BRANCH : env.CHANGE_BRANCH} || git checkout dev
+                    git status
+                    cd ${WORKSPACE}/genielibs.cisco
+                    # checkout same branch on genielibs.cisco, if it exists
                     git checkout ${env.CHANGE_BRANCH == null ? env.GIT_BRANCH : env.CHANGE_BRANCH} || git checkout dev
                     git status
                     cd ${WORKSPACE}/unicon.plugins
@@ -88,6 +95,8 @@ pipeline {
                     make develop
                     cd $WORKSPACE/genieparser
                     make develop
+                    cd $WORKSPACE/genielibs.cisco
+                    make develop
                     cd $WORKSPACE/pyats
                     make develop
                     cd $WORKSPACE
@@ -118,6 +127,24 @@ pipeline {
                 """
             }
         }
+
+        stage("Run runAll (without genie.libs.cisco)") {
+            steps {
+                sh """
+                . /scratch/genielibs-env/bin/activate
+                cd $WORKSPACE/genie
+                pip uninstall -y genie
+                make clean
+                make devnet
+                pip install __build__/dist/genie*
+                pip uninstall -y genie.libs.cisco
+                cd $WORKSPACE
+                cd tests
+                runAll --no-refresh
+                """
+            }
+        }
+
     }
     post {
         cleanup {

@@ -2828,6 +2828,8 @@ TriggerIssuNative:
     mode: 'native'
     ctrlplane_downtime: 120
     issu_timeout: 1800
+    cfg_transfer: False
+    cfg_timeout: 600
     timeout:
        max_time: 3600
        interval: 60
@@ -2845,6 +2847,8 @@ TriggerIssuLxc:
     mode: 'lxc'
     ctrlplane_downtime: 120
     issu_timeout: 1800
+    cfg_transfer: False
+    cfg_timeout: 600
     timeout:
        max_time: 3600
        interval: 60

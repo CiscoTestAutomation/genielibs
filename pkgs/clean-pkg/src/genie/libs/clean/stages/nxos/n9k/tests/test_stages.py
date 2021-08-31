@@ -23,6 +23,7 @@ from genie.libs.clean.stages.stages import connect, ping_server, copy_to_linux,\
                                            copy_to_device, write_erase,\
                                            reload, apply_configuration,\
                                            verify_running_image
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # Positive Mock Outputs
 from genie.libs.clean.stages.nxos.n9k.tests.pos_stage_outputs import \
@@ -114,7 +115,7 @@ class PositiveStages(unittest.TestCase):
         self.assertEqual('passed', self.section.result.name)
 
 
-    def test_stage_change_boot_variable(self):
+    def test_stage_change_boot_variable_1(self):  
         self.device.parse = Mock(side_effect=pos_parsed)
         self.device.configure = Mock(side_effect=pos_config)
         self.device.execute = Mock(side_effect=pos_execute)
@@ -123,7 +124,7 @@ class PositiveStages(unittest.TestCase):
         # Execute stage: change_boot_variable
         with self.assertRaises(AEtestPassedSignal):
             change_boot_variable(self.section, self.steps, self.device,
-                                 **self.device.clean.change_boot_variable)
+                                 **self.device.clean.change_boot_variable__1)
 
 
     def test_stage_write_erase(self):
@@ -176,6 +177,8 @@ class PositiveStages(unittest.TestCase):
                              **self.device.clean.verify_running_image)
 
         self.assertEqual('passed', self.section.result.name)
+
+
 
 
 class NegativeStages(unittest.TestCase):
@@ -249,7 +252,7 @@ class NegativeStages(unittest.TestCase):
                            **self.device.clean.copy_to_device)
 
 
-    def test_stage_change_boot_variable1(self):
+    def test_stage_change_boot_variable_1(self):
         self.device.parse = Mock(side_effect=neg_parsed)
         self.device.configure = Mock(side_effect=KeyError("negative test"))
         self.device.execute = Mock(side_effect=neg_execute)
@@ -257,10 +260,10 @@ class NegativeStages(unittest.TestCase):
         # Execute stage: change_boot_variable
         with self.assertRaises(TerminateStepSignal):
             change_boot_variable(self.section, self.steps, self.device,
-                                 **self.device.clean.change_boot_variable)
+                                 **self.device.clean.change_boot_variable__1)
 
 
-    def test_stage_change_boot_variable2(self):
+    def test_stage_change_boot_variable_2(self):
         self.device.parse = Mock(side_effect=neg_parsed)
         self.device.configure = Mock(side_effect=neg_config)
         self.device.execute = Mock(side_effect=neg_execute)
@@ -268,7 +271,7 @@ class NegativeStages(unittest.TestCase):
         # Execute stage: change_boot_variable
         with self.assertRaises(TerminateStepSignal):
             change_boot_variable(self.section, self.steps, self.device,
-                                 **self.device.clean.change_boot_variable)
+                                 **self.device.clean.change_boot_variable__1)
 
 
     def test_stage_write_erase(self):
@@ -351,6 +354,19 @@ class NegativeStages(unittest.TestCase):
         with self.assertRaises(TerminateStepSignal):
             verify_running_image(self.section, self.steps, self.device,
                                  **self.device.clean.verify_running_image)
+
+
+
+    def test_stage_change_boot_variable_3(self):
+        self.device.connect = Mock()
+        self.device.parse = Mock(side_effect=KeyError('negative test'))
+        self.device.configure = Mock(side_effect=neg_config)
+        self.device.execute = Mock(side_effect=neg_execute)
+
+        # Execute stage: change_boot_variable
+        with self.assertRaises(AEtestFailedSignal):
+            change_boot_variable(self.section, self.steps, self.device,
+                                 **self.device.clean.change_boot_variable__2)
 
 
 if __name__ == '__main__':

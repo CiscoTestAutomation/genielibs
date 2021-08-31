@@ -371,7 +371,8 @@ def copy_to_server(testbed,
                    remote_path,
                    timeout=300,
                    fu_session=None,
-                   quiet=False):
+                   quiet=False,
+                   **kwargs):
     """ Copy file from directory to server
 
         Args:
@@ -397,7 +398,8 @@ def copy_to_server(testbed,
                         remote_path,
                         timeout=timeout,
                         fu_session=fu_session,
-                        quiet=quiet)
+                        quiet=quiet,
+                        **kwargs)
 
     else:
         with FileUtils(testbed=testbed) as fu:
@@ -407,7 +409,8 @@ def copy_to_server(testbed,
                             remote_path,
                             timeout=timeout,
                             fu_session=fu,
-                            quiet=quiet)
+                            quiet=quiet,
+                            **kwargs)
 
 
 def _copy_to_server(protocol,
@@ -416,7 +419,8 @@ def _copy_to_server(protocol,
                     remote_path,
                     timeout=300,
                     fu_session=None,
-                    quiet=False):
+                    quiet=False,
+                    **kwargs):
     remote = "{p}://{s}/{f}".format(p=protocol, s=server, f=remote_path)
     remote = fu_session.validate_and_update_url(remote)
 
@@ -426,7 +430,8 @@ def _copy_to_server(protocol,
     fu_session.copyfile(source=local_path,
                         destination=remote,
                         timeout_seconds=timeout,
-                        quiet=quiet)
+                        quiet=quiet,
+                        **kwargs)
 
 
 def copy_file_from_tftp_ftp(testbed, filename, pro):
@@ -909,7 +914,11 @@ def copy_to_device(device,
                                    use_kstack=use_kstack,
                                    protocol=protocol,
                                    **kwargs)
-        except Exception:
+        except Exception as e:
+            log.info('Failed to copy file to device: {e}'.format(
+                e = e
+            ))
+            
             if compact or use_kstack:
                 log.info("Failed to copy with compact/use-kstack option, "
                          "retrying again without compact/use-kstack")

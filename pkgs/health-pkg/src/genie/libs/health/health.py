@@ -4,8 +4,9 @@ import json
 import logging
 
 # pyATS
+from pyats import aetest
 from pyats.easypy import runtime
-from pyats.results import Passed, Passx, Errored
+from pyats.results import Passed, Passx, Errored, Skipped
 from pyats.aetest.steps import Steps
 from pyats.async_ import pcall
 
@@ -19,6 +20,15 @@ from genie.libs.sdk.triggers.blitz.markup import (_load_saved_variable,
 
 log = logging.getLogger(__name__)
 
+SECTION_CLASS_MAPPING = {
+    'CommonSetup': aetest.commons.CommonSetup,
+    'CommonCleanup': aetest.commons.CommonCleanup,
+    'SetupSection': aetest.sections.SetupSection,
+    'CleanupSection': aetest.sections.CleanupSection,
+    'TestSection': aetest.sections.TestSection,
+    'TestCase': aetest.testcase.Testcase
+}
+
 
 class Health(Blitz):
     def _find_item_by_search_keyword(self, section, data, arg_name,
@@ -31,10 +41,10 @@ class Health(Blitz):
 
         Arguments:
             section (`obj`) : Aetest Subsection object.
-            data (`dict`) : data of section 
-            arg_name (`str`) : one the way to narrow down such as 
-                                    `health_tc_sections`, `health_tc_uids` or 
-                                    `health_tc_groups` 
+            data (`dict`) : data of section
+            arg_name (`str`) : one the way to narrow down such as
+                                    `health_tc_sections`, `health_tc_uids` or
+                                    `health_tc_groups`
             search_keyword (`str`) : keyword to search which supports regex
 
         Returns:
@@ -67,15 +77,15 @@ class Health(Blitz):
 
     def _select_health(self, section, data, search_keywords, arg_name):
         """
-        check if pyATS Health Check processor meets criteria 
+        check if pyATS Health Check processor meets criteria
         via `health_tc_sections`, `health_tc_uids` and `health_tc_groups`
 
         Arguments:
             section (`obj`) : Aetest Subsection object.
             data (`dict`) : data of section
             search_keywords (`list`) :  list of search keywords
-            arg_name (`str`) : `health_tc_sections`, `health_tc_uids` or 
-                               `health_tc_groups` 
+            arg_name (`str`) : `health_tc_sections`, `health_tc_uids` or
+                               `health_tc_groups`
 
         Returns:
             new_data (`list`) : Updated data which meets args criteria
@@ -96,31 +106,38 @@ class Health(Blitz):
             _, search_keyword = _load_saved_variable(self,
                                                      section=section,
                                                      val=search_keyword)
-            # get search_target such as section.uid, section.groups from section
-            search_target = self._find_search_target(section, arg_name,
-                                                     search_keyword,
-                                                     search_keywords)
-            log.debug('search_target: {st}'.format(st=search_target))
-            if re.search(search_keyword, search_target):
-                # when args exist, don't need to do `contains` because
-                # args will affect to all items in pyATS Health
-                if getattr(runtime.args, arg_name):
-                    dq_item = self._find_item_by_search_keyword(
-                        section, data, arg_name, search_target)
-                else:
-                    # in `data`, %VARIABLES doesn't need to be converted
-                    # so, need to use `pre_search_keyword`
-                    data_dq = Dq(data)
-                    dq_item = data_dq.contains(pre_search_keyword,
-                                               regex=True,
-                                               level=1).reconstruct()
-                    # for the case regex is used. need to do exact match
-                    # without `regex=True`
-                    if not dq_item:
+
+            if 'type:' in search_keyword:
+                search_class = search_keyword.replace('type:', '')
+                if isinstance(section,
+                              SECTION_CLASS_MAPPING.get(search_class)):
+                    new_data.append(data)
+
+            else:
+                # get search_target such as section.uid, section.groups from section
+                search_target = self._find_search_target(
+                    section, arg_name, search_keyword, search_keywords)
+                log.debug('search_target: {st}'.format(st=search_target))
+                if re.search(search_keyword, search_target):
+                    # when args exist, don't need to do `contains` because
+                    # args will affect to all items in pyATS Health
+                    if getattr(runtime.args, arg_name):
+                        dq_item = self._find_item_by_search_keyword(
+                            section, data, arg_name, search_target)
+                    else:
+                        # in `data`, %VARIABLES doesn't need to be converted
+                        # so, need to use `pre_search_keyword`
+                        data_dq = Dq(data)
                         dq_item = data_dq.contains(pre_search_keyword,
+                                                   regex=True,
                                                    level=1).reconstruct()
-                if dq_item and dq_item not in new_data:
-                    new_data.append(dq_item)
+                        # for the case regex is used. need to do exact match
+                        # without `regex=True`
+                        if not dq_item:
+                            dq_item = data_dq.contains(pre_search_keyword,
+                                                       level=1).reconstruct()
+                    if dq_item and dq_item not in new_data:
+                        new_data.append(dq_item)
 
         log.debug("new_data: {}".format(new_data))
         return new_data
@@ -131,7 +148,7 @@ class Health(Blitz):
 
         Arguments:
             data   (`dict`) : data of section
-            processor_targets (`list`) : list of `processor_flag which ones 
+            processor_targets (`list`) : list of `processor_flag which ones
                                          will be run as pre/post processors
                                          Defaults to ['pre', 'post', 'both']
 
@@ -158,7 +175,7 @@ class Health(Blitz):
 
             Arguments:
                 actions (`dict`): action data
-                processor_targets (`list`) : list of `processor` which ones 
+                processor_targets (`list`) : list of `processor` which ones
                                              will be run as pre/post processors
 
             Returns:
@@ -514,6 +531,8 @@ class Health(Blitz):
         new_data_dict = {}
         selected_options = 0
         list_of_args = []
+        # store reasons why processor is skipped
+        reasons = []
         # flag if health args are given to pyats command
         args_flag = False
         # flag if health args are defined under action in health yaml
@@ -638,6 +657,9 @@ class Health(Blitz):
                 data = temp_data
         elif (not new_data_dict or len(set(list_of_args)) != len(new_data_dict)
               ) and len(set(list_of_args)) != 0:
+            reasons.append(
+                f"health arg {set(list_of_args)-set(new_data_dict.keys())} does not meet criteria"
+            )
             data = []
         # processor start message
         log.debug('{type}-processor {name} started'.format(
@@ -659,7 +681,24 @@ class Health(Blitz):
             # get connected devices list
             devices_connected = self._check_all_devices_connected(
                 testbed, data, reconnect)
-        for each_data in self._get_actions(data, processor_targets):
+
+        actions = self._get_actions(data, processor_targets)
+        if not actions:
+            # check processor in action and put in proc_in_action
+            proc_in_action = []
+            if isinstance(data, list):
+                for each_data in data:
+                    for each_proc in Dq(each_data).get_values('processor'):
+                        proc_in_action.append(each_proc)
+            else:
+                for each_proc in Dq(data).get_values('processor'):
+                    proc_in_action.append(each_proc)
+            proc_in_action = set(proc_in_action)
+            if proc_in_action:
+                reasons.append(
+                    f"processor {proc_in_action} does not meet criteria {processor_targets}"
+                )
+        for each_data in actions:
             for key in each_data:
                 # get processor key from action. by default, `both`
                 each_data_dq = Dq(each_data)
@@ -697,16 +736,18 @@ class Health(Blitz):
                             else:
                                 all_devices_connected = False
                                 devices_not_connected.append(uut)
+
                     if devices_not_connected:
                         log.warning("devices are not connected: {}".format(
                             devices_not_connected))
+
                     force_all_connected = health_settings.get(
                         'force_all_connected', True)
                     if device_checked and not force_all_connected and devices_connected:
                         log.warning(
                             "force_all_connected is False. Executing even though some of devices might not be connected."
                         )
-                    # date will be created if all devices are connected or
+                    # data will be created if all devices are connected or
                     # if force_all_connected == False and one of devices is connected
                     if (all_devices_connected == True or all_devices_connected
                             is None) or (force_all_connected == False
@@ -743,6 +784,10 @@ class Health(Blitz):
         # remove section if no data
         removed_section = False
         if not data:
+            # no reason at this point. must be that device is not connected
+            if not reasons:
+                reasons.append('Device is not connected')
+            processor.result = Skipped
             processor.reporter.remove_section(id_list=processor.uid.list)
             removed_section = True
 
@@ -780,6 +825,7 @@ class Health(Blitz):
             if (isinstance(result, dict) and 'run_condition_skipped' in result
                     and not removed_section
                     and result['run_condition_skipped'] == True):
+                processor.result = Skipped
                 removed_section = self._remove_section(processor)
             if processor_type == 'pre' and steps.result != Passed and steps.result != Passx:
                 log.info(
@@ -793,13 +839,19 @@ class Health(Blitz):
                 processor.result += steps.result
                 section.result = section.result + processor.result + self.pre_processor_result
 
-                return pre_processor_run, pre_processor_result
+                # return processor.result to raise the result
+                # at end of context post processor
+                return pre_processor_run, processor.result
+
         elif processor_type == 'pre':
             pre_processor_run = False
-            # processor is skipped. but call passed to move forward     for this case
+            # processor is skipped
             log.info(
-                "Pre-processor pyATS Health '{name}' is skipped because devices are not connected."
-                .format(name=name))
+                f"Pre-processor pyATS Health '{name}' is skipped due to: {reasons}"
+            )
+            if pre_processor_result == Passed:
+                # processor.skipped()
+                pre_processor_result = Skipped
             return pre_processor_run, pre_processor_result
         elif processor_type == 'post':
             # for the case only pre-processors runs
@@ -809,10 +861,17 @@ class Health(Blitz):
                          'Post-processor result to Section.')
                 # reflect processor results to section
                 section.result = section.result + processor.result + self.pre_processor_result
+            # processor is skipped
             log.info(
-                "Post-processor pyATS Health '{name}' was skipped because devices are not connected."
-                .format(name=name))
-            return pre_processor_run, pre_processor_result
+                f"Post-processor pyATS Health '{name}' was skipped due to: {reasons}"
+            )
+            if pre_processor_result == Passed:
+                # processor.skipped()
+                pre_processor_result = Skipped
+
+            # return processor.result to raise the result
+            # at end of context post processor
+            return pre_processor_run, processor.result
 
         return pre_processor_run, pre_processor_result
 
@@ -932,8 +991,7 @@ class Health(Blitz):
         post_if_pre_execute_flag = not any(
             Dq(each_data).get_values('processor', 0) == 'post_if_pre_execute'
             and not self.pre_processor_run
-            for each_data in self._get_actions(data)
-        )
+            for each_data in self._get_actions(data))
 
         if not post_if_pre_execute_flag:
             log.info(
@@ -948,7 +1006,7 @@ class Health(Blitz):
                 testbed = Converter.convert_tb(runtime.testbed)
 
             # execute post-processor
-            self._pre_post_processors(
+            _, post_processor_result = self._pre_post_processors(
                 testbed,
                 processor,
                 section,
@@ -959,3 +1017,6 @@ class Health(Blitz):
                 processor_type='post',
                 pre_processor_result=self.pre_processor_result,
                 health_settings=health_settings)
+
+            # raise result
+            getattr(processor, post_processor_result.name)()

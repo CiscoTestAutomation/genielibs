@@ -331,8 +331,10 @@ def configure_replace(self, testbed, steps, devices, include_os=None,
             file_name = None
             file_location = None
             lookup = Lookup.from_device(device)
+            #overriding the default directory
             if 'file_location' in dev:
                 file_location = dev['file_location']
+                log.warning("Overriding the default directory with {}".format(file_location))
             else:
                 file_location = lookup.sdk.libs. \
                     abstracted_libs.subsection.get_default_dir(
@@ -340,6 +342,10 @@ def configure_replace(self, testbed, steps, devices, include_os=None,
                 if 'file_name' not in dev:
                     log.error('Missing file_name for device {}'.format(device_name))
                     return
+
+            if file_location and file_location[-1:]!='/':
+                file_location = file_location + '/'
+
             if 'file_name' in dev:
                 file_name = dev['file_name']
             lookup.sdk.libs.abstracted_libs.subsection.configure_replace(

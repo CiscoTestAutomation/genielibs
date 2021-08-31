@@ -231,9 +231,9 @@ def get_ip_bgp_summary(
 
 def get_bgp_state_pfx_rcd(
     device,
-    address_family,
-    neighbor_address,
-    vrf="",
+    address_family="",
+    neighbor_address="",
+    vrf="default",
     rd="",
     all_summary=False,
     output=None,

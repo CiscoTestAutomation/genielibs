@@ -33,14 +33,14 @@ log = logging.getLogger(__name__)
     Optional('check_interval'): int,
     Optional('config_register'): str,
     Optional('write_memory'): bool,
+    Optional('current_running_image'): bool
 })
 @aetest.test
 def change_boot_variable(section, steps, device, images, timeout=300,
     max_time=300, check_interval=30, config_register='0x2102',
-    write_memory=False):
+    write_memory=False, current_running_image=False):
     """ This stage configures the boot variables to the provided image in
     preparation for the next device reload.
-
     Stage Schema
     ------------
     change_boot_variable:
@@ -60,6 +60,10 @@ def change_boot_variable(section, steps, device, images, timeout=300,
         config_register (str, optional): Value to set config-register for
             reload. Defaults to 0x2102.
 
+        current_running_image (bool, optional): Set the boot variable to the currently 
+            running image from the show version command instead of the image provided. 
+            Defaults to False.
+
     Example
     -------
     change_boot_variable:
@@ -78,7 +82,6 @@ def change_boot_variable(section, steps, device, images, timeout=300,
              "\n5- Write to memory or save running-config to startup-configuration"
              "\n6- Verify next reload boot variables are set correctly"
              "\n7- Verify config-register to boot new image is set correctly")
-
 
     # Delete any previously configured boot variables
     with steps.start("Delete any previously configured boot variables on {}".\
@@ -119,6 +122,17 @@ def change_boot_variable(section, steps, device, images, timeout=300,
                                )
             else:
                 step.passed("Succesfully executed 'write memory'")
+    # Get the current running image from the show version command            
+    if current_running_image:
+        with steps.start("Fetching the running image") as step:
+            try:                  
+                output = device.parse('show version')
+                images=[output['version']['system_image']]
+            except Exception as e:
+                log.error(str(e))
+                section.failed("Failed to retrieve the running image from the '{0}' device."
+                            "Cannot set boot variables.".format(device))
+
 
 
     # Setting boot variable to image specified

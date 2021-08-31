@@ -61,6 +61,8 @@ def _is_boot_variable_as_expected(device, system, boot_variable, kickstart=None)
     try:
         output = device.parse('show boot')
     except SchemaEmptyParserError:
+        if not system and not kickstart:
+            return
         raise Exception("No boot variables found on the device '{d}' "
             "to verify boot variables set".format(d=device.name))
 

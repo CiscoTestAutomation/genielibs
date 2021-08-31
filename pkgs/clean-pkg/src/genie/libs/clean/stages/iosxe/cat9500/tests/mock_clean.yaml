@@ -10,14 +10,24 @@ devices:
 
     connect:
 
-    change_boot_variable:
+    change_boot_variable__1:
       images: 
         - bootflash:/cat9k_iosxe.BLD_V173_THROTTLE_LATEST_20200421_032634.SSA.bin
       timeout: 1
       max_time: 2
       check_interval: 0.5
 
+    change_boot_variable__2:
+      images: 
+        - bootflash:/cat9k_iosxe.BLD_V173_THROTTLE_LATEST_20200421_032634.SSA.bin
+      timeout: 1
+      max_time: 2
+      check_interval: 0.5
+      current_running_image: True
+
+
     order:
       - 'connect'
-      - 'change_boot_variable'
+      - 'change_boot_variable__1'
+      - 'change_boot_variable__2'
   

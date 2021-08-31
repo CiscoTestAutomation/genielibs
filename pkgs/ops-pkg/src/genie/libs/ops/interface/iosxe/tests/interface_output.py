@@ -777,7 +777,7 @@ class InterfaceOutput(object):
                 "out_errors": 0,
                 "in_octets": 2297417,
                 "out_octets": 2321107,
-                "in_broadcast_pkts": 0,
+                "in_broadcast_pkts": 4173,
                 "rate": {
                     "out_rate_pkts": 0,
                     "out_rate": 0,
@@ -864,7 +864,7 @@ class InterfaceOutput(object):
                "out_errors": 0,
                "in_octets": 2297417,
                "out_octets": 2321107,
-               "in_broadcast_pkts": 0,
+               "in_broadcast_pkts": 4173,
                "rate": {
                     "out_rate_pkts": 0,
                     "out_rate": 0,
@@ -969,7 +969,7 @@ class InterfaceOutput(object):
                "out_errors": 0,
                "in_octets": 41210298,
                "out_octets": 3642296,
-               "in_broadcast_pkts": 535961,
+               "in_broadcast_pkts": 535996,
                "rate": {
                     "out_rate_pkts": 0,
                     "out_rate": 0,

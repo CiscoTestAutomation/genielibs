@@ -1,11 +1,83 @@
 # Python
+import os
+import re
 import logging
 
 # Genie
-from genie.metaparser.util.exceptions import SchemaEmptyParserError
+from genie.utils import Dq
+from genie.utils.diff import Diff
+from genie.metaparser.util.exceptions import (SchemaEmptyParserError,
+                                              SchemaMissingKeyError)
 
 # Logger
 log = logging.getLogger(__name__)
+
+def get_diffs_platform(platform_before, platform_after):
+    """ Check differences between two parsed outputs from 'show platform'
+
+        Args:
+            platform_before ('str'): Parsed output from 'show platform'
+            platform_after ('str'): Parsed output from 'show platform'
+        Return:
+            True
+            False
+        Raises:
+            None
+    """
+
+    dd = Diff(platform_before, platform_after, exclude=["insert_time"])
+    dd.findDiff()
+
+    for slot in platform_after["slot"]:
+        for rp_lc in platform_after["slot"][slot]:
+            for type_ in platform_after["slot"][slot][rp_lc]:
+                state_after = platform_after["slot"][slot][rp_lc][type_][
+                    "state"
+                ]
+
+                state_before = (
+                    platform_before["slot"]
+                    .get(slot, {})
+                    .get(rp_lc, {})
+                    .get(type_, {})
+                    .get("state", False)
+                )
+
+                if not state_before:
+                    log.info(
+                        "Found differences between outputs:\n{out}".format(
+                            out=dd
+                        )
+                    )
+                    return False
+
+                for subslot in platform_before["slot"][slot][rp_lc].get(
+                    "subslot", []
+                ):
+
+                    subslot_state = (
+                        platform_after["slot"][slot][rp_lc]
+                        .get(subslot, {})
+                        .get("state", False)
+                    )
+
+                    if not subslot_state:
+                        log.info(
+                            "Found differences between outputs:\n{out}".format(
+                                out=dd
+                            )
+                        )
+
+                if state_after == state_before or ("ok" in state_after and "ok" in state_before):
+                    continue
+                else:
+                    log.info(
+                        "Found differences between outputs:\n{out}".format(
+                            out=dd
+                        )
+                    )
+                    return False
+    return True
 
 def get_platform_default_dir(device, output=None):
     '''Get the default directory of this device
@@ -46,6 +118,10 @@ def get_boot_variables(device, output=None):
         # Get configured
         if boot_out.get("boot_path_list", {}):
             boot_variables = boot_out.get("boot_path_list")
+        elif boot_out.get("current_boot_variable", {}):
+            boot_variables = boot_out.get("current_boot_variable")
+        else:
+            boot_variables = boot_out.get("current_boot_variable")
 
         # Trim
         if boot_variables:
@@ -412,3 +488,131 @@ def get_platform_memory_usage_detail(device,
             memory_usage_dict.update({ps_item: memory_usage * 100})
 
     return memory_usage_dict
+
+def get_available_space(device, directory='', output=None):
+    '''Gets available space on a given directory
+        Args:
+            device ('str'): Device object
+            directory ('str'): Directory to check space
+                               If not provided, checks current working directory
+                               i.e. media:/path/to/my/dir
+            output ('str'): Output of 'dir' command
+                            if not provided, executes the cmd on device
+        Returns:
+            space available in bytes in `int` type or 
+            None if failed to retrieve available space
+    '''
+
+    try:
+        dir_output = device.parse('dir {}'.format(directory), output=output)
+    except Exception as e:
+        log.error("Failed to parse the directory listing due to: {}".\
+                  format(str(e)))
+        return None
+
+    bytes_free = Dq(dir_output).get_values(key='bytes_free')
+    if bytes_free:
+        return int(bytes_free[0])
+    else:
+        log.error("Failed to get available space for {}".format(directory))
+
+
+def get_file_size(device, file, output=None):
+    '''Get file size on the device
+        Args:
+            device (`obj`): Device object
+            file (`str`): File name
+            output ('str'): Output of 'dir' command
+                            if not provided, executes the cmd on device
+        Returns:
+            file size in `int` type or None if file size is not available
+    '''
+
+    directory = ''.join([os.path.dirname(file), '/'])
+    filename = os.path.basename(file)
+    try:
+        dir_output = device.parse('dir {}'.format(directory), output=output)
+    except Exception as e:
+        log.error("Failed to parse the directory listing due to: {}".
+                  format(str(e)))
+        return None
+
+    size = Dq(dir_output).contains(filename).get_values('size')
+    if size:
+        return int(size[0])
+    else:
+        log.error("File '{}' is not found on device".format(file))
+
+
+def get_running_image(device):
+    '''Get running image on the device
+        Args:
+            device (`obj`): Device object
+        Returns:
+            Image or None
+    '''
+
+    output = {}
+    try:
+        # Execute 'show version'
+        output = device.parse("show version")
+    except SchemaEmptyParserError as e:
+        log.error(
+            "Command 'show version' did not return any results: {e}".format(e=e))
+    except SchemaMissingKeyError as e:
+        log.error("Missing key while parsing 'show version': {e}".format(e=e))
+    except Exception as e:
+        log.error("Failed to parse 'show version': {e}".format(e=e))
+
+    if not output:
+        return None
+
+    system_image = output.get('version', {}).get('system_image')
+
+    if 'packages.conf' in system_image:
+        directory = system_image.split(":")[0]
+
+        try:
+            output = device.execute("more {}".format(system_image))
+        except Exception as e:
+            log.error("Failed to check contents of {}".format(system_image))
+            return None
+
+        # more bootflash:packages.conf
+        # #! /usr/binos/bin/packages_conf.sh
+        #
+        # sha1sum: e4de49179e2b7fbd772888d0d8ce7fc57f830b80
+        # boot  rp 0 0   rp_boot       csr1000v-rpboot.16.12.01a.SPA.pkg
+        #
+        # iso   rp 0 0   rp_base       csr1000v-mono-universalk9.16.12.01a.SPA.pkg
+
+        for line in output.splitlines():
+            if line.startswith("boot"):
+                system_image = line.split()[-1]
+                system_image = directory + ":" + system_image
+                break
+
+    return system_image
+
+def get_total_space(device, directory='', output=None):
+    '''Gets total space on a given directory
+        Args:
+            device ('str'): Device object
+            directory ('str'): Directory to check space
+                               If not provided, checks current working directory
+                               i.e. media:/path/to/my/dir
+            output ('str'): Output of 'dir' command
+                            if not provided, executes the cmd on device
+        Returns:
+            space available in bytes in `int` type or 
+            None if failed to retrieve available space
+    '''
+
+    try:
+        dir_output = device.parse('dir {}'.format(directory), output=output)
+    except Exception as e:
+        log.error("Failed to parse the directory listing due to: {}".
+                  format(str(e)))
+        return None
+    else:
+        return int(Dq(dir_output).get_values('bytes_total')[0])

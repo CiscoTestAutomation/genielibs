@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
 
 
 @clean_schema({
-    Optional('images'): {
+    'images': {
         'system': list,
         Optional('kickstart'): list
     },
@@ -36,28 +36,44 @@ log = logging.getLogger(__name__)
     Optional('check_interval'): int,
     Optional('stabilize_time'): int,
     Optional('standby_copy_max_time'): int,
-    Optional('standby_copy_check_interval'): int
+    Optional('standby_copy_check_interval'): int,
+    Optional('current_running_image'): bool,
+   
+
 })
 @aetest.test
 def change_boot_variable(section, steps, device, images, copy_vdc_all=False,
     timeout=300, max_time=300, check_interval=60, stabilize_time=100,
-    standby_copy_max_time=300, standby_copy_check_interval=20):
+    standby_copy_max_time=300, standby_copy_check_interval=20, current_running_image=False):
     """ This stage configures the boot variables to the provided image in
     preparation for the next device reload.
 
     Stage Schema
     ------------
     change_boot_variable:
+    
         images:
             kickstart: [<kickstart image>] (Optional)
             system: [<system image>] (Mandatory)
+
         copy_vdc_all: <Copy on all VDCs, 'Boolean'> (Optional)
+
         timeout: <Execute timeout in seconds, 'int'> (Optional)
+
         max_time: <Maximum time section will take for checks in seconds, 'int'> (Optional)
+
         check_interval: <Time interval, 'int'> (Optional)
+
         stabilize_time: <Time in seconds till boot variables stabilization, 'int'> (Optional)
+
         standby_copy_max_time: <Maximum time section will take for checks in seconds, 'int'> (Optional)
+
         standby_copy_check_interval: <Time interval, 'int'> (Optional)
+
+        current_running_image (bool, optional): Set the boot variable to the currently 
+            running image from the show version command instead of the image provided. 
+            Defaults to False.
+    
 
 
     Example
@@ -73,6 +89,7 @@ def change_boot_variable(section, steps, device, images, copy_vdc_all=False,
         stabilize_time: 100
         standby_copy_max_time: 100
         standby_copy_check_interval: 10
+    
 
     """
 
@@ -81,13 +98,29 @@ def change_boot_variable(section, steps, device, images, copy_vdc_all=False,
              "\n3- Verify next boot variables as expected"
              "\n4- Verify files transferred successfully to the standby (if HA)")
 
-    kickstart = images.get('kickstart')
-    kickstart = kickstart[0] if kickstart else None
-
-    system = images.get('system')
-    system = system[0] if system else None
+    if current_running_image:
+        # if no image provided in the clean.yaml we try to get the image by doing show version
+        log.info("Get the running image from the show version")
+        try:
+            output = device.parse('show version')
+            kickstart = output['platform']['software'].get('kickstart_image_file', None)
+            system=output['platform']['software'].get('system_image_file')
+            system=system.replace(':///', ':/')
+        except Exception as e:
+            log.error(str(e))
+            section.failed("Failed to get the image from device '{}' by doing show version ".\
+                          format(device.name))
+    else:    
+        kickstart = images.get('kickstart')
+        kickstart = kickstart[0] if kickstart else None
+        system = images.get('system')
+        system = system[0] if system else None
 
     with steps.start("Changing the boot variables") as step:
+        try:
+            device.api.execute_delete_boot_variable(device=device, timeout=timeout)
+        except Exception as e:
+            step.failed('{e}'.format(e=e))
         try:
             device.api.execute_change_boot_variable(kickstart=kickstart,
                                                     system=system,

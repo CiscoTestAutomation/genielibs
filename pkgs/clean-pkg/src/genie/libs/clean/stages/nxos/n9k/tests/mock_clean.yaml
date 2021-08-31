@@ -51,12 +51,22 @@ devices:
       overwrite: True
       verify_num_images: False
 
-    change_boot_variable:
+    change_boot_variable__1:
       images:
         system: ['bootflash:nxos.9.3.1_N95.bin']
       timeout: 1
       max_time: 2
       check_interval: 0.5
+    change_boot_variable__2:
+      images:
+        system: ['bootflash:nxos.9.3.1_N95.bin']
+      timeout: 1
+      max_time: 2
+      check_interval: 0.5
+      current_running_image: True
+
+
+
 
     write_erase:
       timeout: 1
@@ -99,7 +109,8 @@ devices:
       - 'ping_server'
       - 'copy_to_linux'
       - 'copy_to_device'
-      - 'change_boot_variable'
+      - 'change_boot_variable_1'
+      - 'change_boot_variable_2'
       - 'write_erase'
       - 'reload'
       - 'apply_configuration'

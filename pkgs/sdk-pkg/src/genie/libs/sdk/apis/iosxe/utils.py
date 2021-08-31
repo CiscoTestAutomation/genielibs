@@ -460,7 +460,7 @@ def delete_files(device, locations, filenames):
 
 def verify_ping(
     device, address, expected_max_success_rate=100, expected_min_success_rate=0,
-    count=None, source=None, max_time=60, check_interval=10,
+    count=None, source=None, vrf=None, max_time=60, check_interval=10,
 ):
     """Verify ping
 
@@ -471,6 +471,7 @@ def verify_ping(
             expected_min_success_rate (int): Expected minimum success rate
             count ('int'): Count value for ping command
             source ('str'): Source IP address, default: None
+            vrf (`str`): vrf id
             max_time (`int`): Max time, default: 30
             check_interval (`int`): Check interval, default: 10
     """
@@ -492,8 +493,10 @@ def verify_ping(
             cmd = 'ping {address} source {source}'.format(
                     address=address,
                     source=source)
-        elif address:
+        elif address and not vrf:
             cmd = 'ping {address}'.format(address=address)
+        elif vrf:
+            cmd = "ping vrf {vrf} {address}".format(vrf=vrf,address=address)
         else:
             log.info('Need to pass address as argument')
             return False
@@ -510,7 +513,7 @@ def verify_ping(
 
         timeout.sleep()
     return False
-
+    
 def get_md5_hash_of_file(device, file, timeout=60):
     """ Return the MD5 hash of a given file.
 
@@ -690,10 +693,8 @@ def get_show_output_line_count(device, command, filter, output=None):
             command (`str`): show command
             filter (`str`): filter expression
             output (`str`): output of show command. (optional) Default to None
-
         Returns:
             line_count (`int`): number of lines based on show command output
-
         Raises:
             N/A
     """
@@ -712,3 +713,70 @@ def get_show_output_line_count(device, command, filter, output=None):
 
     log.warn("Couldn't get line count properly.")
     return 0
+
+def clear_counters(device):
+    """ clear logging
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("clear counters on {device}".format(device=device))
+
+    dialog = Dialog([Statement(pattern=r'\[confirm\].*', action='sendline(\r)',loop_continue=True,continue_timer=False)])
+
+    try:
+        device.execute("clear counters", reply=dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear counters on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+
+
+def clear_logging(device):
+    """ clear logging
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("clear logging on {device}".format(device=device))
+
+    dialog = Dialog([Statement(pattern=r'\[confirm\].*', action='sendline(\r)',loop_continue=True,continue_timer=False)])
+
+    try:
+        device.execute("clear logging", reply=dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear logging on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+
+def get_show_output_include(device, command, filter, output=None):
+    """ Find the lines which are match from show command.
+        Args:
+            device (`obj`): Device object
+            command (`str`): show command
+            filter (`str`): filter expression
+            output (`str`): output of show command. (optional) Default to None
+        Returns:
+            bool,output('str') : True/False, include command output based on the output
+        Raises:
+            N/A
+    """
+    command += ' | include {}'.format(filter)
+    result = True
+
+    try:
+        output= device.execute(command)
+        if output == "":
+            log.error('No match found')
+            result = False
+    except:
+        log.info("In valid command")
+        result = False
+
+    return [result,output]

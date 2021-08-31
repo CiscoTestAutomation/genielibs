@@ -98,7 +98,7 @@ class FileUtils(FileUtilsDeviceBase):
         # Extract the server address to be used later for authentication
         used_server = self.get_server(source, destination)
 
-        super().copyfile(source=source, destination=destination,
+        return super().copyfile(source=source, destination=destination,
                          timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,
                          vrf=vrf, *args, **kwargs)
 

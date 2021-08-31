@@ -334,6 +334,119 @@ class test_nx_interface(TestCase):
                 ' exit'
             ]))
 
+    # Below function is for L3VNI when Fabric underlay is
+    # ASM and DCI underlay is also ASM
+    def test_nve_interface_msite_mcast_underlay_l3vni(self):
+
+        # Set Genie Tb
+        testbed = Testbed()
+        Genie.testbed = testbed
+
+        # Device
+        dev1 = Device(name='BL1', testbed=testbed, os='nxos')
+        intf1 = Interface(name='nve1', device=dev1)
+
+        # Apply configuration
+        intf1.nve_host_reachability_protocol = 'bgp'
+        intf1.nve_adv_virtual_rmac = True
+        intf1.nve_src_intf_loopback = 'loopback1'
+        intf1.nve_multisite_bgw_intf = 'loopback100'
+        vnis_map= {}
+        nve_vni_map = {}
+        vnis_map['nve_vni_associate_vrf'] = True
+        vnis_map['nve_vni_suppress_arp'] = False
+        vnis_map['nve_vni_mcast_group'] = '226.1.1.1'
+        vnis_map['nve_vni_multisite_mcast_group'] = '239.1.1.1'
+        vnis_map['nve_vni'] = '1001-1100'
+        nve_vni_map['1001-1100'] = vnis_map
+        intf1.vni_map = nve_vni_map
+        intf1.nve_src_intf_holddown = 30
+        intf1.nve_global_suppress_arp = True
+        intf1.nve_global_ir_proto = 'bgp'
+        intf1.nve_global_mcast_group_l3 = '229.0.0.1'
+
+        # Build config
+        cfgs = intf1.build_config(apply=False)
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(cfgs),
+            '\n'.join([
+                'interface nve1',
+                ' host-reachability protocol bgp',
+                ' global suppress-arp',
+                ' global ingress-replication protocol bgp',
+                ' global mcast-group 229.0.0.1 L3',
+                ' advertise virtual-rmac',
+                ' source-interface loopback1',
+                ' source-interface hold-down-time 30',
+                ' multisite border-gateway interface loopback100',
+                ' member vni 1001-1100 associate-vrf',
+                '  mcast-group 226.1.1.1',
+                '  multisite mcast-group 239.1.1.1',
+                '  exit',
+                ' exit'
+            ]))
+
+
+        dev1 = Device(name='BL1', testbed=testbed, os='nxos')
+        intf1 = Interface(name='nve1', device=dev1)
+        vni_map = {}
+        vnis_map = {}
+        vnis_map['nve_vni'] = '1001-1100'
+        vni_map['1001-1100'] = vnis_map
+
+        intf1.vni_map = vni_map
+
+        # Build unconfig
+        uncfgs = intf1.build_unconfig(apply=False, attributes = {'vni_map': vnis_map})
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(uncfgs),
+            '\n'.join([
+                'interface nve1',
+                ' no member vni 1001-1100',
+                ' exit'
+            ]))
+
+        dev1 = Device(name='BL1', testbed=testbed, os='nxos')
+        intf1 = Interface(name='nve1', device=dev1)
+        # Apply configuration
+        intf1.nve_host_reachability_protocol = 'bgp'
+        intf1.nve_adv_virtual_rmac = True
+        intf1.nve_src_intf_loopback = 'loopback1'
+        intf1.nve_multisite_bgw_intf = 'loopback100'
+        vnis_map = {}
+        vni_map = {}
+        vnis_map['nve_vni_multisite_mcast_group'] = '239.1.1.1'
+        vnis_map['nve_vni'] = '1001-1100'
+        vni_map['1001-1100'] = vnis_map
+        intf1.vni_map = vni_map
+        intf1.nve_global_suppress_arp = True
+        intf1.nve_global_ir_proto = 'bgp'
+        intf1.nve_global_mcast_group_l3 = '229.0.0.1'
+        # Build unconfig
+        uncfgs = intf1.build_unconfig(apply=False, attributes= {
+                                                                'nve_host_reachability_protocol': 'bgp' ,
+                                                                'nve_global_mcast_group_l3': intf1.nve_global_mcast_group_l3 ,
+                                                                'nve_global_suppress_arp' : True,
+                                                                 'vni_map': vnis_map })
+
+
+
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(uncfgs),
+            '\n'.join([
+                'interface nve1',
+                ' no host-reachability protocol bgp',
+                ' no global suppress-arp',
+                ' no global mcast-group L3',
+                ' member vni 1001-1100',
+                '  no multisite mcast-group',
+                '  exit',
+                ' exit'
+            ]))
+
     def test_nve_interface_ir(self):
 
         # Set Genie Tb
@@ -459,7 +572,116 @@ class test_nx_interface(TestCase):
                  ' exit'
             ]))
 
+    # Below function is for L2VNI when Fabric underlay is
+    # ASM and DCI underlay is also ASM
+    def test_nve_interface_msite_mcast_underlay_l2vni(self):
 
+        # Set Genie Tb
+        testbed = Testbed()
+        Genie.testbed = testbed
+
+        # Device
+        dev1 = Device(name='BL1', testbed=testbed, os='nxos')
+        intf1 = Interface(name='nve1', device=dev1)
+
+        # Apply configuration
+        intf1.nve_host_reachability_protocol = 'bgp'
+        intf1.nve_adv_virtual_rmac = True
+        intf1.nve_src_intf_loopback = 'loopback1'
+        intf1.nve_multisite_bgw_intf = 'loopback100'
+        vni_map= {}
+        vnis_map = {}
+        vnis_map['nve_vni_suppress_arp'] = False
+        vnis_map['nve_vni_mcast_group'] = '225.1.1.1'
+        vnis_map['nve_vni_multisite_mcast_group'] = '238.1.1.1'
+        vnis_map['nve_vni_suppress_arp'] = True
+        vnis_map['nve_vni'] = '1001-1100'
+        vni_map['1001-1100'] = vnis_map
+        intf1.vni_map = vni_map
+        intf1.nve_src_intf_holddown = 30
+        intf1.nve_global_suppress_arp = True
+        intf1.nve_global_ir_proto = 'bgp'
+        intf1.nve_global_mcast_group_l2 = '229.0.0.1'
+
+
+
+
+        # Build config
+
+        cfgs = intf1.build_config(apply=False)
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(cfgs),
+            '\n'.join([
+                'interface nve1',
+                ' host-reachability protocol bgp',
+                ' global suppress-arp',
+                ' global ingress-replication protocol bgp',
+                ' global mcast-group 229.0.0.1 L2',
+                ' advertise virtual-rmac',
+                ' source-interface loopback1',
+                ' source-interface hold-down-time 30',
+                ' multisite border-gateway interface loopback100',
+                ' member vni 1001-1100',
+                '  suppress-arp',
+                '  mcast-group 225.1.1.1',
+                '  multisite mcast-group 238.1.1.1',
+                '  exit',
+                ' exit'
+            ]))
+
+        dev1 = Device(name='BL1', testbed=testbed, os='nxos')
+        intf1 = Interface(name='nve1', device=dev1)
+
+        vnis_map = {}
+        vnis_map['nve_vni'] = '1001-1100'
+        vni_map['1001-1100'] = vnis_map
+        intf1.vni_map = vni_map
+        # Build unconfig
+        uncfgs = intf1.build_unconfig(apply=False,attributes = {'vni_map': vni_map})
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(uncfgs),
+            '\n'.join([
+                'interface nve1',
+                ' no member vni 1001-1100',
+                ' exit'
+            ]))
+        # Apply configuration
+        intf1.nve_host_reachability_protocol = 'bgp'
+        intf1.nve_global_suppress_arp = True
+        intf1.nve_global_mcast_group_l2 = '229.0.0.1'
+        intf1.nve_src_intf_holddown = 30
+        vni_map= {}
+        vnis_map = {}
+        vni_map['nve_vni_multisite_mcast_group'] = '238.1.1.1'
+        vni_map['nve_vni_suppress_arp'] = True
+        vni_map['nve_vni'] = '1001-1100'
+        vnis_map['1001-1100'] = vni_map
+        intf1.vni_map = vnis_map
+
+        # Build unconfig
+        uncfgs = intf1.build_unconfig(apply=False, attributes={'nve_host_reachability_protocol': 'bgp',
+                                                               'nve_src_intf_holddown': 30,
+                                                               'global_suppress_arp': True,
+                                                               'nve_global_mcast_group_l2': '229.0.0.1',
+                                                                'vni_map': vnis_map})
+
+
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(uncfgs),
+            '\n'.join([
+                 'interface nve1',
+                 ' no host-reachability protocol bgp',
+                 ' no global mcast-group L2',
+                 ' no source-interface hold-down-time 30',
+                 ' member vni 1001-1100',
+                 '  no suppress-arp',
+                 '  no multisite mcast-group',
+                 '  exit',
+                 ' exit'
+            ]))
 
 
 
@@ -975,6 +1197,39 @@ class test_nx_interface(TestCase):
                 ' switchport trunk native vlan 1',
                 ' exit'
             ]))
+
+        def test_dot1q_tunnel_interface(self):
+            # Set Genie Tb
+            testbed = Testbed()
+            Genie.testbed = testbed
+
+            # Device
+            dev1 = Device(name='BL1', testbed=testbed, os='nxos')
+            intf1 = Interface(
+                name='Ethernet2/22',
+                device=dev1,
+                description='dot1q tunnel testing',
+                enabled=True,
+                switchport_mode='dot1q-tunnel',
+                dot1q_access_vlan='301',
+                switchport_enable=True
+            )
+
+            # Build config
+            cfgs = intf1.build_config(apply=False)
+
+            # Check config build correctly
+            self.assertMultiLineEqual(
+                str(cfgs),
+                '\n'.join([
+                    'interface Ethernet2/22',
+                    ' description dot1q tunnel testing',
+                    ' no shutdown',
+                    ' switchport',
+                    ' switchport mode dot1q-tunnel',
+                    ' switchport access vlan 1301',
+                    ' exit'
+                ]))
             
 if __name__ == '__main__':
     unittest.main()

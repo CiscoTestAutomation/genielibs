@@ -10,7 +10,7 @@ from pyats.aetest.steps import Steps
 from pyats.aetest.base import TestItem
 from pyats.kleenex.engine import KleenexEngine
 from pyats.kleenex.loader import KleenexFileLoader
-from pyats.aetest.signals import AEtestPassedSignal, TerminateStepSignal
+from pyats.aetest.signals import AEtestPassedSignal, TerminateStepSignal, AEtestFailedSignal
 
 # Genie
 from genie.testbed import load
@@ -52,7 +52,7 @@ class PositiveStages(unittest.TestCase):
         self.section = TestItem(uid='test', description='', parameters={})
 
 
-    def test_stage_change_boot_variable(self):
+    def test_stage_change_boot_variable__1(self):
         self.device.parse = Mock(side_effect=pos_parsed)
         self.device.configure = Mock(side_effect=pos_config)
         self.device.execute = Mock(side_effect=pos_execute)
@@ -60,7 +60,18 @@ class PositiveStages(unittest.TestCase):
         # Execute stage: change_boot_variable
         with self.assertRaises(AEtestPassedSignal):
             change_boot_variable(self.section, self.steps, self.device,
-                                 **self.device.clean.change_boot_variable)
+                                 **self.device.clean.change_boot_variable__1)
+
+    def test_stage_change_boot_variable__2(self):
+        self.device.parse = Mock(side_effect=pos_parsed)
+        self.device.configure = Mock(side_effect=pos_config)
+        self.device.execute = Mock(side_effect=pos_execute)
+
+        # Execute stage: change_boot_variable
+        with self.assertRaises(AEtestPassedSignal):
+            change_boot_variable(self.section, self.steps, self.device,
+                                 **self.device.clean.change_boot_variable__2)
+
 
 
 class NegativeStages(unittest.TestCase):
@@ -88,7 +99,7 @@ class NegativeStages(unittest.TestCase):
         # Execute stage: change_boot_variable
         with self.assertRaises(TerminateStepSignal):
             change_boot_variable(self.section, self.steps, self.device,
-                                 **self.device.clean.change_boot_variable)
+                                 **self.device.clean.change_boot_variable__1)
 
 
     def test_stage_change_boot_variable2(self):
@@ -99,8 +110,19 @@ class NegativeStages(unittest.TestCase):
         # Execute stage: change_boot_variable
         with self.assertRaises(TerminateStepSignal):
             change_boot_variable(self.section, self.steps, self.device,
-                                 **self.device.clean.change_boot_variable)
+                                 **self.device.clean.change_boot_variable__1)
 
+
+
+    # def test_stage_change_boot_variable3(self):
+    #     self.device.parse = Mock(side_effect=KeyError('negative test'))
+    #     self.device.configure = Mock(side_effect=neg_config)
+    #     self.device.execute = Mock(side_effect=neg_execute)
+
+    #     # Execute stage: change_boot_variable
+    #     with self.assertRaises(AEtestFailedSignal):
+    #         change_boot_variable(self.section, self.steps, self.device,
+    #                              **self.device.clean.change_boot_variable__2)
 
 if __name__ == '__main__':
     unittest.main()

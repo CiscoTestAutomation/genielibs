@@ -10,6 +10,9 @@ from .advanced_actions_helper import callback_blitz_dispatcher_gen,\
                                      _loop_dispatcher, \
                                      _parallel
 
+from pyats.results import Passed, Failed, Errored, Skipped,\
+                          Aborted, Passx, Blocked                                
+
 log = logging.getLogger()
 
 
@@ -106,8 +109,19 @@ def parallel(self, steps, testbed, section, name, data):
         for action_kwargs in callback_blitz_dispatcher_gen(**kwargs):
             pcall_payloads.append(action_kwargs)
 
+        # Run actions in parallel
         pcall_returns = pcall(self.dispatcher, ikwargs=pcall_payloads)
-        return _parallel(self, section, pcall_returns, steps)
+
+        _parallel_results = _parallel(self, section, pcall_returns, steps)
+
+        # Check for `continue: False` and go to exit if a section doesn't pass
+        continues = [entry.get('continue_') for entry in pcall_returns]
+        if not all(continues) and section.result != Passed:
+                section.failed(
+                    'Parallel section results is NOT passed, Stopping the testcase',
+                    goto=['exit'])
+
+        return _parallel_results
 
 
 def run_condition(self, steps, testbed, section, name, action_item):
