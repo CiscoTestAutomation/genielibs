@@ -68,7 +68,7 @@ def config_enable_ip_routing(device):
     """
     log.info("Configuring ip routing")
 
-    try:            
+    try:
         device.configure("ip routing")
     except SubCommandFailure as e:
         raise SubCommandFailure(
@@ -209,7 +209,35 @@ def config_mpls_on_device(device, loopback_intf):
     """
     log.info("Configuring mpls ip on device")
 
-    try:            
+    try:
+        device.configure(
+            [
+                "mpls ip",
+                "mpls label protocol ldp",
+                "mpls ldp router-id {loopback_intf} force".format(
+                                       loopback_intf=loopback_intf),
+                "mpls ldp graceful-restart"
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Basic mpls configuration failed. Error: {e}".format(e=e)
+        )
+
+def config_mpls_on_device(device, loopback_intf):
+    """ configure mpls on device
+        Args:
+            device (`obj`): Device object
+            loopback_intf (`str`): Interface name
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info("Configuring mpls ip on device")
+
+    try:
         device.configure(
             [
                 "mpls ip",
@@ -288,7 +316,8 @@ def unshut_interface_adjacent_interfaces(
         adjacent_interfaces = \
             get_interface_connected_adjacent_router_interfaces(
                 device=device, link_name=link_name, num=num
-        )
+            )
+
     for interface in adjacent_interfaces:
         adjacent_device = interface.device
         interface_name = interface.name
@@ -537,7 +566,7 @@ def config_interface_ospfv3(device, interface, ospfv3_pid, area):
         device.configure(
             [
                 "interface {interface}".format(interface=interface),
-                "ospfv3 {pid} ipv6 area {area}".format(pid=ospfv3_pid, 
+                "ospfv3 {pid} ipv6 area {area}".format(pid=ospfv3_pid,
                                                        area=area),
             ]
         )
@@ -906,7 +935,7 @@ def configure_interfaces_shutdown(device, interfaces):
     """
     config_cmd = []
     for interface in interfaces:
-        config_cmd += ["int {interface}".format(interface=interface), 
+        config_cmd += ["int {interface}".format(interface=interface),
                        "shutdown"]
     try:
         device.configure(config_cmd)
@@ -924,7 +953,7 @@ def configure_interfaces_unshutdown(device, interfaces):
     """
     config_cmd = []
     for interface in interfaces:
-        config_cmd += ["int {interface}".format(interface=interface), 
+        config_cmd += ["int {interface}".format(interface=interface),
                        "no shutdown"]
     try:
         device.configure(config_cmd)
@@ -998,7 +1027,7 @@ def configure_interface_interfaces_on_port_channel(
         raise SubCommandFailure(
             "Couldn't add {intf} on "
             "channel-group {channel_group} in {mode} mode. Error:\n{error}"\
-                .format(intf=interface, mode=mode, channel_group=channel_group, 
+                .format(intf=interface, mode=mode, channel_group=channel_group,
                         error=e
             )
         )
@@ -1019,7 +1048,7 @@ def configure_interfaces_on_port_channel(
         Returns:
             None
     """
-    
+
     for intf  in interfaces:
         config_cmd="interface {interface} \n".format(interface=intf)
         if disable_switchport:
@@ -1029,7 +1058,7 @@ def configure_interfaces_on_port_channel(
             config_cmd+="channel-protocol {channel_protocol} \n".format(
                                       channel_protocol=channel_protocol)
         config_cmd+="channel-group {channel_group} mode {mode} \n".format(
-                                  channel_group=channel_group, mode=mode)         
+                                  channel_group=channel_group, mode=mode)
         try:
             device.configure(config_cmd)
             log.info(
@@ -1042,11 +1071,11 @@ def configure_interfaces_on_port_channel(
             raise SubCommandFailure(
                 "Couldn't add {intf} on "
                 "channel-group {channel_group} in {mode} mode. Error:\n{error}"\
-                    .format(intf=intf, mode=mode, channel_group=channel_group, 
+                    .format(intf=intf, mode=mode, channel_group=channel_group,
                             error=e
                 )
         )
-    
+
 def configure_interface_switchport_trunk(device, interfaces, vlan_id=None):
 
     """ configure switchport mode trunk to the interface
@@ -1070,7 +1099,7 @@ def configure_interface_switchport_trunk(device, interfaces, vlan_id=None):
             confg+="switchport \n"
             confg+="switchport mode trunk \n"
             confg+="switchport trunk allowed vlan {vlan_id}".format(
-                                                    vlan_id=vlan_id)     
+                                                    vlan_id=vlan_id)
             device.configure(confg)
     except SubCommandFailure as e:
         raise SubCommandFailure(
@@ -1212,7 +1241,7 @@ def remove_virtual_interface(device,interfaces):
                 "Could not remove interface {interface}. Error:\n{error}"\
                     .format(interface=interface, error=e
                 )
-            )            
+            )
 
 
 def configure_vrf_on_interface(device, interface, vrf):
@@ -1403,8 +1432,8 @@ def unconfigure_interface_monitor_session(device, session_name, session_type):
             
 
 def configure_subinterfaces_for_vlan_range(
-    device, interface, vlan_id_start, vlan_id_step, vlan_id_count, 
-    network_start, network_step,host_address_step, netmask, 
+    device, interface, vlan_id_start, vlan_id_step, vlan_id_count,
+    network_start, network_step,host_address_step, netmask,
     ospf_network_type=None):
     """ Configures multiple subinterfaces looping through vlan range
 
@@ -1437,10 +1466,10 @@ def configure_subinterfaces_for_vlan_range(
         ip_address = network + int(IPv4Address(host_address_step))
 
         cmds.extend([
-            'interface {interface}.{vlan_id}'.format(interface=interface, 
+            'interface {interface}.{vlan_id}'.format(interface=interface,
                                                      vlan_id=vlan_id),
             'encapsulation dot1q {vlan_id}'.format(vlan_id=vlan_id),
-            'ip address {ip_address} {netmask}'.format(ip_address=ip_address, 
+            'ip address {ip_address} {netmask}'.format(ip_address=ip_address,
                                                        netmask=netmask)])
 
         if ospf_network_type:
@@ -1457,7 +1486,7 @@ def configure_subinterfaces_for_vlan_range(
     return interfaces
 
 
-def configure_interface_for_authentication(device, config_list, 
+def configure_interface_for_authentication(device, config_list,
                                            auth_type='dot1x'):
     """
     Interface configuration for Dot1x
@@ -1484,7 +1513,7 @@ def configure_interface_for_authentication(device, config_list,
 
 
 def configure_interface_for_dot1x(
-    device, interface, role='authenticator', order='dot1x', priority='dot1x', 
+    device, interface, role='authenticator', order='dot1x', priority='dot1x',
     port_control='auto', additional_config=None):
     """
     Interface configuration for Dot1x
@@ -1500,8 +1529,8 @@ def configure_interface_for_dot1x(
         None
     Raises:
         SubCommandFailure
-    
-    ex.) 
+
+    ex.)
         configures below cli commands on interface if role is authenticator:
             'interface GigabitEthernet1/0/2',
             'authentication open',
@@ -1530,12 +1559,12 @@ def configure_interface_for_dot1x(
         default_config_list+additional_config if additional_config is not None \
             else default_config_list
 
-    configure_interface_for_authentication(device, config_list, 
+    configure_interface_for_authentication(device, config_list,
                                            auth_type='dot1x')
-      
+
 
 def configure_interface_for_mab(
-    device, interface, role='authenticator', order='mab', priority='mab', 
+    device, interface, role='authenticator', order='mab', priority='mab',
     port_control='auto', additional_config=None):
     """
     Interface configuration for Mac authentication bypass
@@ -1551,8 +1580,8 @@ def configure_interface_for_mab(
         None
     Raises:
         SubCommandFailure
-    
-    ex.) 
+
+    ex.)
         configures below cli commands on interface if role is authenticator:
             'interface GigabitEthernet1/0/2',
             'authentication open',
@@ -1599,8 +1628,8 @@ def unconfigure_interface_for_dot1x(device, interface, role='authenticator',
         None
     Raises:
         SubCommandFailure
-    
-    ex.) 
+
+    ex.)
         configures below cli commands on interface if role is authenticator:
             'interface GigabitEthernet1/0/2',
             'no authentication open',
@@ -1629,9 +1658,9 @@ def unconfigure_interface_for_dot1x(device, interface, role='authenticator',
     config_list = default_config_list + additional_config \
         if additional_config is not None else default_config_list
 
-    configure_interface_for_authentication(device, config_list, 
+    configure_interface_for_authentication(device, config_list,
                                            auth_type='dot1x')
-      
+
 
 def unconfigure_interface_for_mab(device, interface, role='authenticator',
                                   additional_config=None):
@@ -1646,8 +1675,8 @@ def unconfigure_interface_for_mab(device, interface, role='authenticator',
         None
     Raises:
         SubCommandFailure
-    
-    ex.) 
+
+    ex.)
         configures below cli commands on interface if role is authenticator:
             'interface GigabitEthernet1/0/2',
             'no authentication open',
@@ -1809,7 +1838,7 @@ def configure_ipv6_dhcp_relay(device, interface, dest_ipv6, vlan):
             )
         )
 
-def configure_ipv6_nd(device, interface, lifetime, pref_lifetime, router_pref, 
+def configure_ipv6_nd(device, interface, lifetime, pref_lifetime, router_pref,
                       ra_lifetime,ra_interval):
     """ Configure IPv6 ND parameters
         Args:
@@ -1863,16 +1892,15 @@ def attach_dhcpv6_guard_policy_to_interface(device, interface, policy_name):
             SubCommandFailure
     """
 
-    cmd_1 = "interface {intf}".format(intf=interface)
-    cmd_2 = "ipv6 dhcp guard attach-policy {policy_name}"\
-        .format(policy_name=policy_name)
+    cmd = ["interface {intf}".format(intf=interface),
+           "ipv6 dhcp guard attach-policy {policy_name}"
+           .format(policy_name=policy_name)]
 
-    # Configure device
     try:
-        device.configure([cmd_1, cmd_2])
+        device.configure(cmd)
 
     except SubCommandFailure as e:
-        raise SubCommandFailure(
+        log.error(
             "Failed to attach DHCPv6 Guard policy {policy_name} on interface "
             "{interface} on device {dev}. Error:\n{error}".format(
                 policy_name=policy_name,
@@ -1881,6 +1909,7 @@ def attach_dhcpv6_guard_policy_to_interface(device, interface, policy_name):
                 error=e,
             )
         )
+        raise
 
 def enable_ipv6_dhcp_server(device, interface, pool_name):
     """ Enable IPv6 DHCP server on an interface
@@ -1897,16 +1926,15 @@ def enable_ipv6_dhcp_server(device, interface, pool_name):
             SubCommandFailure
     """
 
-    cmd_1 = "interface {intf}".format(intf=interface)
-    cmd_2 = "ipv6 dhcp server {pool_name} rapid-commit"\
-        .format(pool_name=pool_name)
+    cmd = ["interface {intf}".format(intf=interface),
+           "ipv6 dhcp server {pool_name} rapid-commit"
+           .format(pool_name=pool_name)]
 
-    # Configure device
     try:
-        device.configure([cmd_1, cmd_2])
+        device.configure(cmd)
 
     except SubCommandFailure as e:
-        raise SubCommandFailure(
+        log.error(
             "Failed to enable IPv6 DHCP server for {pool_name} on interface "
             "{interface} on device {dev}. Error:\n{error}".format(
                 pool_name=pool_name,
@@ -1915,6 +1943,7 @@ def enable_ipv6_dhcp_server(device, interface, pool_name):
                 error=e,
             )
         )
+        raise
 
 def detach_dhcpv6_guard_policy_to_interface(device, interface, policy_name):
     """ Detach DHCPv6 Guard Policy from an interface
@@ -1931,16 +1960,15 @@ def detach_dhcpv6_guard_policy_to_interface(device, interface, policy_name):
             SubCommandFailure
     """
 
-    cmd_1 = "interface {intf}".format(intf=interface)
-    cmd_2 = "no ipv6 dhcp guard attach-policy {policy_name}"\
-        .format(policy_name=policy_name)
+    cmd = ["interface {intf}".format(intf=interface),
+           "no ipv6 dhcp guard attach-policy {policy_name}"
+           .format(policy_name=policy_name)]
 
-    # Configure device
     try:
-        device.configure([cmd_1, cmd_2])
+        device.configure(cmd)
 
     except SubCommandFailure as e:
-        raise SubCommandFailure(
+        log.error(
             "Failed to detach DHCPv6 Guard policy {policy_name} on interface "
             "{interface} on device {dev}. Error:\n{error}".format(
                 policy_name=policy_name,
@@ -1949,6 +1977,7 @@ def detach_dhcpv6_guard_policy_to_interface(device, interface, policy_name):
                 error=e,
             )
         )
+        raise
 
 def detach_ipv6_raguard_policy_to_interface(device,interface,policy_name):
     """ Detach IPv6 RA Guard Policy from an interface
@@ -1965,15 +1994,14 @@ def detach_ipv6_raguard_policy_to_interface(device,interface,policy_name):
             SubCommandFailure
     """
 
-    cmd_1 = "interface {intf}".format(intf=interface)
-    cmd_2 = "no ipv6 nd raguard attach-policy {policy_name}"\
-        .format(policy_name=policy_name)
+    cmd = ["interface {intf}".format(intf=interface),
+           "no ipv6 nd raguard attach-policy {policy_name}"
+           .format(policy_name=policy_name)]
 
-    # Configure device
     try:
-        device.configure([cmd_1, cmd_2])
+        device.configure(cmd)
     except SubCommandFailure as e:
-        raise SubCommandFailure(
+        log.error(
             "Failed to detach IPv6 RA Guard policy {policy_name} on interface "
             "{interface} on device {dev}. Error:\n{error}".format(
                 policy_name=policy_name,
@@ -1982,6 +2010,7 @@ def detach_ipv6_raguard_policy_to_interface(device,interface,policy_name):
                 error=e,
             )
         )
+        raise
 
 def attach_ipv6_raguard_policy_to_vlan(device, vlan, policy_name):
     """ Attach IPv6 RA Guard Policy to a vlan
@@ -1998,16 +2027,15 @@ def attach_ipv6_raguard_policy_to_vlan(device, vlan, policy_name):
             SubCommandFailure
     """
 
-    cmd_1 = "vlan configuration {vlan}".format(vlan=vlan)
-    cmd_2 = "ipv6 nd raguard attach-policy {policy_name}"\
-        .format(policy_name=policy_name)
+    cmd = ["vlan configuration {vlan}".format(vlan=vlan),
+           "ipv6 nd raguard attach-policy {policy_name}"
+           .format(policy_name=policy_name)]
 
-    # Configure device
     try:
-        device.configure([cmd_1, cmd_2])
+        device.configure(cmd)
 
     except SubCommandFailure as e:
-        raise SubCommandFailure(
+        log.error(
             "Failed to attach IPv6 RA Guard policy {policy_name} on vlan "
             "{vlan} on device {dev}. Error:\n{error}".format(
                 policy_name=policy_name,
@@ -2016,6 +2044,7 @@ def attach_ipv6_raguard_policy_to_vlan(device, vlan, policy_name):
                 error=e,
             )
         )
+        raise
 
 def detach_ipv6_raguard_policy_to_vlan(device, vlan, policy_name):
     """ Detach IPv6 RA Guard Policy from Vlan
@@ -2032,15 +2061,14 @@ def detach_ipv6_raguard_policy_to_vlan(device, vlan, policy_name):
             SubCommandFailure
     """
 
-    cmd_1 = "vlan configuration {vlan}".format(vlan=vlan)
-    cmd_2 = "no ipv6 nd raguard attach-policy {policy_name}"\
-        .format(policy_name=policy_name)
+    cmd = ["vlan configuration {vlan}".format(vlan=vlan),
+           "no ipv6 nd raguard attach-policy {policy_name}"
+           .format(policy_name=policy_name)]
 
-    # Configure device
     try:
-        device.configure([cmd_1, cmd_2])
+        device.configure(cmd)
     except SubCommandFailure as e:
-        raise SubCommandFailure(
+        log.error(
             "Failed to detach IPv6 RA Guard policy {policy_name} on vlan "
             "{vlan} on device {dev}. Error:\n{error}".format(
                 policy_name=policy_name,
@@ -2049,6 +2077,7 @@ def detach_ipv6_raguard_policy_to_vlan(device, vlan, policy_name):
                 error=e,
             )
         )
+        raise
 
 def remove_channel_group_from_interface(device, interface, channel_group, mode):
     """ Remove channel group from an Interface
@@ -2163,7 +2192,138 @@ def configure_interface_ospfv3(device, interface, ospf_pid, area):
             "Could not configure ospfv3. Error:\n{error}".format(error=e)
         )
 
-    
+def attach_dhcpv6_guard_policy_to_vlan(device, vlan, policy_name):
+    """ Attach DHCPv6 Guard Policy to a vlan
+
+        Args:
+            device (`obj`): Device object
+            vlan (`str`): vlan to attach policy
+            policy_name (`str`): Policy name to be attached to interface
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = ["vlan configuration {vlan}".format(vlan=vlan),
+           "ipv6 dhcp guard attach-policy {policy_name}".format(policy_name=policy_name)]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(
+            "Failed to attach DHCPv6 Guard policy {policy_name} on vlan "
+            "{vlan} on device {dev}. Error:\n{error}".format(
+                policy_name=policy_name,
+                vlan=vlan,
+                dev=device.name,
+                error=e,
+            )
+        )
+        raise
+
+def detach_dhcpv6_guard_policy_vlan(device, vlan, policy_name):
+    """ Detach DHCPv6 Guard Policy from a vlan
+
+        Args:
+            device (`obj`): Device object
+            vlan (`str`): vlan to attach policy
+            policy_name (`str`): Policy name to be attached to interface
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = ["vlan configuration {vlan}".format(vlan=vlan),
+           "no ipv6 dhcp guard attach-policy {policy_name}".format(
+         policy_name=policy_name
+    )]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(
+            "Failed to detach DHCPv6 Guard policy {policy_name} from vlan "
+            "{vlan} on device {dev}. Error:\n{error}".format(
+                policy_name=policy_name,
+                vlan=vlan,
+                dev=device.name,
+                error=e,
+            )
+        )
+        raise
+
+def attach_device_tracking_policy_to_interface(device, policy_name, interface):
+    """ Attach Device Tracking Policy to a interface
+
+        Args:
+            device (`obj`): Device object
+            policy_name (`str`): Policy name to be attached to interface
+            interface (`str`): interface to attach policy
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = ["interface {interface}".format(interface=interface),
+           "device-tracking attach-policy {policy_name}".format(
+         policy_name=policy_name
+    )]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(
+            "Failed to attach Device Tracking policy {policy_name} on interface "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                policy_name=policy_name,
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )
+        raise
+
+def configure_authentication_parameters_interface(device, interface):
+    """ Configure authentication parameters on interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): interface to configure the authentication parameters
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = ["interface {interface}".format(interface=interface),
+           "authentication port-control auto",
+           "authentication periodic",
+           "authentication timer reauthenticate server"]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(
+            "Failed to Configure authentication parameters on interface "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )
+        raise
+
 def configure_interface_switchport_mode(device, interface, mode):
     """ Configures switchport mode on interface
         Args:
@@ -2173,7 +2333,7 @@ def configure_interface_switchport_mode(device, interface, mode):
         Returns:
             None
         Raises:
-            SubCommandFailure 
+            SubCommandFailure
     """
     log.info(
         "Configuring switchport mode on {interface} with mode = {mode}".format(
@@ -2191,8 +2351,8 @@ def configure_interface_switchport_mode(device, interface, mode):
     except SubCommandFailure:
         log.error('Failed to configure switchport mode on the interface')
         raise
-        
-        
+
+
 def configure_interface_no_switchport(device, interface):
     """ Configures no switchport on interface
         Args:
@@ -2201,7 +2361,7 @@ def configure_interface_no_switchport(device, interface):
         Returns:
             None
         Raises:
-            SubCommandFailure 
+            SubCommandFailure
     """
     log.info(
         "Configuring no switchport on {interface}".format(
@@ -2220,4 +2380,203 @@ def configure_interface_no_switchport(device, interface):
         log.error('Failed to configure no switchport on the interface')
         raise
 
+def unconfigure_vlan_interface(device, vlan):
+    """ Unconfigure vlan from device
+
+        Args:
+            device (`obj`): Device object
+            vlan (`str`): vlan to be unconfigured
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = "no interface {vlan}".format(vlan=vlan)
+
+    # Configure device
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to Unconfigure Vlan {vlan} from device"
+            "on device {dev}. Error:\n{error}".format(
+                vlan=vlan,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+
+def configure_interface_template(device, interface_list=[], template_name="sample-template"):
+    """ Configure Template on a list of interfaces
+    interface GigabitEthernet1/0/1
+      source template sample-template
+
+    Args:
+        device ('obj'): Device object
+        template_name ('str'): Template name
+        interface_list ('list'): List of Interface names - can directly pass in device.interfaces from testbed yaml
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+    for interface in interface_list:
+        try:
+            device.configure(
+                '''
+                interface {interface}
+                  source template {template_name}
+                '''.format(interface=interface, template_name=template_name))
+
+        except SubCommandFailure as e:
+            raise SubCommandFailure(
+                "Could not configure template on {interface}. Error:\n{error}".format(
+                    interface=interface, error=e
+                )
+        )
+
+
+def unconfigure_interface_template(device, interface_list=[], template_name="test"):
+    """ UnConfigures Template on a list of interfaces
+    interface GigabitEthernet1/0/1
+      no source template sample-template
+
+        Args:
+            device ('obj'): Device object
+            template_name ('str'): Template name
+            interface_list ('list'): List of Interface names - can directly pass in device.interfaces from testbed yaml
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    for interface in interface_list:
+        try:
+            device.configure(
+                '''
+                interface {interface}
+                  no source template {template_name}
+                '''.format(interface=interface, template_name=template_name))
+
+        except SubCommandFailure as e:
+            raise SubCommandFailure(
+                "Could not unconfigure template on {interface}. Error:\n{error}".format(
+                    interface=interface, error=e
+                )
+                )
+
+def configure_interface_switchport_voice_vlan(device, interface, vlan):
+    """ Configures switchport on interface
+    Args:
+        device ('obj'): device to use
+        interface ('str'): interface to configure
+        vlan ('str'): voice_vlan to configure
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+            "interface {interface}".format(interface=interface),
+            "switchport voice vlan {vlan}".format(vlan=vlan),
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure switchport voice vlan. Error:\n{error}".format(
+            error=e)
+        )
+
+def configure_ip_on_tunnel_interface(
+    device,
+    interface,
+    ip_address,
+    mask,
+    tunnel_source,
+    tunnel_destination,
+    keepalive_timer = 10,
+    ip_mtu = None,
+    ipv6_address=None
+):
+    """ Configure tunnel interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to get address
+            ip_address (`str`): IP addressed to be configured on interface
+            mask (`str`): Mask address to be used in configuration
+            tunnel_source (`str`): tunnel source address
+            tunnel_destination (`str`): tunnel destination address
+            keepalive_timer ('int',optional): tunnel keepalive timer,default value is 10
+            ip_mtu ('str',optional): tunnel mtu, default value is None
+            ipv6_address (`str`,optional): IPv6 address with subnet mask,default value is None
+
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    configs.append("interface {intf}".format(intf=interface))
+    configs.append("ip address {ip} {mask}".format(ip=ip_address,mask=mask))
+    configs.append("tunnel source {ip}".format(ip=tunnel_source))
+    configs.append("tunnel destination {ip}".format(ip=tunnel_destination))
+    configs.append("keepalive {timer}".format(timer=keepalive_timer))
+
+    if ip_mtu:
+        configs.append("ip mtu {mtu}".format(mtu=ip_mtu))
+
+    if ipv6_address:
+        configs.append("tunnel mode gre ipv6")
+        configs.append("ipv6 address {ipv6}".format(ipv6=ipv6_address))
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure IP address {ip} on Tunnel interface "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                ip=ip_address,
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def unconfigure_tunnel_interface(device, interface):
+    """ Unconfigure tunnel interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to get address
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    configs = "no interface {intf}".format(intf=interface)
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure tunnel on interface {interface} on device {dev}. Error:\n{error}".format(
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )
 

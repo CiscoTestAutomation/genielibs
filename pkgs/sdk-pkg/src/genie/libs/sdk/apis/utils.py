@@ -1137,11 +1137,11 @@ def copy_from_device(device,
             fu.validate_and_update_url = lambda url, *args, **kwargs: url  # override to avoid url changes
             fu.get_server = lambda *args, **kwargs: None  # override to suppress log messages
             return fu.copyfile(source=local_path,
-                        destination=destination,
-                        timeout_seconds=timeout,
-                        device=device,
-                        vrf=vrf,
-                        interface=mgmt_interface)
+                               destination=destination,
+                               timeout_seconds=timeout,
+                               device=device,
+                               vrf=vrf,
+                               interface=mgmt_interface)
 
         except Exception:
             log.error('Failed to transfer file', exc_info=True)
@@ -1244,6 +1244,8 @@ def modify_filename(device,
             limit ('int'): character limit of the url, default 63
             unique_file_name ('bool'): append a six digit random number to the end of
                                         file name to make it unique
+            unique_number ('int'): provide a number to be used with unique_file_name
+                                    instead of a random one
             new_name ('str'): replace original file name with new_name
 
         Raises:

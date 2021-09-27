@@ -965,6 +965,14 @@ class Health(Blitz):
         # pre-context processor
         # ---------------------
 
+        # set result Passed at beginning of section in pre processor
+        # because section sometimes doesn't have any item like commonCleanup
+        # if the section doesn't have any, section.result is None and rolled-up
+        # only with pyATS Health Check result. But section should have Passed 
+        # at first place
+        if section.__result__ is None:
+            section.result = Passed
+
         # execute pre-processor and received result in self.pre_processor_result
         self.pre_processor_run, self.pre_processor_result = self._pre_post_processors(
             testbed,

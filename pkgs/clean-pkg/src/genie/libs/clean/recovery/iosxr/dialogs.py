@@ -5,7 +5,7 @@ import time
 import logging
 
 # Unicon
-from unicon.eal.dialogs import Statement, Dialog, statement_decorator
+from unicon.eal.dialogs import Statement, statement_decorator
 from genie.libs.clean.recovery.dialogs import BreakBootDialog as CommonBreakBootDialog
 from genie.libs.clean.recovery.dialogs import RommonDialog as CommonRommonDialog
 

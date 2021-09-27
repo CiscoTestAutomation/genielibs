@@ -6,7 +6,7 @@ import logging
 
 # Unicon
 from unicon.eal.expect import Spawn
-from unicon.eal.dialogs import Dialog, Statement
+from unicon.eal.dialogs import Statement
 
 # Genie
 from genie.libs.clean.recovery.nxos.recovery import sendbrk_handler

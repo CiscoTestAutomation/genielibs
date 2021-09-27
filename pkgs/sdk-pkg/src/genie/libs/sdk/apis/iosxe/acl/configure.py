@@ -11,21 +11,22 @@ log = logging.getLogger(__name__)
 
 
 def config_extended_acl(
-    device,
-    acl_name,
-    permission,
-    protocol,
-    src_ip,
-    src_step,
-    src_wildcard,
-    dst_ip,
-    dst_step,
-    dst_wildcard,
-    dst_port,
-    entries,
+        device,
+        acl_name,
+        permission,
+        protocol,
+        src_ip,
+        src_step,
+        src_wildcard,
+        dst_ip,
+        dst_step,
+        dst_wildcard,
+        dst_port,
+        entries,
+        acl_type=None,
+        sequence_num=None
 ):
     """ Configure extended ACL on device
-
         Args:
             device ('obj'): device object
             acl_name ('str'): acl name
@@ -39,52 +40,96 @@ def config_extended_acl(
             dst_wildcard ('str'): destination wildcard
             dst_port ('str'): Acl destination port
             entries ('int'): Acl entries
-
+            acl_type ('str', optional): type of ACL like with or without host keyword, default value is None
+            sequence_num ('str',optional): specific sequence number,default value is None
         Returns:
             config
         Raises:
             SubCommandFailure: Failed to configure access-list
     """
-    config = "ip access-list extended {}\n".format(acl_name)
-    src_ip = IPv4Address(src_ip)
-    src_step = IPv4Address(src_step)
-    dst_ip = IPv4Address(dst_ip)
-    dst_step = IPv4Address(dst_step)
-
-    if dst_wildcard != "0.0.0.0":
-        cmd = (
-            " {sequence} {permission} {protocol} {src_ip} {src_wildcard} "
-            "{dst_ip} {dst_wildcard} eq {dst_port}\n"
-        )
-    else:
-        cmd = (
-            " {sequence} {permission} {protocol} {src_ip} {src_wildcard} "
-            "host {dst_ip} eq {dst_port}\n"
-        )
-
-    for i in range(entries):
-        src_ip += int(src_step)
-        dst_ip += int(dst_step)
-
-        config += cmd.format(
-            sequence=i + 1,
+    configs = []
+    configs.append("ip access-list extended {}".format(acl_name))
+    if acl_type:
+        # Build config string
+        configs.append("{sequence} {permission} {protocol} host {src_ip} host {dst_ip}".format(
+            sequence=sequence_num,
             permission=permission,
             protocol=protocol,
             src_ip=src_ip,
-            src_wildcard=src_wildcard,
-            dst_ip=dst_ip,
-            dst_wildcard=dst_wildcard,
-            dst_port=dst_port,
+            dst_ip=dst_ip))
+    else:
+        if dst_wildcard != "0.0.0.0":
+            if entries > 1:
+                for i in range(entries):
+                    src_ip = IPv4Address(src_ip)
+                    src_step = IPv4Address(src_step)
+                    dst_ip = IPv4Address(dst_ip)
+                    dst_step = IPv4Address(dst_step)
+                    src_ip_inc = src_ip + i
+                    dst_ip_inc = dst_ip + i
+                    configs.append(
+                        " {sequence} {permission} {protocol} {src_ip} {src_wildcard} {dst_ip} {dst_wildcard} eq {dst_port}".format(
+                            sequence=i + 1,
+                            permission=permission,
+                            protocol=protocol,
+                            src_ip=src_ip_inc,
+                            src_wildcard=src_wildcard,
+                            dst_ip=dst_ip_inc,
+                            dst_wildcard=dst_wildcard,
+                            dst_port=dst_port))
+
+            if entries == 1:
+                configs.append(
+                    " {sequence} {permission} {protocol} {src_ip} {src_wildcard} {dst_ip} {dst_wildcard} eq {dst_port}".format(
+                        sequence=sequence_num,
+                        permission=permission,
+                        protocol=protocol,
+                        src_ip=src_ip,
+                        src_wildcard=src_wildcard,
+                        dst_ip=dst_ip,
+                        dst_wildcard=dst_wildcard,
+                        dst_port=dst_port))
+
+        if src_wildcard != "0.0.0.0":
+            if entries > 1:
+                for i in range(entries):
+                    src_ip = IPv4Address(src_ip)
+                    src_step = IPv4Address(src_step)
+                    dst_ip = IPv4Address(dst_ip)
+                    dst_step = IPv4Address(dst_step)
+                    src_ip_inc = src_ip + i
+                    dst_ip_inc = dst_ip + i
+                    configs.append(
+                        " {sequence} {permission} {protocol} {src_ip} {src_wildcard} {dst_ip} {dst_wildcard} eq {dst_port}".format(
+                            sequence=i + 1,
+                            permission=permission,
+                            protocol=protocol,
+                            src_ip=src_ip_inc,
+                            src_wildcard=src_wildcard,
+                            dst_ip=dst_ip_inc,
+                            dst_wildcard=dst_wildcard,
+                            dst_port=dst_port))
+
+            if entries == 1:
+                configs.append(
+                    " {sequence} {permission} {protocol} {src_ip} {src_wildcard} host {dst_ip} eq {dst_port}".format(
+                        sequence=sequence_num,
+                        permission=permission,
+                        protocol=protocol,
+                        src_ip=src_ip,
+                        src_wildcard=src_wildcard,
+                        dst_ip=dst_ip,
+                        dst_port=dst_port))
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure Access-list {acl} on device {dev}. Error:\n{error}".format(
+                acl=acl_name,
+                dev=device.name,
+                error=e,
+            )
         )
-
-    config += " {} permit ip any any\n".format(i + 2)
-    out = device.configure(config)
-
-    if "% Duplicate sequence" in out or "%Failed" in out:
-        raise SubCommandFailure("Failed to configure access-list")
-
-    return out
-
 
 def config_acl_on_interface(device, interface, acl_name, inbound=True):
     """ Configures acl on interface 
@@ -160,3 +205,92 @@ def scale_accesslist_config(device,acl_name,acl_list):
         raise SubCommandFailure("Failed to configure access-list")
 
     return out
+
+def unconfigure_acl(device, acl_name):
+    """ unconfigure Access-list
+
+        Args:
+            device (`obj`): Device object
+            acl_name (`str`): Access-list name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    configs = "no ip access-list extended {acl}".format(acl=acl_name)
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure {acl} on device {dev}. Error:\n{error}".format(
+                acl=acl_name,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def unconfigure_ace(
+        device,
+        acl_name,
+        permission,
+        protocol,
+        src_ip,
+        src_wildcard,
+        dst_ip,
+        dst_wildcard,
+        acl_type=None,
+        sequence_num=None
+):
+    """ Unconfigure Access-list Entry (ACE) from Access-list
+
+        Args:
+            device ('obj'): device object
+            acl_name ('str'): acl name
+            permission ('str'): (permit | deny)
+            protocol ('str'): protocol
+            src_ip ('str'): source start ip
+            src_wildcard ('str'): source wildcard
+            dst_ip ('str'): destination start ip
+            dst_wildcard ('str'): destination wildcard
+            acl_type ('str', optional): type of ACL like with or without host keyword, default value is None
+            sequence_num ('str',optional): specific sequence number, default value is None
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    configs.append("ip access-list extended {}".format(acl_name))
+    if sequence_num:
+        configs.append("no {sequence_num}".format(sequence_num=sequence_num))
+
+    elif acl_type == 'host':
+        configs.append("no {permission} {protocol} host {src_ip} host {dst_ip}".format(
+            permission=permission,
+            protocol=protocol,
+            src_ip=src_ip,
+            dst_ip=dst_ip))
+
+    elif src_wildcard and dst_wildcard :
+        configs.append("no {permission} {protocol} {src_ip} {src_wc}{dst_ip} {dst_wc}".format(
+            permission=permission,
+            protocol=protocol,
+            src_ip=src_ip,
+            src_wc=src_wildcard,
+            dst_ip=dst_ip,
+            dst_wc=dst_wildcard))
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure ace from {acl} on device {dev}. Error:\n{error}".format(
+                acl=acl_name,
+                dev=device.name,
+                error=e,
+            )
+        )

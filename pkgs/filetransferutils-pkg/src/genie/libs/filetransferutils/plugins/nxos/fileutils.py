@@ -90,10 +90,7 @@ class FileUtils(FileUtilsDeviceBase):
                                                        'cache_ip', True))
 
         if vrf is None:
-            logger.warning('Using default vrf "management" for NXOS. This '
-                           'default will change to None in v21.4. Please '
-                           'explicitly specify "management" to continue using '
-                           'this vrf.')
+            logger.info('Using default vrf "management" for NXOS.')
             vrf = 'management'
 
         # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl vrf management

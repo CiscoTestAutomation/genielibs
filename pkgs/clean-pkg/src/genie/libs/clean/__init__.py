@@ -17,4 +17,4 @@ __copyright__ = 'Copyright (c) 2019, Cisco Systems Inc.'
 from genie import abstract
 abstract.declare_package(__name__)
 
-from .clean import DeviceClean, PyatsDeviceClean
+from .clean import DeviceClean, PyatsDeviceClean, BaseStage

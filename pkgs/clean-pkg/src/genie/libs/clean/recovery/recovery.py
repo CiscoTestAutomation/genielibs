@@ -10,7 +10,7 @@ from pyats.async_ import pcall
 from pyats.results import Passed
 from pyats.log.utils import banner
 
-from unicon.eal.dialogs import Statement, Dialog
+from unicon.eal.dialogs import Statement
 
 # Genie
 from genie.libs import clean
@@ -23,7 +23,7 @@ from genie.metaparser.util.schemaengine import Optional, Or
 # Logger
 log = logging.getLogger(__name__)
 
-CONTINUE_RECOVERY = ['connect']
+CONTINUE_RECOVERY = ['Connect']
 
 
 def _disconnect_reconnect(device):
@@ -195,7 +195,7 @@ def _connectivity(device, console_activity_pattern=None, console_breakboot_char=
 
     # Step-5: Disconnect and reconnect to the device
     if not _disconnect_reconnect(device):
-        # If that still doesnt work, Thats all we got
+        # If that still doesn't work, Thats all we got
         raise Exception("Cannot recover the device '{d}'\nCannot run clean".\
                         format(d=device.name))
     else:
@@ -391,8 +391,10 @@ Recovery Steps:
     if recovery_is_required:
         section.passed("Device has been recovered. Continuing with pyATS Clean.")
     else:
-        log.info("Device '{}' is still connected. No need to recover the "
-                       "device.".format(device.name))
+        log.info(
+            "Device '{}' is still connected. No need to recover the device.".
+            format(device.name))
+
 
 def block_section(section):
     if section.parent.parameters.get('block_section'):

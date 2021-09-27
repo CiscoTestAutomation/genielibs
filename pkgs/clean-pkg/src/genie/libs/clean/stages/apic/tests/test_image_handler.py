@@ -118,16 +118,6 @@ class InvalidStructures(unittest.TestCase):
     def setUp(self):
         self.device = Mock()
 
-    def test_structure_1_extra_entry(self):
-        images = [
-            '/path/to/controller_image.bin',
-            '/path/to/switch_image.bin',
-            'invalid entry'
-        ]
-
-        with self.assertRaises(Exception):
-            ImageHandler(self.device, images)
-
     def test_structure_2_extra_type(self):
         images = {
             'controller': ['/path/to/controller_image.bin'],

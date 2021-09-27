@@ -74,66 +74,74 @@ def execute_clear_line(device, alias='cli'):
 
 
 def execute_power_cycle_device(device, delay=30):
-    '''Powercycle a device
-        Args:
-            device ('obj'): Device object
+    ''' Powercycle a device
+
+    Args:
+        device ('obj'): Device object
+
+        delay (int, optional): Time in seconds to sleep between turning the
+            device off and then back on. Defaults to 30.
+
+    Raises:
+        Exception if powercycling fails.
+
+    Returns:
+        None
     '''
 
     # Destroy device object
     device.destroy_all()
 
     # Find device's power cycler information
-    pc_dict = getattr(device, 'peripherals', {}).get('power_cycler', {})
-
-    if not pc_dict:
+    power_cyclers = getattr(device, 'peripherals', {}).get('power_cycler')
+    if not power_cyclers:
         raise Exception("Powercycler information is not provided in the "
                         "testbed YAML file for device '{}'\nUnable to "
                         "powercycle device".format(device.name))
-    #check to see if we have one power cycler or a list of power cycler 
-    #if we have only one wrap it around list
-    if isinstance(pc_dict,dict):
-        pc_list=[pc_dict]
-    else:
-        pc_list=pc_dict
-    # list of working power cyclers
-    working_pc=[]
-    for power_cycle in pc_list:
-        if not power_cycle.get('outlets'):
-            raise Exception("Powercycler 'outlets' have not been provided for "
-                "device '{}'".format(device.name))
+
+    # type(device['peripherals']['power_cycler']) should be a list to support
+    # redundant PDUs. It can also be a dict in case of single PDU (legacy).
+    if isinstance(power_cyclers, dict):
+        power_cyclers = [power_cyclers]
+
+    pcs = []
+
+    # Initialize each power cycler. Save the powercycler object and outlets
+    # for later user
+    for power_cycler in power_cyclers:
+        if power_cycler.get('outlets'):
+            # Cyberswitching based powercyclers require the testbed object
+            power_cycler['testbed'] = device.testbed
+
+            pcs.append(
+                (PowerCycler(**power_cycler), power_cycler['outlets'])
+            )
         else:
-            power_cycle['pc_outlets'] = power_cycle.get('outlets')
+            raise Exception("Powercycler outlets have not been provided:\n"
+                            "    Device: {}\n"
+                            "    Powercycler info: {}".format(device.name, power_cycler))
 
+    # Turn power cyclers off
+    for pc, outlets in pcs:
+        try:
+            device.api.change_power_cycler_state(
+                powercycler=pc, state='off', outlets=outlets)
+        except Exception as e:
+            raise Exception("Failed to powercycle device off:\n{}".format(str(e)))
 
-        power_cycle['testbed'] = device.testbed
-
-        # Init powercycler
-        pc = PowerCycler(**power_cycle)
-
-        # add a tuple of(PowerCycler obj, pc_list item ) to the working_pc
-        # move to the next step when all the power cyclers added to the list
-        working_pc.append((pc,power_cycle))
-
-    # Turn powercycler off
-    try:
-        for pc, power_cycle in working_pc:
-            device.api.change_power_cycler_state(powercycler=pc, state='off',
-                                    outlets= power_cycle['pc_outlets'])
-    except Exception as e:
-        raise Exception("Failed to powercycle device off\n{}".format(str(e)))
-    else:
         log.info("Powercycled device '{}' to 'off' state".format(device.name))
-    # Wait specified amount of time before turning powercycler back on
+
     log.info("Waiting '{}' seconds before powercycling device on".format(delay))
     time.sleep(delay)
-    # Turn powercycler off
-    try:
-        for pc, power_cycle in working_pc:
-            device.api.change_power_cycler_state(powercycler=pc, state='on',
-                                outlets=power_cycle['pc_outlets'])
-    except Exception as e:
-        raise Exception("Failed to powercycle device on\n{}".format(str(e)))
-    else:
+
+    # Turn power cyclers on
+    for pc, outlets in pcs:
+        try:
+            device.api.change_power_cycler_state(
+                powercycler=pc, state='on', outlets=outlets)
+        except Exception as e:
+            raise Exception("Failed to powercycle device on:\n{}".format(str(e)))
+
         log.info("Powercycled device '{}' to 'on' state".format(device.name))
 
 

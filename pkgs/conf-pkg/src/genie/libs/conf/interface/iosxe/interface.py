@@ -1100,5 +1100,7 @@ class VlanInterface(
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+
+
 Interface._build_name_to_class_map()
 

@@ -17,6 +17,7 @@ from pyats.easypy.plugins.bases import BasePlugin
 from pyats.aetest.processors.decorator import ProcessorDecorator
 from pyats import configuration as cfg
 from pyats.utils import parser as argparse
+from pyats.utils.yaml.dumper import OrderedSafeDumper
 
 # genie
 from genie import testbed
@@ -46,6 +47,12 @@ Start Time    : {starttime}
 Stop Time     : {stoptime}
 ```
 """
+
+try:
+    from genie.libs.cisco.telemetry import add_health_usage_data
+    INTERNAL = True
+except:
+    INTERNAL = False
 
 
 class HealthCheckPlugin(BasePlugin):
@@ -311,7 +318,9 @@ class HealthCheckPlugin(BasePlugin):
         with open(
                 "{rundir}/pyats_health.yaml".format(
                     rundir=self.runtime.directory), 'w') as f:
-            yaml.dump(health_loaded, f)
+            yaml.dump(health_loaded, f,
+                      Dumper = OrderedSafeDumper,
+                      default_flow_style = False)
 
         # get `source` for pyATS Health processors and instantiate class
         source = health_loaded.get('pyats_health_processors',
@@ -518,6 +527,14 @@ class HealthCheckPlugin(BasePlugin):
             # Block testcase when error is found
             raise Exception("Couldn't find any 'test_sections'.")
         processors = task.kwargs.setdefault('processors', {})
+
+        # Try to add health section usage to telemetry data 
+        if INTERNAL:
+            try:
+                add_health_usage_data(section_names)
+            except Exception as e:
+                logger.debug("Encountered an unexpected error while adding "
+                             "health telemetry data: %s" % e)
 
         # loop by health items (sections)
         for section in section_names:
