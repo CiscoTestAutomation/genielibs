@@ -33,8 +33,6 @@ TEST_FILE_NAME_PREFIX = 'test_api_'
 MOCK_DATA_FOLDER = 'mock_data'
 MOCK_DATA_FILE_NAME = 'mock_data.yaml'
 
-# records data from device and stores in temporary folder
-os.environ['UNICON_RECORD'] = TEMP_DIR
 
 
 class TestReport:
@@ -135,6 +133,9 @@ class TestGenerator:
         # if no destination is specified, create tests folder in cwd
         if not destination:
             destination = os.path.join(os.getcwd(), 'tests')
+
+        # records data from device and stores in temporary folder
+        os.environ['UNICON_RECORD'] = TEMP_DIR
 
         self.exclude_apis = []
         self.apis = self._get_apis(

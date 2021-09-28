@@ -93,11 +93,13 @@ pipeline {
                     make develop
                     cd $WORKSPACE/genie
                     make develop
+                    make json
                     cd $WORKSPACE/genieparser
                     make develop
                     make json
                     cd $WORKSPACE/genielibs.cisco
                     make develop
+                    make json
                     cd $WORKSPACE/pyats
                     make develop
                     cd $WORKSPACE
