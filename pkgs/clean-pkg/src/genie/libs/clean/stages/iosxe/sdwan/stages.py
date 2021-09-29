@@ -8,22 +8,19 @@ import time
 import logging
 
 # pyATS
-from pyats import aetest
 from pyats.async_ import pcall
 
 # Genie
 from genie.abstract import Lookup
 from genie.libs import clean
-from genie.libs.clean.utils import (clean_schema, _apply_configuration,
+from genie.libs.clean.utils import (_apply_configuration,
                                     handle_rommon_exception)
 from genie.libs.clean.recovery.iosxe.sdwan.recovery import recovery_worker as sdwan_recovery_worker
-from genie.libs.clean.recovery.recovery import _disconnect_reconnect
 from genie.metaparser.util.schemaengine import Optional, Or
 from genie.utils.timeout import Timeout
 from genie.libs.clean import BaseStage
-from genie.libs.clean.stages.stages import Connect as BaseConnect
-
-from genie.libs.sdk.libs.abstracted_libs.iosxe.subsection import get_default_dir
+from genie.libs.clean.stages.stages import Connect as CommonConnect
+from genie.libs.clean.stages.iosxe.stages import ChangeBootVariable as XeChangeBootVariable
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
@@ -32,7 +29,7 @@ from unicon.eal.dialogs import Statement, Dialog
 log = logging.getLogger(__name__)
 
 
-class Connect(BaseConnect):
+class Connect(CommonConnect):
     """This stage connects to the device that is being cleaned.
 
 Stage Schema
@@ -117,7 +114,9 @@ connect:
                                    via=via,
                                    init_exec_commands=init_exec_commands,
                                    init_config_commands=init_config_commands)
-                device.settings.HA_INIT_CONFIG_COMMANDS = ['']
+                device.settings.HA_INIT_CONFIG_COMMANDS = []
+                # ignore error for 'pnpa service discovery stop' in case device doesn't support
+                device.settings.ERROR_PATTERN = []
 
                 rommon = Statement(
                     pattern=r'^(.*)(rommon(.*)|loader(.*))+>.*$',
@@ -382,6 +381,7 @@ apply_configuration:
                             config_stable_time=CONFIG_STABLE_TIME,
                             configure_replace=CONFIGURE_REPLACE,
                             copy_directly_to_startup=COPY_DIRECTLY_TO_STARTUP):
+
         log.info("Section steps:\n1- Copy/Apply configuration to/on the device"
                  "\n2- Copy running-config to startup-config"
                  "\n3- Sleep to stabilize configuration on the device")
@@ -717,7 +717,7 @@ Stage Schema
 ------------
 expand_image:
 
-    image (list): Image to boot with
+    image (list, optional): Image to boot with
 
 Example
 -------
@@ -737,77 +737,66 @@ expand_image:
     # Stage Schema
     # ============
     schema = {
-        'image': list,
+        Optional('image'): list,
     }
 
     # ==============================
     # Execution order of Stage steps
     # ==============================
     exec_order = [
-        'clean_package', 'expand_image', 'save_boot_variable', 'erase_config'
+        'erase_config', 'clean_package', 'expand_image'
     ]
-
-    def clean_package(self, steps, device):
-
-        clean_package_dialog = Dialog([
-            Statement(pattern=r'Do you want to proceed\? \[y/n\]',
-                      action='sendline(y)',
-                      loop_continue=True,
-                      continue_timer=False),
-        ])
-
-        device.execute('request platform software package clean',
-                       reply=clean_package_dialog)
-
-    def expand_image(self, steps, device, image):
-
-        output = device.execute(
-            f'request platform software package expand file {image[0]}')
-
-        # Sample Outputs:
-        #   WARNING: bootflash:asr1000-universalk9.17.06.01a.SPA.18.conf
-        #   WARNING: packages.conf will replace the identical file that already exists in bootflash:
-        m = re.search(r'.*\s+WARNING:\s+(?P<conf_file>\S+.conf)', output)
-        if m:
-            self.conf_file = m.groupdict()['conf_file']
-            if ':' not in self.conf_file:
-                self.conf_file = 'bootflash:' + self.conf_file
-            log.info(
-                f'config is saved as {self.conf_file}. This file will be saved as boot variable for boot.'
-            )
-
-    def save_boot_variable(self, steps, device):
-
-        log.info('saving boot variable.')
-        device.configure(['no boot system', f'boot system {self.conf_file}'])
-
-        copy_run_start_dialog = Dialog([
-            Statement(pattern=r'Destination filename \[startup-config\]\?',
-                      action='sendline()',
-                      loop_continue=True,
-                      continue_timer=False),
-        ])
-
-        log.info('save config to startup-configuration.')
-        device.execute('copy run start', reply=copy_run_start_dialog)
-
-        log.info('checking boot variables')
-        device.execute('show bootvar')
 
     def erase_config(self, steps, device):
 
-        log.info('deleting configuration.')
-        device.execute('write erase')
+        with steps.start("Deleting configuration.") as step:
 
-        device.execute('delete /force bootflash:ciscosdwan*.cfg')
+            device.execute('write erase')
+            device.execute('delete /force bootflash:ciscosdwan*.cfg')
+
+    def clean_package(self, steps, device):
+
+        with steps.start("Cleaning old package info") as step:
+
+            clean_package_dialog = Dialog([
+                Statement(pattern=r'Do you want to proceed\? \[y/n\]',
+                          action='sendline(y)',
+                          loop_continue=True,
+                          continue_timer=False),
+            ])
+
+            device.execute('request platform software package clean',
+                           reply=clean_package_dialog)
+
+    def expand_image(self, steps, device, image):
+
+        with steps.start("Expanding .bin image file.") as step:
+
+            output = device.execute(
+                f'request platform software package expand file {image[0]}')
+
+            # Sample Outputs:
+            #   WARNING: bootflash:asr1000-universalk9.17.06.01a.SPA.18.conf
+            #   WARNING: packages.conf will replace the identical file that already exists in bootflash:
+            m = re.search(r'.*\s+WARNING:\s+(?P<conf_file>\S+.conf)', output)
+            if m:
+                self.conf_file = m.groupdict()['conf_file']
+                if ':' not in self.conf_file:
+                    self.conf_file = 'bootflash:' + self.conf_file
+                log.info(
+                    f'config is saved as {self.conf_file}. This file will be saved as boot variable for boot.'
+                )
+
+            image_mapping = self.history['ExpandImage'].parameters.setdefault('image_mapping', {})
+            image_mapping.update({image[0]: self.conf_file})
 
 
-class ControllerMode(BaseStage):
+class SetControllerMode(BaseStage):
     """Set controller mode
 
 Stage Schema
 ------------
-controller_mode:
+set_controller_mode:
 
     mode (str, optional): `enable` or `disable`. Defaults to `enable`
 
@@ -817,12 +806,16 @@ controller_mode:
     configure_retry_interval (int, optional): interval of retry configure().
         Defaults to 60 secs
 
+    delete_inactive_versions (bool, optional): delete non active version after
+        changing image. Defaults to True
+
 Example
 -------
-controller_mode:
+set_controller_mode:
     mode: enable
     reload_timeout: 600
     configure_retry_interval: 30
+    delete_inactive_versions: True
 """
 
     # =================
@@ -831,6 +824,7 @@ controller_mode:
     MODE = 'enable'
     RELOAD_TIMEOUT = 600
     CONFIGURE_RETRY_INTERVAL = 30
+    delete_inactive_versions = True
 
     # ============
     # Stage Schema
@@ -838,116 +832,195 @@ controller_mode:
     schema = {
         Optional('mode'): str,
         Optional('reload_timeout'): int,
+        Optional('delete_inactive_versions'): bool,
     }
 
     # ==============================
     # Execution order of Stage steps
     # ==============================
-    exec_order = ['controller_mode']
+    exec_order = [
+        'set_controller_mode', 'confirm_and_set_default',
+        'delete_inactive_versions'
+    ]
 
-    def controller_mode(self,
-                        steps,
-                        device,
-                        mode=MODE,
-                        reload_timeout=RELOAD_TIMEOUT,
-                        configure_retry_interval=CONFIGURE_RETRY_INTERVAL):
+    def set_controller_mode(
+        self,
+        steps,
+        device,
+        mode=MODE,
+        reload_timeout=RELOAD_TIMEOUT,
+    ):
 
-        if device.connected:
-            device.destroy_all()
+        with steps.start("setting controller mode") as step:
 
-        device.platform = 'iosxe'
-        device.connect()
+            if device.connected:
+                device.destroy_all()
 
-        _, password = device.api.get_username_password()
+            device.platform = 'iosxe'
+            device.connect()
 
-        # Username: admin
-        # Password:
-        # Default admin password needs to be changed.
-        #
-        #
-        # Enter new password:
-        # Confirm password:
-        #
-        # Router# pnpa service discovery stop
+            _, password = device.api.get_username_password()
 
-        controller_mode_dialog = Dialog([
-            Statement(pattern=r'Continue\? \[confirm\]',
-                      action='sendline()',
-                      loop_continue=True,
-                      continue_timer=False),
-            Statement(pattern=r'Do you want to abort\? \(yes/\[no\]\):',
-                      action='sendline(no)',
-                      loop_continue=True,
-                      continue_timer=False),
-            Statement(pattern=r'Username:',
-                      action='sendline(admin)',
-                      loop_continue=True,
-                      continue_timer=False),
-            Statement(pattern=r'Password:',
-                      action='sendline(admin)',
-                      loop_continue=True,
-                      continue_timer=False),
-            Statement(pattern=r'Enter new password:',
-                      action=f'sendline({password})',
-                      loop_continue=True,
-                      continue_timer=False),
-            Statement(pattern=r'Confirm password:',
-                      action=f'sendline({password})',
-                      loop_continue=True,
-                      continue_timer=False),
-            Statement(
-                pattern=
-                r'Would you like to enter basic management setup\? \[yes/no\]:',
-                action=f'sendline(no)',
-                loop_continue=True,
-                continue_timer=False),
-        ])
-        device.execute(f'controller-mode {mode}',
-                       timeout=reload_timeout,
-                       reply=controller_mode_dialog)
+            # Username: admin
+            # Password:
+            # Default admin password needs to be changed.
+            #
+            #
+            # Enter new password:
+            # Confirm password:
+            #
+            # Router# pnpa service discovery stop
 
-        if device.connected:
-            device.destroy_all()
+            controller_mode_dialog = Dialog([
+                Statement(pattern=r'Continue\? \[confirm\]',
+                          action='sendline()',
+                          loop_continue=True,
+                          continue_timer=False),
+                Statement(pattern=r'Do you want to abort\? \(yes/\[no\]\):',
+                          action='sendline(no)',
+                          loop_continue=True,
+                          continue_timer=False),
+                Statement(pattern=r'Username:',
+                          action='sendline(admin)',
+                          loop_continue=True,
+                          continue_timer=False),
+                Statement(pattern=r'Password:',
+                          action='sendline(admin)',
+                          loop_continue=True,
+                          continue_timer=False),
+                Statement(pattern=r'Enter new password:',
+                          action=f'sendline({password})',
+                          loop_continue=True,
+                          continue_timer=False),
+                Statement(pattern=r'Confirm password:',
+                          action=f'sendline({password})',
+                          loop_continue=True,
+                          continue_timer=False),
+                Statement(
+                    pattern=
+                    r'Would you like to enter basic management setup\? \[yes/no\]:',
+                    action=f'sendline(no)',
+                    loop_continue=True,
+                    continue_timer=False),
+            ])
+            device.execute(f'controller-mode {mode}',
+                           timeout=reload_timeout,
+                           reply=controller_mode_dialog)
 
-        log.debug(f"device.platform : {device.platform}")
-        log.debug('changing platform to sdwan...')
-        device.platform = 'sdwan'
-        log.debug(f"device.platform : {device.platform}")
-        device.instantiate(
-            learn_hostname=True,
-            prompt_recovery=True,
-            init_exec_commands=['pnpa service discovery stop', 'show version'],
-            init_config_commands=[])
-        log.debug(f"device.platform : {device.platform}")
-        output = device.connect()
-        for attempt in range(5):
-            log.info(f'Attempt#{attempt+1}:')
-            try:
-                device.configure('no logging console')
-                break
-            except Exception as e:
-                if attempt == 4:
-                    raise Exception(
-                        f"Couldn't enter to configuration mode: {e}")
-            time.sleep(configure_retry_interval)
+    def confirm_and_set_default(
+            self,
+            steps,
+            device,
+            configure_retry_interval=CONFIGURE_RETRY_INTERVAL):
 
-        parsed_output = device.parse('show sdwan software')
-        active_version = parsed_output.q.contains_key_value('active',
-                                                            'true').get_values(
-                                                                'version', 0)
+        with steps.start("upgrade-confirm and set-default") as step:
 
-        if active_version:
-            commands = [
-                'request platform software sdwan software upgrade-confirm',
-                f'request platform software sdwan software set-default {active_version}',
-                'show sdwan software'
-            ]
-        else:
-            self.failed('Active version was not confirmed.')
+            if device.connected:
+                device.destroy_all()
 
-        device.execute(commands)
+            log.debug(f"device.platform : {device.platform}")
+            log.debug('changing platform to sdwan...')
+            device.platform = 'sdwan'
+            log.debug(f"device.platform : {device.platform}")
+            device.instantiate(learn_hostname=True,
+                               prompt_recovery=True,
+                               init_exec_commands=[
+                                   'pnpa service discovery stop',
+                                   'show version'
+                               ],
+                               init_config_commands=[])
+            log.debug(f"device.platform : {device.platform}")
+            self.output = device.connect()
+            for attempt in range(5):
+                log.info(f'Attempt#{attempt+1}:')
+                try:
+                    device.configure('no logging console')
+                    break
+                except Exception as e:
+                    if attempt == 4:
+                        raise Exception(
+                            f"Couldn't enter to configuration mode: {e}")
+                    else:
+                        time.sleep(configure_retry_interval)
 
-        if 'Controller-Managed' in output:
-            self.passed("Device booted up with controller-mode successfully.")
-        else:
-            self.failed("Device couldn't boot up with controller-mode")
+            parsed_output = device.parse('show sdwan software')
+            active_version = parsed_output.q.contains_key_value(
+                'active', 'true').get_values('version', 0)
+            self.non_active_version = parsed_output.q.contains_key_value(
+                'active', 'false').get_values('version')
+
+            if active_version:
+                commands = [
+                    'request platform software sdwan software upgrade-confirm',
+                    f'request platform software sdwan software set-default {active_version}',
+                    'show sdwan software'
+                ]
+                device.execute(commands)
+            else:
+                step.failed('Active version was not confirmed.')
+
+        with steps.start("Verify controller mode") as step:
+
+            if 'Controller-Managed' in self.output:
+                step.passed(
+                    "Device booted up with controller-mode successfully.")
+            else:
+                step.failed("Device couldn't boot up with controller-mode")
+
+    def delete_inactive_versions(
+            self,
+            steps,
+            device,
+            delete_inactive_versions=delete_inactive_versions):
+
+        with steps.start("deleting non active version") as step:
+
+            if delete_inactive_versions and self.non_active_version:
+                for version in self.non_active_version:
+                    device.execute(
+                        f"request platform software sdwan software remove {version}"
+                    )
+                device.execute("show sdwan software")
+                log.info(
+                    f"Non active versions {self.non_active_version} are deleted."
+                )
+
+
+class ChangeBootVariable(XeChangeBootVariable):
+    """This stage change boot variables of the device using the following steps:
+
+    - Delete existing boot variables.
+    - Configure boot variables using the provided 'images'.
+    - Write memory.
+
+Stage Schema
+------------
+change_boot_variable:
+
+    images (list): Image files to use when configuring the boot variables.
+
+    timeout (int, optional): Execute timeout in seconds. Defaults to 300.
+
+Example
+-------
+change_boot_variable:
+    timeout: 150
+"""
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        Optional('images'): list,
+        Optional('timeout'): int,
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = [
+        'delete_boot_variable',
+        'configure_boot_variable',
+        'write_memory',
+    ]
+

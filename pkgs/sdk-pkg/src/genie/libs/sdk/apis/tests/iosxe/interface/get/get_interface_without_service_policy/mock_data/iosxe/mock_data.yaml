@@ -1,0 +1,612 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: R1_xe(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: R1_xe(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    show interfaces: "GigabitEthernet1 is up, line protocol is up \r\n  Hardware is\
+      \ CSR vNIC, address is 5e01.4000.0000 (bia 5e01.4000.0000)\r\n  Internet address\
+      \ is 172.16.1.211/24\r\n  MTU 1500 bytes, BW 1000000 Kbit/sec, DLY 10 usec,\
+      \ \r\n     reliability 255/255, txload 1/255, rxload 1/255\r\n  Encapsulation\
+      \ ARPA, loopback not set\r\n  Keepalive set (10 sec)\r\n  Full Duplex, 1000Mbps,\
+      \ link type is auto, media type is Virtual\r\n  output flow-control is unsupported,\
+      \ input flow-control is unsupported\r\n  ARP type: ARPA, ARP Timeout 04:00:00\r\
+      \n  Last input 00:00:00, output 00:00:11, output hang never\r\n  Last clearing\
+      \ of \"show interface\" counters never\r\n  Input queue: 0/375/0/0 (size/max/drops/flushes);\
+      \ Total output drops: 0\r\n  Queueing strategy: fifo\r\n  Output queue: 0/40\
+      \ (size/max)\r\n  5 minute input rate 179000 bits/sec, 141 packets/sec\r\n \
+      \ 5 minute output rate 0 bits/sec, 0 packets/sec\r\n     346995972 packets input,\
+      \ 57087921956 bytes, 0 no buffer\r\n     Received 0 broadcasts (0 IP multicasts)\r\
+      \n     0 runts, 0 giants, 0 throttles \r\n     0 input errors, 0 CRC, 0 frame,\
+      \ 0 overrun, 0 ignored\r\n     0 watchdog, 0 multicast, 0 pause input\r\n  \
+      \   307586 packets output, 53174950 bytes, 0 underruns\r\n     0 output errors,\
+      \ 0 collisions, 1 interface resets\r\n     243068 unknown protocol drops\r\n\
+      \     0 babbles, 0 late collision, 0 deferred\r\n     0 lost carrier, 0 no carrier,\
+      \ 0 pause output\r\n     0 output buffer failures, 0 output buffers swapped\
+      \ out\r\nGigabitEthernet2 is up, line protocol is up \r\n  Hardware is CSR vNIC,\
+      \ address is fa16.3eb7.b676 (bia fa16.3eb7.b676)\r\n  MTU 1500 bytes, BW 1000000\
+      \ Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload 1/255, rxload\
+      \ 1/255\r\n  Encapsulation 802.1Q Virtual LAN, Vlan ID  1., loopback not set\r\
+      \n  Keepalive set (10 sec)\r\n  Full Duplex, 1000Mbps, link type is auto, media\
+      \ type is Virtual\r\n  output flow-control is unsupported, input flow-control\
+      \ is unsupported\r\n  ARP type: ARPA, ARP Timeout 04:00:00\r\n  Last input 00:00:01,\
+      \ output 00:00:00, output hang never\r\n  Last clearing of \"show interface\"\
+      \ counters never\r\n  Input queue: 0/375/0/0 (size/max/drops/flushes); Total\
+      \ output drops: 0\r\n  Queueing strategy: fifo\r\n  Output queue: 0/40 (size/max)\r\
+      \n  5 minute input rate 0 bits/sec, 0 packets/sec\r\n  5 minute output rate\
+      \ 13000 bits/sec, 8 packets/sec\r\n     3116135 packets input, 1025432239 bytes,\
+      \ 0 no buffer\r\n     Received 0 broadcasts (37599 IP multicasts)\r\n     0\
+      \ runts, 0 giants, 0 throttles \r\n     0 input errors, 0 CRC, 0 frame, 0 overrun,\
+      \ 0 ignored\r\n     0 watchdog, 0 multicast, 0 pause input\r\n     22061044\
+      \ packets output, 4852361015 bytes, 0 underruns\r\n     0 output errors, 0 collisions,\
+      \ 1 interface resets\r\n     0 unknown protocol drops\r\n     0 babbles, 0 late\
+      \ collision, 0 deferred\r\n     0 lost carrier, 0 no carrier, 0 pause output\r\
+      \n     0 output buffer failures, 0 output buffers swapped out\r\nGigabitEthernet2.90\
+      \ is up, line protocol is up \r\n  Hardware is CSR vNIC, address is fa16.3eb7.b676\
+      \ (bia fa16.3eb7.b676)\r\n  Internet address is 10.12.90.1/24\r\n  MTU 1500\
+      \ bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload\
+      \ 1/255, rxload 1/255\r\n  Encapsulation 802.1Q Virtual LAN, Vlan ID  90.\r\n\
+      \  ARP type: ARPA, ARP Timeout 04:00:00\r\n  Keepalive set (10 sec)\r\n  Last\
+      \ clearing of \"show interface\" counters never\r\nGigabitEthernet2.110 is up,\
+      \ line protocol is up \r\n  Hardware is CSR vNIC, address is fa16.3eb7.b676\
+      \ (bia fa16.3eb7.b676)\r\n  Internet address is 10.12.110.1/24\r\n  MTU 1500\
+      \ bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload\
+      \ 1/255, rxload 1/255\r\n  Encapsulation 802.1Q Virtual LAN, Vlan ID  110.\r\
+      \n  ARP type: ARPA, ARP Timeout 04:00:00\r\n  Keepalive set (10 sec)\r\n  Last\
+      \ clearing of \"show interface\" counters never\r\nGigabitEthernet2.115 is up,\
+      \ line protocol is up \r\n  Hardware is CSR vNIC, address is fa16.3eb7.b676\
+      \ (bia fa16.3eb7.b676)\r\n  Internet address is 10.12.115.1/24\r\n  MTU 1500\
+      \ bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload\
+      \ 1/255, rxload 1/255\r\n  Encapsulation 802.1Q Virtual LAN, Vlan ID  115.\r\
+      \n  ARP type: ARPA, ARP Timeout 04:00:00\r\n  Keepalive set (10 sec)\r\n  Last\
+      \ clearing of \"show interface\" counters never\r\nGigabitEthernet2.120 is up,\
+      \ line protocol is up \r\n  Hardware is CSR vNIC, address is fa16.3eb7.b676\
+      \ (bia fa16.3eb7.b676)\r\n  Internet address is 10.12.120.1/24\r\n  MTU 1500\
+      \ bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload\
+      \ 1/255, rxload 1/255\r\n  Encapsulation 802.1Q Virtual LAN, Vlan ID  120.\r\
+      \n  ARP type: ARPA, ARP Timeout 04:00:00\r\n  Keepalive set (10 sec)\r\n  Last\
+      \ clearing of \"show interface\" counters never\r\nGigabitEthernet2.390 is up,\
+      \ line protocol is up \r\n  Hardware is CSR vNIC, address is fa16.3eb7.b676\
+      \ (bia fa16.3eb7.b676)\r\n  Internet address is 10.12.90.1/24\r\n  MTU 1500\
+      \ bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload\
+      \ 1/255, rxload 1/255\r\n  Encapsulation 802.1Q Virtual LAN, Vlan ID  390.\r\
+      \n  ARP type: ARPA, ARP Timeout 04:00:00\r\n  Keepalive set (10 sec)\r\n  Last\
+      \ clearing of \"show interface\" counters never\r\nGigabitEthernet2.410 is up,\
+      \ line protocol is up \r\n  Hardware is CSR vNIC, address is fa16.3eb7.b676\
+      \ (bia fa16.3eb7.b676)\r\n  Internet address is 10.12.110.1/24\r\n  MTU 1500\
+      \ bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload\
+      \ 1/255, rxload 1/255\r\n  Encapsulation 802.1Q Virtual LAN, Vlan ID  410.\r\
+      \n  ARP type: ARPA, ARP Timeout 04:00:00\r\n  Keepalive set (10 sec)\r\n  Last\
+      \ clearing of \"show interface\" counters never\r\nGigabitEthernet2.415 is up,\
+      \ line protocol is up \r\n  Hardware is CSR vNIC, address is fa16.3eb7.b676\
+      \ (bia fa16.3eb7.b676)\r\n  Internet address is 10.12.115.1/24\r\n  MTU 1500\
+      \ bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload\
+      \ 1/255, rxload 1/255\r\n  Encapsulation 802.1Q Virtual LAN, Vlan ID  415.\r\
+      \n  ARP type: ARPA, ARP Timeout 04:00:00\r\n  Keepalive set (10 sec)\r\n  Last\
+      \ clearing of \"show interface\" counters never\r\nGigabitEthernet2.420 is up,\
+      \ line protocol is up \r\n  Hardware is CSR vNIC, address is fa16.3eb7.b676\
+      \ (bia fa16.3eb7.b676)\r\n  Internet address is 10.12.120.1/24\r\n  MTU 1500\
+      \ bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload\
+      \ 1/255, rxload 1/255\r\n  Encapsulation 802.1Q Virtual LAN, Vlan ID  420.\r\
+      \n  ARP type: ARPA, ARP Timeout 04:00:00\r\n  Keepalive set (10 sec)\r\n  Last\
+      \ clearing of \"show interface\" counters never\r\nGigabitEthernet3 is up, line\
+      \ protocol is up \r\n  Hardware is CSR vNIC, address is fa16.3e6b.1934 (bia\
+      \ fa16.3e6b.1934)\r\n  MTU 1500 bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n\
+      \     reliability 255/255, txload 1/255, rxload 1/255\r\n  Encapsulation 802.1Q\
+      \ Virtual LAN, Vlan ID  1., loopback not set\r\n  Keepalive set (10 sec)\r\n\
+      \  Full Duplex, 1000Mbps, link type is auto, media type is Virtual\r\n  output\
+      \ flow-control is unsupported, input flow-control is unsupported\r\n  ARP type:\
+      \ ARPA, ARP Timeout 04:00:00\r\n  Last input 00:00:00, output 00:00:00, output\
+      \ hang never\r\n  Last clearing of \"show interface\" counters never\r\n  Input\
+      \ queue: 0/375/0/0 (size/max/drops/flushes); Total output drops: 0\r\n  Queueing\
+      \ strategy: fifo\r\n  Output queue: 0/40 (size/max)\r\n  5 minute input rate\
+      \ 6000 bits/sec, 2 packets/sec\r\n  5 minute output rate 23000 bits/sec, 10\
+      \ packets/sec\r\n     6274712 packets input, 2132338057 bytes, 0 no buffer\r\
+      \n     Received 0 broadcasts (175453 IP multicasts)\r\n     0 runts, 0 giants,\
+      \ 0 throttles \r\n     0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored\r\
+      \n     0 watchdog, 0 multicast, 0 pause input\r\n     25083938 packets output,\
+      \ 7652370004 bytes, 0 underruns\r\n     0 output errors, 0 collisions, 1 interface\
+      \ resets\r\n     0 unknown protocol drops\r\n     0 babbles, 0 late collision,\
+      \ 0 deferred\r\n     0 lost carrier, 0 no carrier, 0 pause output\r\n     0\
+      \ output buffer failures, 0 output buffers swapped out\r\nGigabitEthernet3.90\
+      \ is up, line protocol is up \r\n  Hardware is CSR vNIC, address is fa16.3e6b.1934\
+      \ (bia fa16.3e6b.1934)\r\n  Internet address is 10.13.90.1/24\r\n  MTU 1500\
+      \ bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload\
+      \ 1/255, rxload 1/255\r\n  Encapsulation 802.1Q Virtual LAN, Vlan ID  90.\r\n\
+      \  ARP type: ARPA, ARP Timeout 04:00:00\r\n  Keepalive set (10 sec)\r\n  Last\
+      \ clearing of \"show interface\" counters never\r\nGigabitEthernet3.110 is up,\
+      \ line protocol is up \r\n  Hardware is CSR vNIC, address is fa16.3e6b.1934\
+      \ (bia fa16.3e6b.1934)\r\n  Internet address is 10.13.110.1/24\r\n  MTU 1500\
+      \ bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload\
+      \ 1/255, rxload 1/255\r\n  Encapsulation 802.1Q Virtual LAN, Vlan ID  110.\r\
+      \n  ARP type: ARPA, ARP Timeout 04:00:00\r\n  Keepalive set (10 sec)\r\n  Last\
+      \ clearing of \"show interface\" counters never\r\nGigabitEthernet3.115 is up,\
+      \ line protocol is up \r\n  Hardware is CSR vNIC, address is fa16.3e6b.1934\
+      \ (bia fa16.3e6b.1934)\r\n  Internet address is 10.13.115.1/24\r\n  MTU 1500\
+      \ bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload\
+      \ 1/255, rxload 1/255\r\n  Encapsulation 802.1Q Virtual LAN, Vlan ID  115.\r\
+      \n  ARP type: ARPA, ARP Timeout 04:00:00\r\n  Keepalive set (10 sec)\r\n  Last\
+      \ clearing of \"show interface\" counters never\r\nGigabitEthernet3.120 is up,\
+      \ line protocol is up \r\n  Hardware is CSR vNIC, address is fa16.3e6b.1934\
+      \ (bia fa16.3e6b.1934)\r\n  Internet address is 10.13.120.1/24\r\n  MTU 1500\
+      \ bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload\
+      \ 1/255, rxload 1/255\r\n  Encapsulation 802.1Q Virtual LAN, Vlan ID  120.\r\
+      \n  ARP type: ARPA, ARP Timeout 04:00:00\r\n  Keepalive set (10 sec)\r\n  Last\
+      \ clearing of \"show interface\" counters never\r\nGigabitEthernet3.390 is up,\
+      \ line protocol is up \r\n  Hardware is CSR vNIC, address is fa16.3e6b.1934\
+      \ (bia fa16.3e6b.1934)\r\n  Internet address is 10.13.90.1/24\r\n  MTU 1500\
+      \ bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload\
+      \ 1/255, rxload 1/255\r\n  Encapsulation 802.1Q Virtual LAN, Vlan ID  390.\r\
+      \n  ARP type: ARPA, ARP Timeout 04:00:00\r\n  Keepalive set (10 sec)\r\n  Last\
+      \ clearing of \"show interface\" counters never\r\nGigabitEthernet3.410 is up,\
+      \ line protocol is up \r\n  Hardware is CSR vNIC, address is fa16.3e6b.1934\
+      \ (bia fa16.3e6b.1934)\r\n  Internet address is 10.13.110.1/24\r\n  MTU 1500\
+      \ bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload\
+      \ 1/255, rxload 1/255\r\n  Encapsulation 802.1Q Virtual LAN, Vlan ID  410.\r\
+      \n  ARP type: ARPA, ARP Timeout 04:00:00\r\n  Keepalive set (10 sec)\r\n  Last\
+      \ clearing of \"show interface\" counters never\r\nGigabitEthernet3.415 is up,\
+      \ line protocol is up \r\n  Hardware is CSR vNIC, address is fa16.3e6b.1934\
+      \ (bia fa16.3e6b.1934)\r\n  Internet address is 10.13.115.1/24\r\n  MTU 1500\
+      \ bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload\
+      \ 1/255, rxload 1/255\r\n  Encapsulation 802.1Q Virtual LAN, Vlan ID  415.\r\
+      \n  ARP type: ARPA, ARP Timeout 04:00:00\r\n  Keepalive set (10 sec)\r\n  Last\
+      \ clearing of \"show interface\" counters never\r\nGigabitEthernet3.420 is up,\
+      \ line protocol is up \r\n  Hardware is CSR vNIC, address is fa16.3e6b.1934\
+      \ (bia fa16.3e6b.1934)\r\n  Internet address is 10.13.120.1/24\r\n  MTU 1500\
+      \ bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload\
+      \ 1/255, rxload 1/255\r\n  Encapsulation 802.1Q Virtual LAN, Vlan ID  420.\r\
+      \n  ARP type: ARPA, ARP Timeout 04:00:00\r\n  Keepalive set (10 sec)\r\n  Last\
+      \ clearing of \"show interface\" counters never\r\nGigabitEthernet4 is up, line\
+      \ protocol is up \r\n  Hardware is CSR vNIC, address is 001e.e5ca.afcb (bia\
+      \ fa16.3ea5.eb70)\r\n  MTU 1500 bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n\
+      \     reliability 255/255, txload 1/255, rxload 1/255\r\n  Encapsulation ARPA,\
+      \ loopback not set\r\n  Keepalive set (10 sec)\r\n  Full Duplex, 1000Mbps, link\
+      \ type is auto, media type is Virtual\r\n  output flow-control is unsupported,\
+      \ input flow-control is unsupported\r\n  ARP type: ARPA, ARP Timeout 04:00:00\r\
+      \n  Last input 2w1d, output 00:00:04, output hang never\r\n  Last clearing of\
+      \ \"show interface\" counters 4w0d\r\n  Input queue: 0/375/0/0 (size/max/drops/flushes);\
+      \ Total output drops: 0\r\n  Queueing strategy: fifo\r\n  Output queue: 0/40\
+      \ (size/max)\r\n  5 minute input rate 0 bits/sec, 0 packets/sec\r\n  5 minute\
+      \ output rate 0 bits/sec, 0 packets/sec\r\n     131234 packets input, 17800338\
+      \ bytes, 0 no buffer\r\n     Received 0 broadcasts (0 IP multicasts)\r\n   \
+      \  0 runts, 0 giants, 0 throttles \r\n     0 input errors, 0 CRC, 0 frame, 0\
+      \ overrun, 0 ignored\r\n     0 watchdog, 0 multicast, 0 pause input\r\n    \
+      \ 220255 packets output, 60538709 bytes, 0 underruns\r\n     0 output errors,\
+      \ 0 collisions, 0 interface resets\r\n     0 unknown protocol drops\r\n    \
+      \ 0 babbles, 0 late collision, 0 deferred\r\n     0 lost carrier, 0 no carrier,\
+      \ 0 pause output\r\n     0 output buffer failures, 0 output buffers swapped\
+      \ out\r\nGigabitEthernet5 is up, line protocol is up \r\n  Hardware is CSR vNIC,\
+      \ address is 001e.e5ca.afcb (bia fa16.3e9f.f5de)\r\n  MTU 1500 bytes, BW 1000000\
+      \ Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload 1/255, rxload\
+      \ 1/255\r\n  Encapsulation ARPA, loopback not set\r\n  Keepalive set (10 sec)\r\
+      \n  Full Duplex, 1000Mbps, link type is auto, media type is Virtual\r\n  output\
+      \ flow-control is unsupported, input flow-control is unsupported\r\n  ARP type:\
+      \ ARPA, ARP Timeout 04:00:00\r\n  Last input 2w1d, output 00:00:02, output hang\
+      \ never\r\n  Last clearing of \"show interface\" counters 4w0d\r\n  Input queue:\
+      \ 0/375/0/0 (size/max/drops/flushes); Total output drops: 0\r\n  Queueing strategy:\
+      \ fifo\r\n  Output queue: 0/40 (size/max)\r\n  5 minute input rate 0 bits/sec,\
+      \ 0 packets/sec\r\n  5 minute output rate 0 bits/sec, 0 packets/sec\r\n    \
+      \ 93462 packets input, 12776663 bytes, 0 no buffer\r\n     Received 0 broadcasts\
+      \ (0 IP multicasts)\r\n     0 runts, 0 giants, 0 throttles \r\n     0 input\
+      \ errors, 0 CRC, 0 frame, 0 overrun, 0 ignored\r\n     0 watchdog, 0 multicast,\
+      \ 0 pause input\r\n     220221 packets output, 60527569 bytes, 0 underruns\r\
+      \n     0 output errors, 0 collisions, 0 interface resets\r\n     0 unknown protocol\
+      \ drops\r\n     0 babbles, 0 late collision, 0 deferred\r\n     0 lost carrier,\
+      \ 0 no carrier, 0 pause output\r\n     0 output buffer failures, 0 output buffers\
+      \ swapped out\r\nGigabitEthernet6 is up, line protocol is up \r\n  Hardware\
+      \ is CSR vNIC, address is 001e.e5ca.afcc (bia fa16.3e92.2048)\r\n  MTU 1500\
+      \ bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload\
+      \ 1/255, rxload 1/255\r\n  Encapsulation ARPA, loopback not set\r\n  Keepalive\
+      \ set (10 sec)\r\n  Full Duplex, 1000Mbps, link type is auto, media type is\
+      \ Virtual\r\n  output flow-control is unsupported, input flow-control is unsupported\r\
+      \n  ARP type: ARPA, ARP Timeout 04:00:00\r\n  Last input 00:00:01, output 00:00:00,\
+      \ output hang never\r\n  Last clearing of \"show interface\" counters 4w0d\r\
+      \n  Input queue: 0/375/0/0 (size/max/drops/flushes); Total output drops: 0\r\
+      \n  Queueing strategy: fifo\r\n  Output queue: 0/40 (size/max)\r\n  5 minute\
+      \ input rate 0 bits/sec, 0 packets/sec\r\n  5 minute output rate 0 bits/sec,\
+      \ 0 packets/sec\r\n     833546 packets input, 81721991 bytes, 0 no buffer\r\n\
+      \     Received 0 broadcasts (0 IP multicasts)\r\n     0 runts, 0 giants, 0 throttles\
+      \ \r\n     0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored\r\n     0 watchdog,\
+      \ 0 multicast, 0 pause input\r\n     220167 packets output, 60522457 bytes,\
+      \ 0 underruns\r\n     0 output errors, 0 collisions, 0 interface resets\r\n\
+      \     0 unknown protocol drops\r\n     0 babbles, 0 late collision, 0 deferred\r\
+      \n     0 lost carrier, 0 no carrier, 0 pause output\r\n     0 output buffer\
+      \ failures, 0 output buffers swapped out\r\nGigabitEthernet7 is up, line protocol\
+      \ is up \r\n  Hardware is CSR vNIC, address is 001e.e5ca.afcc (bia fa16.3e8f.7401)\r\
+      \n  MTU 1500 bytes, BW 1000000 Kbit/sec, DLY 10 usec, \r\n     reliability 255/255,\
+      \ txload 1/255, rxload 1/255\r\n  Encapsulation ARPA, loopback not set\r\n \
+      \ Keepalive set (10 sec)\r\n  Full Duplex, 1000Mbps, link type is auto, media\
+      \ type is Virtual\r\n  output flow-control is unsupported, input flow-control\
+      \ is unsupported\r\n  ARP type: ARPA, ARP Timeout 04:00:00\r\n  Last input 00:00:01,\
+      \ output 00:00:11, output hang never\r\n  Last clearing of \"show interface\"\
+      \ counters 4w0d\r\n  Input queue: 0/375/0/0 (size/max/drops/flushes); Total\
+      \ output drops: 0\r\n  Queueing strategy: fifo\r\n  Output queue: 0/40 (size/max)\r\
+      \n  5 minute input rate 0 bits/sec, 0 packets/sec\r\n  5 minute output rate\
+      \ 0 bits/sec, 0 packets/sec\r\n     833233 packets input, 81702939 bytes, 0\
+      \ no buffer\r\n     Received 0 broadcasts (0 IP multicasts)\r\n     0 runts,\
+      \ 0 giants, 0 throttles \r\n     0 input errors, 0 CRC, 0 frame, 0 overrun,\
+      \ 0 ignored\r\n     0 watchdog, 0 multicast, 0 pause input\r\n     220201 packets\
+      \ output, 60527438 bytes, 0 underruns\r\n     0 output errors, 0 collisions,\
+      \ 0 interface resets\r\n     0 unknown protocol drops\r\n     0 babbles, 0 late\
+      \ collision, 0 deferred\r\n     0 lost carrier, 0 no carrier, 0 pause output\r\
+      \n     0 output buffer failures, 0 output buffers swapped out\r\nLoopback0 is\
+      \ up, line protocol is up \r\n  Hardware is Loopback\r\n  Internet address is\
+      \ 1.1.1.1/32\r\n  MTU 1514 bytes, BW 8000000 Kbit/sec, DLY 5000 usec, \r\n \
+      \    reliability 255/255, txload 1/255, rxload 1/255\r\n  Encapsulation LOOPBACK,\
+      \ loopback not set\r\n  Keepalive set (10 sec)\r\n  Last input 00:00:01, output\
+      \ 00:00:01, output hang never\r\n  Last clearing of \"show interface\" counters\
+      \ never\r\n  Input queue: 0/75/0/0 (size/max/drops/flushes); Total output drops:\
+      \ 0\r\n  Queueing strategy: fifo\r\n  Output queue: 0/0 (size/max)\r\n  5 minute\
+      \ input rate 0 bits/sec, 0 packets/sec\r\n  5 minute output rate 0 bits/sec,\
+      \ 0 packets/sec\r\n     0 packets input, 0 bytes, 0 no buffer\r\n     Received\
+      \ 0 broadcasts (1125136 IP multicasts)\r\n     0 runts, 0 giants, 0 throttles\
+      \ \r\n     0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored, 0 abort\r\n\
+      \     1685201 packets output, 128384587 bytes, 0 underruns\r\n     0 output\
+      \ errors, 0 collisions, 0 interface resets\r\n     0 unknown protocol drops\r\
+      \n     0 output buffer failures, 0 output buffers swapped out\r\nLoopback300\
+      \ is up, line protocol is up \r\n  Hardware is Loopback\r\n  Internet address\
+      \ is 1.1.1.1/32\r\n  MTU 1514 bytes, BW 8000000 Kbit/sec, DLY 5000 usec, \r\n\
+      \     reliability 255/255, txload 1/255, rxload 1/255\r\n  Encapsulation LOOPBACK,\
+      \ loopback not set\r\n  Keepalive set (10 sec)\r\n  Last input 00:00:02, output\
+      \ 00:00:38, output hang never\r\n  Last clearing of \"show interface\" counters\
+      \ never\r\n  Input queue: 0/75/0/0 (size/max/drops/flushes); Total output drops:\
+      \ 0\r\n  Queueing strategy: fifo\r\n  Output queue: 0/0 (size/max)\r\n  5 minute\
+      \ input rate 0 bits/sec, 0 packets/sec\r\n  5 minute output rate 0 bits/sec,\
+      \ 0 packets/sec\r\n     0 packets input, 0 bytes, 0 no buffer\r\n     Received\
+      \ 0 broadcasts (1125135 IP multicasts)\r\n     0 runts, 0 giants, 0 throttles\
+      \ \r\n     0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored, 0 abort\r\n\
+      \     1685345 packets output, 142413366 bytes, 0 underruns\r\n     0 output\
+      \ errors, 0 collisions, 0 interface resets\r\n     0 unknown protocol drops\r\
+      \n     0 output buffer failures, 0 output buffers swapped out\r\nPort-channel12\
+      \ is down, line protocol is down \r\n  Hardware is GEChannel, address is 001e.e5ca.afcb\
+      \ (bia 001e.e5ca.afcb)\r\n  MTU 1500 bytes, BW 1000000 Kbit/sec, DLY 1000 usec,\
+      \ \r\n     reliability 255/255, txload 1/255, rxload 1/255\r\n  Encapsulation\
+      \ ARPA, loopback not set\r\n  Keepalive set (10 sec)\r\n  ARP type: ARPA, ARP\
+      \ Timeout 04:00:00\r\n    No. of active members in this channel: 0 \r\n    No.\
+      \ of PF_JUMBO supported members in this channel : 2\r\n  Last input never, output\
+      \ never, output hang never\r\n  Last clearing of \"show interface\" counters\
+      \ never\r\n  Input queue: 0/0/0/0 (size/max/drops/flushes); Total output drops:\
+      \ 0\r\n  Queueing strategy: fifo\r\n  Output queue: 0/0 (size/max)\r\n  5 minute\
+      \ input rate 0 bits/sec, 0 packets/sec\r\n  5 minute output rate 0 bits/sec,\
+      \ 0 packets/sec\r\n     224619 packets input, 30566781 bytes, 0 no buffer\r\n\
+      \     Received 0 broadcasts (0 IP multicasts)\r\n     0 runts, 0 giants, 0 throttles\
+      \ \r\n     0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored\r\n     0 watchdog,\
+      \ 0 multicast, 0 pause input\r\n     0 packets output, 0 bytes, 0 underruns\r\
+      \n     0 output errors, 0 collisions, 0 interface resets\r\n     0 unknown protocol\
+      \ drops\r\n     0 babbles, 0 late collision, 0 deferred\r\n     0 lost carrier,\
+      \ 0 no carrier, 0 pause output\r\n     0 output buffer failures, 0 output buffers\
+      \ swapped out\r\nPort-channel13 is up, line protocol is up \r\n  Hardware is\
+      \ GEChannel, address is 001e.e5ca.afcc (bia 001e.e5ca.afcc)\r\n  MTU 1500 bytes,\
+      \ BW 2000000 Kbit/sec, DLY 10 usec, \r\n     reliability 255/255, txload 1/255,\
+      \ rxload 1/255\r\n  Encapsulation ARPA, loopback not set\r\n  Keepalive set\
+      \ (10 sec)\r\n  ARP type: ARPA, ARP Timeout 04:00:00\r\n    No. of active members\
+      \ in this channel: 2 \r\n        Member 0 : GigabitEthernet6 , Full-duplex,\
+      \ 1000Mb/s\r\n        Member 1 : GigabitEthernet7 , Full-duplex, 1000Mb/s\r\n\
+      \    No. of PF_JUMBO supported members in this channel : 2\r\n  Last input 00:00:01,\
+      \ output never, output hang never\r\n  Last clearing of \"show interface\" counters\
+      \ never\r\n  Input queue: 0/750/0/0 (size/max/drops/flushes); Total output drops:\
+      \ 0\r\n  Queueing strategy: fifo\r\n  Output queue: 0/80 (size/max)\r\n  5 minute\
+      \ input rate 0 bits/sec, 0 packets/sec\r\n  5 minute output rate 0 bits/sec,\
+      \ 0 packets/sec\r\n     2916749 packets input, 229665132 bytes, 0 no buffer\r\
+      \n     Received 0 broadcasts (0 IP multicasts)\r\n     0 runts, 0 giants, 0\
+      \ throttles \r\n     0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored\r\n\
+      \     0 watchdog, 0 multicast, 0 pause input\r\n     0 packets output, 0 bytes,\
+      \ 0 underruns\r\n     0 output errors, 0 collisions, 0 interface resets\r\n\
+      \     0 unknown protocol drops\r\n     0 babbles, 0 late collision, 0 deferred\r\
+      \n     0 lost carrier, 0 no carrier, 0 pause output\r\n     0 output buffer\
+      \ failures, 0 output buffers swapped out\r\nTunnel0 is up, line protocol is\
+      \ up \r\n  Hardware is Tunnel\r\n  Description: Pim Register Tunnel (Encap)\
+      \ for Embedded RP\r\n  MTU 1452 bytes, BW 100 Kbit/sec, DLY 50000 usec, \r\n\
+      \     reliability 255/255, txload 1/255, rxload 1/255\r\n  Encapsulation TUNNEL,\
+      \ loopback not set\r\n  Keepalive not set\r\n  Tunnel linestate evaluation up\r\
+      \n  Tunnel source 2001:10:13:120::1 (GigabitEthernet3.120), destination ::\r\
+      \n   Tunnel Subblocks:\r\n      src-track:\r\n         Tunnel0 source tracking\
+      \ subblock associated with GigabitEthernet3.120\r\n          Set of tunnels\
+      \ with source GigabitEthernet3.120, 2 members (includes iterators), on interface\
+      \ <OK>\r\n  Tunnel protocol/transport PIM/IPv6\r\n  Tunnel TTL 65\r\n  Tunnel\
+      \ transport MTU 1452 bytes\r\n  Tunnel is transmit only\r\n  Tunnel transmit\
+      \ bandwidth 8000 (kbps)\r\n  Tunnel receive bandwidth 8000 (kbps)\r\n  Last\
+      \ input never, output never, output hang never\r\n  Last clearing of \"show\
+      \ interface\" counters 4w0d\r\n  Input queue: 0/375/0/0 (size/max/drops/flushes);\
+      \ Total output drops: 0\r\n  Queueing strategy: fifo\r\n  Output queue: 0/0\
+      \ (size/max)\r\n  5 minute input rate 0 bits/sec, 0 packets/sec\r\n  5 minute\
+      \ output rate 0 bits/sec, 0 packets/sec\r\n     0 packets input, 0 bytes, 0\
+      \ no buffer\r\n     Received 0 broadcasts (0 IP multicasts)\r\n     0 runts,\
+      \ 0 giants, 0 throttles \r\n     0 input errors, 0 CRC, 0 frame, 0 overrun,\
+      \ 0 ignored, 0 abort\r\n     0 packets output, 0 bytes, 0 underruns\r\n    \
+      \ 0 output errors, 0 collisions, 0 interface resets\r\n     0 unknown protocol\
+      \ drops\r\n     0 output buffer failures, 0 output buffers swapped out\r\nTunnel1\
+      \ is up, line protocol is up \r\n  Hardware is Tunnel\r\n  Description: Pim\
+      \ Register Tunnel (Encap) for Embedded RP on VRF VRF1\r\n  MTU 1452 bytes, BW\
+      \ 100 Kbit/sec, DLY 50000 usec, \r\n     reliability 255/255, txload 1/255,\
+      \ rxload 1/255\r\n  Encapsulation TUNNEL, loopback not set\r\n  Keepalive not\
+      \ set\r\n  Tunnel linestate evaluation up\r\n  Tunnel source 2001:10:13:120::1\
+      \ (GigabitEthernet3.420), destination ::\r\n   Tunnel Subblocks:\r\n      src-track:\r\
+      \n         Tunnel1 source tracking subblock associated with GigabitEthernet3.420\r\
+      \n          Set of tunnels with source GigabitEthernet3.420, 2 members (includes\
+      \ iterators), on interface <OK>\r\n  Tunnel protocol/transport PIM/IPv6\r\n\
+      \  Tunnel TTL 65\r\n  Tunnel transport MTU 1452 bytes\r\n  Tunnel is transmit\
+      \ only\r\n  Tunnel transmit bandwidth 8000 (kbps)\r\n  Tunnel receive bandwidth\
+      \ 8000 (kbps)\r\n  Last input never, output never, output hang never\r\n  Last\
+      \ clearing of \"show interface\" counters 4w0d\r\n  Input queue: 0/375/0/0 (size/max/drops/flushes);\
+      \ Total output drops: 0\r\n  Queueing strategy: fifo\r\n  Output queue: 0/0\
+      \ (size/max)\r\n  5 minute input rate 0 bits/sec, 0 packets/sec\r\n  5 minute\
+      \ output rate 0 bits/sec, 0 packets/sec\r\n     0 packets input, 0 bytes, 0\
+      \ no buffer\r\n     Received 0 broadcasts (0 IP multicasts)\r\n     0 runts,\
+      \ 0 giants, 0 throttles \r\n     0 input errors, 0 CRC, 0 frame, 0 overrun,\
+      \ 0 ignored, 0 abort\r\n     0 packets output, 0 bytes, 0 underruns\r\n    \
+      \ 0 output errors, 0 collisions, 0 interface resets\r\n     0 unknown protocol\
+      \ drops\r\n     0 output buffer failures, 0 output buffers swapped out\r\nTunnel2\
+      \ is up, line protocol is down \r\n  Hardware is Tunnel\r\n  Description: Pim\
+      \ Register Tunnel (Encap) for RP 2.2.2.2\r\n  Interface is unnumbered. Using\
+      \ address of GigabitEthernet3.110 (10.13.110.1)\r\n  MTU 9972 bytes, BW 100\
+      \ Kbit/sec, DLY 50000 usec, \r\n     reliability 255/255, txload 1/255, rxload\
+      \ 1/255\r\n  Encapsulation TUNNEL, loopback not set\r\n  Keepalive not set\r\
+      \n  Tunnel linestate evaluation down - no output interface\r\n  Tunnel source\
+      \ 10.13.110.1 (GigabitEthernet3.110), destination 2.2.2.2\r\n   Tunnel Subblocks:\r\
+      \n      src-track:\r\n         Tunnel2 source tracking subblock associated with\
+      \ GigabitEthernet3.110\r\n          Set of tunnels with source GigabitEthernet3.110,\
+      \ 1 member (includes iterators), on interface <OK>\r\n  Tunnel protocol/transport\
+      \ PIM/IPv4\r\n  Tunnel TTL 255\r\n  Tunnel transport MTU 1472 bytes\r\n  Tunnel\
+      \ is transmit only\r\n  Tunnel transmit bandwidth 8000 (kbps)\r\n  Tunnel receive\
+      \ bandwidth 8000 (kbps)\r\n  Last input never, output 2w1d, output hang never\r\
+      \n  Last clearing of \"show interface\" counters 4w0d\r\n  Input queue: 0/375/0/0\
+      \ (size/max/drops/flushes); Total output drops: 0\r\n  Queueing strategy: fifo\r\
+      \n  Output queue: 0/0 (size/max)\r\n  5 minute input rate 0 bits/sec, 0 packets/sec\r\
+      \n  5 minute output rate 0 bits/sec, 0 packets/sec\r\n     0 packets input,\
+      \ 0 bytes, 0 no buffer\r\n     Received 0 broadcasts (0 IP multicasts)\r\n \
+      \    0 runts, 0 giants, 0 throttles \r\n     0 input errors, 0 CRC, 0 frame,\
+      \ 0 overrun, 0 ignored, 0 abort\r\n     3 packets output, 240 bytes, 0 underruns\r\
+      \n     0 output errors, 0 collisions, 0 interface resets\r\n     0 unknown protocol\
+      \ drops\r\n     0 output buffer failures, 0 output buffers swapped out\r\nTunnel3\
+      \ is up, line protocol is down \r\n  Hardware is Tunnel\r\n  Description: Pim\
+      \ Register Tunnel (Encap) for RP 2.2.2.2 on VRF VRF1\r\n  Interface is unnumbered.\
+      \ Using address of GigabitEthernet3.410 (10.13.110.1)\r\n  MTU 9972 bytes, BW\
+      \ 100 Kbit/sec, DLY 50000 usec, \r\n     reliability 255/255, txload 1/255,\
+      \ rxload 1/255\r\n  Encapsulation TUNNEL, loopback not set\r\n  Keepalive not\
+      \ set\r\n  Tunnel linestate evaluation down - no output interface\r\n  Tunnel\
+      \ source 10.13.110.1 (GigabitEthernet3.410), destination 2.2.2.2\r\n   Tunnel\
+      \ Subblocks:\r\n      src-track:\r\n         Tunnel3 source tracking subblock\
+      \ associated with GigabitEthernet3.410\r\n          Set of tunnels with source\
+      \ GigabitEthernet3.410, 1 member (includes iterators), on interface <OK>\r\n\
+      \  Tunnel protocol/transport PIM/IPv4\r\n  Tunnel TTL 255\r\n  Tunnel transport\
+      \ MTU 1472 bytes\r\n  Tunnel is transmit only\r\n  Tunnel transmit bandwidth\
+      \ 8000 (kbps)\r\n  Tunnel receive bandwidth 8000 (kbps)\r\n  Last input never,\
+      \ output never, output hang never\r\n  Last clearing of \"show interface\" counters\
+      \ 4w0d\r\n  Input queue: 0/375/0/0 (size/max/drops/flushes); Total output drops:\
+      \ 0\r\n  Queueing strategy: fifo\r\n  Output queue: 0/0 (size/max)\r\n  5 minute\
+      \ input rate 0 bits/sec, 0 packets/sec\r\n  5 minute output rate 0 bits/sec,\
+      \ 0 packets/sec\r\n     0 packets input, 0 bytes, 0 no buffer\r\n     Received\
+      \ 0 broadcasts (0 IP multicasts)\r\n     0 runts, 0 giants, 0 throttles \r\n\
+      \     0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored, 0 abort\r\n    \
+      \ 0 packets output, 0 bytes, 0 underruns\r\n     0 output errors, 0 collisions,\
+      \ 0 interface resets\r\n     0 unknown protocol drops\r\n     0 output buffer\
+      \ failures, 0 output buffers swapped out\r\nTunnel4 is up, line protocol is\
+      \ up \r\n  Hardware is Tunnel\r\n  Description: Pim Register Tunnel (Decap)\
+      \ for RP 1.1.1.1 on VRF VRF1\r\n  Interface is unnumbered. Using address of\
+      \ Loopback300 (1.1.1.1)\r\n  MTU 9980 bytes, BW 100 Kbit/sec, DLY 50000 usec,\
+      \ \r\n     reliability 255/255, txload 1/255, rxload 1/255\r\n  Encapsulation\
+      \ TUNNEL, loopback not set\r\n  Keepalive not set\r\n  Tunnel linestate evaluation\
+      \ up\r\n  Tunnel source 1.1.1.1 (Loopback300), destination 1.1.1.1\r\n   Tunnel\
+      \ Subblocks:\r\n      src-track:\r\n         Tunnel4 source tracking subblock\
+      \ associated with Loopback300\r\n          Set of tunnels with source Loopback300,\
+      \ 2 members (includes iterators), on interface <OK>\r\n  Tunnel protocol/transport\
+      \ PIM/IPv4\r\n  Tunnel TTL 255\r\n  Tunnel transport MTU 1494 bytes\r\n  Tunnel\
+      \ is receive only\r\n  Tunnel transmit bandwidth 8000 (kbps)\r\n  Tunnel receive\
+      \ bandwidth 8000 (kbps)\r\n  Last input never, output never, output hang never\r\
+      \n  Last clearing of \"show interface\" counters 4w0d\r\n  Input queue: 0/375/0/0\
+      \ (size/max/drops/flushes); Total output drops: 0\r\n  Queueing strategy: fifo\r\
+      \n  Output queue: 0/0 (size/max)\r\n  5 minute input rate 0 bits/sec, 0 packets/sec\r\
+      \n  5 minute output rate 0 bits/sec, 0 packets/sec\r\n     0 packets input,\
+      \ 0 bytes, 0 no buffer\r\n     Received 0 broadcasts (0 IP multicasts)\r\n \
+      \    0 runts, 0 giants, 0 throttles \r\n     0 input errors, 0 CRC, 0 frame,\
+      \ 0 overrun, 0 ignored, 0 abort\r\n     0 packets output, 0 bytes, 0 underruns\r\
+      \n     0 output errors, 0 collisions, 0 interface resets\r\n     0 unknown protocol\
+      \ drops\r\n     0 output buffer failures, 0 output buffers swapped out\r\nTunnel5\
+      \ is up, line protocol is up \r\n  Hardware is Tunnel\r\n  Description: Pim\
+      \ Register Tunnel (Decap) for RP 1.1.1.1\r\n  Interface is unnumbered. Using\
+      \ address of Loopback0 (1.1.1.1)\r\n  MTU 9980 bytes, BW 100 Kbit/sec, DLY 50000\
+      \ usec, \r\n     reliability 255/255, txload 1/255, rxload 1/255\r\n  Encapsulation\
+      \ TUNNEL, loopback not set\r\n  Keepalive not set\r\n  Tunnel linestate evaluation\
+      \ up\r\n  Tunnel source 1.1.1.1 (Loopback0), destination 1.1.1.1\r\n   Tunnel\
+      \ Subblocks:\r\n      src-track:\r\n         Tunnel5 source tracking subblock\
+      \ associated with Loopback0\r\n          Set of tunnels with source Loopback0,\
+      \ 2 members (includes iterators), on interface <OK>\r\n  Tunnel protocol/transport\
+      \ PIM/IPv4\r\n  Tunnel TTL 255\r\n  Tunnel transport MTU 1494 bytes\r\n  Tunnel\
+      \ is receive only\r\n  Tunnel transmit bandwidth 8000 (kbps)\r\n  Tunnel receive\
+      \ bandwidth 8000 (kbps)\r\n  Last input never, output never, output hang never\r\
+      \n  Last clearing of \"show interface\" counters 4w0d\r\n  Input queue: 0/375/0/0\
+      \ (size/max/drops/flushes); Total output drops: 0\r\n  Queueing strategy: fifo\r\
+      \n  Output queue: 0/0 (size/max)\r\n  5 minute input rate 0 bits/sec, 0 packets/sec\r\
+      \n  5 minute output rate 0 bits/sec, 0 packets/sec\r\n     0 packets input,\
+      \ 0 bytes, 0 no buffer\r\n     Received 0 broadcasts (0 IP multicasts)\r\n \
+      \    0 runts, 0 giants, 0 throttles \r\n     0 input errors, 0 CRC, 0 frame,\
+      \ 0 overrun, 0 ignored, 0 abort\r\n     0 packets output, 0 bytes, 0 underruns\r\
+      \n     0 output errors, 0 collisions, 0 interface resets\r\n     0 unknown protocol\
+      \ drops\r\n     0 output buffer failures, 0 output buffers swapped out\r\nTunnel6\
+      \ is up, line protocol is up \r\n  Hardware is Tunnel\r\n  Description: Pim\
+      \ Register Tunnel (Encap) for RP 1.1.1.1 on VRF VRF1\r\n  Interface is unnumbered.\
+      \ Using address of Loopback300 (1.1.1.1)\r\n  MTU 9972 bytes, BW 100 Kbit/sec,\
+      \ DLY 50000 usec, \r\n     reliability 255/255, txload 1/255, rxload 1/255\r\
+      \n  Encapsulation TUNNEL, loopback not set\r\n  Keepalive not set\r\n  Tunnel\
+      \ linestate evaluation up\r\n  Tunnel source 1.1.1.1 (Loopback300), destination\
+      \ 1.1.1.1\r\n   Tunnel Subblocks:\r\n      src-track:\r\n         Tunnel6 source\
+      \ tracking subblock associated with Loopback300\r\n          Set of tunnels\
+      \ with source Loopback300, 2 members (includes iterators), on interface <OK>\r\
+      \n  Tunnel protocol/transport PIM/IPv4\r\n  Tunnel TTL 255\r\n  Tunnel transport\
+      \ MTU 1486 bytes\r\n  Tunnel is transmit only\r\n  Tunnel transmit bandwidth\
+      \ 8000 (kbps)\r\n  Tunnel receive bandwidth 8000 (kbps)\r\n  Last input never,\
+      \ output 00:02:36, output hang never\r\n  Last clearing of \"show interface\"\
+      \ counters 4w0d\r\n  Input queue: 0/375/0/0 (size/max/drops/flushes); Total\
+      \ output drops: 0\r\n  Queueing strategy: fifo\r\n  Output queue: 0/0 (size/max)\r\
+      \n  5 minute input rate 0 bits/sec, 0 packets/sec\r\n  5 minute output rate\
+      \ 0 bits/sec, 0 packets/sec\r\n     0 packets input, 0 bytes, 0 no buffer\r\n\
+      \     Received 0 broadcasts (0 IP multicasts)\r\n     0 runts, 0 giants, 0 throttles\
+      \ \r\n     0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored, 0 abort\r\n\
+      \     41490 packets output, 3319200 bytes, 0 underruns\r\n     0 output errors,\
+      \ 0 collisions, 0 interface resets\r\n     0 unknown protocol drops\r\n    \
+      \ 0 output buffer failures, 0 output buffers swapped out\r\nTunnel7 is up, line\
+      \ protocol is up \r\n  Hardware is Tunnel\r\n  Description: Pim Register Tunnel\
+      \ (Encap) for RP 1.1.1.1\r\n  Interface is unnumbered. Using address of Loopback0\
+      \ (1.1.1.1)\r\n  MTU 9972 bytes, BW 100 Kbit/sec, DLY 50000 usec, \r\n     reliability\
+      \ 255/255, txload 1/255, rxload 1/255\r\n  Encapsulation TUNNEL, loopback not\
+      \ set\r\n  Keepalive not set\r\n  Tunnel linestate evaluation up\r\n  Tunnel\
+      \ source 1.1.1.1 (Loopback0), destination 1.1.1.1\r\n   Tunnel Subblocks:\r\n\
+      \      src-track:\r\n         Tunnel7 source tracking subblock associated with\
+      \ Loopback0\r\n          Set of tunnels with source Loopback0, 2 members (includes\
+      \ iterators), on interface <OK>\r\n  Tunnel protocol/transport PIM/IPv4\r\n\
+      \  Tunnel TTL 255\r\n  Tunnel transport MTU 1486 bytes\r\n  Tunnel is transmit\
+      \ only\r\n  Tunnel transmit bandwidth 8000 (kbps)\r\n  Tunnel receive bandwidth\
+      \ 8000 (kbps)\r\n  Last input never, output 00:00:02, output hang never\r\n\
+      \  Last clearing of \"show interface\" counters 4w0d\r\n  Input queue: 0/375/0/0\
+      \ (size/max/drops/flushes); Total output drops: 0\r\n  Queueing strategy: fifo\r\
+      \n  Output queue: 0/0 (size/max)\r\n  5 minute input rate 0 bits/sec, 0 packets/sec\r\
+      \n  5 minute output rate 0 bits/sec, 0 packets/sec\r\n     0 packets input,\
+      \ 0 bytes, 0 no buffer\r\n     Received 0 broadcasts (0 IP multicasts)\r\n \
+      \    0 runts, 0 giants, 0 throttles \r\n     0 input errors, 0 CRC, 0 frame,\
+      \ 0 overrun, 0 ignored, 0 abort\r\n     41498 packets output, 3319840 bytes,\
+      \ 0 underruns\r\n     0 output errors, 0 collisions, 0 interface resets\r\n\
+      \     0 unknown protocol drops\r\n     0 output buffer failures, 0 output buffers\
+      \ swapped out\r\nTunnel8 is up, line protocol is down \r\n  Hardware is Tunnel\r\
+      \n  Description: Pim Register Tunnel (Encap) for RP 2001:2:2:2::2 on VRF VRF1\r\
+      \n  MTU 1452 bytes, BW 100 Kbit/sec, DLY 50000 usec, \r\n     reliability 255/255,\
+      \ txload 1/255, rxload 1/255\r\n  Encapsulation TUNNEL, loopback not set\r\n\
+      \  Keepalive not set\r\n  Tunnel linestate evaluation down - transport reg down\r\
+      \n  Tunnel source 2001:10:13:120::1 (GigabitEthernet3.420), destination 2001:2:2:2::2\r\
+      \n   Tunnel Subblocks:\r\n      src-track:\r\n         Tunnel8 source tracking\
+      \ subblock associated with GigabitEthernet3.420\r\n          Set of tunnels\
+      \ with source GigabitEthernet3.420, 2 members (includes iterators), on interface\
+      \ <OK>\r\n  Tunnel protocol/transport PIM/IPv6\r\n  Tunnel TTL 65\r\n  Tunnel\
+      \ transport MTU 1452 bytes\r\n  Tunnel is transmit only\r\n  Tunnel transmit\
+      \ bandwidth 8000 (kbps)\r\n  Tunnel receive bandwidth 8000 (kbps)\r\n  Last\
+      \ input never, output never, output hang never\r\n  Last clearing of \"show\
+      \ interface\" counters 4w0d\r\n  Input queue: 0/375/0/0 (size/max/drops/flushes);\
+      \ Total output drops: 0\r\n  Queueing strategy: fifo\r\n  Output queue: 0/0\
+      \ (size/max)\r\n  5 minute input rate 0 bits/sec, 0 packets/sec\r\n  5 minute\
+      \ output rate 0 bits/sec, 0 packets/sec\r\n     0 packets input, 0 bytes, 0\
+      \ no buffer\r\n     Received 0 broadcasts (0 IP multicasts)\r\n     0 runts,\
+      \ 0 giants, 0 throttles \r\n     0 input errors, 0 CRC, 0 frame, 0 overrun,\
+      \ 0 ignored, 0 abort\r\n     0 packets output, 0 bytes, 0 underruns\r\n    \
+      \ 0 output errors, 0 collisions, 0 interface resets\r\n     0 unknown protocol\
+      \ drops\r\n     0 output buffer failures, 0 output buffers swapped out\r\nTunnel9\
+      \ is up, line protocol is down \r\n  Hardware is Tunnel\r\n  Description: Pim\
+      \ Register Tunnel (Encap) for RP 2001:2:2:2::2\r\n  MTU 1452 bytes, BW 100 Kbit/sec,\
+      \ DLY 50000 usec, \r\n     reliability 255/255, txload 1/255, rxload 1/255\r\
+      \n  Encapsulation TUNNEL, loopback not set\r\n  Keepalive not set\r\n  Tunnel\
+      \ linestate evaluation down - transport reg down\r\n  Tunnel source 2001:10:13:120::1\
+      \ (GigabitEthernet3.120), destination 2001:2:2:2::2\r\n   Tunnel Subblocks:\r\
+      \n      src-track:\r\n         Tunnel9 source tracking subblock associated with\
+      \ GigabitEthernet3.120\r\n          Set of tunnels with source GigabitEthernet3.120,\
+      \ 2 members (includes iterators), on interface <OK>\r\n  Tunnel protocol/transport\
+      \ PIM/IPv6\r\n  Tunnel TTL 65\r\n  Tunnel transport MTU 1452 bytes\r\n  Tunnel\
+      \ is transmit only\r\n  Tunnel transmit bandwidth 8000 (kbps)\r\n  Tunnel receive\
+      \ bandwidth 8000 (kbps)\r\n  Last input never, output never, output hang never\r\
+      \n  Last clearing of \"show interface\" counters 4w0d\r\n  Input queue: 0/375/0/0\
+      \ (size/max/drops/flushes); Total output drops: 0\r\n  Queueing strategy: fifo\r\
+      \n  Output queue: 0/0 (size/max)\r\n  5 minute input rate 0 bits/sec, 0 packets/sec\r\
+      \n  5 minute output rate 0 bits/sec, 0 packets/sec\r\n     0 packets input,\
+      \ 0 bytes, 0 no buffer\r\n     Received 0 broadcasts (0 IP multicasts)\r\n \
+      \    0 runts, 0 giants, 0 throttles \r\n     0 input errors, 0 CRC, 0 frame,\
+      \ 0 overrun, 0 ignored, 0 abort\r\n     0 packets output, 0 bytes, 0 underruns\r\
+      \n     0 output errors, 0 collisions, 0 interface resets\r\n     0 unknown protocol\
+      \ drops\r\n     0 output buffer failures, 0 output buffers swapped out"
+    show run | section interface: "interface Loopback0\r\n ip address 1.1.1.1 255.255.255.255\r\
+      \n ip pim sparse-mode\r\n ip ospf 1 area 0\r\n ipv6 address 2001:1:1:1::1/128\r\
+      \n ipv6 rip ripng enable\r\n ipv6 ospf 1 area 0\r\ninterface Loopback300\r\n\
+      \ vrf forwarding VRF1\r\n ip address 1.1.1.1 255.255.255.255\r\n ip pim sparse-mode\r\
+      \n ip ospf 2 area 0\r\n ipv6 address 2001:1:1:1::1/128\r\n ipv6 rip ripng enable\r\
+      \ninterface Port-channel12\r\n no ip address\r\n no negotiation auto\r\n no\
+      \ mop enabled\r\n no mop sysid\r\ninterface Port-channel13\r\n no ip address\r\
+      \n no negotiation auto\r\n no mop enabled\r\n no mop sysid\r\ninterface GigabitEthernet1\r\
+      \n vrf forwarding Mgmt-intf\r\n ip address 172.16.1.211 255.255.255.0\r\n negotiation\
+      \ auto\r\n no mop enabled\r\n no mop sysid\r\ninterface GigabitEthernet2\r\n\
+      \ no ip address\r\n negotiation auto\r\n cdp enable\r\n no mop enabled\r\n no\
+      \ mop sysid\r\ninterface GigabitEthernet2.90\r\n encapsulation dot1Q 90\r\n\
+      \ ip address 10.12.90.1 255.255.255.0\r\n ipv6 address 2001:10:12:90::1/64\r\
+      \ninterface GigabitEthernet2.110\r\n encapsulation dot1Q 110\r\n ip address\
+      \ 10.12.110.1 255.255.255.0\r\n ip pim sparse-mode\r\n ip ospf 1 area 0\r\n\
+      \ ipv6 address 2001:10:12:110::1/64\r\n mpls ip\r\n ipv6 ospf 1 area 0\r\ninterface\
+      \ GigabitEthernet2.115\r\n encapsulation dot1Q 115\r\n ip address 10.12.115.1\
+      \ 255.255.255.0\r\n ip router isis test\r\n ip igmp join-group 239.1.1.2\r\n\
+      \ ip igmp join-group 239.1.1.1\r\n ip igmp static-group 239.1.1.4\r\n ip igmp\
+      \ static-group 239.1.1.3\r\n ipv6 address 2001:10:12:115::1/64\r\n ipv6 mld\
+      \ join-group FF1E:ABCD:DEF1:1111::1\r\n ipv6 mld join-group FF1E:ABCD:DEF1:1111::2\r\
+      \n ipv6 mld static-group FF1E:ABCD:DEF1:1111::3\r\n ipv6 mld static-group FF1E:ABCD:DEF1:1111::4\r\
+      \n ipv6 router isis test\r\ninterface GigabitEthernet2.120\r\n encapsulation\
+      \ dot1Q 120\r\n ip address 10.12.120.1 255.255.255.0\r\n ipv6 address 2001:10:12:120::1/64\r\
+      \n ipv6 rip ripng enable\r\ninterface GigabitEthernet2.390\r\n encapsulation\
+      \ dot1Q 390\r\n vrf forwarding VRF1\r\n ip address 10.12.90.1 255.255.255.0\r\
+      \n ipv6 address 2001:10:12:90::1/64\r\ninterface GigabitEthernet2.410\r\n encapsulation\
+      \ dot1Q 410\r\n vrf forwarding VRF1\r\n ip address 10.12.110.1 255.255.255.0\r\
+      \n ip pim sparse-mode\r\n ip ospf 2 area 0\r\n ipv6 address 2001:10:12:110::1/64\r\
+      \n ipv6 enable\r\n mpls ip\r\ninterface GigabitEthernet2.415\r\n encapsulation\
+      \ dot1Q 415\r\n vrf forwarding VRF1\r\n ip address 10.12.115.1 255.255.255.0\r\
+      \n ip router isis test1\r\n ip igmp join-group 239.1.1.2\r\n ip igmp join-group\
+      \ 239.1.1.1\r\n ip igmp static-group 239.1.1.4\r\n ip igmp static-group 239.1.1.3\r\
+      \n ipv6 address 2001:10:12:115::1/64\r\n ipv6 mld join-group FF1E:ABCD:DEF1:1111::1\r\
+      \n ipv6 mld join-group FF1E:ABCD:DEF1:1111::2\r\n ipv6 mld static-group FF1E:ABCD:DEF1:1111::3\r\
+      \n ipv6 mld static-group FF1E:ABCD:DEF1:1111::4\r\n ipv6 router isis test1\r\
+      \ninterface GigabitEthernet2.420\r\n encapsulation dot1Q 420\r\n vrf forwarding\
+      \ VRF1\r\n ip address 10.12.120.1 255.255.255.0\r\n ipv6 address 2001:10:12:120::1/64\r\
+      \n ipv6 rip ripng enable\r\ninterface GigabitEthernet3\r\n no ip address\r\n\
+      \ negotiation auto\r\n cdp enable\r\n no mop enabled\r\n no mop sysid\r\ninterface\
+      \ GigabitEthernet3.90\r\n encapsulation dot1Q 90\r\n ip address 10.13.90.1 255.255.255.0\r\
+      \n ipv6 address 2001:10:13:90::1/64\r\ninterface GigabitEthernet3.110\r\n encapsulation\
+      \ dot1Q 110\r\n ip address 10.13.110.1 255.255.255.0\r\n ip pim sparse-mode\r\
+      \n ip ospf 1 area 0\r\n ipv6 address 2001:10:13:110::1/64\r\n mpls ip\r\n ipv6\
+      \ ospf 1 area 0\r\ninterface GigabitEthernet3.115\r\n encapsulation dot1Q 115\r\
+      \n ip address 10.13.115.1 255.255.255.0\r\n ip router isis test\r\n ipv6 address\
+      \ 2001:10:13:115::1/64\r\n ipv6 router isis test\r\ninterface GigabitEthernet3.120\r\
+      \n encapsulation dot1Q 120\r\n ip address 10.13.120.1 255.255.255.0\r\n ipv6\
+      \ address 2001:10:13:120::1/64\r\n ipv6 rip ripng enable\r\ninterface GigabitEthernet3.390\r\
+      \n encapsulation dot1Q 390\r\n vrf forwarding VRF1\r\n ip address 10.13.90.1\
+      \ 255.255.255.0\r\n ipv6 address 2001:10:13:90::1/64\r\ninterface GigabitEthernet3.410\r\
+      \n encapsulation dot1Q 410\r\n vrf forwarding VRF1\r\n ip address 10.13.110.1\
+      \ 255.255.255.0\r\n ip pim sparse-mode\r\n ip ospf 2 area 0\r\n ipv6 address\
+      \ 2001:10:13:110::1/64\r\n mpls ip\r\ninterface GigabitEthernet3.415\r\n encapsulation\
+      \ dot1Q 415\r\n vrf forwarding VRF1\r\n ip address 10.13.115.1 255.255.255.0\r\
+      \n ip router isis test1\r\n ipv6 address 2001:10:13:115::1/64\r\n ipv6 router\
+      \ isis test1\r\ninterface GigabitEthernet3.420\r\n encapsulation dot1Q 420\r\
+      \n vrf forwarding VRF1\r\n ip address 10.13.120.1 255.255.255.0\r\n ipv6 address\
+      \ 2001:10:13:120::1/64\r\n ipv6 rip ripng enable\r\ninterface GigabitEthernet4\r\
+      \n no ip address\r\n negotiation auto\r\n cdp enable\r\n no mop enabled\r\n\
+      \ no mop sysid\r\n channel-group 12 mode active\r\ninterface GigabitEthernet5\r\
+      \n no ip address\r\n negotiation auto\r\n cdp enable\r\n no mop enabled\r\n\
+      \ no mop sysid\r\n channel-group 12 mode active\r\ninterface GigabitEthernet6\r\
+      \n no ip address\r\n negotiation auto\r\n cdp enable\r\n no mop enabled\r\n\
+      \ no mop sysid\r\n channel-group 13 mode active\r\ninterface GigabitEthernet7\r\
+      \n no ip address\r\n negotiation auto\r\n cdp enable\r\n no mop enabled\r\n\
+      \ no mop sysid\r\n channel-group 13 mode active\r\nip http client source-interface\
+      \ GigabitEthernet1"
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: R1_xe#

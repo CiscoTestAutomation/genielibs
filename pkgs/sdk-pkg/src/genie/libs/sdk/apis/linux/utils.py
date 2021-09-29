@@ -1,10 +1,15 @@
 # Python
+import re
 import logging
+import pathlib
 
 # Logger
 log = logging.getLogger(__name__)
+
 # unicon
+from unicon.eal.dialogs import Dialog, Statement
 from unicon.core.errors import SubCommandFailure
+
 
 def extract_tar_gz(device, path, files, option='-zxvf'):
     """ extract tar.gz file
@@ -64,7 +69,7 @@ def execute_by_jinja2(device, templates_dir, template_name, post_commands=None, 
     template = device.api.get_jinja_template(
         templates_dir=templates_dir,
         template_name=template_name)
-    
+
     if not template:
         raise Exception('Could not get template')
 
@@ -73,7 +78,7 @@ def execute_by_jinja2(device, templates_dir, template_name, post_commands=None, 
 
     if post_commands:
         out = out + post_commands
-    
+
     try:
         for cmd in out:
             if timeout:
@@ -84,7 +89,7 @@ def execute_by_jinja2(device, templates_dir, template_name, post_commands=None, 
                 device.execute(cmd)
     except SubCommandFailure as e:
         if failure_commands:
-            device.execute(failure_commands)   
+            device.execute(failure_commands)
         raise SubCommandFailure(
             "Failed in applying the following "
             "configuration:\n{config}, error:\n{e}".format(config=out, e=e)
@@ -112,3 +117,86 @@ def get_md5_hash_of_file(device, file, timeout=60):
     except Exception as e:
         log.warning(e)
         return None
+
+
+def scp(device,
+        local_path,
+        remote_path,
+        remote_device,
+        remote_user=None,
+        remote_pass=None,
+        remote_via=None,
+        creds=None,
+        **kwargs):
+    """ copy files from local device to remote device via scp
+
+        Args:
+            device (`obj`) : Device object (local device)
+            local_path (`str`): path with file on local device
+            remote_device (`str`): remote device name
+            remote_path (`str`): path with file on remote device
+            remote_user (`str`): use given username to scp
+                                 Default to None
+            remote_pass (`str`): use given password to scp
+                                 Default to None
+            remote_via (`str`): specify connection to get ip
+                                Default to None
+            creds (`str`): Name of the credentials for the remote device
+                           Defaults to "default"
+        Returns:
+            result (`bool`): True if scp successfully done
+    """
+    # convert from device name to device object
+    remote_device = device.testbed.devices[remote_device]
+    # set credential for remote device
+    username, password = remote_device.api.get_username_password(creds=creds)
+    if remote_user:
+        username = remote_user
+    if remote_pass:
+        password = remote_pass
+
+    # find ip for remote server from testbed yaml
+    if remote_via:
+        remote_device_ip = remote_device.connections.get(remote_via, {}).get('ip') or \
+            remote_device.connections.get(remote_via, {}).get('host')
+    else:
+        remote_connections = list(remote_device.connections.keys())
+        if 'defaults' in remote_connections:
+            remote_connections.remove('defaults')
+        via = remote_device.connections.get('defaults', {}).get('via',
+            remote_connections[0] if remote_connections else None)
+        remote_device_ip = remote_device.connections.get(via, {}).get('ip') or \
+            remote_device.connections[via].get('host')
+    if not remote_device_ip:
+        raise ValueError('Please specify remote_via with a connection'
+                        ' name that has an ip or host attribute.')
+
+    local_filename = pathlib.Path(local_path).name
+
+    # complete remote_path with credential and ip
+    remote_path = "{id}@{ip}:{rp}".format(id=username,
+                                          ip=remote_device_ip,
+                                          rp=remote_path)
+
+    s1 = Statement(pattern=r".*Password:",
+                   action="sendline({pw})".format(pw=password),
+                   args=None,
+                   loop_continue=True,
+                   continue_timer=False)
+    dialog = Dialog([s1])
+
+    try:
+        out = device.execute("scp {lp} {rp}".format(lp=local_path,
+                                                    rp=remote_path),
+                              reply=dialog,
+                              **kwargs)
+    except Exception as e:
+        log.warning("Failed to copy from {lp} to {rp} via scp: {e}".format(
+            lp=local_path, rp=remote_path, e=e))
+        return False
+
+    # return True/False depending on result
+    if re.search(r'{}\s*100%'.format(local_filename), out):
+        return True
+    else:
+        return False

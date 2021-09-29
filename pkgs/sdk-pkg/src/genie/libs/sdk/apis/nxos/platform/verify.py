@@ -77,7 +77,7 @@ def _is_boot_variable_as_expected(device, system, boot_variable, kickstart=None)
         if system != actual_system:
             raise Exception("Next reload system boot variable ({a}) is not as expected ({e}) "
                             "for '{d}'".format(a=actual_system, e=system, d=device.name))
-    else:
+    elif 'sup_number' in output[boot_variable]:
         # if there are supervisors, check if all of the boot var are changed
         for sup in output[boot_variable]['sup_number']:
             actual_kickstart = output.get(boot_variable, None).\
@@ -95,6 +95,11 @@ def _is_boot_variable_as_expected(device, system, boot_variable, kickstart=None)
             if system != actual_system:
                 raise Exception("Next reload system boot variable ({a}) is not as expected ({e}) "
                                 "for '{d}', supervisor '{s}'".format(a=actual_system, e=system, d=device.name, s=sup))
+    else:
+        # No boot variables set but parser not empty
+        if system or kickstart:
+            raise Exception("No boot variables were parsed but the API expected boot"
+                            "variables to be set")
 
 def verify_file_exists(device, file, size=None, dir_output=None):
     """verify that the given file exist on device with the same name and size

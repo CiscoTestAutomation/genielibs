@@ -132,6 +132,88 @@ class BaseStage(TestContainer):
         return iter(methods)
 
 
+class StageSection(TestSection):
+
+    def __str__(self):
+        '''Context __str__
+
+        Formats the logging output
+
+        Example
+        -------
+            >>> str(section)
+        '''
+        return 'stage %s' %(self.uid)
+
+
+class BaseStage(TestContainer):
+    """ Container for class based clean stages.
+
+    This container enables executing an instantiated class just like a function.
+    Class methods are executed based on the run_order list defined. If a method
+    in the exec_order list does not exist within the class an AttributeError
+    will be raised.
+
+    Examples
+    --------
+        >>> class Stage(BaseStage):
+        ...     exec_order = ['func1', 'func2']
+        ...     def func2(self):
+        ...         print("I am func2")
+        ...     def func1(self):
+        ...         print("I am func1")
+        ...
+        >>> stage = Stage()
+        >>> stage()
+        I am func1
+        I am func2
+
+        >>> class Stage(BaseStage):
+        ...     exec_order = ['func1', 'some_other_func', 'func2']
+        ...     def func1(self):
+        ...         print("I am func1")
+        ...     def func2(self):
+        ...         print("I am func2")
+        ...
+        >>> stage = Stage()
+        >>> stage()
+        Traceback (most recent call last):
+          (snip)
+        AttributeError: The class variable 'exec_order' from <class '__main__.Stage'> contains undefined methods: some_other_func
+    """
+
+    exec_order = []
+
+    def __call__(self, **parameters):
+        # Update the parameters with user provided
+        self.parameters.update(parameters)
+
+        for func in self:
+            # Retrieve a partial func with all func args populated
+            func = self.apply_parameters(func, self.parameters)
+            func()
+
+    def __iter__(self):
+        undefined_methods = []
+        methods = []
+
+        # Ensure all methods are defined and retrieve them
+        for method_name in self.exec_order:
+            try:
+                method = getattr(self, method_name)
+            except AttributeError:
+                undefined_methods.append(method_name)
+            else:
+                methods.append(method)
+
+        if undefined_methods:
+            raise AttributeError(
+                "The class variable 'exec_order' from {} contains undefined methods: "
+                "{}".format(self.__class__, ', '.join(undefined_methods)))
+
+        return iter(methods)
+
+
 class CleanTestcase(Testcase):
 
     def __init__(self, device, global_stage_reuse_limit, *args, **kwargs):
@@ -260,7 +342,7 @@ class CleanTestcase(Testcase):
 
             else:
                 if INTERNAL:
-                    # Try to add clean stage usage to telemetry data 
+                    # Try to add clean stage usage to telemetry data
                     try:
                         add_clean_usage_data(clean_stages=self.stages,
                                              device=self.device)
@@ -350,14 +432,6 @@ class DeviceClean(BaseCleaner):
             # 1. Figure out what section to run
             # 2. Run them
             result = clean_testcase()
-
-            # Disconnect the device
-            # try:
-            #     log.warning("before destroy all")
-            #     device.destroy_all()
-            #     log.warning("after destroy all")
-            # except Exception:
-            #     pass
 
             if not result:
                 raise Exception("Clean {result}.".format(result=str(result)))

@@ -247,40 +247,48 @@ def get_clean_function(clean_name, clean_data, device):
     try:
         data = clean_data[name]
     except KeyError:
-        raise Exception("Could not find a clean stage called '{c}'".format(
-            c=name)) from None
+        raise Exception(f"The clean stage '{name}' does not exist in the json "
+                        f"file") from None
 
-    # Load abstraction
+    # Load abstraction tokens
     tokens = Lookup.tokens_from_device(device)
 
-    # if this is true after below loop, it means the function not under any os
-    is_com = True
+    # Start by checking the lowest level in the json using the abstraction tokens.
+    # For each consecutive iteration, remove the last token, checking every level
+    # until there is nothing left to check or a stage is found.
+    iterated_data = data
+    for i in reversed(range(1, len(tokens)+1)):
 
-    # find the token in the lowest level of the json
-    for token in tokens:
-        if token in data:
-            data = data[token]
-            is_com = False
+        for token in tokens[:i]:
+            if token not in iterated_data:
+                break
 
-    pkg_name = data.get('package')
-    if pkg_name:
-        pkg = importlib.import_module(pkg_name)
-        lookup = Lookup.from_device(device, packages={"clean": pkg})
+            iterated_data = iterated_data[token]
+
+        if 'module_name' in iterated_data:
+            # Found an abstracted stage
+            break
+
+        # reset for the next iteration
+        iterated_data = data
+
+    if iterated_data == data:
+        # The stage was not found under any of the abstraction tokens.
+        # Try 'com' as a last resort.
+        iterated_data = iterated_data.get('com', {})
+
+    if 'package' in iterated_data:
+        pkg = importlib.import_module(iterated_data['package'])
     else:
-        lookup = Lookup.from_device(device, packages={"clean": clean})
+        pkg = clean
 
-    # if not found, search under 'com' token
-    if is_com:
-        data = data['com']
+    lookup = Lookup.from_device(device, packages={"clean": pkg})
 
     try:
-        mod = getattr(_get_submodule(lookup.clean, data["module_name"]), name)
-        return mod
-
+        return getattr(_get_submodule(lookup.clean, iterated_data["module_name"]), name)
     except Exception:
-        raise Exception("Could not find '{cn}' clean section under '{o}', "
-                        "and common".format(cn=name,
-                                            o=device.os)) from None
+        raise Exception(f"The clean stage '{name}' does not exist under the "
+                        f"following abstraction tokens: {['com']+tokens}") from None
 
 def _get_submodule(abs_mod, mods):
     """recursively find the submodule"""

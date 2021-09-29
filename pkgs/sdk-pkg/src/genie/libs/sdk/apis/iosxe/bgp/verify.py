@@ -1840,3 +1840,292 @@ def verify_ip_bgp_route(device, route, max_time=90, check_interval=10,
             return True
         timeout.sleep()
     return False
+
+
+def verify_bgp_rt2_route_target(
+    device, address_family, eti, mac_addr, ip_addr, vrf_id, expected_rt, 
+    max_time=30, check_interval=10
+):
+    """ Verify bgp RT-2 host route(s) exists in 'show ip bgp {address_family}
+        route-type 2 {eti} {mac} {ip}'
+
+        Args:
+            device ('obj'): device to use
+            address_family ('str'): address family
+            eti ('str'):Ethernet tag in decimal <0-4294967295>
+            mac_addr('str'): mac address
+            ip_addr('str'): Ip address
+            vrf_id ('str'): vrf
+            expected_rt('str' or 'list'): Expected route target
+            max_time ('int', optional): maximum time to wait in seconds, 
+                default 30
+            check_interval ('int'. optional): how often to check in seconds, 
+                default 10
+        Returns:
+            result ('bool'): verified result
+        Raises:
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        rt2_dict = device.api.get_bgp_rt2_community_label(
+             device=device,
+             address_family=address_family,
+             eti=eti,
+             mac=mac_addr,
+             ip=ip_addr,
+             vrf_id=vrf_id)
+
+        if rt2_dict:
+            comm_list = rt2_dict["ext_community"]
+
+            if isinstance(expected_rt, str):
+                if expected_rt in comm_list:
+                    return True
+            else:
+                # comparing expected list with actual for diff using sets
+                if not set(expected_rt).difference(set(comm_list)):
+                    return True
+
+        timeout.sleep()
+
+    if not rt2_dict:
+        log.error(
+            "Unable to get RT-2 route for host {} in 'show ip bgp {} route-type"
+            "2 {} {} {}".format(ip_addr, address_family, eti, mac_addr, ip_addr)
+        )
+    else:
+        log.error(
+            'Expected route target is {expected_rt} actual is '
+            '{actual_rt}'.format(expected_rt=expected_rt, actual_rt=comm_list)
+        )
+
+    return False
+
+
+def verify_bgp_rt5_reoriginated_from(
+    device, address_family, eti, ip_addr, ip_length, vrf_id, expected_path, 
+    max_time=30, check_interval=10
+):
+    """ re-originated RT-5 host IP route indicates route is re-originated 
+        from RT-2 in 'show ip bgp {address_family} route-type 5 
+        {eti} {ip} {ip_len}'
+
+        Args:
+            device ('obj'): device to use
+            address_family ('str'): address family
+            eti ('str'):Ethernet tag in decimal <0-4294967295>
+            ip_addr('str'): Ip address
+            ip_length('str'): Ip length
+            vrf_id('str'): VRF name
+            expected_path('str'): Expected path
+            max_time ('int', optional): maximum time to wait in seconds,
+                default 30
+            check_interval ('int', optional): how often to check in seconds, 
+                default 10
+        Example: 
+            Paths: (1 available, best #1, table evi_101, 
+            re-originated from [2][30.0.1.11:101][0][48]
+                [009999888888][32][20.101.1.3]/24)
+        Returns:
+            result ('bool'): verified result
+        Raises:
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        path_dict = device.api.get_bgp_rt5_community_paths_label(
+             device=device,
+             address_family=address_family,
+             eti=eti,
+             ip=ip_addr,
+             ip_len=ip_length,
+             vrf_id=vrf_id)
+
+        if path_dict:
+            path_list = path_dict["paths"]
+
+            for path in path_list.split(","):
+
+                if path.find(expected_path) >= 0:
+                    return True
+                else:
+                    continue
+        timeout.sleep()
+
+    if not path_dict:
+        log.error('Output is empty')
+    else:
+        log.error('Expected reoriginated path is "{expected_path}" '
+            'actual is "{path_list}"'.format(expected_path=
+            expected_path, path_list=path_list))
+
+    return False
+
+
+def verify_bgp_rt5_route_target(
+    device, address_family, eti, ip_addr, ip_length, vrf_id, expected_rt, 
+    max_time=30, check_interval=10
+):
+    """ Verify bgp for specific route target host(s) in
+        'show ip bgp {address_family} route-type 5 {eti} {ip} {ip_len}' 
+
+        Args:
+            device ('obj'): device to use
+            address_family ('str'): address family
+            eti ('str'):Ethernet tag in decimal <0-4294967295>
+            ip_addr('str'): ipv4/ipv6 address
+            ip_length('str'): Ip length
+            vrf_id ('str'): vrf
+            expected_rt ('str' or 'list'): Expected RT
+            max_time ('int', optional): maximum time to wait in seconds, 
+                default 30
+            check_interval ('int', optional): how often to check in seconds, 
+                default 10
+        Returns:
+            result ('bool'): verified result
+        Raises:
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        rt5_dict = device.api.get_bgp_rt5_community_paths_label(
+             device=device,
+             address_family=address_family,
+             eti=eti,
+             ip=ip_addr,
+             ip_len=ip_length,
+             vrf_id=vrf_id)
+
+        if rt5_dict:
+            comm_list = rt5_dict["ext_community"]
+
+            if isinstance(expected_rt, str):
+                if expected_rt in comm_list:
+                    return True
+            else:
+                if not set(expected_rt).difference(set(comm_list)):
+                    return True
+             
+        timeout.sleep()
+
+    if not rt5_dict:
+        log.error("Unable to get rt5 data")
+    else:
+        log.error('Expected route target is {expected_rt} actual is'
+            '{actual_rt}'.format(expected_rt=expected_rt, actual_rt=comm_list)
+        )
+
+    return False
+
+
+def verify_bgp_rt5_label(
+    device, address_family, eti, ip_addr, ip_length, vrf_id, expected_label, 
+    max_time=30, check_interval=10
+):
+    """ Verify bgp for specific label existstance in 
+        'show ip bgp {address_family} route-type 5 {eti} {ip_addr} {ip_length}'
+
+        Args:
+            device ('obj'): device to use
+            address_family ('str'): address family
+            eti ('str'):Ethernet tag in decimal <0-4294967295>
+            ip_addr('str'): IP ADDRESS
+            ip_length('str'): Ip length
+            vrf_id ('str'): vrf
+            expected_label('str'): Expected Label
+            max_time ('int', optional): maximum time to wait in seconds, 
+                default is 30
+            check_interval ('int', optional): how often to check  in seconds, 
+                default is 10
+        Example:
+            EVPN ESI: 00000000000000000000, Gateway Address: 0.0.0.0, 
+            VNI Label 3000101, MPLS VPN Label 0
+        Returns:
+            result ('bool'): verified result
+        Raises:
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        label_dict = device.api.get_bgp_rt5_community_paths_label(
+             device=device,
+             address_family=address_family,
+             eti=eti,
+             ip=ip_addr,
+             ip_len=ip_length,
+             vrf_id=vrf_id)
+
+        if label_dict:
+            label_list = label_dict["vni_labels"]
+
+            if expected_label in label_list:
+                return True
+
+        timeout.sleep()
+
+    if not label_dict:
+        log.error("Could not get the vrf {} data".format(vrf_id))
+    else:
+        log.error('Expected route target label is "{expected_label}" '
+            'actual is "{actual_label}"'.format(expected_label=
+                expected_label, actual_label=label_list)
+        )
+   
+    return False
+
+
+def verify_bgp_rt2_label(
+    device, address_family, eti, mac_addr, ip_addr, vrf_id, 
+    expected_label, max_time=30, check_interval=10
+):
+    """ Verify bgp label for routetype 2 in 'show ip bgp {address_family}
+        route-type 2 {eti} {mac} {ip}'
+
+        Args:
+            device ('obj'): device to use
+            address_family ('str'): address family
+            eti ('str'):Ethernet tag in decimal <0-4294967295>
+            mac_addr('str'): Mac address
+            ip_addr('str'): Ip address
+            vrf_id ('str'): vrf
+            expected_label('str'): Expected label 
+            max_time ('int', optional): maximum time to wait in seconds,
+                default is 30
+            check_interval ('int', optional): how often to check in seconds,
+                default is 10
+        Returns:
+            result ('bool'): verified result
+        Raises:
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+
+        rt2_dict = device.api.get_bgp_rt2_community_label(
+             device=device,
+             address_family=address_family,
+             eti=eti,
+             mac=mac_addr,
+             ip=ip_addr,
+             vrf_id=vrf_id)
+
+        if rt2_dict:
+            label_list = rt2_dict["labels"]
+
+            if expected_label in label_list:
+                return True
+
+        timeout.sleep()
+
+    if not rt2_dict:
+        log.error("Could not get rt2 data, output is empty")
+    else:
+        log.error('Expected route target label is "{expected_label}" '
+            'actual is "{actual_label}"'.format(expected_label=
+                expected_label, actual_label=label_list)
+        )
+
+    return False

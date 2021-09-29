@@ -234,7 +234,7 @@ def recovery_processor(
         console_breakboot_char='\x03', # '\x03' == <ctrl>+C
         grub_activity_pattern=None,
         grub_breakboot_char='c',
-        break_count=None,
+        break_count=15,
         timeout=None,
         golden_image=None,
         tftp_boot=None,
@@ -252,7 +252,7 @@ def recovery_processor(
     devices:
       <device>:
         device_recovery:
-          break_count: <Send break count, 'int'>
+          break_count: <Send break count, 'int'> (default to 15)
           console_activity_pattern: <Break pattern on the device for normal boot mode, 'str'>
           console_breakboot_char: <Character to send when console_activity_pattern is matched, 'str'>
           grub_activity_pattern: <Break pattern on the device for grub boot mode, 'str'>

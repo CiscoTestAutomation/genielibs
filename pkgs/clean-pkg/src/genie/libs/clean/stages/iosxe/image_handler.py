@@ -178,7 +178,6 @@ class ImageHandler(BaseImageHandler, ImageLoader):
 
     def update_tftp_boot(self, number=''):
         '''Update clean section 'tftp_boot' with image information'''
-
         tftp_boot = self.device.clean.setdefault('tftp_boot'+number, {})
         tftp_boot.update({'image': self.image})
 
@@ -205,6 +204,12 @@ class ImageHandler(BaseImageHandler, ImageLoader):
 
         change_boot_variable = self.device.clean.setdefault('change_boot_variable'+number, {})
         change_boot_variable.update({'images': self.image})
+
+    def update_expand_image(self, number=''):
+        '''Update clean stage 'expand_image' with image information'''
+
+        expand_image = self.device.clean.setdefault('expand_image'+number, {})
+        expand_image.update({'image': self.image})
 
     def update_verify_running_image(self, number=''):
         '''Update clean stage 'verify_running_image' with image information'''

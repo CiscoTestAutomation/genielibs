@@ -1,0 +1,59 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: R1_xe(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: R1_xe(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    show interfaces GigabitEthernet1: "GigabitEthernet1 is up, line protocol is up\
+      \ \r\n  Hardware is CSR vNIC, address is 5e01.4000.0000 (bia 5e01.4000.0000)\r\
+      \n  Internet address is 172.16.1.211/24\r\n  MTU 1500 bytes, BW 1000000 Kbit/sec,\
+      \ DLY 10 usec, \r\n     reliability 255/255, txload 1/255, rxload 1/255\r\n\
+      \  Encapsulation ARPA, loopback not set\r\n  Keepalive set (10 sec)\r\n  Full\
+      \ Duplex, 1000Mbps, link type is auto, media type is Virtual\r\n  output flow-control\
+      \ is unsupported, input flow-control is unsupported\r\n  ARP type: ARPA, ARP\
+      \ Timeout 04:00:00\r\n  Last input 00:00:00, output 00:00:22, output hang never\r\
+      \n  Last clearing of \"show interface\" counters never\r\n  Input queue: 0/375/0/0\
+      \ (size/max/drops/flushes); Total output drops: 0\r\n  Queueing strategy: fifo\r\
+      \n  Output queue: 0/40 (size/max)\r\n  5 minute input rate 181000 bits/sec,\
+      \ 140 packets/sec\r\n  5 minute output rate 0 bits/sec, 0 packets/sec\r\n  \
+      \   346976186 packets input, 57084695479 bytes, 0 no buffer\r\n     Received\
+      \ 0 broadcasts (0 IP multicasts)\r\n     0 runts, 0 giants, 0 throttles \r\n\
+      \     0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored\r\n     0 watchdog,\
+      \ 0 multicast, 0 pause input\r\n     307566 packets output, 53171615 bytes,\
+      \ 0 underruns\r\n     0 output errors, 0 collisions, 1 interface resets\r\n\
+      \     243052 unknown protocol drops\r\n     0 babbles, 0 late collision, 0 deferred\r\
+      \n     0 lost carrier, 0 no carrier, 0 pause output\r\n     0 output buffer\
+      \ failures, 0 output buffers swapped out"
+    show snmp mib ifmib ifindex GigabitEthernet1: '%SNMP agent not enabled'
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: R1_xe#

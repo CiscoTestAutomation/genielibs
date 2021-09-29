@@ -1,4 +1,5 @@
 import logging
+import json
 from time import sleep
 from copy import deepcopy
 from six import string_types
@@ -6,6 +7,8 @@ from six import string_types
 from pyats.log.utils import banner
 from .rpcbuilder import YSNetconfRPCBuilder
 from .rpcverify import RpcVerify
+from .requestbuilder import RestconfRequestBuilder, NO_BODY_METHODS, WITH_BODY_METHODS
+from .yangexec_helper import DictionaryToXML
 
 log = logging.getLogger(__name__)
 
@@ -703,6 +706,93 @@ def run_gnmi(operation, device, steps,
     else:
         log.warning(banner('OPERATION: {0} not allowed'.format(operation)))
     return result
+
+
+def run_restconf(operation, device, steps, datastore, rpc_data, returns, **kwargs):
+    result = False
+    request_successful = False
+    request_senders = {
+        'PATCH': device.patch,
+        'POST': device.post,
+        'PUT': device.put,
+        'DELETE': device.delete,
+        'GET': device.get,
+    }
+
+    format = kwargs.get('format', {})
+    if 'auto_validate' in format:
+        auto_validate = format.get('auto_validate')
+    else:
+        auto_validate = format.get('auto-validate', True)
+    if 'negative_test' in format:
+        negative_test = format.get('negative_test')
+    else:
+        negative_test = format.get('negative-test', False)
+
+    # Get URL and request body
+    request_builder = RestconfRequestBuilder(request_data=rpc_data, returns=returns)
+    url = request_builder.url
+    body = request_builder.json_body
+    content_type = request_builder.content_type
+    http_method = request_builder.http_method
+    # Translate HTTP method to a function present in device to execute request(s)
+    send_request = request_senders[http_method]
+
+    # Print HTTP method
+    log.info(f'Using HTTP method: {http_method}')
+    # Print request URL
+    log.info(f'Using request URL: {url}')
+
+    # Send request
+    if http_method in NO_BODY_METHODS:
+        request = send_request(url, content_type)
+    elif http_method in WITH_BODY_METHODS:
+        # Print request body
+        log.info(f'Using request body:\n{body}')
+        request = send_request(url, body, content_type)
+
+    status_code = request.status_code
+    content = json.loads(request.content.decode('utf-8')) if len(request.content) else None
+
+    if status_code >= 200 and status_code <= 299:
+        # Request was successful
+        log.info(banner(f'Request successful! Request status code: {status_code}'))
+        request_successful = True
+    elif status_code >= 400 and status_code <= 499:
+        # Client error occured
+        log.error(banner(f'Client error occured! Request status code: {status_code}'))
+    elif status_code >= 500 and status_code <= 599:
+        # Server error occured
+        log.error(banner(f'Server error occured! Request status code: {status_code}'))
+    # Pretty print server response
+    log.info(f'Server response:\n{json.dumps(content or {}, indent=2)}')
+
+    if request_successful:
+        if content and returns:
+            log.info(banner('Server response and returns exist'))
+            # If the response has a body, convert body to xml, process body, and verify body
+            rpc_verify = RpcVerify(log=log)
+            resp_xml = DictionaryToXML(content).xml_str
+            resp_elements = rpc_verify.process_rpc_reply(resp_xml)
+            # Remove namespaces from returns' XPaths
+            formatted_returns = []
+            for item in returns:
+                xpath = item.get('xpath', '')
+                item['xpath'] = RestconfRequestBuilder.replace_or_delete_namespaces(xpath, rpc_data, 'delete')
+                formatted_returns.append(item)
+            result = rpc_verify.process_operational_state(resp_elements, formatted_returns)
+        elif content and not returns:
+            log.info(banner('Server response exist, returns does not exist'))
+            result = True
+        elif not content and returns:
+            log.error(banner(f'Server response does not exist, returns does exist, no response to compare'))
+        elif not content and not returns:
+            log.info(banner('Server response and returns does not exist'))
+            result = True
+
+        return negative_test != result
+
+    return False
 
 
 def notify_wait(steps, device):

@@ -219,7 +219,7 @@ def enable_ipv6_unicast_routing(device):
     """ Enables ipv6 unicast routing on device
 
         Args:
-            device ('str'): Device str
+            device ('obj'): Device object
 
         Returns:
             None
@@ -237,7 +237,8 @@ def enable_ipv6_unicast_routing(device):
         )
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Could not enable ipv6 unicast routing on device. Error:\n{e}".format(e=e)
+            "Could not enable ipv6 unicast routing on "
+            "device. Error:\n{e}".format(e=e)
         )
 
 def disable_ip_routing(device):
@@ -317,7 +318,6 @@ def disable_keepalive_on_interface(device, interface):
             "Could not disable keepalive on interface {interface}. Error:\n{error}".format(interface=interface, error=e)
         )
 
-
 def configure_routing_ip_route_vrf(
     device,
     ip_address,
@@ -335,13 +335,14 @@ def configure_routing_ip_route_vrf(
             vrf(str)  : vrf name
             interface ('str'): interface name to configure,default is None.
             dest_add('str'): gateway address to configure,default is None.
-
+            
         Returns:
             None
-
+            
         Raises:
             SubCommandFailure
     """
+    
     try:
         if interface and dest_add:
             device.configure(
@@ -369,8 +370,28 @@ def configure_routing_ip_route_vrf(
     except SubCommandFailure:
         log.error('Failed to configure the vrf static route')
         raise
+                
+def configure_default_gateway(device, gateway_ip):
+    """ Configures default gateway
 
+        Args:
+            device ('obj'): Device obj
+            gateway_ip ('str'): IP address of gateway to be configured
+              
+        Returns:
+            None
 
+        Raises:
+            SubCommandFailure
+    """
+    
+    log.info(
+        'Configuring default gateway'
+    )
 
-
-
+    try:
+        device.configure(["ip default-gateway {gateway_ip}".format(gateway_ip=gateway_ip)])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure default gateway. Error:\n{error}".format(error=e)
+        )

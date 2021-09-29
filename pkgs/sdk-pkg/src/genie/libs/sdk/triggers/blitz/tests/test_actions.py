@@ -16,20 +16,20 @@ from genie.libs.sdk.triggers.blitz.blitz import Blitz
 from genie.libs.ops.platform.nxos.platform import Platform
 from genie.libs.sdk.libs.abstracted_libs.restore import Restore
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
-from genie.libs.sdk.triggers.blitz.actions import compare, rest, sleep, \
-                                                  restore_config_snapshot, \
-                                                  bash_console, genie_sdk, \
-                                                  api, learn, bash_console,\
-                                                  parse, execute, configure,\
-                                                  print_, configure_replace,\
-                                                  save_config_snapshot, diff,\
-                                                  configure_dual
+from genie.libs.sdk.triggers.blitz.actions import (compare, rest, sleep,
+                                                   restore_config_snapshot,
+                                                   bash_console, genie_sdk,
+                                                   api, learn, parse,
+                                                   execute, configure,
+                                                   print_, configure_replace,
+                                                   save_config_snapshot, diff,
+                                                   configure_dual, dialog)
 
-from genie.libs.sdk.triggers.blitz.actions_helper import _send_command,\
-                                                         _prompt_handler, \
-                                                         _condition_validator, \
-                                                         _output_query_template
-
+from genie.libs.sdk.triggers.blitz.actions_helper import (Dialog,
+                                                          _send_command,
+                                                          _prompt_handler,
+                                                          _condition_validator,
+                                                          _output_query_template)
 
 
 from unicon import Connection
@@ -1575,6 +1575,42 @@ class TestActions(unittest.TestCase):
         self.kwargs.update({'steps': step, 'items': []})
         compare(**self.kwargs)
         self.assertEqual(step.result, Failed)
+
+    def test_dialog(self):
+      self.dev.is_ha = False
+      self.dev.sendline = Mock()
+      self.dev.spawn = Mock()
+      self.dev.active = Mock()
+
+      self.dev.state_machine = Mock()
+
+      steps = Steps()
+
+      kwargs = {
+        'self': self, 
+        'device': self.dev,
+        'steps': steps,
+        'section': None,
+        'name': '',
+        'start': 'show version',
+        'end': 'end',
+        'sequence': [
+          {
+            'step_msg': 'First step',
+            'expect': 'switch#'
+          }, 
+          {
+            'step_msg': 'Second step',
+            'expect': 'switch#'
+          }
+        ]
+      }
+
+      with patch.object(Dialog, 'process') as mock_dialog:
+        mock_dialog.return_value.match_output = ''
+        output = dialog(**kwargs)
+      self.assertEqual(output, '')
+      self.assertEqual(steps.result, Passed)
 
     def test_sleep(self):
 

@@ -1,0 +1,216 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: R1_xe(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: R1_xe(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    show run: "Building configuration...\r\n\r\nCurrent configuration : 12259 bytes\r\
+      \n!\r\n! Last configuration change at 19:22:37 UTC Tue Oct 12 2021 by admin\r\
+      \n!\r\nversion 16.9\r\nservice config\r\nservice timestamps debug datetime msec\r\
+      \nservice timestamps log datetime msec\r\nplatform qfp utilization monitor load\
+      \ 80\r\nno platform punt-keepalive disable-kernel-core\r\nplatform console serial\r\
+      \n!\r\nhostname R1_xe\r\n!\r\nboot-start-marker\r\nboot-end-marker\r\n!\r\n\
+      !\r\nvrf definition Mgmt-intf\r\n !\r\n address-family ipv4\r\n exit-address-family\r\
+      \n !\r\n address-family ipv6\r\n exit-address-family\r\n!\r\nvrf definition\
+      \ VRF1\r\n rd 65000:1\r\n !\r\n address-family ipv4\r\n exit-address-family\r\
+      \n !\r\n address-family ipv6\r\n exit-address-family\r\n!\r\nno logging console\r\
+      \nenable secret 5 $1$ufBe$ebDG13UD9/PqK.NsPBqOo.\r\n!\r\nno aaa new-model\r\n\
+      !\r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\nip domain name cisco.com\r\nip admission\
+      \ watch-list expiry-time 0\r\nip multicast-routing distributed\r\nip multicast-routing\
+      \ vrf VRF1 distributed\r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\n\
+      subscriber templating\r\n! \r\n! \r\n! \r\n! \r\n!\r\nipv6 unicast-routing\r\
+      \nipv6 rip vrf-mode enable\r\nipv6 multicast-routing\r\nipv6 multicast-routing\
+      \ vrf VRF1\r\nmultilink bundle-name authenticated\r\n!\r\n!\r\n!\r\n!\r\n!\r\
+      \ncrypto pki trustpoint TP-self-signed-2655316104\r\n enrollment selfsigned\r\
+      \n subject-name cn=IOS-Self-Signed-Certificate-2655316104\r\n revocation-check\
+      \ none\r\n rsakeypair TP-self-signed-2655316104\r\n!\r\n!\r\ncrypto pki certificate\
+      \ chain TP-self-signed-2655316104\r\n certificate self-signed 01\r\n  \tquit\r\
+      \n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\nlicense udi pid CSR1000V sn 90T3DC8EFSV\r\
+      \nno license smart enable\r\ndiagnostic bootup level minimal\r\n!\r\nspanning-tree\
+      \ extend system-id\r\n!\r\n!\r\n!\r\nmac access-list extended mac_acl\r\n permit\
+      \ host 0000.0000.0000 host 0000.0000.0000\r\n deny   host 0000.0000.0000 host\
+      \ 0000.0000.0000 msdos\r\n deny   host 0000.0000.0000 host 0000.0000.0000 vlan\
+      \ 10\r\n permit host aaaa.aaaa.aaaa host bbbb.bbbb.bbbb aarp\r\n!\r\nusername\
+      \ cisco privilege 15 secret 5 $1$zmuJ$N4opUnBFwW7eNn5hfKj550\r\nusername admin\
+      \ password 0 Cisc0123\r\n!\r\nredundancy\r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\nlldp\
+      \ run\r\ncdp run\r\n! \r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\n!\r\n\
+      !\r\n!\r\n! \r\n! \r\n!\r\n!\r\ninterface Loopback0\r\n ip address 1.1.1.1 255.255.255.255\r\
+      \n ip pim sparse-mode\r\n ip ospf 1 area 0\r\n ipv6 address 2001:1:1:1::1/128\r\
+      \n ipv6 rip ripng enable\r\n ipv6 ospf 1 area 0\r\n!\r\ninterface Loopback300\r\
+      \n vrf forwarding VRF1\r\n ip address 1.1.1.1 255.255.255.255\r\n ip pim sparse-mode\r\
+      \n ip ospf 2 area 0\r\n ipv6 address 2001:1:1:1::1/128\r\n ipv6 rip ripng enable\r\
+      \n!\r\ninterface Port-channel12\r\n no ip address\r\n no negotiation auto\r\n\
+      \ no mop enabled\r\n no mop sysid\r\n!\r\ninterface Port-channel13\r\n no ip\
+      \ address\r\n no negotiation auto\r\n no mop enabled\r\n no mop sysid\r\n!\r\
+      \ninterface GigabitEthernet1\r\n vrf forwarding Mgmt-intf\r\n ip address 172.16.1.211\
+      \ 255.255.255.0\r\n negotiation auto\r\n no mop enabled\r\n no mop sysid\r\n\
+      !\r\ninterface GigabitEthernet2\r\n no ip address\r\n negotiation auto\r\n cdp\
+      \ enable\r\n no mop enabled\r\n no mop sysid\r\n!\r\ninterface GigabitEthernet2.90\r\
+      \n encapsulation dot1Q 90\r\n ip address 10.12.90.1 255.255.255.0\r\n ipv6 address\
+      \ 2001:10:12:90::1/64\r\n!\r\ninterface GigabitEthernet2.110\r\n encapsulation\
+      \ dot1Q 110\r\n ip address 10.12.110.1 255.255.255.0\r\n ip pim sparse-mode\r\
+      \n ip ospf 1 area 0\r\n ipv6 address 2001:10:12:110::1/64\r\n mpls ip\r\n ipv6\
+      \ ospf 1 area 0\r\n!\r\ninterface GigabitEthernet2.115\r\n encapsulation dot1Q\
+      \ 115\r\n ip address 10.12.115.1 255.255.255.0\r\n ip router isis test\r\n ip\
+      \ igmp join-group 239.1.1.2\r\n ip igmp join-group 239.1.1.1\r\n ip igmp static-group\
+      \ 239.1.1.4\r\n ip igmp static-group 239.1.1.3\r\n ipv6 address 2001:10:12:115::1/64\r\
+      \n ipv6 mld join-group FF1E:ABCD:DEF1:1111::1\r\n ipv6 mld join-group FF1E:ABCD:DEF1:1111::2\r\
+      \n ipv6 mld static-group FF1E:ABCD:DEF1:1111::3\r\n ipv6 mld static-group FF1E:ABCD:DEF1:1111::4\r\
+      \n ipv6 router isis test\r\n!\r\ninterface GigabitEthernet2.120\r\n encapsulation\
+      \ dot1Q 120\r\n ip address 10.12.120.1 255.255.255.0\r\n ipv6 address 2001:10:12:120::1/64\r\
+      \n ipv6 rip ripng enable\r\n!\r\ninterface GigabitEthernet2.390\r\n encapsulation\
+      \ dot1Q 390\r\n vrf forwarding VRF1\r\n ip address 10.12.90.1 255.255.255.0\r\
+      \n ipv6 address 2001:10:12:90::1/64\r\n!\r\ninterface GigabitEthernet2.410\r\
+      \n encapsulation dot1Q 410\r\n vrf forwarding VRF1\r\n ip address 10.12.110.1\
+      \ 255.255.255.0\r\n ip pim sparse-mode\r\n ip ospf 2 area 0\r\n ipv6 address\
+      \ 2001:10:12:110::1/64\r\n ipv6 enable\r\n mpls ip\r\n!\r\ninterface GigabitEthernet2.415\r\
+      \n encapsulation dot1Q 415\r\n vrf forwarding VRF1\r\n ip address 10.12.115.1\
+      \ 255.255.255.0\r\n ip router isis test1\r\n ip igmp join-group 239.1.1.2\r\n\
+      \ ip igmp join-group 239.1.1.1\r\n ip igmp static-group 239.1.1.4\r\n ip igmp\
+      \ static-group 239.1.1.3\r\n ipv6 address 2001:10:12:115::1/64\r\n ipv6 mld\
+      \ join-group FF1E:ABCD:DEF1:1111::1\r\n ipv6 mld join-group FF1E:ABCD:DEF1:1111::2\r\
+      \n ipv6 mld static-group FF1E:ABCD:DEF1:1111::3\r\n ipv6 mld static-group FF1E:ABCD:DEF1:1111::4\r\
+      \n ipv6 router isis test1\r\n!\r\ninterface GigabitEthernet2.420\r\n encapsulation\
+      \ dot1Q 420\r\n vrf forwarding VRF1\r\n ip address 10.12.120.1 255.255.255.0\r\
+      \n ipv6 address 2001:10:12:120::1/64\r\n ipv6 rip ripng enable\r\n!\r\ninterface\
+      \ GigabitEthernet3\r\n no ip address\r\n negotiation auto\r\n cdp enable\r\n\
+      \ no mop enabled\r\n no mop sysid\r\n!\r\ninterface GigabitEthernet3.90\r\n\
+      \ encapsulation dot1Q 90\r\n ip address 10.13.90.1 255.255.255.0\r\n ipv6 address\
+      \ 2001:10:13:90::1/64\r\n!\r\ninterface GigabitEthernet3.110\r\n encapsulation\
+      \ dot1Q 110\r\n ip address 10.13.110.1 255.255.255.0\r\n ip pim sparse-mode\r\
+      \n ip ospf 1 area 0\r\n ipv6 address 2001:10:13:110::1/64\r\n mpls ip\r\n ipv6\
+      \ ospf 1 area 0\r\n!\r\ninterface GigabitEthernet3.115\r\n encapsulation dot1Q\
+      \ 115\r\n ip address 10.13.115.1 255.255.255.0\r\n ip router isis test\r\n ipv6\
+      \ address 2001:10:13:115::1/64\r\n ipv6 router isis test\r\n!\r\ninterface GigabitEthernet3.120\r\
+      \n encapsulation dot1Q 120\r\n ip address 10.13.120.1 255.255.255.0\r\n ipv6\
+      \ address 2001:10:13:120::1/64\r\n ipv6 rip ripng enable\r\n!\r\ninterface GigabitEthernet3.390\r\
+      \n encapsulation dot1Q 390\r\n vrf forwarding VRF1\r\n ip address 10.13.90.1\
+      \ 255.255.255.0\r\n ipv6 address 2001:10:13:90::1/64\r\n!\r\ninterface GigabitEthernet3.410\r\
+      \n encapsulation dot1Q 410\r\n vrf forwarding VRF1\r\n ip address 10.13.110.1\
+      \ 255.255.255.0\r\n ip pim sparse-mode\r\n ip ospf 2 area 0\r\n ipv6 address\
+      \ 2001:10:13:110::1/64\r\n mpls ip\r\n!\r\ninterface GigabitEthernet3.415\r\n\
+      \ encapsulation dot1Q 415\r\n vrf forwarding VRF1\r\n ip address 10.13.115.1\
+      \ 255.255.255.0\r\n ip router isis test1\r\n ipv6 address 2001:10:13:115::1/64\r\
+      \n ipv6 router isis test1\r\n!\r\ninterface GigabitEthernet3.420\r\n encapsulation\
+      \ dot1Q 420\r\n vrf forwarding VRF1\r\n ip address 10.13.120.1 255.255.255.0\r\
+      \n ipv6 address 2001:10:13:120::1/64\r\n ipv6 rip ripng enable\r\n!\r\ninterface\
+      \ GigabitEthernet4\r\n no ip address\r\n negotiation auto\r\n cdp enable\r\n\
+      \ no mop enabled\r\n no mop sysid\r\n channel-group 12 mode active\r\n!\r\n\
+      interface GigabitEthernet5\r\n no ip address\r\n negotiation auto\r\n cdp enable\r\
+      \n no mop enabled\r\n no mop sysid\r\n channel-group 12 mode active\r\n!\r\n\
+      interface GigabitEthernet6\r\n no ip address\r\n negotiation auto\r\n cdp enable\r\
+      \n no mop enabled\r\n no mop sysid\r\n channel-group 13 mode active\r\n!\r\n\
+      interface GigabitEthernet7\r\n no ip address\r\n negotiation auto\r\n cdp enable\r\
+      \n no mop enabled\r\n no mop sysid\r\n channel-group 13 mode active\r\n!\r\n\
+      !\r\nrouter eigrp test\r\n !\r\n address-family ipv4 unicast autonomous-system\
+      \ 100\r\n  !\r\n  topology base\r\n  exit-af-topology\r\n  network 1.1.1.1 0.0.0.0\r\
+      \n  network 10.12.90.0 0.0.0.255\r\n  network 10.13.90.0 0.0.0.255\r\n exit-address-family\r\
+      \n !\r\n address-family ipv4 unicast vrf VRF1 autonomous-system 100\r\n  !\r\
+      \n  topology base\r\n  exit-af-topology\r\n  network 1.1.1.1 0.0.0.0\r\n  network\
+      \ 10.12.90.0 0.0.0.255\r\n  network 10.13.90.0 0.0.0.255\r\n exit-address-family\r\
+      \n !\r\n address-family ipv6 unicast autonomous-system 100\r\n  !\r\n  topology\
+      \ base\r\n  exit-af-topology\r\n exit-address-family\r\n!\r\n!\r\nrouter eigrp\
+      \ tet\r\n !\r\n address-family ipv6 unicast vrf VRF1 autonomous-system 100\r\
+      \n  !\r\n  topology base\r\n  exit-af-topology\r\n exit-address-family\r\n!\r\
+      \nrouter ospfv3 1\r\n !\r\n address-family ipv6 unicast\r\n exit-address-family\r\
+      \n!\r\nrouter ospf 2 vrf VRF1\r\n router-id 11.11.11.11\r\n!\r\nrouter ospf\
+      \ 1\r\n router-id 1.1.1.1\r\n!\r\nrouter isis test\r\n net 49.0001.1111.1111.1111.00\r\
+      \n metric-style wide\r\n !\r\n address-family ipv6\r\n  multi-topology\r\n exit-address-family\r\
+      \n!\r\nrouter isis test1\r\n vrf VRF1\r\n net 49.0001.1111.1111.1111.00\r\n\
+      \ metric-style wide\r\n !\r\n address-family ipv6\r\n  multi-topology\r\n exit-address-family\r\
+      \n!\r\nrouter rip\r\n version 2\r\n network 1.0.0.0\r\n network 10.0.0.0\r\n\
+      \ !\r\n address-family ipv4 vrf VRF1\r\n  network 1.0.0.0\r\n  network 10.0.0.0\r\
+      \n  no auto-summary\r\n exit-address-family\r\n!\r\nrouter bgp 65000\r\n bgp\
+      \ router-id 1.1.1.1\r\n bgp log-neighbor-changes\r\n no bgp default ipv4-unicast\r\
+      \n neighbor 2.2.2.2 remote-as 65000\r\n neighbor 2.2.2.2 update-source Loopback0\r\
+      \n neighbor 3.3.3.3 remote-as 65000\r\n neighbor 3.3.3.3 update-source Loopback0\r\
+      \n neighbor 2001:2:2:2::2 remote-as 65000\r\n neighbor 2001:2:2:2::2 update-source\
+      \ Loopback0\r\n neighbor 2001:3:3:3::3 remote-as 65000\r\n neighbor 2001:3:3:3::3\
+      \ update-source Loopback0\r\n !\r\n address-family ipv4\r\n  network 1.1.1.1\
+      \ mask 255.255.255.255\r\n  neighbor 2.2.2.2 activate\r\n  neighbor 3.3.3.3\
+      \ activate\r\n exit-address-family\r\n !\r\n address-family ipv6\r\n  network\
+      \ 2001:1:1:1::1/128\r\n  neighbor 2001:2:2:2::2 activate\r\n  neighbor 2001:3:3:3::3\
+      \ activate\r\n exit-address-family\r\n !\r\n address-family ipv4 vrf VRF1\r\n\
+      \  network 1.1.1.1 mask 255.255.255.255\r\n  neighbor 2.2.2.2 remote-as 65000\r\
+      \n  neighbor 2.2.2.2 update-source Loopback300\r\n  neighbor 2.2.2.2 activate\r\
+      \n  neighbor 3.3.3.3 remote-as 65000\r\n  neighbor 3.3.3.3 update-source Loopback300\r\
+      \n  neighbor 3.3.3.3 activate\r\n exit-address-family\r\n !\r\n address-family\
+      \ ipv6 vrf VRF1\r\n  network 2001:1:1:1::1/128\r\n  neighbor 2001:2:2:2::2 remote-as\
+      \ 65000\r\n  neighbor 2001:2:2:2::2 update-source Loopback300\r\n  neighbor\
+      \ 2001:2:2:2::2 activate\r\n  neighbor 2001:3:3:3::3 remote-as 65000\r\n  neighbor\
+      \ 2001:3:3:3::3 update-source Loopback300\r\n  neighbor 2001:3:3:3::3 activate\r\
+      \n exit-address-family\r\n!\r\nip forward-protocol nd\r\nno ip http server\r\
+      \nip http authentication local\r\nip http secure-server\r\nip http client source-interface\
+      \ GigabitEthernet1\r\nip pim rp-address 2.2.2.2\r\nip pim send-rp-announce Loopback0\
+      \ scope 32\r\nip pim send-rp-discovery Loopback0 scope 32\r\nip pim bsr-candidate\
+      \ Loopback0 0\r\nip pim rp-candidate Loopback0\r\nip pim vrf VRF1 rp-address\
+      \ 2.2.2.2\r\nip pim vrf VRF1 send-rp-announce Loopback300 scope 32\r\nip pim\
+      \ vrf VRF1 send-rp-discovery Loopback300 scope 32\r\nip pim vrf VRF1 bsr-candidate\
+      \ Loopback300 0\r\nip pim vrf VRF1 rp-candidate Loopback300\r\nip msdp peer\
+      \ 2.2.2.2 connect-source Loopback0\r\nip msdp peer 3.3.3.3 connect-source Loopback0\r\
+      \nip msdp cache-sa-state\r\nip msdp vrf VRF1 peer 2.2.2.2 connect-source Loopback300\r\
+      \nip msdp vrf VRF1 peer 3.3.3.3 connect-source Loopback300\r\nip msdp vrf VRF1\
+      \ cache-sa-state\r\n!\r\nip ssh version 2\r\n!\r\n!\r\nip prefix-list test seq\
+      \ 5 permit 35.0.0.0/8\r\nip prefix-list test seq 10 permit 35.0.0.0/8 le 16\r\
+      \nip prefix-list test seq 15 permit 36.0.0.0/8 le 16\r\nip prefix-list test\
+      \ seq 20 permit 37.0.0.0/8 ge 24\r\nip prefix-list test seq 25 permit 38.0.0.0/8\
+      \ ge 16 le 24\r\n!\r\nip access-list extended acl_name\r\n permit ip any any\r\
+      \nip access-list extended ipv4_acl\r\n permit tcp any any eq www\r\n permit\
+      \ tcp any any eq 22\r\n permit tcp any any eq 443\r\nip access-list extended\
+      \ ipv4_ext\r\nip access-list extended test22\r\n permit tcp 192.168.1.0 0.0.0.255\
+      \ host 1.1.1.1 established log\r\n permit tcp host 2.2.2.2 eq www telnet 443\
+      \ any precedence network ttl eq 255\r\n deny   ip any any\r\nip sla 1\r\n udp-echo\
+      \ 239.1.1.1 65000\r\n frequency 10\r\nip sla schedule 1 life forever start-time\
+      \ now\r\nip sla 2\r\n udp-echo 239.1.1.1 65000\r\n vrf VRF1\r\n frequency 10\r\
+      \nip sla schedule 2 life forever start-time now\r\nip sla 3\r\n udp-echo 239.2.2.1\
+      \ 65000\r\n frequency 10\r\nip sla schedule 3 life forever start-time now\r\n\
+      ip sla 4\r\n udp-echo 239.2.2.1 65000\r\n vrf VRF1\r\n frequency 10\r\nip sla\
+      \ schedule 4 life forever start-time now\r\nip sla 5\r\n udp-echo 239.3.3.1\
+      \ 65000\r\n frequency 10\r\nip sla schedule 5 life forever start-time now\r\n\
+      ip sla 6\r\n udp-echo 239.3.3.1 65000\r\n vrf VRF1\r\n frequency 10\r\nip sla\
+      \ schedule 6 life forever start-time now\r\nipv6 router rip ripng\r\n !\r\n\
+      \ address-family ipv6 vrf VRF1\r\n exit-address-family\r\n!\r\nipv6 pim vrf\
+      \ VRF1 rp-address 2001:2:2:2::2\r\nipv6 pim vrf VRF1 bsr candidate bsr 2001:1:1:1::1\r\
+      \nipv6 pim vrf VRF1 bsr candidate rp 2001:1:1:1::1\r\nipv6 pim rp-address 2001:2:2:2::2\r\
+      \nipv6 pim bsr candidate bsr 2001:1:1:1::1\r\nipv6 pim bsr candidate rp 2001:1:1:1::1\r\
+      \n!\r\n!\r\nipv6 prefix-list test6 seq 5 permit 2001:DB8:1::/64\r\nipv6 prefix-list\
+      \ test6 seq 10 permit 2001:DB8:2::/64 ge 65\r\nipv6 prefix-list test6 seq 15\
+      \ permit 2001:DB8:3::/64 le 128\r\nipv6 prefix-list test6 seq 20 permit 2001:DB8:4::/64\
+      \ ge 65 le 98\r\n!\r\n!\r\n!\r\nipv6 access-list ipv6_acl\r\n permit ipv6 any\
+      \ any log\r\n permit ipv6 host 2001::1 host 2001:1::2\r\n permit tcp any eq\
+      \ www 8443 host 2001:2::2\r\n!\r\ncontrol-plane\r\n!\r\n!\r\n!\r\n!\r\n!\r\n\
+      !\r\nline con 0\r\n exec-timeout 0 0\r\n login local\r\n stopbits 1\r\nline\
+      \ vty 0 4\r\n login local\r\n transport input telnet ssh\r\n!\r\n!\r\n!\r\n\
+      !\r\n!\r\n!\r\nend"
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: R1_xe#

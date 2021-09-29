@@ -19,7 +19,8 @@ from pyats.easypy import runtime
 from pyats.results import Passed, Failed
 
 # from unicon
-from unicon.eal.dialogs import Statement, Dialog
+from unicon.eal.dialogs import Statement, Dialog, statement_action_helper
+from unicon.core.errors import TimeoutError as UniconTimeoutError
 
 
 log = logging.getLogger(__name__)
@@ -417,6 +418,62 @@ def rest_handler(device,
               'extra_kwargs':extra_kwargs}
 
     return _output_query_template(**kwargs)
+
+
+def dialog_handler(step,
+                   device,
+                   action,
+                   expect,
+                   arguments=None,
+                   include=None,
+                   exclude=None,
+                   timeout=None,
+                   continue_=True,
+                   **extra_kwargs):
+    '''
+    Handles dialog actions and returns the output of the process
+    '''
+    handle = device.active if device.is_ha else device
+
+    if not re.match(r'^\^?\(?\.\*', expect):
+        expect = '^.*?{}'.format(expect)
+
+    if action:
+        callback, arg = statement_action_helper(action)
+        callback(device.spawn, arg)
+
+    dialog = Dialog([
+        Statement(pattern=expect, args=arguments, loop_continue=False)
+    ])
+
+    try:
+        result = dialog.process(handle.spawn,
+                                timeout=timeout,
+                                prompt_recovery=False,
+                                context=device.context)
+    except UniconTimeoutError:
+        log.exception('Dialog failed due to timeout')
+        step.failed()
+
+    output = result.match_output
+
+    kwargs = {
+        'output': output,
+        'steps': step,
+        'device': device,
+        'command': action,
+        'include': include,
+        'exclude': exclude,
+        'result_status': extra_kwargs.pop('result_status', None),
+        'max_time': extra_kwargs.pop('max_time', 0),
+        'check_interval': extra_kwargs.pop('check_interval', 0),
+        'continue_': continue_,
+        'action': 'dialog',
+        'expected_failure': extra_kwargs.pop('expected_failure', False),
+        'extra_kwargs': extra_kwargs
+    }
+    return _output_query_template(**kwargs)
+
 
 def _prompt_handler(reply):
 

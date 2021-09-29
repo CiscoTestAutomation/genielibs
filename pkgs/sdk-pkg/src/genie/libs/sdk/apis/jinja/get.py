@@ -1,7 +1,9 @@
 # Python
 import jinja2
 from jinja2.exceptions import TemplateNotFound
+import logging
 
+log = logging.getLogger(__name__)
 
 def get_jinja_template(templates_dir, template_name):
     """ Gets the jinja template specified
@@ -39,10 +41,14 @@ def load_jinja_template(path, file, **kwargs):
             kwargs (`dict`): Key value pairs
         Returns:
             out (`str`): Rendered template
+        Raises:
+            TemplateNotFound
     """
+
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=path))
-
-    template = env.get_template(file)
-    out = template.render(**kwargs)
-
-    return out
+    try:
+        template = env.get_template(file)
+    except TemplateNotFound:
+        log.error(f"Template was not found. path: {path} / file: {file}")
+        raise
+    return template.render(**kwargs)

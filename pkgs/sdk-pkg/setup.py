@@ -128,7 +128,8 @@ setup(
                 'Sphinx',
                 'sphinxcontrib-napoleon',
                 'sphinx-rtd-theme',
-                'xmltodict'],
+                'xmltodict',
+                'rest.connector'],
     },
 
     # external modules

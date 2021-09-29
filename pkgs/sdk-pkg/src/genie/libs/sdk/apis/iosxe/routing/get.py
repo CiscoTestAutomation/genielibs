@@ -302,3 +302,39 @@ def get_routing_mpls_label(device, prefix, vrf='', output=None):
              'address {prefix}'.format(prefix=prefix))
 
     return None
+
+
+def get_routing_vrf_entries(device, prefix, vrf=None):
+    ''' Get entry of routes from
+        'show ip route vrf {vrf} {prefix}'/'show ip route {prefix}'
+        Args:
+            device ('obj'): Device object
+            prefix ('str'): Prefix address
+            vrf (`str`, optional): VRF name, default None
+        Returns:
+            list: entries of ip
+            None
+        Raises:
+            None
+
+    '''
+    if vrf:
+        command = "show ip route vrf {vrf} {prefix}".format(
+            vrf=vrf, prefix=prefix)
+    else:
+        command = "show ip route {prefix}".format(prefix=prefix)
+
+    try:
+        output = device.parse(command)
+    except SchemaEmptyParserError:
+        log.error(
+            'Routing table is empty for route {prefix}'.format(prefix=prefix)
+        )
+        return None
+
+    entries = []
+    for entry in output['entry']:
+        received_entry = output['entry'][entry].get('ip', '')
+        entries.append(received_entry)
+
+    return entries

@@ -788,3 +788,48 @@ def verify_cef_labels(device, route, expected_first_label, expected_last_label=N
                 return True
         timeout.sleep()
     return False
+
+
+def verify_routing_subnet_entry(
+    device, prefix, vrf=None, max_time=30, check_interval=10
+):
+    """ Verify route entry is present in
+        'show ip route vrf {vrf} {prefix}'/'show ip route {prefix}'
+
+        Args:
+            device ('obj'): Device object
+            prefix ('str'): prefix
+            max_time ('int', optional): maximum time to wait in seconds, 
+                default is 30
+            check_interval ('int', optional): how often to check in seconds, 
+                default is 10
+            vrf ('str', optional): VRF name, default None
+        Returns:
+            Result('bool'): verified result
+        Raises:
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        actual_entries = device.api.get_routing_vrf_entries(
+            device=device,
+            prefix=prefix,
+            vrf=vrf,
+        )
+
+        if actual_entries:
+ 
+            if prefix in actual_entries:
+                return True
+
+        timeout.sleep()
+
+    if not actual_entries:
+        log.error("Unable to get subnet details for {}".format(prefix))
+    else:
+        log.error("Did not get entry in {} for prefix {}".format(
+            actual_entries, prefix)
+        )
+
+    return False

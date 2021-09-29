@@ -39,7 +39,7 @@ def verify_ptp_states(
             except SchemaEmptyParserError:
                 pass
             if out:
-                port_state = out.q.get_values("Port_state")[0]
+                port_state = out['ptp_port_dataset']['port_info']['state']
                 log.info("PTP value fetched from output {port_state}".format(port_state=port_state))
                 if port_state:
                     if port_state in states:
@@ -85,12 +85,12 @@ def verify_ptp_platform_fed_results(
             except SchemaEmptyParserError:
                 pass
             if out:
-                port_state = out.q.get_values("Port_state")[0]
-                dom = out.q.get_values("domain_value")[0]
-                clock = out.q.get_values("Clock_Mode")[0]
-                prof = out.q.get_values("Profile_Type")[0]
-                delay = out.q.get_values("Delay_mechanism")[0]
-                if (port_state in states) and (dom == domain) and (clock == clock_mode) and \
+                port_state = out['interface']['port_info']['state']
+                dom = out['interface']['domain_value']
+                clock = out['interface']['clock_mode']
+                prof = out['interface']['profile_type']
+                delay = out['interface']['delay_mechanism']
+                if (port_state in states) and (int(dom) == int(domain)) and (clock == clock_mode) and \
                     (prof == profile) and (delay == delay_mech):
                     result = True
                 else:
@@ -134,17 +134,16 @@ def verify_ptp_clock(
         except SchemaEmptyParserError:
             pass
         if out:
-            dev_type = out.q.get_values("PTP_Device_Type")[0]
-            dom = out.q.get_values("Clock_Domain")[0]
-            prio1 = out.q.get_values("Priority1")[0]
-            prio2 = out.q.get_values("Priority2")[0]
-            off = out.q.get_values("Offset_From_Master")
-            eve = out.q.get_values("Message_event_ip_dscp")[0]
-            gen = out.q.get_values("Message_general_ip_dscp")[0]
-
-            if (dev_type.lower() == device_type.lower()) and (dom == domain) and \
-                    (prio1 == priority1) and (prio2 == priority2) and \
-                    (off[0] <= offset) and (int(eve) == int(dscp_event)) and \
+            dev_type = out['ptp_clock_info']['device_type']
+            dom = out['ptp_clock_info']['clock_domain']
+            prio1 = out['ptp_clock_info']['priority1']
+            prio2 = out['ptp_clock_info']['priority2']
+            off = out['ptp_clock_info']['offset_from_master']
+            eve = out['ptp_clock_info']['message_event_ip_dscp']
+            gen = out['ptp_clock_info']['message_general_ip_dscp']
+            if (dev_type.lower() == device_type.lower()) and (int(dom) == int(domain)) and \
+                    (int(prio1) == int(priority1)) and (int(prio2) == int(priority2)) and \
+                    (int(off) <= int(offset)) and (int(eve) == int(dscp_event)) and \
                     (int(gen) == int(dscp_general)):
                 result = True
             else:
@@ -187,12 +186,12 @@ def verify_ptp_counters(
             except SchemaEmptyParserError:
                 pass
             if out:
-                sync_t = out.q.get_values("num_sync_messages_transmitted")[0]
-                follow_t = out.q.get_values("num_followup_messages_transmitted")[0]
-                sync_r = out.q.get_values("num_sync_messages_received")[0]
-                follow_r = out.q.get_values("num_followup_messages_received")[0]
-                if (sync_t <= sync_trans) and (follow_t <= follow_trans) and (sync_r <= sync_recv) and \
-                    (follow_r <= follow_recv):
+                sync_t = out['interface']['num_info']['num_sync_messages_transmitted']
+                follow_t = out['interface']['num_info']['num_followup_messages_transmitted']
+                sync_r = out['interface']['num_info']['num_sync_messages_received']
+                follow_r = out['interface']['num_info']['num_followup_messages_received']
+                if (int(sync_t) <= int(sync_trans)) and (int(follow_t) <= int(follow_trans)) and (int(sync_r) <= int(sync_recv)) and \
+                    (int(follow_r) <= int(follow_recv)):
                     result = True
                 else:
                     result = False
@@ -229,10 +228,10 @@ def verify_ptp_parent(
         except SchemaEmptyParserError:
             pass
         if out:
-            parent_id = out.q.get_values("Parent_Clock_Identity")[0]
-            gm_id = out.q.get_values("Grandmaster_Clock_Identity")[0]
-            prio1 = out.q.get_values("Priority1")[0]
-            prio2 = out.q.get_values("Priority2")[0]
+            parent_id = out['ptp_parent_property']['parent_clock']['identity']
+            gm_id = out['ptp_parent_property']['grandmaster_clock']['identity']
+            prio1 = out['ptp_parent_property']['grandmaster_clock']['priority1']
+            prio2 = out['ptp_parent_property']['grandmaster_clock']['priority2']
             if (parent_id[0] != None) and (gm_id[0] != None):
                 result = True
             else:
@@ -278,4 +277,3 @@ def verify_ptp_calibration_states(
             return True
         timeout.sleep()
     return False
-

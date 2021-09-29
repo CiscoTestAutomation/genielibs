@@ -618,7 +618,54 @@ basic-mode=explicit&also-supported=report-all-tagged']
         self.assertTrue(result)
 
     def test_operational_state_other_datatype(self):
-        """Check opfields empty, boolean, pattern matches."""
+        """Check opfields empty == '', boolean, pattern matches."""
+        oper = self.operstate.replace('5', '')
+        oper = oper.replace('330', 'true')
+        oper = oper.replace('17', 'false')
+        oper = oper.replace('16', 'abc[123]DEFghblahblah')
+        opfields = [
+            {'selected': 'true',
+             'name': 'in-unicast-pkts',
+             'xpath': '/interfaces-state/interface/statistics/in-unicast-pkts',
+             'value': '',
+             'datatype': 'empty',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'in-octets',
+             'xpath': '/interfaces-state/interface/statistics/in-octets',
+             'value': 'true',
+             'datatype': 'boolean',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'out-discards',
+             'xpath': '/interfaces-state/interface/statistics/out-discards',
+             'value': 'False',
+             'datatype': 'boolean',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'out-errors',
+             'xpath': '/interfaces-state/interface/statistics/out-errors',
+             'value': '([^a-zA-Z1-3\\[])|(blah)',
+             'datatype': 'pattern',
+             'op': '=='}]
+
+        oper_gnmi = self.jsonIetfVal.replace('5', '""')
+        oper_gnmi = oper_gnmi.replace('330', '"true"')
+        oper_gnmi = oper_gnmi.replace('17', '"false"')
+        oper_gnmi = oper_gnmi.replace('16', '"abc[123]DEFghblahblah"')
+        self.jsonIetfVal = oper_gnmi
+        self._base64encode()
+
+        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
+        resp = self.rpcv.process_rpc_reply(oper)
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
+    def test_operational_state_other_empty_value(self):
+        """Check opfields empty == 'empty', boolean, pattern matches."""
         oper = self.operstate.replace('5', '')
         oper = oper.replace('330', 'true')
         oper = oper.replace('17', 'false')
