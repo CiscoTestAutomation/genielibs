@@ -1,5 +1,8 @@
 --------------------------------------------------------------------------------
-                                Fix
+                                      Fix                                       
 --------------------------------------------------------------------------------
-* HTTP fileserver
+
+* http fileserver
     * Added support for mime/multipart file uploads (used by NXOS)
+
+

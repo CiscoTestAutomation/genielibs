@@ -1465,8 +1465,8 @@ reload:
             # If user provides custom values, update the default with the user
             # provided. This is needed because if the user only provides 1 of
             # the many optional arguments, we still need to default the others.
-            check_modules = self.CHECK_MODULES.update(
-                check_modules)
+            self.CHECK_MODULES.update(check_modules)
+            check_modules.update(self.CHECK_MODULES)
 
         if check_modules['check']:
 
