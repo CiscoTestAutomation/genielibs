@@ -12,6 +12,8 @@ class ImageLoader(object):
     EXPECTED_IMAGE_STRUCTURE_MSG = """\
 Expected one of the following structures for 'images' in the clean yaml
 
+Other images are optional other files, in structure #1 other files are not supported because there is no way to distinguish them from optional packages
+
 Structure #1
 ------------
 images:
@@ -27,6 +29,8 @@ images:
   packages:   <<< optional
   - /path/to/optional_package1
   - /path/to/optional_package2
+  other:   <<< optional
+  - /path/to/other/images.bin
 
 Structure #3
 ------------
@@ -38,6 +42,9 @@ images:
     file:
     - /path/to/optional_package1
     - /path/to/optional_package2
+  other:  <<< optional
+    file:
+    - /path/to/other/images.bin
 
 But got the following structure
 -------------------------------
@@ -74,7 +81,8 @@ But got the following structure
 
         schema = {
             'image': ListOf(str),
-            Optional('packages'): ListOf(str)
+            Optional('packages'): ListOf(str),
+            Optional('other'): ListOf(str)
         }
 
         try:
@@ -90,6 +98,8 @@ But got the following structure
         if 'packages' in images:
             setattr(self, 'packages', images['packages'])
 
+        setattr(self, 'other', images.get('other', []))
+
         return True
 
 
@@ -100,6 +110,9 @@ But got the following structure
                 'file': ListOf(str)
             },
             Optional('packages'): {
+                'file': ListOf(str)
+            },
+            Optional('other'): {
                 'file': ListOf(str)
             }
         }
@@ -117,6 +130,8 @@ But got the following structure
         if 'packages' in images:
             setattr(self, 'packages', images['packages']['file'])
 
+        setattr(self, 'other', images.get('other', {}).get('file', []))
+
         return True
 
 
@@ -126,6 +141,7 @@ class ImageHandler(BaseImageHandler, ImageLoader):
 
         # Set default
         self.packages = []
+        self.other = []
 
         # Check if images is one of the valid structures and
         # load into a consolidated structure
@@ -135,6 +151,9 @@ class ImageHandler(BaseImageHandler, ImageLoader):
         self.image = [self.image[0].replace('file://', '')]
         if hasattr(self, 'packages'):
             self.packages = [x.replace('file://', '') for x in self.packages]
+
+        if hasattr(self, 'other'):
+            self.other = [x.replace('file://', '') for x in self.other]
 
         self.original_image = [self.image[0].replace('file://', '')]
 
@@ -153,6 +172,10 @@ class ImageHandler(BaseImageHandler, ImageLoader):
                 # change the saved package to the new package name/path
                 self.packages[index] = section.parameters['image_mapping'].get(package, package)
 
+            if hasattr(self, 'other'):
+                for index,image in enumerate(self.other):
+                    self.other[index] = section.parameters['image_mapping'].get(image, self.other[index])
+
     def update_tftp_boot(self, number=''):
         '''Update clean section 'tftp_boot' with image information'''
 
@@ -162,16 +185,20 @@ class ImageHandler(BaseImageHandler, ImageLoader):
     def update_copy_to_linux(self, number=''):
         '''Update clean section 'copy_to_linux' with image information'''
 
-        origin = self.device.clean.setdefault('copy_to_linux'+number, {}).\
-                                   setdefault('origin', {})
-        origin.update({'files': self.image + self.packages})
+        files = self.device.clean.setdefault('copy_to_linux' + number, {}). \
+            setdefault('origin', {}).setdefault('files', [])
+
+        files.clear()
+        files.extend(self.image + self.packages + self.other)
 
     def update_copy_to_device(self, number=''):
         '''Update clean stage 'copy_to_device' with image information'''
 
-        origin = self.device.clean.setdefault('copy_to_device'+number, {}).\
-                                   setdefault('origin', {})
-        origin.update({'files': self.image + self.packages})
+        files = self.device.clean.setdefault('copy_to_device' + number, {}). \
+            setdefault('origin', {}).setdefault('files', [])
+
+        files.clear()
+        files.extend(self.image + self.packages + self.other)
 
     def update_change_boot_variable(self, number=''):
         '''Update clean stage 'change_boot_variable' with image information'''

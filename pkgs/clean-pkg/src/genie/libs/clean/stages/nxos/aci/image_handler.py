@@ -104,6 +104,7 @@ class ImageHandler(BaseImageHandler, ImageLoader):
 
         # Set defaults
         self.switch = []
+        self.other = []
 
         # Check if images is one of the valid structures and
         # load into a consolidated structure

@@ -141,6 +141,8 @@ def configure_radius_group(device, server_config):
                 mgmt_intf('str'):  Management interface
                 retransmit('int'):  <1-100>  Number of retries for a transaction (default is 3)
                 timeout('int'): <1-1000>  Wait time (default 5 seconds)
+                ip_addr ('str'): ISE IP
+                key('str'): Server key
     Returns:
         configurations list
     Raises:
@@ -153,6 +155,8 @@ def configure_radius_group(device, server_config):
                     mgmt_intf = "GigabitEthernet0/0",
                     retransmit = 0,
                     timeout = 10,
+                    ip_addr = "11.19.99.99",
+                    key = "cisco123',
                 },
     """
     #initialize list variable
@@ -173,6 +177,18 @@ def configure_radius_group(device, server_config):
     # ip radius source-interface GigabitEthernet0/0
     if 'mgmt_intf' in server_config:
         config_list.append("ip radius source-interface {}".format(server_config['mgmt_intf']))
+    
+    # radius server sname1
+    if 'server_name' in server_config:
+        config_list.append("radius server {}".format(server_config['server_name']))
+
+    # address ipv4 11.19.99.99 auth-port 1812 acct-port 1813
+    if 'ip_addr' in server_config:
+       config_list.append("address ipv4 {} auth-port 1812 acct-port 1813".format(server_config['ip_addr']))
+
+    # key cisco123
+    if 'key' in server_config:
+       config_list.append("key {}".format(server_config['key']))
 
     # retransmit 0
     if 'retransmit' in server_config:
@@ -256,3 +272,458 @@ def configure_coa(device, config_dict):
     except SubCommandFailure:
         logger.error('Failed configuring COA on device {}'.format(device))
         raise
+
+def configure_radius_attribute_6(device):
+
+    """
+    Configure radius attribute 6 on-for-login-auth
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try: 
+        device.configure([
+            "radius-server attribute 6 on-for-login-auth"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure radius attribute 6 on-for-login-auth'
+        )
+
+def unconfigure_radius_attribute_6(device):
+
+    """
+    Unconfigure radius attribute 6 on-for-login-auth
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "no radius-server attribute 6 on-for-login-auth"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure radius attribute 6 on-for-login-auth'
+        )
+        
+
+def configure_any_radius_server(device, server_name, addr_type, address, authport, acctport, secret):
+
+    """ Configure radius server on device
+    Args:
+        device (`obj`): Device object
+        server_name (`str`): Radius server name
+        addr_type (`str`): Address type v4 or v6
+        address (`str`): ISE Ip
+        authport (`int`): Auth port
+        acctport (`int`): Acct port
+        secret (`str`): ISE Secret key
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "radius server {server_name}".format(server_name=server_name),
+            "address {addr_type} {address} auth-port {authport} acct-port {acctport}".\
+                format(addr_type=addr_type,address=address,authport=authport,acctport=acctport),
+            "key {secret}".format(secret=secret)
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure radius server {server_name}'.format(server_name=server_name)
+        )    
+
+def unconfigure_any_radius_server(device, server_name):
+
+    """ Unconfigure radius server on device
+    Args:
+        device (`obj`): Device object
+        server_name (`str`): Radius server name
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "no radius server {server_name}".format(server_name=server_name)
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure radius server {server_name}'.format(server_name=server_name)
+        )            
+
+def configure_radius_server_group(device, servergrp, rad_server):
+
+    """ Configure aaa radius server group
+    Args:
+        device (`obj`): Device object
+        servergrp (`str`): Radius Server Grp name
+        rad_server (`str`): Radius Server
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "aaa group server radius {servergrp}".format(servergrp=servergrp),
+            "server name {rad_server}".format(rad_server=rad_server)
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure AAA radius server group {servergrp}'.format(servergrp=servergrp)
+        )
+
+def unconfigure_radius_server_group(device, servergrp):
+
+    """ unconfigure aaa radius server group
+    Args:
+        device (`obj`): Device object
+        servergrp (`str`): Radius Server Grp name
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "no aaa group server radius {servergrp}".format(servergrp=servergrp)
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure AAA radius server group {servergrp}'.format(servergrp=servergrp)
+        )   
+
+def configure_aaa_new_model(device):
+
+    """ configure aaa new-model
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "aaa new-model"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure AAA new-model'
+        )
+
+def configure_aaa_default_dot1x_methods(device,server_grp,group_type='group',group_type2=None,server_grp2=None):
+    """ configure aaa default dot1x methods
+        Args:
+            device (`obj`): Device object
+            server_grp (`str`): Radius Server Grp name
+            group_type ('str'): Group type. Options are 'group','cache','local'
+            server_grp2 (`str`, optional): 2nd Radius Server Grp name. i.e aaa cache feature (Default is None)
+            group_type2 ('str', optional): 2nd Group type. Options are 'group','cache','local' (Default is None)
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring
+        Examples:
+            configure_aaa_default_dot1x_methods(switch1,'testRadiusGrp')
+            configure_aaa_default_dot1x_methods(switch1,'radiusGroup',group_type='cache',
+                group_type2='group',server_grp2='radiusGroup')
+    """
+    if group_type2 is None:
+        group_type2 = ""
+    if server_grp2 is None:
+        server_grp2 = ""
+
+    try:
+        device.configure([
+            "aaa authentication dot1x default {group_type} {server_grp} {group_type2} {server_grp2}".format(
+                group_type=group_type,server_grp=server_grp,group_type2=group_type2,server_grp2=server_grp2),
+            "aaa authorization network default {group_type} {server_grp} {group_type2} {server_grp2}".format(
+                group_type=group_type,server_grp=server_grp,group_type2=group_type2,server_grp2=server_grp2),
+            "aaa accounting dot1x default start-stop group {server_grp}".format(server_grp=server_grp),
+            "aaa accounting network default start-stop group {server_grp}".format(server_grp=server_grp)
+            ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure AAA dot1x default method {server_grp}'.format(server_grp=server_grp)
+        )
+
+def unconfigure_aaa_default_dot1x_methods(device):
+
+    """ configure aaa default dot1x methods
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "no aaa authentication dot1x default",
+            "no aaa authorization network default",
+            "no aaa accounting dot1x default",
+            "no aaa accounting network default"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure AAA dot1x default method'
+        )            
+
+def configure_aaa_login_method_none(device,servergrp):
+
+    """ This configure will enable login method none that is applicable for line and vty
+    from getting locked for password 
+    Args:
+        device (`obj`): Device object
+        servergrp (`str`): Radius Server Grp name
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "aaa authentication login {servergrp} none".format(servergrp=servergrp),
+            "line con 0",
+            "login authentication {servergrp}".format(servergrp=servergrp),
+            "line vty 0 4",
+            "login authentication {servergrp}".format(servergrp=servergrp),
+            "line vty 5 15",
+            "login authentication {servergrp}".format(servergrp=servergrp)
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure AAA login  method none {servergrp}'.format(servergrp=servergrp)
+        )
+
+def unconfigure_aaa_login_method_none(device,servergrp):
+
+    """ This configure will enable login method none that is applicable for line and vty
+        from getting locked for password 
+    Args:
+        device (`obj`): Device object
+        servergrp (`str`): Radius Server Grp name
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "line con 0",
+            "no login authentication {servergrp}".format(servergrp=servergrp),
+            "line vty 0 4",
+            "no login authentication {servergrp}".format(servergrp=servergrp),
+            "line vty 5 15",
+            "no login authentication {servergrp}".format(servergrp=servergrp),
+            "no aaa authentication login {servergrp} none".format(servergrp=servergrp)
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure AAA login  method none {servergrp}'.format(servergrp=servergrp)
+    )
+
+def configure_wired_radius_attribute_44(device):
+
+    """ To configure radius attribute 44 for wired
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "radius-server attribute 44 extend-with-addr"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure wired radius attribute 44'
+        )
+
+
+def unconfigure_wired_radius_attribute_44(device):
+
+    """ To unconfigure radius attribute 44 for wired
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "no radius-server attribute 44 extend-with-addr"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure wired radius attribute 44'
+        )
+
+def configure_radius_interface(device, interface):
+
+    """ Configure Radius Interface
+    Args:
+        device ('obj'): device to use
+        interface('str'): Interface to be configured
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed configuring Radius Interface
+    """
+    try:
+        device.configure(["ip radius source-interface {interface}".format(interface=interface)])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not Configure Radius Interface"
+        )
+
+def unconfigure_radius_interface(device, interface):
+
+    """ Configure Radius Interface
+    Args:
+        device ('obj'): device to use
+        interface('str'): Interface to be configured
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed configuring Radius Interface
+    """
+    try:
+        device.configure(["no ip radius source-interface {interface}".format(interface=interface)])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not Configure Radius Interface"
+        )
+
+
+def clear_aaa_cache(device, server_grp, profile='all'):
+    """ Clear AAA Cache
+        Args:
+            device (`obj`): Device object
+            server_grp (`str`): Radius Server Grp name
+            profile ('str',optional): Profile name to clear. Default 'all.'
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring
+        Examples:
+            switch1.api.clear_aaa_cache('radiusGroup')
+    """
+    try:
+        device.execute('clear aaa cache group {server_grp} {profile}'.format(
+            server_grp=server_grp,
+            profile=profile))
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to execute clear aaa cache"
+        )
+
+
+def configure_username(device, username, pwd, encryption=0):
+    """ Configure a user with a password
+        Args:
+            device (`obj`): Device object
+            username (`str`): User name
+            pwd ('str'): Password for the user
+            encryption ('int',optional): Encryption level (Default 0 for cleartext)
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring
+        Examples:
+            dut1.api.configure_username(username='testUser',pwd='secretPwd')
+            -->username testUser password 0 secretPwd
+    """
+    try:
+        # Update str with password encryption level
+        if encryption:
+            pwd = '{encryption} {pwd}'.format(encryption=encryption,pwd=pwd)
+        device.configure('username {username} password {pwd}'.format(username=username,pwd=pwd))
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to configure user {username}".format(username=username)
+        )
+
+
+def unconfigure_username(device, username):
+    """ Configure a user with a password
+        Args:
+            device (`obj`): Device object
+            username (`str`): User name
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring
+        Examples:
+            dut1.api.unconfigure_username(username='testUser')
+    """
+    try:
+        device.configure('no username {username}'.format(username=username))
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to unconfigure user {username}".format(username=username)
+        )
+
+
+def configure_radius_automate_tester(device, server_name, username, idle_time=None):
+    """ configure Radius Automate Tester. It polls the radius to make sure it is alive.
+    Args:
+        device (`obj`): Device object
+        server_name ('str'): Radius server name
+        username ('str'): Identity Username to query radius server
+        idle_time ('int',optional): Radius polling interval in min.
+                                  Default: None. Device will add idle time depending on IOS version
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    if idle_time is None:
+        optCfg = ""
+    else:
+        optCfg = "idle-time {idle_time}".format(idle_time=str(idle_time))
+    try:
+        device.configure([
+            "radius server {server_name}".format(server_name=server_name),
+            "automate-tester username {username} {optCfg}".format(username=username,optCfg=optCfg)
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not configure radius automate tester"
+        )
+
+def unconfigure_radius_automate_tester(device, server_name, username):
+    """ Unconfigure Radius Automate Tester.
+    Args:
+        device (`obj`): Device object
+        server_name ('str'): Radius server name
+        username ('str'): Identity Username to query radius server
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "radius server {server_name}".format(server_name=server_name),
+            "no automate-tester username {username}".format(username=username)
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not unconfigure Radius automate tester"
+        )

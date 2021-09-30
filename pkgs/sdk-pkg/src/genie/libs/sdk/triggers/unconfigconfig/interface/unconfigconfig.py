@@ -244,6 +244,148 @@ class TriggerUnconfigConfigVirtualTrunkInterface(TriggerUnconfigConfig):
                                        'exclude': interface_exclude}},
                       num_values={'interface':1})
 
+class TriggerUnconfigConfigPortChannelInterface(TriggerUnconfigConfig):
+    """Unconfigure and reapply the whole configurations of dynamically learned
+    port-channel interface(s)."""
+
+    __description__ = """Unconfigure and reapply the whole configurations of dynamically learned
+    port-channel interface(s).
+
+    trigger_datafile:
+        Mandatory:
+            timeout: 
+                max_time (`int`): Maximum wait time for the trigger,
+                                in second. Default: 180
+                interval (`int`): Wait time between iteration when looping is needed,
+                                in second. Default: 15
+                method (`str`): Method to recover the device configuration,
+                              Support methods:
+                                'checkpoint': Rollback the configuration by
+                                              checkpoint (nxos),
+                                              archive file (iosxe),
+                                              load the saved running-config file on disk (iosxr)
+        Optional:
+            tgn_timeout (`int`): Maximum wait time for all traffic threads to be
+                                 restored to the reference rate,
+                                 in second. Default: 60
+            tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,
+                               in second. Default: 10
+            timeout_recovery: 
+                Buffer recovery timeout make sure devices are recovered at the end
+                of the trigger execution. Used when previous timeouts have been exhausted.
+
+                max_time (`int`): Maximum wait time for the last step of the trigger,
+                                in second. Default: 180
+                interval (`int`): Wait time between iteration when looping is needed,
+                                in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
+
+                interface: `str`
+
+                (e.g) interface: '(?P<interface>[p|P]ort-channel[\d\.]+)' (Regex supported)
+                      OR
+                      interface: 'Port-channel1' (Specific value)
+    steps:
+        1. Learn Interface Ops object and store the "up" port-channel interface(s)
+           if has any, otherwise, SKIP the trigger
+        2. Save the current device configurations through "method" which user uses
+        3. Unconfigure the learned virtual interface(s) from step 1 
+           with Interface Conf object
+        4. Verify the port-channel interfaces from step 3 are no longer existed
+        5. Recover the device configurations to the one in step 2
+        6. Learn Interface Ops again and verify it is the same as the Ops in step 1
+
+    """
+
+    # Mapping of Information between Ops and Conf
+    # Also permit to dictate which key to verify
+    mapping = Mapping(requirements={'ops.interface.interface.Interface':{
+                                       'requirements':[['info', '(?P<interface>[p|P]ort-channel[\d\.]+)',
+                                                        'oper_status', 'up']],
+                                       'exclude': interface_exclude}},
+                      config_info={'conf.interface.Interface':{
+                                       'requirements':[],
+                                       'verify_conf':False,
+                                       'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
+                                                              'attach': False}}}},
+                      verify_ops={'ops.interface.interface.Interface':{
+                                       'requirements':[['info', NotExists('(?P<interface>.*)')]],
+                                       'exclude': interface_exclude}},
+                      num_values={'interface':1})
+
+class TriggerUnconfigConfigBridgeDomainInterface(TriggerUnconfigConfig):
+    """Unconfigure and reapply the whole configurations of dynamically learned
+    bridge domain interface(s)."""
+
+    __description__ = """Unconfigure and reapply the whole configurations of dynamically learned
+    bridge domain interface(s).
+
+    trigger_datafile:
+        Mandatory:
+            timeout: 
+                max_time (`int`): Maximum wait time for the trigger,
+                                in second. Default: 180
+                interval (`int`): Wait time between iteration when looping is needed,
+                                in second. Default: 15
+                method (`str`): Method to recover the device configuration,
+                              Support methods:
+                                'checkpoint': Rollback the configuration by
+                                              checkpoint (nxos),
+                                              archive file (iosxe),
+                                              load the saved running-config file on disk (iosxr)
+        Optional:
+            tgn_timeout (`int`): Maximum wait time for all traffic threads to be
+                                 restored to the reference rate,
+                                 in second. Default: 60
+            tgn_delay (`int`): Wait time between each poll to verify if traffic is resumed,
+                               in second. Default: 10
+            timeout_recovery: 
+                Buffer recovery timeout make sure devices are recovered at the end
+                of the trigger execution. Used when previous timeouts have been exhausted.
+
+                max_time (`int`): Maximum wait time for the last step of the trigger,
+                                in second. Default: 180
+                interval (`int`): Wait time between iteration when looping is needed,
+                                in second. Default: 15
+            static:
+                The keys below are dynamically learnt by default.
+                However, they can also be set to a custom value when provided in the trigger datafile.
+
+                interface: `str`
+
+                (e.g) interface: '(?P<interface>[BDI|bdi][\d\.]+)' (Regex supported)
+                      OR
+                      interface: 'BDI1' (Specific value)
+    steps:
+        1. Learn Interface Ops object and store the "up" bridge domain interface(s)
+           if has any, otherwise, SKIP the trigger
+        2. Save the current device configurations through "method" which user uses
+        3. Unconfigure the learned virtual interface(s) from step 1 
+           with Interface Conf object
+        4. Verify the bridge domain interfaces from step 3 are no longer existed
+        5. Recover the device configurations to the one in step 2
+        6. Learn Interface Ops again and verify it is the same as the Ops in step 1
+
+    """
+
+    # Mapping of Information between Ops and Conf
+    # Also permit to dictate which key to verify
+    mapping = Mapping(requirements={'ops.interface.interface.Interface':{
+                                       'requirements':[['info', '(?P<interface>[BDI|bdi][\d\.]+)',
+                                                        'oper_status', 'up']],
+                                       'exclude': interface_exclude}},
+                      config_info={'conf.interface.Interface':{
+                                       'requirements':[],
+                                       'verify_conf':False,
+                                       'kwargs':{'mandatory':{'name': '(?P<interface>.*)',
+                                                              'attach': False}}}},
+                      verify_ops={'ops.interface.interface.Interface':{
+                                       'requirements':[['info', NotExists('(?P<interface>.*)')]],
+                                       'exclude': interface_exclude}},
+                      num_values={'interface':1})
+
 
 class TriggerUnconfigConfigEthernetInterface(TriggerUnconfigConfig):
     """Unconfigure and reapply the whole configurations of dynamically learned Ethernet interface(s)."""

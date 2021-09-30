@@ -79,7 +79,7 @@
       "doc": "BGP Genie Ops Object",
       "module_name": "bgp.bgp",
       "uid": "bgp",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/bgp/iosxr/yang/bgp.py#L13",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/bgp/iosxr/bgp.py#L21",
       "yang": {
         "class_name": "Bgp",
         "doc": "BGP Genie Ops Object",
@@ -93,7 +93,7 @@
       "doc": "BGP Genie Ops Object",
       "module_name": "bgp.bgp",
       "uid": "bgp",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/bgp/nxos/yang/bgp.py#L13",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/bgp/nxos/xml/bgp.py#L13",
       "xml": {
         "class_name": "Bgp",
         "doc": "BGP Genie Ops Object",
@@ -545,7 +545,7 @@
       "doc": "Ospf Ops Object",
       "module_name": "ospf.ospf",
       "uid": "ospf",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/ospf/iosxe/yang/ospf.py#L5",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/ospf/iosxe/ospf.py#L11",
       "yang": {
         "class_name": "Ospf",
         "doc": "Ospf Ops Object",
@@ -559,7 +559,7 @@
       "doc": "Ospf Ops Object",
       "module_name": "ospf.ospf",
       "uid": "ospf",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/ospf/iosxr/yang/ospf.py#L4",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/ospf/iosxr/ospf.py#L25",
       "yang": {
         "class_name": "Ospf",
         "doc": "Ospf Ops Object",
@@ -573,7 +573,7 @@
       "doc": "Ospf Ops Object",
       "module_name": "ospf.ospf",
       "uid": "ospf",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/ospf/nxos/yang/ospf.py#L5",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/ospf/nxos/ospf.py#L25",
       "yang": {
         "class_name": "Ospf",
         "doc": "Ospf Ops Object",
@@ -609,10 +609,10 @@
   "platform": {
     "ios": {
       "class_name": "Platform",
-      "doc": "\n    Platform ops object\n    ",
-      "module_name": "platform.cat6k.platform",
+      "doc": "Platform Ops Object",
+      "module_name": "platform.platform",
       "uid": "platform",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/ios/cat6k/platform.py#L11"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/ios/platform.py#L6"
     },
     "iosxe": {
       "asr900": {

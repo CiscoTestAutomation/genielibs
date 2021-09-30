@@ -32,6 +32,9 @@ def get_show_tech(device,
         vrf (str): VRF to use (default: management)
         timeout (int): timeout to copy file (default: 600s)
 
+    Returns
+        True on success, False on failure
+
     The filename is based the prefix + show_tech + timestamp.
 
     The default prefix is the device name.
@@ -76,13 +79,18 @@ def get_show_tech(device,
     timestamp = datetime.utcnow().strftime('%Y%m%dT%H%M%S%f')[:-3]
     filename_without_extention = '{}{}show_tech_{}'.format(device_dir, prefix, timestamp)
     filename = filename_without_extention + '.txt'
-    device.execute('{} > {}'.format(show_tech_command, filename), timeout=timeout)
-    device.execute('tar create {} gz-compress {}'.format(filename_without_extention, filename))
 
-    delete_dialog = Dialog([
-        [r'Do you want to delete .* \[y\]\s*$', 'sendline()', None, True, False]
-    ])
-    device.execute('delete {}'.format(filename), reply=delete_dialog)
+    try:
+        device.execute('{} > {}'.format(show_tech_command, filename), timeout=timeout)
+        device.execute('tar create {} gz-compress {}'.format(filename_without_extention, filename))
+
+        delete_dialog = Dialog([
+            [r'Do you want to delete .* \[y\]\s*$', 'sendline()', None, True, False]
+        ])
+        device.execute('delete {}'.format(filename), reply=delete_dialog)
+    except Exception:
+        log.exception('Failed to collect show tech')
+        return False
 
     filename = '{}.tar.gz'.format(filename_without_extention)
 

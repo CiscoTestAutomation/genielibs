@@ -1,12 +1,10 @@
 import logging
-import argparse
 
 # Genie
 from genie.libs.clean.utils import validate_clean
 
 # pyATS
-from pyats.cli.base import Subcommand, ERROR
-from pyats.utils.yaml import Loader
+from pyats.cli.base import Subcommand
 from pyats.utils.commands import do_lint
 
 log = logging.getLogger(__name__)

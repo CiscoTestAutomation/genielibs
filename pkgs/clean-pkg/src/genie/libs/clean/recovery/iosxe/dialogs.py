@@ -6,7 +6,7 @@ import time
 import logging
 
 # Unicon
-from unicon.eal.dialogs import Statement, Dialog, statement_decorator
+from unicon.eal.dialogs import Statement, statement_decorator
 from unicon.plugins.generic.statements import buffer_settled
 from genie.libs.clean.recovery.dialogs import RommonDialog as TelnetDialog
 
@@ -191,13 +191,17 @@ class TftpRommonDialog(RommonDialog):
         subnet_mask = context['subnet_mask']
         gateway = context['gateway']
         image = context['image']
+        if image[0][0] != '/':
+            image[0] = '/' + image[0]
         tftp_server = context['tftp_server']
 
         commands = [
-            "IP_ADDRESS={ip}".format(ip=ip),
-            "IP_SUBNET_MASK={sm}".format(sm=subnet_mask),
-            "DEFAULT_GATEWAY={gateway}".format(gateway=gateway),
-            'boot tftp://{tftp}{image}'.format(tftp=tftp_server, image=image[0])
+            "TFTP_BLKSIZE=8192",
+            f"IP_ADDRESS={ip}",
+            f"IP_SUBNET_MASK={subnet_mask}",
+            f"DEFAULT_GATEWAY={gateway}",
+            "sync",
+            f"boot tftp://{tftp_server}{image[0]}"
         ]
 
         # This is getting double logged somehow??
@@ -216,4 +220,8 @@ class TftpRommonDialog(RommonDialog):
             except Exception as e:
                 raise Exception("Connection to device has been lost. Something "
                                 "closed the connection?\n{}".format(str(e)))
-            time.sleep(0.5)
+            # in case of 'sync', need a delay before sending other commands
+            if 'sync' in cmd:
+                time.sleep(3)
+            else:
+                time.sleep(0.5)

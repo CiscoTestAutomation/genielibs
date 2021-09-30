@@ -10,7 +10,6 @@ import json
 import importlib
 from functools import wraps
 from unittest.mock import patch
-from copy import deepcopy
 from pkg_resources import iter_entry_points
 
 # Genie
@@ -18,11 +17,11 @@ from genie.libs import clean
 from genie.clean.extend import ExtendClean
 from genie.abstract import Lookup
 from genie.harness.utils import load_class
-from genie.metaparser.util.schemaengine import Schema, Optional, Any, Use, And, Or
-from genie.metaparser.util.exceptions import SchemaMissingKeyError,\
-                                             SchemaTypeError,\
-                                             SchemaUnsupportedKeyError
-
+from genie.metaparser.util.schemaengine import Schema, Optional, Any, Or
+from genie.metaparser.util.exceptions import (
+    SchemaMissingKeyError,
+    SchemaTypeError,
+    SchemaUnsupportedKeyError)
 from genie.metaparser.util import merge_dict
 
 # pyATS
@@ -34,8 +33,7 @@ from pyats.utils.schemaengine import Use as PyatsUse
 from pyats.utils.commands import do_lint
 
 # Unicon
-from unicon.core.errors import (SubCommandFailure, TimeoutError,
-                                StateMachineError)
+from unicon.core.errors import StateMachineError
 
 # Logger
 log = logging.getLogger(__name__)
@@ -197,7 +195,6 @@ def initialize_clean_sections(image_handler, order):
     for section in order:
         getattr(image_handler, 'update_section')(section)
 
-
 def load_clean_json():
     """get all clean data in json file"""
     try:
@@ -236,12 +233,17 @@ def load_clean_json():
 
     return clean_data
 
-
 def get_clean_function(clean_name, clean_data, device):
     """From a clean function and device, return the function object"""
 
     # Support calling multiple time the same section
     name = clean_name.split('__')[0]
+
+    # For legacy reasons support calling stage by camelcase or snakecase.
+    # Example: ChangeBootVariable or change_boot_variable
+    if '_' in name or name == name.lower():
+        name = ''.join(word.title() for word in name.split('_'))
+
     try:
         data = clean_data[name]
     except KeyError:
@@ -273,7 +275,6 @@ def get_clean_function(clean_name, clean_data, device):
 
     try:
         mod = getattr(_get_submodule(lookup.clean, data["module_name"]), name)
-        mod.__name__ = clean_name
         return mod
 
     except Exception:
@@ -556,7 +557,10 @@ def remove_string_from_image(images, string):
 
     regex = re.compile(r'.*{}.*'.format(string))
 
-    return [item.replace(string, "") if regex.match(item) else item for item in images]
+    if not string or string == "/":
+        return images
+    else:
+        return [item.replace(string, "") if regex.match(item) else item for item in images]
 
 def get_image_handler(device):
     if device.clean.get('images'):

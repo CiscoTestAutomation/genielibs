@@ -307,9 +307,9 @@ class HA(HA_main):
         with steps.start('Check available diskspace') as step:
             dir_output = filetransfer.parsed_dir(disk, timeout_seconds, Dir)
 
-            if int(dir_output['disk_free_space']) < 3000000000:
+            if int(dir_output['disk_free_space']) < 4500000000:
                 step.failed(
-                    "Not enough free space available to copy over the image.Free up atleast 3GB of space on {}".format(disk))
+                    "Not enough free space available to copy over the image.Free up atleast 4.5GB of space on {}".format(disk))
 
         with steps.start('Copy over the issu image') as step:
             # Copy ISSU upgrade image to disk
@@ -362,19 +362,29 @@ class HA(HA_main):
         cfg_transfer = self.parameters.get('cfg_transfer')
         cfg_timeout = self.parameters.get('cfg_timeout')
         with steps.start("Check boot mode on {}".format(self.device.hostname)) as step:
+            invalid_cmd = False
             out = self.device.execute('show boot mode')
+            # p1 matches line "Current mode is <native/lxc>."
+            p1 = re.compile(
+                r'^Current\smode\sis\s(?P<mode>\w+)\.$')
+            # p2 matches line "% Invalid command at '^' marker."
+            p2 = re.compile(r'.*?\'\^ \'\smarker\.')
             for line in out.splitlines():
-                line = line.rstrip()
-                p1 = re.compile(
-                    r'^Current\smode\sis\s(?P<mode>\w+)\.$')
+                line = line.strip()
                 m = p1.match(line)
                 if m:
                     sys_boot_mode = m.groupdict()['mode']
                     break
-
+                m = p2.match(line)
+                if m:
+                    invalid_cmd = True
+                    break
             if sys_boot_mode.lower() != user_boot_mode.lower():
                 step.failed(
                     "System boot mode {} does not match user expected boot mode {}".format(sys_boot_mode, user_boot_mode))
+            elif invalid_cmd and user_boot_mode.lower() != 'lxc':
+                step.failed("System only supports lxc mode. Invalid user expected boot mode input {}".format(
+                    user_boot_mode))
             else:
                 step.passed(
                     "System boot mode {} matches user expected boot mode {}".format(sys_boot_mode, user_boot_mode))

@@ -1,0 +1,30 @@
+{% for imp in imports -%}
+{{imp}}
+{% endfor %}
+
+class {{class_name}}(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(self):
+        testbed = """
+        devices:
+          {{device}}:
+            connections:
+              defaults:
+                class: unicon.Unicon
+              a:
+                command: {{cmd}}
+                protocol: unknown
+            os: {{os}}
+            platform: {{platform}}
+            type: {{type}}
+        """
+        self.testbed = loader.load(testbed)
+        self.device = self.testbed.devices['{{device}}']
+        self.device.connect()
+{% for ut in unit_tests %}
+    def test_{{ut.api}}{% if loop.index0 > 0 %}_{{loop.index0}}{% endif %}(self):
+        result = {{ut.api}}({{ut.arguments}})
+        expected_output = {{ut.expected_output}}
+        self.assertEqual(result, expected_output)
+{% endfor %}

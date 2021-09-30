@@ -61,16 +61,6 @@ class InvalidStructures(unittest.TestCase):
     def setUp(self):
         self.device = Mock()
 
-    def test_structure_1_extra_entry(self):
-        images = [
-            '/path/to/kickstart_image.bin',
-            '/path/to/system_image.bin',
-            'invalid entry'
-        ]
-
-        with self.assertRaises(Exception):
-            ImageHandler(self.device, images)
-
     def test_structure_1_missing_entry(self):
         images = [
             '/path/to/kickstart_image.bin',
@@ -105,6 +95,40 @@ class InvalidStructures(unittest.TestCase):
         with self.assertRaises(Exception):
             ImageHandler(self.device, images)
 
+    def test_structure_3_missing_kickstart(self):
+        images = {
+            'system': {
+                'file': ['/path/to/system_image.bin']
+            }
+        }
+
+        with self.assertRaises(Exception):
+            ImageHandler(self.device, images)
+
+    def test_structure_3_missing_system(self):
+        images = {
+            'kickstart': {
+                'file': ['/path/to/system_image.bin']
+            }
+        }
+
+        with self.assertRaises(Exception):
+            ImageHandler(self.device, images)
+
+    def test_structure_3_extra_type(self):
+        images = {
+            'system': {
+                'file': ['/path/to/system_image.bin'],
+                'this shouldnt work': ['/path/to/system_image.bin']
+            },
+            'kickstart': {
+                'file': ['/path/to/system_image.bin'],
+                'this shouldnt work': ['/path/to/system_image.bin']
+            },
+        }
+
+        with self.assertRaises(Exception):
+            ImageHandler(self.device, images)
 
 
 if __name__ == '__main__':

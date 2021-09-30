@@ -1,5 +1,8 @@
 """ Common retrieve functions for logging """
 
+# Unicon
+from unicon.core.errors import SubCommandFailure
+
 # Python
 import logging
 
@@ -28,3 +31,24 @@ def get_logging_logs(device):
         return None
 
     return out.get("logs", None)
+
+def execute_clear_logging(device):
+    """ Clears logging logs
+        execute - clear logging
+
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+        Raises:
+            None
+    """
+    log.info("Clearing logs on {}".format(device.hostname))
+
+    try:
+        out = device.execute("clear logging")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not Clear Logging, Error: {error}'.format(
+                error=e)
+        )

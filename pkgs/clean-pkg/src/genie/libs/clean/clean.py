@@ -1,7 +1,6 @@
 
 # Python
 import logging
-from inspect import unwrap
 from functools import partial
 from collections import OrderedDict
 
@@ -10,17 +9,21 @@ from pyats import aetest
 from pyats import results
 from pyats.results import Passed, Passx, Failed, Errored
 from pyats.aetest import Testcase
+from pyats.aetest.container import TestContainer
 from pyats.log.utils import banner
-from pyats.aetest.base import Source
 from pyats.aetest import processors
 from pyats.kleenex.bases import BaseCleaner
 from pyats.aetest.parameters import ParameterDict
+from pyats.aetest.sections import TestSection
 
 # Genie
 from genie.testbed import load
 from genie.harness.utils import load_class
-from genie.libs.clean.utils import pretty_schema_exception, \
-    get_clean_function, load_clean_json, get_image_handler
+from genie.libs.clean.utils import (
+    pretty_schema_exception,
+    get_clean_function,
+    load_clean_json,
+    get_image_handler)
 from genie.metaparser.util.schemaengine import Schema
 from genie.libs.clean.recovery import recovery_processor, block_section
 
@@ -39,6 +42,94 @@ To protect against an infinite loop scenario.
 stage_reuse_limit = {limit}
 {stage} ran {limit} times
 """
+
+try:
+    from genie.libs.cisco.telemetry import add_clean_usage_data
+    INTERNAL = True
+except:
+    INTERNAL = False
+
+
+class StageSection(TestSection):
+
+    def __str__(self):
+        '''Context __str__
+
+        Formats the logging output
+
+        Example
+        -------
+            >>> str(section)
+        '''
+        return 'stage %s' %(self.uid)
+
+
+class BaseStage(TestContainer):
+    """ Container for class based clean stages.
+
+    This container enables executing an instantiated class just like a function.
+    Class methods are executed based on the run_order list defined. If a method
+    in the exec_order list does not exist within the class an AttributeError
+    will be raised.
+
+    Examples
+    --------
+        >>> class Stage(BaseStage):
+        ...     exec_order = ['func1', 'func2']
+        ...     def func2(self):
+        ...         print("I am func2")
+        ...     def func1(self):
+        ...         print("I am func1")
+        ...
+        >>> stage = Stage()
+        >>> stage()
+        I am func1
+        I am func2
+
+        >>> class Stage(BaseStage):
+        ...     exec_order = ['func1', 'some_other_func', 'func2']
+        ...     def func1(self):
+        ...         print("I am func1")
+        ...     def func2(self):
+        ...         print("I am func2")
+        ...
+        >>> stage = Stage()
+        >>> stage()
+        Traceback (most recent call last):
+          (snip)
+        AttributeError: The class variable 'exec_order' from <class '__main__.Stage'> contains undefined methods: some_other_func
+    """
+
+    exec_order = []
+
+    def __call__(self, **parameters):
+        # Update the parameters with user provided
+        self.parameters.update(parameters)
+
+        for func in self:
+            # Retrieve a partial func with all func args populated
+            func = self.apply_parameters(func, self.parameters)
+            func()
+
+    def __iter__(self):
+        undefined_methods = []
+        methods = []
+
+        # Ensure all methods are defined and retrieve them
+        for method_name in self.exec_order:
+            try:
+                method = getattr(self, method_name)
+            except AttributeError:
+                undefined_methods.append(method_name)
+            else:
+                methods.append(method)
+
+        if undefined_methods:
+            raise AttributeError(
+                "The class variable 'exec_order' from {} contains undefined methods: "
+                "{}".format(self.__class__, ', '.join(undefined_methods)))
+
+        return iter(methods)
 
 
 class CleanTestcase(Testcase):
@@ -90,38 +181,43 @@ class CleanTestcase(Testcase):
                 if self.image_handler:
                     self.image_handler.update_section(stage)
 
-                func = self.stages[stage]['func']
+                cls = self.stages[stage]['func']
 
                 # Get a unique ID for the section
-                if stage not in used_uids:
-                    used_uids[stage] = []
-                    func.uid = stage
+                cls_name = stage.split('__')[0]
+                if cls_name not in used_uids:
+                    used_uids[cls_name] = []
+                    cls.uid = cls.__name__
                 else:
-                    func.uid = "{}({})".format(stage, len(used_uids[stage])+1)
+                    cls.uid = f"{cls.__name__}({len(used_uids[cls_name])+1})"
 
-                used_uids[stage].append(func.uid)
+                used_uids[cls_name].append(cls.uid)
 
-                # Setup stage function
-                func.source = Source(self, objcls=func.__class__)
-                func.parameters = ParameterDict()
-                func.parameters['device'] = self.device
+                cls.parameters = ParameterDict()
+                cls.parameters['device'] = self.device
 
                 args = self.stages[stage]['args']
                 for parameter, value in args.items():
-                    func.parameters[parameter] = value
-
-                # Bind function
-                section = func.__get__(self, func.__testcls__)
-                self.history[section.uid] = section
+                    cls.parameters[parameter] = value
 
                 if self.device_recovery_processor:
                     processors.affix(
-                        section,
+                        cls,
                         pre=[block_section],
-                        post=[self.device_recovery_processor],
-                        exception=[])
+                        post=[self.device_recovery_processor])
 
-                new_section = section.__testcls__(section, parent=self)
+                cls = cls()
+                cls.__name__ = cls.__uid__
+                cls.history = self.history
+                cls.history[cls.uid] = cls
+
+                # Create a stage section
+                new_section = StageSection(cls, parent=self)
+
+                # For some unknown reason, this is required for internal arguments
+                # like 'steps' and 'section' to be propagated. Do not remove.
+                cls.parameters.internal = new_section.parameters.internal
+
                 yield new_section
 
                 pass_order = self.stages[stage]['change_order_if_pass']
@@ -131,7 +227,7 @@ class CleanTestcase(Testcase):
                     log.warning(msg)
                     order = pass_order
                     if self.image_handler:
-                        self.image_handler.update_image_references(section)
+                        self.image_handler.update_image_references(cls)
                     break
 
                 fail_order = self.stages[stage]['change_order_if_fail']
@@ -160,9 +256,18 @@ class CleanTestcase(Testcase):
 
                 # image handler updates latest image
                 if self.image_handler:
-                    self.image_handler.update_image_references(section)
+                    self.image_handler.update_image_references(cls)
 
             else:
+                if INTERNAL:
+                    # Try to add clean stage usage to telemetry data 
+                    try:
+                        add_clean_usage_data(clean_stages=self.stages,
+                                             device=self.device)
+                    except Exception as e:
+                        log.debug("Encountered an unexpected error while adding"
+                                  " clean telemetry data: %s" % e)
+
                 # Every stage in 'order' successfully ran
                 # Break from while loop to finish clean
                 break
@@ -209,17 +314,9 @@ class CleanTestcase(Testcase):
                 # Attempt to load from the provided source
                 stage_func = load_class(stage_data, self.device)
 
-            if not hasattr(stage_func, '__testcls__'):
-                raise TypeError(
-                    "The function definition for stage '{}' is missing the "
-                    "@aetest.test decorator".format(stage_func.__name__))
-
             if hasattr(stage_func, 'schema'):
                 clean_schema[stage_func.__name__] = stage_func.schema
                 clean_to_validate[stage_func.__name__] = stage_data
-
-                # unwrap from schema to get the original function
-                stage_func = unwrap(stage_func)
 
             # Save for use later in __iter__()
             self.stages[stage] = {
@@ -255,10 +352,12 @@ class DeviceClean(BaseCleaner):
             result = clean_testcase()
 
             # Disconnect the device
-            try:
-                device.destroy_all()
-            except Exception:
-                pass
+            # try:
+            #     log.warning("before destroy all")
+            #     device.destroy_all()
+            #     log.warning("after destroy all")
+            # except Exception:
+            #     pass
 
             if not result:
                 raise Exception("Clean {result}.".format(result=str(result)))

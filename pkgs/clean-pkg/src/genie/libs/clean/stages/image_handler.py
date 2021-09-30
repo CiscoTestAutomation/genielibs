@@ -22,7 +22,6 @@ class BaseImageHandler(object):
             section_uid = sections[0]
             number = '__{}'.format(sections[1])
 
-
         # call the ImageHandler update method
         if hasattr(self, 'update_' + section_uid):
             getattr(self, 'update_' + section_uid)(number)

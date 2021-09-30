@@ -93,14 +93,18 @@ pipeline {
                     make develop
                     cd $WORKSPACE/genie
                     make develop
+                    make json
                     cd $WORKSPACE/genieparser
                     make develop
+                    make json
                     cd $WORKSPACE/genielibs.cisco
                     make develop
+                    make json
                     cd $WORKSPACE/pyats
                     make develop
                     cd $WORKSPACE
                     make develop
+                    make json
                     env
                     pip list
                     pip freeze
@@ -113,6 +117,15 @@ pipeline {
                 sh """
                 . /scratch/genielibs-env/bin/activate
                 compileAll --path=src
+                """
+            }
+        }
+        
+        stage("Test changelogs") {
+            steps {
+                sh"""
+                . /scratch/genielibs-env/bin/activate
+                make changelogs
                 """
             }
         }

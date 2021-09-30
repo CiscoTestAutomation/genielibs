@@ -28,6 +28,9 @@ def get_show_tech(device,
         protocol (str): protocol to use to copy (default: scp)
         timeout (int): timeout to copy file (default: 600s)
 
+    Returns
+        True on success, False on failure
+
     The filename is based the prefix + show_tech + timestamp.
 
     The default prefix is the device name.
@@ -67,7 +70,12 @@ def get_show_tech(device,
         prefix = device.name + '_'
 
     # Capture show tech to flash
-    output = device.execute(show_tech_command, timeout=timeout)
+    try:
+        output = device.execute(show_tech_command, timeout=timeout)
+    except Exception:
+        log.exception('Failed to collect show tech')
+        return False
+
     m = re.search(r'Show tech output available at .*?: +/?(\S+)', output)
     if m:
         filename = m.group(1)

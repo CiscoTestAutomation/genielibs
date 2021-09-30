@@ -157,6 +157,12 @@ class Vxlan(DeviceFeature, LinkFeature):
         type=(None, managedattribute.test_istype(bool)),
         doc='dci advertise pip')
 
+    evpn_msite_split_horizon_per_site = managedattribute(
+        name='evpn_msite_split_horizon_per_site',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)),
+        doc='split-horizon per-site')
+
     evpn_vni = managedattribute(
         name='evpn_vni',
         default=None,

@@ -85,3 +85,24 @@ def verify_pattern_in_output(output, pattern_list):
 
     return False
 
+
+def verify_test_aaa_cmd(device, servergrp, username, password, path):
+
+    """ To verify radius connectivity with test aaa command
+    Args:
+        device (`obj`): Device object
+        servergrp (`str`): Radius server group name
+        username (`str`): username
+        password (`str`): password
+        path (`str`): legacy/new-code
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    output = device.execute(
+        "test aaa group {servergrp} {username} {password} {path}".\
+            format(servergrp=servergrp,username=username,password=password,\
+            path=path)
+        )   
+    return output

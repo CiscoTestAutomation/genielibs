@@ -1,12 +1,30 @@
 #!/usr/bin/env python
-
+import os
+import binascii
 import tempfile
 import unittest
-from unittest.mock import Mock
+import requests
 
 from genie.libs.filetransferutils import FileServer
 from pyats.datastructures import AttrDict
 from pyats.utils.secret_strings import SecretString, to_plaintext
+
+
+def encode_multipart_formdata(data):
+    boundary = '-' * 25 + binascii.hexlify(os.urandom(16)).decode('ascii')
+
+    body = ''
+    if not isinstance(data, list):
+        data = [data]
+    for content in data:
+        body += '--{boundary}\r\n'\
+            'Content-Disposition: form-data; name="filename"; filename="test.data"'\
+            '\r\n{data}\r\n'.format(data=content, boundary=boundary)
+
+    body += '--{boundary}--\r\n'.format(boundary=boundary)
+    content_type = "multipart/form-data; boundary={}".format(boundary)
+
+    return body, content_type
 
 
 class TestFileServer(unittest.TestCase):
@@ -85,3 +103,27 @@ class TestFileServer(unittest.TestCase):
             self.assertEqual(fs['credentials']['http']['username'], 'test')
             self.assertEqual(
                 to_plaintext(fs['credentials']['http']['password']), 'test123')
+
+    def test_http_multipart_single(self):
+        with tempfile.TemporaryDirectory() as td:
+            with FileServer(protocol='http', subnet='127.0.0.1/32', path=td) as fs:
+                url = 'http://127.0.0.1:{}/test.txt'.format(fs['port'])
+                orig_data = 'test123'
+                data, content_type = encode_multipart_formdata(orig_data)
+                r = requests.post(url, data=data, headers={'Content-type': content_type})
+                self.assertEqual(r.status_code, 201)
+                with open(os.path.join(td, 'test.txt'), 'rb') as f:
+                    test_data = f.read().decode()
+                self.assertEqual(test_data, orig_data)
+
+    def test_http_multipart_multi(self):
+        with tempfile.TemporaryDirectory() as td:
+            with FileServer(protocol='http', subnet='127.0.0.1/32', path=td) as fs:
+                url = 'http://127.0.0.1:{}/test.txt'.format(fs['port'])
+                orig_data = ['test123'] * 2
+                data, content_type = encode_multipart_formdata(orig_data)
+                r = requests.post(url, data=data, headers={'Content-type': content_type})
+                self.assertEqual(r.status_code, 201)
+                with open(os.path.join(td, 'test_1.txt'), 'rb') as f:
+                    test_data = f.read().decode()
+                self.assertEqual(test_data, orig_data[1])
