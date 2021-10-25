@@ -3,6 +3,9 @@
 # Python
 import re
 import logging
+import subprocess
+import time
+from pyats.async_ import Pcall
 
 # Genie
 from genie.libs.sdk.apis.utils import get_config_dict
@@ -13,6 +16,8 @@ from genie.libs.parser.iosxe.ping import Ping
 # unicon
 from unicon.eal.dialogs import Dialog, Statement
 from unicon.core.errors import SubCommandFailure
+from ats.log.utils import banner
+
 
 log = logging.getLogger(__name__)
 
@@ -714,6 +719,7 @@ def get_show_output_line_count(device, command, filter, output=None):
     log.warn("Couldn't get line count properly.")
     return 0
 
+
 def clear_counters(device):
     """ clear logging
         Args:
@@ -755,6 +761,7 @@ def clear_logging(device):
             "Could not clear logging on {device}. Error:\n{error}".format(device=device, error=e)
         )
 
+
 def get_show_output_include(device, command, filter, output=None):
     """ Find the lines which are match from show command.
         Args:
@@ -780,3 +787,549 @@ def get_show_output_include(device, command, filter, output=None):
         result = False
 
     return [result,output]
+
+  
+def decrypt_tacacs_pcap(filename, key, filepath):
+    """Decrypt and Converting the tacacs pcap file to tacacs txt file
+        Args:
+            filename: taacs pcap filename
+            key: tacacs server key
+            filepath: tacacs pcap file path
+
+        Returns:
+            True : Decrypted and copied to pcap txt file
+            False: No data in pcap text file
+    """
+
+    decrypted_pcap_file = filename.replace("pcap", "txt")
+    log.info("Decoding {0} file and saving the decrypted data to {1} file".
+                format(filename, decrypted_pcap_file))
+    cmd = 'tshark -r {path} -V -o tacplus.key:{key}>{decrypted_pcap_file}'.format(
+        path=filepath, key=key, decrypted_pcap_file=decrypted_pcap_file)
+    log.info(cmd)
+    try:
+        subprocess.getoutput(cmd)
+        with open(decrypted_pcap_file, encoding="utf8", errors='ignore') as file:
+            fdata = file.readlines()
+        if fdata:
+            log.info("Data copied from {0} to {1}".format(
+                filename, decrypted_pcap_file))
+            log.info("Decrypted pcap txt file saved in script location ")
+            return decrypted_pcap_file
+        else:
+            log.info("No Data in {0}".format(decrypted_pcap_file))
+            return False
+    except Exception as error:
+        log.error("Failed to decode tacacs pcap file using tshark {0}".format(error))
+        return False
+
+
+def parse_tacacs_packet(decrypted_pcap_file):
+    """ Parsing tacacs pcap file data
+        Args:
+            decrypted_pcap_file: txt file having tacacs packet data
+        Returns:
+            tacacs_json_dict: dict contains tacacs data as
+            json format
+
+    """
+    log.info(banner("start analysing the packet"))
+
+    tacacs_json_dict = {}
+    typedict = {}
+    seqdict = {}
+    aaadict = {}
+    aaa_type = ""
+    seqno = ''
+    packetno = 1
+
+    # Different patterns of tacacs packet
+    # common pattern for all key-value data
+    p = re.compile(r'(.*):\s*(.*)')
+
+    # Patterns of Tacacs Header
+    # Frame 1: 60 bytes on wire (480 bits), 60 bytes captured (480 bits)
+    # on interface 0
+    p0 = re.compile(r'\s*Frame.*')
+
+    # TACACS+
+    p1 = re.compile(r'(^TACACS[+]$)')
+
+    # Type: Authentication(1)
+    p2 = re.compile(r'\s*Type\:\s+(.*)\s*\(\d+\)')
+
+    # Sequence number: 1
+    p3 = re.compile(r'\s*(Sequence\s*number)\:\s*(\d+)')
+
+    # .... .0.. = Single Connection: Not set
+    p4 = re.compile(r'.*\=\s*(Single\s*Connection)\:\s*(.*)')
+
+    # .... ...0 = Unencrypted: Not set
+    p5 = re.compile(r'.*\=\s*(Unencrypted)\:\s*(.*)')
+
+    # Session ID: 3305082361
+    p6 = re.compile(r'.*\=\s*(Session\s*ID)\:\s*(.*)')
+
+    # Decrypted Request
+    p7 = re.compile(r'\s*Decrypted\s*(.*)')
+
+    # Server message: Password:
+    p8 = re.compile(r'\s*Server\s*message\:\s*(.*)')
+
+    # authorization command
+    # Arg[0] length: 13
+    p9 = re.compile(r'\s*Arg\[(\d+)\]\s*length\:\s*(\d+)')
+
+    # Arg[0] value: service=shell
+    p10 = re.compile(r'Arg\[(\d+)\]\s*value\:\s*(.*)')
+
+    # accounting commands
+    # .... ...0 = More: Not set
+    # .... ..0. = Start: Not set
+    # .... .1.. = Stop: Set
+    #   .... 0... = Watchdog: Not set
+    p11 = re.compile(r'.*\=\s*(.*)\:\s*(.*)')
+
+    with open(decrypted_pcap_file, encoding="utf8", errors='ignore') as file:
+        fdata = file.readlines()
+        if fdata:
+            data = iter(list(fdata))
+            for i in data:
+                # TACACS+
+                res = p1.match(i)
+                if res:
+                    for j in range(100):
+                        ndata = next(data)
+                        n = ndata.strip()
+
+                        # Frame 1: 60 bytes on wire (480 bits), 60 bytes captured (480
+                        # bits) on interface 0
+                        if p0.match(n):
+                            break
+
+                        # Type: Authentication(1)
+                        res = p2.match(n)
+                        if res:
+                            aaa_type = "".join(res.group(1).split(" "))
+                            typedict = tacacs_json_dict.setdefault(aaa_type, {})
+                            continue
+
+                        # Sequence number: 1
+                        res = p3.match(n)
+                        if res:
+                            seqno = "".join(res.group(2).split(" "))
+                            if seqno == '1':
+                                aaa_p = aaa_type[:6] + 'packet' + str(packetno)
+                                aaadict = typedict.setdefault(aaa_p, {})
+                                packetno += 1
+                            seqdict = aaadict.setdefault(seqno, {})
+                            continue
+
+                        if seqno != '':
+                            # .... .0.. = Single Connection: Not set
+                            res = p4.match(n)
+                            if res:
+                                single_connection = res.group(2)
+                                seqdict["single_connection"] = single_connection
+                                continue
+
+                            # .... ...0 = Unencrypted: Not set
+                            res = p5.match(n)
+                            if res:
+                                unencrypted = res.group(2)
+                                seqdict["unencrypted"] = unencrypted
+                                continue
+
+                            # Session ID: 3305082361
+                            res = p6.match(n)
+                            if res:
+                                seesion_id = res.group(2)
+                                seqdict["seesion_id"] = seesion_id
+                                continue
+
+                            # Decrypted Request
+                            res = p7.match(n)
+                            if res:
+                                msgtype = res.group(1)
+                                seqdict["msgtype"] = msgtype
+                                continue
+
+                        if aaa_type == 'Authentication':
+                            # Server message: Password:
+                            res = p8.match(n)
+                            if res:
+                                server_message = res.group(1)
+                                seqdict["server_message"] = server_message
+                                continue
+                            # common pattern for all key-value data
+                            res = p.match(n)
+                            if res:
+                                key = res.group(1).lower().replace(" ", "_")
+                                value = res.group(2)
+                                seqdict[key] = value
+                                continue
+
+                        if aaa_type == 'Authorization':
+                            # Arg[0] length: 13
+                            arg_len = p9.match(n)
+                            if arg_len:
+                                key = "arg_len" + arg_len.group(1)
+                                seqdict[key] = arg_len.group(2)
+                                continue
+
+                            # Arg[0] value: service=shell
+                            arg_value = p10.match(n)
+                            if arg_value:
+                                key = "arg_value" + arg_value.group(1)
+                                seqdict[key] = arg_value.group(2)
+                                continue
+
+                            # common pattern for all key-value data
+                            res = p.match(n)
+                            if res:
+                                key = res.group(1).lower().replace(" ", "_")
+                                value = res.group(2)
+                                seqdict[key] = value
+                                continue
+
+                        if aaa_type == 'Accounting':
+                            # Arg[0] length: 13
+                            arg_len = p9.match(n)
+                            if arg_len:
+                                key = "arg_len" + str(arg_len.group(1))
+                                seqdict[key] = arg_len.group(2)
+                                continue
+                            # Arg[0] value: service=shell
+                            arg_value = p10.match(n)
+                            if arg_value:
+                                key = "arg_value" + arg_value.group(1)
+                                seqdict[key] = arg_value.group(2)
+                                continue
+
+                            # .... ...0 = More: Not set
+                            # .... ..0. = Start: Not set
+                            # .... .1.. = Stop: Set
+                            #   .... 0... = Watchdog: Not set
+                            arg_value = p11.match(n)
+                            res = p11.match(n)
+                            if res:
+                                flag_name = res.group(1).lower()
+                                flags = res.group(2)
+                                seqdict[flag_name] = flags
+                                continue
+                            # common pattern for all key-value data
+                            res = p.match(n)
+                            if res:
+                                key = res.group(1).lower().replace(" ", "_")
+                                value = res.group(2)
+                                seqdict[key] = value
+                                continue
+                    continue
+            return tacacs_json_dict
+        else:
+            log.info("No data in {0} to parse".format(decrypted_pcap_file))
+            return False
+
+          
+def verify_tacacs_packet(tacacs_json_dict, verfifydict):
+    """Validating Authentication, Authorization and Accounting json data
+    with the verifydict data
+        Args:
+            tacacs_json_dict: parsed tacacs packet data
+            verfifydict:  dict having authentication or accounting or
+                        authorization attributes to verify
+        Returns:
+            final_verify: dict contains authentication or accounting or
+            authorization bool values
+    """
+    final_verify = {}
+    for i in verfifydict:
+        type = i
+        count = 0
+        for type_dict in verfifydict[i]:
+            count += 1
+            final_verify[type + str(count)] = False
+            seq_dict = {}
+            aaapackets = tacacs_json_dict[type].keys()
+            for i in aaapackets:
+                seq_dict.setdefault(i, {})
+                seq = tacacs_json_dict[type][i].keys()
+                for e in type_dict.keys():
+                    seq_dict.setdefault(i, {}).setdefault(e, {})
+                    if e in seq:
+                        aaa_flag = {}
+                        seqfields = tacacs_json_dict[type][i][e]
+                        for f in type_dict[e].keys():
+                            if f in seqfields.keys():
+                                if type_dict[e][f] == seqfields[f]:
+                                    aaa_flag[f] = True
+                                else:
+                                    aaa_flag[f] = False
+                            else:
+                                aaa_flag[f] = False
+                    if all(aaa_flag.values()):
+                        seq_dict[i][e] = True
+                    else:
+                        seq_dict[i][e] = False
+            for v in seq_dict.keys():
+                if all(seq_dict[v].values()) is True:
+                    log.info("{0} packet found {1} {2}".format(type, v,
+                                                                  type_dict))
+                    final_verify[type + str(count)] = True
+    return final_verify
+
+
+def perform_ssh(device, testbed, enable_pass, timeout=60):
+    """
+    Restore config from local file using copy function
+        Args:
+            device (`obj`): Device object
+            testbed (`str`): Testbed object
+            enable_pass (`str`): Enable password
+            timeout (int): Optional timeout value
+                           default value 60
+        Returns:
+            None
+    """
+    hostname = testbed.devices['uut'].name
+    username = testbed.custom['username']
+    password = testbed.custom['password']
+    ip_address = testbed.devices['uut'].custom['int_ipaddress']
+
+    ssh_dict = {
+                'pass_timeout_expire_flag': False,
+                'ssh_pass_case_flag': False,
+                'enable_pass_flag': False
+                }
+
+    def pass_timeout_expire():
+        ssh_dict['pass_timeout_expire_flag'] = True
+
+    def send_pass(spawn):
+        if ssh_dict['enable_pass_flag']:
+            spawn.sendline(enable_pass)
+            ssh_dict['enable_pass_flag'] = False
+        else:
+            spawn.sendline(password)
+
+    def ssh_pass_case(spawn):
+        ssh_dict['ssh_pass_case_flag'] = True
+        spawn.sendline(' exit')
+
+    def send_enable(spawn):
+        ssh_dict['enable_pass_flag'] = True
+        spawn.sendline('enable')
+
+    dialog = Dialog([
+
+            Statement(pattern=r"Password:\s*timeout expired!",
+                      action=pass_timeout_expire,
+                      loop_continue=False),
+            Statement(pattern=r"Password:",
+                      action=send_pass,
+                      loop_continue=True),
+            Statement(pattern=r""+hostname+">",
+                      action=send_enable,
+                      loop_continue=True),
+            Statement(pattern=r""+hostname+"#",
+                      action=ssh_pass_case,
+                      loop_continue=True),
+
+    ])
+    try:
+        device.execute('ssh -l {u} {i}'.format(u=username, i=ip_address),
+                       reply=dialog,
+                       prompt_recovery=True,
+                       timeout=timeout)
+    except Exception as e:
+        log.info(f"Error occurred while performing ssh : {e}")
+
+    if ssh_dict['pass_timeout_expire_flag']:
+        return False
+    if ssh_dict['ssh_pass_case_flag']:
+        return True
+
+
+def concurrent_ssh_sessions(concurrent_sessions, iteration_times, device, testbed,
+                            enable_pass):
+    """
+    Generates multiple ssh sessions
+        Args:
+            device (`obj`): Device object
+            testbed (`str`): Testbed object
+            enable_pass (`str`): enable password
+            concurrent_sessions (`int`): count of ssh session to generate
+            iteration_times (`int`): count of concurrent_sessions to repeat
+        Returns:
+            None
+    """
+    for iteration in range(iteration_times):
+        log.info(f"generating sessions for iteration {iteration + 1}")
+
+        p = Pcall(perform_ssh, device=[device]*concurrent_sessions,
+                  testbed=[testbed]*concurrent_sessions,
+                  enable_pass=[enable_pass]*concurrent_sessions)
+
+        # start all child processes
+        p.start()
+        # wait for everything to finish
+        p.join()
+
+        time.sleep(2)
+  
+
+def get_radius_packets(pcap_or_packet):
+    """
+    returns radius packets from pcap file/packet
+        Args:
+            pcap_or_packet (`str/obj`): path of pcap file or packet object obtained
+                                        from scapy module
+        Returns:
+            List contains radius packets
+    """
+    try:
+        from scapy.all import rdpcap
+        from scapy.layers.radius import Radius
+    except ImportError:
+        raise ImportError('scapy is not installed, please install it by running: '
+                          'pip install scapy') from None
+
+    # Read the pcap file if path is provided
+    if isinstance(pcap_or_packet, str):
+        pcap_or_packet = rdpcap(pcap_or_packet)
+
+    return pcap_or_packet.getlayer(Radius)
+
+
+def get_packet_attributes_scapy(packet):
+    """
+    returns attributes and their values of a packet
+        Args:
+            packet (`obj`): packet object obtained from scapy module
+        Returns:
+            dict with attributes and their values
+    example:
+        {
+            "User-Name": {"value": "'6c8bd38ec702'", "len": "14"},
+            "User-Password": {"value": "b392032ba377baacffb4cacf3a8d9b04", "len": "18"},
+            "Service-Type": {"value": "Call Check", "len": "6"},
+            "Framed-MTU": {"value": "1468", "len": "6"},
+            "Message-Authenticator": {"value": "d215599321f88dca2cacb5e0e793f354", "len": "18"},
+            "EAP-Key-Name": {"value": "''", "len": "2"},
+            "NAS-IP-Address": {"value": "10.106.26.213", "len": "6"},
+            "NAS-Port-Id": {"value": "'TenGigabitEthernet1/0/11'", "len": "26"},
+            "NAS-Port-Type": {"value": "Ethernet", "len": "6"},
+            "NAS-Port": {"value": "50111", "len": "6"},
+            "Calling-Station-Id": {"value": "'6C-8B-D3-8E-C7-02'", "len": "19"},
+            "NAS-Identifier": {"value": "'Switch-9500'", "len": "13"},
+            "Called-Station-Id": {"value": "'D0-EC-35-92-C9-8B'", "len": "19"},
+        }
+    """
+    try:
+        from scapy.layers.radius import Radius
+    except ImportError:
+        raise ImportError('scapy is not installed, please install it by running: '
+                          'pip install scapy') from None
+
+    attr_dict = {}
+    for i in range(0, len(packet.attributes)):
+        attribute = packet.attributes[i]
+        attr_type = attribute.get_field('type').i2repr(attribute, attribute.type)
+        type_dict = attr_dict.setdefault(attr_type, {})
+        type_dict.update({'value': attribute.get_field('value').i2repr(
+                        attribute, attribute.value)})
+        type_dict.update({'len': attribute.get_field('len').i2repr(
+                        attribute, attribute.len)})
+
+        if 'Vendor-Specific' in attr_type:
+            av_pair = attribute.get_field('value').i2repr(attribute, attribute.value)
+            vender_type = type_dict.setdefault(av_pair, {})
+            vender_type.update({'vendor_type': attribute.get_field(
+                            'vendor_type').i2repr(attribute, attribute.vendor_type)})
+            vender_type.update({'vender_id': attribute.get_field('vendor_id').i2repr(
+                            attribute, attribute.vendor_id)})
+            vender_type.update({'vendor_len': attribute.get_field('vendor_len').i2repr(
+                            attribute, attribute.vendor_len)})
+
+    return attr_dict
+
+
+def get_packet_info_field(packet):
+    """
+    returns packets info
+        Args:
+            packet (`obj`): packet object obtained from scapy module
+        Returns:
+            returns packets info
+    """
+
+    return packet.get_field('code').i2repr(packet, packet.code)
+
+
+def get_ip_packet_scapy(packet):
+    """
+    returns IP layer from packet
+        Args:
+            packet (`obj`): packet object obtained from scapy module
+        Returns:
+            ip packet
+    """
+    try:
+        from scapy.layers.inet import IP
+    except ImportError:
+        raise ImportError('scapy is not installed, please install it by running: '
+                          'pip install scapy') from None
+
+    return packet.getlayer(IP)
+
+
+def get_packet_ip_tos_field(packet):
+    """
+    returns types of services field from packet
+        Args:
+            packet (`obj`): packet object obtained from scapy module
+        Returns:
+            returns types of services field
+    """
+
+    return packet.get_field('tos').i2repr(packet, packet.tos)
+
+
+def clear_ip_nat_translation_all(device):
+    """ clear ip nat translation *
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug("Delete all dynamic translations on {device}".format(device=device))
+
+    try:
+        device.execute('clear ip nat translation *')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not Delete all dynamic translations on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+
+
+def clear_ip_mroute_all(device):
+    """ clear ip mroute *
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug("Clearing ip mroute on {device}".format(device=device))
+
+    try:
+        device.execute("clear ip mroute *")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clearing ip mroute on {device}. Error:\n{error}".format(device=device, error=e)
+        )

@@ -8,13 +8,14 @@ from unicon.core.errors import SubCommandFailure
 
 log = logging.getLogger(__name__)
 
+
 def configure_ipv6_dhcp_guard_policy(device, policy_name, device_role=None, trusted_port=False):
     """ Configures ipv6 dhcp guard policy {policy_name}
         Args:
             device ('obj'): device to use
             policy_name ('str'): name of the policy to be configured
             device_role ('str'): role of the  device
-            trusted_port ('bool'): True indicating the port is a trusted port 
+            trusted_port ('bool'): True indicating the port is a trusted port
         Returns:
             None
         Raises:
@@ -23,8 +24,8 @@ def configure_ipv6_dhcp_guard_policy(device, policy_name, device_role=None, trus
     log.info(
         "Configuring ipv6 dhcp guard policy {policy_name}, device role {device_role} and trusted port {trusted_port}"
         .format(
-            policy_name=policy_name, 
-            device_role=device_role, 
+            policy_name=policy_name,
+            device_role=device_role,
             trusted_port=trusted_port
             )
     )
@@ -38,7 +39,7 @@ def configure_ipv6_dhcp_guard_policy(device, policy_name, device_role=None, trus
              "trusted-port"
              ])
 
-        elif trusted_port:   
+        elif trusted_port:
          device.configure(
              ["ipv6 dhcp guard policy {policy_name}".format(policy_name=policy_name),
               "trusted-port"
@@ -73,25 +74,26 @@ def configure_ipv6_dhcp_guard_policy(device, policy_name, device_role=None, trus
             .format(policy_name=policy_name)
         )
 
+
 def unconfigure_ipv6_dhcp_guard_policy(device, policy_name, device_role=False, trusted_port=False):
     """ Unconfigures ipv6 dhcp guard policy {policy_name}
         Args:
             device ('obj'): device to use
             policy_name ('str'): name of the policy to be unconfigured
-            device_role ('bool'): True indicating set device role to its default value 
-            trusted_port ('bool'): True indicating set trusted_port to its default value  
+            device_role ('bool'): True indicating set device role to its default value
+            trusted_port ('bool'): True indicating set trusted_port to its default value
         Returns:
             None
         Raises:
-            SubCommandFailure: "Failed to unconfigure ipv6 dhcp guard policy {policy_name} with 
+            SubCommandFailure: "Failed to unconfigure ipv6 dhcp guard policy {policy_name} with
             unconfigure device role {device_role} and unconfigure trusted port {trusted_port}"
     """
     log.info(
-        """Unconfiguring ipv6 dhcp guard policy {policy_name}, 
+        """Unconfiguring ipv6 dhcp guard policy {policy_name},
            unconfigure device role {device_role} and unconfigure trusted port {trusted_port}"""
         .format(
-            policy_name=policy_name, 
-            device_role=device_role, 
+            policy_name=policy_name,
+            device_role=device_role,
             trusted_port=trusted_port
         )
     )
@@ -103,9 +105,9 @@ def unconfigure_ipv6_dhcp_guard_policy(device, policy_name, device_role=False, t
              "ipv6 dhcp guard policy {policy_name}".format(policy_name=policy_name),
              "no device-role",
              "no trusted-port"
-             ])   
+             ])
 
-        elif trusted_port:   
+        elif trusted_port:
          device.configure(
              ["ipv6 dhcp guard policy {policy_name}".format(policy_name=policy_name),
               "no trusted-port"
@@ -117,12 +119,12 @@ def unconfigure_ipv6_dhcp_guard_policy(device, policy_name, device_role=False, t
              [
              "ipv6 dhcp guard policy {policy_name}".format(policy_name=policy_name),
              "no device-role"
-             ])   
-        
+             ])
+
 
     except SubCommandFailure:
         raise SubCommandFailure(
-            """Failed to unconfigure ipv6 dhcp guard policy {policy_name} with 
+            """Failed to unconfigure ipv6 dhcp guard policy {policy_name} with
                unconfigure device role {device_role} and unconfigure trusted port {trusted_port}"""
             .format(
                 policy_name=policy_name,
@@ -130,6 +132,35 @@ def unconfigure_ipv6_dhcp_guard_policy(device, policy_name, device_role=False, t
                 trusted_port=trusted_port
             )
         )
+
+
+def remove_ipv6_dhcp_guard_policy(device, policy_name):
+    """ Remove IPv6 DHCP Guard Policy
+        Args:
+            device ('obj'): device to use
+            policy_name ('str'): name of the policy to be removed
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed removing IPv6 DHCP guard policy
+    """
+    log.debug(
+        "Removing IPv6 DHCP Guard Policy with name={policy_name}"
+        .format(policy_name=policy_name)
+    )
+
+    try:
+        device.configure([
+            "no ipv6 dhcp guard policy {policy_name}".format(policy_name=policy_name),
+        ])
+
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not remove IPv6 DHCP Guard Policy {policy_name}".format(
+                policy_name=policy_name
+            )
+        )
+
 
 def configure_ipv6_nd_suppress_policy(device, policy_name, mode):
     """ Configure ipv6 nd suppress policy {mode}
@@ -145,7 +176,7 @@ def configure_ipv6_nd_suppress_policy(device, policy_name, mode):
     log.info(
         "Configuring ipv6 nd suppress policy name={policy_name} with mode {mode}"
         .format(
-            policy_name=policy_name, 
+            policy_name=policy_name,
             mode=mode
             )
         )
@@ -160,11 +191,12 @@ def configure_ipv6_nd_suppress_policy(device, policy_name, mode):
         raise SubCommandFailure(
         "Failed to configure ipv6 nd suppress policy {policy_name} with mode {mode}"
            .format(
-            policy_name=policy_name, 
+            policy_name=policy_name,
             mode=mode
             )
         )
-        
+
+
 def unconfigure_ipv6_nd_suppress_policy(device, policy_name, mode):
     """ Unconfigures ipv6 nd suppress policy {mode}
     Args:
@@ -179,7 +211,7 @@ def unconfigure_ipv6_nd_suppress_policy(device, policy_name, mode):
     log.info(
         "Unconfiguring ipv6 nd suppress policy {policy_name} with unconfigure mode {mode}"
         .format(
-            policy_name=policy_name, 
+            policy_name=policy_name,
             mode=mode
             )
         )
@@ -190,26 +222,53 @@ def unconfigure_ipv6_nd_suppress_policy(device, policy_name, mode):
                 "ipv6 nd suppress policy {policy_name}".format(policy_name=policy_name),
                 "no mode"
             ])
-
     except:
         raise SubCommandFailure(
         "Failed to unconfigure ipv6 nd suppress policy {policy_name} with unconfigure mode {mode}"
            .format(
-            policy_name=policy_name, 
+            policy_name=policy_name,
             mode=mode
             )
         )
+
+
+def remove_ipv6_nd_suppress_policy(device, policy_name):
+    """ Remove IPv6 ND Suppress Policy
+        Args:
+            device ('obj'): device to use
+            policy_name ('str'): name of the policy to be removed
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed removing IPv6 ND suppress policy
+    """
+    log.debug(
+        "Removing IPv6 IPv6 ND suppress policy with name={policy_name}"
+        .format(policy_name=policy_name)
+    )
+
+    try:
+        device.configure([
+            "no ipv6 nd suppress policy {policy_name}".format(policy_name=policy_name),
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not remove IPv6 ND suppress policy {policy_name}".format(
+                policy_name=policy_name
+            )
+        )
+
 
 def configure_device_tracking_upgrade_cli(device, force=False, revert=False):
     """ Configures device-tracking upgrade-cli {option}
     Args:
         device ('obj'): device to use
-        force ('bool'): option to force the upgrade 
+        force ('bool'): option to force the upgrade
         revert: ('bool'): option to revert the upgrade
     Returns:
         None
     Raises:
-        SubCommandFailure: "Failed to configure device-tracking upgrade-cli with 
+        SubCommandFailure: "Failed to configure device-tracking upgrade-cli with
         force {force} and revert {revert}"
     """
     log.info(
@@ -231,7 +290,7 @@ def configure_device_tracking_upgrade_cli(device, force=False, revert=False):
             ])
         else:
             raise SubCommandFailure(
-                """Failed to configure device-tracking upgrade-cli with force {force} and revert {revert}. 
+                """Failed to configure device-tracking upgrade-cli with force {force} and revert {revert}.
                    force and revert cannot have the same value"""
                 .format(
                     force=force,
@@ -246,12 +305,13 @@ def configure_device_tracking_upgrade_cli(device, force=False, revert=False):
                 revert=revert
                 )
             )
-        
+
+
 def configure_ip_dhcp_snooping(device, vlan_range=None):
     """ Configures ip dhcp snooping vlan {vlan_range}
     Args:
         device ('obj'): device to use
-        vlan_range: ('str'): vlan range from (1-4096), example: 1,3-5,7,9-11
+        vlan_range ('str'): vlan range from (1-4096), example: 1,3-5,7,9-11
     Returns:
         None
     Raises:
@@ -268,12 +328,13 @@ def configure_ip_dhcp_snooping(device, vlan_range=None):
     except:
         raise SubCommandFailure("Failed to configure ip dhcp snooping vlan {vlan_range}"
                                 .format(vlan_range=vlan_range))
-        
+
+
 def unconfigure_ip_dhcp_snooping(device, vlan_range):
     """ Unconfigures ip dhcp snooping vlan {vlan_range}
     Args:
         device ('obj'): device to use
-        vlan_range: ('str'): vlan range from (1-4096), example: 1,3-5,7,9-11
+        vlan_range ('str'): vlan range from (1-4096), example: 1,3-5,7,9-11
     Returns:
         None
     Raises:
@@ -290,7 +351,8 @@ def unconfigure_ip_dhcp_snooping(device, vlan_range):
     except:
         raise SubCommandFailure("Failed to unconfigure ip dhcp snooping vlan {vlan_range}"
                                 .format(vlan_range=vlan_range))
-                            
+
+
 def attach_ipv6_dhcp_guard_policy(device, policy_name, vlan=None, interface=None):
     """ Attaches the given ipv6 dhcp guard policy to an interface or vlan(s)
         Args:
@@ -325,6 +387,7 @@ def attach_ipv6_dhcp_guard_policy(device, policy_name, vlan=None, interface=None
             "Failed to attach ipv6 dhcp guard policy {policy_name}"
             .format(policy_name=policy_name)
         )
+
 
 def detach_ipv6_dhcp_guard_policy(device, policy_name, vlan=None, interface=None):
     """ Detaches the given ipv6 dhcp guard policy from an interface or vlan(s)
@@ -361,6 +424,7 @@ def detach_ipv6_dhcp_guard_policy(device, policy_name, vlan=None, interface=None
             .format(policy_name=policy_name)
         )
 
+
 def attach_ipv6_nd_suppress_policy(device, policy_name, vlan=None, interface=None):
     """ Attaches the given ipv6 nd suppress policy to an interface or vlan(s)
         Args:
@@ -395,7 +459,6 @@ def attach_ipv6_nd_suppress_policy(device, policy_name, vlan=None, interface=Non
             "Failed to attach ipv6 nd suppress policy {policy_name}"
             .format(policy_name=policy_name)
         )
-        
 
 
 def detach_ipv6_nd_suppress_policy(device, policy_name, vlan=None, interface=None):
@@ -432,6 +495,7 @@ def detach_ipv6_nd_suppress_policy(device, policy_name, vlan=None, interface=Non
             "Failed to detach ipv6 nd suppress policy {policy_name}"
             .format(policy_name=policy_name)
         )
+
 
 def config_device_tracking_policy(device, policy, options=None):
     """ Configure a device-tracking policy with specified options
@@ -634,6 +698,36 @@ def unconfig_device_tracking_policy(device, policy, options=None):
         raise SubCommandFailure(
             "Failed to remove device-track policy configurations"
         )
+
+
+def remove_device_tracking_policy(device, client_policy_name,  server_policy_name=None):
+    """ Remove device-tracking policy
+        Args:
+            device ('obj'): device to use
+            client_policy_name('str'): name of a policy to be removed
+            server_policy_name('str', optional): name of another policy to be removed. Default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed removing device tracking policy
+    """
+
+    config = []
+    policy_list = [p for p in [client_policy_name, server_policy_name] if p is not None]
+
+    log.debug('Removing device tracking policy/policies {policy_list}'.format(policy=policy_list))
+
+    for policy in policy_list:
+        config.append("no device-tracking policy {policy}".format(policy=policy))
+
+    try:
+       device.configure(config)
+    except SubCommandFailure:
+        log.warning(
+            "Could not remove device tracking policy/policies {policy_list}" \
+            .format(policy_list=policy_list), exc_info=True
+        )
+        raise
 
 
 def config_ipv6_nd_raguard_policy(device, policy, options=None):
@@ -920,12 +1014,39 @@ def unconfig_ipv6_source_guard_policy(device, policy, options=None):
         )
 
 
+def remove_ipv6_source_guard_policy(device, policy_name):
+    """ Configure IPv6 Source Guard Policy
+        Args:
+            device ('obj'): device to use
+            policy_name ('str'): name of the policy to be removed
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed removing IPv6 Source Guard policy
+    """
+    log.debug(
+        "Removing ipv6 source-guard policy with name={policy_name}"
+        .format(policy_name=policy_name)
+    )
+
+    try:
+        device.configure([
+            "no ipv6 source-guard policy {policy_name}".format(policy_name=policy_name),
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not remove IPv6 source guard policy {policy_name}".format(
+                policy_name=policy_name
+            )
+        )
+
+
 def device_tracking_attach_policy(device, policy, interface=None, vlan=None):
     """ Attach device tracking policy to a target
         Args:
             device ('obj'): device object
             policy ('str'): policy name
-            interace ('str', optional): interface name. Defaults to None
+            interface ('str', optional): interface name. Defaults to None
             vlan ('str', optional): vlan id list - Eg. "1-10,15". Defaults to None
         Returns:
             None
@@ -957,7 +1078,7 @@ def device_tracking_detach_policy(device, policy, interface=None, vlan=None):
         Args:
             device ('obj'): device object
             policy ('str'): policy name
-            interace ('str', optional): interface name. Defaults to None
+            interface ('str', optional): interface name. Defaults to None
             vlan ('str', optional): vlan id list - Eg. "1-10,15". Defaults to None
         Returns:
             None
@@ -989,7 +1110,7 @@ def ipv6_nd_raguard_attach_policy(device, policy, interface=None, vlan=None):
         Args:
             device ('obj'): device object
             policy ('str'): policy name
-            interace ('str', optional): interface name. Defaults to None
+            interface ('str', optional): interface name. Defaults to None
             vlan ('str', optional): vlan id list - Eg. "1-10,15". Defaults to None
         Returns:
             None
@@ -1021,7 +1142,7 @@ def ipv6_nd_raguard_detach_policy(device, policy, interface=None, vlan=None):
         Args:
             device ('obj'): device object
             policy ('str'): policy name
-            interace ('str', optional): interface name. Defaults to None
+            interface ('str', optional): interface name. Defaults to None
             vlan ('str', optional): vlan id list - Eg. "1-10,15". Defaults to None
         Returns:
             None
@@ -1053,7 +1174,7 @@ def ipv6_source_guard_attach_policy(device, policy, interface=None, vlan=None):
         Args:
             device ('obj'): device object
             policy ('str'): policy name
-            interace ('str', optional): interface name. Defaults to None
+            interface ('str', optional): interface name. Defaults to None
             vlan ('str', optional): vlan id list - Eg. "1-10,15". Defaults to None
         Returns:
             None
@@ -1085,7 +1206,7 @@ def ipv6_source_guard_detach_policy(device, policy, interface=None, vlan=None):
         Args:
             device ('obj'): device object
             policy ('str'): policy name
-            interace ('str', optional): interface name. Defaults to None
+            interface ('str', optional): interface name. Defaults to None
             vlan ('str', optional): vlan id list - Eg. "1-10,15". Defaults to None
         Returns:
             None
@@ -1422,18 +1543,22 @@ def device_tracking_unit_test(device, options=None):
                     config.append("{prefix} {suffix} data-glean".format(prefix=prefix, suffix=suffix))
                 if "pref" in params:
                     pref_dict = params["pref"]
-                    incomplete = iterate = ""
+                    incomplete = iterate = origin = level = ""
 
                     if "incomplete" in pref_dict:
                         if pref_dict["incomplete"] is True:
                             incomplete = "incomplete "
-                    if "iterate" in option:
+                    if "origin" in pref_dict:
+                        origin = "origin {origin}".format(origin=pref_dict["origin"])
+                    if "level" in pref_dict:
+                        level = "preflevel {level}".format(level=pref_dict["level"])
+                    if "iterate" in pref_dict:
                         iterate = " iterate {num}".format(num=pref_dict["iterate"])
 
-                    config.append("{prefix} {suffix} preflevel {level} {incomplete}" \
-                                  "origin {origin}{iterate}"
-                                  .format(prefix=prefix, suffix=suffix, level=pref_dict["level"],
-                                          incomplete=incomplete, origin=pref_dict["origin"],
+                    config.append("{prefix} {suffix} {level} {incomplete}" \
+                                  "{origin}{iterate}"
+                                  .format(prefix=prefix, suffix=suffix, level=level,
+                                          incomplete=incomplete, origin=origin,
                                           iterate=iterate))
 
             params = option.get("bt_mac", None)
@@ -1479,9 +1604,9 @@ def device_tracking_unit_test(device, options=None):
                     target = "interface {interface} {num}".format(interface=params["interface"],
                                                                   num = params["num"])
 
-                if params["policy"]:
+                if params.get("policy", None):
                     policy = "policy {policy} ".format(policy=params["policy"])
-                if params["priority"]:
+                if params.get("priority", None):
                     priority = "priority {priority}".format(priority=params["priority"])
 
                 if target:
@@ -1679,12 +1804,117 @@ def configure_device_tracking_binding(device, vlan, address, interface, mac, tra
         raise
 
 
+def configure_device_tracking_binding_options(device, reachable_lifetime=None, stale_lifetime=None,
+                                              down_lifetime=None, max_entries=None, mac_limit=None,
+                                              port_limit=None, vlan_limit=None, logging=False):
+    """ Configures device-tracking binding options
+        Args:
+            device ('obj'): device object
+            reachable_lifetime ('str', optional): Default max time in REACHABLE without activity - can be 1-86400 or "infinite". Defaults to None
+            stale_lifetime ('str', optional): Default max time in STALE without activity - can be 1-86400 or "infinite". Defaults to None
+            down_lifetime ('str', optional): Default max time in DOWN without activity - can be 1-86400 or "infinite". Defaults to None
+            max_entries ('int', optional): Max number of entries - can be 1-1000000. Defaults to None
+            mac_limit ('int', optional): Max number of mac entries - can be 1-1000000. Defaults to None
+            port_limit ('int', optional): Max number of port entries - can be 1-1000000. Defaults to None
+            vlan_limit ('int', optional): Max number of vlan entries - can be 1-2000000. Defaults to None
+            logging ('bool', optional): Enable syslog logging of binding table events. Defaults to False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure device-tracking binding
+    """
+
+    config = []
+    debug_dict = {
+        "reachable-lifetime": reachable_lifetime,
+        "stale-lifetime": stale_lifetime,
+        "down-lifetime": down_lifetime,
+        "max-entries": max_entries,
+        "mac-limit": mac_limit,
+        "port-limit": port_limit,
+        "vlan-limit": vlan_limit
+    }
+
+    if logging:
+        config.append("device-tracking binding logging")
+
+    # The CLI accepts max-entries limits in the order of vlan->port->mac,
+    # otherwise the options will not be set as intended
+    if max_entries:
+        limit = "max-entries {max_entries} ".format(max_entries=max_entries)
+        if vlan_limit:
+            limit += "vlan-limit {} ".format(vlan_limit)
+        if port_limit:
+            limit += "port-limit {} ".format(port_limit)
+        if mac_limit:
+            limit += "mac-limit {} ".format(mac_limit)
+        config.append("device-tracking binding {limit}".format(limit=limit))
+
+    # The CLI accepts lifetime timers in the order of reachable->stale->down,
+    # otherwise the options will not be set as intended
+    if any([reachable_lifetime, stale_lifetime, down_lifetime]):
+        lifetime = ""
+        if reachable_lifetime:
+            lifetime += "reachable-lifetime {} ".format(reachable_lifetime)
+        if stale_lifetime:
+            lifetime += "stale-lifetime {} ".format(stale_lifetime)
+        if down_lifetime:
+            lifetime += "down-lifetime {} ".format(down_lifetime)
+        config.append("device-tracking binding {lifetime}".format(lifetime=lifetime))
+
+    try:
+        device.configure(config)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to configure device-tracking binding with parameters: {params} " \
+            .format(params=debug_dict)
+        )
+
+
+def unconfigure_device_tracking_binding_options(device, reachable_lifetime=False, stale_lifetime=False,
+                                              down_lifetime=False, max_entries=False, logging=False):
+    """ Unconfigures device-tracking binding options
+        Args:
+            device ('obj'): device object
+            reachable_lifetime ('bool', optional): Flag to unconfigure reachable-lifetime. Defaults to False
+            stale_lifetime ('bool', optional): Flag to unconfigure stale-lifetime. Defaults to False
+            down_lifetime ('bool', optional): Flag to unconfigure down-lifetime. Defaults to False
+            max_entries ('bool', optional): Flag to unconfigure max-entries lifetime. Defaults to False
+            logging ('bool', optional): Disable syslog logging of binding table events. Defaults to False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure device-tracking binding
+    """
+
+    config = []
+    prefix_dict = {
+        "reachable-lifetime": reachable_lifetime,
+        "stale-lifetime": stale_lifetime,
+        "down-lifetime": down_lifetime,
+        "max-entries": max_entries,
+        "logging": logging
+    }
+
+    for key, value in prefix_dict.items():
+        if value:
+            config.append("no device-tracking binding {key}".format(key=key))
+
+    try:
+        device.configure(config)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to unconfigure device-tracking binding with parameters: {params}" \
+            .format(params=prefix_dict)
+        )
+
+
 def configure_ipv6_destination_guard_attach_policy(device, policy, interface=None, vlan=None):
     """ Attach ipv6 destination-guard policy
     Args:
         device ('obj'): device object
         policy ('str'): policy name
-        interace ('str', optional): interface name. Defaults to None
+        interface ('str', optional): interface name. Defaults to None
         vlan ('str', optional): vlan id list - Eg. "1-10,15". Defaults to None.
     Returns:
         None
@@ -1715,7 +1945,7 @@ def configure_ipv6_destination_guard_detach_policy(device, policy, interface=Non
     Args:
         device ('obj'): device object
         policy ('str'): policy name
-        interace ('str', optional): interface name. Defaults to None
+        interface ('str', optional): interface name. Defaults to None
         vlan ('str', optional): vlan id list - Eg. "1-10,15". Defaults to None.
     Returns:
         None
@@ -1808,3 +2038,147 @@ def configure_device_tracking_tracking(device, auto_source=None, retry_interval=
     except SubCommandFailure:
         log.warning("Failed to configure device-tracking tracking")
         raise
+
+
+def clear_device_tracking_database(device, options=None):
+    """ Clear device-tracking database
+        Args:
+            device ('obj'): device object
+            options ('list'): list of policy configuration options to be removed or reset:
+                dictionary contains following keys:
+                    address ('dict', optional):
+                        address ('str'): IPv4 address or "all"
+                        target ('dict', optional):
+                            force ('bool', optional): Force to clear all (mac) entries
+                            interface ('str', optional): interface
+                            policy ('str', optional): policy name
+                            vlanid ('str', optional): vlanid
+                    force ('bool', optional): Force to clear all (mac) entries
+                    interface ('str', optional):
+                        target ('str'): interface
+                        force ('bool', optional): Force to clear all (mac) entries
+                        vlanid ('str', optional): vlanid
+                    mac ('str', optional):
+                        address ('str'): 48-bit hardware address
+                        target ('dict', optional):
+                            force ('bool', optional): Force to clear all (mac) entries
+                            interface ('str', optional): interface
+                            policy ('str', optional): policy name
+                            vlanid ('str', optional): vlanid
+                    policy ('str', optional): policy name
+                    prefix ('bool', optional)
+                        address ('str'): IPv6 address (X:X:X:X::X/<0-128>) or "all"
+                        target ('dict', optional):
+                            force ('bool', optional): Force to clear all (mac) entries
+                            interface ('str', optional): interface
+                            policy ('str', optional): policy name
+                            vlanid ('str', optional): vlanid
+                    vlanid ('str', optional): vlan id
+                ex.)
+                    [
+                        {
+                            "force": True,
+                            "mac": {
+                                "address": "dead.beef.0001"
+                                "target":
+                                    "force": True
+                                    "interface": "gigabitEthernet0/0"
+                                    "policy": "test"
+                                    "vlanid": 10
+                            }
+                        }
+                    ]
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to remove ipv6 source-guard policy configurations
+    """
+
+    config = []
+    prefix = "clear device-tracking database"
+    nested_options_list = [
+        "address",
+        "mac",
+        "prefix",
+    ]
+
+    if options is None:
+        config.append(prefix)
+    else:
+        if options.get("force", None):
+            config.append("{prefix} force".format(prefix=prefix))
+        if options.get("policy", None):
+            config.append("{prefix} policy {policy}".format(prefix=prefix, policy=options['policy']))
+        if options.get("vlanid", None):
+            config.append("{prefix} vlanid {vlanid}".format(prefix=prefix, vlanid=options['vlanid']))
+        if options.get("interface", None):
+            interface_dict = options["interface"]
+            if interface_dict.get("interface", None):
+                target = interface_dict["interface"]
+                suffix = ""
+                if interface_dict.get("force", None):
+                    suffix = "force"
+                elif interface_dict.get("vlanid", None):
+                    suffix = "vlanid {vlanid}".format(interface_dict["vlanid"])
+
+                config.append("{prefix} interface {interface} {suffix}".format(prefix=prefix,
+                                                                            interface=target,
+                                                                            suffix=suffix))
+
+        for option in nested_options_list:
+            if options.get(option, None):
+                address_dict = options[option]
+                if address_dict.get("address", None):
+                    address = address_dict["address"]
+                    opt = "{key} {value}".format(key=option, value=address)
+                    suffix = ""
+
+                    if address_dict.get("target", None):
+                        target_dict = address_dict["target"]
+                        if target_dict.get("force", None):
+                            suffix = "force"
+                        elif target_dict.get("interface", None):
+                            suffix = "interface {interface}".format(target_dict["interface"])
+                        elif target_dict.get("policy", None):
+                            suffix = "policy {policy}",format(policy=target_dict["policy"])
+                        elif target_dict.get("vlanid", None):
+                            suffix = "vlanid {vlanid}".format(vlanid=target_dict["vlanid"])
+
+                    config.append("{prefix} {opt} {suffix}".format(prefix=prefix, opt=opt, suffix=suffix))
+
+    try:
+        device.execute(config)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failure to clear device-tracking database"
+        )
+
+
+def clear_device_tracking_counters(device, interface=None, vlan=None):
+    """ Clear device-tracking counters
+    Args:
+        device ('obj'): device object
+        interface ('str', optional): interface name. Defaults to None
+        vlan ('str', optional): vlan id. Defaults to None.
+    Returns:
+        None
+    Raises:
+         SubCommandFailure: Failed to clear device-tracking counters
+    """
+
+    prefix = "clear device-tracking counters"
+    config = []
+
+    if interface is None and vlan is None:
+        config.append(prefix)
+    elif interface:
+        config.append("{prefix} interface {interface}".format(prefix=prefix, interface=interface))
+    elif vlan:
+        config.append("{prefix} vlan {vlan}".format(prefix=prefix, vlan=vlan))
+
+    try:
+        device.execute(config)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failure to clear device-tracking counters"
+        )

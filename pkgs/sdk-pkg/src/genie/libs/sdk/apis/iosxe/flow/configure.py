@@ -244,4 +244,25 @@ def unconfigure_fnf_monitor_on_interface(device, interface, monitor_name):
             'interface {interface}'.format(monitor_name=monitor_name,
                                           interface=interface)
         )
-        
+       
+def clear_flow_monitor(device, name, option=''):
+    """ clear flow monitor data
+        Args:
+            device (`obj`):           Device object
+            name ('str'):             Name of the flow (eg: created[ipv4_input] or user defined[monitor_ipv4_out])
+            option ('str', optional): Which data to clear. Default will clear all flow monitor info or
+                                      can give perticular option to clear eg:cache/statistics
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug("Clear flow monitor data on {device}".format(device=device))
+
+    try:
+        device.execute('clear flow monitor {name} {option}'.format(name=name,option=option))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear flow monitor data on {device}. Error:\n{error}".format(device=device, error=e)
+        )

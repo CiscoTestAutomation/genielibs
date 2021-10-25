@@ -34,7 +34,7 @@
     * Added pyATS Clean support for SD-WAN Controllers (vManage/vBond/vSmart)
 
 * all
-    * Modified CleanTestcase
+    * Modified CleanTestcase - Cisco Internal Change
         * Added telemetry data collection within __iter__()
 
 * iosxe/sdwan (cedge devices)

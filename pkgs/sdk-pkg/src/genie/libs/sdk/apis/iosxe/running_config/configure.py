@@ -40,13 +40,13 @@ def save_running_config(
         )
 
 
-def copy_file_to_running_config(device, path, file):
+def copy_file_to_running_config(device, path, file, timeout=60):
     """ Restore config from local file using copy function
-
         Args:
             device (`obj`): Device object
             path (`str`): directory
             file (`str`): file name
+            timeout (`str`): timeout
         Returns:
             None
     """
@@ -63,7 +63,7 @@ def copy_file_to_running_config(device, path, file):
     try:
         device.execute(
             "copy {path}{file} running-config".format(path=path, file=file),
-            reply=dialog,
+            reply=dialog, timeout=timeout
         )
     except SubCommandFailure as e:
         raise SubCommandFailure(

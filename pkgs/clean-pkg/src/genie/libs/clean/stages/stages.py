@@ -4,6 +4,7 @@ import time
 import shutil
 import os.path
 import logging
+import ipaddress
 
 # Genie
 from genie.utils.timeout import Timeout
@@ -203,10 +204,14 @@ ping_server:
             #   5 packets transmitted, 5 received, 0% packet loss, time 4005ms
             p2 = r'(?P<transmit>\d+) +packets +transmitted, (?P<recv>\d+) +(packets )?received, (?P<loss>\S+)% +packet +loss'
 
-            # If hostname of server given, return IP address
-            # call FileUtils only when given server is not IPv4/IPv6 address
-            # this will support more OSes which don't have FileUtils support
-            if not re.search(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', server) and not re.search(r'[a-fA-F\d\:]+', server):
+            try:
+                # If the server is a valid IP (v4 or v6) use it directly instead
+                # of going through FileUtils as this would support more OS's
+                # than FileUtils supports.
+                ipaddress.ip_address(server)
+            except ValueError:
+                # Not an IP (v4 or v6). Attempt to retrieve address from
+                # testbed.servers block using FileUtils
                 fu = FileUtils.from_device(device)
                 server = fu.get_hostname(server, device, vrf=vrf)
 
@@ -1162,6 +1167,7 @@ copy_to_device:
                                                        compact=compact,
                                                        use_kstack=use_kstack,
                                                        interface=interface,
+                                                       overwrite=overwrite,
                                                        **kwargs)
                                 except Exception as e:
                                     # Retry attempt if user specified
@@ -1190,6 +1196,7 @@ copy_to_device:
                                                        compact=compact,
                                                        use_kstack=use_kstack,
                                                        interface=interface,
+                                                       overwrite=overwrite,
                                                        **kwargs)
                                 except Exception as e:
                                     # Retry attempt if user specified
@@ -1411,8 +1418,8 @@ reload:
             # If user provides custom values, update the default with the user
             # provided. This is needed because if the user only provides 1 of
             # the many optional arguments, we still need to default the others.
-            reload_service_args = self.RELOAD_SERVICE_ARGS.update(
-                reload_service_args)
+            self.RELOAD_SERVICE_ARGS.update(reload_service_args)
+            reload_service_args = self.RELOAD_SERVICE_ARGS
 
         with steps.start(f"Reload {device.name}") as step:
 
@@ -1432,8 +1439,8 @@ reload:
             # If user provides custom values, update the default with the user
             # provided. This is needed because if the user only provides 1 of
             # the many optional arguments, we still need to default the others.
-            reload_service_args = self.RELOAD_SERVICE_ARGS.update(
-                reload_service_args)
+            self.RELOAD_SERVICE_ARGS.update(reload_service_args)
+            reload_service_args = self.RELOAD_SERVICE_ARGS
 
         with steps.start(f"Disconnect and Reconnect to {device.name}") as step:
 
@@ -1466,7 +1473,7 @@ reload:
             # provided. This is needed because if the user only provides 1 of
             # the many optional arguments, we still need to default the others.
             self.CHECK_MODULES.update(check_modules)
-            check_modules.update(self.CHECK_MODULES)
+            check_modules = self.CHECK_MODULES
 
         if check_modules['check']:
 
@@ -2073,7 +2080,7 @@ delete_files_from_server:
 
             if not files:
                 # Get list of files from copy_to_linux stage
-                if 'copy_to_linux' in self.history:
+                if 'CopyToLinux' in self.history:
                     log.warning("No files to delete have been specified. Will "
                                 "delete the files copied from the 'copy_to_linux' "
                                 "stage.")
@@ -2092,7 +2099,7 @@ delete_files_from_server:
                 log.warning("No server has been specified. Will use the same "
                             "server from the 'copy_to_linux' stage.")
 
-                if 'copy_to_linux' in self.history:
+                if 'CopyToLinux' in self.history:
                     server = getattr(self.history['CopyToLinux'], 'parameters', {}).\
                         get('destination', {}).get('hostname')
 

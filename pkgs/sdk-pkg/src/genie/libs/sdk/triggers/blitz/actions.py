@@ -18,10 +18,11 @@ from genie.harness.standalone import run_genie_sdk
 
 from pkg_resources import get_distribution
 from .maple import maple, maple_search
-from .yangexec import run_netconf, run_gnmi, notify_wait
-from .actions_helper import configure_handler, api_handler, learn_handler,\
-                            parse_handler, execute_handler,_get_exclude,\
-                            _condition_validator, rest_handler, bash_console_handler
+from .yangexec import run_netconf, run_gnmi, run_restconf, notify_wait
+from .actions_helper import (configure_handler, api_handler, learn_handler,
+                             parse_handler, execute_handler, _get_exclude,
+                             _condition_validator, rest_handler,
+                             bash_console_handler, dialog_handler)
 
 # skip in case pyats.contrib is not installed
 try:
@@ -621,6 +622,7 @@ def compare(self,
                     ' based on the result_status'.format(result_status))
         getattr(steps, result_status)(result_status_message)
 
+
 @add_result_as_extra
 def sleep(self,
           steps,
@@ -649,6 +651,7 @@ def sleep(self,
         log.warning('The sleep result status is changed from passed to {}' \
                     ' based on the result_status'.format(result_status))
         getattr(steps, result_status)(result_status_message)
+
 
 @add_result_as_extra
 def rest(self,
@@ -735,28 +738,30 @@ def yang(self,
         # connected but we all know its of no use.
     if returns is None:
         returns = {}
-    if protocol == 'netconf':
-        result = run_netconf(operation=operation,
-                             device=device,
-                             steps=steps,
-                             datastore=datastore,
-                             rpc_data=content,
-                             returns=returns,
-                             **kwargs)
-    elif protocol == 'gnmi':
-        result = run_gnmi(operation=operation,
-                          device=device,
-                          steps=steps,
-                          datastore=datastore,
-                          rpc_data=content,
-                          returns=returns,
-                          **kwargs)
+
+    # Valid protocols mapped to their respective run functions
+    protocols = {
+        'netconf': run_netconf,
+        'gnmi': run_gnmi,
+        'restconf': run_restconf
+    }
+
+    if protocol in protocols:
+        result = protocols[protocol](operation=operation,
+                                     device=device,
+                                     steps=steps,
+                                     datastore=datastore,
+                                     rpc_data=content,
+                                     returns=returns,
+                                     **kwargs)
+    else:
+        result = None
+
     if not result:
         steps.failed('Yang action has failed')
 
     if operation != 'subscribe':
         notify_wait(steps, device)
-
 
     # steps.result will only change to result_status if it is passed.
     if result_status and steps.result.name == "passed":
@@ -869,6 +874,7 @@ def save_config_snapshot(self,
                     ' based on the result_status'.format(result_status))
         getattr(steps, result_status)(result_status_message)
 
+
 @add_result_as_extra
 def restore_config_snapshot(self,
                             device,
@@ -919,6 +925,7 @@ def restore_config_snapshot(self,
         log.warning('The restore_config_snapshot result status is changed from passed to {}' \
                     ' based on the result_status'.format(result_status))
         getattr(steps, result_status)(result_status_message)
+
 
 @add_result_as_extra
 def bash_console(self,
@@ -1041,6 +1048,7 @@ def print_(self,
                     ' based on the result_status'.format(result_status))
         getattr(steps, result_status)(result_status_message)
 
+
 @add_result_as_extra
 def diff(self,
          steps,
@@ -1113,11 +1121,67 @@ def diff(self,
         getattr(steps, result_status)(result_status_message)
 
 
+@add_result_as_extra
+def dialog(self,
+           device,
+           steps,
+           section,
+           name,
+           start,
+           end,
+           sequence,
+           alias=None,
+           connection_alias=None,
+           continue_=True,
+           processor='',
+           health_uids=None,
+           health_groups=None,
+           health_sections=None,
+           **kwargs):
+    '''
+    Action to handle interactions with a dialog
+    '''
+
+    if 'ret_dict' in kwargs:
+        kwargs.pop('ret_dict')
+
+    device.sendline(start)
+
+    # action dialog
+    for sequence_item in sequence:
+        msg = '{}'.format(
+            sequence_item.get(
+                'step_msg', 'Expect ' + sequence_item.get('expect'))
+        )
+        with steps.start(msg, continue_=continue_) as step:
+
+            kwargs.update({
+                'step': step,
+                'device': device,
+                'action': sequence_item.get('action'),
+                'expect': sequence_item.get('expect'),
+                'include': sequence_item.get('include'),
+                'exclude': sequence_item.get('exclude'),
+                'timeout': sequence_item.get('timeout', 30),
+                'connection_alias': connection_alias,
+                'continue_': continue_,
+            })
+
+            output = dialog_handler(**kwargs)
+
+    device.sendline(end)
+    device.state_machine.go_to('any', device.spawn,
+                               context=device.context)
+
+    return output
+
+
 actions = {
     'configure': configure,
     'configure_dual': configure_dual,
     'parse': parse,
     'execute': execute,
+    'dialog': dialog,
     'api': api,
     'tgn': api,
     'sleep': sleep,

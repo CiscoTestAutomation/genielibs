@@ -83,7 +83,6 @@ change_boot_variable:
     # Execution order of Stage steps
     # ==============================
     exec_order = [
-        # 'pre_requisite_checks',
         'delete_boot_variable',
         'configure_boot_variable',
         'set_configuration_register',
@@ -91,10 +90,6 @@ change_boot_variable:
         'verify_boot_variable',
         'verify_configuration_register'
     ]
-
-    def pre_requisite_checks(self, device):
-        if not device.connected:
-            device.connect()
 
     def delete_boot_variable(self, steps, device):
         with steps.start("Delete any configured boot variables on {}".format(

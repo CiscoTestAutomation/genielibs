@@ -1768,4 +1768,143 @@ def get_bgp_mpls_labels(device, route):
                                         source=found)
         return keys.pop()['mpls_labels']
     return None
-    
+
+
+def get_bgp_rt2_community_label(device, address_family, eti, mac, ip, vrf_id):
+    """ Get external community & label for specific mac and ip route from 
+        <show ip bgp l2vpn evpn route-type 2 <eti> <mac> <ip>> command
+
+        Args:
+            device ('obj'): Device object
+            address_family ('str'): address family
+            eti (int): Ethernet Tag Identifier
+            mac (str): MAC Address
+            ip (str): Ip address
+            vrf_id (str): vrf
+        Returns:
+            Dict: contains values for keys ext_community and label
+            Ex:  {
+              'ext_community': ['RT:300:2000101', 'RT:300:3000101', 'ENCAP:8'], 
+              'labels': ['2000101']
+            }
+            or None
+        Raises:
+            None
+
+    """
+    try:
+        route_output = device.parse(
+            "show ip bgp {address_family} route-type 2 {eti} {mac} {ip} "
+            .format(address_family=address_family, eti=eti, mac=mac, ip=ip)
+        )
+    except SchemaEmptyParserError:
+        log.error("Command has not returned any results")
+        return {}
+
+    try:
+        afs = route_output["instance"]["default"]["vrf"]["evi_"+vrf_id]\
+           ["address_family"][address_family]
+    except KeyError as e:
+        return None
+
+    for prefix in afs.get('prefixes', {}):
+        nlri_data = afs['prefixes'][prefix].get("nlri_data", {})
+        # If we match, we have our data. Get it and return
+
+        if nlri_data.get("ip_prefix") == ip and nlri_data.get("mac") == mac:
+            rt2_evpn = dict()
+            rt2_evpn["ext_community"] = []
+            rt2_evpn["labels"] = []
+
+            for idx in afs["prefixes"][prefix].get("index", {}):
+                evpn = afs["prefixes"][prefix]["index"][idx].get("evpn", {})
+                ext_comm = evpn.get("ext_community", '')
+
+                if ' ' in ext_comm:
+                    for comm in ext_comm.split(' '):
+                        rt2_evpn["ext_community"].append(comm)
+                else:
+                    rt2_evpn["ext_community"].append(ext_comm)
+                label = evpn.get("label", '')
+                rt2_evpn["labels"].append(str(label))    
+
+            return rt2_evpn
+
+        else:
+           continue
+
+    return None
+
+
+def get_bgp_rt5_community_paths_label(device, address_family, eti, ip, ip_len, vrf_id):
+    """ Get external community, paths and labels of specific ip from 
+        show ip bgp {address_family} route-type 5 {eti} {ip} {ip_len}
+
+        Args:
+            device ('obj'): Device object
+            address_family ('str'): address family
+            eti (int): Ethernet Tag Identifier
+            ip (str): Ip address
+            ip_len (int): ip length <=128
+            vrf_id (str): vrf
+        Returns:
+            dict: Contains values for keys ext_community, label, paths 
+            Ex: {
+              'vni_labels': ['3000101'], 
+              'ext_community': ['RT:300:3000101'], 
+              'paths': '1 available, best #1, table evi_101, 
+                   re-originated from [2][30.0.1.11:101][0][48]
+                   [00505684DC69][32][20.101.1.3]/24'
+            }
+            or None
+        Raises:
+            None
+
+    """
+    try:
+        route_output = device.parse(
+            "show ip bgp {address_family} route-type 5 {eti} {ip} {ip_len} "
+            .format(address_family=address_family, eti=eti, ip=ip, ip_len=ip_len)
+        )
+    except SchemaEmptyParserError as e:
+        log.error("Command has not returned any results")
+        return {}
+
+    try:
+        afs = route_output["instance"]["default"]["vrf"]["evi_"+vrf_id]\
+              ["address_family"][address_family]
+    except KeyError as e:
+        log.error("Cannot find key, Error: {}".format(str(e)))
+        return {}
+
+    for prefix in afs.get('prefixes', {}):
+        pf = prefix.split("/")
+
+        if pf[0] == ip:
+            evpn_rt5_dict = dict()
+            evpn_rt5_dict["vni_labels"] = []
+            evpn_rt5_dict["ext_community"] = []
+            evpn_rt5_dict["paths"] = "" 
+            paths = afs["prefixes"][prefix].get("paths", '')
+            evpn_rt5_dict["paths"] = paths
+
+            for idx in afs["prefixes"][prefix].get("index", {}):
+                evpn = afs["prefixes"][prefix]["index"][idx].get("evpn", {})
+                ext_comm = evpn.get("ext_community", '')
+
+                if ' ' in ext_comm:
+
+                    for comm in ext_comm.split(' '):
+                        evpn_rt5_dict["ext_community"].append(comm)                 
+                else:
+                    evpn_rt5_dict["ext_community"].append(ext_comm)
+                vtep = afs["prefixes"][prefix]["index"][idx].get("local_vxlan_vtep", {})
+                vni_label = vtep.get("vni", '')
+                evpn_rt5_dict["vni_labels"].append(vni_label)
+
+            return evpn_rt5_dict
+
+        else:
+            continue
+
+    return {} 

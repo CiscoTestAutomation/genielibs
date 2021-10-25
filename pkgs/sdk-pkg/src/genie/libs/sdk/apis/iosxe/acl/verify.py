@@ -34,6 +34,7 @@ def verify_acl_applied(device, acl_name, applied_config):
 
     return True
 
+
 def verify_acl_usage(
         device,
         expected_acl_type,

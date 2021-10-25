@@ -5,6 +5,7 @@ import logging
 
 # Genie
 from genie.utils.timeout import Timeout
+from genie.libs.parser.utils.common import Common
 
 log = logging.getLogger(__name__)
 
@@ -182,12 +183,12 @@ def verify_device_tracking_policy_configuration(device, policy_name, security_le
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
         output = device.parse('show device-tracking policy {policy}'.format(policy=policy_name))
-        if output['configuration']:
+        if output.get('configuration', None):
             target_configs = output['configuration']
             if not _verify_policy_configurations(target_configs, config_dict):
                 return False
 
-            if target_configs['limit_address_count']:
+            if target_configs.get('limit_address_count', None):
                 target_address_limit_configs = target_configs['limit_address_count']
                 if not _verify_policy_configurations(target_address_limit_configs,
                                                      address_limits_dict):
@@ -252,7 +253,7 @@ def verify_missing_device_tracking_policy_configuration(device, policy_name, tru
             if not _verify_missing_policy_configurations(target_configs, config_dict):
                 return False
 
-            if target_configs['limit_address_count']:
+            if target_configs.get('limit_address_count', None):
                 target_address_limit_configs = target_configs['limit_address_count']
                 if not _verify_missing_policy_configurations(target_address_limit_configs,
                                                              address_limits_dict):
@@ -318,7 +319,7 @@ def verify_ip_mac_binding_in_network(device, ipAddr, macAddr, origin,
     """
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
-        output = device.parser('show device-tracking database')
+        output = device.parse('show device-tracking database')
         if output:
             entries = output['device']
             for i in range(1, len(entries)+1):
@@ -400,7 +401,7 @@ def verify_ipv6_nd_raguard_policy(device, policy_name, vlan=None, iface=None,
 
 
 def verify_ipv6_nd_raguard_configuration(device, policy_name, trusted_port=None, device_role=None,
-                                         max_hop_limit=None, min_hop_limit=None, 
+                                         max_hop_limit=None, min_hop_limit=None,
                                          managed_config_flag=None, other_config_flag=None,
                                          max_router_preference=None, match_ra_prefix=None,
                                          match_ipv6_access_list=None, max_time=20,
@@ -450,9 +451,11 @@ def verify_ipv6_nd_raguard_configuration(device, policy_name, trusted_port=None,
                 return True
             else:
                 return False
+        timeout.sleep()
 
     log.info('Configurations cannot be found')
     return False
+
 
 def verify_missing_ipv6_nd_raguard_configuration(device, policy_name, trusted_port=False,
                                                  max_hop_limit=False, min_hop_limit=False,
@@ -501,6 +504,7 @@ def verify_missing_ipv6_nd_raguard_configuration(device, policy_name, trusted_po
                 return True
             else:
                 return False
+        timeout.sleep()
 
     return False
 
@@ -575,6 +579,7 @@ def verify_ipv6_source_guard_configuration(device, policy_name, trusted=None,
                 return True
             else:
                 return False
+        timeout.sleep()
 
     log.info('Configurations cannot be found')
     return False
@@ -617,7 +622,51 @@ def verify_missing_ipv6_source_guard_configuration(device, policy_name, trusted=
                 return True
             else:
                 return False
+        timeout.sleep()
 
+    return False
+
+
+def verify_device_tracking_counters_vlan(device, vlanid, message_type, protocol, message,
+                                         count, max_time=20, check_interval=10):
+    """ Verify missing ipv6 source guard configurations
+        Args:
+            device('obj'): device object
+            vlanid('str'): vlan id
+            message_type('str'): message type - can be one of [received, received_broadcast_multicast, bridged, broadcast_multicast_to_unicast, limited_broadcast_to_local]
+            protocol('str'): protocol
+            message('str'): message type
+            count('int'): number of packets
+            max_time('int', optional): max check time. Defaults to 20
+            check_interval('int', optional): check intervals. Defaults to 10
+        Returns:
+            True
+            False
+
+        Raises:
+            None
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        output = device.parse('show device-tracking counters vlan {vlanid}'.format(vlanid=vlanid))
+        query = output.q.contains(int(vlanid)).contains(message_type) \
+                        .contains(protocol).get_values(message)
+        if query:
+            message_count = query[0]
+            if message_count == count:
+                return True
+            else:
+                log.info('Expected count: {count}. Instead got count: {target_count}.'.format(
+                         count=count, target_count=message_count))
+                return False
+        timeout.sleep()
+
+    log.info('Packet is not found in the counters. Looking for arguments - ' \
+             'vlanid: "{vlanid}", message_type: "{message_type}", protcol: "{protocol}" ' \
+             'message: "{message}", count: "{count}" in parsed dictionary: {output}' \
+             .format(vlanid=vlanid, message_type=message_type, protocol=protocol,
+                     message=message, count=count, output=output))
     return False
 
 
@@ -657,6 +706,7 @@ def verify_device_tracking_counters_vlan_dropped(device, vlanid, feature, protoc
                                 target_protocol=dropped['protocol'],target_message=dropped['message'],
                                 target_dropped=dropped['dropped']))
                 return False
+        timeout.sleep()
 
     log.info('Dropped message type cannot be found')
     return False
@@ -698,6 +748,51 @@ def verify_device_tracking_counters_vlan_faults(device, vlanid, faults,
             else:
                 log.info('There are no faults the target as expected')
                 return True
+        timeout.sleep()
 
     log.info('The correct faults are found on the target'.format(fault=fault))
     return True
+
+
+def verify_device_tracking_counters_interface(device, interface, message_type, protocol, message,
+                                              count, max_time=20, check_interval=10):
+    """ Verify missing ipv6 source guard configurations
+        Args:
+            device('obj'): device object
+            interface('str'): interface name
+            message_type('str'): message type - can be one of [received, received_broadcast_multicast, bridged, broadcast_multicast_to_unicast, limited_broadcast_to_local]
+            protocol('str'): protocol
+            message('str'): message type
+            count('int'): number of packets
+            max_time('int', optional): max check time. Defaults to 20
+            check_interval('int', optional): check intervals. Defaults to 10
+        Returns:
+            True
+            False
+
+        Raises:
+            None
+    """
+
+    interface = Common.convert_intf_name(interface.capitalize())
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        output = device.parse('show device-tracking counters interface {interface}'.format(interface=interface))
+        query = output.q.contains(interface).contains(message_type) \
+                        .contains(protocol).get_values(message)
+        if query:
+            message_count = query[0]
+            if message_count == count:
+                return True
+            else:
+                log.info('Expected count: {count}. Instead got count: {target_count}.'.format(
+                         count=count, target_count=message_count))
+                return False
+        timeout.sleep()
+
+    log.info('Packet is not found in the counters. Looking for arguments - ' \
+             'interface: "{interface}", message_type: "{message_type}", protcol: "{protocol}" ' \
+             'message: "{message}", count: "{count}" in parsed dictionary: {output}' \
+             .format(interface=interface, message_type=message_type, protocol=protocol,
+                     message=message, count=count, output=output))
+    return False

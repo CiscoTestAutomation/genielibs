@@ -51,10 +51,10 @@ def recovery_worker(start, device, console_activity_pattern=None,
                 None
         """
 
-        log.info("Found the console_activity_pattern! "
-                 "Breaking the boot process by sending '{}'".format(break_char))
+        log.info(f"Found the console_activity_pattern! Breaking the boot process.")
 
         for _ in range(break_count):
+            log.info(f"Sending {repr(break_char)}")
             spawn.send(break_char)
             time.sleep(1)
 
@@ -69,8 +69,8 @@ def recovery_worker(start, device, console_activity_pattern=None,
                 None
         """
 
-        log.info("Found the grub_activity_pattern! "
-                 "Breaking the boot process by sending '{}'".format(break_char))
+        log.info(f"Found the grub_activity_pattern! Breaking the boot process "
+                 f"by sending {repr(break_char)}")
 
         spawn.send(break_char)
 

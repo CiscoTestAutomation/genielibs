@@ -1,0 +1,54 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: R1_xe(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: R1_xe(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    show platform hardware qfp active infrastructure bqs queue output default interface GigabitEthernet1: "Interface:\
+      \ GigabitEthernet1 QFP: 0.0 if_h: 6 Num Queues/Schedules: 1\r\n  Queue specifics:\r\
+      \n    Index 0 (Queue ID:0x6d, Name: GigabitEthernet1)\r\n    PARQ Software Control\
+      \ Info:\r\n      (cache) queue id: 0x0000006d, wred: 0xe73a2d80, qlimit (pkts\
+      \ ): 418\r\n      parent_sid: 0x87, debug_name: GigabitEthernet1\r\n      sw_flags:\
+      \ 0x08000011, sw_state: 0x00000c01, port_uidb: 65530\r\n      orig_min  : 0\
+      \                   ,      min: 105000000           \r\n      min_qos   : 0\
+      \                   , min_dflt: 0                   \r\n      orig_max  : 0\
+      \                   ,      max: 0                   \r\n      max_qos   : 0\
+      \                   , max_dflt: 0                   \r\n      share     : 1\r\
+      \n      plevel    : 0, priority: 65535\r\n      defer_obj_refcnt: 0\r\n    Statistics:\r\
+      \n      tail drops  (bytes): 0                   ,          (packets): 0   \
+      \                \r\n      total enqs  (bytes): 53174950            ,      \
+      \    (packets): 307586              \r\n      queue_depth (pkts ): 0       \
+      \            \r\n      licensed throughput oversubscription drops:\r\n     \
+      \             (bytes): 0                   ,          (packets): 0"
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: R1_xe#

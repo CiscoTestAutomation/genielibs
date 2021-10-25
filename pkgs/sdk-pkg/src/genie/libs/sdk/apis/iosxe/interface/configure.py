@@ -75,6 +75,7 @@ def config_enable_ip_routing(device):
             "Configure ip routing"
         )
 
+
 def config_interface_negotiation(device, interface):
     """ Config negotiation auto on interface
 
@@ -105,8 +106,9 @@ def config_interface_negotiation(device, interface):
         raise SubCommandFailure(
             "Failed to config negotiation auto on interface {interface}. Error:"
             "\n{error}".format(interface=interface, error=e
-            )
+                               )
         )
+
 
 def remove_interface_negotiation(device, interface):
     """ Remove negotiation auto on interface
@@ -137,8 +139,9 @@ def remove_interface_negotiation(device, interface):
         raise SubCommandFailure(
             "Failed to unconfig negotiation auto on interface {interface}. "
             "Error:\n{error}".format(interface=interface, error=e
-            )
+                                     )
         )
+
 
 def shut_interface(device, interface):
     """ Shut interface
@@ -193,8 +196,9 @@ def unshut_interface(device, interface):
         raise SubCommandFailure(
             "Could not unshut interface {interface} on device {dev}. Error:\n"
             "{error}".format(interface=interface, dev=device.name, error=e
-            )
+                             )
         )
+
 
 def config_mpls_on_device(device, loopback_intf):
     """ configure mpls on device
@@ -369,6 +373,7 @@ def config_interface_carrier_delay(device, interface, delay, delay_type):
             )
         )
 
+
 def clear_interface_counters(device, interface):
     """ Clear interface counters
 
@@ -398,6 +403,7 @@ def clear_interface_counters(device, interface):
                 interface=interface, error=e
             )
         )
+
 
 def remove_interface_carrier_delay(device, interface):
     """ Remove interface carrier delay on device
@@ -543,6 +549,7 @@ def config_interface_ospf(device, interface, ospf_pid, area):
             "Could not configure ospf. Error:\n{error}".format(error=e)
         )
 
+
 def config_interface_ospfv3(device, interface, ospfv3_pid, area):
     """config OSPF on interface
 
@@ -575,6 +582,7 @@ def config_interface_ospfv3(device, interface, ospfv3_pid, area):
             "Could not configure ospfv3 {pid}. Error:\n{error}"
             .format(pid=ospfv3_pid, error=e)
         )
+
 
 def config_ip_on_interface(
     device,
@@ -1032,6 +1040,7 @@ def configure_interface_interfaces_on_port_channel(
             )
         )
 
+
 def configure_interfaces_on_port_channel(
     device, interfaces, mode, channel_group,
     channel_protocol=None, disable_switchport=False,
@@ -1049,7 +1058,7 @@ def configure_interfaces_on_port_channel(
             None
     """
 
-    for intf  in interfaces:
+    for intf in interfaces:
         config_cmd="interface {interface} \n".format(interface=intf)
         if disable_switchport:
             config_cmd+="no switchport \n"
@@ -1074,7 +1083,8 @@ def configure_interfaces_on_port_channel(
                     .format(intf=intf, mode=mode, channel_group=channel_group,
                             error=e
                 )
-        )
+            )
+
 
 def configure_interface_switchport_trunk(device, interfaces, vlan_id=None):
 
@@ -1107,6 +1117,7 @@ def configure_interface_switchport_trunk(device, interfaces, vlan_id=None):
                 .format(interfaces=interfaces, error=e
             )
         )
+
 
 def configure_lacp_on_interface(
         device, interface, min_max_bundle, minumum_bundle=False
@@ -1184,7 +1195,7 @@ def default_interface(device, interfaces):
             )
 
 
-def clear_interface_interfaces(device, interfaces):
+def clear_interface_interfaces(device, interfaces, pseudowire=None):
     """ clear interface configuration
 
         Args:
@@ -1201,10 +1212,14 @@ def clear_interface_interfaces(device, interfaces):
         if "." in interface:
             cmd = "no interface {interface}".format(interface=interface)
         else:
-            cmd = "default interface {interface}".format(interface=interface)
-            log.info(
-                'Clearing interface {interface} configuration with "{cmd}"'\
-                    .format(interface=interface, cmd=cmd
+            if pseudowire:
+                cmd = "no interface {interface}".format(interface=interface)
+            else:
+                cmd = "default interface {interface}".format(interface=interface)
+                log.info(
+                    'Clearing interface {interface} configuration '
+                    'with "{cmd}"'.format(
+                        interface=interface, cmd=cmd
                 )
             )
 
@@ -2324,6 +2339,7 @@ def configure_authentication_parameters_interface(device, interface):
         )
         raise
 
+
 def configure_interface_switchport_mode(device, interface, mode):
     """ Configures switchport mode on interface
         Args:
@@ -2493,6 +2509,37 @@ def configure_interface_switchport_voice_vlan(device, interface, vlan):
         )
     except SubCommandFailure as e:
         raise SubCommandFailure(
+            "Could not configure switchport trunk vlan. Error:\n{error}".format(
+                error=e
+            )
+        )
+
+def configure_interface_switchport_trunk_vlan(device, interface, trunk_mode, vlan):
+    """ Configures switchport trunk on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+            trunk_mode('str'): trunk mode to configure
+            vlan ('str'): trunk_vlan to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Configuring switchport on {interface} with trunk_vlan = {vlan}".format(
+            interface=interface, vlan=vlan
+        )
+    )
+    try:
+        device.configure(
+            [
+                "interface {interface}".format(interface=interface),
+                "switchport trunk {trunk_mode} vlan {vlan}".format(trunk_mode=trunk_mode, vlan=vlan),
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
             "Could not configure switchport voice vlan. Error:\n{error}".format(
             error=e)
         )
@@ -2578,5 +2625,116 @@ def unconfigure_tunnel_interface(device, interface):
                 dev=device.name,
                 error=e,
             )
+        )
+
+
+def configure_ip_mtu(device, intf, mtu):
+    """ Configuring ip mtu on  device
+
+        Args:
+            device ('str'): Device str
+            intf ('str') : interface to configure
+            mtu ('str'): mtu size to configure
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+             f"interface {intf}",
+             f"ip mtu {mtu}",
+            ]
+
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ip mtu  on interface. Error:\n{e}"
+        )
+
+def unconfigure_ip_mtu(device, intf, mtu):
+    """ Unconfiguring ip mtu on  device
+
+        Args:
+            device ('str'): Device str
+            intf ('str') : interface to configure
+            mtu ('str'): mtu size to configure
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+             f"interface {intf}",
+             f"no ip mtu {mtu}",
+            ]
+
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure ip mtu  on interface. Error:\n{e}"
+        )
+
+def configure_eapol_dest_address_interface(device, interface, dest_address):
+    """ Configures EAPOL Destination Address on interface
+
+    Args:
+        device ('obj'): device to use
+        interface ('str'): interface to be configured
+        dest_address ('str'): destination address to be configured
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+
+    try:
+        device.configure(
+            [
+            "interface {interface}".format(interface=interface),
+            "eapol destination-address {dest_address}".format(dest_address=dest_address),
+            ]
+        )
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure EAPOL Destination Address on interface. Error:\n{error}".format(
+            error=e)
+        )
+
+def unconfigure_eapol_dest_address_interface(device, interface, dest_address):
+    """ Unconfigures EAPOL Destination Address on interface
+
+    Args:
+        device ('obj'): device to use
+        interface ('str'): interface to be unconfigured
+        dest_address ('str'): destination address to be unconfigured
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+
+    try:
+        device.configure(
+            [
+            "interface {interface}".format(interface=interface),
+            "no eapol destination-address {dest_address}".format(dest_address=dest_address),
+            ]
+        )
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure EAPOL Destination Address on interface. Error:\n{error}".format(
+            error=e)
         )
 

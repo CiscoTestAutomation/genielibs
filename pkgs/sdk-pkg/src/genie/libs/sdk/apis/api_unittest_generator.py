@@ -24,7 +24,7 @@ TEMP_DIR = '/tmp/test_generator_{}'.\
     format(datetime.now().strftime('%Y%m%d%H%m%s'))
 
 # jinja template files
-TEMPLATE_FOLDER = 'test_templates'
+TEMPLATE_FOLDER = os.path.join(os.path.dirname(__file__), 'test_templates')
 TEMPLATE_TEST = 'test_api.py.jinja'
 
 # test file name prefix for API tests generated
@@ -33,6 +33,14 @@ TEST_FILE_NAME_PREFIX = 'test_api_'
 MOCK_DATA_FOLDER = 'mock_data'
 MOCK_DATA_FILE_NAME = 'mock_data.yaml'
 
+DEFAULT_HEADER_WIDTH = 80
+
+
+# method to simplify printing Report headers
+def print_header(title):
+    logger.info('='*DEFAULT_HEADER_WIDTH)
+    logger.info(title.center(DEFAULT_HEADER_WIDTH))
+    logger.info('='*DEFAULT_HEADER_WIDTH)
 
 
 class TestReport:
@@ -76,9 +84,7 @@ class TestReport:
         if not self.end_time:
             self.end_time = datetime.now()
 
-        logger.info('='*80)
-        logger.info('Test Generator Results'.center(80))
-        logger.info('='*80)
+        print_header('Test Generator Results')
         time_elapsed = self.end_time - self.start_time
 
         tests_passed = len(self._tests['passed'])
@@ -105,9 +111,7 @@ class TestReport:
                     format(tests_failed, tests_fail_percent))
 
         if tests_failed > 0:
-            logger.info('='*80)
-            logger.info('Tests Not Created'.center(80))
-            logger.info('='*80)
+            print_header('Tests Not Created')
 
             for k, v in self._tests['failed'].items():
                 logger.info(f'{k}: {v}')
@@ -154,16 +158,20 @@ class TestGenerator:
         """
 
         for api_name, api in self.apis:
-            logger.info('='*80)
-            logger.info(
-                'Generating tests for API {}'.format(api_name).center(80))
-            logger.info('='*80)
+            print_header('Generating tests for API {}'.format(api_name))
             argspec = getfullargspec(api)
             arguments = argspec.args
             api_args = self._build_api_args(
                 api_name, arguments)
 
             test_info = (self._build_test_class(api_name))
+
+            if not api_args:
+                e = 'No test arguments provided for this API.' \
+                    ' Skipped API call'
+                logger.warning(e)
+                self.report.add_failed_test({api_name: e})
+                continue
 
             try:
                 self._set_stored_data()
@@ -239,8 +247,9 @@ class TestGenerator:
 
         self.device.disconnect()
 
-        # temp directory cleanup
-        shutil.rmtree(TEMP_DIR)
+        if os.path.isdir(TEMP_DIR):
+            # temp directory cleanup (if created)
+            shutil.rmtree(TEMP_DIR)
 
         self.report.print_results(destination=self.destination)
 
@@ -496,26 +505,39 @@ class TestGenerator:
                 # folder structure that will be created for the module
                 destination_path = os.path.dirname(module_path).split('/')
                 # ignores anything before and including the os index
-                os_index = destination_path.index(self.device.os)
-                destination_path = destination_path[os_index+1:]
+                base_folder_index = destination_path.index('apis')
+                destination_path = destination_path[base_folder_index+1:]
                 # add module parent folder
                 destination_path.append(module_name)
             else:
                 raise ValueError(
                     'A valid module path needs to be provided')
         elif module:
-            # if not, then simply import it
-            import_string = 'genie.libs.sdk.apis.{}.{}'.\
-                format(self.device.os, module)
+            # try importing lib without OS prefix
+            lib_prefix = 'genie.libs.sdk.apis'
+            import_string = '{}.{}'.format(
+                lib_prefix, module)
+            # path that will contain API folder structure
+            destination_path = []
+
+            try:
+                importlib.util.find_spec(import_string)
+            except ModuleNotFoundError:
+                # if it does not work, then use os
+                import_string = '{}.{}.{}'.\
+                    format(lib_prefix, self.device.os, module)
+                # considers OS as part of the path
+                destination_path.append(self.device.os)
 
             self.module = importlib.import_module(import_string)
             self.module_import = import_string
 
-            destination_path = module.split('.')
+            # destination folder examples
+            # e.g. iosxe.interface.get, jinja.get
+            destination_path += module.split('.')
 
         self.destination = os.path.join(
             destination,
-            self.device.os,
             *destination_path
         )
 

@@ -557,10 +557,22 @@ class RpcVerify():
                     name = self.et.QName(reply).localname
                 else:
                     # GNMI response
-                    value = reply or 'empty'
+                    if reply is False:
+                        value = reply
+                    else:
+                        value = reply or 'empty'
                     name = reply_xpath[reply_xpath.rfind('/') + 1:]
                 if 'xpath' in field and field['xpath'] == reply_xpath and \
                         name == field['name']:
+                    datatype = field.get('datatype')
+                    if not datatype:
+                        log.warning(
+                            "{0} has no datatype; default to string".format(
+                                field['xpath']
+                            )
+                        )
+                    elif datatype == 'empty':
+                        field['value'] = 'empty'
                     result, log_msg = self.check_opfield(value, field)
                     if result:
                         log.info(log_msg)
@@ -570,7 +582,7 @@ class RpcVerify():
                 field['name'], field['value']
             ))
             return True
-        log.info(log_msg)
+        log.error(log_msg)
         return False
 
     def process_operational_state(self, response, returns, key=False):

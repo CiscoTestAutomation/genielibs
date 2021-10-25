@@ -16,7 +16,7 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
-from unicon.core.errors import StateMachineError
+from unicon.core.errors import StateMachineError,SubCommandFailure
 
 # Logger
 
@@ -134,6 +134,7 @@ def execute_write_memory(device, timeout=300):
     else:
         raise Exception("Failed to execute 'write memory'")
 
+
 def execute_install_package(device, image_dir, image, save_system_config=True,
                             install_timeout=660, reconnect_max_time=120,
                             reconnect_interval=30, _install=True, install_commit_sleep_time=None):
@@ -233,6 +234,7 @@ def execute_install_package(device, image_dir, image, save_system_config=True,
                 return False
 
     return False if _install else True
+
 
 def execute_uninstall_package(device, image_dir, image, save_system_config=True,
                               timeout=660, install_commit_sleep_time=None):
@@ -374,3 +376,17 @@ def execute_card_OIR(device, card_number, timeout=60):
     else:
         raise Exception("Failed to execute 'hw-module subslot <slot> oir power-cycle'")
 
+
+def execute_clear_platform_software_fed_active_acl_counters_hardware(device):
+    """ clear platform software fed active acl counters hardware
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.execute("clear platform software fed active acl counters hardware")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not clear counters on {device}. Error:\n{e}")

@@ -1,6 +1,12 @@
 # Python
 import logging
+import time
 import re
+from genie.utils.timeout import Timeout
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
+
+log = logging.getLogger(__name__)
+
 
 def get_aaa_member(device, leaf, keyword, intf):
     '''Get aaa member by parsing variuos aaa related commands
@@ -212,6 +218,80 @@ def get_aaa_member(device, leaf, keyword, intf):
         info = out.split()
         index = info.index(leaf)
         return (info[index+1])
+
+
+def get_auth_session(device, interface=None, mac_address=None, method='dot1x',
+                     search_value='Authc Success', timeout=1, interval=1):
+    """
+    Get the authentication session details for the device interface
+    Args:
+        device ('obj'): Device object
+        interface ('str'): interface to check the authentication session
+        mac_address ('str'): mac-address of the session
+        search_value (str): key to be matched for method status
+        method ('str', optional): dot1x/mab session
+        timeout (int, optional): Total timeout in seconds. Defaults to 1
+        interval (int, optional): interval in seconds to check for authentication.
+                                  Defaults to 1
+    Returns:
+        None if authentication session is empty
+        Authentication session dictionary if session exists
+    Raise:
+        AttributeError
+    """
+    if interface is not None:
+        interface = interface
+    elif interface is None and 'interface' in device.custom and \
+            device.custom['interface']:
+        interface = device.custom['interface']
+    else:
+        raise AttributeError("No interface argument was provided and no interface key"
+                             " was defined under device.custom")
+
+    if mac_address is not None:
+        mac_address = mac_address
+    elif mac_address is None and 'mac_address' in device.custom and \
+            device.custom['mac_address']:
+        mac_address = device.custom['mac_address']
+    else:
+        raise AttributeError("No mac_address argument was provided and no mac_address "
+                             "key was defined under device.custom")
+
+    timeout = Timeout(timeout, interval)
+    while timeout.iterate():
+        try:
+            # get the authentication session
+            user_session = device.parse('show authentication sessions interface {} '
+                                        'details'.format(interface))
+        except SchemaEmptyParserError:
+            log.warning("Authentication session is not created, "
+                        "Waiting for {} sec".format(interval))
+            time.sleep(interval)
+            continue
+
+        if user_session.q.contains('interfaces').contains(interface).contains(
+                'mac_address').contains(mac_address):
+            mac_client = user_session.get('interfaces', {}).get(interface, {}).get(
+                'mac_address').get(mac_address, {})
+            search_key = mac_client.get('method_status', {}).get(method, {}).get(
+                'state')
+
+            # Verify if search criteria matched
+            if search_key == search_value:
+                return mac_client
+            else:
+                log.warning("Authentication session is created, but the "
+                            "search_value is not matched. "
+                            "Waiting for {} sec".format(interval))
+                time.sleep(interval)
+        else:
+            log.warning("Authentication session with interface : {i} and mac "
+                        "address : {m} not found. Waiting for {t} secs".format(
+                         i=interface, m=mac_address, t=interval))
+            time.sleep(interval)
+
+    return None
+
 
 def get_running_config_section_attr44(device, option):
     """ Return list with configuration section starting with passed keyword

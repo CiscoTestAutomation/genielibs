@@ -445,7 +445,10 @@ def health_core(device,
                     # proxy of device will be detected automatically. if proxy,
                     # proxy will be used as remote_device
                     if protocol == 'http':
-                        output = device.api.copy_from_device(local_path, vrf=vrf)
+                        output = device.api.copy_from_device(protocol=protocol,
+                                                             remote_path=remote_path,
+                                                             local_path=local_path,
+                                                             vrf=vrf)
                     else:
                         output = device.api.copy_from_device(protocol=protocol,
                                                              server=remote_device,
@@ -461,7 +464,7 @@ def health_core(device,
                     if not copied_files:
                         copied_files = [local_path]
                 except Exception as e:
-                    log.warn(
+                    log.exception(
                         '{p} has failed to copy core file to remote device {rd}: {e}'
                         .format(p=protocol, rd=remote_device, e=e))
             # execute by API

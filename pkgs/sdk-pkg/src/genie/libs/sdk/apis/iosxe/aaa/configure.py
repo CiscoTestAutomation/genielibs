@@ -2,6 +2,7 @@
 import logging
 
 # Unicon
+from unicon.eal.dialogs import Statement, Dialog
 from unicon.core.errors import SubCommandFailure
 
 logger = logging.getLogger(__name__)
@@ -205,7 +206,6 @@ def configure_radius_group(device, server_config):
         logger.error('Failed configuring aaa radius server group')
         raise
 
-
 def configure_coa(device, config_dict):
     """
     COA Configuration for dot1x and mab
@@ -272,6 +272,74 @@ def configure_coa(device, config_dict):
     except SubCommandFailure:
         logger.error('Failed configuring COA on device {}'.format(device))
         raise
+
+
+def configure_enable_aes_encryption(device, master_key):
+    """
+        enables aes password encryption
+        Args:
+            device ('obj'): Device object
+            master_key ('str'): Master key(New key with minimum length of 8 chars)
+        Returns:
+            None
+        Raises:
+            SubCommandError
+    """
+    dialog = Dialog(
+        [
+            Statement(
+                pattern=r".*New\s*key.*",
+                action=f"sendline({master_key})",
+                loop_continue=True,
+                continue_timer=False,
+            ),
+            Statement(
+                pattern=r".*Confirm\s*key.*",
+                action=f"sendline({master_key})",
+                loop_continue=True,
+                continue_timer=False,
+            )
+        ]
+    )
+    try:
+        device.configure("key config-key password-encrypt", reply=dialog)
+        device.configure("password encryption aes")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not enables aes password encryption on device {device}.\nError:"
+            " {e}".format(device=device.name, e=str(e))
+        )
+
+
+def configure_disable_aes_encryption(device):
+    """
+        removes aes password encryption
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandError
+    """
+    dialog = Dialog(
+        [
+            Statement(
+                pattern=r".*Continue\s*with\s*master\s*key\s*deletion.*",
+                action="sendline(yes)",
+                loop_continue=True,
+                continue_timer=False,
+            )
+        ]
+    )
+    try:
+        device.configure("no key config-key password-encrypt", reply=dialog)
+        device.configure("no password encryption aes")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not remove aes password encryption on {device}.\nError: {e}".format(
+                device=device.name, e=str(e))
+        )
+
 
 def configure_radius_attribute_6(device):
 
@@ -592,6 +660,7 @@ def configure_radius_interface(device, interface):
             "Could not Configure Radius Interface"
         )
 
+
 def unconfigure_radius_interface(device, interface):
 
     """ Configure Radius Interface
@@ -727,3 +796,51 @@ def unconfigure_radius_automate_tester(device, server_name, username):
         raise SubCommandFailure(
             "Could not unconfigure Radius automate tester"
         )
+
+def configure_radius_interface_vrf(device, interface, vrf):
+
+    """ Configure Radius Interface via vrf
+    Args:
+        device ('obj'): device to use
+        interface('str'): Interface to be configured
+        vrf('str'): VRF name
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed configuring Radius Interface via vrf
+
+    """
+
+    try:
+        device.configure(["ip radius source-interface {interface} vrf {vrf}".format(interface=interface, vrf=vrf)])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not Configure Radius Interface via vrf"
+        )
+
+def unconfigure_radius_interface_vrf(device, interface, vrf):
+
+    """ Unconfigure Radius Interface via vrf
+    Args:
+        device ('obj'): device to use
+        interface('str'): Interface to be configured
+        vrf('str'): VRF name
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed unconfiguring Radius Interface via vrf
+
+    """
+
+    try:
+        device.configure(["no ip radius source-interface {interface} vrf {vrf}".format(interface=interface, vrf=vrf)])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not Unconfigure Radius Interface via vrf"
+        )
+
+

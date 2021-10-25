@@ -104,3 +104,66 @@ def verify_arp_packets(pkts, timeout, tolerance):
                 prev_pkt = pkt
 
     return True
+
+
+def verify_arp_vrf_interface_mac_entry(
+    device, ip_address, expected_interface, vrf=None, expected_mac=None, 
+    max_time=30, check_interval=10
+):
+    """ Verify that interface and mac (optional) passed in are the 
+        outgoing interface and mac for host in ARP table 
+        'show arp vrf {vrf} {ip}' / 'show arp {ip}'
+
+        Args:
+            device (`obj`): Device object
+            ip_address (`str`): Ip address
+            expected_interface ('str'): interface
+            vrf ('str', optional): vrf interface, default None
+            expected_mac ('str', optional): mac address, default None
+            max_time ('int', optional): maximum time to wait in seconds, 
+                default 30
+            check_interval ('int', optional): how often to check in seconds, 
+                default 10
+        Returns:
+            result ('bool'): verified result
+        Raises:
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        received_intf_mac = device.api.get_arp_interface_mac_from_ip(
+            device=device,
+            ip_address=ip_address,
+            vrf=vrf,
+        )
+
+        if received_intf_mac:
+
+            if expected_mac:
+                if (expected_interface and expected_mac) in received_intf_mac:
+                    return True
+            else:
+                if expected_interface in received_intf_mac:
+                    return True
+
+        timeout.sleep()
+
+    if not received_intf_mac:
+        log.error(
+            'Unable to get entry {} related interface and mac from'
+            'show arp vrf {} {}'.format(ip_address, vrf, ip_address)
+        )
+    elif expected_mac:
+        log.error(
+            'Unable to find entry for interface {} and Mac {} in arp host'
+            '{} table {}'.format(expected_interface, expected_mac, ip_address,
+                received_intf_mac)
+        )
+    else:
+        log.error(
+            "Unable to find entry for interface {} in arp host {} "
+            "table {}".format(expected_interface, ip_address, received_intf_mac)
+        )
+ 
+    return False

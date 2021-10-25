@@ -1,0 +1,17 @@
+execute:
+  prompt: lnx#
+  commands:
+      "scp /tmp/test.txt user@lnx:/tmp/test2.txt": |
+        test.txt                   100%    0     0.0KB/s   00:00
+      "scp /tmp/does_not_exist.txt user@lnx:/tmp/test2.txt": |
+        /tmp/does_not_exist.txt: No such file or directory
+      "scp /tmp/test2.txt user@lnx:/tmp/test3.txt":
+        new_state: password
+
+password:
+  prompt: "Password: "
+  commands:
+    "test":
+      response: |
+        test2.txt                   100%    0     0.0KB/s   00:00
+      new_state: execute

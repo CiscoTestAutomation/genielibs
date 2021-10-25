@@ -1716,6 +1716,38 @@ def unconfigure_mpls_static_binding(device, neighbor, mask, neigh_intf_ip):
             "Error:\n{error}".format(neighbor=neighbor,error=e)
         )   
 
+def configure_encapsulation_mpls_ldp(device, interface, neigbor, vlan_id):
+    """ Configures encapsulation mpls ldp on interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface on which the encapuslation
+                               config to be applied
+            neigbor (`str`): Neighbor id
+            vlan_id (`str`): vlan id
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+       device.configure(
+            [
+                "interface {intf}".format(intf=interface),
+                "encapsulation mpls",
+                "signaling protocol ldp",
+                "neighbor {neigh} {vlan}".format(neigh=neigbor, vlan=vlan_id)
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Couldn't configure encapsulation mpls lsp on interface {intf} "
+            "Error:\n{error}".format(intf=interface, error=e)
+        )
+
 def configure_mpls_te_forwarding_adjacency(device, intf):
     
     '''configure mpls te forwarding-adjacency

@@ -14,8 +14,10 @@ pipeline {
                 checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'pyats']], userRemoteConfigs: [[credentialsId: 'e8a7354a-c71a-42cb-83ee-49ab5ad40085', url: 'https://wwwin-github.cisco.com/pyATS/pyats.git']]])
                 checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'genie']], userRemoteConfigs: [[credentialsId: 'e8a7354a-c71a-42cb-83ee-49ab5ad40085', url: 'https://wwwin-github.cisco.com/pyATS/genie.git']]])
                 checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'genieparser']], userRemoteConfigs: [[credentialsId: 'e8a7354a-c71a-42cb-83ee-49ab5ad40085', url: 'https://wwwin-github.cisco.com/pyATS/genieparser.git']]])
+                checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'unicon']], userRemoteConfigs: [[credentialsId: 'e8a7354a-c71a-42cb-83ee-49ab5ad40085', url: 'https://wwwin-github.cisco.com/pyATS/unicon.git']]])
                 checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'unicon.plugins']], userRemoteConfigs: [[credentialsId: 'e8a7354a-c71a-42cb-83ee-49ab5ad40085', url: 'https://wwwin-github.cisco.com/pyATS/unicon.plugins.git']]])
                 checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'yang']], userRemoteConfigs: [[url: 'https://github.com/CiscoTestAutomation/yang.git']]])
+                checkout([$class: 'GitSCM', extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'rest']], userRemoteConfigs: [[url: 'https://github.com/CiscoTestAutomation/rest.git']]])
                 checkout([$class: 'GitSCM', branches: [[name: '*/dev'], [name: '*/main']], extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'genielibs.cisco']], userRemoteConfigs: [[credentialsId: 'e8a7354a-c71a-42cb-83ee-49ab5ad40085', url: 'https://wwwin-github.cisco.com/pyATS/genielibs.cisco.git']]])
                 script {
                     sh """
@@ -28,9 +30,13 @@ pipeline {
                     git remote -v
                     cd ${WORKSPACE}/genielibs.cisco
                     git remote -v
+                    cd ${WORKSPACE}/unicon
+                    git remote -v
                     cd ${WORKSPACE}/unicon.plugins
                     git remote -v
                     cd ${WORKSPACE}/yang
+                    git remote -v
+                    cd ${WORKSPACE}/rest
                     git remote -v
                     """
                 }
@@ -58,12 +64,20 @@ pipeline {
                     # checkout same branch on genielibs.cisco, if it exists
                     git checkout ${env.CHANGE_BRANCH == null ? env.GIT_BRANCH : env.CHANGE_BRANCH} || git checkout dev
                     git status
+                    cd ${WORKSPACE}/unicon
+                    # checkout same branch on unicon, if it exists
+                    git checkout ${env.CHANGE_BRANCH == null ? env.GIT_BRANCH : env.CHANGE_BRANCH} || git checkout dev
+                    git status
                     cd ${WORKSPACE}/unicon.plugins
                     # checkout same branch on unicon.plugins, if it exists
                     git checkout ${env.CHANGE_BRANCH == null ? env.GIT_BRANCH : env.CHANGE_BRANCH} || git checkout dev
                     git status
                     cd ${WORKSPACE}/yang
                     # checkout same branch on yang, if it exists
+                    git checkout ${env.CHANGE_BRANCH == null ? env.GIT_BRANCH : env.CHANGE_BRANCH} || git checkout master
+                    git status
+                    cd ${WORKSPACE}/rest
+                    # checkout same branch on rest, if it exists
                     git checkout ${env.CHANGE_BRANCH == null ? env.GIT_BRANCH : env.CHANGE_BRANCH} || git checkout master
                     git status
                     """
@@ -82,12 +96,16 @@ pipeline {
                     export LC_ALL=C.UTF-8
                     rm -rf /scratch/genielibs-env
                     cd /scratch
-                    /usr/bin/python3.6 -m venv genielibs-env
+                    /scratch/pyadm/.pyenv/versions/3.8.8/bin/python -m venv genielibs-env
                     . /scratch/genielibs-env/bin/activate
                     pip install --upgrade pip setuptools
                     pip3 install --no-cache-dir wheel pytest pytest-xdist
                     pip3 install --no-cache-dir -i http://pyats-pypi.cisco.com/simple --trusted-host pyats-pypi.cisco.com cisco-distutils ats[full]
                     cd $WORKSPACE/yang/connector
+                    make develop
+                    cd $WORKSPACE/rest
+                    make develop
+                    cd $WORKSPACE/unicon
                     make develop
                     cd $WORKSPACE/unicon.plugins
                     make develop

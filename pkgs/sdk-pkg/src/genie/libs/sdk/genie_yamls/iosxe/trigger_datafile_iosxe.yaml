@@ -21,7 +21,6 @@ global_processors:
       method: genie.harness.libs.prepostprocessor.compare_traffic_profile
       parameters:
         loss_tolerance: 1
-        frames_tolerance: 2
         rate_tolerance: 2
     test_case_genie_telemetry:
       method: genie.telemetry.processors.genie_telemetry_processor

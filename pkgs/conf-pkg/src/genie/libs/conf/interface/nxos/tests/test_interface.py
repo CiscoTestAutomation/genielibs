@@ -1198,38 +1198,38 @@ class test_nx_interface(TestCase):
                 ' exit'
             ]))
 
-        def test_dot1q_tunnel_interface(self):
-            # Set Genie Tb
-            testbed = Testbed()
-            Genie.testbed = testbed
+    def test_dot1q_tunnel_interface(self):
+        # Set Genie Tb
+        testbed = Testbed()
+        Genie.testbed = testbed
 
-            # Device
-            dev1 = Device(name='BL1', testbed=testbed, os='nxos')
-            intf1 = Interface(
-                name='Ethernet2/22',
-                device=dev1,
-                description='dot1q tunnel testing',
-                enabled=True,
-                switchport_mode='dot1q-tunnel',
-                dot1q_access_vlan='301',
-                switchport_enable=True
-            )
+        # Device
+        dev1 = Device(name='BL1', testbed=testbed, os='nxos')
+        intf1 = Interface(
+            name='Ethernet2/22',
+            device=dev1,
+            description='dot1q tunnel testing',
+            enabled=True,
+            switchport_mode='dot1q-tunnel',
+            dot1q_access_vlan='1301',
+            switchport_enable=True
+        )
 
-            # Build config
-            cfgs = intf1.build_config(apply=False)
+        # Build config
+        cfgs = intf1.build_config(apply=False)
 
-            # Check config build correctly
-            self.assertMultiLineEqual(
-                str(cfgs),
-                '\n'.join([
-                    'interface Ethernet2/22',
-                    ' description dot1q tunnel testing',
-                    ' no shutdown',
-                    ' switchport',
-                    ' switchport mode dot1q-tunnel',
-                    ' switchport access vlan 1301',
-                    ' exit'
-                ]))
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(cfgs),
+            '\n'.join([
+                'interface Ethernet2/22',
+                ' description dot1q tunnel testing',
+                ' no shutdown',
+                ' switchport',
+                ' switchport mode dot1q-tunnel',
+                ' switchport access vlan 1301',
+                ' exit'
+            ]))
             
 if __name__ == '__main__':
     unittest.main()

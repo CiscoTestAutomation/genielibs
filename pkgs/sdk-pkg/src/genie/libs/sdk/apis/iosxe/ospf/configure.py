@@ -383,34 +383,6 @@ def configure_ospf_vrf(device, ospf_process_id, vrf, router_id):
             vrf=vrf, ospf_process_id=ospf_process_id, error=e)
         )
 
-def configure_ospf_routing(device, ospf_process_id, router_id):
-    """ Configures ospf and ip routing on device
-        Args:
-            device ('obj'): Device to use
-            ospf_process_id ('str'): Process id for ospf process
-            router_id ('str'): Router id to use
-
-        Returns:
-            N/A
-
-        Raises:
-            SubCommandFailure
-    """
-    try:
-        device.configure([
-            'router ospf {ospf_process_id}'.format(
-                ospf_process_id=ospf_process_id),
-            'router-id {router_id}'.format(router_id=router_id)
-        ])
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Failed to configure the device {device} "
-            "with OSPF process id {ospf_process_id}, Error: {error}".format(
-                ospf_process_id=ospf_process_id,
-                device=device.name, error=e
-            )
-        )
-        
 def unconfigure_ospf_router_id(device, ospf_process_id, router_id):
     """ unonfigures ospf router-id 
         Args:
@@ -492,11 +464,13 @@ def configure_ospf_routing_on_interface(device, interface, ospf_process_id,
             SubCommandFailure
     """
     try:
-        device.configure([
-            'interface {interface}'.format(interface=interface),
-            'ip ospf {ospf_process_id} area {areaid}'.format(
-                ospf_process_id=ospf_process_id, areaid=areaid)
-        ])
+        device.configure(
+            [
+                'interface {interface}'.format(interface=interface),
+                'ip ospf {ospf_process_id} area {areaid}'.format(
+                    ospf_process_id=ospf_process_id, areaid=areaid)
+            ]
+        )
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Failed to configure the interface {interface} "
@@ -530,7 +504,7 @@ def unconfigure_ospf_on_device(device, ospf_process_id):
 
 
 def configure_ospf_message_digest_key(device, interface, message_digest_key, 
-                                      md5, key):
+                                      md5, key=None):
     """configure ospf message digest key
 
         Args:
@@ -548,20 +522,28 @@ def configure_ospf_message_digest_key(device, interface, message_digest_key,
         Raises:
             SubCommandFailure
     """
-    try:
-        device.configure(
-            [
-                "interface {interface}".format(interface=interface),
-                "ip ospf message-digest-key {message_digest_key} md5 "
-                "{md5} {key}".format(
+    configs = ["interface {interface}".format(interface=interface)]
+    if key:
+        configs.append(
+                    "ip ospf message-digest-key {message_digest_key} md5 "
+                    "{md5} {key}".format(
                     message_digest_key=message_digest_key,md5=md5,key=key)
-            ]
-        )
+                )
+    else:
+        configs.append(
+                    "ip ospf message-digest-key {message_digest_key} md5 "
+                    "{md5}".format(
+                    message_digest_key=message_digest_key,md5=md5)
+                )
+
+    try:
+        device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Ospf message-digest-key {key} is not configured on device"
             " {device} for interface {interface}, Error: {error}".format(
-                key=key, device=device, interface=interface, error=e
+                key=message_digest_key, device=device,
+                interface=interface, error=e
             )
         )
 
@@ -628,37 +610,6 @@ def configure_ospf_bfd(device, interface):
             )
         )
 
-
-
-def configure_ospfv3(device, pid, router_id=None, vrf=None):
-    """configure ospfv3
-
-        Args:
-            device (`obj`): Device object
-            pid (`str`): Ospfv3 process id
-            vrf('str'): vrf id for ospf process
-            router_id('str'): ospf router id
-
-        Returns:
-            N/A
-
-        Raises:
-            SubCommandFailure
-    """
-    cmd = ['router ospfv3 {pid}'.format(pid=pid, vrf=vrf)]
-    if router_id:
-        cmd.append('router-id {router_id}'.format(router_id=router_id))
-        cmd.append('graceful-restart')
-    if vrf:
-        cmd.append('address-family ipv6 unicast vrf {vrf}'.format(vrf=vrf))
-        cmd.append('redistribute connected')
-    try:
-        device.configure(cmd)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Failed to configure ospfv3 {pid} due to error {error}".
-            format(pid=pid, error=e))
-
 def unconfigure_ospfv3(device, pid):
     """unconfigure ospfv3
 
@@ -682,13 +633,66 @@ def unconfigure_ospfv3(device, pid):
             )
         )
 
-def configure_ospf_routing(device, ospf_process_id, router_id):
+def configure_ospfv3(device, pid, router_id=None, vrf=None, nsr=None, 
+    graceful_restart=None, address_family=None, bfd=None):
+    """configure ospf ip bfd
+
+        Args:
+            device (`obj`): Device object
+            pid (`str`): Ospfv3 process id
+            router_id (`str`, optional): Router id, default value is None
+            vrf('str', optional): vrf id for ospf process
+            nsr (`Bool`, optional): Nsr to be configured, default value is None
+            graceful_restart (`Bool`, optional): Graceful restart to be 
+                                                 configured,default value is None
+            address_family (`str`, optional): Address family to be configured,
+                                              default value is None
+            bfd ('str', optional) : bfd name, default value is None
+
+        Return:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    config = ["router ospfv3 {pid}".format(pid=pid)]
+    if graceful_restart:
+        config.append("graceful-restart")
+    if nsr:
+        config.append("nsr")
+    if address_family:
+        config.extend([
+            "address-family {addr}".format(addr=address_family),
+            "router-id {id}".format(id=router_id)])
+        if bfd:
+            config.append("bfd {bfd}".format(bfd=bfd))
+    if vrf:
+        config.append('address-family ipv6 unicast vrf {vrf}'.format(vrf=vrf))
+        config.append('redistribute connected')
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Ospfv3 is not configured on device"
+            " {device}, Error: {error}".format(
+               device=device.name, error=e
+            )
+        )
+
+def configure_ospf_routing(device, ospf_process_id, router_id=None,
+                           router_config=True, nsf=None,
+                           vrf_name=None, vrf_id=None):
     """ Configures ospf and ip routing on device
 
         Args:
             device ('obj'): Device to use
             ospf_process_id ('str'): Process id for ospf process
-            router_id ('str'): Router id to use
+            router_id ('str', optional): Router id to use, default value is None
+            router_config ('bool', optional): To configure router-id or not, 
+                                              default value is None
+            nsf ('bool', optional): nsf configuration, default value is None
+            vrf_name ('str', optional): vrf name, default value is None
+            vrf_id ('str', optional): vrf id, default value is None
 
         Returns:
             N/A
@@ -696,13 +700,32 @@ def configure_ospf_routing(device, ospf_process_id, router_id):
         Raises:
             SubCommandFailure
     """
-    try:
-        device.configure(
-            [
-                'router ospf {ospf_process_id}'.format(ospf_process_id=ospf_process_id),
-                'router-id {router_id}'.format(router_id=router_id)
-            ]
+    config = []
+    if router_config:
+        if vrf_name:
+            config.extend(
+                [
+                'router ospf {ospf_process_id} vrf {vrf_name} {vrf_id}'.format(
+                    ospf_process_id=ospf_process_id, vrf_name=vrf_name,
+                    vrf_id=vrf_id),
+                    'router-id {router_id}'.format(router_id=router_id)
+            ])
+        else:
+            config.extend(
+                [
+                    'router ospf {ospf_process_id}'.format(
+                        ospf_process_id=ospf_process_id),
+                    'router-id {router_id}'.format(router_id=router_id)
+                ]
         )
+    else:
+        config.append('router ospf {ospf_process_id}'.format(
+            ospf_process_id=ospf_process_id))
+    if nsf:
+        config.append('nsf')
+
+    try:
+        device.configure(config)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Failed to configure the device {device} "
@@ -711,6 +734,7 @@ def configure_ospf_routing(device, ospf_process_id, router_id):
                 device=device.name, error=e
             )
         )
+
 
 def redistribute_route_map_under_ospf(device, ospf_process_id, route_map_name, 
                                       redistributed_ospf):
@@ -748,7 +772,8 @@ def redistribute_route_map_under_ospf(device, ospf_process_id, route_map_name,
         )
 
 
-def configure_ospf_routing_on_interface(device, interface, ospf_process_id, areaid):
+def configure_ospf_routing_on_interface(device, interface, ospf_process_id,
+        areaid):
     """ Configures ospf and ip routing on Interface
 
         Args:
@@ -767,7 +792,8 @@ def configure_ospf_routing_on_interface(device, interface, ospf_process_id, area
         device.configure(
             [
                 'interface {interface}'.format(interface=interface),
-                'ip ospf {ospf_process_id} area {areaid}'.format(ospf_process_id=ospf_process_id, areaid=areaid)
+                'ip ospf {ospf_process_id} area {areaid}'.format(
+                    ospf_process_id=ospf_process_id, areaid=areaid)
             ]
         )
     except SubCommandFailure as e:
@@ -863,42 +889,6 @@ def unconfigure_ip_prefix_list(device, prefix_list_name, seq, ip_address):
             )
         )
 
-
-def configure_ospf_message_digest_key(device, interface, message_digest_key, md5, key):
-    """configure ospf message digest key
-
-        Args:
-            device (`obj`): Device object
-            key (`str`): key value
-            message_digest_key (`str`): message digest key value
-            md5 (`str`): md5 value
-            interface (`str`): interface to configure
-            ex.)
-                interface = 'tenGigabitEthernet0/4/0'
-
-        Return:
-            None
-
-        Raises:
-            SubCommandFailure
-    """
-    try:
-        device.configure(
-            [
-                "interface {interface}".format(interface=interface),
-                "ip ospf message-digest-key {message_digest_key} md5 "
-                "{md5} {key}".format(
-                    message_digest_key=message_digest_key,md5=md5,key=key)
-            ]
-        )
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Ospf message-digest-key {key} is not configured on device"
-            " {device} for interface {interface}, Error: {error}".format(
-                key=key, device=device, interface=interface, error=e
-            )
-        )
-    
         
 def configure_route_map(device, route_map_name, permit, prefix_list_name):
 

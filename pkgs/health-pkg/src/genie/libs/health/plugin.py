@@ -424,7 +424,7 @@ class HealthCheckPlugin(BasePlugin):
             _evaluate_arguments(
                 self.runtime.args.health_show_logging_keywords,
                 health_settings,
-                'logging_keywords',
+                'show_logging_keywords',
                 exception_msg=
                 "Wrong format was given to `--health-show-logging-keywords`. Format would be `\"iosxe:['traceback','Traceback']\" \"iosxr:['TRACEBACK']\"`."
             )

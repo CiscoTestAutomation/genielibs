@@ -9,7 +9,8 @@ from unicon.core.errors import SubCommandFailure
 log = logging.getLogger(__name__)
 
 
-def config_wan_macsec_on_interface(device, interface, destination_address, eth_type, speed=None):
+def config_wan_macsec_on_interface(device, interface, destination_address,
+        eth_type, speed=None, dot1q_clear=True):
     """ Configures WAN Macsec on interface 
 
         Args:
@@ -32,12 +33,12 @@ def config_wan_macsec_on_interface(device, interface, destination_address, eth_t
 
     config = [
         "interface {intf}".format(intf=interface),
-        "macsec dot1q-in-clear 1",
         "eapol destination-address {dest_addr}".format(
             dest_addr=destination_address),
         "eapol eth-type {eth_type}".format(eth_type=eth_type)
     ]
-
+    if dot1q_clear:
+        config.append("macsec dot1q-in-clear 1")
     if speed:
         config.append("speed {speed}".format(speed=speed))
 
@@ -81,13 +82,18 @@ def config_macsec_replay_protection_window_size(device, interface, window_size):
             )
         )
 
-def config_macsec_keychain_on_device(device, keychain_name, key, crypt_algorithm, key_string):
+def config_macsec_keychain_on_device(device, keychain_name, key,
+        crypt_algorithm, key_string, lifetime=None):
+
     """ Configures macsec key chain on device
 
         Args:
             device ('obj'): device to use
             keychain_name ('str'): keychain name to configure
             key_string ('str'): key string to configure
+            lifetime ('list'): start and end timings
+              ex.)
+                lifetime = ["10:36:55 Aug 18 2021", "10:37:55 Aug 18 2021"]
 
         Returns:
             None
@@ -100,13 +106,19 @@ def config_macsec_keychain_on_device(device, keychain_name, key, crypt_algorithm
                 keychain_name=keychain_name)
             )
     try:
-        device.configure([
+        configs = [
             "key chain {keychain_name} macsec".format(
                 keychain_name=keychain_name),
             "key {key}".format(key=key),
             "cryptographic-algorithm {crypt_algorithm}".format(
                 crypt_algorithm=crypt_algorithm),
-            "key-string {key_string}".format(key_string=key_string)])
+            "key-string {key_string}".format(key_string=key_string)]
+
+        if lifetime is not None:
+            configs.append("lifetime local {start} {end}".format(
+                start=lifetime[0], end=lifetime[1]))
+        device.configure(configs)
+
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not configure macsec key chain {keychain_name} on "
@@ -235,12 +247,16 @@ def unconfig_macsec_network_link_on_interface(device, interface):
         )
 
 
-def config_mka_policy_xpn(device,cipher=None,interface=None):
+def config_mka_policy_xpn(device, interface=None, cipher=None,
+        sak_rekey_int=None, key_server_priority=None):
     """ Configures mka policy xpn on device or interface
 
         Args:
             device ('obj'): device to use
             interface ('str'): interface to configure
+            cipher ('str'): Cipher suite value
+            sak_rekey_int ('str'): Sak rekey interval
+            key_server_priority ('str'): Key server priority
 
         Returns:
             None
@@ -248,20 +264,26 @@ def config_mka_policy_xpn(device,cipher=None,interface=None):
         Raises:
             SubCommandFailure
     """
+    if interface is None:
+        log.info("Configure mka policy xpn on device")
+        configs = [
+            "mka policy XPN",
+            "macsec-cipher-suite {cipher}".format(cipher=cipher)]
+        if sak_rekey_int:
+            configs.append("sak-rekey interval {interval}".format(
+                interval=sak_rekey_int))
+        if key_server_priority:
+            configs.append("key-server priority {key_pr}".format(
+                key_pr=key_server_priority))
+    else:
+        log.info("Configure mka policy xpn on "
+                "interface {interface}".format(interface=interface)
+        )
+        configs = [
+            "interface {intf}".format(intf=interface),
+            "mka policy XPN"]
     try:
-        if interface is None:
-            log.info("Configure mka policy xpn on device")
-            device.configure([
-                "mka policy XPN",
-                "macsec-cipher-suite {cipher}".format(cipher=cipher)])
-        else:
-            log.info("Configure mka policy xpn on "
-                    "interface {interface}".format(interface=interface)
-            )
-
-            device.configure([
-                "interface {intf}".format(intf=interface),
-                "mka policy XPN"])
+        device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not configure mka policy xpn on device/interface, "
