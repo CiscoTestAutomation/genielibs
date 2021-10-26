@@ -603,10 +603,6 @@ There is more than one ip address, one for each supervisor.
             device.platform = 'iosxe'
             device.instantiate(connection_timeout=timeout)
 
-            # change from ['/to/path/asr1001x-universalk9.17.06.01a.SPA.bin']
-            # to ['asr1001x-universalk9.17.06.01a.SPA.bin']
-            image = [x.split('/')[-1] for x in image]
-
             tftp_boot = {
                 'ip_address': ip_address,
                 'subnet_mask': subnet_mask,
@@ -1023,4 +1019,3 @@ change_boot_variable:
         'configure_boot_variable',
         'write_memory',
     ]
-
