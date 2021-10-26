@@ -64,7 +64,7 @@
         "module_name": "stages.stages",
         "package": "genie.libs.clean",
         "uid": "ChangeBootVariable",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L982"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L989"
       },
       "uid": "ChangeBootVariable",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L27"
@@ -145,7 +145,7 @@
         "module_name": "stages.stages",
         "package": "genie.libs.clean",
         "uid": "ExpandImage",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L709"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L713"
       }
     }
   },
@@ -269,11 +269,11 @@
   "SetControllerMode": {
     "iosxe": {
       "sdwan": {
-        "doc": "Set controller mode\n\nStage Schema\n------------\nset_controller_mode:\n\n    mode (str, optional): `enable` or `disable`. Defaults to `enable`\n\n    reload_timeout (int, optional): maximum time to wait for reload.\n        Defaults to 600 secs\n\n    configure_retry_interval (int, optional): interval of retry configure().\n        Defaults to 60 secs\n\n    delete_non_active_version (bool, optional): delete non active version after \n        changing image. Defaults to True\n\nExample\n-------\nset_controller_mode:\n    mode: enable\n    reload_timeout: 600\n    configure_retry_interval: 30\n    delete_non_active_version: True\n",
+        "doc": "Set controller mode\n\nStage Schema\n------------\nset_controller_mode:\n\n    mode (str, optional): `enable` or `disable`. Defaults to `enable`\n\n    reload_timeout (int, optional): maximum time to wait for reload.\n        Defaults to 600 secs\n\n    configure_retry_interval (int, optional): interval of retry configure().\n        Defaults to 60 secs\n\n    delete_inactive_versions (bool, optional): delete non active version after\n        changing image. Defaults to True\n\nExample\n-------\nset_controller_mode:\n    mode: enable\n    reload_timeout: 600\n    configure_retry_interval: 30\n    delete_inactive_versions: True\n",
         "module_name": "stages.stages",
         "package": "genie.libs.clean",
         "uid": "SetControllerMode",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L790"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L794"
       }
     }
   },
