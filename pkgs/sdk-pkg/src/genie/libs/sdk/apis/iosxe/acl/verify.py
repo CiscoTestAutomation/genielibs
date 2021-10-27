@@ -38,7 +38,7 @@ def verify_acl_applied(device, acl_name, applied_config):
 def verify_acl_usage(
         device,
         expected_acl_type,
-        expected_acl_name,
+        acl_id,
         max_time=15,
         check_interval=5
 ):
@@ -46,7 +46,7 @@ def verify_acl_usage(
         Args:
             device (`obj`): Device object
             expected_acl_type (`str`): type of ACL
-            expected_acl_name (`str`): Name of ACL
+            acl_id (`str`): Name of ACL
             max_time ('int',optional): Maximum wait time for the trigger,
                             in second. Default: 15
             check_interval (`int`, optional): Wait time between iterations when looping is needed,
@@ -63,13 +63,12 @@ def verify_acl_usage(
             out = device.parse("show platform software fed active acl usage")
         except SchemaEmptyParserError:
             pass
+        
         if out:
-            get_acl_type = out['acl_usage']['acl_info']['feature_type']
-            get_acl_name = out['acl_usage']['acl_info']['name']
-
-            if (expected_acl_type == get_acl_type) and (expected_acl_name == get_acl_name):
+            get_acl_type = out['acl_usage']['acl_name'][acl_id]['direction']['Ingress']['feature_type']
+            if expected_acl_type == get_acl_type:
                 return True
-            else:
-                return False
+            
         timeout.sleep()
+        
     return False
