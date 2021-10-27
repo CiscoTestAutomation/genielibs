@@ -94,37 +94,3 @@ def configure_device_tracking_policy(
     else:
 
         log.debug('Invalid protocol')
-
-
-def remove_device_tracking_policy(device, client_policy_name,  server_policy_name):
-    """ Remove device tracking Policy
-        Args:
-            device ('obj'): device to use
-            client_policy_name ('str'): name of the policy to be configured on client side
-            server_policy_name ('str'): name of the policy to be configured on server side
-        Returns:
-            None
-        Raises:
-            SubCommandFailure: Failed removing device tracking policy
-    """
-    log.debug('Removing device tracking Policy of'
-             'client_policy_name={client_policy_name} on client side',
-             'server_policy_name={server_policy_name} on server side'
-             .format(client_policy_name=client_policy_name,
-                     server_policy_name=server_policy_name)
-    )
-
-    try:
-       cmd = [
-            "no device-tracking policy {client_policy_name}".format(client_policy_name=client_policy_name),
-            "no device-tracking policy {server_policy_name}".format(server_policy_name=server_policy_name)
-            ]
-       device.configure(cmd)
-
-    except SubCommandFailure:
-        log.warning(
-            "Could not remove device tracking Policy {client_policy_name} and {server_policy_name}".format(
-                client_policy_name=client_policy_name,server_policy_name=server_policy_name
-            ), exc_info=True
-        )
-        raise
