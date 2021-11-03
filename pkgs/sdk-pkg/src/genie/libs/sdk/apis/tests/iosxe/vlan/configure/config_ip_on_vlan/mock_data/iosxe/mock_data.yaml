@@ -1,0 +1,44 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface vlan 251: "interface vlan 251\r\n"
+    ip address 192.168.1.1 255.255.255.0: "ip address 192.168.1.1 255.255.255.0\r\n"
+    ipv6 address 2001::3/10: "ipv6 address 2001::3/10\r\n"
+    ipv6 enable: "ipv6 enable\r\n"
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Switch(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: Switch(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: Switch#

@@ -36,6 +36,40 @@ def config_vlan(device, vlanid):
                 vlanid=vlanid, error=e)
         )
 
+def config_ip_on_vlan(device, vlan_id, ipv4_address=None,
+                      subnetmask=None, ipv6_address=None,
+                      ipv6_prefix_len=None):
+    """Configure an IPv4/IPv6 address on a vlan
+
+        Args:
+            device (`obj`): Device object
+            vlanid (`str`): Vlan id
+            ipv4_address (`str`): IPv4 address
+            subnetmask (`str`): Subnet mask to be used for IPv4 address
+            ipv6_address (`str`): Ipv6 address
+            ipv6_prefix_len (`int`): length of IPv6 prefix
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed to configure Ipv4/Ipv6 address on vlan
+    """
+
+    try:
+        if ipv4_address and subnetmask:
+            device.configure([f'interface vlan {vlan_id}',
+                            f'ip address {ipv4_address} {subnetmask}'])
+
+        if ipv6_address and ipv6_prefix_len:
+            device.configure([f'interface vlan {vlan_id}',
+                            'ipv6 enable',
+                            f'ipv6 address {ipv6_address}/{ipv6_prefix_len}'])
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure Ipv4/Ipv6 address on vlan {vlan_id}, '
+            f'Error: {e}'
+        )
+
 def unconfig_vlan(device, vlanid):
     """ vlan on Interface or Device configuration removal
 

@@ -1,0 +1,45 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: R1_xe(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: R1_xe(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ip bgp VPNv4 vrf VRF1 3.3.3.3: "BGP routing table entry for 65000:1:3.3.3.3/32,\
+      \ version 4\r\nPaths: (1 available, best #1, table VRF1, RIB-failure(17))\r\n\
+      \  Not advertised to any peer\r\n  Refresh Epoch 1\r\n  Local\r\n    3.3.3.3\
+      \ (metric 2570240) (via vrf VRF1) from 3.3.3.3 (3.3.3.3)\r\n      Origin IGP,\
+      \ localpref 100, valid, internal, best\r\n      rx pathid: 0, tx pathid: 0x0"
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: R1_xe#

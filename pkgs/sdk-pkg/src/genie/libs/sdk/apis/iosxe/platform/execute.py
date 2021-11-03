@@ -19,7 +19,6 @@ from unicon.eal.dialogs import Statement, Dialog
 from unicon.core.errors import StateMachineError,SubCommandFailure
 
 # Logger
-
 log = logging.getLogger(__name__)
 
 

@@ -833,6 +833,33 @@ def configure_interface_switchport_access_vlan(device, interface, vlan):
             )
         )
 
+def unconfigure_interface_switchport_access_vlan(device, interface, vlan):
+    """ Unconfigures switchport on interface
+
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to unconfigure
+            vlan ('str'): access_vlan to unconfigure
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f'Unconfiguring switchport on {interface} with access_vlan {vlan}')
+
+    try:
+        device.configure([
+                f'interface {interface}',
+                f'no switchport access vlan {vlan}',
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not unconfigure switchport access vlan on {vlan}, '
+            f'Error:\n{e}'
+        )
 
 def configure_interface_directed_broadcast(device, interfaces, configure=True):
     """ Configures directed-broadcast on interface
@@ -940,6 +967,9 @@ def configure_interfaces_shutdown(device, interfaces):
         Args:
             List['string']: Interfaces to shutdown
             device ('obj'): Device object
+
+        Raises:
+            SubCommandFailure
     """
     config_cmd = []
     for interface in interfaces:
@@ -948,9 +978,10 @@ def configure_interfaces_shutdown(device, interfaces):
     try:
         device.configure(config_cmd)
     except SubCommandFailure as e:
-        log.error('Failed to shutdown interfaces on device {}: {}'\
-            .format(device.name, e))
-
+        raise SubCommandFailure(
+            'Failed to shutdown interfaces on device {}: {}'.format(device.name, e
+            )
+        )
 
 def configure_interfaces_unshutdown(device, interfaces):
     """ Enable the listed interfaces in the given list on the device
@@ -958,6 +989,9 @@ def configure_interfaces_unshutdown(device, interfaces):
         Args:
             List['string']: Interfaces to enable
             device ('obj'): Device object
+
+        Raises:
+            SubCommandFailure
     """
     config_cmd = []
     for interface in interfaces:
@@ -966,9 +1000,10 @@ def configure_interfaces_unshutdown(device, interfaces):
     try:
         device.configure(config_cmd)
     except SubCommandFailure as e:
-        log.error('Failed to enable interfaces on device {}: {}'\
-            .format(device.name, e))
-
+        raise SubCommandFailure(
+            'Failed to enable interfaces on device {}: {}'.format(device.name, e
+            )
+        )
 
 def shutdown_interface(device, member):
     """ Shutdown a bundled Interface

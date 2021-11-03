@@ -593,6 +593,131 @@ class test_interface(TestCase):
 			' exit',
         ]))
 
+    def test_NveInterface_L2vni_mcast(self):
+        testbed = Genie.testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='iosxe')
+        intf1 = Interface(name='nve1',device=dev1)
+
+        # Defining attributes section
+        intf1.nve_bgp_host_reachability = True
+        intf1.nve_src_intf_loopback = 'Loopback0'
+
+        intf1.nve_vni= '20000'
+        intf1.nve_vni_mcast_group = '239.1.1.2'
+        intf1.nve_vni_local_routing = True
+
+        # Build config
+        cfg = intf1.build_config(apply=False)
+        self.assertMultiLineEqual(
+            str(cfg),
+            '\n'.join([
+                'interface nve1',
+                ' host-reachability protocol bgp',
+                ' source-interface Loopback0',
+                ' member vni 20000',
+                '  mcast-group 239.1.1.2 local-routing',
+                '  exit',
+                ' exit'
+            ]))
+
+        # Build unconfig
+        partial_uncfg_1 = intf1.build_unconfig(apply=False, attributes={
+                                               'nve_bgp_host_reachability': True,
+                                               'nve_vni': '20000'})
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(partial_uncfg_1),
+            '\n'.join([
+                'interface nve1',
+                ' no host-reachability protocol bgp',
+                ' no member vni 20000',
+                ' exit'
+            ]))
+
+        # Build unconfig
+        partial_uncfg_2 = intf1.build_unconfig(apply=False, attributes={
+                                               'nve_src_intf_loopback': 'Loopback0'})
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(partial_uncfg_2),
+            '\n'.join([
+                'interface nve1',
+                ' no source-interface Loopback0',
+                ' exit'
+            ]))
+
+    def test_NveInterface_L2vni_ir(self):
+        testbed = Genie.testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='iosxe')
+        intf1 = Interface(name='nve1',device=dev1)
+
+        # Defining attributes section
+        intf1.nve_bgp_host_reachability = True
+        intf1.nve_src_intf_loopback = 'Loopback0'
+
+        intf1.nve_vni= '20000'
+        intf1.nve_vni_ingress_replication = True
+
+        # Build config
+        cfg = intf1.build_config(apply=False)
+        self.assertMultiLineEqual(
+            str(cfg),
+            '\n'.join([
+                'interface nve1',
+                ' host-reachability protocol bgp',
+                ' source-interface Loopback0',
+                ' member vni 20000',
+                '  ingress-replication',
+                '  exit',
+                ' exit'
+            ]))
+
+        # Build unconfig
+        uncfg= intf1.build_unconfig(apply=False, attributes={'nve_vni': '20000'})
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(uncfg),
+            '\n'.join([
+                'interface nve1',
+                ' no member vni 20000',
+                ' exit'
+            ]))
+
+    def test_NveInterface_L3vni(self):
+        testbed = Genie.testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='iosxe')
+        intf1 = Interface(name='nve1',device=dev1)
+
+        # Defining attributes section
+        intf1.nve_bgp_host_reachability = True
+        intf1.nve_src_intf_loopback = 'Loopback0'
+
+        intf1.nve_vni= '30000'
+        intf1.nve_vni_vrf = 'red'
+
+        # Build config
+        cfg = intf1.build_config(apply=False)
+        self.assertMultiLineEqual(
+            str(cfg),
+            '\n'.join([
+                'interface nve1',
+                ' host-reachability protocol bgp',
+                ' source-interface Loopback0',
+                ' member vni 30000 vrf red',
+                ' exit'
+            ]))
+
+        # Build unconfig
+        uncfg= intf1.build_unconfig(apply=False, attributes={'nve_vni': '20000'})
+        # Check config build correctly
+        self.assertMultiLineEqual(
+            str(uncfg),
+            '\n'.join([
+                'interface nve1',
+                ' no member vni 30000',
+                ' exit'
+            ]))
+
 if __name__ == '__main__':
     unittest.main()
 

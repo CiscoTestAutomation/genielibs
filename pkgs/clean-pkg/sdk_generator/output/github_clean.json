@@ -64,7 +64,7 @@
         "module_name": "stages.stages",
         "package": "genie.libs.clean",
         "uid": "ChangeBootVariable",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L989"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L985"
       },
       "uid": "ChangeBootVariable",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L27"
@@ -145,7 +145,7 @@
         "module_name": "stages.stages",
         "package": "genie.libs.clean",
         "uid": "ExpandImage",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L713"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L709"
       }
     }
   },
@@ -273,7 +273,7 @@
         "module_name": "stages.stages",
         "package": "genie.libs.clean",
         "uid": "SetControllerMode",
-        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L794"
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/sdwan/stages.py#L790"
       }
     }
   },

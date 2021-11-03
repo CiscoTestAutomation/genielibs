@@ -1056,29 +1056,31 @@ def get_bgp_route_ext_community(
             device('obj'): device to run on
             address_family('str'): address_family to search under
             route('route'): route to search under
-            vrf('str'): if getting route via vrf
-            rd('str'): if getting route via rd
+            vrf('str', Optional): if getting route via vrf. Default is None
+            rd('str', Optional): if getting route via rd. Default is None
         Returns:
             extended community
         Raises:
             None
     """
-    if vrf:
-        log.info(
-            "Getting extended community for route {} using vrf {}".format(
-                route, vrf
-            )
-        )
-        cmd = "show ip bgp {} vrf {} {}".format(address_family, vrf, route)
+    if vrf is None:
+        vrf = 'default'
 
-    elif rd:
+    if rd:
         log.info(
             "Getting extended community for route {} using rd {}".format(
                 route, rd
             )
         )
         cmd = "show ip bgp {} rd {} {}".format(address_family, rd, route)
-        vrf = "default"
+
+    else:
+        log.info(
+            "Getting extended community for route {} using vrf {}".format(
+                route, vrf
+            )
+        )
+        cmd = "show ip bgp {} vrf {} {}".format(address_family, vrf, route)
 
     try:
         out = device.parse(cmd)

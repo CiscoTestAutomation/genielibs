@@ -46,6 +46,23 @@ def configure_arp_timeout(device, interface, timeout):
             )
         ) from e
 
+def clear_arp_cache(device):
+    """ Clears device cache
+
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.execute('clear arp-cache')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Failed to clear arp-cache on device {device}, '
+            f'Error: {e} {device.name}, {str(e)}'
+        ) from e
 
 def remove_arp_timeout(device, interface):
     """ Remove arp timeout configuration

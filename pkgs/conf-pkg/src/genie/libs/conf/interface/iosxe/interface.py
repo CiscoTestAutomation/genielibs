@@ -15,6 +15,7 @@ __all__ = (
     'TunnelInterface',
     'TunnelTeInterface',
     'PortchannelInterface',
+    'NveInterface',
 )
 
 import re
@@ -1100,7 +1101,59 @@ class VlanInterface(
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+class NveInterface(VirtualInterface, genie.libs.conf.interface.NveInterface):
+    _interface_name_types = (
+        'nve',
+        'Nve',
+    )
 
+    def _build_config_interface_submode(self, configurations, attributes, unconfig):
+
+        super()._build_config_interface_submode(configurations, attributes, unconfig)
+        if attributes.value('nve_bgp_host_reachability'):
+            configurations.append_line(
+                attributes.format('host-reachability protocol bgp'))
+
+        if attributes.value('nve_src_intf_loopback'):
+            configurations.append_line(
+                attributes.format('source-interface {nve_src_intf_loopback}'))
+
+
+        # attributes for vnis
+        if attributes.value('nve_vni'):
+            cfg = 'member vni {nve_vni}'
+
+            if attributes.value('nve_vni_vrf'):
+                cfg += ' vrf {nve_vni_vrf}'
+                configurations.append_line(attributes.format(cfg))
+                return
+
+            with configurations.submode_context(attributes.format(cfg)):
+                if unconfig:
+                    configurations.submode_unconfig()
+
+                if attributes.value('nve_vni_mcast_group'):
+                    sub_cfg = 'mcast-group {nve_vni_mcast_group}'
+
+                if attributes.value('nve_vni_ingress_replication'):
+                    sub_cfg = 'ingress-replication'
+
+                if attributes.value('nve_vni_local_routing'):
+                    sub_cfg += ' local-routing'
+
+                configurations.append_line(attributes.format(sub_cfg))
+
+        # -- NVE
+        # iosxe: interface <intf> / host-reachability protocol bgp
+        # iosxe: interface <intf> / member vni <nve_vni> vrf <nve_vni_vrf>
+        # iosxe: interface <intf> / member vni <nve_vni> / ingress-replication
+        # iosxe: interface <intf> / member vni <nve_vni> / ingress-replication local-routing
+        # iosxe: interface <intf> / member vni <nve_vni> / mcast-group <nve_vni_mcast_group>
+        # iosxe: interface <intf> / member vni <nve_vni> / mcast-group <nve_vni_mcast_group> local-routing
+        # iosxe: interface <intf> / source-interface Loopback0
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 Interface._build_name_to_class_map()
 
