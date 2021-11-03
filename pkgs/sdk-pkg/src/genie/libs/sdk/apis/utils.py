@@ -2905,8 +2905,9 @@ def get_devices(testbed,
     """ Get devices from testbed object
         Args:
             testbed (`obj`): testbed object
-            os (`str`): specify os to choose
+            os (`str`): specify os to choose. Defaults to None
             regex (`str`): regex to chose devices based against regex_key
+                           Defaults to None
             regex_key (`str`): specify key in testbed yaml where use regex
                                default to `os`
             pick_type (`str`) : specify how to pick up
@@ -2921,8 +2922,9 @@ def get_devices(testbed,
                                   `random_order`: randomize order of devices
                                                   return device names as list
             only_connected (`bool`) : check if device is connected and return 
-                                      only connected ones
+                                      only connected ones. Default to False
             with_os (`bool`): return dict with device name and os as key/value pair
+                              Defaults to False
 
         Raise:
             Exception
@@ -3032,7 +3034,12 @@ def get_devices(testbed,
                 picked_devices = _create_dict_with_os(testbed, picked_devices)
             return picked_devices
     else:
-        raise Exception("Couldn't find any device from testbed object.")
+        if hasattr(runtime, 'testbed') and runtime.testbed != testbed:
+            log.warning('testbed object is not same with runtime.testbed. Please make sure device is connected via runtime.testbed for easypy plugins.')
+        if only_connected:
+            raise Exception("Couldn't find any connected device from testbed object.")
+        else:
+            raise Exception("Couldn't find any device from testbed object.")
 
 
 def get_interface_from_yaml(local, remote, value, testbed_topology, **kwargs):
@@ -3044,7 +3051,7 @@ def get_interface_from_yaml(local, remote, value, testbed_topology, **kwargs):
             local (`str`): local device to get interface from
             remote (`str`): Remote device where the interface is connected to
             value (`str`): Either link name or a number and a link will be randomly chosen
-            testbed_topology (`dict`): testbed.topology
+            testbed_topology (`dict`): `testbed.topology` or `testbed`
 
         Raise:
             Exception
@@ -3098,6 +3105,47 @@ def get_interface_from_yaml(local, remote, value, testbed_topology, **kwargs):
         raise Exception(
             "Could not find an interface for device '{d}'".format(d=local))
     return interface
+
+
+def get_interface_type_from_yaml(local, remote, value, testbed_topology, **kwargs):
+    """ Get interface type from the testbed yaml file
+
+        To be used within datafile
+
+        Args:
+            local (`str`): local device to get interface from
+            remote (`str`): Remote device where the interface is connected to
+            value (`str`): Either link name or a number and a link will be randomly chosen
+            testbed_topology (`dict`): `testbed.topology` or `testbed`
+
+        Raise:
+            N/A
+        Returns:
+            Interface type or `None` if not found
+
+        Example:
+
+            interface_type: "%CALLABLE{genie.libs.sdk.apis.utils.get_interface_type_from_yaml(uut,helper,0,%{testbed.topology})}"
+
+            interface_type: "%CALLABLE{genie.libs.sdk.apis.utils.get_interface_type_from_yaml(uut,helper,r1_r4_1,%{testbed.topology})}"
+
+            interface_type: "%CALLABLE{genie.libs.sdk.apis.utils.get_interface_type_from_yaml(alias,helper,0,%{testbed})}"
+    """
+    if not isinstance(testbed_topology, dict):
+        topology = ast.literal_eval(','.join(testbed_topology).lstrip())
+    else:
+        topology = testbed_topology
+    data = Dq(topology)
+
+    # Get type related to the interface
+    interface = get_interface_from_yaml(local, remote, value, testbed_topology)
+    type = data.contains(interface).contains(local.strip()).get_values('type', 0)
+    if isinstance(type, list):
+        log.error("Could not find a type for device '{d}' interface '{i}'"
+                  .format(d=local, i=interface))
+        # Empty list is given if the type is not found. Return `None` instead.
+        return None
+    return type
 
 
 def get_device_connections_info(device):

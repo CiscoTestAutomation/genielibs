@@ -206,7 +206,7 @@ def scale_accesslist_config(device,acl_name,acl_list):
 
     return out
 
-def unconfigure_acl(device, acl_name):
+def unconfigure_acl(device, acl_name, extended=True):
     """ unconfigure Access-list
 
         Args:
@@ -219,7 +219,11 @@ def unconfigure_acl(device, acl_name):
         Raises:
             SubCommandFailure
     """
-    configs = "no ip access-list extended {acl}".format(acl=acl_name)
+    if extended:
+        configs = "no ip access-list extended {acl}".format(acl=acl_name)
+    else:
+        configs = "no ip access-list standard {acl}".format(acl=acl_name)
+
     try:
         device.configure(configs)
     except SubCommandFailure as e:
@@ -292,5 +296,43 @@ def unconfigure_ace(
                 acl=acl_name,
                 dev=device.name,
                 error=e,
+            )
+        )
+
+
+def remove_acl_from_interface(device, interface, acl_name, inbound=True):
+    """ Remove acl from an interface
+
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+            acl_name ('str'): acl to apply
+            inbound (boolean, optional): True for inbound acl, False for outbound acl. Default value is True
+    """
+    if inbound:
+        log.info(
+            "Remove inbound {acl} on {intf}".format(
+                acl=acl_name, intf=interface
+            )
+        )
+        direction = "in"
+    else:
+        log.info(
+            "Remove outbound {acl} on {intf}".format(
+                acl=acl_name, intf=interface
+            )
+        )
+        direction = "out"
+
+    try:
+        device.configure(
+            "interface {intf}\nno ip access-group {acl} {direction}".format(
+                intf=interface, acl=acl_name, direction=direction
+            )
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not remove acl {acl} on interface {interface}".format(
+                acl=acl_name, interface=interface
             )
         )

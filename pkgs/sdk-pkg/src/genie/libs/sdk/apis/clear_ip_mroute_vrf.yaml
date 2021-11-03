@@ -1,0 +1,3 @@
+clear_ip_mroute_vrf:
+    arguments:
+        vrf_name: vn-5

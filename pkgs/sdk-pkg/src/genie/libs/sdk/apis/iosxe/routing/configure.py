@@ -395,3 +395,25 @@ def configure_default_gateway(device, gateway_ip):
         raise SubCommandFailure(
             "Could not configure default gateway. Error:\n{error}".format(error=e)
         )
+
+def configure_system_jumbomtu(device, mtu_value):
+    """ Sets mtu value on device
+        Args:
+            device ('str'): Device str
+            mtu_value ('int'): MTU value to be set
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        device.configure(
+            "system jumbomtu {mtu_value}".format(mtu_value=mtu_value)
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not set mtu value on device. Error:\n{e}".format(e=e)
+        )
+
+

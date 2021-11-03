@@ -4,10 +4,10 @@
 import re
 import logging
 
-from genie.libs.sdk.apis.nxos.aci.utils import (
-    copy_to_device as aci_copy_to_device,
-    copy_from_device as aci_copy_from_device)
-
+from genie.libs.sdk.apis.nxos.aci.utils import (copy_to_device as
+                                                aci_copy_to_device,
+                                                copy_from_device as
+                                                aci_copy_from_device)
 
 log = logging.getLogger(__name__)
 
@@ -21,6 +21,7 @@ def apic_rest_get(device,
                   rsp_prop_include='all',
                   rsp_subtree_include='',
                   rsp_subtree_class='',
+                  target_subtree_class='',
                   expected_status_code=200,
                   timeout=30):
     """GET REST Command to retrieve information from the device
@@ -49,6 +50,7 @@ def apic_rest_get(device,
             rsp_subtree_include (`string`): specify additional contained objects
                                           or options to be included
             rsp_subtree_class (`string`) : specify classes
+            target_subtree_class (string): specify subtree classes
             query_target_filter (`string`): filter expression
             expected_status_code (`int`): Expected result
 
@@ -61,17 +63,25 @@ def apic_rest_get(device,
 
     if connection_alias:
         try:
-                device = getattr(device, connection_alias)
+            device = getattr(device, connection_alias)
         except AttributeError as e:
-            raise Exception("'{dev}' does not have a connection with the "
-                            "alias '{alias}'".format(
-                                dev=device.name, alias=connection_alias)) from e
+            raise Exception(
+                "'{dev}' does not have a connection with the "
+                "alias '{alias}'".format(dev=device.name,
+                                         alias=connection_alias)) from e
 
     output = ''
     try:
-        output = device.get(dn, query_target, rsp_subtree, query_target_filter,
-                            rsp_prop_include, rsp_subtree_include,
-                            rsp_subtree_class, expected_status_code, timeout)
+        output = device.get(dn=dn,
+                            query_target=query_target,
+                            rsp_subtree=rsp_subtree,
+                            query_target_filter=query_target_filter,
+                            rsp_prop_include=rsp_prop_include,
+                            rsp_subtree_include=rsp_subtree_include,
+                            rsp_subtree_class=rsp_subtree_class,
+                            target_subtree_class=target_subtree_class,
+                            expected_status_code=expected_status_code,
+                            timeout=timeout)
     except Exception as e:
         log.info("Failed to get: {}".format(e))
 
@@ -81,6 +91,7 @@ def apic_rest_get(device,
 def apic_rest_post(device,
                    dn,
                    payload,
+                   xml_payload=False,
                    connection_alias='',
                    expected_status_code=200,
                    timeout=30):
@@ -92,6 +103,7 @@ def apic_rest_post(device,
                          and its place in the tree.
             payload (`dict`): Dictionary containing the information to send via
                             the post
+            xml_payload (bool): Set to True if payload is in XML format
             connection_alias (`str`): Connection alias
             expected_status_code (`int`): Expected result
             timeout (`int`): Maximum time
@@ -107,13 +119,18 @@ def apic_rest_post(device,
         try:
             device = getattr(device, connection_alias)
         except AttributeError as e:
-            raise Exception("'{dev}' does not have a connection with the "
-                            "alias '{alias}'".format(
-                                dev=device.name, alias=connection_alias)) from e
+            raise Exception(
+                "'{dev}' does not have a connection with the "
+                "alias '{alias}'".format(dev=device.name,
+                                         alias=connection_alias)) from e
 
     output = ''
     try:
-        output = device.post(dn, payload, expected_status_code, timeout)
+        output = device.post(dn=dn,
+                             payload=payload,
+                             xml_payload=xml_payload,
+                             expected_status_code=expected_status_code,
+                             timeout=timeout)
     except Exception as e:
         log.info("Failed to post: {}".format(e))
 
@@ -145,9 +162,10 @@ def apic_rest_delete(device,
         try:
             device = getattr(device, connection_alias)
         except AttributeError as e:
-            raise Exception("'{dev}' does not have a connection with the "
-                            "alias '{alias}'".format(
-                                dev=device.name, alias=connection_alias)) from e
+            raise Exception(
+                "'{dev}' does not have a connection with the "
+                "alias '{alias}'".format(dev=device.name,
+                                         alias=connection_alias)) from e
 
     output = ''
     try:
@@ -276,9 +294,12 @@ def get_mgmt_src_ip_addresses(device):
 
     netstat_output = device.execute('netstat -an | grep {}:22'.format(mgmt_ip))
     # tcp        0      0 172.1.1.2:22        10.1.1.1:59905     ESTABLISHED -
-    mgmt_src_ip_addresses = re.findall(r'\d+ +\S+:\d+ +(\S+):\d+ +ESTAB', netstat_output)
+    mgmt_src_ip_addresses = re.findall(r'\d+ +\S+:\d+ +(\S+):\d+ +ESTAB',
+                                       netstat_output)
     if not mgmt_src_ip_addresses:
-        log.error('Unable to find management session, cannot determine management IP addresses')
+        log.error(
+            'Unable to find management session, cannot determine management IP addresses'
+        )
         return []
 
     return mgmt_src_ip_addresses
@@ -299,7 +320,8 @@ def get_mgmt_ip(device):
     if m:
         mgmt_ip = m.group(1)
     else:
-        log.error('Unable to find management session, cannot determine IP address')
+        log.error(
+            'Unable to find management session, cannot determine IP address')
         return None
 
     return mgmt_ip

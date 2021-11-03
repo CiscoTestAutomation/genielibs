@@ -8,7 +8,6 @@ from unicon.core.errors import SubCommandFailure
 
 log = logging.getLogger(__name__)
 
-
 def clear_ipv6_mfib_vrf_counters(device, vrf_name=''):
     """ clear ipv6 mfib vrf * counters
         Args:
@@ -31,4 +30,24 @@ def clear_ipv6_mfib_vrf_counters(device, vrf_name=''):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not clear ipv6 mfib vrf counters on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+       
+def clear_ipv6_mld_group(device):
+    """ clear ipv6 mld group
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug("Clear ipv6 mld group on {device}".format(device=device))
+
+    try:
+        device.execute('clear ipv6 mld group')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear ipv6 mld group on {device}. Error:\n{error}"
+                .format(device=device, error=e)
         )

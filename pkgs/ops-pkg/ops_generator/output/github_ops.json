@@ -891,6 +891,13 @@
     }
   },
   "vxlan": {
+    "iosxe": {
+      "class_name": "Vxlan",
+      "doc": "Vxlan Ops Object",
+      "module_name": "vxlan.vxlan",
+      "uid": "vxlan",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/vxlan/iosxe/vxlan.py#L8"
+    },
     "nxos": {
       "class_name": "Vxlan",
       "doc": "Vxlan Ops Object",

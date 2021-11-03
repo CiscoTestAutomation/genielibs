@@ -783,10 +783,10 @@ class Health(Blitz):
             data = temp_data
         # remove section if no data
         removed_section = False
+        # no reason at this point. must be that device is not connected
+        if not reasons:
+            reasons.append('Device is not connected')
         if not data:
-            # no reason at this point. must be that device is not connected
-            if not reasons:
-                reasons.append('Device is not connected')
             processor.result = Skipped
             processor.reporter.remove_section(id_list=processor.uid.list)
             removed_section = True
