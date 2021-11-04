@@ -32,6 +32,7 @@ jobs:
     - name: Test Unit Tests
       run: |
         make develop
+        make json
         cd tests
         python -m unittest
     
