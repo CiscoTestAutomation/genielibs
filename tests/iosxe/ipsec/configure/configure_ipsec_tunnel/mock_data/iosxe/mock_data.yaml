@@ -1,0 +1,47 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface tunnel20: "interface tunnel20\r\n"
+    ip address 200.1.1.1 255.255.255.255: "ip address 200.1.1.1 255.255.255.255\r\n"
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    tunnel destination 200.2.1.4: "tunnel destination 200.2.1.4\r\n"
+    tunnel mode ipsec ipv4: "tunnel mode ipsec ipv4\r\n"
+    tunnel protection ipsec profile ipsec_profile_new: "tunnel protection ipsec profile\
+      \ ipsec_profile_new\r\n"
+    tunnel source 200.2.1.1: "tunnel source 200.2.1.1\r\n"
+  prompt: rad-vtep1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: rad-vtep1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: rad-vtep1#

@@ -5,6 +5,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
+
 def get_jinja_template(templates_dir, template_name):
     """ Gets the jinja template specified
 
@@ -21,8 +22,7 @@ def get_jinja_template(templates_dir, template_name):
     """
     env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(searchpath=templates_dir),
-        undefined=jinja2.StrictUndefined
-    )
+        undefined=jinja2.StrictUndefined)
 
     try:
         template = env.get_template(template_name)
@@ -44,8 +44,8 @@ def load_jinja_template(path, file, **kwargs):
         Raises:
             TemplateNotFound
     """
-
-    env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=path))
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=path),
+                             undefined=jinja2.StrictUndefined)
     try:
         template = env.get_template(file)
     except TemplateNotFound:

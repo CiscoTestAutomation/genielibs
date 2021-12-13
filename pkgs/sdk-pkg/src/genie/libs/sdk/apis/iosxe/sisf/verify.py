@@ -6,6 +6,7 @@ import logging
 # Genie
 from genie.utils.timeout import Timeout
 from genie.libs.parser.utils.common import Common
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 log = logging.getLogger(__name__)
 
@@ -121,6 +122,28 @@ def verify_device_tracking_policies(device, policy_name, vlan=None, iface=None, 
     log.debug('Target policy not found')
     return False
 
+def verify_empty_device_tracking_policies(device, max_time=60, check_interval=10):
+    """ Verify device tracking policies is empty
+
+        Args:
+            device('obj'): device object
+            max_time('int',optional): max check time. Defaults to 60
+            check_interval('int',optional): check intervals. Defaults to 10
+        Returns:
+            Bool
+        Raises:
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            output = device.parse('show device-tracking policies')
+        except SchemaEmptyParserError:
+            return True
+    timeout.sleep()
+
+    log.debug('Device-tracking policies is not empty:\n{}'.format(output))
+    return False
 
 def verify_device_tracking_policy_configuration(device, policy_name, security_level='guard',
                                                 trusted_port=None, device_role=None,
@@ -370,6 +393,31 @@ def verify_ip_mac_binding_count(device, origin, expected, max_time=60, check_int
     log.debug('Sepcific {} entry number not met the expected'.format(origin))
     return False
 
+
+def verify_empty_device_tracking_database(device, max_time=60, check_interval=10):
+
+    """ Verify ip mac binding count in device tracking database
+
+        Args:
+            device('obj'): device object
+            max_time('int',optional): max check time. Defaults to 60
+            check_interval('int',optional): check intervals. Defaults to 10
+        Returns:
+            Bool
+        Raises:
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+    count = 0
+    while timeout.iterate():
+        try:
+            output = device.parse("show device-tracking database")
+        except SchemaEmptyParserError:
+            return True
+        timeout.sleep()
+
+    log.debug('Device-tracking database is not empty:\n{}'.format(output))
+    return False
 
 def verify_ipv6_nd_raguard_policy(device, policy_name, vlan=None, iface=None,
                                   feature='Source guard', max_time=20, check_interval=10):

@@ -308,3 +308,22 @@ def add_device_to_testbed_yaml_file(device_name, device_ip, yaml_file):
     except Exception as e:
         log.warning("Failed to open/write {f}. Error: {e}".format(f=yaml_file, e=e))
     return
+
+def clear_logging(device):
+    """ clear logging
+        Args:
+            device ('obj'): Device object
+        Returns:
+            output ('str'): Output of execution
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        output = device.execute("clear logging logfile")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear logging on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+
+    return output

@@ -65,14 +65,16 @@ class Health(Blitz):
             # groups location is different depending on
             # where the section is in commonSetup/Cleanup or Testcase
             # check `section.groups` first, if not, check `section.parent.groups`
-            try:
-                for grp in section.groups:
-                    if re.search(search_keyword, grp):
-                        return data
-            except AttributeError:
-                for grp in section.parent.groups:
-                    if re.search(search_keyword, grp):
-                        return data
+            if isinstance(section, aetest.testcase.Testcase):
+                try:
+                    for grp in section.groups:
+                        if re.search(search_keyword, grp):
+                            return data
+                except AttributeError:
+                    # import remote_pdb; remote_pdb.set_trace()
+                    for grp in section.parent.groups:
+                        if re.search(search_keyword, grp):
+                            return data
         return {}
 
     def _select_health(self, section, data, search_keywords, arg_name):
@@ -681,6 +683,7 @@ class Health(Blitz):
             # get connected devices list
             devices_connected = self._check_all_devices_connected(
                 testbed, data, reconnect)
+            devices_connected = [dev for dev in devices_connected if dev != '']
 
         actions = self._get_actions(data, processor_targets)
         if not actions:
@@ -753,6 +756,8 @@ class Health(Blitz):
                             is None) or (force_all_connected == False
                                          and devices_connected):
                         temp_data.append(each_data)
+                    else:
+                        log.warning('health check is blocked due to force_all_connected is True.')
 
         # until here, data contains only actions
         # for cases like `parallel`, `loop`, need to put the headers
@@ -783,10 +788,10 @@ class Health(Blitz):
             data = temp_data
         # remove section if no data
         removed_section = False
-        # no reason at this point. must be that device is not connected
-        if not reasons:
+        # set reason in case device is not connected
+        if (not devices_connected and not common_api) and not reasons:
             reasons.append('Device is not connected')
-        if not data:
+        if not data or reasons:
             processor.result = Skipped
             processor.reporter.remove_section(id_list=processor.uid.list)
             removed_section = True

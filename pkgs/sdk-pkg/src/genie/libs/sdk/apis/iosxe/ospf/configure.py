@@ -1065,3 +1065,142 @@ def unconfigure_ospf_vrf_on_device(
                 ospf_process_id=ospf_process_id
             )
         )
+
+def configure_maximum_path_under_ospf(
+    device, ospf_process_id, max_path):
+    """ configure maximum-path under ospf
+        Args:
+            device ('obj'): Device object
+            ospf_process_id('int'): ospf processid to unconfig
+            max_path('int'): maximum path to be installed
+        Returns:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing configure commands
+    """
+
+    cmd=['router ospf {}'.format(ospf_process_id),'maximum-path {}'.format(max_path)]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure maximum-path under router ospf {ospf_process_id}".format(
+                ospf_process_id=ospf_process_id
+            )
+        )
+        
+def configure_ospfv3_network_point(device, interface):
+    """configure ospfv3 point to point network
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): interface to configure
+            ex.)
+                interface = 'tenGigabitEthernet0/4/0'
+        Return:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+                "interface {}".format(interface),
+                 "ipv6 ospf network point-to-point"
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Ospfv3 network point-to-point is not configured on device"
+            " {device} for interface {interface}, Error: {error}".format(
+               device=device.name, interface=interface, error=e
+            )
+        )
+
+def unconfigure_ospfv3_network(device, interface):
+    """unconfigure ospfv3 network type
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): interface to configure
+            ex.)
+                interface = 'tenGigabitEthernet0/4/0'
+        Return:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+                "interface {}".format(interface),
+                 "no ipv6 ospf network"
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Ospfv3 network point-to-point is not configured on device"
+            " {device} for interface {interface}, Error: {error}".format(
+               device=device.name, interface=interface, error=e
+            )
+        )
+
+def configure_ipv6_ospf_bfd(device, interface):
+    """configure ipv6 ospf bfd
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): interface to configure
+            ex.)
+                interface = 'tenGigabitEthernet0/4/0'
+        Return:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+               "interface {interface}".format(interface=interface),
+               "ipv6 ospf bfd"
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "ipv6 Ospf bfd is not configured on device"
+            " {device} for interface {interface}, Error: {error}".format(
+               device=device.name, interface=interface, error=e
+            )
+        )
+
+def unconfigure_ipv6_ospf_bfd(device, interface):
+    """unconfigure ipv6 ospf bfd
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): interface to configure
+            ex.)
+                interface = 'tenGigabitEthernet0/4/0'
+        Return:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+               "interface {interface}".format(interface=interface),
+               "no ipv6 ospf bfd"
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "ipv6 Ospf bfd is not configured on device"
+            " {device} for interface {interface}, Error: {error}".format(
+               device=device.name, interface=interface, error=e
+            )
+        )

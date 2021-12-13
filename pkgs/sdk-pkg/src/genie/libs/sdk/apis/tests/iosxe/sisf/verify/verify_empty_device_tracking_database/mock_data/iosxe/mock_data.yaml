@@ -1,0 +1,51 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: sisf-c9500-21-8-26-2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: sisf-c9500-21-8-26-2(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show device-tracking database: "Binding Table has 1 entries, 0 dynamic (limit\
+      \ 200000)\r\nCodes: L - Local, S - Static, ND - Neighbor Discovery, ARP - Address\
+      \ Resolution Protocol, DH4 - IPv4 DHCP, DH6 - IPv6 DHCP, PKT - Other Packet,\
+      \ API - API created\r\nPreflevel flags (prlvl):\r\n0001:MAC and LLA match  \
+      \   0002:Orig trunk            0004:Orig access           \r\n0008:Orig trusted\
+      \ trunk    0010:Orig trusted access   0020:DHCP assigned         \r\n0040:Cga\
+      \ authenticated     0080:Cert authenticated    0100:Statically assigned   \r\
+      \n\r\n\r\n    Network Layer Address                    Link Layer Address  \
+      \   Interface  vlan       prlvl      age        state      Time left       \r\
+      \nS   10.10.10.10                              dead.beed.1000         Te1/0/1\
+      \    900        0100       32s        REACHABLE  276 s"
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: sisf-c9500-21-8-26-2#

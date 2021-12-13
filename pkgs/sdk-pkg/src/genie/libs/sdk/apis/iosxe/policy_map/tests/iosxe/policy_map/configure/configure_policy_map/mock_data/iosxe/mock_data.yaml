@@ -1,0 +1,51 @@
+configure:
+  commands:
+    class class-default: "police burst (bc) is adjusted to 10000000 to fit the interface\
+      \ supported interval\r\n"
+    class test1: "class test1\r\n"
+    class test2: "set cos 5\r\n"
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    police rate 20000000000: "set cos 2\r\n"
+    policy-map policy1: "policy-map policy1\r\n"
+    set cos 2: "police rate 20000000000\r\n"
+    set cos 5: "set dscp cs2\r\n"
+    set cos cos table table_cos: "class class-default\r\n"
+    set dscp cs2: "police burst (bc) is adjusted to 10000000 to fit the interface\
+      \ supported interval\r\n"
+  prompt: Startek(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: Startek(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: Startek#

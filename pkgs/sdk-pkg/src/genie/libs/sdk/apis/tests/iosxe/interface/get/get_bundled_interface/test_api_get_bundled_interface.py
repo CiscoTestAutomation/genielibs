@@ -22,9 +22,13 @@ class TestGetBundledInterface(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['R1_xe']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_get_bundled_interface(self):
-        result = get_bundled_interface(self.device, 'Po12')
+        result = get_bundled_interface(device=self.device, port_channel='Po12')
         expected_output = None
         self.assertEqual(result, expected_output)

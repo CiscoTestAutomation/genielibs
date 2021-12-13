@@ -342,3 +342,23 @@ def get_mgmt_interface(device, mgmt_ip=None):
     result = out.q.contains_key_value(key='ip_address', value=mgmt_ip).get_values('interface')
     if result:
         return result[0]
+
+def clear_logging(device):
+    """ clear logging
+        Args:
+            device ('obj'): Device object
+        Returns:
+            output ('str'): Output of execution
+        Raises:
+            SubCommandFailure
+    """
+    dialog = Dialog([Statement(pattern=r'Clear logging buffer \[confirm\] \[y/n\] :.*', action='sendline(y)',loop_continue=True,continue_timer=False)])
+
+    try:
+        output = device.execute("clear logging", reply=dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear logging on {device}. Error:\n{error}".format(device=device, error=e)
+        )
+
+    return output

@@ -114,7 +114,7 @@ class TestReport:
             print_header('Tests Not Created')
 
             for k, v in self._tests['failed'].items():
-                logger.info(f'{k}: {v}')
+                logger.info('{}: {}'.format(k, v))
 
 
 class TestGenerator:
@@ -161,22 +161,20 @@ class TestGenerator:
             print_header('Generating tests for API {}'.format(api_name))
             argspec = getfullargspec(api)
             arguments = argspec.args
+            varargs = argspec.varargs
+            varkw = argspec.varkw
+            defaults = argspec.defaults
+
             api_args = self._build_api_args(
-                api_name, arguments)
+                api_name, arguments, varargs, varkw, defaults)
 
             test_info = (self._build_test_class(api_name))
-
-            if not api_args:
-                e = 'No test arguments provided for this API.' \
-                    ' Skipped API call'
-                logger.warning(e)
-                self.report.add_failed_test({api_name: e})
-                continue
 
             try:
                 self._set_stored_data()
             except Exception:
                 logger.error('Failed to record device information')
+                self._cleanup()
                 raise
 
             test_class = test_info.setdefault('unit_tests', [])
@@ -188,7 +186,8 @@ class TestGenerator:
                 expected_output = self._get_api_expected_output(
                     api_name, index)
                 try:
-                    api_result = api(**test_arg)
+                    args, varargs, kwargs = test_arg
+                    api_result = api(*args, *varargs, **kwargs)
                 except TypeError as t:
                     error_message = \
                         'Update test-arguments YAML: {}'.\
@@ -210,8 +209,7 @@ class TestGenerator:
                     # add to report as a failure
                     self.report.add_failed_test({api_name: error_message})
                 else:
-                    arguments = self._build_write_args(
-                        test_arg)
+                    arguments = self._build_write_args(args, varargs, kwargs)
                     test_class.append(self._build_test_method(
                         api_name,
                         arguments,
@@ -222,8 +220,7 @@ class TestGenerator:
 
             # if there are tests to generate
             if test_class:
-                test_info.update(
-                    self._create_testbed(api_name, self.destination))
+                test_info.update(self._create_testbed())
 
                 template = self.template_env.get_template(TEMPLATE_TEST)
                 api_folder = os.path.join(
@@ -247,9 +244,8 @@ class TestGenerator:
 
         self.device.disconnect()
 
-        if os.path.isdir(TEMP_DIR):
-            # temp directory cleanup (if created)
-            shutil.rmtree(TEMP_DIR)
+        # temp directory cleanup (if created)
+        self._cleanup()
 
         self.report.print_results(destination=self.destination)
 
@@ -263,44 +259,63 @@ class TestGenerator:
             return test_instance.get('expected_output', None)
         return None
 
-    def _build_api_args(self, api_name, arguments):
+    def _build_api_args(self, api_name, args,
+                        varargs, varkw, defaults):
         """
         Creates list of test arguments for the given API.
 
         Args:
             api_name (str): the name of the API
-            arguments (dict): arguments declared on test arguments YAML.
+            arguments (str): API arguments
+            varargs (str): the name of the variable containing positional arguments
+            varkw (str): the name of the variable containing keyword arguments
+            defaults (list): all default values for the given API
         Returns:
             list: List of dictionaries with API arguments and values
         """
-
-        api_args = []
+        def_args = {}
+        args_list = []
 
         test_args_list = self._get_test_arguments(api_name)
 
         # if test arguments are not provided
         if not test_args_list:
-            if 'device' in arguments:
-                api_args.append({'device': self.device})
-            return api_args
+            api_args = []
+            if 'device' in args:
+                api_args.append(self.device)
+            args_list = [(api_args, (), {})]
+            return args_list
+
+        # get default values for when arguments are not provided
+        if defaults:
+            def_args = dict(zip(reversed(args), reversed(defaults)))
 
         # get test arguments values based on argument names
-        for args_dict in test_args_list:
-            api_dict = {}
-            for arg in arguments:
+        for test_args_dict in test_args_list:
+            api_args = []
+            api_varargs = ()
+            api_varkw = {}
+            for arg in args:
                 # devices are not listed as arguments
                 # but needed to run the API
                 if arg == 'device':
                     value = self.device
-                elif arg in args_dict:
-                    value = args_dict[arg]
+                elif arg in test_args_dict:
+                    value = test_args_dict[arg]
+                elif arg in def_args:
+                    value = def_args[arg]
                 else:
                     # if cannot find argument, ignore it
                     # if argument is needed, it will show up in the test report
                     continue
-                api_dict.update({arg: value})
-            api_args.append(api_dict)
-        return api_args
+                api_args.append(value)
+            if varargs and varargs in test_args_dict:
+                api_varargs = tuple(test_args_dict[varargs])
+            if varkw and varkw in test_args_dict:
+                api_varkw = test_args_dict[varkw]
+            args_list.append((api_args, api_varargs, api_varkw))
+
+        return args_list
 
     def _build_test_class(self, api_name):
         """
@@ -352,28 +367,37 @@ class TestGenerator:
 
         return ret_dict
 
-    def _build_write_args(self, arguments):
+    def _build_write_args(self, arguments, varargs, kwargs):
         """
         Builds a string containing all arguments used in a test.
 
         Args:
             arguments (dict): The arguments necessary to run the test
+            varargs (dict): Positional arguments necessary to run the test
+            kwargs (dict): Keyword arguments necessary to run the test
         Returns:
             str: a string containing all arguments used in the API call
         """
 
         write_args = []
 
-        for key, value in arguments.items():
-            if key == 'device':
+        for value in arguments:
+            if value == self.device:
                 arg_value = 'self.device'
             else:
                 arg_value = pprint.pformat(value)
-            write_args.append(arg_value)
+            write_args.append('{}'.format(arg_value))
+        if varargs:
+            for var in varargs:
+                write_args.append('{}'.format(var))
+        if kwargs:
+            for key, value in kwargs.items():
+                arg_value = pprint.pformat(value)
+                write_args.append('{}={}'.format(key, arg_value))
 
         return ', '.join(write_args)
 
-    def _create_testbed(self, api_name, mock_data_path):
+    def _create_testbed(self):
         """
         Creates the testbed file used to connect to the mock data.
 
@@ -472,6 +496,8 @@ class TestGenerator:
         Returns:
             list: Tuples containing the API name and the API itself.
         """
+        # path that will contain API folder structure
+        destination_path = []
 
         # check if module is a filepath
         if module_path:
@@ -484,15 +510,16 @@ class TestGenerator:
                 if not genie_path:
                     _, genie_path, mod_path = module_path.partition(
                      'genielibs/src/sdk/apis')
-                    genie_path = 'genie/libs/sdk/apis'
+                genie_path = 'genie.libs.sdk.apis'
             except Exception as e:
                 logger.error(
-                    "--module-path has to be the path to a genielibs module")
+                    "--module-path has to be a path to a genielibs module")
                 raise e
 
-            genie_path = genie_path.replace('/', '.')
-            mod_path = mod_path.replace('/', '.').strip('.py')
-            self.module_import = '.'.join([genie_path, mod_path])
+            # ignore file extension
+            mod_path, _ = os.path.splitext(mod_path)
+            mod_path = mod_path.replace('/', '.')
+            self.module_import = ''.join([genie_path, mod_path])
 
             module_path = Path(module_path)
             if module_path.is_file():
@@ -517,8 +544,6 @@ class TestGenerator:
             lib_prefix = 'genie.libs.sdk.apis'
             import_string = '{}.{}'.format(
                 lib_prefix, module)
-            # path that will contain API folder structure
-            destination_path = []
 
             try:
                 importlib.util.find_spec(import_string)
@@ -559,7 +584,7 @@ class TestGenerator:
                     # ignores filter if regex is incorrect
                     logger.warning('Skipped: Invalid Regex - {}'.format(e))
                     return apis
-                # apis = [a for a in apis if not r.match(a[0])]
+
                 # removes matches from the list of APIs
                 apis = [a for a in apis if not re.search(r, a[0])]
             else:
@@ -567,15 +592,32 @@ class TestGenerator:
 
         return apis
 
+    def _cleanup(self):
+        """Removes temp directory (if created)"""
+        if os.path.isdir(TEMP_DIR):
+            shutil.rmtree(TEMP_DIR)
+
     def _set_stored_data(self, folder=TEMP_DIR):
         """
         Connect to device and keep copy of connection data for mock_data files.
         """
 
         if not self.device.is_connected():
-            self.device.connect(learn_hostname=True)
-            self._connected_data = self.device.stored_data.copy()
-            os.makedirs(folder, exist_ok=True)
+            self.device.connect(
+                learn_hostname=True,
+                init_config_commands=[],
+                init_exec_commands=[]
+            )
+            # check if it is a single unicon connection
+            if hasattr(self.device, 'stored_data') and not self.device.is_ha:
+                self._connected_data = self.device.stored_data.copy()
+                os.makedirs(folder, exist_ok=True)
+            else:
+                self.device.disconnect()
+                self._cleanup()
+                raise Exception(
+                    'Connection not supported: '
+                    'only single Unicon connections are supported')
 
     def _reset_stored_data(self):
         """

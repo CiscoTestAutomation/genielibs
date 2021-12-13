@@ -337,3 +337,177 @@ def clear_macsec_counters(device,interfaces):
             "Could not clear macsec counters on device {device}, "
             "Error: {error}".format(device=device.name, error=e)
             )
+
+def configure_mka_policy_delay_protection(device, policy_name, interface, cipher):
+    """ Configures mka policy with delay protection on device and interface
+
+        Args:
+            device ('obj'): device to use
+            policy_name ('str'): name of the policy to be configured
+            interface ('str'): interface to configure
+            cipher ('str'): Cipher suite to be configured
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info("Configure mka policy with delay protection on device")
+    configs = [
+            "mka policy {policy_name}".format(policy_name=policy_name),
+            "delay-protection",
+            "macsec-cipher-suite {cipher}".format(cipher=cipher)]
+    log.info("Configure mka policy {policy_name} on "
+                "interface {interface}".format(policy_name=policy_name, interface=interface)
+        )
+    configs.extend(["interface {intf}".format(intf=interface),
+            "mka policy {policy_name}".format(policy_name=policy_name)])
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure mka policy with delay protection on device/interface, "
+            "Error: {error}".format(error=e)
+            )
+
+
+def unconfigure_mka_policy_delay_protection(device, policy_name, interface):
+    """ Unconfigures mka policy with delay protection on device and interface
+
+        Args:
+            device ('obj'): device to use
+            policy_name ('str'): name of the policy to be unconfigured
+            interface ('str'): interface to unconfigure
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info("Unconfigure mka policy {policy_name} on "
+                "interface {interface}".format(policy_name=policy_name, interface=interface)
+        )
+    configs = [
+            "interface {intf}".format(intf=interface),
+            "no mka policy {policy_name}".format(policy_name=policy_name)]
+
+    log.info("Unconfigure mka policy with delay protection on device")
+    
+    configs.append("no mka policy {policy_name}".format(policy_name=policy_name))
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure mka policy with delay protection on device/interface, "
+            "Error: {error}".format(error=e)
+            )
+
+def configure_mka_policy(device, policy_name, interface, cipher):
+    """ Configures mka policy on device and interface
+
+        Args:
+            device ('obj'): device to use
+            policy_name ('str'): name of the policy to be configured
+            interface ('str'): interface to configure
+            cipher ('str'): Cipher suite to be configured
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info("Configure mka policy on device")
+    configs = [
+            "mka policy {policy_name}".format(policy_name=policy_name),
+            "macsec-cipher-suite {cipher}".format(cipher=cipher)]
+    log.info("Configure mka policy {policy_name} on "
+                "interface {interface}".format(policy_name=policy_name, interface=interface)
+        )
+    configs.extend(["interface {intf}".format(intf=interface),
+            "mka policy {policy_name}".format(policy_name=policy_name)])
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure mka policy on device/interface, "
+            "Error: {error}".format(error=e)
+            )
+
+
+def unconfigure_mka_policy(device, policy_name, interface):
+    """ Unconfigures mka policy on device and interface
+
+        Args:
+            device ('obj'): device to use
+            policy_name ('str'): name of the policy to be unconfigured
+            interface ('str'): interface to unconfigure
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info("Unconfigure mka policy {policy_name} on "
+                "interface {interface}".format(policy_name=policy_name, interface=interface)
+        )
+    configs = [
+            "interface {intf}".format(intf=interface),
+            "no mka policy {policy_name}".format(policy_name=policy_name)]
+
+    log.info("Unconfigure mka policy with on device")
+
+    configs.append("no mka policy {policy_name}".format(policy_name=policy_name))
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure mka policy with on device/interface, "
+            "Error: {error}".format(error=e)
+            )
+
+def unconfigure_mka_keychain_on_interface(device, interface, key_string, key_chain=None):
+    """ Unconfigures mka keychain on interface
+
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+            key_string ('str'): key string to configure
+            key_chain ('str'): fall back key chain to unconfigure
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        if key_chain is not None:
+            log.info(
+                "Unconfigure mka keychain {key_string} fall back key chain {key_chain} on {intf}".format(
+                key_string=key_string, key_chain=key_chain, intf=interface))
+            device.configure([
+                "interface {intf}".format(intf=interface),
+                "no mka pre-shared-key key-chain {key_string} fallback-key-chain {key_chain}".
+                 format(key_string=key_string, key_chain=key_chain)])
+        else:
+            log.info(
+                "Unconfigure mka keychain {key_string} on {intf}".format(
+                 key_string=key_string, intf=interface))
+            device.configure([
+                "interface {intf}".format(intf=interface),
+                "no mka pre-shared-key key-chain {key_string}".format(key_string=key_string)])
+                
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure mka keychain {key_string} "
+            "on interface {interface}, Error: {error}".format(
+                key_string=key_string, interface=interface, error=e
+            )
+        )
+

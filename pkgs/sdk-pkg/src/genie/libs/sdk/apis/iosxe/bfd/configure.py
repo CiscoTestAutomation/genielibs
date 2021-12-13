@@ -118,3 +118,37 @@ def enable_bfd_static_route(device, interface, ip_address):
                 interface=interface
             )
         )
+
+def unconfigure_bfd_on_interface(
+    device, interface
+):
+    """ Unconfigures bfd on interface
+
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring bfd on interface
+
+    """
+    log.info(
+        "Unconfiguring bfd on "
+        "interface {}".format(interface)
+    )
+
+    try:
+        device.configure(
+            [
+                "interface {}".format(interface),
+                "no bfd interval"
+            ]
+        )
+
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not unconfigure bfd on interface {interface}".format(
+                interface=interface
+            )
+        )

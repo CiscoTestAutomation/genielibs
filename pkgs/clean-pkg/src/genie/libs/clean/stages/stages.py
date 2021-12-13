@@ -27,7 +27,6 @@ from unicon.core.errors import SubCommandFailure
 # Logger
 log = logging.getLogger(__name__)
 
-
 class Connect(BaseStage):
     """This stage connects to the device that is being cleaned.
 
@@ -194,7 +193,6 @@ ping_server:
     def ping_server(self, steps, device, server, vrf=VRF, timeout=TIMEOUT,
                     min_success_rate=MIN_SUCCESS_RATE, max_attempts=MAX_ATTEMPTS,
                     interval=INTERVAL):
-
         with steps.start("Pinging server") as step:
 
             # Success rate is 80 percent (4/5)
@@ -203,6 +201,10 @@ ping_server:
             #   5 packets transmitted, 5 packets received, 0.00% packet loss
             #   5 packets transmitted, 5 received, 0% packet loss, time 4005ms
             p2 = r'(?P<transmit>\d+) +packets +transmitted, (?P<recv>\d+) +(packets )?received, (?P<loss>\S+)% +packet +loss'
+
+            # Send count=3, Receive count=3
+            # Send count=3, Receive count=3 from 172.25.195.115 
+            p3 = r'Send count=+(?P<send>\d+), Receive count=+(?P<received>\d+)'
 
             try:
                 # If the server is a valid IP (v4 or v6) use it directly instead
@@ -221,6 +223,8 @@ ping_server:
                 try:
                     if vrf:
                         output = device.ping(server, vrf=vrf, timeout=timeout)
+                    elif 'aireos' in device.os:
+                        output = device.ping(addr=server, timeout=timeout)
                     else:
                         output = device.ping(server, timeout=timeout)
                 except SubCommandFailure as err:
@@ -258,6 +262,13 @@ ping_server:
 
                     if float(success_rate) >= float(min_success_rate):
                         step.passed(f"'{server}' is reachable")
+
+                m = re.search(p3, output)
+                if m:
+                    group = m.groupdict()
+
+                    if int(group['received']) > 0:
+                        step.passed(f"{server} is reachable")
 
                 # Minimum success rate not met, retry
                 log.warning(f'Unable to meet minimum ping success rate of '

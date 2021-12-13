@@ -18,26 +18,35 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from unicon.eal.dialogs import Statement, Dialog
 from unicon.core.errors import StateMachineError,SubCommandFailure
 
+
 # Logger
 log = logging.getLogger(__name__)
 
 
-def execute_delete_boot_variable(device, boot_images, timeout=300):
+def execute_delete_boot_variable(device, boot_images=[], timeout=300):
     ''' Delete the boot variables
         Args:
             device ('obj'): Device object
-            boot_images ('list'): List of strings of system images to delete as boot variable
+            boot_images ('list', optional): List of strings of system images to delete as boot variable.default is an empty list
             timeout ('int'): Max time to delete boot vars in seconds
     '''
 
-    for image in boot_images:
+    if not boot_images:
+        log.info("Removing boot variable on {device}".format(device=device))
         try:
-            device.configure("no boot system {}".format(image), timeout=timeout)
-        except Exception as e:
-            raise Exception("Failed to delete boot variables on '{}'\n{}".\
+            device.configure('no boot system')
+        except SubCommandFailure as e:
+            raise SubCommandFailure(
+                "Could not removing boot variable on {device}. Error:\n{error}".format(device=device, error=e))
+    else:
+        for image in boot_images:
+            try:
+                device.configure("no boot system {}".format(image), timeout=timeout)
+            except Exception as e:
+                raise Exception("Failed to delete boot variables on '{}'\n{}".\
                             format(device.name, str(e)))
-        else:
-            log.info("Deleted '{}' from BOOT variable".format(image))
+            else:
+                log.info("Deleted '{}' from BOOT variable".format(image))
 
 
 def execute_set_boot_variable(device, boot_images, timeout=300):
@@ -389,3 +398,20 @@ def execute_clear_platform_software_fed_active_acl_counters_hardware(device):
         device.execute("clear platform software fed active acl counters hardware")
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Could not clear counters on {device}. Error:\n{e}")
+
+
+def execute_clear_platform_software_fed_switch_acl_counters_hardware(device,switch_num):
+    """ clear platform software fed switch acl counters hardware
+        Args:
+            device ('obj'): Device object
+            switch_num ('int'): Switch number to clear acl counters
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.execute("clear platform software fed switch {switch_num} acl counters hardware".format(switch_num=switch_num))
+    except SubCommandFailure as e:
+        raise SubCommandFailure("Could not clear counters on {device}. Error:\n{e}")
+

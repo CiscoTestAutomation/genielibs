@@ -183,3 +183,8 @@ class ImageHandler(BaseImageHandler, ImageLoader):
             verify_running_image.update({'images': self.original_system})
         else:
             verify_running_image.update({'images': self.system})
+
+    def update_install_image(self, number=''):
+        '''Update clean stage 'install_image' with image information'''
+        install_image = self.device.clean.setdefault('install_image'+number, {})
+        install_image.update({'images': self.system})

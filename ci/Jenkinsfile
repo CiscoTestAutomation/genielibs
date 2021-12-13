@@ -114,15 +114,23 @@ pipeline {
                     make json
                     cd $WORKSPACE/genieparser
                     make develop
-                    make json
                     cd $WORKSPACE/genielibs.cisco
                     make develop
-                    make json
                     cd $WORKSPACE/pyats
                     make develop
                     cd $WORKSPACE
                     make develop
+
                     make json
+                    make -C $WORKSPACE/genieparser json
+                    make -C $WORKSPACE/genielibs.cisco json
+                    make -C $WORKSPACE/genie json
+
+                    cd $WORKSPACE
+                    git diff --exit-code pkgs/sdk-pkg/api_generator/output/github_apis.json || (echo "API JSON may be corrupted. Ensure your branch is up to date, run 'make json', and re-push to branch" && false)
+                    git diff --exit-code pkgs/ops-pkg/ops_generator/output/github_ops.json || (echo "Ops JSON may be corrupted. Ensure your branch is up to date, run 'make json', and re-push to branch" && false)
+                    git diff --exit-code pkgs/clean-pkg/sdk_generator/output/github_clean.json || (echo "Clean JSON may be corrupted. Ensure your branch is up to date, run 'make json', and re-push to branch" && false)
+
                     env
                     pip list
                     pip freeze
@@ -156,6 +164,43 @@ pipeline {
                 cd tests
                 runAll --no-refresh
                 """
+
+            }
+        }
+
+        stage("Run Tests for Coverage") {
+            steps {
+                sh """
+                . /scratch/genielibs-env/bin/activate
+                coverage erase
+                coverage run --include 'pkgs/*' --omit='*/tests/*' -m unittest discover -s tests/api -v
+                mv .coverage .coverage.api
+                coverage run --include 'pkgs/*' --omit='*/tests/*' -m unittest discover -s tests/clean -v
+                mv .coverage .coverage.clean
+                coverage run --include 'pkgs/*' --omit='*/tests/*' -m unittest discover -s tests/filetransferutils -v
+                mv .coverage .coverage.filetransferutils
+                coverage run --include 'pkgs/*' --omit='*/tests/*' -m unittest discover -s tests/iosxe -v
+                mv .coverage .coverage.iosxe
+                coverage run --include 'pkgs/*' --omit='*/tests/*' -m unittest discover -s tests/robot -v
+                mv .coverage .coverage.robot
+                coverage run --include 'pkgs/*' --omit='*/tests/*' -m unittest discover -s tests/blitz -v
+                mv .coverage .coverage.blitz
+                coverage run --include 'pkgs/*' --omit='*/tests/*' -m unittest discover -s tests/conf -v
+                mv .coverage .coverage.conf
+                coverage run --include 'pkgs/*' --omit='*/tests/*' -m unittest discover -s tests/health -v
+                mv .coverage .coverage.health
+                coverage combine
+                coverage report
+                coverage html
+                """
+                publishHTML (target: [
+                    allowMissing: true,
+                    alwaysLinkToLastBuild: false,
+                    keepAll: true,
+                    reportDir: 'htmlcov',
+                    reportFiles: "index.html",
+                    reportName: 'Coverage report'
+                ])
             }
         }
 

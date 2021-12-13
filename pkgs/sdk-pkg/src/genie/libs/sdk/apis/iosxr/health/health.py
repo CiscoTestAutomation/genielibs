@@ -266,6 +266,7 @@ def health_logging(device,
                    keywords=['traceback', 'Traceback', 'TRACEBACK'],
                    output=None,
                    num_of_logs=False,
+                   clear_log=False,
                    health=True):
     '''Get logging messages
 
@@ -278,6 +279,10 @@ def health_logging(device,
             output    (`str`): Output of show command
             num_of_logs (`bool`): flag to return number of log messages
                                   Default to False
+            clear_log (`bool`): flag to clear logging message
+                                Default to False
+            health (`bool`): wheather return health_data format or not
+                             Default to True
         Returns:
             logs     (`dict`): return health_data format.
                                ex.)
@@ -307,6 +312,8 @@ def health_logging(device,
             parsed = device.parse('show logging', output=output)
     except SchemaEmptyParserError:
         parsed = {}
+    if clear_log:
+        device.api.clear_logging()
 
     # Get value of 'logs' if it exists else '[]'
     logs = parsed.setdefault('logs', [])

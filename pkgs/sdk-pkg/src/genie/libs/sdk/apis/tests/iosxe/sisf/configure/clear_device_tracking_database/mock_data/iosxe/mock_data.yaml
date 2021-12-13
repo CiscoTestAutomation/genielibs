@@ -1,0 +1,61 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: sisf-c9500-21-8-26-2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: sisf-c9500-21-8-26-2(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    'clear device-tracking database address 20.20.20.20 force': ''
+    'clear device-tracking database address 20.20.20.20 interface te1/0/1': ''
+    'clear device-tracking database address 20.20.20.20 policy test': Invalid
+      policy
+    'clear device-tracking database address 20.20.20.20 vlanid 10': ''
+    'clear device-tracking database force': ''
+    'clear device-tracking database interface te1/0/1 force': ''
+    'clear device-tracking database interface te1/0/1 vlanid 10': ''
+    'clear device-tracking database mac dead.beef.0001 force': ''
+    'clear device-tracking database mac dead.beef.0001 interface te1/0/1': ''
+    'clear device-tracking database mac dead.beef.0001 policy test': Invalid
+      policy
+    'clear device-tracking database mac dead.beef.0001 vlanid 10': ''
+    'clear device-tracking database policy test': Invalid policy
+    'clear device-tracking database prefix 3001::1/48 force': ''
+    'clear device-tracking database prefix 3001::1/48 interface te1/0/1': ''
+    'clear device-tracking database prefix 3001::1/48 policy test': Invalid
+      policy
+    'clear device-tracking database prefix 3001::1/48 vlanid 10': ''
+    'clear device-tracking database vlanid 10': ''
+    'clear device-tracking database': ''
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: sisf-c9500-21-8-26-2#

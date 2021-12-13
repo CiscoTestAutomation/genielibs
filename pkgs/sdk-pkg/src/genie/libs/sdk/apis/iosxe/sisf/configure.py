@@ -715,7 +715,7 @@ def remove_device_tracking_policy(device, client_policy_name,  server_policy_nam
     config = []
     policy_list = [p for p in [client_policy_name, server_policy_name] if p is not None]
 
-    log.debug('Removing device tracking policy/policies {policy_list}'.format(policy=policy_list))
+    log.debug('Removing device tracking policy/policies {policy_list}'.format(policy_list=policy_list))
 
     for policy in policy_list:
         config.append("no device-tracking policy {policy}".format(policy=policy))
@@ -1804,6 +1804,30 @@ def configure_device_tracking_binding(device, vlan, address, interface, mac, tra
         raise
 
 
+def unconfigure_device_tracking_binding(device, vlan, address, interface, mac, tracking="default"):
+    """Removes static entry to binding table
+    Args:
+        device ('obj'): device object
+        vlan ('str'): vlan id
+        address ('str'): ip address (v4 or v6)
+        interface ('str'): interface for entry - Eg. TWE 1/0/1
+        mac ('str'): entry's mac address
+        tracking ('str', optional): Set the tracking for the device - Eg. "enable", "disable", or "default" . Defaults to "default.
+    Returns:
+        None
+    Raises:
+        SubCommandFailure: Failed to add static entry
+    """
+    cmd = "no device-tracking binding vlan {vlan} {address} interface {interface} {mac} tracking {tracking}"
+    cmd = cmd.format(vlan=vlan, address=address, interface=interface, mac=mac, tracking=tracking)
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+        log.warning("Failed to remove static entry")
+        raise
+
+
 def configure_device_tracking_binding_options(device, reachable_lifetime=None, stale_lifetime=None,
                                               down_lifetime=None, max_entries=None, mac_limit=None,
                                               port_limit=None, vlan_limit=None, logging=False):
@@ -2105,46 +2129,47 @@ def clear_device_tracking_database(device, options=None):
     if options is None:
         config.append(prefix)
     else:
-        if options.get("force", None):
-            config.append("{prefix} force".format(prefix=prefix))
-        if options.get("policy", None):
-            config.append("{prefix} policy {policy}".format(prefix=prefix, policy=options['policy']))
-        if options.get("vlanid", None):
-            config.append("{prefix} vlanid {vlanid}".format(prefix=prefix, vlanid=options['vlanid']))
-        if options.get("interface", None):
-            interface_dict = options["interface"]
-            if interface_dict.get("interface", None):
-                target = interface_dict["interface"]
-                suffix = ""
-                if interface_dict.get("force", None):
-                    suffix = "force"
-                elif interface_dict.get("vlanid", None):
-                    suffix = "vlanid {vlanid}".format(interface_dict["vlanid"])
-
-                config.append("{prefix} interface {interface} {suffix}".format(prefix=prefix,
-                                                                            interface=target,
-                                                                            suffix=suffix))
-
-        for option in nested_options_list:
-            if options.get(option, None):
-                address_dict = options[option]
-                if address_dict.get("address", None):
-                    address = address_dict["address"]
-                    opt = "{key} {value}".format(key=option, value=address)
+        for option in options:
+            if option.get("force", None):
+                config.append("{prefix} force".format(prefix=prefix))
+            if option.get("policy", None):
+                config.append("{prefix} policy {policy}".format(prefix=prefix, policy=option['policy']))
+            if option.get("vlanid", None):
+                config.append("{prefix} vlanid {vlanid}".format(prefix=prefix, vlanid=option['vlanid']))
+            if option.get("interface", None):
+                interface_dict = option["interface"]
+                if interface_dict.get("interface", None):
+                    target = interface_dict["interface"]
                     suffix = ""
+                    if interface_dict.get("force", None):
+                        suffix = "force"
+                    elif interface_dict.get("vlanid", None):
+                        suffix = "vlanid {vlanid}".format(vlanid=interface_dict["vlanid"])
 
-                    if address_dict.get("target", None):
-                        target_dict = address_dict["target"]
-                        if target_dict.get("force", None):
-                            suffix = "force"
-                        elif target_dict.get("interface", None):
-                            suffix = "interface {interface}".format(target_dict["interface"])
-                        elif target_dict.get("policy", None):
-                            suffix = "policy {policy}",format(policy=target_dict["policy"])
-                        elif target_dict.get("vlanid", None):
-                            suffix = "vlanid {vlanid}".format(vlanid=target_dict["vlanid"])
+                    config.append("{prefix} interface {interface} {suffix}".format(prefix=prefix,
+                                                                                interface=target,
+                                                                                suffix=suffix))
 
-                    config.append("{prefix} {opt} {suffix}".format(prefix=prefix, opt=opt, suffix=suffix))
+            for nested_option in nested_options_list:
+                if option.get(nested_option, None):
+                    address_dict = option[nested_option]
+                    if address_dict.get("address", None):
+                        address = address_dict["address"]
+                        opt = "{key} {value}".format(key=nested_option, value=address)
+                        suffix = ""
+
+                        if address_dict.get("target", None):
+                            target_dict = address_dict["target"]
+                            if target_dict.get("force", None):
+                                suffix = "force"
+                            elif target_dict.get("interface", None):
+                                suffix = "interface {interface}".format(interface=target_dict["interface"])
+                            elif target_dict.get("policy", None):
+                                suffix = "policy {policy}".format(policy=target_dict["policy"])
+                            elif target_dict.get("vlanid", None):
+                                suffix = "vlanid {vlanid}".format(vlanid=target_dict["vlanid"])
+
+                        config.append("{prefix} {opt} {suffix}".format(prefix=prefix, opt=opt, suffix=suffix))
 
     try:
         device.execute(config)

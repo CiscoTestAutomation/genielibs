@@ -528,8 +528,13 @@ def get_md5_hash_of_file(device, file, timeout=60):
     # ....................................Done!
     # verify /md5 (bootflash:test1.bin) = 2c9bf2c64bee6fb22277fc89bd1c8ff0
     try:
-        return device.execute('verify /md5 {}'.format(file),
-                              timeout=timeout).split()[-1]
+        output = device.execute('verify /md5 {}'.format(file), timeout=timeout)
+        m = re.search(r' = (\S+)', output)
+        if m:
+            hash_value = m.group(1)
+            return hash_value
+        else:
+            log.error('Could not find MD5 hash in output')
     except Exception as e:
         log.warning(e)
         return None

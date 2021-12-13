@@ -416,4 +416,54 @@ def configure_system_jumbomtu(device, mtu_value):
             "Could not set mtu value on device. Error:\n{e}".format(e=e)
         )
 
+def enable_ipv6_multicast_routing(device):
+    """ Enables ipv6 multicast routing on device
 
+        Args:
+            device ('obj'): Device object
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        'Enabling ipv6 multicast routing on device '
+    )
+
+    try:
+        device.configure(
+            "ipv6 multicast-routing"
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not enable ipv6 multicast routing on "
+            "device. Error:\n{e}".format(e=e)
+        )
+
+def disable_ipv6_multicast_routing(device):
+    """ Disables ipv6 multicast routing on device
+
+        Args:
+            device ('obj'): Device object
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        'Disabling ipv6 multicast routing on device '
+    )
+
+    try:
+        device.configure(
+            "no ipv6 multicast-routing"
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not disable ipv6 multicast routing on "
+            "device. Error:\n{e}".format(e=e)
+        )

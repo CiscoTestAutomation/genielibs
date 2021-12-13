@@ -843,4 +843,214 @@ def unconfigure_radius_interface_vrf(device, interface, vrf):
             "Could not Unconfigure Radius Interface via vrf"
         )
 
+def configure_common_criteria_policy(device, 
+                                     policy_name, 
+                                     char_changes=None,
+                                     copy=None, 
+                                     lifetime=None, 
+                                     lower_case=1, 
+                                     upper_case=1,
+                                     max_len=None, 
+                                     min_len=3, 
+                                     no_value=None, 
+                                     num_count=1,
+                                     special_case=None):
+    
+    """ Configure aaa common criteria policy
+    Args:
+        device (`obj`):                 Device object
+        policy_name (`str`):            Policy name
+        char_changes (`str`, optional): Number of change characters between old and new passwords
+        copy (`str`, optional):         Copy from policy
+        lifetime (`dict`, optional):    lifetime configuration
+        lower_case (`str`, optional):   Number of lower-case characters
+        upper_case (`str`, optional):   Number of upper-case characters
+        max_len (`str`, optional):      Specify the maximum length of the password
+        min_len (`str`, optional):      Specify the minimum length of the password
+        no_value (`dict`, optional):    value to unconfigure
+        num_count (`str`, optional):    Number of numeric characters
+        special_case (`str`, optional): Number of special characters
 
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+
+    configs = ["aaa common-criteria policy {pol}".format(pol=policy_name)]
+    if char_changes:
+        configs.append("char-changes {char}".format(char=char_changes))
+    if copy:
+        configs.append("copy {copy_pol}".format(copy_pol=copy))
+    if lifetime:
+       for key in lifetime:
+           configs.append("lifetime {attr} {val}".format(attr=key, val=lifetime[key])) 
+    if int(lower_case) > 1:
+        configs.append("lower-case {low}".format(low=lower_case))
+    if int(upper_case) > 1:
+        configs.append("upper-case {up}".format(up=upper_case))
+    if max_len:
+        configs.append("max-length {maxl}".format(maxl=max_len))
+    if int(min_len) > 3:
+        configs.append("min-length {minl}".format(minl=min_len))
+    if no_value:
+        if 'lifetime' in no_value:
+            configs.append("no lifetime {val1} {val2}".format(
+                val1=no_value["lifetime"][0],
+                val2=no_value["lifetime"][1]))
+        else:
+            for key in no_value:
+                configs.append("no {attr} {val}".format(attr=key,
+                    val=no_value[key]))
+    if int(num_count) > 1:
+        configs.append("numeric-count {num}".format(num=num_count))
+    if special_case:
+        configs.append("special-case {spcl}".format(spcl=special_case))
+
+    try:
+        device.configure(configs)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure aaa common criteria policy {pol} "
+            "Error: {error}".format(pol=policy_name, error=e
+            )
+        )
+
+def unconfigure_common_criteria_policy(device, 
+                                       policy_name):
+    
+    """ Unconfigure aaa common criteria policy
+    Args:
+        device (`obj`):      Device object
+        policy_name (`str`): Policy name
+
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+
+    try:
+        out = device.configure("no aaa common-criteria policy {pol}".format(
+                               pol=policy_name))
+        if '% Policy {pol} cannot be deleted'.format(pol=policy_name) in out:
+            raise SubCommandFailure(out)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure aaa common criteria policy {pol} "
+            "Error: {error}".format(pol=policy_name, error=e
+            )
+        )
+
+def configure_enable_policy_password(device, 
+                                     password, 
+                                     policy_name=None, 
+                                     password_type=None):
+    
+    """ Configure enable password with policy
+    Args:
+        device (`obj`):                  Device object
+        password (`str`):                Password
+        policy_name (`str`, optional):   Policy name
+        password_type ('str', optional): Password type
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+      
+    if policy_name:
+        config = "enable common-criteria-policy {pol} password {ptype} {pwd}".format(
+                            pol=policy_name, ptype=password_type, pwd=password)
+    else:
+        config = "enable password {pwd}".format(pwd=password)
+
+    try:
+        out = device.configure(config)
+        if '% Password' in out:
+            raise SubCommandFailure(out)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure enable password with policy {pwd} "
+            "Error: {error}".format(pwd=password, error=e
+            )
+        )
+        
+def unconfigure_enable_policy_password(device, 
+                                       password, 
+                                       policy_name=None, 
+                                       password_type=None):
+    
+    """ Unconfigure enable password with policy
+    Args:
+        device (`obj`):                   Device object
+        password (`str`):                 Password
+        policy (`str`, optional):         Policy name
+        password_type ('str', optional) : Password type
+
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+
+    if policy_name:
+        config = "no enable common-criteria-policy {pol} password {ptype} {pwd}".format(
+                            pol=policy_name, ptype=password_type, pwd=password)
+    else:
+        config = "no enable password {pwd}".format(pwd=password)
+
+    try:
+        device.configure(config)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure enable password with policy {pwd} "
+            "Error: {error}".format(pwd=password, error=e
+            )
+        )
+
+def configure_service_password_encryption(device):
+
+    """ Configures service password encryption
+    Args:
+        device ('obj'): device to use
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed configuring service password encryption 
+
+    """
+
+    try:
+        device.configure("service password-encryption")
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not configure service password encryption"
+        )
+
+def unconfigure_service_password_encryption(device):
+
+    """ Unconfigures service password encryption
+    Args:
+        device ('obj'): device to use
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed unconfiguring service password encryption 
+
+    """
+
+    try:
+        device.configure("no service password-encryption")
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not unconfigure service password encryption"
+        )

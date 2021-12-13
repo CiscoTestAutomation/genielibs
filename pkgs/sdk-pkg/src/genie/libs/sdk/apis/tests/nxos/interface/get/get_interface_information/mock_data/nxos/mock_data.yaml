@@ -4,9 +4,6 @@ configure:
       new_state: execute
     line console:
       new_state: configure_line
-    line console 0:
-      new_state: configure_line
-    no logging console: ''
   prompt: R3_nx(config)#
 configure_line:
   commands:
@@ -30,27 +27,31 @@ execute:
   commands:
     config term:
       new_state: configure
-    show interface Loopback0: "loopback0 is up\r\nadmin state is up,\r\n  Hardware:\
-      \ Loopback\r\n  Internet Address is 3.3.3.3/32\r\n  MTU 1500 bytes, BW 8000000\
-      \ Kbit, DLY 5000 usec\r\n  reliability 255/255, txload 1/255, rxload 1/255\r\
-      \n  Encapsulation LOOPBACK, medium is broadcast\r\n  Auto-mdix is turned off\r\
-      \n    79481 packets input 4555833 bytes\r\n    0 multicast frames 0 compressed\r\
-      \n    0 input errors 0 frame 0 overrun 0 fifo\r\n    0 packets output 0 bytes\
-      \ 0 underruns\r\n    0 output errors 0 collisions 0 fifo\r\n    0 out_carrier_errors"
-    show interface mgmt0: "mgmt0 is up\r\nadmin state is up,\r\n  Hardware: Ethernet,\
-      \ address: 5e01.4002.0000 (bia 5e01.4002.0000)\r\n  Internet Address is 172.16.1.213/24\r\
-      \n  MTU 1500 bytes, BW 1000000 Kbit, DLY 10 usec\r\n  reliability 255/255, txload\
-      \ 1/255, rxload 1/255\r\n  Encapsulation ARPA, medium is broadcast\r\n  full-duplex,\
-      \ 1000 Mb/s\r\n  Auto-Negotiation is turned on\r\n  Auto-mdix is turned off\r\
-      \n  EtherType is 0x0000 \r\n  1 minute input rate 184488 bits/sec, 136 packets/sec\r\
-      \n  1 minute output rate 112 bits/sec, 0 packets/sec\r\n  Rx\r\n    112501437\
-      \ input packets 84826 unicast packets 111564686 multicast packets\r\n    851925\
-      \ broadcast packets 18928552766 bytes\r\n  Tx\r\n    98904 output packets 84823\
-      \ unicast packets 14078 multicast packets\r\n    3 broadcast packets 11960502\
-      \ bytes"
-    show version: ''
+    show interface Loopback0:
+      response:
+      - "loopback0 is up\r\nadmin state is up,\r\n  Hardware: Loopback\r\n  Internet\
+        \ Address is 3.3.3.3/32\r\n  MTU 1500 bytes, BW 8000000 Kbit, DLY 5000 usec\r\
+        \n  reliability 255/255, txload 1/255, rxload 1/255\r\n  Encapsulation LOOPBACK,\
+        \ medium is broadcast\r\n  Auto-mdix is turned off\r\n    122404 packets input\
+        \ 7361691 bytes\r\n    0 multicast frames 0 compressed\r\n    0 input errors\
+        \ 0 frame 0 overrun 0 fifo\r\n    1 packets output 56 bytes 0 underruns\r\n\
+        \    0 output errors 0 collisions 0 fifo\r\n    0 out_carrier_errors"
+      response_type: circular
+    show interface mgmt0:
+      response:
+      - "mgmt0 is up\r\nadmin state is up,\r\n  Hardware: Ethernet, address: 5e03.8002.0000\
+        \ (bia 5e03.8002.0000)\r\n  Internet Address is 172.16.1.54/24\r\n  MTU 1500\
+        \ bytes, BW 1000000 Kbit, DLY 10 usec\r\n  reliability 254/255, txload 1/255,\
+        \ rxload 1/255\r\n  Encapsulation ARPA, medium is broadcast\r\n  full-duplex,\
+        \ 1000 Mb/s\r\n  Auto-Negotiation is turned on\r\n  Auto-mdix is turned off\r\
+        \n  EtherType is 0x0000 \r\n  1 minute input rate 175296 bits/sec, 130 packets/sec\r\
+        \n  1 minute output rate 120 bits/sec, 0 packets/sec\r\n  Rx\r\n    362641345\
+        \ input packets 251829 unicast packets 360263430 multicast packets\r\n   \
+        \ 2126086 broadcast packets 60656696923 bytes\r\n  Tx\r\n    293527 output\
+        \ packets 251817 unicast packets 41707 multicast packets\r\n    3 broadcast\
+        \ packets 35486383 bytes"
+      response_type: circular
     term length 0: ''
-    term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
   prompt: R3_nx#

@@ -9,9 +9,7 @@ from genie.libs.parser.ios.cat6k import show_platform
 
 
 class Platform(SuperPlatform):
-    """
-    Platform ops object
-    """
+    """Platform Ops Object"""
     def slot_num(self, item):
         p = re.compile(r'.*(?P<slot>\d+)')
         m = p.match(item)

@@ -1768,3 +1768,41 @@ def configure_mpls_te_forwarding_adjacency(device, intf):
             "Could not configuretunnel mpls traffic-eng forwarding-adjacency "
             "under tunnel {intf}. Error:\n{error}".format(intf=intf,error=e)
         )      
+
+def configure_ldp_discovery_targeted_hello_accept(device):
+    """ configure mpls ldp discovery targeted-hello accept 
+        Args:
+            device (`obj`): Device object
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring interface
+    """
+    try:
+        device.configure([
+            "mpls ldp discovery targeted-hello accept"]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not configure mpls ldp discovery targeted-hello accept'
+            'Error:{e}'.format(e=e)
+        )  
+
+def unconfigure_ldp_discovery_targeted_hello_accept(device):
+    """ unconfigure mpls ldp discovery targeted-hello accept 
+        Args:
+            device (`obj`): Device object
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring interface
+    """
+    try:
+        device.configure([
+            "no mpls ldp discovery targeted-hello accept"]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not unconfigure mpls ldp discovery targeted-hello accept'
+            'Error:{e}'.format(e=e)
+        ) 

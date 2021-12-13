@@ -115,54 +115,6 @@ def configure_ptp_priority(device, priority1, priority2):
             "Could not configure PTP transport as per provided argument"
         )
 
-def configure_switchport_trunk(device, intf_list):
-    """ Switch port mode trunk interface configuration
-        Args:
-            device (`obj`): Device object
-            intf_list ('list'): PTP interface list
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-    configs = []
-    for intf in intf_list:
-        configs.append("interface {intf}".format(intf=intf))
-        configs.append("no shutdown")
-        configs.append("switchport")
-        configs.append("switchport mode trunk")
-
-    try:
-        device.configure(configs)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Could not configure PTP aes67 profile rates as per provided argument"
-        )
-
-def configure_svi(device, vlan, ipaddr, mask):
-    """ Vlan SVI configuration
-        Args:
-            device (`obj`): Device object
-            vlan ('int'): VLAN id for SVI
-            ipaddr ('str'): IP address for SVI
-            mask ('str'): Subnet mask for ip address
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-    configs = []
-    configs.append("interface vlan {vlan}".format(vlan=vlan))
-    configs.append("no shutdown")
-    configs.append("ip address {ipaddr} {mask}".format(ipaddr=ipaddr,mask=mask))
-
-    try:
-        device.configure(configs)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Could not configure PTP aes67 profile rates as per provided argument"
-        )
-
 def configure_ptp_dscp_message(device, dscp_event, dscp_general):
     """ PTP dscp message configuration
         Args:
@@ -199,27 +151,6 @@ def unconfigure_ptp_dscp_message(device, dscp_event, dscp_general):
     configs = []
     configs.append("no ptp ip dscp message event")
     configs.append("no ptp ip dscp message general")
-
-    try:
-        device.configure(configs)
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            "Could not configure PTP aes67 profile rates as per provided argument"
-        )
-
-def unconfigure_svi(device, vlan):
-    """ Vlan SVI configuration removal
-        Args:
-            device (`obj`): Device object
-            vlan ('list'): Vlan value
-        Returns:
-            None
-        Raises:
-            SubCommandFailure
-    """
-    configs = []
-    configs.append("no interface vlan {vlan}".format(vlan=vlan))
-    configs.append("no vlan {vlan}".format(vlan=vlan))
 
     try:
         device.configure(configs)

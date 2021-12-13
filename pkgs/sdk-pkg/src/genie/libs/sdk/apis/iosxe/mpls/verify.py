@@ -4,6 +4,7 @@
 import logging
 from netaddr import IPNetwork
 import re
+import time
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
@@ -605,6 +606,122 @@ def verify_mpls_ping(
         rate = int(p.search(out).groupdict().get('rate', 0))
 
         if expected_max_success_rate >= rate >= expected_min_success_rate:
+            return True
+
+        timeout.sleep()
+    return False
+
+def verify_mpls_forwarding_table_vrf_mdt(device, 
+        vrf, 
+        prefix_type, 
+        expected_prefix,
+        bytes_labeled_switched, 
+        mdt_cnt=1, 
+        max_time=20, 
+        check_interval=10):
+        
+    """ Verifies counters for mdt in mpls forwarding-table
+
+        Args:
+            vrf ('str')  : vrf name
+            prefix_type ('str') : prefix type 
+			expected_prefix ('str') : expected prefix 
+			bytes_labeled_switched ('str') : counter value
+            mdt_cnt ('int'): mdt data configured
+            max_time (`int`, optional): Max time, default: 20
+            check_interval (`int`, optional): Check interval, default: 10
+        Raises:
+            Exception
+
+        Returns
+            Boolean
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():  
+        result = True
+        try:
+            parsed_output1 = device.parse("show mpls forwarding-table vrf {vrf}".format(vrf=vrf))
+            time.sleep(20)
+            parsed_output2=device.parse("show mpls forwarding-table vrf {vrf}".format(vrf=vrf))
+        except SchemaEmptyParserError as se:
+            pass
+
+        count=0
+        ###Verify counters are incrementing or not for mentioned prefix
+        for labels in parsed_output1.q.get_values("local_label"):
+            if parsed_output1.q.contains(labels).contains(prefix_type):
+                learnet_prefix = parsed_output1.q.contains(labels).get_values('prefix_or_tunnel_id')[0]
+                if learnet_prefix == expected_prefix:
+                    first_counter=parsed_output1.q.contains(labels).get_values("bytes_label_switched")[0]
+                    second_counter=parsed_output2.q.contains(labels).get_values("bytes_label_switched")[0]
+                    if (int(second_counter)-int(first_counter))>int(bytes_labeled_switched):
+                        log.info("Packets are flowing on prefix {expected_prefix}, 1st counter-->{first_counter}, second counter {second_counter}"
+                                                     .format(expected_prefix=expected_prefix, first_counter=first_counter, second_counter=second_counter))
+                        count+=1
+                    else:
+                        log.error("Packets are not flowing on prefix {expected_prefix},1st counter-->{first_counter}, second counter {second_counter}, please verify!"
+                                                     .format(expected_prefix=expected_prefix, first_counter=first_counter, second_counter=second_counter))
+                        result=False
+                else:
+                    log.error("Got unexpected {learnet_prefix}, expected {expected_prefix} please verify!"
+                    .format(learnet_prefix=learnet_prefix,expected_prefix=expected_prefix))
+                    result=False
+                        
+        if count == mdt_cnt:
+            log.info("Got expected number of mdt configured {mdt_cnt}".format(mdt_cnt=mdt_cnt))
+        else:
+            log.error("Got unexpected number of mdt {count}, while expected number of mdt to be {mdt_cnt}, please verify!"
+            .format(count=count, mdt_cnt=mdt_cnt))
+            result = False
+            
+        if result:
+            return True
+        timeout.sleep()
+    return False
+
+def verify_mpls_forwarding_table_gid_counter(device, 
+        prefix_type,
+        bytes_labeled_switched, 
+        max_time=20, 
+        check_interval=10):
+        
+    """ Verifies counters for gid in mpls forwarding-table
+
+        Args:
+            prefix_type ('str')  : prefix type 
+			bytes_labeled_switched ('str') : counter value
+            max_time (`int`, optional): Max time, default: 20
+            check_interval (`int`, optional): Check interval, default: 10
+        Raises:
+            Exception
+
+        Returns
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():  
+        result = True
+        try:
+            parsed_output1 = device.parse("show mpls forwarding-table | sect gid")
+            time.sleep(20)
+            parsed_output2=device.parse("show mpls forwarding-table | sect gid")
+        except SchemaEmptyParserError as se:
+            pass
+        
+        ###Verify counters are incrementing or not for mentioned prefix
+        for labels in parsed_output1.q.get_values("local_label"):
+            first_counter=parsed_output1.q.contains(labels).get_values("bytes_label_switched")[0]
+            second_counter=parsed_output2.q.contains(labels).get_values("bytes_label_switched")[0]
+            prefix=parsed_output1.q.contains(labels).get_values('prefix_or_tunnel_id')[0]
+            if (int(second_counter)-int(first_counter))>int(bytes_labeled_switched):
+                log.info("Packets are flowing on prefix {prefix}, 1st counter-->{first_counter}, second counter {second_counter}"
+                                             .format(prefix=prefix, first_counter=first_counter, second_counter=second_counter))
+            else:
+                log.error("Packets are not flowing on prefix {prefix},1st counter-->{first_counter}, second counter {second_counter}, please verify!"
+                                             .format(prefix=prefix, first_counter=first_counter, second_counter=second_counter))
+                result=False
+
+        if result:
             return True
 
         timeout.sleep()

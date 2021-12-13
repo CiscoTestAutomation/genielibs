@@ -66,7 +66,6 @@ change_boot_variable:
     # Execution order of Stage steps
     # ==============================
     exec_order = [
-        'pre_requisite_checks',
         'delete_boot_variable',
         'configure_boot_variable',
         'write_memory',

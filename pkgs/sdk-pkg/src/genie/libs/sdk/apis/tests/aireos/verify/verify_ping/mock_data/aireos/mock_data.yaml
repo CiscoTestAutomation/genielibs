@@ -1,0 +1,28 @@
+config:
+  commands:
+    paging disable: ''
+    sessions timeout 0: ''
+    serial timeout 0: ''
+    exit:
+      new_state: execute
+  prompt: (vWLC) config>
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config:
+      new_state: config
+    ping 172.25.195.1:
+      response:
+      - "\r\r\nSend count=3, Receive count=0 from 172.25.195.1"
+      - "\r\r\nSend count=3, Receive count=3 from 172.25.195.1"
+      response_type: circular
+  prompt: (vWLC) >

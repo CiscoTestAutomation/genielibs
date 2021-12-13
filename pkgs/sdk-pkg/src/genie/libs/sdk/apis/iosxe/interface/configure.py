@@ -798,18 +798,15 @@ def clear_interface_config(device, interface):
             )
         )
 
-
-def configure_interface_switchport_access_vlan(device, interface, vlan):
+def configure_interface_switchport_access_vlan(device, interface, vlan,mode=None):
     """ Configures switchport on interface
-
         Args:
             device ('obj'): device to use
             interface ('str'): interface to configure
             vlan ('str'): access_vlan to configure
-
+            mode ('str',optional) Switchport mode (i.e access)
         Returns:
             None
-
         Raises:
             SubCommandFailure
     """
@@ -819,19 +816,22 @@ def configure_interface_switchport_access_vlan(device, interface, vlan):
         )
     )
 
+    config_list = []
+    config_list.append("interface {interface}".format(interface=interface))
+    if mode:
+        config_list.append("switchport mode {mode}".format(mode=mode))
+    config_list.append("switchport access vlan {vlan}".format(vlan=vlan))
+
     try:
-        device.configure(
-            [
-                "interface {interface}".format(interface=interface),
-                "switchport access vlan {vlan}".format(vlan=vlan),
-            ]
-        )
+        device.configure(config_list)
+
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not configure switchport access vlan. Error:\n{error}"\
                 .format(error=e
             )
         )
+
 
 def unconfigure_interface_switchport_access_vlan(device, interface, vlan):
     """ Unconfigures switchport on interface
@@ -982,6 +982,7 @@ def configure_interfaces_shutdown(device, interfaces):
             'Failed to shutdown interfaces on device {}: {}'.format(device.name, e
             )
         )
+
 
 def configure_interfaces_unshutdown(device, interfaces):
     """ Enable the listed interfaces in the given list on the device
@@ -1455,6 +1456,7 @@ def configure_interface_monitor_session(device, monitor_config):
                 )
             )
 
+
 def unconfigure_interface_monitor_session(device, session_name, session_type):
     """ configure monitor session on device
         Args:
@@ -1854,6 +1856,7 @@ def remove_interface_ip(device, interface):
             )
         )
 
+
 def configure_ipv6_dhcp_relay(device, interface, dest_ipv6, vlan):
     """ Configure IPv6 DHCP Relay
         Args:
@@ -2029,6 +2032,7 @@ def detach_dhcpv6_guard_policy_to_interface(device, interface, policy_name):
         )
         raise
 
+
 def detach_ipv6_raguard_policy_to_interface(device,interface,policy_name):
     """ Detach IPv6 RA Guard Policy from an interface
 
@@ -2129,6 +2133,7 @@ def detach_ipv6_raguard_policy_to_vlan(device, vlan, policy_name):
         )
         raise
 
+
 def remove_channel_group_from_interface(device, interface, channel_group, mode):
     """ Remove channel group from an Interface
 
@@ -2213,6 +2218,7 @@ def config_edge_trunk_on_interface(device, interface):
                 interface=interface, error=e)
         )
 
+
 def configure_interface_ospfv3(device, interface, ospf_pid, area):
     """ Config OSPFV3 on interface
         Args:
@@ -2241,6 +2247,7 @@ def configure_interface_ospfv3(device, interface, ospf_pid, area):
         raise SubCommandFailure(
             "Could not configure ospfv3. Error:\n{error}".format(error=e)
         )
+
 
 def attach_dhcpv6_guard_policy_to_vlan(device, vlan, policy_name):
     """ Attach DHCPv6 Guard Policy to a vlan
@@ -2273,6 +2280,7 @@ def attach_dhcpv6_guard_policy_to_vlan(device, vlan, policy_name):
             )
         )
         raise
+
 
 def detach_dhcpv6_guard_policy_vlan(device, vlan, policy_name):
     """ Detach DHCPv6 Guard Policy from a vlan
@@ -2308,6 +2316,7 @@ def detach_dhcpv6_guard_policy_vlan(device, vlan, policy_name):
         )
         raise
 
+
 def attach_device_tracking_policy_to_interface(device, policy_name, interface):
     """ Attach Device Tracking Policy to a interface
 
@@ -2341,6 +2350,7 @@ def attach_device_tracking_policy_to_interface(device, policy_name, interface):
             )
         )
         raise
+
 
 def configure_authentication_parameters_interface(device, interface):
     """ Configure authentication parameters on interface
@@ -2430,6 +2440,7 @@ def configure_interface_no_switchport(device, interface):
     except SubCommandFailure:
         log.error('Failed to configure no switchport on the interface')
         raise
+
 
 def unconfigure_vlan_interface(device, vlan):
     """ Unconfigure vlan from device
@@ -2524,6 +2535,7 @@ def unconfigure_interface_template(device, interface_list=[], template_name="tes
                 )
                 )
 
+
 def configure_interface_switchport_voice_vlan(device, interface, vlan):
     """ Configures switchport on interface
     Args:
@@ -2548,6 +2560,7 @@ def configure_interface_switchport_voice_vlan(device, interface, vlan):
                 error=e
             )
         )
+
 
 def configure_interface_switchport_trunk_vlan(device, interface, trunk_mode, vlan):
     """ Configures switchport trunk on interface
@@ -2578,6 +2591,7 @@ def configure_interface_switchport_trunk_vlan(device, interface, trunk_mode, vla
             "Could not configure switchport voice vlan. Error:\n{error}".format(
             error=e)
         )
+
 
 def configure_ip_on_tunnel_interface(
     device,
@@ -2636,6 +2650,7 @@ def configure_ip_on_tunnel_interface(
                 error=e,
             )
         )
+
 
 def unconfigure_tunnel_interface(device, interface):
     """ Unconfigure tunnel interface
@@ -2715,6 +2730,57 @@ def unconfigure_ip_mtu(device, intf, mtu):
             f"Could not unconfigure ip mtu  on interface. Error:\n{e}"
         )
 
+
+def configure_switchport_trunk(device, intf_list):
+    """ Switch port mode trunk interface configuration
+        Args:
+            device (`obj`): Device object
+            intf_list ('list'): List of interfaces to be configured as trunks
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    for intf in intf_list:
+        configs.append("interface {intf}".format(intf=intf))
+        configs.append("no shutdown")
+        configs.append("switchport")
+        configs.append("switchport mode trunk")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure switchport trunk on {intf}".format(intf=intf)
+        )
+
+
+def configure_svi(device, vlan, ipaddr, mask):
+    """ Vlan SVI configuration
+        Args:
+            device (`obj`): Device object
+            vlan ('int'): VLAN id for SVI
+            ipaddr ('str'): IP address for SVI
+            mask ('str'): Subnet mask for ip address
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    configs.append("interface vlan {vlan}".format(vlan=vlan))
+    configs.append("no shutdown")
+    configs.append("ip address {ipaddr} {mask}".format(ipaddr=ipaddr,mask=mask))
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure SVI, VLAN {vlan} with the provided parameters".format(vlan=vlan)
+        )
+
+
 def configure_eapol_dest_address_interface(device, interface, dest_address):
     """ Configures EAPOL Destination Address on interface
 
@@ -2743,6 +2809,7 @@ def configure_eapol_dest_address_interface(device, interface, dest_address):
             "Could not configure EAPOL Destination Address on interface. Error:\n{error}".format(
             error=e)
         )
+
 
 def unconfigure_eapol_dest_address_interface(device, interface, dest_address):
     """ Unconfigures EAPOL Destination Address on interface
@@ -2773,3 +2840,202 @@ def unconfigure_eapol_dest_address_interface(device, interface, dest_address):
             error=e)
         )
 
+
+def configure_eapol_eth_type_interface(device, interface, eth_type):
+    """ Configures EAPOL Ethernet Type on interface
+
+    Args:
+        device ('obj'): device to use
+        interface ('str'): interface to be configured
+        eth_type ('str'): eth_type to be configured
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+
+    try:
+        device.configure(
+            [
+            "interface {interface}".format(interface=interface),
+            "eapol eth-type {eth_type}".format(eth_type=eth_type),
+            ]
+        )
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure EAPOL Ethernet Type on interface. Error:\n{error}".format(
+            error=e)
+        )
+
+
+def unconfigure_eapol_eth_type_interface(device, interface, eth_type):
+    """ Unconfigures EAPOL Ethernet Type on interface
+
+    Args:
+        device ('obj'): device to use
+        interface ('str'): interface to be unconfigured
+        eth_type ('str'): eth_type to be unconfigured
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure
+    """
+
+    try:
+        device.configure(
+            [
+            "interface {interface}".format(interface=interface),
+            "no eapol eth-type {eth_type}".format(eth_type=eth_type),
+            ]
+        )
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure EAPOL Ethernet Type on interface. Error:\n{error}".format(
+            error=e)
+        )
+
+
+def configure_interface_mac_address(device,interface,mac):
+    """ Configure static mac address on interface
+    Args:
+        device (`obj`): Device object
+        interface ('str'): Interface to configure
+        mac ('str'): Mac address with format H.H.H
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    configs = []
+    configs.append("interface {interface}".format(interface=interface))
+    configs.append("mac-address {mac}".format(mac=mac))
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not configure mac address on interface"
+        )
+
+
+def unconfigure_interface_mac_address(device,interface):
+    """ Unconfigure static mac address on interface
+    Args:
+        device (`obj`): Device object
+        interface ('str'): Interface to unconfigure mac
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring
+    """
+    configs = []
+    configs.append("interface {interface}".format(interface=interface))
+    configs.append("no mac-address")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not unconfigure mac address on interface"
+        )
+
+def unconfigure_svi(device, vlan):
+    """ Vlan SVI configuration removal
+        Args:
+            device (`obj`): Device object
+            vlan ('list'): Vlan value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    configs.append("no interface vlan {vlan}".format(vlan=vlan))
+    configs.append("no vlan {vlan}".format(vlan=vlan))
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure SVI, VLAN {vlan}".format(vlan=vlan)
+        )
+
+def configure_interface_span_portfast(device,interface,mode=''):
+    """ Configures Spanning Tree Portfast on port
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+            mode ('str',optional) : Options are disable/trunk. Default is '' (i.e no mode)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    #initialize list variable
+    config_list = []
+    config_list.append("interface {interface}".format(interface=interface))
+    config_list.append("spanning-tree portfast {mode}".format(mode=mode))
+    try:
+        device.configure(config_list)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure Primary Pvlan'
+        )
+
+def configure_interface_switchport_pvlan_mode(device, interface, mode):
+    """ Configures Private Vlan Switchport mode
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+            mode ('str')      : pvlan mode (i.e host or promiscuous)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring switchport pvlan mode on {interface} with mode = {mode}".format(
+            interface=interface, mode=mode
+        )
+    )
+    try:
+        device.configure(
+            [
+                "interface {interface}".format(interface=interface),
+                "switchport mode private-vlan {mode}".format(mode=mode),
+            ]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure Primary Pvlan'
+        )
+
+def configure_interface_pvlan_host_assoc(device,interface,primary_vlan,sec_vlan):
+    """ Configures Interface Private Vlan Host Association
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+            primary_vlan ('str'): Primary private vlan
+            sec_vlan ('str'): Secondary private vlan
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    #initialize list variable
+    config_list = []
+    config_list.append("interface {interface}".format(interface=interface))
+    config_list.append("switchport private-vlan host-association {primary_vlan} {sec_vlan}".format(
+        primary_vlan=primary_vlan,sec_vlan=sec_vlan))
+    try:
+        device.configure(config_list)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure Primary Pvlan Host Association'
+        )

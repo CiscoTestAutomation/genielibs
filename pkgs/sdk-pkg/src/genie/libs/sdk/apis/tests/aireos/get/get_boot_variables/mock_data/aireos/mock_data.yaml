@@ -1,0 +1,27 @@
+config:
+  commands:
+    paging disable: ''
+    sessions timeout 0: ''
+    serial timeout 0: ''
+    exit:
+      new_state: execute
+  prompt: (vWLC) config>
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config:
+      new_state: config
+    show boot:
+      response: "Primary Boot Image............................... 8.10.151.0 (default)\
+        \ (active)\r\r\nBackup Boot Image................................ 8.10.151.0"
+      response_type: circular
+  prompt: (vWLC) >

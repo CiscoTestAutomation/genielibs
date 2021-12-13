@@ -27,7 +27,7 @@ def is_next_reload_boot_variable_as_expected(device, system, kickstart=None):
             boot_variable='next_reload_boot_variable', kickstart=kickstart)
         log.info("Successfully verified next reload boot variables")
     except Exception as e:
-        log.error("Could not verify next reload boot variables due to: {e}".format(
+        raise Exception("Could not verify next reload boot variables due to: {e}".format(
             e=e))
 
 def is_current_boot_variable_as_expected(device, system, kickstart=None):
