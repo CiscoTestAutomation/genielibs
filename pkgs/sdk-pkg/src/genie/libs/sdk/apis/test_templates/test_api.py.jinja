@@ -21,7 +21,11 @@ class {{class_name}}(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['{{device}}']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 {% for ut in unit_tests %}
     def test_{{ut.api}}{% if loop.index0 > 0 %}_{{loop.index0}}{% endif %}(self):
         result = {{ut.api}}({{ut.arguments}})

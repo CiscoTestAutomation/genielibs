@@ -1,16 +1,12 @@
 """Common get info functions for routing"""
 
 # Python
-import os
-import re
 import logging
 
 # pyATS
-from pyats.easypy import runtime
 from pyats.utils.objects import find, R
 
 # Genie
-from genie.utils.config import Config
 from genie.libs.sdk.libs.utils.normalize import GroupKeys
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
@@ -27,8 +23,7 @@ def get_routing_ospf_routes(device):
     """
     log.info("Getting all ospf routes")
     protocol_codes = 'O'
-    routes = get_routes(device, protocol_codes)
-    return routes
+    return get_routes(device, protocol_codes)
 
 
 def get_routes(device, protocol_codes=None):
@@ -53,27 +48,30 @@ def get_routes(device, protocol_codes=None):
         log.error("Failed to parse '{}':\n{}".format(cmd, e))
         return routes
 
-    reqs = R(['vrf', '(.*)', 
-              'address_family', '(.*)', 
-              'routes', '(?P<route>.*)', 
-              'source_protocol_codes', protocol_codes])
+    reqs = R([
+        'vrf', '(.*)', 'address_family', '(.*)', 'routes', '(?P<route>.*)',
+        'source_protocol_codes', protocol_codes
+    ])
     found = find([out], reqs, filter_=False, all_keys=True)
 
     if found:
-        keys = GroupKeys.group_keys(reqs=reqs.args, ret_num={}, 
-                                    source=found, all_keys=True)
+        keys = GroupKeys.group_keys(reqs=reqs.args,
+                                    ret_num={},
+                                    source=found,
+                                    all_keys=True)
         for route in keys:
             routes.append(route['route'])
     else:
         log.error("Could not find any route with protocol_codes '{}'".\
             format(protocol_codes))
- 
+
     return routes
 
 
-def get_routing_outgoing_interface(
-    device, ip_address, vrf=None, address_family=None
-):
+def get_routing_outgoing_interface(device,
+                                   ip_address,
+                                   vrf=None,
+                                   address_family=None):
     """ Execute 'show ip cef <address>' and retrieve the outgoing interface
 
         Args:
@@ -100,19 +98,17 @@ def get_routing_outgoing_interface(
     except SchemaEmptyParserError:
         return []
 
-    vrf = vrf if vrf else "default"
-    address_family = address_family if address_family else "ipv4"
+    vrf = vrf or "default"
+    address_family = address_family or "ipv4"
 
     for prefix, p_data in out["vrf"][vrf]["address_family"][address_family][
-        "prefix"
-    ].items():
+            "prefix"].items():
         for next_hop, nh_data in p_data.get("nexthop", {}).items():
             for key in nh_data.get("outgoing_interface", {}):
                 outgoing_interface = key
                 new_ip = next_hop
                 break
-        else:
-            continue
+        continue
 
     return [outgoing_interface, new_ip]
 
@@ -133,23 +129,17 @@ def get_routing_route_count(device, vrf=None):
 
     commands = ["show ip route vrf {} summary", "show ip route summary"]
 
-    if vrf:
-        cmd = commands[0].format(vrf)
-    else:
-        cmd = commands[1]
-
+    cmd = commands[0].format(vrf) if vrf else commands[1]
     try:
         output = device.parse(cmd)
     except SchemaEmptyParserError:
-        raise SchemaEmptyParserError(
-            "Command '{}' has " "not returned any results".format(cmd)
-        )
+        raise SchemaEmptyParserError("Command '{}' has "
+                                     "not returned any results".format(cmd))
     if not vrf:
         vrf = "default"
 
-    count = output.get("vrf", {}).get(vrf, {}).\
+    return output.get("vrf", {}).get(vrf, {}).\
             get("total_route_source", {}).get("subnets")
-    return count
 
 
 def get_routing_route_count_all_vrf(device):
@@ -210,13 +200,11 @@ def get_routing_routes(device, vrf, address_family):
         out = device.parse("show ip route vrf {}".format(vrf))
     except SchemaEmptyParserError:
         log.error(
-            "Parser did not return any routes for vrf {vrf}".format(vrf=vrf)
-        )
+            "Parser did not return any routes for vrf {vrf}".format(vrf=vrf))
         return None
     try:
         routes_received = out["vrf"][vrf]["address_family"][address_family][
-            "routes"
-        ]
+            "routes"]
     except KeyError as e:
         log.error("Key issue with exception : {}".format(str(e)))
         return None
@@ -248,14 +236,11 @@ def get_routing_repair_path_information(device, route):
     for rt in output["entry"]:
         for path_index in output["entry"][rt]["paths"]:
             repair_path = output["entry"][rt]["paths"][path_index].get(
-                "repair_path", {}
-            )
+                "repair_path", {})
             if repair_path:
                 log.info(
-                    "Found repair path {path[repair_path]} via {path[via]}".format(
-                        path=repair_path
-                    )
-                )
+                    "Found repair path {path[repair_path]} via {path[via]}".
+                    format(path=repair_path))
                 next_hop = repair_path["repair_path"]
                 outgoing_interface = repair_path["via"]
 
@@ -263,6 +248,7 @@ def get_routing_repair_path_information(device, route):
 
     log.info("Could not find any information about repair path")
     return None, None
+
 
 def get_routing_mpls_label(device, prefix, vrf='', output=None):
     ''' Get registered MPLS label to prefix 
@@ -278,14 +264,18 @@ def get_routing_mpls_label(device, prefix, vrf='', output=None):
 
     '''
 
-    log.info('Getting registered MPLS label to prefix {prefix}'.format(prefix=prefix))
+    log.info('Getting registered MPLS label to prefix {prefix}'.format(
+        prefix=prefix))
 
     if not output:
         try:
             if vrf:
-                output = device.parse('show ip route vrf {vrf} {prefix}'.format(vrf=vrf,prefix=prefix))
+                output = device.parse(
+                    'show ip route vrf {vrf} {prefix}'.format(vrf=vrf,
+                                                              prefix=prefix))
             else:
-                output = device.parse('show ip route {prefix}'.format(prefix=prefix))
+                output = device.parse(
+                    'show ip route {prefix}'.format(prefix=prefix))
         except SchemaEmptyParserError:
             log.info('Could not find any MPLS label to prefix '
                      'address {prefix}'.format(prefix=prefix))
@@ -293,7 +283,8 @@ def get_routing_mpls_label(device, prefix, vrf='', output=None):
     for entry in output['entry']:
         for prefix in entry:
             for path in output['entry'][entry].get('paths', {}):
-                label = output['entry'][entry]['paths'][path].get('mpls_label', None)
+                label = output['entry'][entry]['paths'][path].get(
+                    'mpls_label', None)
                 if label:
                     log.info('Found MPLS label {label}'.format(label=label))
                     return int(label)
@@ -319,8 +310,8 @@ def get_routing_vrf_entries(device, prefix, vrf=None):
 
     '''
     if vrf:
-        command = "show ip route vrf {vrf} {prefix}".format(
-            vrf=vrf, prefix=prefix)
+        command = "show ip route vrf {vrf} {prefix}".format(vrf=vrf,
+                                                            prefix=prefix)
     else:
         command = "show ip route {prefix}".format(prefix=prefix)
 
@@ -328,8 +319,7 @@ def get_routing_vrf_entries(device, prefix, vrf=None):
         output = device.parse(command)
     except SchemaEmptyParserError:
         log.error(
-            'Routing table is empty for route {prefix}'.format(prefix=prefix)
-        )
+            'Routing table is empty for route {prefix}'.format(prefix=prefix))
         return None
 
     entries = []

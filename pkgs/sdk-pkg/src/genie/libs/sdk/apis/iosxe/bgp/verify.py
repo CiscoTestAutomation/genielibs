@@ -17,7 +17,7 @@ from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # BGP
 from genie.libs.sdk.apis.iosxe.bgp.get import (
-    get_routing_routes,
+    get_bgp_routes,
     get_bgp_summary,
     get_ip_bgp_route,
     get_ip_bgp_neighbors,
@@ -961,7 +961,7 @@ def verify_bgp_routes_from_neighbors(
     prefixes = {}
 
     # Get prefixes in order to get all routes
-    prefixes = get_routing_routes(
+    prefixes = get_bgp_routes(
         device=device, address_family=address_family, vrf=vrf, route=route
     )
 
@@ -1840,7 +1840,43 @@ def verify_ip_bgp_route(device, route, max_time=90, check_interval=10,
             return True
         timeout.sleep()
     return False
+    
+def verify_bgp_mvpn_route_count(device, route_type, vrf, max_time=90, check_interval=10):
+    """ Verify count of metioned routes 
 
+        args:
+            device ('obj'): Device to use
+            route_type ('dict') : contains all the route type and route count
+            vrf ('str'): vrf name
+        raises:
+            N/A
+
+        returns:
+            dict
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        result = True
+        out = device.api.get_bgp_mvpn_route_count(route_type, vrf)
+        if not out:
+            log.info('Could not get information about show bgp ipv4 mvpn vrf')
+            result = False
+            timeout.sleep()
+            continue     
+
+        for route, count in route_type.items():
+            if out.get(route,None):
+                if count == out[route]:
+                    log.info("Got the expected number of routes {count} for {route}".format(count=count,route=route))
+                else:
+                    log.error("Got unexpected number of routes {count} for {route}, expected number of routes {count1}".format(count=out[route],route=route,count1=count))
+                    result = False            
+            else:
+                log.error("{route} not found in the output, please verify!".format(route=route)) 
+                result = False
+        if result:
+            return True
+        timeout.sleep()
 
 def verify_bgp_rt2_route_target(
     device, address_family, eti, mac_addr, ip_addr, vrf_id, expected_rt, 

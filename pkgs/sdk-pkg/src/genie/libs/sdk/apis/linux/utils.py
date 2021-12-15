@@ -48,7 +48,13 @@ def extract_tar_gz(device, path, files, option='-zxvf'):
 
     return extracted_files
 
-def execute_by_jinja2(device, templates_dir, template_name, post_commands=None, failure_commands=None, **kwargs):
+
+def execute_by_jinja2(device,
+                      templates_dir,
+                      template_name,
+                      post_commands=None,
+                      failure_commands=None,
+                      **kwargs):
     """ Configure using Jinja template
         Args:
             device ('obj'): Device object
@@ -64,11 +70,9 @@ def execute_by_jinja2(device, templates_dir, template_name, post_commands=None, 
     """
 
     log.info("Configuring {filename} on {device}".format(
-        filename=template_name,
-        device=device.alias))
-    template = device.api.get_jinja_template(
-        templates_dir=templates_dir,
-        template_name=template_name)
+        filename=template_name, device=device.alias))
+    template = device.api.get_jinja_template(templates_dir=templates_dir,
+                                             template_name=template_name)
 
     if not template:
         raise Exception('Could not get template')
@@ -77,7 +81,7 @@ def execute_by_jinja2(device, templates_dir, template_name, post_commands=None, 
     out = [x.lstrip() for x in template.render(**kwargs).splitlines()]
 
     if post_commands:
-        out = out + post_commands
+        out += post_commands
 
     try:
         for cmd in out:
@@ -90,12 +94,12 @@ def execute_by_jinja2(device, templates_dir, template_name, post_commands=None, 
     except SubCommandFailure as e:
         if failure_commands:
             device.execute(failure_commands)
-        raise SubCommandFailure(
-            "Failed in applying the following "
-            "configuration:\n{config}, error:\n{e}".format(config=out, e=e)
-        )
+        raise SubCommandFailure("Failed in applying the following "
+                                "configuration:\n{config}, error:\n{e}".format(
+                                    config=out, e=e))
 
     log.info("Successfully changed configuration using the jinja template")
+
 
 def get_md5_hash_of_file(device, file, timeout=60):
     """ Return the MD5 hash of a given file.
@@ -127,6 +131,7 @@ def scp(device,
         remote_pass=None,
         remote_via=None,
         creds=None,
+        timeout=None,
         **kwargs):
     """ copy files from local device to remote device via scp
 
@@ -143,6 +148,7 @@ def scp(device,
                                 Default to None
             creds (`str`): Name of the credentials for the remote device
                            Defaults to "default"
+            timeout (`timeout`, optional): timeout for scp in seconds. Defaults to None
         Returns:
             result (`bool`): True if scp successfully done
     """
@@ -163,13 +169,13 @@ def scp(device,
         remote_connections = list(remote_device.connections.keys())
         if 'defaults' in remote_connections:
             remote_connections.remove('defaults')
-        via = remote_device.connections.get('defaults', {}).get('via',
-            remote_connections[0] if remote_connections else None)
+        via = remote_device.connections.get('defaults', {}).get(
+            'via', remote_connections[0] if remote_connections else None)
         remote_device_ip = remote_device.connections.get(via, {}).get('ip') or \
             remote_device.connections[via].get('host')
     if not remote_device_ip:
         raise ValueError('Please specify remote_via with a connection'
-                        ' name that has an ip or host attribute.')
+                         ' name that has an ip or host attribute.')
 
     local_filename = pathlib.Path(local_path).name
 
@@ -178,7 +184,7 @@ def scp(device,
                                           ip=remote_device_ip,
                                           rp=remote_path)
 
-    s1 = Statement(pattern=r".*Password:",
+    s1 = Statement(pattern=r".*[pP]assword:",
                    action="sendline({pw})".format(pw=password),
                    args=None,
                    loop_continue=True,
@@ -188,15 +194,14 @@ def scp(device,
     try:
         out = device.execute("scp {lp} {rp}".format(lp=local_path,
                                                     rp=remote_path),
-                              reply=dialog,
-                              **kwargs)
+                             reply=dialog,
+                             timeout=timeout,
+                             **kwargs)
+
     except Exception as e:
         log.warning("Failed to copy from {lp} to {rp} via scp: {e}".format(
             lp=local_path, rp=remote_path, e=e))
         return False
 
     # return True/False depending on result
-    if re.search(r'{}\s*100%'.format(local_filename), out):
-        return True
-    else:
-        return False
+    return bool(re.search(r'{}\s*100%'.format(local_filename), out))

@@ -5,6 +5,9 @@ import re
 from genie.utils.timeout import Timeout
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
+# unicon
+from unicon.eal.dialogs import Dialog, Statement
+
 log = logging.getLogger(__name__)
 
 
@@ -24,6 +27,28 @@ def get_aaa_member(device, leaf, keyword, intf):
         Returns:
             Valid xpath value for the leaf or None
     '''
+    #Nested function to send master key to cli interface
+    def send_master_key(spawn, key):
+        spawn.sendline(f'{key}')
+
+    key_dialog = Dialog([
+        Statement(pattern=r'.*New key:*',
+                  action=send_master_key,
+                  args={"key":keyword},
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r'.*Confirm key:*',
+                  action=send_master_key,
+                  args={"key":keyword},
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r'.*Old key:*',
+                  action=send_master_key,
+                  args={"key":keyword},
+                  loop_continue=True,
+                  continue_timer=False),
+    ])
+
     if (leaf == "accounting-method"):
         output = []
         count = 0
@@ -212,6 +237,17 @@ def get_aaa_member(device, leaf, keyword, intf):
         info = out.split()
         index = info.index(intf)
         return (info[index+1])
+    elif (leaf == 'hash-key'):
+        #to validate secret-key-hahsed leaf
+        cmd = f'show run | sec {keyword}'
+        out = device.execute(cmd)
+        info = re.compile(r'key 6 (.*)')
+        return re.findall(info, out)[0]
+    elif (leaf == "masterkey"):
+        #set master key
+        device.configure("password encryption aes", timeout = 10)
+        device.configure("key config-key password-encrypt", reply = key_dialog, allow_state_change = True)
+        return None
     else:
         cmd = "show run | sec " + keyword
         out = device.execute(cmd)

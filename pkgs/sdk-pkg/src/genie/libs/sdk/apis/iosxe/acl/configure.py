@@ -11,35 +11,35 @@ log = logging.getLogger(__name__)
 
 
 def config_extended_acl(
-        device,
-        acl_name,
-        permission,
-        protocol,
-        src_ip,
-        src_step,
-        src_wildcard,
-        dst_ip,
-        dst_step,
-        dst_wildcard,
-        dst_port,
-        entries,
-        acl_type=None,
-        sequence_num=None
+    device,
+    acl_name,
+    permission=None,
+    protocol=None,
+    src_ip=None,
+    src_step=None,
+    src_wildcard=None,
+    dst_ip=None,
+    dst_step=None,
+    dst_wildcard=None,
+    dst_port=None,
+    entries=None,
+    acl_type=None,
+    sequence_num=None
 ):
     """ Configure extended ACL on device
         Args:
             device ('obj'): device object
             acl_name ('str'): acl name
-            permission ('str'): (permit | deny)
-            protocol ('str'): protocol
-            src_ip ('str'): source start ip
-            src_step ('str'): increment step for source ip
-            src_wildcard ('str'): source wildcard
-            dst_ip ('str'): destination start ip
-            dst_step ('str'): increment step for destination ip
-            dst_wildcard ('str'): destination wildcard
-            dst_port ('str'): Acl destination port
-            entries ('int'): Acl entries
+            permission ('str'): (permit | deny), default value is None
+            protocol ('str'): protocol, default value is None
+            src_ip ('str'): source start ip, default value is None
+            src_step ('str'): increment step for source ip, default value is None
+            src_wildcard ('str'): source wildcard, default value is None
+            dst_ip ('str'): destination start ip, default value is None
+            dst_step ('str'): increment step for destination ip, default value is None
+            dst_wildcard ('str'): destination wildcard, default value is None
+            dst_port ('str'): Acl destination port, default value is None
+            entries ('int'): Acl entries, default value is None
             acl_type ('str', optional): type of ACL like with or without host keyword, default value is None
             sequence_num ('str',optional): specific sequence number,default value is None
         Returns:
@@ -49,77 +49,81 @@ def config_extended_acl(
     """
     configs = []
     configs.append("ip access-list extended {}".format(acl_name))
-    if acl_type:
-        # Build config string
-        configs.append("{sequence} {permission} {protocol} host {src_ip} host {dst_ip}".format(
-            sequence=sequence_num,
-            permission=permission,
-            protocol=protocol,
-            src_ip=src_ip,
-            dst_ip=dst_ip))
+    if permission in ['permit', 'deny']:
+        if acl_type:
+            # Build config string
+            configs.append("{sequence} {permission} {protocol} host {src_ip} host {dst_ip}".format(
+                sequence=sequence_num,
+                permission=permission,
+                protocol=protocol,
+                src_ip=src_ip,
+                dst_ip=dst_ip))
+        else:
+            if dst_wildcard != "0.0.0.0":
+                if entries > 1:
+                    for i in range(entries):
+                        src_ip = IPv4Address(src_ip)
+                        src_step = IPv4Address(src_step)
+                        dst_ip = IPv4Address(dst_ip)
+                        dst_step = IPv4Address(dst_step)
+                        src_ip_inc = src_ip + i
+                        dst_ip_inc = dst_ip + i
+                        configs.append(
+                            " {sequence} {permission} {protocol} {src_ip} {src_wildcard} {dst_ip} {dst_wildcard} eq {dst_port}".format(
+                                sequence=i + 1,
+                                permission=permission,
+                                protocol=protocol,
+                                src_ip=src_ip_inc,
+                                src_wildcard=src_wildcard,
+                                dst_ip=dst_ip_inc,
+                                dst_wildcard=dst_wildcard,
+                                dst_port=dst_port))
+
+                if entries == 1:
+                    configs.append(
+                        " {sequence} {permission} {protocol} {src_ip} {src_wildcard} {dst_ip} {dst_wildcard} eq {dst_port}".format(
+                            sequence=sequence_num,
+                            permission=permission,
+                            protocol=protocol,
+                            src_ip=src_ip,
+                            src_wildcard=src_wildcard,
+                            dst_ip=dst_ip,
+                            dst_wildcard=dst_wildcard,
+                            dst_port=dst_port))
+
+            if src_wildcard != "0.0.0.0":
+                if entries > 1:
+                    for i in range(entries):
+                        src_ip = IPv4Address(src_ip)
+                        src_step = IPv4Address(src_step)
+                        dst_ip = IPv4Address(dst_ip)
+                        dst_step = IPv4Address(dst_step)
+                        src_ip_inc = src_ip + i
+                        dst_ip_inc = dst_ip + i
+                        configs.append(
+                            " {sequence} {permission} {protocol} {src_ip} {src_wildcard} {dst_ip} {dst_wildcard} eq {dst_port}".format(
+                                sequence=i + 1,
+                                permission=permission,
+                                protocol=protocol,
+                                src_ip=src_ip_inc,
+                                src_wildcard=src_wildcard,
+                                dst_ip=dst_ip_inc,
+                                dst_wildcard=dst_wildcard,
+                                dst_port=dst_port))
+
+                if entries == 1:
+                    configs.append(
+                        " {sequence} {permission} {protocol} {src_ip} {src_wildcard} host {dst_ip} eq {dst_port}".format(
+                            sequence=sequence_num,
+                            permission=permission,
+                            protocol=protocol,
+                            src_ip=src_ip,
+                            src_wildcard=src_wildcard,
+                            dst_ip=dst_ip,
+                            dst_port=dst_port))
     else:
-        if dst_wildcard != "0.0.0.0":
-            if entries > 1:
-                for i in range(entries):
-                    src_ip = IPv4Address(src_ip)
-                    src_step = IPv4Address(src_step)
-                    dst_ip = IPv4Address(dst_ip)
-                    dst_step = IPv4Address(dst_step)
-                    src_ip_inc = src_ip + i
-                    dst_ip_inc = dst_ip + i
-                    configs.append(
-                        " {sequence} {permission} {protocol} {src_ip} {src_wildcard} {dst_ip} {dst_wildcard} eq {dst_port}".format(
-                            sequence=i + 1,
-                            permission=permission,
-                            protocol=protocol,
-                            src_ip=src_ip_inc,
-                            src_wildcard=src_wildcard,
-                            dst_ip=dst_ip_inc,
-                            dst_wildcard=dst_wildcard,
-                            dst_port=dst_port))
+        configs.append("permit ip any any")
 
-            if entries == 1:
-                configs.append(
-                    " {sequence} {permission} {protocol} {src_ip} {src_wildcard} {dst_ip} {dst_wildcard} eq {dst_port}".format(
-                        sequence=sequence_num,
-                        permission=permission,
-                        protocol=protocol,
-                        src_ip=src_ip,
-                        src_wildcard=src_wildcard,
-                        dst_ip=dst_ip,
-                        dst_wildcard=dst_wildcard,
-                        dst_port=dst_port))
-
-        if src_wildcard != "0.0.0.0":
-            if entries > 1:
-                for i in range(entries):
-                    src_ip = IPv4Address(src_ip)
-                    src_step = IPv4Address(src_step)
-                    dst_ip = IPv4Address(dst_ip)
-                    dst_step = IPv4Address(dst_step)
-                    src_ip_inc = src_ip + i
-                    dst_ip_inc = dst_ip + i
-                    configs.append(
-                        " {sequence} {permission} {protocol} {src_ip} {src_wildcard} {dst_ip} {dst_wildcard} eq {dst_port}".format(
-                            sequence=i + 1,
-                            permission=permission,
-                            protocol=protocol,
-                            src_ip=src_ip_inc,
-                            src_wildcard=src_wildcard,
-                            dst_ip=dst_ip_inc,
-                            dst_wildcard=dst_wildcard,
-                            dst_port=dst_port))
-
-            if entries == 1:
-                configs.append(
-                    " {sequence} {permission} {protocol} {src_ip} {src_wildcard} host {dst_ip} eq {dst_port}".format(
-                        sequence=sequence_num,
-                        permission=permission,
-                        protocol=protocol,
-                        src_ip=src_ip,
-                        src_wildcard=src_wildcard,
-                        dst_ip=dst_ip,
-                        dst_port=dst_port))
     try:
         device.configure(configs)
     except SubCommandFailure as e:

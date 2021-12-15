@@ -3,6 +3,10 @@
 # Python
 import logging
 from genie.utils.timeout import Timeout
+from genie.libs.parser.iosxe.show_logging import ShowLogging
+
+# unicon
+from unicon.eal.dialogs import Dialog, Statement
 
 logger = logging.getLogger(__name__)
 
@@ -106,3 +110,81 @@ def verify_test_aaa_cmd(device, servergrp, username, password, path):
             path=path)
         )   
     return output
+
+
+def verify_enable_password(device, password):
+    
+    """ To verify enable password
+    Args:
+        device (`obj`):   Device object
+        password (`str`): password
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed enabling
+    """
+    
+    dialog =Dialog([Statement(pattern = r"^.*RETURN to get started",
+                              action = "sendline()",
+                              args = None,
+                              loop_continue = True,
+                              continue_timer = False)])
+    cmd = 'exit'
+    out = device.execute(cmd,reply=dialog,timeout=100,allow_state_change=True)
+    
+    dialog =Dialog([Statement(pattern = r"^.*(P|p)assword: $",
+                              action = "sendline({pw})".format(pw=password),
+                              args = None,
+                              loop_continue = True,
+                              continue_timer = False)])          
+    cmd = 'enable'
+    out = device.execute(cmd,reply=dialog,timeout=100,allow_state_change=True)
+    
+    if 'Access denied' not in out:
+        logger.info('Enable password is successful')
+        return True
+    else:
+        logger.error('Enable password is failed')
+        return False
+
+
+def verify_pattern_in_show_logging(device, pattern_list, exclude='', include='',
+                                   output=None):
+    """Verifies the pattern in show logging output
+        Args:
+            device (`obj`): Device object
+            pattern_list (`list`): pattern list to be verified in the output
+            exclude (`str`, optional): String to exclude from show logging
+            include (`str`, optional): String to include from show logging
+            output (`list`, optional): output of show logging in list
+        Returns:
+            True if pattern list matches in show logging output
+            False if pattern list does not match in show logging output
+    """
+    if exclude:
+        cmd = f'show logging | exclude {exclude}'
+    elif include:
+        cmd = f'show logging | include {include}'
+    else:
+        cmd = 'show logging'
+
+    # parse the command
+    output = device.parse(cmd, output=output)
+
+    matched_pattern_list = []
+    unmatched_pattern_list = []
+
+    for p in pattern_list:
+        if len(list(filter(p.match, output['logs']))) >= 1:
+            matched_pattern_list.append(p)
+        else:
+            unmatched_pattern_list.append(p)
+
+    if len(matched_pattern_list) == len(pattern_list):
+        logger.debug(f"Verified the following regex patterns exist "
+                    f"in show logging: {matched_pattern_list}")
+        return True
+
+    logger.debug(f"Failed to verify the following regex patterns exist "
+                f"in show logging: {unmatched_pattern_list}")
+    return False

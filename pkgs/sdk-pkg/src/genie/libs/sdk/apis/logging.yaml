@@ -1,0 +1,9 @@
+configure_terminal_length:
+    arguments:
+        line_num: 0
+configure_terminal_width:
+    arguments:
+        char_num: 0
+configure_logging_buffer_size:
+    arguments:
+        buffer_size: 2147483647

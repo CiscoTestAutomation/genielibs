@@ -918,3 +918,36 @@ def verify_interface_state_admin_up(
 
     return False
 
+
+def verify_port_channel_member_state(device,port_channel,interfaces,bundle_state=True,
+                                     max_time=60,check_interval=10):
+    '''Verifies interface list matches the bundle state
+    i.e. Does interface port-channel state match the bundle_state
+        Args:
+            device ('obj')    : device to use
+            port_channel ('str'): Port-channel interface (i.e. Port-channel5)
+            interfaces ('list'): List of member interfaces to check
+            bundle_state ('bootlean',optional): Bundle State to compare (default is True)
+            max_time ('int'): Max time to check status (Default is 60s)
+            check_interval ('int'): Loop interval (default is 10s)
+        Returns:
+            Boolean. True if interfaces list bundle state match bundle_state. False otherwise.
+    '''
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        result = True
+        out = device.parse("show etherchannel summary")
+        for intf in interfaces:
+            # Does intf state match the bundle state
+            if (out["interfaces"][port_channel.capitalize()]["members"][
+                        Common.convert_intf_name(intf)]["bundled"] != bundle_state):
+                result = False
+                timeout.sleep()
+                break
+        # Check if all interfaces match the bundle_state
+        # Sleep and loop if there was a mismatch
+        if result:
+            return True
+        else:
+            timeout.sleep()
+    return result

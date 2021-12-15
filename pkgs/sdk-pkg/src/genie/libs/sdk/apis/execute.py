@@ -5,6 +5,7 @@ import re
 import os
 import time
 import logging
+import json
 
 # Genie
 from genie.utils import Dq
@@ -448,3 +449,23 @@ def execute(device, *args, **kwargs):
         raise Exception('Found aliases {a}, but not CLI(Unicon).'.format(a=connected_aliases.keys()))
     else:
         raise Exception('No connected alias found.')
+
+def execute_and_parse_json(device, command):
+    ''' execute the specified command on the device which must return output in JSON format.
+        The JSON is parsed into a dict.
+
+        Args:
+            device (`obj`): Device object
+        Return:
+            output (`dict`): parsed JSON output from command on device as a dict
+    '''
+
+    output = {}
+    try:
+        output = execute(device, command)
+        output = json.loads(output)
+    except Exception as e:
+        log.error("An exception occurred when trying to run or parse the output of a command as JSON. "
+                "The command was '{}' and the exception is {}".format(command, e))
+        output = {}
+    return output

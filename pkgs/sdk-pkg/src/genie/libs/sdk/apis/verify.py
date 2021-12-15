@@ -2,6 +2,7 @@
 
 # Python
 import os
+import re
 from os import device_encoding
 import time
 import logging
@@ -369,7 +370,7 @@ def _verify_local_file_size_stable(file, max_tries=3, delay_seconds=2):
     return True
 
 
-def verify_current_image(device, images):
+def verify_current_image(device, images, delimiter_regex=None):
     '''Verify current images on the device
         Args:
             device (`obj`): Device object
@@ -377,6 +378,9 @@ def verify_current_image(device, images):
         Returns:
             None
     '''
+
+    if not delimiter_regex:
+        delimiter_regex = ':|\/'
 
     # Get current running image
     running_images = device.api.get_running_image()
@@ -396,9 +400,24 @@ def verify_current_image(device, images):
                         "length as the image(s) to be verified '{}'".format(
                             running_images, images))
 
-    if set(images) != set(running_images):
+    # Split images on delimiters to compare them more reliably. 
+    # Example, bootflash:/some/path/to/csr1000v-boot.16.09.01.SPA.pkg becomes 
+    # ['bootflash', 'some', 'path', 'to', 'csr1000v-boot.16.09.01.SPA.pkg']
+    split_images = \
+        [[x for x in re.split(delimiter_regex, image) if x] 
+            for image in images]
+
+    split_running_images = \
+        [[x for x in re.split(delimiter_regex, running_image) if x] 
+            for running_image in running_images]
+
+    # Compare the (directory, image) tuple sets of images and running images
+    if split_images != split_running_images:
         raise Exception("Running images '{}' do not match list of the "
-                        "expected images '{}'".format(running_images, images))
+                        "expected images '{}'. \nNote: delimeters have been "
+                        "excluded from this comparison based on this regex "
+                        "patern: '{}'"
+                        .format(running_images, images, delimiter_regex))
     log.info("Successfully loaded the following images on device '{}':".\
              format(device.name))
     for i in running_images:

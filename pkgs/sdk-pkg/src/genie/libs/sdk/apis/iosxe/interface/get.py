@@ -1365,4 +1365,30 @@ def get_interface_counter(device, interface, counter_name,
             my_count = my_count + variation
 
     return int(my_count)
- 
+
+def get_trunk_interfaces_encapsulation(device, interfaces):
+    """Get trunk interfaces encapsulation
+
+    Args:
+        device ('obj'): device object
+        interfaces ('list'): interface names
+
+    Returns:
+        dictonary with interface as the key and encapsulation as the value
+
+    Raises:
+        None
+    """
+    try:
+        output = {}
+        parsed_out = device.parse('show interfaces trunk')
+
+        for interface in interfaces:
+            res = parsed_out['interface'].get(interface)
+            if res is not None:
+                output[interface] = res['encapsulation']
+
+    except SchemaEmptyParserError:
+         log.error("No trunk interfaces configured on the device")
+
+    return output

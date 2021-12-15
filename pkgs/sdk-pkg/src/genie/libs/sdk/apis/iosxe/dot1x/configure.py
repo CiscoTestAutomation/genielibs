@@ -120,14 +120,14 @@ def configure_eap_profile_md5(device, profile_name):
             "Could not configure eap md5 profile {}.Error: {}".format(profile_name, str(e))
         )
 
-
-def configure_dot1x_supplicant(device, interface, cred_profile_name, eap_profile=None):
+def configure_dot1x_supplicant(device, interface, cred_profile_name=None, eap_profile=None,auth_port_control=None):
     """Configure switch as dot1x supplicant/client
     Args:
         device ('obj'): device to use
         interface (`str`): Interface name
-        cred_profile_name (`str`): dot1x credential profile name
+        cred_profile_name (`str`,optional): dot1x credential profile name
         eap_profile (`str`, optional): eap profile name (Default is None)
+        auth_port_control ('str',optional): Port control type (i.e auto, force-authorized)
     Returns:
         None
     Raises:
@@ -137,10 +137,15 @@ def configure_dot1x_supplicant(device, interface, cred_profile_name, eap_profile
     cmd = ''
     cmd += 'interface {}\n'.format(converted_interface)
     cmd += 'dot1x pae supplicant\n'
-    cmd += 'dot1x credentials {}\n'.format(cred_profile_name)
+
+    if cred_profile_name:
+        cmd += 'dot1x credentials {cred_profile_name}\n'.format(cred_profile_name=cred_profile_name)
 
     if eap_profile is not None:
         cmd += 'dot1x supplicant eap profile {}\n'.format(eap_profile)
+
+    if auth_port_control:
+        cmd += 'authentication port-control {auth_port_control}\n'.format(auth_port_control=auth_port_control)
 
     log.info("configure dot1x supplicant")
     try:

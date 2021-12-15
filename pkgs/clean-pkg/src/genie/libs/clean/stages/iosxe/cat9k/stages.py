@@ -70,7 +70,6 @@ change_boot_variable:
     # Execution order of Stage steps
     # ==============================
     exec_order = [
-        'pre_requisite_checks',
         'delete_boot_variable',
         'configure_boot_variable',
         'write_memory',
@@ -166,7 +165,7 @@ There is more than one ip address, one for each supervisor.
         with steps.start("Delete any previously configured boot variables on {}".\
                         format(device.name)) as step:
             try:
-                device.api.execute_no_boot_variable(timeout=timeout)
+                device.configure('no boot system', timeout=timeout)
             except Exception as e:
                 step.failed("Failed to delete the boot variables because of {}".format(e))            
 

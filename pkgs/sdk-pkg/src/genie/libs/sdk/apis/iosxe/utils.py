@@ -51,7 +51,7 @@ def get_config_from_file(device, disk, filename):
         Raises:
             SubCommandFailure
         Returns:
-            Dictionary: Configuration 
+            Dictionary: Configuration
     """
 
     try:
@@ -69,7 +69,7 @@ def get_config_from_file(device, disk, filename):
 
 
 def start_packet_capture(
-    device, capture_name=None, interface=None, capture_command=None
+    device, capture_name=None, interface=None, direction='both', capture_command=None
 ):
     """Start packet capture
 
@@ -78,6 +78,7 @@ def start_packet_capture(
             capture_name (`str`): Packet capture name
             interface (`str`): Interface to capture the packets on
             capture_command (`str`): Monitor command
+            direction ('str'): direction of the capture pkts. Default is both direction
 
         Returns:
             None
@@ -102,8 +103,8 @@ def start_packet_capture(
         # User provided own command, use that one instead
         monitor_command = (
             "monitor capture {capture_name} interface {interface} "
-            "out match any".format(
-                capture_name=capture_name, interface=interface
+            "{direction} match any".format(
+                capture_name=capture_name, interface=interface, direction=direction
             )
         )
 
@@ -359,7 +360,7 @@ def scp(device,
             vrf (`str`): use vrf where scp find route to remote device
                                  Default to None
         Returns:
-            result (`bool`): True if scp successfully done 
+            result (`bool`): True if scp successfully done
     """
     # convert from device name to device object
     remote_device = device.testbed.devices[remote_device]
@@ -518,7 +519,8 @@ def verify_ping(
 
         timeout.sleep()
     return False
-    
+
+
 def get_md5_hash_of_file(device, file, timeout=60):
     """ Return the MD5 hash of a given file.
 
@@ -536,8 +538,13 @@ def get_md5_hash_of_file(device, file, timeout=60):
     # ....................................Done!
     # verify /md5 (bootflash:test1.bin) = 2c9bf2c64bee6fb22277fc89bd1c8ff0
     try:
-        return device.execute('verify /md5 {}'.format(file),
-                              timeout=timeout).split()[-1]
+        output = device.execute('verify /md5 {}'.format(file), timeout=timeout)
+        m = re.search(r' = (\S+)', output)
+        if m:
+            hash_value = m.group(1)
+            return hash_value
+        else:
+            log.error('Could not find MD5 hash in output')
     except Exception as e:
         log.warning(e)
         return None
@@ -746,21 +753,20 @@ def clear_logging(device):
         Args:
             device ('obj'): Device object
         Returns:
-            None
+            output ('str'): Output of execution
         Raises:
             SubCommandFailure
     """
-    log.info("clear logging on {device}".format(device=device))
-
     dialog = Dialog([Statement(pattern=r'\[confirm\].*', action='sendline(\r)',loop_continue=True,continue_timer=False)])
 
     try:
-        device.execute("clear logging", reply=dialog)
+        output = device.execute("clear logging", reply=dialog)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not clear logging on {device}. Error:\n{error}".format(device=device, error=e)
         )
 
+    return output
 
 def get_show_output_include(device, command, filter, output=None):
     """ Find the lines which are match from show command.
@@ -788,7 +794,7 @@ def get_show_output_include(device, command, filter, output=None):
 
     return [result,output]
 
-  
+
 def decrypt_tacacs_pcap(filename, key, filepath):
     """Decrypt and Converting the tacacs pcap file to tacacs txt file
         Args:
@@ -1030,7 +1036,7 @@ def parse_tacacs_packet(decrypted_pcap_file):
             log.info("No data in {0} to parse".format(decrypted_pcap_file))
             return False
 
-          
+
 def verify_tacacs_packet(tacacs_json_dict, verfifydict):
     """Validating Authentication, Authorization and Accounting json data
     with the verifydict data
@@ -1176,7 +1182,7 @@ def concurrent_ssh_sessions(concurrent_sessions, iteration_times, device, testbe
         p.join()
 
         time.sleep(2)
-  
+
 
 def get_radius_packets(pcap_or_packet):
     """
@@ -1333,3 +1339,28 @@ def clear_ip_mroute_all(device):
         raise SubCommandFailure(
             "Could not clearing ip mroute on {device}. Error:\n{error}".format(device=device, error=e)
         )
+
+
+def get_show_output_section(device, command, filter):
+    """ Display the lines which are match from section 
+        Args:
+            device (`obj`): Device object
+            command (`str`): show command
+            filter (`str`): filter expression
+        Returns:
+            bool,output('str') : True/False, section command output based on the output
+        Raises:
+            SubCommandFailure
+    """
+    command += ' | section {}'.format(filter)
+    result = True
+
+    try:
+        output = device.execute(command)
+        if not output:
+            log.error('No match found')
+            result = False
+    except SubCommandFailure as e:
+        raise SubCommandFailure("No match found or Invalid command executed on {device}. Error:\n{e}")
+
+    return (result,output)

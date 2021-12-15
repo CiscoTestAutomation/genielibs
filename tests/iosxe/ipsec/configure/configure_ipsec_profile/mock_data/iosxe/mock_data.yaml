@@ -1,0 +1,44 @@
+configure:
+  commands:
+    crypto ipsec profile ipsec_profile_new: "crypto ipsec profile ipsec_profile_new\r\
+      \n"
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    set ikev2-profile ikev2_profile_new: "set ikev2-profile ikev2_profile_new\r\n"
+    set transform-set transform_set: "set transform-set transform_set\r\n"
+  prompt: rad-vtep1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: rad-vtep1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: rad-vtep1#

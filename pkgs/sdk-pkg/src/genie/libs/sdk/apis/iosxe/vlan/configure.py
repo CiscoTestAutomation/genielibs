@@ -108,25 +108,6 @@ def config_vlan_tag_native(device):
                 error=e)
         )
 
-def unconfig_vlan_tag_native(device):
-    """ Unconfigure vlan dot1q tag native
-
-        Args:
-            device (`obj`): Device object
-        Return:
-            None
-        Raise:
-            SubCommandFailure: Failed configuring device
-    """
-
-    try:
-        device.configure("no vlan dot1q tag native")
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            'Could not remove vlan dot1q tag native, Error: {error}'.format(
-                error=e)
-        )
- 
 def configure_vlan_vpls(device, vlanid):
     """ Config vpls on vlan
 
@@ -153,44 +134,93 @@ def configure_vlan_vpls(device, vlanid):
                 vlanid=vlanid, error=e)
         )
 
-def unconfigure_vlan_vpls(device, vlanid):
-    """ Unconfig vpls on vlan
-
+def configure_vtp_mode(device,mode):
+    """ Configures global VTP mode
         Args:
-            device (`obj`): Device object
-            vlanid (`str`): Vlan id
-        Return:
-            None
-        Raise:
-            SubCommandFailure: Failed configuring interface
-    """
-
-    try:
-        device.configure([
-            "no vlan configuration {vlanid}".format(vlanid=vlanid),
-            "no vlan dot1q tag native"])
-    except SubCommandFailure as e:
-        raise SubCommandFailure(
-            'Could not unconfigure vpls on vlan {vlanid}, Error: {error}'.format(
-                vlanid=vlanid, error=e)
-        )
-
-
-def unconfigure_vlan_configuration(device, vlanid):
-    """ Unconfguring vlan configuration in the device
-        Args:
-            device (`obj`): Device object
-            vlanid ('int') : vlan id
+            device ('obj'): device to use
+            mode ('str'):  VTP mode (i.e transparent, client, server)
         Returns:
             None
         Raises:
             SubCommandFailure
-        Example: no vlan configuration 101
     """
     try:
-        device.configure(
-            "no vlan configuration {vlanid}".format(vlanid=vlanid)
+        device.configure('vtp mode {mode}'.format(mode=mode))
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure VTP mode'
         )
-    except SubCommandFailure as e:
-        log.error("Unable to unconfig vlan {}, Error:\n{}".format(vlanid, e))
-        raise
+
+def configure_pvlan_svi_mapping(device, svi_vlan, mapping_vlan):
+    """ Configures Private Vlan Mapping on SVI
+        Args:
+            device ('obj'): device to use
+            svi_vlan ('str'): SVI interface
+            mapping_vlan ('str'): Private vlan to map to
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    # Initialize list variable
+    config_list = []
+    config_list.append("interface {svi_vlan}".format(svi_vlan=svi_vlan))
+    config_list.append("private-vlan mapping {mapping_vlan}".format(mapping_vlan=mapping_vlan))
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure PVLAN-mapping'
+        )
+
+
+def configure_pvlan_primary(device, primary_vlan, secondary_vlan=None):
+    """ Configures Primary Private Vlan
+        Args:
+            device ('obj'): device to use
+            primary_vlan ('str'): Primary private vlan
+            secondary_vlan ('str',optional): Secondary isolated/community vlan
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config_list = []
+    # vlan 100
+    # private-vlan primary
+    config_list.append("vlan {primary_vlan} \n"
+                       "private-vlan primary".format(primary_vlan=primary_vlan))
+    # private-vlan association 101
+    if secondary_vlan != None:
+        config_list.append("private-vlan association {secondary_vlan}".format(secondary_vlan=secondary_vlan))
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure Primary Pvlan'
+        )
+
+def configure_pvlan_type(device,vlan,pvlan_type):
+    """ Configures Isolated Private Vlan
+        Args:
+            device ('obj'): device to use
+            vlan ('str'): Vlan id
+            pvlan_type ('str'): Private vlan type (i.e isolated, primary, community)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    # Initialize list variable
+    config_list = []
+    config_list.append("vlan {vlan}".format(vlan=vlan))
+    config_list.append("private-vlan {pvlan_type}".format(pvlan_type=pvlan_type))
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure Primary Pvlan'
+        )

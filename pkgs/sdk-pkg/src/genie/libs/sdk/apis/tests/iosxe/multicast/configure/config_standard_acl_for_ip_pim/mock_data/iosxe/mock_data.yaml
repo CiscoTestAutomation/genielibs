@@ -1,0 +1,46 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    ip access-list standard vrf3001-BidigroupRP: "ip access-list standard vrf3001-BidigroupRP\r\
+      \n"
+    ip pim bidir-enable: "ip pim bidir-enable\r\n"
+    ip pim vrf vrf3001 rp-address 30.0.1.1 vrf3001-BidigroupRP bidir: "ip pim vrf\
+      \ vrf3001 rp-address 30.0.1.1 vrf3001-BidigroupRP bidir\r\n"
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    permit 229.1.1.1 0.0.255.255: "permit 229.1.1.1 0.0.255.255\r\n"
+  prompt: P1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: P1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: P1#

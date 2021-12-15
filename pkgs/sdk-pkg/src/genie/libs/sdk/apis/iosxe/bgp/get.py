@@ -1,19 +1,15 @@
 """Common get info functions for bgp"""
 
 # Python
-import os
 import logging
 import re
-import time
 from prettytable import PrettyTable
 
 # pyATS
-from pyats.easypy import runtime
 from pyats.utils.objects import find, R
 
 # Genie
 from genie.libs.sdk.libs.utils.normalize import GroupKeys
-from genie.utils.config import Config
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
 from genie.utils.timeout import Timeout
 
@@ -85,7 +81,7 @@ def get_show_run_bgp_dict(device):
         m = p1.match(line)
         if m:
             bgp_as = int(m.groupdict()["bgp_as"])
-            ret_dict.update({"bgp_as": bgp_as})
+            ret_dict["bgp_as"] = bgp_as
             continue
 
         # address-family vpnv4
@@ -391,7 +387,7 @@ def get_bgp_neighbors_advertised_routes(
         if out:
             break
 
-    vrf = vrf if vrf else "default"
+    vrf = vrf or "default"
 
     if not out:
         return {}
@@ -512,33 +508,32 @@ def get_ip_bgp_route_nexthop_color(device, address_family, route, vrf="", rd="",
 
     routes = get_ip_bgp_route(device, address_family, route, vrf, rd, best_path)
 
-    if routes:
-        ret_list = []
-        for instance in routes.get('instance', {}):
-            for vrf in routes['instance'].get(instance, {}).get('vrf', {}):
-                for af in routes['instance'][instance]['vrf'].get(vrf, {})\
-                    ['address_family']:
-                    for prefix in routes['instance'][instance]['vrf'][vrf]\
-                        .get('address_family', {}).get(af, {})\
-                        .get('prefixes', {}):
-                        for idx in routes['instance'][instance]['vrf'][vrf]\
-                            ['address_family'][af]['prefixes'].get(prefix, {})\
-                            .get('index', {}):
-                            keys = routes['instance'][instance]['vrf'][vrf]\
-                                ['address_family'][af]['prefixes'][prefix]\
-                                ['index'].get(idx, {})
-                            
-                            ext_comm = keys.get('ext_community', '').split()
-                            for comm in ext_comm:
-                                if 'Color:' in comm:
-                                    _, color = comm.split(':')
-                                    ret_list.append([keys['next_hop'], color])
-        return ret_list
-    else:
+    if not routes:
         return []
+    ret_list = []
+    for instance in routes.get('instance', {}):
+        for vrf in routes['instance'].get(instance, {}).get('vrf', {}):
+            for af in routes['instance'][instance]['vrf'].get(vrf, {})\
+                ['address_family']:
+                for prefix in routes['instance'][instance]['vrf'][vrf]\
+                    .get('address_family', {}).get(af, {})\
+                    .get('prefixes', {}):
+                    for idx in routes['instance'][instance]['vrf'][vrf]\
+                        ['address_family'][af]['prefixes'].get(prefix, {})\
+                        .get('index', {}):
+                        keys = routes['instance'][instance]['vrf'][vrf]\
+                            ['address_family'][af]['prefixes'][prefix]\
+                            ['index'].get(idx, {})
 
-def get_routing_routes(device, address_family, vrf, route):
-    """ Get advertised neighbors from route
+                        ext_comm = keys.get('ext_community', '').split()
+                        for comm in ext_comm:
+                            if 'Color:' in comm:
+                                _, color = comm.split(':')
+                                ret_list.append([keys['next_hop'], color])
+    return ret_list
+
+def get_bgp_routes(device, address_family, vrf, route):
+    """ Get bgp routes
 
         Args:
             device ('obj'): Device object
@@ -560,10 +555,9 @@ def get_routing_routes(device, address_family, vrf, route):
         return {}
 
     try:
-        prefixes = out["instance"]["default"]["vrf"][vrf]["address_family"][
+        return out["instance"]["default"]["vrf"][vrf]["address_family"][
             address_family
         ]["prefixes"]
-        return prefixes
 
     except KeyError as e:
         return {}
@@ -696,11 +690,11 @@ def get_bgp_best_routes(
 
     if not address_family:
         cmd = "show ip bgp all neighbors {} routes".format(neighbor_address)
-    elif address_family and vrf:
+    elif vrf:
         cmd = "show ip bgp {} vrf {} neighbors {} routes".format(
             address_family, vrf, neighbor_address
         )
-    elif address_family:
+    else:
         cmd = "show ip bgp {} all neighbors {} routes".format(
             address_family, neighbor_address
         )
@@ -754,19 +748,18 @@ def get_bgp_best_routes(
                                 ][
                                     index
                                 ]
+                            ) and ">" in (
+                                out["vrf"][vrf_name]["neighbor"][
+                                    neighbor_address
+                                ]["address_family"][af]["routes"][route][
+                                    "index"
+                                ][
+                                    index
+                                ][
+                                    "status_codes"
+                                ]
                             ):
-                                if ">" in (
-                                    out["vrf"][vrf_name]["neighbor"][
-                                        neighbor_address
-                                    ]["address_family"][af]["routes"][route][
-                                        "index"
-                                    ][
-                                        index
-                                    ][
-                                        "status_codes"
-                                    ]
-                                ):
-                                    routes.append(route)
+                                routes.append(route)
         return routes
 
 
@@ -842,7 +835,7 @@ def get_bgp_neighbor_capabilities(
             return None
 
     address_family = address_family.replace(" ", "_")
-    capabilities = (
+    return (
         output["vrf"]
         .get(vrf, {})
         .get("neighbor", {})
@@ -850,8 +843,6 @@ def get_bgp_neighbor_capabilities(
         .get("bgp_negotiated_capabilities", {})
         .get(address_family, None)
     )
-
-    return capabilities
 
 
 def get_bgp_neighbor_session_state(
@@ -947,7 +938,7 @@ def get_ip_bgp_neighbors(
             'show ip bgp {address_family} vrf {vrf} neighbors',
             'show ip bgp {address_family} neighbors {neighbor}',
             'show ip bgp {address_family} neighbors',
-            'show ip bgp {address_family} all neighbors {route}'           
+            'show ip bgp {address_family} all neighbors {route}'
             'show ip bgp neighbors {neighbor}',
             'show ip bgp neighbors'
 
@@ -1100,11 +1091,10 @@ def get_bgp_route_ext_community(
             ext_community = routes["index"][index].get("ext_community", None)
             if ext_community:
                 return ext_community
-            else:
-                # ext_community doesnt exist under index, try under evpn
-                evpn_dict = routes["index"][index].get("evpn", None)
-                if evpn_dict:
-                    return evpn_dict.get("ext_community", None)
+            # ext_community doesnt exist under index, try under evpn
+            evpn_dict = routes["index"][index].get("evpn", None)
+            if evpn_dict:
+                return evpn_dict.get("ext_community", None)
 
 
 def get_bgp_neighbors(device, address_family, vrf=None):
@@ -1180,17 +1170,16 @@ def get_bgp_neighbors_in_state(device, address_family, state, in_state=True):
                 "Getting all BGP neighbors that are "
                 "in state: '{}'.".format(state)
             )
+    elif address_family:
+        log.info(
+            "Getting all BGP neighbors under {} address_family that are "
+            "not in state: '{}'.".format(address_family, state)
+        )
     else:
-        if address_family:
-            log.info(
-                "Getting all BGP neighbors under {} address_family that are "
-                "not in state: '{}'.".format(address_family, state)
-            )
-        else:
-            log.info(
-                "Getting all BGP neighbors that are "
-                "not in state: '{}'.".format(state)
-            )
+        log.info(
+            "Getting all BGP neighbors that are "
+            "not in state: '{}'.".format(state)
+        )
     cli_commands = ["show ip bgp {} all summary", "show ip bgp all summary"]
 
     if address_family:
@@ -1219,13 +1208,9 @@ def get_bgp_neighbors_in_state(device, address_family, state, in_state=True):
                     )
 
                     m = p1.match(output_state)
-                    if in_state and m:
+                    if in_state and m or not in_state and not m:
                         # if state in output_state:
                         neighbor_addresses.append(neighbor)
-                    elif not in_state and not m:
-                        # if state not in output_state:
-                        neighbor_addresses.append(neighbor)
-
                 else:
                     for af in out["vrf"][vrf]["neighbor"][neighbor].get(
                         "address_family", {}
@@ -1241,13 +1226,9 @@ def get_bgp_neighbors_in_state(device, address_family, state, in_state=True):
                         )
 
                         m = p1.match(output_state)
-                        if in_state and m:
+                        if in_state and m or not in_state and not m:
                             # if state in output_state:
                             neighbor_addresses.append(neighbor)
-                        elif not in_state and not m:
-                            # if state not in output_state:
-                            neighbor_addresses.append(neighbor)
-
     return neighbor_addresses
 
 
@@ -1484,8 +1465,7 @@ def get_configured_bgp_peers(device, bgp_as, router_bgp_address_family, vrf):
             group = m.groupdict()
             neighbor = group["neighbor"]
             as_number = group["as_number"]
-            remote_as_dict.update({neighbor: as_number})
-
+            remote_as_dict[neighbor] = as_number
     return remote_as_dict
 
 
@@ -1577,7 +1557,7 @@ def get_bgp_networks_from_neighbor(device, neighbor_address, vrf=""):
         log.info("Command has not returned any results")
         return []
 
-    vrf = vrf if vrf else "default"
+    vrf = vrf or "default"
 
     routes = []
 
@@ -1624,7 +1604,7 @@ def get_bgp_status_codes_from_neighbor(
         log.info("Command has not returned any results")
         return None
 
-    vrf = vrf if vrf else "default"
+    vrf = vrf or "default"
 
     if (
         out
@@ -1770,7 +1750,37 @@ def get_bgp_mpls_labels(device, route):
                                         source=found)
         return keys.pop()['mpls_labels']
     return None
+    
+def get_bgp_mvpn_route_count(device, route, vrf):
+    """ Returns count of metioned routes 
 
+        args:
+            device ('obj'): Device to use
+            route ('list'): Route to check 
+            vrf ('str'): vrf name
+        raises:
+            N/A
+
+        returns:
+            dict
+    """
+
+    try:
+        out = device.parse('show bgp ipv4 mvpn vrf {vrf}'.format(vrf=vrf))
+    except SchemaEmptyParserError:
+        out = None
+    if not out:
+        log.info('Could not get information about show bgp ipv4 mvpn vrf {vrf}'.format(vrf=vrf))
+        return None   
+
+    res=out.q.get_values('routes')
+    res=','.join(res)
+    return {
+        rt: len(
+            re.findall(r'\[{rt}\]'.format(rt=re.findall(r'\d+', rt)[0]), res)
+        )
+        for rt in route
+    }
 
 def get_bgp_rt2_community_label(device, address_family, eti, mac, ip, vrf_id):
     """ Get external community & label for specific mac and ip route from 
@@ -1811,29 +1821,23 @@ def get_bgp_rt2_community_label(device, address_family, eti, mac, ip, vrf_id):
 
     for prefix in afs.get('prefixes', {}):
         nlri_data = afs['prefixes'][prefix].get("nlri_data", {})
-        # If we match, we have our data. Get it and return
+        if nlri_data.get("ip_prefix") != ip or nlri_data.get("mac") != mac:
+            continue
 
-        if nlri_data.get("ip_prefix") == ip and nlri_data.get("mac") == mac:
-            rt2_evpn = dict()
-            rt2_evpn["ext_community"] = []
-            rt2_evpn["labels"] = []
+        rt2_evpn = {'ext_community': [], 'labels': []}
+        for idx in afs["prefixes"][prefix].get("index", {}):
+            evpn = afs["prefixes"][prefix]["index"][idx].get("evpn", {})
+            ext_comm = evpn.get("ext_community", '')
 
-            for idx in afs["prefixes"][prefix].get("index", {}):
-                evpn = afs["prefixes"][prefix]["index"][idx].get("evpn", {})
-                ext_comm = evpn.get("ext_community", '')
+            if ' ' in ext_comm:
+                for comm in ext_comm.split(' '):
+                    rt2_evpn["ext_community"].append(comm)
+            else:
+                rt2_evpn["ext_community"].append(ext_comm)
+            label = evpn.get("label", '')
+            rt2_evpn["labels"].append(str(label))    
 
-                if ' ' in ext_comm:
-                    for comm in ext_comm.split(' '):
-                        rt2_evpn["ext_community"].append(comm)
-                else:
-                    rt2_evpn["ext_community"].append(ext_comm)
-                label = evpn.get("label", '')
-                rt2_evpn["labels"].append(str(label))    
-
-            return rt2_evpn
-
-        else:
-           continue
+        return rt2_evpn
 
     return None
 
@@ -1882,31 +1886,27 @@ def get_bgp_rt5_community_paths_label(device, address_family, eti, ip, ip_len, v
     for prefix in afs.get('prefixes', {}):
         pf = prefix.split("/")
 
-        if pf[0] == ip:
-            evpn_rt5_dict = dict()
-            evpn_rt5_dict["vni_labels"] = []
-            evpn_rt5_dict["ext_community"] = []
-            evpn_rt5_dict["paths"] = "" 
-            paths = afs["prefixes"][prefix].get("paths", '')
-            evpn_rt5_dict["paths"] = paths
-
-            for idx in afs["prefixes"][prefix].get("index", {}):
-                evpn = afs["prefixes"][prefix]["index"][idx].get("evpn", {})
-                ext_comm = evpn.get("ext_community", '')
-
-                if ' ' in ext_comm:
-
-                    for comm in ext_comm.split(' '):
-                        evpn_rt5_dict["ext_community"].append(comm)                 
-                else:
-                    evpn_rt5_dict["ext_community"].append(ext_comm)
-                vtep = afs["prefixes"][prefix]["index"][idx].get("local_vxlan_vtep", {})
-                vni_label = vtep.get("vni", '')
-                evpn_rt5_dict["vni_labels"].append(vni_label)
-
-            return evpn_rt5_dict
-
-        else:
+        if pf[0] != ip:
             continue
+
+        evpn_rt5_dict = {'vni_labels': [], 'ext_community': [], 'paths': ''}
+        paths = afs["prefixes"][prefix].get("paths", '')
+        evpn_rt5_dict["paths"] = paths
+
+        for idx in afs["prefixes"][prefix].get("index", {}):
+            evpn = afs["prefixes"][prefix]["index"][idx].get("evpn", {})
+            ext_comm = evpn.get("ext_community", '')
+
+            if ' ' in ext_comm:
+
+                for comm in ext_comm.split(' '):
+                    evpn_rt5_dict["ext_community"].append(comm)                 
+            else:
+                evpn_rt5_dict["ext_community"].append(ext_comm)
+            vtep = afs["prefixes"][prefix]["index"][idx].get("local_vxlan_vtep", {})
+            vni_label = vtep.get("vni", '')
+            evpn_rt5_dict["vni_labels"].append(vni_label)
+
+        return evpn_rt5_dict
 
     return {} 

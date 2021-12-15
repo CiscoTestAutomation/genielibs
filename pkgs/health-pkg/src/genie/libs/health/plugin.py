@@ -87,6 +87,7 @@ class HealthCheckPlugin(BasePlugin):
             health_mgmt_vrf = ['-health_mgmt_vrf']
             health_threshold = ['-health_threshold']
             health_show_logging_keywords = ['-health_show_logging_keywords']
+            health_clear_logging = ['-health_clear_logging']
             health_core_default_dir = ['-health_core_default_dir']
             health_checks = ['-health_checks']
             health_devices = ['-health_devices']
@@ -105,6 +106,7 @@ class HealthCheckPlugin(BasePlugin):
             health_mgmt_vrf = ['--health-mgmt-vrf']
             health_threshold = ['--health-threshold']
             health_show_logging_keywords = ['--health-show-logging-keywords']
+            health_clear_logging = ['--health-clear-logging']
             health_core_default_dir = ['--health-core-default-dir']
             health_checks = ['--health-checks']
             health_devices = ['--health-devices']
@@ -192,6 +194,13 @@ class HealthCheckPlugin(BasePlugin):
             dest='health_show_logging_keywords',
             default=None,
             nargs='*',
+            help='Specify logging keywords to search')
+
+        pyats_health_grp.add_argument(
+            *health_clear_logging,
+            dest='health_clear_logging',
+            default=False,
+            action='store_true',
             help='Specify logging keywords to search')
 
         pyats_health_grp.add_argument(
@@ -314,14 +323,6 @@ class HealthCheckPlugin(BasePlugin):
             with open(health_yamls.pyats_health_yaml) as f:
                 health_loaded = loader.load(f.read())
 
-        # save `pyats_health.yaml` to runtime.directory for archive
-        with open(
-                "{rundir}/pyats_health.yaml".format(
-                    rundir=self.runtime.directory), 'w') as f:
-            yaml.dump(health_loaded, f,
-                      Dumper = OrderedSafeDumper,
-                      default_flow_style = False)
-
         # get `source` for pyATS Health processors and instantiate class
         source = health_loaded.get('pyats_health_processors',
                                    {}).get('source', {})
@@ -384,10 +385,7 @@ class HealthCheckPlugin(BasePlugin):
             # single value to pair. eg. cpu -> cpu: True
             if checks_list:
                 for check in variable.get('checks', []):
-                    if check in checks_list:
-                        variable['checks'][check] = True
-                    else:
-                        variable['checks'][check] = False
+                    variable['checks'][check] = check in checks_list
             # single value to pair. eg. R3_nx -> R3_nx: nxos
             if devices_list:
                 for device in devices_list:
@@ -428,6 +426,14 @@ class HealthCheckPlugin(BasePlugin):
                 exception_msg=
                 "Wrong format was given to `--health-show-logging-keywords`. Format would be `\"iosxe:['traceback','Traceback']\" \"iosxr:['TRACEBACK']\"`."
             )
+
+        _evaluate_arguments(
+            self.runtime.args.health_clear_logging,
+            health_settings,
+            'clear_logging',
+            exception_msg=
+            "Wrong format was given to `--clear-logging`. No value required. This is flag. If provide, True(clear logging)."
+        )
 
         if self.runtime.args.health_core_default_dir:
             _evaluate_arguments(
@@ -470,7 +476,7 @@ class HealthCheckPlugin(BasePlugin):
             health_settings,
             'webex',
             exception_msg=
-            "Wrong format was given to `--health-webex`. No value required. This is flag. If provide, Tru(webex notification enabled)."
+            "Wrong format was given to `--health-webex`. No value required. This is flag. If provide, True(webex notification enabled)."
         )
 
         if self.runtime.args.health_notify_webex or self.runtime.args.health_webex:
@@ -557,6 +563,14 @@ class HealthCheckPlugin(BasePlugin):
                         'data': section_data
                     })
                 processors.setdefault('context', []).append(processor)
+
+        # save `pyats_health.yaml` to runtime.directory for archive
+        with open(
+                "{rundir}/pyats_health.yaml".format(
+                    rundir=self.runtime.directory), 'w') as f:
+            yaml.dump(health_loaded, f,
+                      Dumper = OrderedSafeDumper,
+                      default_flow_style = False)
 
     def post_task(self, task):
         # save to health_results.json
