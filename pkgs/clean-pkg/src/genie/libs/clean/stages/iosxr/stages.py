@@ -494,9 +494,13 @@ install_image_and_packages:
                     error_pattern=self.error_patterns)
 
                 out = device.expect(
-                    [self.successful_operation_string],
+                    [self.successful_operation_string, self.install_operation_aborted_pattern],
                     trim_buffer=False,
                     timeout=install_timeout)
+                error = re.search(self.install_operation_aborted_pattern, out.match_output)
+                if error:
+                        device.execute("show install log " + error.groupdict()['id'])
+                        step.failed("The command '{cmd}' aborted ".format(cmd=cmd))
             except Exception as e:
                 step.failed("The command '{cmd}' failed. Error: {e}"
                             .format(cmd=cmd, e=str(e)))
@@ -538,9 +542,14 @@ install_image_and_packages:
                     device.spawn, timeout=install_timeout)
 
                 # Wait for successful output
-                device.expect(
-                    [self.successful_operation_string],
+                out = device.expect(
+                    [self.successful_operation_string, self.install_operation_aborted_pattern],
+                    trim_buffer=False,
                     timeout=install_timeout)
+                error = re.search(self.install_operation_aborted_pattern, out.match_output)
+                if error:
+                        device.execute("show install log " + error.groupdict()['id'])
+                        step.failed("The command '{cmd}' aborted ".format(cmd=cmd))
             except Exception as e:
                 step.failed("Attempting to activate install id '{id}' "
                             "failed. Error: {e}"
