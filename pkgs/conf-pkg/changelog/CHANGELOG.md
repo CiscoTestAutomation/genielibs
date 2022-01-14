@@ -1,3 +1,7 @@
+# 2022
+
+* [January](2022/JANUARY.rst)
+
 # 2021
 
 * [July](2021/July.rst)

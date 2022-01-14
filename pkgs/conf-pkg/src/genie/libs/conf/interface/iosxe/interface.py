@@ -174,6 +174,65 @@ class Interface(genie.libs.conf.interface.Interface):
 
     def _build_config_interface_submode(self, configurations, attributes, unconfig):
 
+        # ----- switchport configure ---------#
+
+
+        # iosxe: interface {name} / switchport
+        # Switchport mode configuration can't be applied
+        #  on loopback and Vlan interfaces attribute definition
+        if not re.match('[V|v]lan', self.name) and \
+           not re.match('[L|l]oopback', self.name):
+
+            switchport = attributes.value('switchport')
+            switchport_enable = attributes.value('switchport_enable')
+            if switchport != None or switchport_enable != None:
+                if switchport or switchport_enable:
+                    configurations.append_line(
+                        attributes.format('switchport'))
+                else:
+                    configurations.append_line(
+                        attributes.format('no switchport'),
+                        unconfig_cmd='switchport')
+
+            #  location might be reconsidered
+            # iosxe: interface {name} / switchport mode trunk
+            switchport = attributes.value('switchport_mode')
+            # if 'trunk' in str(switchport):
+            configurations.append_line(
+                attributes.format('switchport mode {switchport_mode.value}'))
+
+            # iosxe: interface {name} / switchport trunk allowed vlan 100-110
+            configurations.append_line(
+                attributes.format(
+                    'switchport trunk allowed vlan {sw_trunk_allowed_vlan}'))
+            configurations.append_line(
+                attributes.format(
+                    'switchport trunk allowed vlan {trunk_vlans}'))
+
+            # iosxe: interface {name} / switchport trunk native vlan 100
+            configurations.append_line(
+                attributes.format(
+                    'switchport trunk native vlan {sw_trunk_native_vlan}'))
+            configurations.append_line(
+                attributes.format(
+                    'switchport trunk native vlan {native_vlan}'))
+
+            # iosxe: interface {name} / switchport access vlan 100
+            if 'access' in str(switchport):
+                configurations.append_line(
+                    attributes.format('switchport access vlan {sw_access_allowed_vlan}'))
+                configurations.append_line(
+                    attributes.format('switchport access vlan {access_vlan}'))
+
+            # switchport trunk allowed vlan add <trunk_add_vlans>
+            configurations.append_line(
+                attributes.format('switchport trunk allowed vlan add {trunk_add_vlans}'))
+
+            # switchport trunk allowed vlan remove <trunk_remove_vlans>
+            configurations.append_line(
+                attributes.format('switchport trunk allowed vlan remove {trunk_remove_vlans}'))
+
+
         # encapsulation <encapsulation> <first_dot1q>
         # encapsulation <encapsulation> <first_dot1q> native
         # encapsulation <encapsulation> <first_dot1q> second-dot1q <second_dot1q>
@@ -346,64 +405,6 @@ class Interface(genie.libs.conf.interface.Interface):
             configurations.append_line(
                 attributes.format('delay {delay}'))
 
-
-        # ----- switchport configure ---------#
-
-
-        # iosxe: interface {name} / switchport
-        # Switchport mode configuration can't be applied
-        #  on loopback and Vlan interfaces attribute definition
-        if not re.match('[V|v]lan', self.name) and \
-           not re.match('[L|l]oopback', self.name):
-
-            switchport = attributes.value('switchport')
-            switchport_enable = attributes.value('switchport_enable')
-            if switchport != None or switchport_enable != None:
-                if switchport or switchport_enable:
-                    configurations.append_line(
-                        attributes.format('switchport'))
-                else:
-                    configurations.append_line(
-                        attributes.format('no switchport'),
-                        unconfig_cmd='switchport')
-
-            #  location might be reconsidered
-            # iosxe: interface {name} / switchport mode trunk
-            switchport = attributes.value('switchport_mode')
-            # if 'trunk' in str(switchport):
-            configurations.append_line(
-                attributes.format('switchport mode {switchport_mode.value}'))
-
-            # iosxe: interface {name} / switchport trunk allowed vlan 100-110
-            configurations.append_line(
-                attributes.format(
-                    'switchport trunk allowed vlan {sw_trunk_allowed_vlan}'))
-            configurations.append_line(
-                attributes.format(
-                    'switchport trunk allowed vlan {trunk_vlans}'))
-
-            # iosxe: interface {name} / switchport trunk native vlan 100
-            configurations.append_line(
-                attributes.format(
-                    'switchport trunk native vlan {sw_trunk_native_vlan}'))
-            configurations.append_line(
-                attributes.format(
-                    'switchport trunk native vlan {native_vlan}'))
-
-            # iosxe: interface {name} / switchport access vlan 100
-            if 'access' in str(switchport):
-                configurations.append_line(
-                    attributes.format('switchport access vlan {sw_access_allowed_vlan}'))
-                configurations.append_line(
-                    attributes.format('switchport access vlan {access_vlan}'))
-
-            # switchport trunk allowed vlan add <trunk_add_vlans>
-            configurations.append_line(
-                attributes.format('switchport trunk allowed vlan add {trunk_add_vlans}'))
-
-            # switchport trunk allowed vlan remove <trunk_remove_vlans>
-            configurations.append_line(
-                attributes.format('switchport trunk allowed vlan remove {trunk_remove_vlans}'))
 
         # iosxr: interface {name} / vlan <vlan-id>
         ns, attributes2 = attributes.namespace('vlan')
@@ -1156,4 +1157,3 @@ class NveInterface(VirtualInterface, genie.libs.conf.interface.NveInterface):
         super().__init__(*args, **kwargs)
 
 Interface._build_name_to_class_map()
-
