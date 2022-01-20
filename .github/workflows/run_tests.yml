@@ -28,7 +28,7 @@ jobs:
         pip install pyats[full] yang.connector rest.connector
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         pip uninstall genie.libs.clean genie.libs.conf genie.libs.filetransferutils genie.libs.health genie.libs.ops genie.libs.robot genie.libs.sdk -y
-        git clone https://github.com/CiscoTestAutomation/genieparser.git
+        git clone -b tahigash_json https://github.com/CiscoTestAutomation/genieparser.git
 
     - name: Test Unit Tests
       run: |
