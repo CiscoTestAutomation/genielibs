@@ -6,6 +6,7 @@ import sys
 
 from unittest.mock import patch
 from collections import OrderedDict
+import yang
 
 # Genie Libs
 from genie.libs.sdk.triggers.blitz.yangexec import run_netconf, run_gnmi, run_restconf

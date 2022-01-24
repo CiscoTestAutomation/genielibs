@@ -147,7 +147,8 @@ def device_recovery(spawn, timeout, golden_image, recovery_password=None, **kwar
                  'password': recovery_password})
 
 
-def tftp_device_recovery(spawn, timeout, device, tftp_boot, item, recovery_password=None, **kwargs):
+def tftp_device_recovery(spawn, timeout, device, tftp_boot, item, recovery_password=None
+                        ,recovery_username=None,recovery_en_pasword=None, **kwargs):
     """ A method for processing a dialog that loads a remote image onto a device
 
         Args:
@@ -177,9 +178,12 @@ def tftp_device_recovery(spawn, timeout, device, tftp_boot, item, recovery_passw
         context={'device_name': device.name,
                  'ip': tftp_boot['ip_address'][item],
                  'password': recovery_password,
+                 'username': recovery_username,
+                 'en_password': recovery_en_pasword,
                  'subnet_mask': tftp_boot['subnet_mask'],
                  'gateway': tftp_boot['gateway'],
                  'image': tftp_boot['image'],
                  'tftp_server': tftp_boot['tftp_server'],
-                 'hostname': device.hostname})
+                 'hostname': device.hostname,
+                 'pass_login':1})
 

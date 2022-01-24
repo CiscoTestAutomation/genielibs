@@ -211,12 +211,13 @@ def verify_files_copied_on_standby(device, max_time=300, check_interval=20):
 
     return
 
-def verify_module_status(device, timeout=180, interval=30):
+def verify_module_status(device, timeout=180, interval=30, ignore_modules=None):
     ''' Check status of slot using 'show module'
         Args:
             device ('obj'): Device object
             timeout ('int'): Max timeout to re-check module status
             interval ('int'): Max interval to re-check module status
+            ignore_modules ('list'): Modules to ignore the status check
     '''
 
     timeout = Timeout(max_time=timeout, interval=interval)
@@ -240,6 +241,15 @@ def verify_module_status(device, timeout=180, interval=30):
                                                    '.*ok.*|active|standby|ha-standby|Ready',
                                                    value_regex=True).\
                             get_values('rp'))
+
+        # To ignore specified modules
+        if ignore_modules:
+            for module in ignore_modules:
+                if module in failed_slots:
+                    failed_slots.remove(module)
+            log.info("Ignoring the following modules '{}'".\
+                     format(ignore_modules))
+
         if not failed_slots:
             log.info("All modules on '{}' are in stable state".\
                      format(device.name))

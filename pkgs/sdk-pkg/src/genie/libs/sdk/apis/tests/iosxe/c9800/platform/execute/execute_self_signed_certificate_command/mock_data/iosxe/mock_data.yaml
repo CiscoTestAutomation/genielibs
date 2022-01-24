@@ -1,0 +1,38 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: vidya-ewlc-5(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: vidya-ewlc-5(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    wireless config vwlc-ssc key-size 2048 signature-algo sha256 password 0 Cisco@123:
+      response:
+      - "    Configuring vWLC-SSC...\r\n\r\nScript is completed"
+      response_type: circular
+  prompt: vidya-ewlc-5#

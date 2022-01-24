@@ -9,7 +9,7 @@ class TestUnconfigureMdtOverlayUseBgp(unittest.TestCase):
     def setUpClass(self):
         testbed = """
         devices:
-          P1:
+          P2:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -21,10 +21,14 @@ class TestUnconfigureMdtOverlayUseBgp(unittest.TestCase):
             type: c9500
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['P1']
-        self.device.connect()
+        self.device = self.testbed.devices['P2']
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_unconfigure_mdt_overlay_use_bgp(self):
-        result = unconfigure_mdt_overlay_use_bgp(self.device, 'vrf3001', 'ipv4')
+        result = unconfigure_mdt_overlay_use_bgp(device=self.device, vrf_name='vrf3001', address_family='ipv4')
         expected_output = None
         self.assertEqual(result, expected_output)

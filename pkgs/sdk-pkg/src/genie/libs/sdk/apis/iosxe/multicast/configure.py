@@ -263,3 +263,99 @@ def unconfig_standard_acl_for_ip_pim(
                 error=e,
             )
         )
+
+def configure_static_ip_pim_rp_address(device,ip_address,vrf=None):
+    """Configures a static IP address of a rendezvous point for a multicast group range.
+
+    Args:
+        device (`obj`): Device object
+        vrf (`str`): VRF name
+        ip_address (`str`): IP address of the group-range
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring rp address
+    """
+    log.info("Configuring rp address on {device}".format(device=device.name))
+    if vrf == None:
+       configs = "ip pim rp-address {ip_address}".format(ip_address=ip_address)
+    else:
+       configs = "ip pim vrf {vrf} rp-address {ip_address}".format(vrf=vrf,ip_address=ip_address)
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Failed to configure rp-address {ip_address} device {dev}. Error:\n{error}".format(ip_address=ip_address,dev=device.name,error=e)
+        )
+
+def configure_static_ipv6_pim_rp_address(device,ipv6_address,vrf=None):
+    """Configures a static IPv6 address of a rendezvous point for a multicast group range.
+
+    Args:
+        device (`obj`): Device object
+        vrf (`str`): VRF name
+        ip_address (`str`): IPv6 address of rp
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring rp address
+    """
+    log.info("Configuring rp address on {device}".format(device=device.name))
+    if vrf==None:
+        configs = "ipv6 pim rp-address {ipv6_address}".format(ipv6_address=ipv6_address)
+    else:
+        configs = "ipv6 pim vrf {vrf} rp-address {ipv6_address}".format(vrf=vrf,ipv6_address=ipv6_address)
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Failed to configure rp-address {ipv6_address} on device {dev}. Error:\n{error}".format(ipv6_address=ipv6_address,vrf=vrf,dev=device.name,error=e)
+        )
+
+def unconfigure_static_ip_pim_rp_address(device,ip_address,vrf=None):
+    """Unconfigures a static IP address of a rendezvous point for a multicast group range.
+
+    Args:
+        device (`obj`): Device object
+        vrf (`str`): VRF name
+        ip_address (`str`): IP address of the group-range
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring rp address
+    """
+    log.info("Unconfiguring rp address on {device}".format(device=device.name))
+    if vrf == None:
+       configs = "no ip pim rp-address {ip_address}".format(ip_address=ip_address)
+    else:
+       configs = "no ip pim vrf {vrf} rp-address {ip_address}".format(vrf=vrf,ip_address=ip_address)
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Failed to unconfigure rp-address {ip_address} device {dev}. Error:\n{error}".format(ip_address=ip_address,dev=device.name,error=e)
+        )
+
+def unconfigure_static_ipv6_pim_rp_address(device,ipv6_address,vrf=None):
+    """Unconfigures a static IPv6 address of a rendezvous point for a multicast group range.
+
+    Args:
+        device (`obj`): Device object
+        vrf (`str`): VRF name
+        ip_address (`str`): IPv6 address of rp
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring rp address
+    """
+    log.info("Unconfiguring rp address on {device}".format(device=device.name))
+    if vrf==None:
+        configs = "no ipv6 pim rp-address {ipv6_address}".format(ipv6_address=ipv6_address)
+    else:
+        configs = "no ipv6 pim vrf {vrf} rp-address {ipv6_address}".format(vrf=vrf,ipv6_address=ipv6_address)
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Failed to unconfigure rp-address {ipv6_address} on device {dev}. Error:\n{error}".format(ipv6_address=ipv6_address,vrf=vrf,dev=device.name,error=e)
+        )

@@ -1037,7 +1037,7 @@ def print_(self,
                 print_value = 'The value of {k}: {v}'.format(k=key,
                                                              v=value['value'])
 
-        log.info(print_value)
+            log.info(print_value)
 
     # steps.result will only change to result_status if it is passed.
     if result_status and steps.result.name == "passed":
@@ -1119,6 +1119,8 @@ def diff(self,
         log.warning('The diff result status is changed from passed to {}' \
                     ' based on the result_status'.format(result_status))
         getattr(steps, result_status)(result_status_message)
+
+    return diff
 
 
 @add_result_as_extra

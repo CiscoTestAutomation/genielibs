@@ -1,0 +1,76 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    match custom22: "match custom22\r\n"
+    match custom22 location-filter filter8: "match custom22 location-filter filter8\r\
+      \n"
+    match custom22 message-type query: "match custom22 message-type query\r\n"
+    mdns-sd gateway: "mdns-sd gateway\r\n"
+    mdns-sd service-definition custom22: "mdns-sd service-definition custom22\r\n"
+    mdns-sd service-list policie31 IN: "mdns-sd service-list policie31 IN\r\n"
+    mdns-sd service-list policie32 OUT: "mdns-sd service-list policie32 OUT\r\n"
+    mdns-sd service-list policie33 OUT: "mdns-sd service-list policie33 OUT\r\n"
+    mdns-sd service-list policie34 IN: "mdns-sd service-list policie34 IN\r\n"
+    mdns-sd service-list policie55 IN: "mdns-sd service-list policie55 IN\r\n"
+    mdns-sd service-list policie66 OUT: "mdns-sd service-list policie66 OUT\r\n"
+    mdns-sd service-policy Policy41: "mdns-sd service-policy Policy41\r\n"
+    mdns-sd service-policy Policy42: "mdns-sd service-policy Policy42\r\n"
+    mdns-sd service-policy Policy43: "mdns-sd service-policy Policy43\r\n"
+    no logging console: ''
+    service-list policie31 IN: "service-list policie31 IN\r\n"
+    service-list policie32 OUT: "service-list policie32 OUT\r\n"
+    service-list policie33 OUT: "service-list policie33 OUT\r\n"
+    service-list policie34 IN: "service-list policie34 IN\r\n"
+    service-list policie55 IN: "service-list policie55 IN\r\n"
+    service-list policie66 OUT: "service-list policie66 OUT\r\n"
+    service-type _afpovertcp._tcp.local: "service-type _afpovertcp._tcp.local\r\n"
+    service-type _airplay._tcp.local: "service-type _airplay._tcp.local\r\n"
+    service-type _daap._tcp.local: "service-type _daap._tcp.local\r\n"
+    service-type _dpap._tcp.local: "service-type _dpap._tcp.local\r\n"
+    service-type _ftp._tcp.local: "service-type _ftp._tcp.local\r\n"
+    service-type _http._tcp.local: "service-type _http._tcp.local\r\n"
+    service-type _ichat._tcp.local: "service-type _ichat._tcp.local\r\n"
+    service-type _ipp._tcp.local: "service-type _ipp._tcp.local\r\n"
+    service-type _ipps._tcp.local: "service-type _ipps._tcp.local\r\n"
+    service-type _nfs._tcp.local: "service-type _nfs._tcp.local\r\n"
+    service-type _presence._tcp.local: "service-type _presence._tcp.local\r\n"
+    service-type _printer._tcp.local: "service-type _printer._tcp.local\r\n"
+    service-type _raop._tcp.local: "service-type _raop._tcp.local\r\n"
+    service-type _smb._tcp.local: "service-type _smb._tcp.local\r\n"
+    service-type _ssh._tcp.local: "service-type _ssh._tcp.local\r\n"
+  prompt: C9500H_Sathya(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: C9500H_Sathya(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: C9500H_Sathya#

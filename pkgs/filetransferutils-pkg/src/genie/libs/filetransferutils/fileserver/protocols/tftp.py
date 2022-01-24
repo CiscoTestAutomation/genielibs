@@ -24,7 +24,7 @@ class FileServer(BaseFileServer):
         # Run server in separate process
         signal.signal(signal.SIGINT, lambda x, y: None)
 
-        address = self.server_info['address']
+        address = self.server_info.get('address', '0.0.0.0')
         port = self.server_info.get('port', DEFAULT_PORT)
         self.path = self.server_info.setdefault('path', '/')
 
@@ -44,7 +44,7 @@ class FileServer(BaseFileServer):
         server.listen(address, port)
 
     def verify_server(self):
-        ip = self.server_info['address']
+        ip = self.server_info.get('address', '0.0.0.0')
         port = self.server_info['port']
         path = self.server_info['path']
 

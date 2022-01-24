@@ -1,0 +1,62 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Switch(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Switch(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show platform:
+      response:
+      - "Chassis type: C9606R              \r\n\r\nSlot      Type                State\
+        \                 Insert time (ago) \r\n--------- ------------------- ---------------------\
+        \ ----------------- \r\n1         C9600-LC-24C        ok                 \
+        \   1w6d          \r\n 1/0      C9600-LC-24C        ok                   \
+        \ 1w6d          \r\n2         C9600-LC-40YL4CD    ok                    1w6d\
+        \          \r\n 2/0      C9600-LC-40YL4CD    ok                    1w6d  \
+        \        \r\n3         C9600-SUP-1         ok                    1w6d    \
+        \      \r\n 3/0      C9600-SUP-1         ok                    1w6d      \
+        \    \r\n4         C9600-SUP-1         ok                    1w6d        \
+        \  \r\n 4/0      C9600-SUP-1         ok                    1w6d          \r\
+        \n5         C9600-LC-48YL       ok                    1w6d          \r\n 5/0\
+        \      C9600-LC-48YL       ok                    1w6d          \r\nR0    \
+        \    C9600-SUP-1         ok, active            1w6d          \r\nR1      \
+        \                      unknown               1w6d          \r\nP1        C9600-PWR-2KWAC\
+        \     ps, f0, f1, fail      1w6d          \r\nP2        C9600-PWR-2KWAC  \
+        \   ok                    1w6d          \r\nP3        C9600-PWR-2KWAC    \
+        \ ok                    1w6d          \r\nP4        C9600-PWR-2KWAC     ps,\
+        \ f0, f1, fail      1w6d          \r\nP5        C9606-FAN           ok   \
+        \                 1w6d          \r\n\r\nSlot      CPLD Version        Firmware\
+        \ Version                        \r\n--------- ------------------- ---------------------------------------\
+        \ \r\n1         20121580            17.8.1r                             \r\
+        \n2         21061140            17.8.1r                             \r\n3\
+        \         21071424            17.8.1r                             \r\n4  \
+        \       21071424            N/A                                 \r\n5    \
+        \     20121580            17.8.1r"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Switch#

@@ -88,6 +88,7 @@ pyats_health_processors:
                           processes:
                             - .*
                           add_total: True
+                          timeout: 120
                         device: "%VARIABLES{dev._keys}"
                         function: health_cpu
                         health_tc_sections:
@@ -112,6 +113,7 @@ pyats_health_processors:
                           processes:
                             - .*
                           add_total: True
+                          timeout: 120
                         device: "%VARIABLES{dev._keys}"
                         function: health_memory
                         health_tc_sections:

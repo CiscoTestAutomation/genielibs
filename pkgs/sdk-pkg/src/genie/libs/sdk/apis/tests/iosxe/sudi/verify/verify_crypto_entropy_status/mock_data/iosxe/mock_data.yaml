@@ -1,0 +1,45 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Switch(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Switch(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show crypto entropy status:
+      response:
+      - "# Entropy source       Type Status  Requests Entropy Bits\r\n1 ACT-2    \
+        \             HW  Working    315     384/120960  \r\n2 randfill          \
+        \    SW  Working    317     128/40576   (*)\r\n3 getrandombytes        SW\
+        \  Working    317     160/50720   (*)\r\n\r\nSecure mode enabled\r\n(*) -\
+        \ The entropy collected from SW sources were not counted as a part of\r\n\
+        \      achieving the entropy target\r\n\r\nFresh entropy collected once every\
+        \ 60 minutes\r\nEntropy most recently collected 14 minutes ago\r\nEntropy\
+        \ target = 256 bits; entropy actually collected = 384 bits"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Switch#

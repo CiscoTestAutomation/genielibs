@@ -375,6 +375,80 @@ basic-mode=explicit&also-supported=report-all-tagged']
         result = self.rpcv.process_operational_state(resp, opfields)
         self.assertTrue(result)
 
+    def test_operational_state_in_range_negative_num_format(self):
+        """Process rpc-reply and check opfield in "n - n" range."""
+        oper = self.operstate.replace('330', '-330')
+        # xpath used for match instead of ID.
+        opfields = [
+            {'selected': 'true',
+             'name': 'in-unicast-pkts',
+             'xpath': '/interfaces-state/interface/statistics/in-unicast-pkts',
+             'value': '5',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'in-octets',
+             'xpath': '/interfaces-state/interface/statistics/in-octets',
+             'value': '-400, -300',
+             'op': 'range'},
+            {'selected': 'true',
+             'name': 'out-discards',
+             'xpath': '/interfaces-state/interface/statistics/out-discards',
+             'value': '17',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'out-errors',
+             'xpath': '/interfaces-state/interface/statistics/out-errors',
+             'value': '16',
+             'op': '=='}]
+
+        oper_gnmi = self.jsonIetfVal.replace('330', '-330')
+        self.jsonIetfVal = oper_gnmi
+        self._base64encode()
+        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
+        resp = self.rpcv.process_rpc_reply(oper)
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
+    def test_operational_state_in_range_swapped(self):
+        """Process rpc-reply and check opfield in "n - n" range."""
+        oper = self.operstate.replace('330', '-330')
+        # xpath used for match instead of ID.
+        opfields = [
+            {'selected': 'true',
+             'name': 'in-unicast-pkts',
+             'xpath': '/interfaces-state/interface/statistics/in-unicast-pkts',
+             'value': '5',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'in-octets',
+             'xpath': '/interfaces-state/interface/statistics/in-octets',
+             'value': '-300, -400',
+             'op': 'range'},
+            {'selected': 'true',
+             'name': 'out-discards',
+             'xpath': '/interfaces-state/interface/statistics/out-discards',
+             'value': '17',
+             'op': '=='},
+            {'selected': 'true',
+             'name': 'out-errors',
+             'xpath': '/interfaces-state/interface/statistics/out-errors',
+             'value': '16',
+             'op': '=='}]
+
+        oper_gnmi = self.jsonIetfVal.replace('330', '-330')
+        self.jsonIetfVal = oper_gnmi
+        self._base64encode()
+        resp = self.gnmi.decode_opfields(self.operstate_gnmi['update'])
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
+        resp = self.rpcv.process_rpc_reply(oper)
+        result = self.rpcv.process_operational_state(resp, opfields)
+        self.assertTrue(result)
+
     def test_operational_state_over_range(self):
         """Process rpc-reply and check opfield over specified range."""
         # xpath used for match instead of ID.

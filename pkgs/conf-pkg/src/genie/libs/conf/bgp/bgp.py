@@ -33,7 +33,7 @@ class Bgp(Routing, DeviceFeature):
     bgp_id = managedattribute(
         name='bgp_id',
         default=None,
-        type=(None, managedattribute.test_istype(int)))
+        type=(None, managedattribute.test_istype((int, str))))
 
     asn = managedattribute(
         name='asn',
@@ -1324,7 +1324,10 @@ class Bgp(Routing, DeviceFeature):
         if asn:
             self.asn = asn
         if bgp_id:
-            self.bgp_id = int(bgp_id)
+            try:
+                self.bgp_id = int(bgp_id)
+            except ValueError:
+                self.bgp_id = str(bgp_id)
         if instance_name:
             self.instance_name = instance_name
         super().__init__(*args, **kwargs)

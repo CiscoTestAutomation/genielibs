@@ -3,6 +3,8 @@ from unittest.mock import MagicMock, patch, mock_open
 from collections import ChainMap
 from genie.libs.sdk.apis.api_unittest_generator import TestGenerator
 from genie.libs.sdk.apis.api_unittest_generator import Path
+from unicon.core.errors import ConnectionError
+import logging
 
 TEST_ARGS_YAML = {
     'default': {
@@ -483,3 +485,24 @@ class TestAPIUnittestGenerator(TestCase):
             ut_gen.module_import,
             'genie.libs.sdk.apis.jinja.utils'
         )
+
+    @patch('genie.libs.sdk.apis.api_unittest_generator.logger')
+    @patch('genie.libs.sdk.apis.api_unittest_generator.os')
+    @patch('genie.libs.sdk.apis.api_unittest_generator.importlib')
+    @patch('genie.libs.sdk.apis.api_unittest_generator.getmembers')
+    def test_run_error(self, mock_members, mock_import, mock_os, mock_logger):
+        test_arguments = ''
+        self.device.is_connected.return_value = False
+        self.device.connect.side_effect = ConnectionError()
+        ut_gen = TestGenerator(
+            self.testbed,
+            self.device.name,
+            module='fake_module',
+            api='fake_api',
+            test_arguments=test_arguments
+        )
+        ut_gen.destination = ''
+        mock_os.makedirs.return_value = True
+        mock_os.path.isdir.return_value = False
+
+        self.assertRaises(SystemExit, ut_gen.run)

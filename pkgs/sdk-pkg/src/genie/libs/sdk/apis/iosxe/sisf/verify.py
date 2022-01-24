@@ -322,8 +322,8 @@ def verify_ip_mac_binding_not_in_network(device, macAddr, ipAddr=None, max_time=
     return True
 
 
-def verify_ip_mac_binding_in_network(device, ipAddr, macAddr, origin,
-                                     preflevel, clientid=None, max_time=60, check_interval=10):
+def verify_ip_mac_binding_in_network(device, ipAddr, macAddr, origin, preflevel, 
+                                     clientid=None, max_time=60, check_interval=10, verify_reachable=False):
     """ Verify the ip-mac binding is present on device
 
         Args:
@@ -351,7 +351,13 @@ def verify_ip_mac_binding_in_network(device, ipAddr, macAddr, origin,
                        entries[i]['link_layer_address'] == macAddr and \
                        entries[i]['pref_level_code'] == preflevel:
                         log.debug('{} entry {} matching criteria found'.format(origin, ipAddr))
-                        return True
+                        if verify_reachable:
+                            if entries[i]['state'] == "REACHABLE":
+                                return True
+                            else:
+                                continue
+                        else:
+                            return True
         log.debug('Entry {} not found, retry in {}s...'.format(ipAddr, check_interval))
         timeout.sleep()
 

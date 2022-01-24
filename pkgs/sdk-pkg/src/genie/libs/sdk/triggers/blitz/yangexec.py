@@ -9,6 +9,7 @@ from .rpcbuilder import YSNetconfRPCBuilder
 from .rpcverify import RpcVerify
 from .requestbuilder import RestconfRequestBuilder, NO_BODY_METHODS, WITH_BODY_METHODS
 from .yangexec_helper import DictionaryToXML
+from .gnmi_util import GnmiMessage, GnmiMessageConstructor
 
 log = logging.getLogger(__name__)
 
@@ -651,22 +652,49 @@ def run_gnmi(operation, device, steps,
     """Form gNMI message and send to testbed."""
     log.debug('gNMI MESSAGE')
     result = True
+    payload = None
+    namespace_modules ={}
+
     rpc_verify = RpcVerify(log=log, capabilities=[])
     format = kwargs.get('format', {})
     if format:
         pause = _validate_pause(format.get('pause', 0))
         if pause:
             sleep(pause)
+        negative_test = format.get('negative_test', False)
+    else:
+        negative_test = False
 
     if operation == 'edit-config':
-        result = device.set(rpc_data)
+        if 'rpc' in rpc_data:
+            # Assume we have a well-formed dict representing gNMI set
+            payload = json.dumps(rpc_data.get('rpc', {}), indent=2)
+        else:
+            gmc = GnmiMessageConstructor('set', rpc_data, **format)
+            payload = gmc.payload
+        resp = GnmiMessage.run_set(device, payload)
+        if not resp:
+            result = False
+        if 'returns' in rpc_data:
+            if not rpc_verify.process_operational_state(resp, returns):
+                result = False
     elif operation == 'get':
         if not returns:
             log.error(banner('No gNMI data to compare to GET'))
             return False
-        response = device.get(rpc_data)
+        if 'rpc' in rpc_data:
+            # Assume we have a well-formed dict representing gNMI get
+            payload = json.dumps(rpc_data.get('rpc', {}), indent=2)
+            namespace_modules = rpc_data
+        else:
+            gmc = GnmiMessageConstructor('get', rpc_data, **format)
+            payload = gmc.payload
+            namespace_modules = gmc.namespace_modules
+        response = GnmiMessage.run_get(
+            device, payload, namespace_modules
+        )
         if not response:
-            return False
+            result = False
         for resp in response:
             update = resp.get('update')
             if not update:
@@ -674,12 +702,24 @@ def run_gnmi(operation, device, steps,
                 continue
             if not rpc_verify.process_operational_state(update, returns):
                 result = False
-        return result
     elif operation == 'get-config':
-        response = device.get_config(rpc_data)
+        if 'rpc' in rpc_data:
+            # Assume we have a well-formed dict representing gNMI get
+            payload = json.dumps(rpc_data.get('rpc', {}), indent=2)
+        else:
+            gmc = GnmiMessageConstructor('get', rpc_data, **format)
+            payload = gmc.payload
+            namespace_modules = gmc.namespace_modules
+        response = GnmiMessage.run_get(
+            device, payload, namespace_modules
+        )
         deletes = False
         updates = False
-        result = True
+        if not response:
+            log.error("NO RESPONSE")
+            result = False
+        else:
+            result = True
         for resp in response:
             if 'update' in resp:
                 updates = True
@@ -690,13 +730,18 @@ def run_gnmi(operation, device, steps,
                 deletes = True
         if not updates and deletes:
             log.info('All configs were deleted')
-            return True
-        return result
+            result = True
     elif operation == 'subscribe':
-        rpc_data['format'] = format
+        rpc_data.update(format)
         rpc_data['returns'] = returns
         rpc_data['verifier'] = rpc_verify.process_operational_state
-        return device.subscribe(rpc_data)
+        if 'rpc' in rpc_data:
+            # Assume we have a well-formed dict representing gNMI subscribe
+            payload = json.dumps(rpc_data.get('rpc', {}), indent=2)
+        else:
+            gmc = GnmiMessageConstructor('subscribe', rpc_data, **format)
+            payload = gmc.payload
+        return GnmiMessage.run_subscribe(device, payload, rpc_data)
     elif operation == 'capabilities':
         if not returns:
             log.error(banner('No gNMI data to compare to GET'))
@@ -705,7 +750,7 @@ def run_gnmi(operation, device, steps,
         result = in_capabilities(resp, returns)
     else:
         log.warning(banner('OPERATION: {0} not allowed'.format(operation)))
-    return result
+    return negative_test != result
 
 
 def run_restconf(operation, device, steps, datastore, rpc_data, returns, **kwargs):

@@ -1,0 +1,44 @@
+configure:
+  commands:
+    do write memory: "% use 'write' command to make license boot config take effect\
+      \ on next boot\r\n"
+    end:
+      new_state: execute
+    license boot level network-advantage addon dna-advantage: "license boot level\
+      \ network-advantage addon dna-advantage\r\n"
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: C9500H_Sathya(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: C9500H_Sathya(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: C9500H_Sathya#

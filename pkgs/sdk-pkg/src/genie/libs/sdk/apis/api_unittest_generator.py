@@ -15,6 +15,7 @@ from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
 
 from pyats.topology import loader
+from unicon.core.errors import ConnectionError
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger('api_unittest_generator')
@@ -603,21 +604,31 @@ class TestGenerator:
         """
 
         if not self.device.is_connected():
-            self.device.connect(
-                learn_hostname=True,
-                init_config_commands=[],
-                init_exec_commands=[]
-            )
-            # check if it is a single unicon connection
-            if hasattr(self.device, 'stored_data') and not self.device.is_ha:
-                self._connected_data = self.device.stored_data.copy()
-                os.makedirs(folder, exist_ok=True)
+            try:
+                self.device.connect(
+                    learn_hostname=True,
+                    init_config_commands=[],
+                    init_exec_commands=[]
+                )
+            except ConnectionError as ce:
+                # Proxy connection - not supported
+                logger.error(
+                    'Proxy Connection is not supported for Unicon recording.'
+                    ' Please try to generate unit test without proxy')
+                logger.error(ce)
+                raise SystemExit
             else:
-                self.device.disconnect()
-                self._cleanup()
-                raise Exception(
-                    'Connection not supported: '
-                    'only single Unicon connections are supported')
+                # check if it is a single unicon connection
+                if hasattr(self.device, 'stored_data') \
+                  and not self.device.is_ha:
+                    self._connected_data = self.device.stored_data.copy()
+                    os.makedirs(folder, exist_ok=True)
+                else:
+                    self.device.disconnect()
+                    self._cleanup()
+                    raise Exception(
+                        'Connection not supported: '
+                        'only single Unicon connections are supported')
 
     def _reset_stored_data(self):
         """

@@ -1,0 +1,42 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface HundredGigE1/0/21: "interface HundredGigE1/0/21\r\n"
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    no ospfv3 1 ipv6 area 0: "no ospfv3 1 ipv6 area 0\r\n"
+  prompt: Intrepid-DUT-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: Intrepid-DUT-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: Intrepid-DUT-1#

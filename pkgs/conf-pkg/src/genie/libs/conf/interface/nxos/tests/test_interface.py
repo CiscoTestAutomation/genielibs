@@ -1230,6 +1230,35 @@ class test_nx_interface(TestCase):
                 ' switchport access vlan 1301',
                 ' exit'
             ]))
+
+    def test_tunnelencryption_interface(self):
+        testbed = Genie.testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='nxos')
+        intf1 = Interface(name='Ethernet0/0/1', device=dev1)
+
+        # Defining attributes section
+        intf1.evpn_multisite_dci_tracking = True
+        intf1.tunnel_encryption = True
+
+        cfg = intf1.build_config(apply=False)
+        self.assertMultiLineEqual(
+            str(cfg),
+            '\n'.join([
+                'interface Ethernet0/0/1',
+                ' evpn multisite dci-tracking',
+                ' tunnel-encryption',
+                ' exit',
+            ]))
+
+        partial_uncfg = intf1.build_unconfig(apply=False, attributes={"tunnel_encryption": True,
+                                                                      "evpn_multisite_dci_tracking": True,
+                                                                      })
+        self.assertMultiLineEqual(str(partial_uncfg), '\n'.join([
+            'interface Ethernet0/0/1',
+            ' no evpn multisite dci-tracking',
+            ' no tunnel-encryption',
+            ' exit',
+        ]))
             
 if __name__ == '__main__':
     unittest.main()

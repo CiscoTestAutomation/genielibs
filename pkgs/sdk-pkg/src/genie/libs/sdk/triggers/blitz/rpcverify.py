@@ -423,6 +423,10 @@ class RpcVerify():
                     rng = field['value'].split('-')
                     r1 = rng[0]
                     r2 = rng[1]
+                elif '-' in field['value'].split():
+                    rng = field['value'].split()
+                    r1 = rng[0]
+                    r2 = rng[2]
 
                 try:
                     if datatype:
@@ -430,16 +434,22 @@ class RpcVerify():
                                 datatype.startswith('uint'):
                             r1 = int(r1)
                             r2 = int(r2)
+                            if r2 < r1:
+                                r1, r2 = (r2, r1)
                             # change value to int type for subsequent compare operation
                             value = int(value)
                         else:
                             r1 = float(r1)
                             r2 = float(r2)
+                            if r2 < r1:
+                                r1, r2 = (r2, r1)
                             # change value to float type for subsequent compare operation
                             value = float(value)
                     else:
                         r1 = float(r1)
                         r2 = float(r2)
+                        if r2 < r1:
+                            r1, r2 = (r2, r1)
                         # change value to float type for subsequent compare operation
                         value = float(value)
                 except TypeError:
@@ -560,7 +570,10 @@ class RpcVerify():
                     if reply is False:
                         value = reply
                     else:
-                        value = reply or 'empty'
+                        if reply == '':
+                            value = 'empty'
+                        else:
+                            value = reply
                     name = reply_xpath[reply_xpath.rfind('/') + 1:]
                 if 'xpath' in field and field['xpath'] == reply_xpath and \
                         name == field['name']:

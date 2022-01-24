@@ -16,6 +16,6 @@ class testAPI(unittest.TestCase):
         '''))
         output = get_md5_hash_of_file(mock, 'filename')
 
-        mock.execute.assert_has_calls([call('verify /md5 filename', timeout=60)])
+        mock.execute.assert_has_calls([call('verify /md5 filename', timeout=180)])
         self.assertEqual(output, '688e630cfeb8a80fa553fb5464650e1d')
 

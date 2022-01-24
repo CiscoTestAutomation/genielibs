@@ -27,7 +27,6 @@ log = logging.getLogger(__name__)
 
 
 def configure_handler(step, device, command, expected_failure=False, **kwargs):
-
     # checking to see if action is 'configure' or 'configure_handler'
     action = kwargs.pop('action', 'configure')
     connection_alias = kwargs.get('connection_alias', None)
@@ -41,9 +40,12 @@ def configure_handler(step, device, command, expected_failure=False, **kwargs):
     if 'reply' in kwargs:
         kwargs.update({'reply': _prompt_handler(kwargs['reply'])})
     try:
-        if connection_alias and (action == "configure" or action == "configure_dual"):
-            connection_alias_obj = getattr(device, connection_alias)
-            output = connection_alias_obj.configure(command, **kwargs)
+        if connection_alias:
+           connection_alias_obj = getattr(device, connection_alias)
+           if action == "configure":
+              output = connection_alias_obj.configure(command, **kwargs)
+           elif action == "configure_dual":
+              output = connection_alias_obj.configure_dual(command, **kwargs)
         else:
             output = getattr(device, action)(command, **kwargs)
 
@@ -374,6 +376,7 @@ def rest_handler(device,
                  max_time=None,
                  check_interval=None,
                  connection_alias='rest',
+                 save=None,
                  **extra_kwargs):
     output = ''
 

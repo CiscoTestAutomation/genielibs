@@ -5,6 +5,7 @@ import shutil
 import os.path
 import logging
 import ipaddress
+from typing import List
 
 # Genie
 from genie.utils.timeout import Timeout
@@ -13,7 +14,6 @@ from genie.libs.clean.utils import (
     _apply_configuration,
     find_clean_variable,
     verify_num_images_provided,
-    handle_rommon_exception,
     remove_string_from_image)
 from genie.metaparser.util.schemaengine import Optional, Any, Or
 
@@ -26,7 +26,6 @@ from unicon.core.errors import SubCommandFailure
 
 # Logger
 log = logging.getLogger(__name__)
-
 class Connect(BaseStage):
     """This stage connects to the device that is being cleaned.
 
@@ -94,20 +93,10 @@ connect:
             while retry_timeout.iterate():
                 retry_timeout.disable_log = False
 
-                # If the device is in rommon, just raise an exception
                 device.instantiate(connection_timeout=timeout,
                                    learn_hostname=True,
                                    prompt_recovery=True,
                                    via=via)
-
-                rommon = Statement(
-                    pattern=r'^(.*)(rommon(.*)|loader(.*))+>.*$',
-                    #action=lambda section: section.failed('Device is in rommon'),
-                    action=handle_rommon_exception,
-                    loop_continue=False,
-                    continue_timer=False)
-
-                device.connect_reply.append(rommon)
 
                 try:
                     device.connect()
@@ -118,11 +107,6 @@ connect:
                 else:
                     step.passed("Successfully connected".format(device.name))
                     # Don't loop
-                finally:
-                    try:
-                        device.connect_reply.remove(rommon)
-                    except Exception:
-                        pass
 
                 retry_timeout.sleep()
 
@@ -853,6 +837,7 @@ copy_to_device:
         'destination': {
             'directory': str,
             Optional('standby_directory'): str,
+            Optional('stack_directory'): list
         },
         'protocol': str,
         Optional('verify_num_images'): bool,
@@ -936,6 +921,11 @@ copy_to_device:
         else:
             destination_stby = None
             destinations = [destination_act]
+
+        if 'stack_directory' in destination:
+            destination_stack = destination['stack_directory']
+            for member_dir in destination_stack:
+                destinations.append(member_dir)
 
         # Check remote server info present in testbed YAML
         if not file_utils.get_server_block(server):
@@ -1389,7 +1379,8 @@ reload:
     CHECK_MODULES = {
         'check': True,
         'timeout': 180,
-        'interval': 30
+        'interval': 30,
+        'ignore_modules': None
     }
     RECONNECT_VIA = None
 
@@ -1400,7 +1391,8 @@ reload:
         Optional('check_modules'): {
             Optional('check'): bool,
             Optional('timeout'): int,
-            Optional('interval'): int
+            Optional('interval'): int,
+            Optional('ignore_modules'): list
         },
         Optional('reload_service_args'): {
             Optional('timeout'): int,
@@ -1494,7 +1486,8 @@ reload:
                 try:
                     device.api.verify_module_status(
                         timeout=check_modules['timeout'],
-                        interval=check_modules['interval'])
+                        interval=check_modules['interval'],
+                        ignore_modules=check_modules['ignore_modules'])
                 except Exception as e:
                     step.failed("Modules are not in a stable state",
                                 from_exception=e)
@@ -2033,7 +2026,6 @@ delete_backup_from_device:
                 except Exception as e:
                     step.failed("Failed to delete the file.", from_exception=e)
 
-
 class DeleteFilesFromServer(BaseStage):
     """This stage deletes files from a server.
 
@@ -2567,3 +2559,53 @@ power_cycle:
                     step.passed("Reconnected")
 
             step.failed("Could not reconnect", from_exception=connect_exception)
+
+
+class CopyRunToFlash(BaseStage):
+    """This stage will copy running-configuration to device flash.
+
+Stage Schema
+------------
+copy_run_to_flash:
+
+    file_name (str): Name of the file to be saved to flash.
+    timeout (int, optional): Copy operation timeout in seconds. Defaults to 300.
+    overwrite (bool, optional): Overwrite the file if a file with the same name already exists. Defaults to True.
+
+Example
+-------
+copy_run_to_flash:
+    file_name: base.cfg
+    timeout: 300
+    overwrite: True
+"""
+    # =================
+    # Argument Defaults
+    # =================
+    TIMEOUT = 300
+    OVERWRITE = True
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        'file_name': str,
+        Optional('timeout'): int,
+        Optional('overwrite'): bool
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = [
+        'copy_run_to_flash'
+    ]
+
+    def copy_run_to_flash(self, steps, device, file_name, timeout=TIMEOUT, overwrite=OVERWRITE):
+
+        with steps.start("Copying running config to flash") as step:
+
+            try:
+                device.copy(source='running-config', dest=file_name, timeout=timeout, overwrite=overwrite)
+            except Exception as e:
+                step.failed("Failed to copy running-config to flash:", from_exception=e)

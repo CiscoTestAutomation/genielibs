@@ -1,0 +1,48 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: vidya-ewlc-5(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: vidya-ewlc-5(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show crypto pki trustpoints vidya-ewlc-5_WLC_TP status:
+      response:
+      - "Trustpoint vidya-ewlc-5_WLC_TP:\r\n  Issuing CA certificate configured:\r\
+        \n    Subject Name:\r\n     o=Cisco Virtual Wireless LAN Controller,cn=CA-vWLC_vidya-ewlc-5\r\
+        \n    Fingerprint MD5: 31DF4D53 E4D54A0E D764E498 3B06FB6C \r\n    Fingerprint\
+        \ SHA1: 44AD78DE CB9350C6 8C979505 930B1301 0B1A92B3 \r\n  Router General\
+        \ Purpose certificate configured:\r\n    Subject Name:\r\n     serialNumber=9SV9FR9MWP9+hostname=vidya-ewlc-5,o=Cisco\
+        \ Virtual Wireless LAN Controller,cn=vidya-ewlc-5_WLC_TP\r\n    Fingerprint\
+        \ MD5: 3EE496BF 528C387B AAA7CDCD 2D9BCB36 \r\n    Fingerprint SHA1: AD4A763D\
+        \ 13979B5F 62780CDA C4F9A7B9 4EC46785 \r\n  Last enrollment status: Granted\r\
+        \n  State:\r\n    Keys generated ............. Yes (General Purpose, exportable)\r\
+        \n    Issuing CA authenticated ....... Yes\r\n    Certificate request(s) .....\
+        \ Yes"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: vidya-ewlc-5#

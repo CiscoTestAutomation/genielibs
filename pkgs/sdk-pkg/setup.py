@@ -129,7 +129,9 @@ setup(
                 'sphinxcontrib-napoleon',
                 'sphinx-rtd-theme',
                 'xmltodict',
-                'rest.connector'],
+                'rest.connector',
+                'protobuf',
+                'cisco-gnmi'],
     },
 
     # external modules

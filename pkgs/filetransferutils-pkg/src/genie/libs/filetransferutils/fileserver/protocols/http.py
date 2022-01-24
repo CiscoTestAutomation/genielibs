@@ -31,11 +31,16 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                             x=x, suffix=pathlib.Path(filename).suffix)
                 else:
                     new_filename = filename
-                new_filename = os.path.join(self.server.directory, new_filename)
+
+                # Translate path to the new filename
+                filepath = pathlib.Path(filename).parent
+                server_dir = pathlib.Path(self.server.directory)
+                new_filepath = server_dir / filepath / pathlib.Path(new_filename).name
+
                 payload = part.get_payload(decode=True)
                 fname = part.get_param('filename', header='content-disposition')
-                log.info('Saving file {} as {}'.format(fname, new_filename))
-                with open(new_filename, 'wb') as f:
+                log.info('Saving file {} as {}'.format(fname, new_filepath))
+                with open(new_filepath, 'wb') as f:
                     f.write(payload)
         else:
             log.error('Unable to decode payload with content type {}'.format(
@@ -54,16 +59,15 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                         "Authorization") != "Basic " + self.server.auth:
                     self.do_AUTHHEAD()
                     return
-            # Translate a /-separated PATH to the local filename syntax.
-            path = self.translate_path(self.path)
-            # get filename from path
-            fname = os.path.basename(path)
-            filename = os.path.join(self.server.directory, fname)
+            # Translate path to the local filename
+            server_dir = pathlib.Path(self.server.directory)
+            path = pathlib.Path(self.path.lstrip('/'))
+            filepath = server_dir / path
             self.length = int(self.headers['Content-Length'])
             if 'multipart' in self.headers.get('Content-Type', ''):
-                self.receive_multipart(fname)
+                self.receive_multipart(filepath)
             else:
-                with open(filename, 'wb') as f:
+                with open(filepath, 'wb') as f:
                     f.write(self.rfile.read(self.length))
             self.send_response(201, "Created")
             self.end_headers()
@@ -78,21 +82,20 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                         "Authorization") != "Basic " + self.server.auth:
                     self.do_AUTHHEAD()
                     return
-            # Translate a /-separated PATH to the local filename syntax.
-            path = self.translate_path(self.path)
-            # get filename from path
-            fname = os.path.basename(path)
-            filename = os.path.join(self.server.directory, fname)
+            # Translate path to the local filename
+            server_dir = pathlib.Path(self.server.directory)
+            path = pathlib.Path(self.path.lstrip('/'))
+            filepath = server_dir / path
             self.length = int(self.headers['Content-Length'])
             # Signal to device that we are ready to receive the file data
             if self.headers.get('Expect', '') == '100-continue':
                 self.send_response_only(100)
                 self.end_headers()
             if 'multipart' in self.headers.get('Content-Type', ''):
-                self.receive_multipart(fname)
+                self.receive_multipart(filepath)
             else:
                 # receive data and store in file
-                with open(filename, 'wb') as f:
+                with open(filepath, 'wb') as f:
                     f.write(self.rfile.read(self.length))
             self.send_response(201, "Created")
             self.end_headers()
@@ -122,7 +125,8 @@ class FileServer(BaseFileServer):
         address = self.server_info.get('address', '0.0.0.0')
         port = self.server_info.get('port', DEFAULT_PORT)
         local_dir = self.server_info.get('path', '/')
-        http_auth = self.server_info.get('http_auth', False)
+        # use authentication by default
+        http_auth = self.server_info.get('custom', {}).get('http_auth', True)
 
         # Setup local HTTP server
         server_address = (address, port)

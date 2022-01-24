@@ -1,0 +1,41 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface GigabitEthernet1/0/2: "interface GigabitEthernet1/0/2\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    storm-control broadcast level 7 4: "storm-control broadcast level 7 4\r\n"
+    storm-control multicast level pps 1000 990: "storm-control multicast level pps\
+      \ 1000 990\r\n"
+    storm-control unicast level 7: "storm-control unicast level 7\r\n"
+    storm-control unicast level bps 10000 9990: "storm-control unicast level bps 10000\
+      \ 9990\r\n"
+  prompt: Overlord1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Overlord1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Overlord1#

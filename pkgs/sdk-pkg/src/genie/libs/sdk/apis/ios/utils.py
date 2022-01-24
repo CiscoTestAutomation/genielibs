@@ -511,14 +511,14 @@ def verify_ping(
         timeout.sleep()
     return False
 
-def get_md5_hash_of_file(device, file, timeout=60):
+def get_md5_hash_of_file(device, file, timeout=180):
     """ Return the MD5 hash of a given file.
 
     Args:
         device (obj): Device to execute on
         file (str): File to calculate the MD5 on
         timeout (int, optional): Max time in seconds allowed for calculation.
-            Defaults to 60.
+            Defaults to 180.
 
     Returns:
         MD5 hash (str), or None if something went wrong

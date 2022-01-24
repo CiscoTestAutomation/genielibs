@@ -22,6 +22,7 @@ def apic_rest_get(device,
                   rsp_subtree_include='',
                   rsp_subtree_class='',
                   target_subtree_class='',
+                  order_by='',
                   expected_status_code=200,
                   timeout=30):
     """GET REST Command to retrieve information from the device
@@ -52,6 +53,8 @@ def apic_rest_get(device,
             rsp_subtree_class (`string`) : specify classes
             target_subtree_class (string): specify subtree classes
             query_target_filter (`string`): filter expression
+            order_by (`string`): sort the query response by one or
+                                 more properties of a class
             expected_status_code (`int`): Expected result
 
         Returns:
@@ -80,6 +83,7 @@ def apic_rest_get(device,
                             rsp_subtree_include=rsp_subtree_include,
                             rsp_subtree_class=rsp_subtree_class,
                             target_subtree_class=target_subtree_class,
+                            order_by=order_by,
                             expected_status_code=expected_status_code,
                             timeout=timeout)
     except Exception as e:

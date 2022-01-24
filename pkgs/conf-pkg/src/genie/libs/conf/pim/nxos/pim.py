@@ -123,7 +123,7 @@ class Pim(ABC):
                         if 'ipv6' in self.address_family.value:
                             self.ip = 'ipv6'
 
-                    if unconfig:
+                    if unconfig and attributes.attributes:
                         attributes.attributes['ip'] = self.ip
                         
                     with configurations.submode_context(

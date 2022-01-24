@@ -9,7 +9,6 @@ from genie.libs.clean.stages.iosxe.stages import (
 from genie.libs.clean.stages.iosxe.stages import (
     TftpBoot as IOSXETftpBoot)
 
-
 # MetaParser
 from genie.metaparser.util.schemaengine import Optional
 
@@ -144,6 +143,7 @@ There is more than one ip address, one for each supervisor.
         'tftp_server': str,
         'recovery_password': str,
         'recovery_username': str,
+        Optional('recovery_en_pasword'): str,
         Optional('save_system_config'): bool,
         Optional('timeout'): int,
     }
@@ -167,6 +167,5 @@ There is more than one ip address, one for each supervisor.
             try:
                 device.configure('no boot system', timeout=timeout)
             except Exception as e:
-                step.failed("Failed to delete the boot variables because of {}".format(e))            
-
+                step.failed("Failed to delete the boot variables because of {}".format(e))
 

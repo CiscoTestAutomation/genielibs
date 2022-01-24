@@ -2,9 +2,13 @@
 
 # Python
 import logging
+import re 
 
 # Genie
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
+
+# Unicon
+from unicon.core.errors import SubCommandFailure
 
 log = logging.getLogger(__name__)
 

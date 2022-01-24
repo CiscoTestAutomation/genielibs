@@ -1,0 +1,45 @@
+configure:
+  commands:
+    address-family ipv6: "address-family ipv6\r\n"
+    end:
+      new_state: execute
+    exit-address-family: "exit-address-family\r\n"
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    no route-target export 1:1 stitching: "no route-target export 1:1 stitching\r\n"
+    no route-target import 1:1 stitching: "no route-target import 1:1 stitching\r\n"
+    vrf definition red: "vrf definition red\r\n"
+  prompt: Cat9300_VTEP1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: Cat9300_VTEP1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: Cat9300_VTEP1#

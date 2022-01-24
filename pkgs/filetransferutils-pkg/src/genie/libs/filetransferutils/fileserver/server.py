@@ -59,20 +59,11 @@ class FileServer:
         self.timeout = kwargs.pop('timeout', TIMEOUT_DEFAULT)
         self.server_info.update(kwargs)
 
-        if 'subnet' not in self.server_info:
-            if 'address' in self.server_info:
-                # Can use the address as the subnet if given (with netmask /32)
-                self.server_info['subnet'] = self.server_info['address']
-            else:
-                # Otherwise try looking in the pyats configuration
-                self.server_info['subnet'] = cfg.get(FILETRANSFER_SUBNET_CFG)
-
-        # Ensure FileServer has a subnet
-        if not self.server_info.get('subnet'):
-            raise TypeError('FileServer missing subnet')
-
-        # Get specific ip from subnet
-        self.server_info['address'] = self._get_ip(self.server_info['subnet'])
+        # try to determine IP address from user provided subnet
+        if self.server_info.get('subnet') or cfg.get(FILETRANSFER_SUBNET_CFG):
+            # Get specific ip from subnet
+            self.server_info['address'] = self._get_ip(
+                self.server_info.get('subnet', cfg.get(FILETRANSFER_SUBNET_CFG)))
 
         # Extract name if provided
         self.name = None
@@ -103,7 +94,7 @@ class FileServer:
             raise OSError('Failed to verify %s' % str(type(self))) from e
 
         # Log address of server
-        address = self.server_info['address']
+        address = self.server_info.get('address', '0.0.0.0')
         port = self.server_info.get('port')
         if port:
             address += ':%s' % port

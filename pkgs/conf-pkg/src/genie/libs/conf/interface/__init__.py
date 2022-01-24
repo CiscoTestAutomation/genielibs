@@ -466,6 +466,12 @@ class Interface(BaseInterface):
         type=(None, managedattribute.test_istype(str)),
         doc='Configure fabric forwarding mode')
 
+    tunnel_encryption = managedattribute(
+        name='tunnel_encryption',
+        default=None,
+        type=(None, managedattribute.test_istype(bool)),
+        doc='Configure tunnel encryption')
+
     ip_forward = managedattribute(
         name='ip_forward',
         default=None,

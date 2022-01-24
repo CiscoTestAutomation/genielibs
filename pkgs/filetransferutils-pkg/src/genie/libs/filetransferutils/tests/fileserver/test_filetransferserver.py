@@ -90,7 +90,7 @@ class TestFileServer(unittest.TestCase):
     def test_http_auth(self):
         with FileServer(protocol='http',
                         subnet='127.0.0.1/32',
-                        http_auth=True,
+                        custom=dict(http_auth=True),
                         credentials=dict(http=dict(
                             username='test',
                             password='test123'
@@ -107,7 +107,11 @@ class TestFileServer(unittest.TestCase):
     def test_http_multipart_single(self):
         with tempfile.TemporaryDirectory() as td:
             with FileServer(protocol='http', subnet='127.0.0.1/32', path=td) as fs:
-                url = 'http://127.0.0.1:{}/test.txt'.format(fs['port'])
+                url = 'http://{u}:{p}@127.0.0.1:{port}/test.txt'.format(
+                    port = fs['port'],
+                    u = fs['credentials']['http']['username'],
+                    p = to_plaintext(fs['credentials']['http']['password'])
+                )
                 orig_data = 'test123'
                 data, content_type = encode_multipart_formdata(orig_data)
                 r = requests.post(url, data=data, headers={'Content-type': content_type})
@@ -119,7 +123,11 @@ class TestFileServer(unittest.TestCase):
     def test_http_multipart_multi(self):
         with tempfile.TemporaryDirectory() as td:
             with FileServer(protocol='http', subnet='127.0.0.1/32', path=td) as fs:
-                url = 'http://127.0.0.1:{}/test.txt'.format(fs['port'])
+                url = 'http://{u}:{p}@127.0.0.1:{port}/test.txt'.format(
+                    port = fs['port'],
+                    u = fs['credentials']['http']['username'],
+                    p = to_plaintext(fs['credentials']['http']['password'])
+                )
                 orig_data = ['test123'] * 2
                 data, content_type = encode_multipart_formdata(orig_data)
                 r = requests.post(url, data=data, headers={'Content-type': content_type})

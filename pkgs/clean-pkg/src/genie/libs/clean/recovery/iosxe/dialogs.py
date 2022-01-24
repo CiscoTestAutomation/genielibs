@@ -94,7 +94,6 @@ class RommonDialog(TelnetDialog):
                         "Due to this, RETURN was never pressed."
                         .format(spawn.settings.RELOAD_WAIT))
 
-
     # Please reset before booting
     @statement_decorator(r'.*(P|p)lease reset before booting.*', loop_continue=True)
     def reset_rommon(spawn, session, context):
@@ -222,6 +221,22 @@ class TftpRommonDialog(RommonDialog):
                                 "closed the connection?\n{}".format(str(e)))
             # in case of 'sync', need a delay before sending other commands
             if 'sync' in cmd:
-                time.sleep(3)
+                time.sleep(5)
             else:
-                time.sleep(0.5)
+                time.sleep(1.5)
+    @statement_decorator(r'^.*([Uu]sername|[Ll]ogin): ?$', loop_continue=True)
+    def send_username(spawn, session, context):
+        # Send password to teh device when prompted
+        spawn.sendline('{}'.format(context['username']))
+        time.sleep(0.5)
+
+
+    @statement_decorator(r'^.*[Pp]assword( for )?(\\S+)?: ?$', loop_continue=True)
+    def send_password(spawn, session, context):
+        # Send password to teh device when prompted
+        if context['pass_login']:
+            spawn.sendline('{}'.format(context['password']))
+            time.sleep(0.5)
+            context['pass_login'] = 0
+        else:
+            spawn.sendline('{}'.format(context['en_password']))

@@ -886,4 +886,31 @@ def unconfigure_auth_method(device,value,intf):
     except SubCommandFailure:
         log.error('Failed unconfiguring authentication method')
 
+def configure_dot1x_cred_pki(device, profile_name, user_name, pki_trustpoint):
+    """Configure EAP Md5 profile with PKI
+        Args:
+            device ('obj'): device to use
+            profile_name (`str`): dot1x credential profile name
+            username (`str`): username for dot1x user
+            pki_trustpoint (`str`): PKI trustpoint name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure: Failed to configure dot1x credential
+    """
+    cmd = ''
+    cmd += f'dot1x credentials {profile_name}\n'
+    cmd += f'username {user_name}\n'
+    cmd += f'pki-trustpoint {pki_trustpoint}\n'
+
+    log.info("Configure dot1x credential with PKI")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure dot1x credential profile with PKI{}.Error: {}".format(profile_name, str(e))
+        )
 

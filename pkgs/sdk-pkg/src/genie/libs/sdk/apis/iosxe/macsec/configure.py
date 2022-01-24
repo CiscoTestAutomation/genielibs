@@ -1,10 +1,11 @@
-"""Configure macsec functions on device and interface"""
+"""Configure and Unconfigure macsec functions on device and interface"""
 
 # Python
 import logging
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
+from unicon.eal.dialogs import Statement, Dialog
 
 log = logging.getLogger(__name__)
 
@@ -82,22 +83,66 @@ def config_macsec_replay_protection_window_size(device, interface, window_size):
             )
         )
 
+def config_macsec_should_secure(device, interface):
+    """ Configures macsec should secure on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure should secure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+            "Configure Should secure on interface"
+            )
+    try:
+        device.configure([
+            "interface {intf}".format(intf=interface),
+            "macsec access-control should-secure"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure should secure on interface "
+            "should secure interface {interface}, Error: {error}".format(
+               interface=interface, error=e
+            )
+        )
+
+def unconfig_macsec_should_secure(device, interface):
+    """ Unconfigures macsec should secure on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to Unconfigure should secure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+            "Unconfigure Should secure on interface"
+            )
+    try:
+        device.configure([
+            "interface {intf}".format(intf=interface),
+            "no macsec access-control should-secure"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure should secure on interface "
+            "should secure interface {interface}, Error: {error}".format(
+               interface=interface, error=e
+            )
+        )
+
 def config_macsec_keychain_on_device(device, keychain_name, key,
         crypt_algorithm, key_string, lifetime=None):
-
     """ Configures macsec key chain on device
-
         Args:
             device ('obj'): device to use
             keychain_name ('str'): keychain name to configure
             key_string ('str'): key string to configure
             lifetime ('list'): start and end timings
-              ex.)
-                lifetime = ["10:36:55 Aug 18 2021", "10:37:55 Aug 18 2021"]
-
         Returns:
             None
-
         Raises:
             SubCommandFailure
     """
@@ -128,14 +173,11 @@ def config_macsec_keychain_on_device(device, keychain_name, key,
 
 def unconfig_macsec_keychain_on_device(device, keychain_name):
     """ Unconfigures macsec key chain on device
-
         Args:
             device ('obj'): device to use
             keychain_name ('str'): keychain name to configure
-
         Returns:
             None
-
         Raises:
             SubCommandFailure
     """
@@ -156,34 +198,43 @@ def unconfig_macsec_keychain_on_device(device, keychain_name):
         )
 
 
-def config_mka_keychain_on_interface(device, interface, key_string):
+def config_mka_keychain_on_interface(device, 
+        interface, 
+        key_string, 
+        key_chain=None):
     """ Configures mka keychain on interface
-
         Args:
             device ('obj'): device to use
             interface ('str'): interface to configure
-            key_string ('str'): key string to configure
-
+            key_string ('str'): master key chain to configure
+            key_chain ('str'): fall back key chain to configure
         Returns:
             None
-
         Raises:
             SubCommandFailure
     """
-    log.info(
-            "Configure mka keychain {key_string} on {intf}".format(
-                key_string=key_string, intf=interface)
-            )
     try:
-        device.configure([
-            "interface {intf}".format(intf=interface),
-            "mka pre-shared-key key-chain {key_string}".format(key_string=key_string)])
+        if key_chain is not None:
+            log.info(
+                "Configure mka keychain {key_string} fall back key chain {key_chain} on {intf}".format(
+                   key_string=key_string, key_chain=key_chain, intf=interface))
+            device.configure([
+                "interface {intf}".format(intf=interface),
+                "mka pre-shared-key key-chain {key_string} fallback-key-chain {key_chain}"
+                .format(key_string=key_string, key_chain=key_chain)])
+        else:
+            log.info(
+                "Configure mka keychain {key_string} on {intf}".format(
+                 key_string=key_string, intf=interface))
+            device.configure([
+                "interface {intf}".format(intf=interface),
+                "mka pre-shared-key key-chain {key_string}".format(key_string=key_string)])
+        
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Could not configure mka keychain {key_string} "
-            "on interface {interface}, Error: {error}".format(
-                key_string=key_string, interface=interface, error=e
-            )
+               "Could not configure mka keychain and fallback keychain {key_string} {key_chain} "
+               "on interface {interface}, Error: {error}".format(
+               key_string=key_string, key_chain=key_chain, interface=interface, error=e)
         )
 
 
@@ -212,21 +263,18 @@ def config_macsec_network_link_on_interface(device, interface):
         raise SubCommandFailure(
             "Could not configure macsec network-link on "
             "interface {interface}, Error: {error}".format(
-                interface=interface, error=e
+            interface=interface, error=e
             )
         )
 
 
 def unconfig_macsec_network_link_on_interface(device, interface):
     """ Un configures macsec network-link on interface
-
         Args:
             device ('obj'): device to use
             interface ('str'): interface to configure
-
         Returns:
             None
-
         Raises:
             SubCommandFailure
     """
@@ -242,7 +290,7 @@ def unconfig_macsec_network_link_on_interface(device, interface):
         raise SubCommandFailure(
             "Could not unconfigure macsec network-link on "
             "interface {interface}, Error: {error}".format(
-                interface=interface, error=e
+            interface=interface, error=e
             )
         )
 
@@ -290,6 +338,76 @@ def config_mka_policy_xpn(device, interface=None, cipher=None,
             "Error: {error}".format(error=e)
             )
 
+def config_mka_policy(device, 
+        global_level=None, 
+        interface=None, 
+        cipher=None, 
+        send_secure_announcements=None,
+        sak_rekey_int=None, 
+        key_server_priority=None, 
+        sak_rekey_on_live_peer_loss=None, 
+        conf_offset=None, 
+        policy_name=None, 
+        delay_protection= None):
+    """ Configures user defined mka policy on device or interface
+        Args:
+            device ('obj'): device to use
+            global_level ('bool'): Enable policy globally
+            Policy name ('str'): policy name to configure 
+            interface ('str'): interface to configure
+            cipher ('str'): Cipher suite value
+            sak_rekey_int ('str'): Sak rekey interval
+            key_server_priority ('str'): Key server priority
+            conf_offset ('str'): confidentiality offset
+            send_secure_announcements ('bool'): Enable/disable send secure announcements  
+            delay_protection ('bool'): Enable/disable delay_protection
+            sak_rekey_on_live_peer_loss ('bool'): Enable/disable sak rekey on live peer loss
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    if global_level:
+        log.info("Configure user defined mka policy on device and interface")
+        configs = [
+            "mka policy {policy_name}".format(policy_name=policy_name)]
+        if cipher:
+            configs.append(
+               "macsec-cipher-suite {cipher}".format(cipher=cipher))
+        if sak_rekey_int:
+            configs.append("sak-rekey interval {interval}".format(
+                interval=sak_rekey_int))
+        if key_server_priority:
+            configs.append("key-server priority {key_pr}".format(
+                key_pr=key_server_priority))
+        if conf_offset:
+            configs.append("confidentiality-offset {conf_off}".format(
+                conf_off=conf_offset))
+        if send_secure_announcements:
+            configs.append("send-secure-announcements")
+        if sak_rekey_on_live_peer_loss:
+            configs.append("sak-rekey on-live-peer-loss")
+        if delay_protection:
+            configs.append("delay-protection")
+        if interface:
+            configs.append("interface {intf}".format(intf=interface))
+            configs.append("mka policy {policy_name}".format(policy_name=policy_name))
+
+    else:
+        if interface:
+            log.info("Configure user defined mka policy on "
+                    "interface {interface}".format(interface=interface))
+            configs = [
+                "interface {intf}".format(intf=interface),
+                "mka policy {policy_name}".format(policy_name=policy_name)]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure user defined mka policy on device/interface, "
+            "Error: {error}".format(error=e)
+            )
+
 def unconfig_mka_policy_xpn(device):
     """ Unconfigures mka policy xpn on device
 
@@ -308,6 +426,41 @@ def unconfig_mka_policy_xpn(device):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not unconfigure mka policy xpn on device, "
+            "Error: {error}".format(error=e)
+            )
+
+def unconfig_mka_policy(device, 
+        interface=None, 
+        policy_name=None, 
+        global_level=None):
+    """ Unconfigures mka policy on interface/device 
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to unconfigure
+            global_level ('bool'): device level to unconfigure
+            policy_name ('str'): Policy name to Unconfigure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        if interface is not None:
+            log.info("Unconfigure user defined mka policy on interface")
+            configs = [
+            "interface {intf}".format(intf=interface),
+            "no mka policy {policy_name}".format(policy_name=policy_name)]
+            device.configure(configs)
+
+        if global_level is not None:
+            log.info("Unconfigure mka policy on device")
+            configs = [
+            "no mka policy {policy_name}".format(policy_name=policy_name)]
+            device.configure(configs)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure mka policy on interface/device, "
             "Error: {error}".format(error=e)
             )
 
@@ -510,4 +663,79 @@ def unconfigure_mka_keychain_on_interface(device, interface, key_string, key_cha
                 key_string=key_string, interface=interface, error=e
             )
         )
+
+def configure_pki_trustpoint(device, key_type, label_name,
+    modulus_size, enrollment_type, subject_line, revocation_check,
+    storage_type):
+    """ Configures Trustpoint related config on device
+
+        Args:
+            device ('obj'): device to use
+            key_type ('str'): Key type to be generated
+            label_name ('str'): Label name
+            modulus_size ('str'): Modulus size to be configured
+            enrollment_type ('str'): Enrollment type to be configured
+            subject_line ('str'): Subject Line to be configured
+            revocation_check ('str'): Revocation check to be configured
+            storage_type ('str'): Storage type to be configured
+
+       Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure Trustpoint on device")
+
+    configs = [
+            f"crypto key generate {key_type} label {label_name} modulus {modulus_size}",
+            f"crypto pki trustpoint {label_name}",
+            f"enrollment {enrollment_type}",
+            f"subject-name {subject_line}",
+            f"revocation-check {revocation_check}",
+            f"rsakeypair {label_name}",
+            f"storage {storage_type}"]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure Trustpoint related config on device "
+            "Error: {error}".format(error=e)
+            )
+
+def unconfigure_pki_trustpoint(device, label_name):
+    """ Unconfigures Trustpoint related config on device
+
+        Args:
+            device ('obj'): device to use
+            label_name ('str'): Label name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Unconfigure Trustpoint on device")
+
+    dialog = Dialog([
+    Statement(pattern=r'.*\% Removing an enrolled trustpoint will destroy all certificates\n'
+    'received from the related Certificate Authority\.\n'
+
+    'Are you sure you want to do this\? \[yes\/no\]\:',
+                        action='sendline(y)',
+                        loop_continue=True,
+                        continue_timer=False)
+    ])
+
+    try:
+       device.configure("no crypto pki trustpoint {label_name}".format(label_name=label_name), reply=dialog)    
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure Trustpoint related config from device "
+            "Error: {error}".format(error=e)
+            )
+
+
 
