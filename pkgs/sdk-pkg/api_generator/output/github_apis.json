@@ -587,24 +587,6 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mdns/configure.py#L1034"
     }
   },
-  "clear_mdns_query_db": {
-    "iosxe": {
-      "doc": " Clears mdns query database statistics on device\n        Args:\n            device (`obj`): Device object\n        Return:\n            None\n        Raise:\n            SubCommandFailure: Failed clearing query-db statistics\n    ",
-      "module_name": "mdns.configure",
-      "package": "genie.libs.sdk.apis",
-      "uid": "clear_mdns_query_db",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mdns/configure.py#L261"
-    }
-  },
-  "clear_mdns_statistics": {
-    "iosxe": {
-      "doc": " Clears mdns statistics on device\n        Args:\n            device (`obj`): Device object\n        Return:\n            None\n        Raise:\n            SubCommandFailure: Failed clearing statistics\n    ",
-      "module_name": "mdns.configure",
-      "package": "genie.libs.sdk.apis",
-      "uid": "clear_mdns_statistics",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mdns/configure.py#L240"
-    }
-  },
   "clear_mpls_counters": {
     "iosxe": {
       "doc": " Clear mpls counters\n        Args:\n            device (`obj`): Device object\n\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
@@ -1174,7 +1156,7 @@
       "module_name": "vlan.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "config_vlan_range",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/vlan/configure.py#L258"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/vlan/configure.py#L257"
     }
   },
   "config_vlan_tag_native": {
@@ -1269,7 +1251,7 @@
   },
   "configure_access_vlan": {
     "iosxe": {
-      "doc": " configuring access vlan configuration on interface\n        Args:\n            device (`obj`): Device object\n            vlanid ('int') : vlan id\n            interface ('str) : interface name\n        Returns:\n            Bool\n        Raises:\n            SubCommandFailure\n        Example: no vlan configuration 101\n    ",
+      "doc": " configuring access vlan configuration on interface\n        Args:\n            device (`obj`): Device object\n            vlanid ('int') : vlan id\n            interface ('str) : interface name\n        Returns:\n            Bool\n        Raises:\n            SubCommandFailure\n    ",
       "module_name": "vlan.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_access_vlan",
@@ -2538,33 +2520,6 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L98"
     }
   },
-  "configure_ipsec_profile": {
-    "iosxe": {
-      "doc": " Configures ipsec transform set\n        Args:\n            device (`obj`): Device object\n            profile_name ('str'): ipsec profile name\n            transform_set_name ('str'): transform-set name\n            ikev2_profile_name ('str'): ikev2 profile name\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
-      "module_name": "ipsec.configure",
-      "package": "genie.libs.sdk.apis",
-      "uid": "configure_ipsec_profile",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L64"
-    }
-  },
-  "configure_ipsec_transform_set": {
-    "iosxe": {
-      "doc": " Configures ipsec transform set\n        Args:\n            device (`obj`): Device object\n            transform_set_name ('str'): transform-set name\n            transform_method ('str'): transform method e.g. esp-gcm, esp-md5-hmac\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
-      "module_name": "ipsec.configure",
-      "package": "genie.libs.sdk.apis",
-      "uid": "configure_ipsec_transform_set",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L36"
-    }
-  },
-  "configure_ipsec_tunnel": {
-    "iosxe": {
-      "doc": " Configures ipsec transform set\n        Args:\n            device (`obj`): Device object\n            tunnel_intf ('str'): tunnel interface\n            tunnel_ip ('str'): tunnel ip addr\n            tunnel_mask ('str'): tunnel mask\n            tunnel_src_ip ('str'): tunnel source IP\n            tunnel_mode ('str'): ipv4 or ipv6\n            tunnel_dst_ip ('str'): tunnel destination IP\n            ipsec_profile_name ('str'): IPSEC profile name\n\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
-      "module_name": "ipsec.configure",
-      "package": "genie.libs.sdk.apis",
-      "uid": "configure_ipsec_tunnel",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L98"
-    }
-  },
   "configure_ipv4_dhcp_relay_helper": {
     "iosxe": {
       "doc": " Configure helper IP on an interface\n\n        Args:\n            device (`obj`): Device object\n            interface (`str`): Interface to get address\n            ip_address (`str`): helper IP address to be configured on interface\n\n        Returns:\n            None\n\n        Raises:\n            SubCommandFailure\n    ",
@@ -3778,7 +3733,7 @@
       "module_name": "vlan.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_pvlan_type",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/vlan/configure.py#L235"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/vlan/configure.py#L234"
     }
   },
   "configure_qos_policy": {
@@ -12188,15 +12143,6 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/macsec/configure.py#L432"
     }
   },
-  "unconfig_mdns_sd_service_peer": {
-    "iosxe": {
-      "doc": " UNConfig MDNS_SD_SERVICE PEER\n\n        Args:\n            device (`obj`): Device object\n            vlan ('int'): Vlan value\n            ip_addr ('str'): ipv4,ipv6 address\n            response_timer ('int'): active response timer\n            timer ('int'): Timer value\n            count ('int'): Count value\n            value ('int'): rate limit value\n\n        Returns:\n            None\n\n        Raises:\n            SubCommandFailure\n    ",
-      "module_name": "mdns.configure",
-      "package": "genie.libs.sdk.apis",
-      "uid": "unconfig_mdns_sd_service_peer",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mdns/configure.py#L311"
-    }
-  },
   "unconfig_mka_policy_xpn": {
     "iosxe": {
       "doc": " Unconfigures mka policy xpn on device\n\n        Args:\n            device ('obj'): device to use\n\n        Returns:\n            None\n\n        Raises:\n            SubCommandFailure\n    ",
@@ -12226,11 +12172,11 @@
   },
   "unconfig_vlan": {
     "iosxe": {
-      "doc": " Configures a standard IP access list.\n        Args:\n            device ('obj'): device object\n            acl_name ('str'): acl name\n        Returns:\n            config\n        Raises:\n            SubCommandFailure: Failed to configure access-list\n    ",
-      "module_name": "multicast.configure",
+      "doc": " vlan on Interface or Device configuration removal\n\n        Args:\n            device (`obj`): Device object\n            vlanid (`str`): Vlan id\n        Return:\n            None\n        Raise:\n            SubCommandFailure: Failed configuring interface\n    ",
+      "module_name": "vlan.configure",
       "package": "genie.libs.sdk.apis",
-      "uid": "unconfig_standard_acl_for_ip_pim",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/configure.py#L243"
+      "uid": "unconfig_vlan",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/vlan/configure.py#L73"
     }
   },
   "unconfig_vlan_range": {
@@ -12239,16 +12185,16 @@
       "module_name": "vlan.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfig_vlan_range",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/vlan/configure.py#L283"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/vlan/configure.py#L282"
     }
   },
   "unconfig_vlan_tag_native": {
     "iosxe": {
-      "doc": " vlan on Interface or Device configuration removal\n\n        Args:\n            device (`obj`): Device object\n            vlanid (`str`): Vlan id\n        Return:\n            None\n        Raise:\n            SubCommandFailure: Failed configuring interface\n    ",
+      "doc": " Unconfigure vlan dot1q tag native\n\n        Args:\n            device (`obj`): Device object\n        Return:\n            None\n        Raise:\n            SubCommandFailure: Failed configuring device\n    ",
       "module_name": "vlan.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfig_vlan_tag_native",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/vlan/configure.py#L305"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/vlan/configure.py#L304"
     }
   },
   "unconfig_xconnect_on_interface": {
@@ -12634,60 +12580,6 @@
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_evpn_instance_vlan_based",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/evpn/configure.py#L37"
-    }
-  },
-  "unconfigure_evpn_l2_instance_vlan_association": {
-    "iosxe": {
-      "doc": " unconfigure VLAN association to EVPN instance\n\n        Args:\n            device (`obj`): Device object\n            vlan_id (`int`): Vlan id\n            evpn_instance('int'): EVPN Instance id\n            vni_id('int'): VNI id\n\n        Returns:\n            None\n\n        Raises:\n            SubCommandFailure\n\n    ",
-      "module_name": "evpn.configure",
-      "package": "genie.libs.sdk.apis",
-      "uid": "unconfigure_evpn_l2_instance_vlan_association",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/evpn/configure.py#L414"
-    }
-  },
-  "unconfigure_evpn_l3_instance_vlan_association": {
-    "iosxe": {
-      "doc": " unconfigure VLAN association to EVPN l3 vni instance\n\n        Args:\n            device (`obj`): Device object\n            vlan_id (`int`): Vlan id\n            vni_id('int'): VNI id\n\n        Returns:\n            None\n\n        Raises:\n            SubCommandFailure\n\n    ",
-      "module_name": "evpn.configure",
-      "package": "genie.libs.sdk.apis",
-      "uid": "unconfigure_evpn_l3_instance_vlan_association",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/evpn/configure.py#L470"
-    }
-  },
-  "unconfigure_evpn_default_gateway_advertise_global": {
-    "iosxe": {
-      "doc": " Unconfigure default-gateway advertise in l2vpn evpn globally\n\n        Args:\n            device (`obj`): Device object\n\n        Returns:\n            None\n\n        Raises:\n            SubCommandFailure\n\n    ",
-      "module_name": "evpn.configure",
-      "package": "genie.libs.sdk.apis",
-      "uid": "unconfigure_evpn_default_gateway_advertise_global",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/evpn/configure.py#L361"
-    }
-  },
-  "unconfigure_evpn_evi_replication_type": {
-    "iosxe": {
-      "doc": " Config l2vpn evpn multicast advertise disable on evi\n        Args:\n            device (`obj`): Device object\n            evi ('int'): evi id\n            srvinst ('str'): service instance type\n                              vlan-based|vlan-bundle|vlan-aware\n            rep_type ('str'): replication type \n                              static | ingress\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
-      "module_name": "evpn.configure",
-      "package": "genie.libs.sdk.apis",
-      "uid": "unconfigure_evpn_evi_replication_type",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/evpn/configure.py#L307"
-    }
-  },
-  "unconfigure_evpn_instance_encapsulation_type": {
-    "iosxe": {
-      "doc": " Config l2vpn evpn replication type on evi\n        Args:\n            device (`obj`): Device object\n            evi ('int'): evi id\n            srvinst ('str'): service instance type\n                              vlan-based|vlan-bundle|vlan-aware\n            encap_type ('str): encapsulation \n                               vxlan | mpls \n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
-      "module_name": "evpn.configure",
-      "package": "genie.libs.sdk.apis",
-      "uid": "unconfigure_evpn_instance_encapsulation_type",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/evpn/configure.py#L245"
-    }
-  },
-  "unconfigure_evpn_instance_vlan_based": {
-    "iosxe": {
-      "doc": " Config l2vpn evpn instance\n        Args:\n            device (`obj`): Device object\n            rep_type ('str'): replication type \n                              static | ingress\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
-      "module_name": "evpn.configure",
-      "package": "genie.libs.sdk.apis",
-      "uid": "unconfigure_evpn_replication_type",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/evpn/configure.py#L187"
     }
   },
   "unconfigure_evpn_l2_instance_vlan_association": {
@@ -16358,15 +16250,6 @@
       "package": "genie.libs.sdk.apis",
       "uid": "verify_mpls_experimental_bits",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2144"
-    }
-  },
-  "verify_mpls_forwarding_table_gid_counter": {
-    "iosxe": {
-      "doc": " Verifies counters for gid in mpls forwarding-table\n\n        Args:\n            prefix_type ('str')  : prefix type \n\t\t\tbytes_labeled_switched ('str') : counter value\n            max_time (`int`, optional): Max time, default: 20\n            check_interval (`int`, optional): Check interval, default: 10\n        Raises:\n            Exception\n\n        Returns\n            None\n    ",
-      "module_name": "mpls.verify",
-      "package": "genie.libs.sdk.apis",
-      "uid": "verify_mpls_forwarding_table_gid_counter",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mpls/verify.py#L682"
     }
   },
   "verify_mpls_forwarding_table_gid_counter": {

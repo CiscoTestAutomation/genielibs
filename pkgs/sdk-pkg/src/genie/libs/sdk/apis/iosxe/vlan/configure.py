@@ -215,15 +215,6 @@ def configure_access_vlan(device , vlanid, interface):
         Raises:
             SubCommandFailure
     """
-    config_list = []
-    # vlan 100
-    # private-vlan primary
-    config_list.append("vlan {primary_vlan} \n"
-                       "private-vlan primary".format(primary_vlan=primary_vlan))
-    # private-vlan association 101
-    if secondary_vlan != None:
-        config_list.append("private-vlan association {secondary_vlan}".format(secondary_vlan=secondary_vlan))
-
     try:
         device.configure(
                     [f"int {interface}",
