@@ -185,6 +185,7 @@ def get_ip_theft_syslogs(device):
     timematch = r'.(?P<timestamp>[A-Za-z]{3}\s+\d+ \d+:\d+:\d+\.\d+( [A-Z]+)?:)'
 
     # *Sep 15 12:53:06.383 EST: %SISF-4-IP_THEFT: IP Theft IP=2001:DB8::101 VLAN=20 MAC=dead.beef.0001 IF=Twe1/0/1 New MAC=dead.beef.0002 New I/F=Twe1/0/1
+    # *Dec 17 13:57:09.293 EST: %SISF-4-IP_THEFT: IP Theft IP=192.168.11.103 VLAN=20 MAC=dead.beef.0001 IF=Twe1/0/1 New(Spoof) MAC=dead.beef.0002 New I/F=Twe1/0/5
     theft1 = re.compile(
         timematch +
         r'\s+%SISF-4-IP_THEFT: IP Theft' +
@@ -192,8 +193,20 @@ def get_ip_theft_syslogs(device):
         r'\s+VLAN=(?P<vlan>\d+)' +
         r'\s+MAC=(?P<mac>([a-fA-F\d]{4}\.){2}[a-fA-F\d]{4})' +
         r'\s+IF=(?P<interface>[\w\/\.\-\:]+)' +
-        r'\s+New Mac=(?P<new_mac>([a-fA-F\d]{4}\.){2}[a-fA-F\d]{4})' +
+        r'\s+New(\(Spoof\))? MAC=(?P<new_mac>([a-fA-F\d]{4}\.){2}[a-fA-F\d]{4})' +
         r'\s+New I/F=(?P<new_if>[\w\/\.\-\:]+)'
+    )
+    # The order of when interface appears varies, so we need a second match
+    # *Jan 11 15:57:30.413 EST: %SISF-4-IP_THEFT: IP Theft IP=192.168.11.103 VLAN=20 MAC=dead.beef.0008 New(Spoof) MAC=dead.beef.0002 IF=Vl20 New IF=Twe1/0/1
+    theft1b = re.compile(
+        timematch +
+        r'\s+%SISF-4-IP_THEFT: IP Theft' +
+        r'\s+IP=(?P<ip>([a-fA-F\d\:]+)|(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}))' +
+        r'\s+VLAN=(?P<vlan>\d+)' +
+        r'\s+MAC=(?P<mac>([a-fA-F\d]{4}\.){2}[a-fA-F\d]{4})' +
+        r'\s+New(\(Spoof\))? MAC=(?P<new_mac>([a-fA-F\d]{4}\.){2}[a-fA-F\d]{4})' +
+        r'\s+IF=(?P<interface>[\w\/\.\-\:]+)' +
+        r'\s+New IF=(?P<new_if>[\w\/\.\-\:]+)'
     )
 
     # *Sep 16 19:22:29.392 EST: %SISF-4-IP_THEFT: IP Theft IP=2001:DB8::105 VLAN=20 Cand-MAC=dead.beef.0002 Cand-I/F=Twe1/0/1 Known MAC over-fabric Known I/F over-fabric
@@ -238,6 +251,29 @@ def get_ip_theft_syslogs(device):
             entry['new_interface'] = new_interface
 
             log_dict.setdefault('entries', []).append(entry)
+            continue
+
+        m = theft1b.match(log_entry)
+        if m:
+            entry = {}
+            group = m.groupdict()
+
+            ip = group['ip']
+            vlan = group['vlan']
+            mac = group['mac']
+            interface = group['interface']
+            new_mac = group['new_mac']
+            new_interface = group['new_if']
+
+            entry['ip'] = ip
+            entry['vlan'] = vlan
+            entry['mac'] = mac
+            entry['interface'] = interface
+            entry['new_mac'] = new_mac
+            entry['new_interface'] = new_interface
+
+            log_dict.setdefault('entries', []).append(entry)
+            continue
 
         m = theft2.match(log_entry)
         if m:
@@ -255,6 +291,7 @@ def get_ip_theft_syslogs(device):
             entry['new_interface'] = new_if
 
             log_dict.setdefault('entries', []).append(entry)
+            continue
 
         m = theft3.match(log_entry)
         if m:
@@ -272,5 +309,6 @@ def get_ip_theft_syslogs(device):
             entry['new_interface'] = new_if
 
             log_dict.setdefault('entries', []).append(entry)
+            continue
 
     return log_dict

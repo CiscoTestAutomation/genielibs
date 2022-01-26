@@ -47,7 +47,7 @@ def version_info(*paths):
 # compute version range
 version = find_version('src', 'genie', 'libs', 'sdk', '__init__.py')
 
-install_requires = ['ruamel.yaml']
+install_requires = ['ruamel.yaml', 'cisco-gnmi']
 
 # launch setup
 setup(
@@ -129,7 +129,8 @@ setup(
                 'sphinxcontrib-napoleon',
                 'sphinx-rtd-theme',
                 'xmltodict',
-                'rest.connector'],
+                'rest.connector',
+                'protobuf'],
     },
 
     # external modules

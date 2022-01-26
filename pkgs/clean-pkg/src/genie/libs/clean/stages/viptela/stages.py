@@ -16,8 +16,7 @@ from pyats.utils.fileutils import FileUtils
 from genie.utils import Dq
 from genie.abstract import Lookup
 from genie.libs import clean
-from genie.libs.clean.utils import (clean_schema, _apply_configuration,
-                                    handle_rommon_exception)
+from genie.libs.clean.utils import (clean_schema, _apply_configuration)
 from genie.libs.clean.recovery.iosxe.sdwan.recovery import recovery_worker as sdwan_recovery_worker
 from genie.libs.clean.recovery.recovery import _disconnect_reconnect
 from genie.metaparser.util.schemaengine import Optional, Or

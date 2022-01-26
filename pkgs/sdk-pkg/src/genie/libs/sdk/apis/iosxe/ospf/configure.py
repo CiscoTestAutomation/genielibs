@@ -1204,3 +1204,131 @@ def unconfigure_ipv6_ospf_bfd(device, interface):
                device=device.name, interface=interface, error=e
             )
         )
+
+def configure_ipv6_ospf_mtu_ignore(device, interface):
+    """configure ipv6 ospf mtu-ignore
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): interface to configure
+            ex.)
+                interface = 'tenGigabitEthernet0/4/0'
+        Return:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+               "interface {interface}".format(interface=interface),
+               " ipv6 ospf mtu-ignore"
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "ipv6 Ospf mtu-ignore is not configured on device"
+            " {device} for interface {interface}, Error: {error}".format(
+               device=device.name, interface=interface, error=e
+            )
+        )
+
+def unconfigure_ipv6_ospf_mtu_ignore(device, interface):
+    """unconfigure ipv6 ospf mtu-ignore
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): interface to configure
+            ex.)
+                interface = 'tenGigabitEthernet0/4/0'
+        Return:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+               "interface {interface}".format(interface=interface),
+               "no ipv6 ospf mtu-ignore"
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "failed to remove the ipv6 ospf mtu-ignore on device"
+            " {device} for interface {interface}, Error: {error}".format(
+               device=device.name, interface=interface, error=e
+            )
+        )
+
+def configure_ipv6_ospf_routing_on_interface(device, interface, ospf_process_id,
+                                        areaid):
+    """ Configures ipv6 ospf  on Interface
+
+        Args:
+            device ('obj'): Device to use
+            interface ('str'): Interface to use
+            ospf_process_id ('str'): Process id for ospf process
+            areaid ('int'): Area id to use
+
+        Returns:
+            N/A
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+                'interface {interface}'.format(interface=interface),
+                'ipv6 ospf {ospf_process_id} area {areaid}'.format(
+                    ospf_process_id=ospf_process_id, areaid=areaid)
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure the interface {interface} "
+            "with OSPF process id {ospf_process_id} and area {areaid}, "
+            "Error: {error}".format(
+                interface=interface,
+                ospf_process_id=ospf_process_id,
+                areaid=areaid, error=e
+            )
+        )
+
+def unconfigure_ipv6_ospf_routing_on_interface(device, interface, ospf_process_id,
+                                        areaid):
+    """ UnConfigures ipv6 ospf  on Interface
+
+        Args:
+            device ('obj'): Device to use
+            interface ('str'): Interface to use
+            ospf_process_id ('str'): Process id for ospf process
+            areaid ('int'): Area id to use
+
+        Returns:
+            N/A
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+                'interface {interface}'.format(interface=interface),
+                'no ipv6 ospf {ospf_process_id} area {areaid}'.format(
+                    ospf_process_id=ospf_process_id, areaid=areaid)
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure the interface {interface} "
+            "with OSPF process id {ospf_process_id} and area {areaid}, "
+            "Error: {error}".format(
+                interface=interface,
+                ospf_process_id=ospf_process_id,
+                areaid=areaid, error=e
+            )
+        )

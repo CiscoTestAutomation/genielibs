@@ -493,3 +493,75 @@ def unconfigure_evpn_l3_instance_vlan_association(device,vlan_id,vni_id):
             "Failed to unconfigure VLAN association to EVPN L3 instance on device "
             'Error:{e}'.format(e=e)
         )
+
+def configure_nve_interface(device,nve_num,src_intf,protocol,vni_id,replication_type,mcast_group=None):
+    """ Configure nve interface
+
+        Args:
+            device (`obj`): Device object
+            nve_num (`str`): nve interface number
+            src_intf (`str`): source interface
+            protocol (`str`): host-reachability protocol
+            vni_id (`str`): vni id
+            replication_type (`str`): replication type (static | ingress)
+            mcast_group (`str`, optional): Multicast group address , default value is None
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+
+    """
+    configs = []
+    configs.append("interface nve {nve_num}".format(nve_num=nve_num))
+    configs.append("source-interface {intf}".format(intf=src_intf))
+    configs.append("host-reachability protocol {protocol}".format(protocol=protocol))
+
+    if replication_type.lower() == 'static': 
+        if mcast_group is None:
+            raise Exception("missing required  argument: 'mcast_group'")
+        else:
+            configs.append("member vni {vni_id} mcast-group {mcast_group}".format(vni_id=vni_id, mcast_group=mcast_group))
+
+    else:
+        configs.append("member vni {vni_id} ingress-replication".format(vni_id=vni_id))
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure nve interface on device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def unconfigure_nve_interface(device,nve_num):
+    """ unconfigure nve interface
+
+        Args:
+            device (`obj`): Device object
+            nve_num (`str`): nve interface number
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+
+    """
+    configs = []
+    configs.append("no interface nve {nve_num}".format(nve_num=nve_num))
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure nve interface on device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                error=e,
+            )
+        )
+
+

@@ -44,7 +44,7 @@ class FileServer(BaseFileServer):
             }
         })
 
-        address = self.server_info['address']
+        address = self.server_info.get('address', '0.0.0.0')
         port = self.server_info.get('port', DEFAULT_PORT)
         address = (address, port)
         path = self.server_info.setdefault('path', '/')
@@ -78,7 +78,7 @@ class FileServer(BaseFileServer):
         server.serve_forever()
 
     def verify_server(self):
-        ip = self.server_info['address']
+        ip = self.server_info.get('address', '0.0.0.0')
         port = self.server_info['port']
         username = self.server_info['credentials']['ftp']['username']
         password = to_plaintext(

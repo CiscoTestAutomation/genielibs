@@ -21,6 +21,7 @@ def health_cpu(device,
                check_key_total='five_sec_cpu_total',
                output=None,
                add_total=False,
+               timeout=None,
                health=True):
     '''Get cpu load on device
 
@@ -37,6 +38,7 @@ def health_cpu(device,
                                      Default to `five_sec_cpu_total`
             add_total (`bool`): If True, add total cpu load
             output     (`str`): Output of show command
+            timeout    (`int`): Timeout(secs). Defaults to None
         Returns:
             cpu_load_dict  (`dict`): Cpu load dictionary on the device
                                      example:
@@ -57,7 +59,7 @@ def health_cpu(device,
     cpu_load_dict = {}
 
     try:
-        parsed = device.parse(command, output=output)
+        parsed = device.parse(command, output=output, timeout=timeout)
     except SchemaEmptyParserError as e:
         log.error("Command '{cmd}' did not return any output\n{msg}".\
                   format(cmd=command, msg=str(e)))
@@ -126,6 +128,7 @@ def health_memory(device,
                   check_key='processor_pool',
                   output=None,
                   add_total=False,
+                  timeout=None,
                   health=True):
     '''Get memory usage on device
 
@@ -140,6 +143,7 @@ def health_memory(device,
                                     Default to `processor_pool`
             add_total    (`bool`): If True, add total memory usage
             output         (`str`): Output of show command
+            timeout       (`int`): Timeout(secs). Defaults to None
         Returns:
             memory_usage_dict (`dict`): memory usage dict on the device (percentage)
                                         example:
@@ -160,7 +164,7 @@ def health_memory(device,
     regex_items = []
     memory_usage_dict = {}
     try:
-        parsed = device.parse(command, output=output)
+        parsed = device.parse(command, output=output, timeout=timeout)
     except SchemaEmptyParserError as e:
         log.error("Command '{cmd}' did not return any output\n{msg}".\
                   format(cmd=command, msg=str(e)))

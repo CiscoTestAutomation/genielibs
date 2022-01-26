@@ -53,3 +53,5 @@ def get_boot_variables(device, boot_var, output=None):
 
     return boot_images
 
+
+

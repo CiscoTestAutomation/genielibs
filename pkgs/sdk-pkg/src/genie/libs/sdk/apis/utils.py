@@ -19,6 +19,7 @@ import pathlib
 from time import strptime
 from datetime import datetime
 from netaddr import IPAddress
+from ipaddress import IPv4Interface
 
 # pyATS
 from pyats.easypy import runtime
@@ -844,7 +845,7 @@ def copy_to_device(device,
                    remote_path,
                    local_path=None,
                    server=None,
-                   protocol='http',
+                   protocol=None,
                    vrf=None,
                    timeout=300,
                    compact=False,
@@ -892,7 +893,12 @@ def copy_to_device(device,
         else:
             server = fu.get_hostname(server, device)
 
+        if protocol is None:
+            server_block = fu.get_server_block(server)
+            protocol = server_block.get('protocol', 'http')
+
         # build the source address
+        remote_path = remote_path.lstrip('/')
         source = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
         try:
             if vrf is not None:
@@ -915,10 +921,8 @@ def copy_to_device(device,
                                    protocol=protocol,
                                    **kwargs)
         except Exception as e:
-            log.info('Failed to copy file to device: {e}'.format(
-                e = e
-            ))
-            
+            log.info(f'Failed to copy file to device: {e}')
+
             if compact or use_kstack:
                 log.info("Failed to copy with compact/use-kstack option, "
                          "retrying again without compact/use-kstack")
@@ -932,12 +936,15 @@ def copy_to_device(device,
             else:
                 raise
 
+    # Try to figure out local IP address
+    local_ip = device.api.get_local_ip()
+    if local_ip is None:
+        log.error('Unable to determine local IP address, cannot copy file')
+        return
+
     mgmt_ip, mgmt_src_ip_addresses = device.api.get_mgmt_ip_and_mgmt_src_ip_addresses()
 
     mgmt_interface = device.api.get_mgmt_interface(mgmt_ip=mgmt_ip)
-
-    # try figure out local IP address
-    local_ip = device.api.get_local_ip()
 
     if local_ip in mgmt_src_ip_addresses:
         mgmt_src_ip = local_ip
@@ -949,7 +956,7 @@ def copy_to_device(device,
     with FileServer(protocol='http',
                     address=local_ip,
                     path=remote_path_parent,
-                    http_auth=http_auth) as fs:
+                    custom=dict(http_auth=http_auth)) as fs:
 
         local_port = fs.get('port')
 
@@ -983,7 +990,7 @@ def copy_to_device(device,
             source += '{}:{}/{}'.format(mgmt_src_ip, local_port, remote_path)
         else:
             log.error('Unable to determine management IP address to use to download file')
-            return None
+            return
 
         try:
             fu.validate_and_update_url = lambda url, *args, **kwargs: url  # override to avoid url changes
@@ -997,14 +1004,14 @@ def copy_to_device(device,
 
         except Exception:
             log.error('Failed to transfer file', exc_info=True)
-            return None
+            return
 
 
 def copy_from_device(device,
                      local_path,
                      remote_path=None,
                      server=None,
-                     protocol='http',
+                     protocol=None,
                      vrf=None,
                      timeout=300,
                      timestamp=False,
@@ -1047,7 +1054,19 @@ def copy_from_device(device,
 
     if server:
 
-        # build the source address
+        if remote_path:
+            if pathlib.Path(remote_path).is_dir():
+                filename = pathlib.Path(os.path.basename(local_path.split(':')[-1]))
+                remote_path = pathlib.Path(remote_path) / str(slugify(filename.stem) + filename.suffix)
+            remote_path = str(remote_path).lstrip('/')
+        else:
+            filename = pathlib.Path(os.path.basename(local_path.split(':')[-1]))
+            remote_path = slugify(filename.stem) + filename.suffix
+
+        if protocol is None:
+            server_block = fu.get_server_block(server)
+            protocol = server_block.get('protocol', 'http')
+
         destination = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
         if vrf is not None:
             return fu.copyfile(source=local_path,
@@ -1063,6 +1082,23 @@ def copy_from_device(device,
                                timeout_seconds=timeout,
                                **kwargs)
 
+    # Try to figure out local IP address
+    local_ip = device.api.get_local_ip()
+    if local_ip is None:
+        log.error('Unable to determine local IP address, cannot copy file')
+        return
+
+    # Try to determine connectivity to device
+    mgmt_ip, mgmt_src_ip_addresses = device.api.get_mgmt_ip_and_mgmt_src_ip_addresses()
+
+    mgmt_interface = device.api.get_mgmt_interface(mgmt_ip=mgmt_ip)
+
+    if local_ip in mgmt_src_ip_addresses:
+        mgmt_src_ip = local_ip
+    else:
+        mgmt_src_ip = None
+
+    # Determine filename and path
     remote_path = remote_path or '.'
 
     if not pathlib.Path(remote_path).is_dir():
@@ -1070,18 +1106,6 @@ def copy_from_device(device,
         remote_path = pathlib.Path(remote_path).parent
     else:
         filename = None
-
-    mgmt_ip, mgmt_src_ip_addresses = device.api.get_mgmt_ip_and_mgmt_src_ip_addresses()
-
-    mgmt_interface = device.api.get_mgmt_interface(mgmt_ip=mgmt_ip)
-
-    # try figure out local IP address
-    local_ip = device.api.get_local_ip()
-
-    if local_ip in mgmt_src_ip_addresses:
-        mgmt_src_ip = local_ip
-    else:
-        mgmt_src_ip = None
 
     if not filename:
         filename = pathlib.Path(os.path.basename(local_path.split(':')[-1]))
@@ -1097,7 +1121,7 @@ def copy_from_device(device,
     with FileServer(protocol='http',
                     address=local_ip,
                     path=remote_path,
-                    http_auth=http_auth) as fs:
+                    custom=dict(http_auth=http_auth)) as fs:
 
         local_port = fs.get('port')
 
@@ -1131,7 +1155,7 @@ def copy_from_device(device,
             destination += '{}:{}/{}'.format(mgmt_src_ip, local_port, filename)
         else:
             log.error('Unable to determine management IP address to use to upload file')
-            return None
+            return
 
         try:
             fu.validate_and_update_url = lambda url, *args, **kwargs: url  # override to avoid url changes
@@ -1145,7 +1169,7 @@ def copy_from_device(device,
 
         except Exception:
             log.error('Failed to transfer file', exc_info=True)
-            return None
+            return
 
 
 
@@ -3148,6 +3172,51 @@ def get_interface_type_from_yaml(local, remote, value, testbed_topology, **kwarg
     return type
 
 
+def get_interface_attr_from_yaml(local,
+                                 remote,
+                                 value,
+                                 testbed_topology,
+                                 attr,
+                                 ipv4_with_netmask=False,
+                                 **kwargs):
+    """ Get interface attribute from the testbed yaml file
+        To be used within datafile
+        Args:
+            local ('str'): local device to get interface from
+            remote ('str'): Remote device where the interface is connected to
+            value ('str'): Either link name or a number and a link will be randomly chosen
+            testbed_topology (`dict`): 'testbed.topology' or 'testbed'
+            attr ('str'): interface attribute to get
+            ipv4_with_netmask ('bool'): Return ipv4 with netmask or not, default is False
+
+            accepts keyword arguments
+        Raise:
+            N/A
+        Returns:
+            Interface attr value or None if not found
+        Example:
+            interface_type: "%CALLABLE{genie.libs.sdk.apis.utils.get_interface_attr_from_yaml(uut,helper,0,%{testbed.topology},ipv4)}"
+            interface_type: "%CALLABLE{genie.libs.sdk.apis.utils.get_interface_attr_from_yaml(uut,helper,r1_r4_1,%{testbed.topology},ipv4,True)}"
+    """
+    if not isinstance(testbed_topology, dict):
+        topology = ast.literal_eval(','.join(testbed_topology).lstrip())
+    else:
+        topology = testbed_topology
+    data = Dq(topology)
+
+    interface = get_interface_from_yaml(local, remote, value, testbed_topology, **kwargs)
+    res_attr = data.contains(interface).contains(local.strip()).get_values(attr, 0)
+    if isinstance(res_attr, list):
+        log.error("Could not find attr '{a}' for device '{d}' interface '{i}'"
+                  .format(a=attr, d=local, i=interface))
+        return None
+    if attr == 'ipv4' and ipv4_with_netmask:
+        ipv4_addr = IPv4Interface(res_attr)
+        res_attr = f"{ipv4_addr.ip} {ipv4_addr.netmask}"
+
+    return res_attr
+
+
 def get_device_connections_info(device):
     """ Get connection information of a device from testbed file.
             Args:
@@ -3847,6 +3916,8 @@ def get_local_ip(device, alias=None):
         local_ip = conn.laddr[0]
         log.info('Local IP: {}'.format(local_ip))
         return local_ip
+    else:
+        log.warning('Unable to determine local IP address')
 
 
 def get_bool(value=None):

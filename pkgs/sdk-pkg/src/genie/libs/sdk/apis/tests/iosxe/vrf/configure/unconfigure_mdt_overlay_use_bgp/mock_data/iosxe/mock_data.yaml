@@ -1,7 +1,6 @@
 configure:
   commands:
-    ' address-family ipv4': " address-family ipv4\r\n"
-    ' no mdt overlay use-bgp': " no mdt overlay use-bgp\r\n"
+    address-family ipv4: "address-family ipv4\r\n"
     end:
       new_state: execute
     line console:
@@ -9,8 +8,9 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
+    no mdt overlay use-bgp: "no mdt overlay use-bgp\r\n"
     vrf definition vrf3001: "vrf definition vrf3001\r\n"
-  prompt: P1(config)#
+  prompt: P2(config)#
 configure_line:
   commands:
     end:
@@ -18,7 +18,7 @@ configure_line:
     exec-timeout 0: ''
     line vty: ''
     terminal width 511: ''
-  prompt: P1(config-line)#
+  prompt: P2(config-line)#
 connect:
   commands:
     ? ''
@@ -40,4 +40,4 @@ execute:
     term width 0: ''
     term width 511: ''
     terminal session-timeout 0: ''
-  prompt: P1#
+  prompt: P2#

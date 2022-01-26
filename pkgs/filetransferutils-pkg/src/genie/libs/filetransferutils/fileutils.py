@@ -249,7 +249,8 @@ class FileUtils(FileUtilsBase):
                         # prepare configure config and restore config
                         config_send.append(each_config)
                         config_restore.append('no ' + each_config)
-                device.configure(config_send)
+                if config_send:
+                    device.configure(config_send)
             except Exception:
                 logger.warning(
                     'Failed to apply configuration on %s' % str(device),

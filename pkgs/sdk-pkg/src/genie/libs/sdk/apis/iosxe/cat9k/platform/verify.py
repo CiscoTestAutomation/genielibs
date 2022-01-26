@@ -1,4 +1,5 @@
 import logging
+from genie.utils.timeout import Timeout
 
 log = logging.getLogger(__name__)
 
@@ -60,3 +61,5 @@ def verify_boot_variable(device, boot_images, output=None):
     log.info("The boot variables on the device {} equal the expected "
              "images {}".format(next_boot_variables, boot_images))
     return True
+
+

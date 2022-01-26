@@ -91,7 +91,6 @@ def verify_changes_platform(device, platform_before, platform_after,
 
     return False
 
-
 def verify_file_exists(device, file, size=None, dir_output=None):
     '''Verify that the given file exist on device with the same name and size
         Args:
@@ -103,7 +102,6 @@ def verify_file_exists(device, file, size=None, dir_output=None):
         Returns:
             Boolean value of whether file exists or not
     '''
-
     filename = os.path.basename(file)
     directory = ''.join([os.path.dirname(file), '/'])
 
@@ -175,12 +173,13 @@ def verify_config_register(device, config_register, next_reload=False,
         return False
 
 
-def verify_module_status(device, timeout=180, interval=30):
+def verify_module_status(device, timeout=180, interval=30, ignore_modules=None):
     ''' Check status of slot using 'show platform'
         Args:
             device ('obj'): Device object
             timeout ('int'): Max timeout to re-check slot status
             interval ('int'): Max interval to re-check slot status
+            ignore_modules ('list'): Modules to ignore status check
     '''
 
     timeout = Timeout(max_time=timeout, interval=interval)
@@ -195,10 +194,20 @@ def verify_module_status(device, timeout=180, interval=30):
 
         # Check state for all slots
         failed_slots = Dq(output).contains('state').\
+                            not_contains_key_value('state', 'empty').\
                             not_contains_key_value('state',
                                                    '.*ok.*|standby|ha-standby|Ready',
                                                    value_regex=True).\
                             get_values('slot')
+
+        # To ignore specified modules
+        if ignore_modules:
+            for module in ignore_modules:
+                if module in failed_slots:
+                    failed_slots.remove(module)
+            log.info("Ignoring the following modules '{}'".\
+                     format(ignore_modules))
+
         if not failed_slots:
             log.info("All modules on '{}' are in stable state".\
                      format(device.name))

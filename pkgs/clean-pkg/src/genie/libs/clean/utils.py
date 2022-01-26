@@ -40,7 +40,6 @@ log = logging.getLogger(__name__)
 
 CLEAN_PLUGIN_ENTRYPOINT = 'genie.libs.clean'
 
-
 def clean_schema(schema):
     """decorator for defining schema"""
     def schema_decorator(func):
@@ -95,7 +94,6 @@ def _apply_configuration(device, configuration=None, configuration_from_file=Non
                 configuration = f.read()
 
         log.info("Applying configuration on '{}'".format(device.name))
-
         try:
             device.configure(configuration, timeout=timeout)
         except Exception as e:
@@ -551,9 +549,6 @@ def validate_clean(clean_file, testbed_file, lint=True):
 
     return validation_results
 
-def handle_rommon_exception(spawn, context):
-    log.error('Device is in Rommon')
-    raise Exception('Device is in Rommon')
 
 def remove_string_from_image(images, string):
     ''' Removes user given string from any provided image path

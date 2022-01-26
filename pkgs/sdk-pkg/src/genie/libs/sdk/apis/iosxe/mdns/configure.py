@@ -499,6 +499,15 @@ def configure_mdns(
                 ])
         # Following else block is used for creating only one service list with direction and definition name
         else:
+            if service_list != None:
+                config.extend([
+                    "mdns-sd service-list {srvc_list_name} {direction}".format(
+                        srvc_list_name=service_list,
+                        direction=direction),
+                    "match {srvc_def_name}".format(
+                        srvc_def_name=service_definition_name)
+                ])                          
+        # Following if block is used for creating multiple service policies with service lists attaching them
             config.extend([
                 "mdns-sd service-list {srvc_list_name} {direction}".format(
                     srvc_list_name=service_list,
@@ -517,6 +526,9 @@ def configure_mdns(
                         srvc_list_name=dirctn[count],
                         direction=dirctn[count + 1])
                     ])
+                    count=count+2
+        # Following if block is used for creating service list with message                       
+        if service_list_msg_type != None:        
                     count = count + 2
                     # Following if block is used for creating service list with message
         if service_list_msg_type != None:
@@ -981,3 +993,99 @@ def configure_mdns_service_definition(device, name, srvc_type):
                 name=name
             )
         )
+               
+def clear_mdns_cache(device):
+    """ Clears mdns cache on device
+
+        Args:
+            device ('obj'): device to use
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.execute("clear mdns-sd cache")
+        
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clears mdns cache. Error:\n{error}".format(error=e)
+        )
+        
+def clear_mdns_statistics_all(device):
+    """ Clears mdns statistics on device
+        Args:
+            device (`obj`): Device object
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed clearing statistics
+    """
+
+    try:
+        device.execute("clear mdns-sd statistics all")
+        
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not clear mdns statistics'
+        )
+        
+def clear_mdns_statistics_sp_sdg(device):
+    """ Clears mdns statistics on sp-sdg
+        Args:
+            device (`obj`): Device object
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed clearing statistics
+    """
+
+    try:
+        device.execute("clear mdns-sd sp-sdg statistics")
+                        
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not clear mdns statistics on sp-sdg'
+        )
+        
+def clear_mdns_statistics_servicepeer(device):
+    """ Clears mdns statistics on service-peer
+        Args:
+            device (`obj`): Device object
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed clearing statistics
+    """
+
+    try:
+        device.execute("clear mdns-sd service-peer statistics")
+        
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not clear mdns statistics on service-peer'
+        )
+        
+def configure_mdns_boot_level_license(device, license):
+
+    """ Configures mdns boot level license
+
+        Args:
+            device ('obj'): device to use
+            license ('str'): license name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configuring mdns boot level license")
+    try:
+        device.configure([
+            "license boot level network-advantage addon {license}".format(license=license),
+            "do write memory"
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure mdns license. Error:\n{error}".format(error=e)
+        ) 

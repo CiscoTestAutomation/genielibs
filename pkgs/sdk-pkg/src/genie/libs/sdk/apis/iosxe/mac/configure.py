@@ -117,3 +117,20 @@ def unconfig_mac_learning(device, bridge_domain):
                 bridge_domain=bridge_domain
             )
         )
+def configure_mac_address_table_aging(device, aging_time):
+    """ Config mac-aging time on device
+        Args:
+            device (`obj`): device object
+            aging_time (`int`): mac aging-time
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring device
+    """
+    try:
+        device.configure(f'mac address-table aging-time {aging_time}')
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not configure aging time"
+            ) 
+

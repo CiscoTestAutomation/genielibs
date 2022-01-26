@@ -1,0 +1,43 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no ipv6 mld snooping: "no ipv6 mld snooping\r\n%Command rejected: MLD snooping\
+      \ cannot be globally disabled because L2VPN EVPN multicast advertise is enabled\
+      \ on one or more VLANs.\r\n\r\n"
+    no logging console: ''
+  prompt: Cat9300_VTEP1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: Cat9300_VTEP1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: Cat9300_VTEP1#

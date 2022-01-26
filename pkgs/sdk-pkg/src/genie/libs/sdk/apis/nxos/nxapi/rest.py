@@ -118,10 +118,10 @@ def nxapi_method_nxapi_rest(device, action, commands='', input_type='cli',
         except Exception:
             log.warning('Request {} to {} failed. '
                         'Waiting {} seconds before retrying\n'.
-                        format(method, dn, retry_wait), exc_info=True)
+                        format(rest_method, dn, retry_wait), exc_info=True)
             time.sleep(retry_wait)
     else:
-        raise ConnectionError('Request {} to {} failed'.format(method, dn))
+        raise ConnectionError('Request {} to {} failed'.format(rest_method, dn))
 
     # Return as is if the method is get
     if rest_method == 'get':

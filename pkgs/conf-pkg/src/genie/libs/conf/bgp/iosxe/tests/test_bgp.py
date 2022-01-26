@@ -417,6 +417,42 @@ class test_bgp(TestCase):
                  ' exit',
                 ]))
 
+
+    def test_cfg_as(self):
+        ''' Test 4-byte AS support'''
+        Genie.testbed = testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='iosxe')
+        intf1 = Interface(device=dev1, name='Ethernet0/0/1',
+                          ipv4='10.1.0.1/24')
+        intf2 = Interface(device=dev1, name='Ethernet0/0/2',
+                          ipv4='10.2.0.1/24',
+                          ipv6='2001::1')
+        dev2 = Device(testbed=testbed, name='PE2', os='iosxe')
+        intf3 = Interface(device=dev2, name='Ethernet0/0/3',
+                          ipv4='10.1.0.2/24', ipv6='2001:111:222::/64')
+        intf4 = Interface(device=dev2, name='Ethernet0/0/4',
+                          ipv4='10.2.0.2/24')
+
+        with self.assertNoWarnings():
+
+            Genie.testbed = testbed
+            bgp = Bgp(bgp_id='304.304')
+            self.assertIs(bgp.testbed, testbed)
+            Genie.testbed = testbed
+            bgp = Bgp(bgp_id='304.304')
+            self.assertIs(bgp.testbed, Genie.testbed)
+            self.assertIs(bgp.testbed, testbed)
+
+        dev1.add_feature(bgp)
+        cfgs = bgp.build_config(apply=False)
+        self.assertCountEqual(cfgs.keys(), [dev1.name])
+        self.maxDiff = None
+        self.assertEqual(str(cfgs[dev1.name]), '\n'.join(
+            ['router bgp 304.304',
+             ' exit',
+            ]))
+
+
     def test_uncfg(self):
 
         Genie.testbed = testbed = Testbed()
@@ -675,6 +711,40 @@ class test_bgp(TestCase):
              '  exit',
              ' exit',
          ]))
+
+def test_uncfg_as(self):
+
+        Genie.testbed = testbed = Testbed()
+        dev1 = Device(testbed=testbed, name='PE1', os='iosxe')
+        intf1 = Interface(device=dev1, name='Ethernet0/0/1',
+                          ipv4='10.1.0.1/24')
+        intf2 = Interface(device=dev1, name='Ethernet0/0/2',
+                          ipv4='10.2.0.1/24')
+        dev2 = Device(testbed=testbed, name='PE2', os='iosxe')
+        intf3 = Interface(device=dev2, name='Ethernet0/0/3',
+                          ipv4='10.1.0.2/24', ipv6='2001:111:222::/64')
+        intf4 = Interface(device=dev2, name='Ethernet0/0/4',
+                          ipv4='10.2.0.2/24')
+
+        with self.assertNoWarnings():
+
+            Genie.testbed = testbed
+            bgp = Bgp(bgp_id='304.304')
+            self.assertIs(bgp.testbed, testbed)
+            Genie.testbed = testbed
+            bgp = Bgp(bgp_id='304.304')
+            self.assertIs(bgp.testbed, Genie.testbed)
+            self.assertIs(bgp.testbed, testbed)
+
+            dev1.add_feature(bgp)
+
+            uncfgs = bgp.build_unconfig(apply=False)
+            self.assertCountEqual(uncfgs.keys(), [dev1.name])
+            self.assertMultiLineEqual(str(uncfgs[dev1.name]), '\n'.join([
+                'no router bgp 304.304',
+                    ]))
+
+
 if __name__ == '__main__':
     unittest.main()
 

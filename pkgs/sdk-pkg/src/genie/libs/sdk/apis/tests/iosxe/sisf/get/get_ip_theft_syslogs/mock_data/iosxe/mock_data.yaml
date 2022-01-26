@@ -2,20 +2,16 @@ configure:
   commands:
     end:
       new_state: execute
-    line console:
-      new_state: configure_line
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: SISF-C9500-1(config)#
+  prompt: sisf-c9500-11(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-    line vty: ''
-    terminal width 511: ''
-  prompt: SISF-C9500-1(config-line)#
+  prompt: sisf-c9500-11(config-line)#
 connect:
   commands:
     ? ''
@@ -32,12 +28,14 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
-    show logging | include %SISF-4-IP_THEFT: '*Nov 10 15:38:21.977 EST: %SISF-4-IP_THEFT:
-      IP Theft IP=2001:DB8::105 VLAN=20 MAC=dead.beef.0001 IF=Twe1/0/1 New(Spoof)
-      MAC=084f.a9f8.6c65 New I/F=Twe1/0/3'
+    show logging | include %SISF-4-IP_THEFT:
+      response:
+      - "*Dec 17 12:17:46.892 EST: %SISF-4-IP_THEFT: IP Theft IP=2001:DB8::105 VLAN=20\
+        \ MAC=dead.beef.0001 IF=Twe1/0/1 New I/F over fabric\r\n*Dec 17 12:18:09.749\
+        \ EST: %SISF-4-IP_THEFT: IP Theft IP=2001:DB8::105 VLAN=20 MAC=dead.beef.0001\
+        \ IF=Twe1/0/1 New(Spoof) MAC=dead.beef.0002 New I/F=Twe1/0/5"
+      response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
-    term width 511: ''
-    terminal session-timeout 0: ''
-  prompt: SISF-C9500-1#
+  prompt: sisf-c9500-11#

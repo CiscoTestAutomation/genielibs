@@ -92,12 +92,13 @@ def verify_file_exists(device, file, size=None, dir_output=None):
                     format(file))
         return True
 
-def verify_module_status(device, timeout=180, interval=30):
+def verify_module_status(device, timeout=180, interval=30, ignore_modules=None):
     ''' Check status of slot using 'show platform'
         Args:
             device ('obj'): Device object
             timeout ('int'): Max timeout to re-check slot status
             interval ('int'): Max interval to re-check slot status
+            ignore_modules ('list'): Modules to ignore the status check
     '''
 
     timeout = Timeout(max_time=timeout, interval=interval)
@@ -112,6 +113,14 @@ def verify_module_status(device, timeout=180, interval=30):
 
         failed_slots = Dq(output).\
                     contains_key_value('state','IOS XR RUN', value_regex=True)
+
+        # To ignore specified modules
+        if ignore_modules:
+            for module in ignore_modules:
+                if module in failed_slots:
+                    failed_slots.remove(module)
+            log.info("Ignoring the following modules '{}'".\
+                     format(ignore_modules))
 
         if failed_slots:
             log.info("All modules on '{}' are in stable state".\

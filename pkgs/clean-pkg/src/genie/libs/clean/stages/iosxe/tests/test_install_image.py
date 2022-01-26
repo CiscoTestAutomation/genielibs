@@ -1,7 +1,7 @@
 import logging
 import unittest
 
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import Mock, MagicMock, call, ANY
 from collections import OrderedDict
 
 from genie.libs.clean.stages.iosxe.stages import InstallImage
@@ -264,7 +264,6 @@ class Installimage(unittest.TestCase):
         # attributes and Mock objects associated with the device.
         self.device = create_test_device('PE1', os='iosxe')
 
-    
     def test_pass(self):
         # Make sure we have a unique Steps() object for result verification
         steps = Steps()
@@ -278,7 +277,7 @@ class Installimage(unittest.TestCase):
 
         # And we want the verify_boot_variable api to be mocked.
         # This simulates the pass case.
-        self.device.execute = Mock()
+        self.device.reload = Mock()
 
         # Call the method to be tested (clean step inside class)
         self.cls.install_image(
@@ -286,7 +285,6 @@ class Installimage(unittest.TestCase):
         )
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[0].result)
-    
 
     def test_fail_to_install_image(self):
         # Make sure we have a unique Steps() object for result verification
@@ -296,7 +294,7 @@ class Installimage(unittest.TestCase):
 
         # And we want the verify_boot_variable api to be mocked.
         # This simulates the fail case.
-        self.device.execute = Mock(side_effect=Exception)
+        self.device.reload = Mock(side_effect=Exception)
 
         # We expect this step to fail so make sure it raises the signal
         with self.assertRaises(TerminateStepSignal):
@@ -308,48 +306,20 @@ class Installimage(unittest.TestCase):
         self.assertEqual(Failed, steps.details[0].result)
 
 
-class WaitForReload(unittest.TestCase):
+class TestInstallImage(unittest.TestCase):
 
-    def setUp(self):
-        # Instantiate class object
-        self.cls = InstallImage()
-
-        # Instantiate device object. This also sets up commonly needed
-        # attributes and Mock objects associated with the device.
-        self.device = create_test_device('PE1', os='iosxe')
-        self.device.hostname = 'PE1'
-
-
-    def test_pass(self):
-        # Make sure we have a unique Steps() object for result verification
+    def test_iosxe_install_image(self):
         steps = Steps()
+        cls = InstallImage()
+        cls.history = MagicMock()
+        cls.new_boot_var = 'image.bin'
 
-        # And we want the connect to be mocked.
-        # This simulates the pass case.
-        self.device.connect = Mock()
+        device = Mock()
+        device.reload = Mock()
 
-        # Call the method to be tested (clean step inside class)
-        self.cls.wait_for_reload(
-            steps=steps, device=self.device, reload_timeout=2
-        )
-        # Check that the result is expected
+        cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'])
+
+        device.reload.assert_has_calls([
+            call('install add file sftp://server/image.bin activate commit', reply=ANY, timeout=500)])
+
         self.assertEqual(Passed, steps.details[0].result)
-    
-
-    def test_fail_to_wait_for_reload(self):
-        # Make sure we have a unique Steps() object for result verification
-        steps = Steps()
-
-        # And we want the connect to be mocked raise an exception when called.
-        # This simulates the fail case.
-        self.device.connect = Mock(side_effect=Exception)
-
-        # We expect this step to fail so make sure it raises the signal
-        with self.assertRaises(TerminateStepSignal):
-            self.cls.wait_for_reload(
-                steps=steps, device=self.device, reload_timeout=2
-            )
-
-        # Check the overall result is as expected
-        self.assertEqual(Failed, steps.details[0].result)
-

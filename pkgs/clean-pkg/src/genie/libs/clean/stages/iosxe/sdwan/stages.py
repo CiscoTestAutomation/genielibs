@@ -13,8 +13,7 @@ from pyats.async_ import pcall
 # Genie
 from genie.abstract import Lookup
 from genie.libs import clean
-from genie.libs.clean.utils import (_apply_configuration,
-                                    handle_rommon_exception)
+from genie.libs.clean.utils import (_apply_configuration)
 from genie.libs.clean.recovery.iosxe.sdwan.recovery import recovery_worker as sdwan_recovery_worker
 from genie.metaparser.util.schemaengine import Optional, Or
 from genie.utils.timeout import Timeout
@@ -107,7 +106,6 @@ connect:
                 # overwrite platform as iosxe
                 device.platform = 'iosxe'
 
-                # If the device is in rommon, just raise an exception
                 device.instantiate(connection_timeout=timeout,
                                    learn_hostname=True,
                                    prompt_recovery=True,
@@ -117,13 +115,6 @@ connect:
                 device.settings.HA_INIT_CONFIG_COMMANDS = []
                 # ignore error for 'pnpa service discovery stop' in case device doesn't support
                 device.settings.ERROR_PATTERN = []
-
-                rommon = Statement(
-                    pattern=r'^(.*)(rommon(.*)|loader(.*))+>.*$',
-                    #action=lambda section: section.failed('Device is in rommon'),
-                    action=handle_rommon_exception,
-                    loop_continue=False,
-                    continue_timer=False)
 
                 autoinstall = Statement(
                     pattern=
@@ -139,7 +130,6 @@ connect:
                     loop_continue=False,
                     continue_timer=False)
 
-                device.connect_reply.append(rommon)
                 device.connect_reply.append(autoinstall)
                 device.connect_reply.append(config_dialog)
 
@@ -236,10 +226,6 @@ connect:
                         if device.connected:
                             device.destroy_all()
                     finally:
-                        try:
-                            device.connect_reply.remove(rommon)
-                        except Exception as e:
-                            log.warning(f'{e}')
                         step.passed("Successfully connected".format(
                             device.name))
                 else:
@@ -261,20 +247,11 @@ connect:
                             log.error("Connection to the device failed",
                                       exc_info=True)
                             device.destroy_all()
-                        finally:
-                            try:
-                                device.connect_reply.remove(rommon)
-                            except Exception:
-                                pass
                     else:
                         log.info("Connected as 'iosxe'")
 
                     step.passed("Successfully connected".format(device.name))
                 finally:
-                    try:
-                        device.connect_reply.remove(rommon)
-                    except Exception as e:
-                        log.warning(f'{e}')
                     step.passed("Successfully connected".format(device.name))
 
                 retry_timeout.sleep()

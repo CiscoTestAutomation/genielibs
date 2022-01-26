@@ -1,0 +1,139 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: sisf-c9500-11(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: sisf-c9500-11(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show device-tracking database:
+      response:
+      - "Binding Table has 4 entries, 1 dynamic (limit 200000)\r\nCodes: L - Local,\
+        \ S - Static, ND - Neighbor Discovery, ARP - Address Resolution Protocol,\
+        \ DH4 - IPv4 DHCP, DH6 - IPv6 DHCP, PKT - Other Packet, API - API created\r\
+        \nPreflevel flags (prlvl):\r\n0001:MAC and LLA match     0002:Orig trunk \
+        \           0004:Orig access           \r\n0008:Orig trusted trunk    0010:Orig\
+        \ trusted access   0020:DHCP assigned         \r\n0040:Cga authenticated \
+        \    0080:Cert authenticated    0100:Statically assigned   \r\n\r\n\r\n  \
+        \  Network Layer Address                    Link Layer Address     Interface\
+        \  vlan       prlvl      age        state      Time left       \r\nL   20.0.0.254\
+        \                               ba25.cdf4.ad38         Vl20       20     \
+        \    0100       47mn       REACHABLE                  \r\nL   FE80::B825:CDFF:FEF4:AD38\
+        \                ba25.cdf4.ad38         Vl20       20         0100       47mn\
+        \       REACHABLE                  \r\nL   2002::100                     \
+        \           ba25.cdf4.ad38         Vl20       20         0100       47mn \
+        \      REACHABLE                  \r\nND  2001:DB8::105                  \
+        \          dead.beef.0001         Twe1/0/1   20         0005       4mn   \
+        \     VERIFY     31 s try 3"
+      - "Binding Table has 4 entries, 1 dynamic (limit 200000)\r\nCodes: L - Local,\
+        \ S - Static, ND - Neighbor Discovery, ARP - Address Resolution Protocol,\
+        \ DH4 - IPv4 DHCP, DH6 - IPv6 DHCP, PKT - Other Packet, API - API created\r\
+        \nPreflevel flags (prlvl):\r\n0001:MAC and LLA match     0002:Orig trunk \
+        \           0004:Orig access           \r\n0008:Orig trusted trunk    0010:Orig\
+        \ trusted access   0020:DHCP assigned         \r\n0040:Cga authenticated \
+        \    0080:Cert authenticated    0100:Statically assigned   \r\n\r\n\r\n  \
+        \  Network Layer Address                    Link Layer Address     Interface\
+        \  vlan       prlvl      age        state      Time left       \r\nL   20.0.0.254\
+        \                               ba25.cdf4.ad38         Vl20       20     \
+        \    0100       47mn       REACHABLE                  \r\nL   FE80::B825:CDFF:FEF4:AD38\
+        \                ba25.cdf4.ad38         Vl20       20         0100       47mn\
+        \       REACHABLE                  \r\nL   2002::100                     \
+        \           ba25.cdf4.ad38         Vl20       20         0100       47mn \
+        \      REACHABLE                  \r\nND  2001:DB8::105                  \
+        \          dead.beef.0001         Twe1/0/1   20         0005       5mn   \
+        \     VERIFY     20 s try 3"
+      - "Binding Table has 4 entries, 1 dynamic (limit 200000)\r\nCodes: L - Local,\
+        \ S - Static, ND - Neighbor Discovery, ARP - Address Resolution Protocol,\
+        \ DH4 - IPv4 DHCP, DH6 - IPv6 DHCP, PKT - Other Packet, API - API created\r\
+        \nPreflevel flags (prlvl):\r\n0001:MAC and LLA match     0002:Orig trunk \
+        \           0004:Orig access           \r\n0008:Orig trusted trunk    0010:Orig\
+        \ trusted access   0020:DHCP assigned         \r\n0040:Cga authenticated \
+        \    0080:Cert authenticated    0100:Statically assigned   \r\n\r\n\r\n  \
+        \  Network Layer Address                    Link Layer Address     Interface\
+        \  vlan       prlvl      age        state      Time left       \r\nL   20.0.0.254\
+        \                               ba25.cdf4.ad38         Vl20       20     \
+        \    0100       47mn       REACHABLE                  \r\nL   FE80::B825:CDFF:FEF4:AD38\
+        \                ba25.cdf4.ad38         Vl20       20         0100       47mn\
+        \       REACHABLE                  \r\nL   2002::100                     \
+        \           ba25.cdf4.ad38         Vl20       20         0100       47mn \
+        \      REACHABLE                  \r\nND  2001:DB8::105                  \
+        \          dead.beef.0001         Twe1/0/1   20         0005       5mn   \
+        \     VERIFY     8 s try 3"
+      - "Binding Table has 4 entries, 1 dynamic (limit 200000)\r\nCodes: L - Local,\
+        \ S - Static, ND - Neighbor Discovery, ARP - Address Resolution Protocol,\
+        \ DH4 - IPv4 DHCP, DH6 - IPv6 DHCP, PKT - Other Packet, API - API created\r\
+        \nPreflevel flags (prlvl):\r\n0001:MAC and LLA match     0002:Orig trunk \
+        \           0004:Orig access           \r\n0008:Orig trusted trunk    0010:Orig\
+        \ trusted access   0020:DHCP assigned         \r\n0040:Cga authenticated \
+        \    0080:Cert authenticated    0100:Statically assigned   \r\n\r\n\r\n  \
+        \  Network Layer Address                    Link Layer Address     Interface\
+        \  vlan       prlvl      age        state      Time left       \r\nL   20.0.0.254\
+        \                               ba25.cdf4.ad38         Vl20       20     \
+        \    0100       47mn       REACHABLE                  \r\nL   FE80::B825:CDFF:FEF4:AD38\
+        \                ba25.cdf4.ad38         Vl20       20         0100       47mn\
+        \       REACHABLE                  \r\nL   2002::100                     \
+        \           ba25.cdf4.ad38         Vl20       20         0100       47mn \
+        \      REACHABLE                  \r\nND  2001:DB8::105                  \
+        \          dead.beef.0001         Twe1/0/1   20         0005       5mn   \
+        \     STALE     try 0 830 s"
+      - "Binding Table has 4 entries, 1 dynamic (limit 200000)\r\nCodes: L - Local,\
+        \ S - Static, ND - Neighbor Discovery, ARP - Address Resolution Protocol,\
+        \ DH4 - IPv4 DHCP, DH6 - IPv6 DHCP, PKT - Other Packet, API - API created\r\
+        \nPreflevel flags (prlvl):\r\n0001:MAC and LLA match     0002:Orig trunk \
+        \           0004:Orig access           \r\n0008:Orig trusted trunk    0010:Orig\
+        \ trusted access   0020:DHCP assigned         \r\n0040:Cga authenticated \
+        \    0080:Cert authenticated    0100:Statically assigned   \r\n\r\n\r\n  \
+        \  Network Layer Address                    Link Layer Address     Interface\
+        \  vlan       prlvl      age        state      Time left       \r\nL   20.0.0.254\
+        \                               ba25.cdf4.ad38         Vl20       20     \
+        \    0100       48mn       REACHABLE                  \r\nL   FE80::B825:CDFF:FEF4:AD38\
+        \                ba25.cdf4.ad38         Vl20       20         0100       48mn\
+        \       REACHABLE                  \r\nL   2002::100                     \
+        \           ba25.cdf4.ad38         Vl20       20         0100       48mn \
+        \      REACHABLE                  \r\nND  2001:DB8::105                  \
+        \          dead.beef.0001         Twe1/0/1   20         0005       5mn   \
+        \     STALE     try 0 818 s"
+      - "Binding Table has 4 entries, 1 dynamic (limit 200000)\r\nCodes: L - Local,\
+        \ S - Static, ND - Neighbor Discovery, ARP - Address Resolution Protocol,\
+        \ DH4 - IPv4 DHCP, DH6 - IPv6 DHCP, PKT - Other Packet, API - API created\r\
+        \nPreflevel flags (prlvl):\r\n0001:MAC and LLA match     0002:Orig trunk \
+        \           0004:Orig access           \r\n0008:Orig trusted trunk    0010:Orig\
+        \ trusted access   0020:DHCP assigned         \r\n0040:Cga authenticated \
+        \    0080:Cert authenticated    0100:Statically assigned   \r\n\r\n\r\n  \
+        \  Network Layer Address                    Link Layer Address     Interface\
+        \  vlan       prlvl      age        state      Time left       \r\nL   20.0.0.254\
+        \                               ba25.cdf4.ad38         Vl20       20     \
+        \    0100       48mn       REACHABLE                  \r\nL   FE80::B825:CDFF:FEF4:AD38\
+        \                ba25.cdf4.ad38         Vl20       20         0100       48mn\
+        \       REACHABLE                  \r\nL   2002::100                     \
+        \           ba25.cdf4.ad38         Vl20       20         0100       48mn \
+        \      REACHABLE                  \r\nND  2001:DB8::105                  \
+        \          dead.beef.0001         Twe1/0/1   20         0005       5mn   \
+        \     STALE     try 0 806 s"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: sisf-c9500-11#

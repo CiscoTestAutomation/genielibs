@@ -4,7 +4,7 @@ IOSXE specific clean stages
 
 # Python
 import logging
-
+import time
 # pyATS
 from pyats.async_ import pcall
 
@@ -19,6 +19,7 @@ from genie.libs.sdk.libs.abstracted_libs.iosxe.subsection import get_default_dir
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
+from unicon.core.errors import SubCommandFailure
 
 # Logger
 log = logging.getLogger(__name__)
@@ -196,7 +197,6 @@ tftp_boot:
 
     recovery_password (str): Enable password for device
         required after bootup. Defaults to None.
-        
     recovery_username (str): Enable username for device
         required after bootup. Defaults to None.
 
@@ -231,8 +231,9 @@ There is more than one ip address, one for each supervisor.
     # Argument Defaults
     # =================
     RECOVERY_PASSWORD = None
+    # RECOVERY_EN_PASSWORD=None
     RECOVERY_USERNAME = None
-    SAVE_SYSTEM_CONFIG = True
+    SAVE_SYSTEM_CONFIG = False
     TIMEOUT = 600
     CONFIG_REG_TIMEOUT = 30
     CONFIG_REG_ROMMON = '0x0'
@@ -249,6 +250,7 @@ There is more than one ip address, one for each supervisor.
         'tftp_server': str,
         'recovery_password': str,
         'recovery_username': str,
+        Optional('recovery_en_pasword'): str,
         Optional('save_system_config'): bool,
         Optional('timeout'): int,
         Optional('config_reg_timeout'): int,
@@ -302,10 +304,16 @@ There is more than one ip address, one for each supervisor.
                     device.expect(['(.*Initializing Hardware.*|^(.*)((rommon(.*))+>|switch *:).*$)'],
                                   target=target, timeout=90)
 
-                pcall(reload_check,
-                      ckwargs={'device': device},
-                      ikwargs=[{'target': 'active'},
-                               {'target': 'standby'}])
+                # check if device is a stack device(stack with 2 memebrs is similar to HA devices)
+                if len(device.subconnections) > 2:
+                    pcall(reload_check,
+                          cargs= (device,),
+                          iargs=[[alias] for alias in device.connections.defaults.connections])
+                else:
+                    pcall(reload_check,
+                          ckwargs={'device': device},
+                          ikwargs=[{'target': 'active'},
+                                   {'target': 'standby'}])
             else:
                 device.expect(['(.*Initializing Hardware.*|^(.*)((rommon(.*))+>|switch *:).*$)'], timeout=60)
 
@@ -314,7 +322,7 @@ There is more than one ip address, one for each supervisor.
 
     def tftp_boot(self, steps, device, ip_address, subnet_mask, gateway, tftp_server,
                   image, timeout=TIMEOUT, recovery_password=RECOVERY_PASSWORD,
-                  recovery_username=RECOVERY_USERNAME):
+                  recovery_username=RECOVERY_USERNAME,recovery_en_pasword=None):
         with steps.start("Begin TFTP boot of device {}".format(device.name)) as step:
 
             # Need to instantiate to get the device.start
@@ -350,6 +358,7 @@ There is more than one ip address, one for each supervisor.
                                     'console_activity_pattern': '\\.\\.\\.\\.',
                                     'golden_image': None,
                                     'recovery_username': recovery_username,
+                                    'recovery_en_pasword':recovery_en_pasword,
                                     'recovery_password': recovery_password})
             except Exception as e:
                 log.error(str(e))
@@ -362,6 +371,10 @@ There is more than one ip address, one for each supervisor.
     def reconnect(self, steps, device):
         with steps.start("Reconnect to device {} after TFTP boot". \
                                  format(device.name)) as step:
+                                 
+            if hasattr(device, 'chassis_type') and device.chassis_type.lower() == 'stack':
+                log.info("Sleep for 90 seconds in order to sync ")
+                time.sleep(90)
             if not _disconnect_reconnect(device):
                 # If that still doesnt work, Thats all we got
                 step.failed("Cannot reconnect to the device {d} after TFTP boot".
@@ -506,8 +519,7 @@ install_image:
         'set_boot_variable',
         'save_running_config',
         'verify_boot_variable',
-        'install_image',
-        'wait_for_reload'
+        'install_image'
     ]
 
     def delete_boot_variable(self, steps, device,):
@@ -574,9 +586,8 @@ install_image:
             ])
 
             try:
-                device.execute('install add file {} activate commit'.format(images[0]),
+                device.reload('install add file {} activate commit'.format(images[0]),
                                reply=install_add_one_shot_dialog,
-                               append_error_pattern=['FAILED:'],
                                timeout=install_timeout)
             except Exception as e:
                 step.failed("Failed to install the iamge", from_exception=e)
@@ -584,24 +595,6 @@ install_image:
             image_mapping = self.history['InstallImage'].parameters.setdefault(
                 'image_mapping', {})
             image_mapping.update({images[0]: self.new_boot_var})
-
-    def wait_for_reload(self, steps, device, reload_timeout=RELOAD_TIMEOUT):
-        with steps.start(f"Waiting for {device.hostname} to reload") as step:
-
-            timeout = Timeout(reload_timeout, 60)
-            while timeout.iterate():
-                timeout.sleep()
-                device.destroy()
-
-                try:
-                    device.connect(learn_hostname=True)
-                except Exception as e:
-                    connect_exception = e
-                    log.info("The device is not ready")
-                else:
-                    step.passed("The device has successfully reloaded")
-
-            step.failed("Failed to reload", from_exception=connect_exception)
 
 
 class InstallPackages(BaseStage):

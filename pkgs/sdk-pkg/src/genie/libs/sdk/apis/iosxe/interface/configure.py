@@ -3039,3 +3039,407 @@ def configure_interface_pvlan_host_assoc(device,interface,primary_vlan,sec_vlan)
         raise SubCommandFailure(
             'Could not configure Primary Pvlan Host Association'
         )
+
+
+def disable_ipv6_dhcp_server(device, interface):
+    """ Unconfigure IPv6 DHCP server from an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to enable IPv6 DHCP server
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = ["interface {intf}".format(intf=interface),
+           "no ipv6 dhcp server"]
+
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to remove IPv6 DHCP server from interface "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                interface=interface,
+                dev=device.name,
+                error=e
+            )
+        )
+
+def enable_ipv6_address_dhcp(device, interface):
+    """ Enables DHCP for IPv6 address assignment on an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to enable IPv6 address DHCP
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        device.configure([f'interface {interface}',
+                          'ipv6 enable',
+                          'ipv6 address dhcp'])
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to enable IPv6 address DHCP on interface "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+
+def disable_ipv6_address_dhcp(device, interface):
+    """ Disables DHCP for IPv6 address assignment on an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to disable IPv6 address DHCP
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        device.configure([f'interface {interface}',
+                          'no ipv6 enable',
+                          'no ipv6 address dhcp'])
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to disable IPv6 address DHCP on interface "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                interface=interface,
+                dev=device.name,
+                error=e
+            )
+        )
+        
+def unconfig_interface_ospfv3(device, interface, ospfv3_pid, area):
+    """config OSPF on interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            ospfv3_pid (`str`): Ospfv3 process id
+            area ('int'): Ospf area code
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    log.info(
+        "Configuring OSPF on interface {interface}".format(interface=interface)
+    )
+
+    try:
+        device.configure(
+            [
+                "interface {interface}".format(interface=interface),
+                "no ospfv3 {pid} ipv6 area {area}".format(pid=ospfv3_pid,
+                                                       area=area),
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ospfv3 {pid}. Error:\n{error}"
+            .format(pid=ospfv3_pid, error=e)
+        )
+
+def config_portchannel_range(device, portchannel_start, portchannel_end):
+    """ Configure port channel
+        e.g.
+        interface range port-channel 1-50
+
+        Args:
+            device (`obj`): Device object
+            portchannel_start(`int`): Port channel number start
+            portchannel_end(`int`): Port channel number end
+
+        Return:
+            None
+        Raise:
+            SubCommandFailure
+    """
+    try:
+        device.configure(f"interface range port-channel {portchannel_start} - {portchannel_end}")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure port channel  on device. Error:\n{e}"
+        )
+
+def configure_interface_storm_control_level(
+        device,
+        interface,
+        sc_type,
+        sc_rising_threshold,
+        sc_falling_threshold='',
+        sc_calc_type=''):
+    """ Config storm control level in
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            sc_type('str'): storm control filter traffic type
+            sc_rising_threshold('float' or 'str'): storm control rising threshold
+            sc_falling_threshold('float' or 'str', optional): storm control falling threshold, default is None
+            sc_calc_type('str', optional): storm control suppression level type, default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Config storm control level on interface {interface}")
+
+    if sc_calc_type:
+        sc_calc_type = f' {sc_calc_type}'
+
+    if sc_falling_threshold:
+        sc_falling_threshold = f' {sc_falling_threshold}'
+
+    cmd = f'storm-control {sc_type} level{sc_calc_type} {sc_rising_threshold}{sc_falling_threshold}'
+
+    try:
+        device.configure(
+            [
+                f"interface {interface}",
+                cmd,
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to config storm control level on {interface}. Error:\n{e}")
+
+
+def unconfigure_interface_storm_control_level(
+        device,
+        interface,
+        sc_type):
+    """ Unconfig storm control level in
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            sc_type('str'): storm control filter traffic type
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Unconfig storm control level on interface {interface}")
+
+    cmd = f'no storm-control {sc_type} level'
+
+    try:
+        device.configure(
+            [
+                f"interface {interface}",
+                cmd,
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfig storm control level on {interface}. Error:\n{e}")
+
+
+def configure_interface_storm_control_action(
+        device,
+        interface,
+        action):
+    """ Config storm control action in
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            action ('str'): storm control action
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Config storm control action on interface {interface}")
+
+    cmd = f'storm-control action {action}'
+    try:
+        device.configure(
+            [
+                f"interface {interface}",
+                cmd,
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to config storm control action on {interface}. Error:\n{e}")
+
+
+def unconfigure_interface_storm_control_action(
+        device,
+        interface,
+        action):
+    """ Unconfig storm control action in
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            action('str'): storm control action
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(f"Unconfig storm control action on interface {interface}")
+
+    cmd = f'no storm-control action {action}'
+
+    try:
+        device.configure(
+            [
+                f"interface {interface}",
+                cmd,
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfig storm control action on {interface}. Error:\n{e}")
+
+
+def config_port_security_on_interface(
+    device,
+    interface,
+    maximum_addresses=1,
+    aging_time=None,
+    aging_type=None,
+    violation_mode=None,
+):
+    """ Configuring port security on an interface
+
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface to get address
+            maximum_addresses (`int`,optional): maximum mac addresses, default value is 1
+            aging_time (`str`,optional): aging time for mac address, default value is None
+            aging_type (`str`,optional): aging type for mac address, default value is None
+            violation_mode (`str`,optional): violation mode, default value is None
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    # Build config list
+    cfg_lst = []
+    cfg_lst.append("interface {intf}".format(intf=interface))
+    cfg_lst.append("switchport port-security")
+
+    if maximum_addresses:
+        cfg_lst.append("switchport port-security maximum {maximum_addresses}".format(
+            maximum_addresses=maximum_addresses))
+
+    if aging_time:
+        cfg_lst.append("switchport port-security  aging time {aging_time}".format(
+            aging_time=aging_time))
+
+    if aging_type:
+        cfg_lst.append("switchport port-security  aging type {aging_type}".format(
+            aging_type=aging_type))
+
+    if violation_mode:
+        cfg_lst.append("switchport port-security violation {violation_mode}".format(
+             violation_mode=violation_mode))
+
+    # Configure device
+    try:
+        device.configure(cfg_lst)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure switchport port-security on interface "
+            "{interface} on device {dev}. Error:\n{error}".format(
+                interface=interface,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+
+def configure_control_policies(
+    device,
+    policy_name,
+    event=None,
+    match=None,
+    class_number=None,
+    class_name=None,
+    class_action=None,
+    action_number=None,
+    action=None,
+    action_method=None,
+
+):
+    """ Configure policy-map on an device
+
+        Args:
+            device (`obj`): Device object
+            policy_name (`str`): name of the policy
+            event (`str`,optional): event name, default value is None
+            match (`str`,optional): match-all or match-first, default value is None
+            class_number (`int`,optional): class number between 1 to 254, default value is None 
+            class_name (`str`,optional): class name if any exists, default value is None
+            class_action (`str`,optional): class action to be perform, default value is None
+            action_number (`int`,optional): action number between 1 to 254, default value is None
+            action (`str`,optional): action to be perform under this class, default value is None
+            action_method (`str`,optional): Mab or dot1x or webauth, default value is None
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    # Build config list
+    cfg_lst = []
+    class_str = ' '
+    cfg_lst.append("policy-map type control subscriber {policy_name}".format(
+            policy_name=policy_name))
+
+
+    # Add encap
+    if event and match:
+        cfg_lst.append("event {event} {match}".format(
+            event=event, match=match))
+    if class_number and class_name:
+        cfg_lst.append("{class_number} class {class_name} {class_action}".format(
+            class_number=class_number,class_name=class_name,class_action=class_action))
+    else:
+        cfg_lst.append("{class_number} class always {class_action}".format(
+            class_number=class_number,class_action=class_action))
+    if action_number and action and action_method:
+        cfg_lst.append("{action_number} {action} using {action_method}".format(
+            action_number=action_number,action=action,action_method=action_method))
+
+    # Configure device
+    try:
+        device.configure(cfg_lst)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure policy-map type control on device"
+            "device {dev}. Error:\n{error}".format(
+                dev=device.name,
+                error=e,
+            )
+        )

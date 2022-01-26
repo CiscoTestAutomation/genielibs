@@ -19,6 +19,7 @@ def health_cpu(device,
                check_key_total='one_min_cpu',
                output=None,
                add_total=False,
+               timeout=None,
                health=True):
     '''Get cpu load on device
 
@@ -35,6 +36,7 @@ def health_cpu(device,
             add_total    (`bool`): If True, add total cpu load
             output     (`str`): Output of show command
                                 Default to None
+            timeout    (`int`): Timeout(secs). Defaults to None
         Returns:
             cpu_load_dict  (`dict`): Cpu load dictionary on the device
                                      Example:
@@ -55,7 +57,7 @@ def health_cpu(device,
     cpu_load_dict = {}
 
     try:
-        parsed = device.parse(command, output=output)
+        parsed = device.parse(command, output=output, timeout=timeout)
     except SchemaEmptyParserError as e:
         log.error("Command '{cmd}' did not return any output\n{msg}".\
                   format(cmd=command, msg=str(e)))
@@ -130,6 +132,7 @@ def health_memory(device,
                   check_key='dynamic',
                   output=None,
                   add_total=False,
+                  timeout=None,
                   health=True):
     '''Get memory usage on device
 
@@ -146,6 +149,7 @@ def health_memory(device,
             add_total    (`bool`): If True, add total memory usage
             output         (`str`): Output of show command
                                     Deault to None
+            timeout        (`int`): Timeout(secs). Defaults to None
         Returns:
             memory_usage_dict (`dict`): memory usage dict on the device (percentage)
                                         example:
@@ -165,7 +169,7 @@ def health_memory(device,
     regex_items = []
     memory_usage_dict = {}
     try:
-        parsed = device.parse(command, output=output)
+        parsed = device.parse(command, output=output, timeout=timeout)
     except SchemaEmptyParserError as e:
         log.error("Command '{cmd}' did not return any output\n{msg}".\
                   format(cmd=command, msg=str(e)))

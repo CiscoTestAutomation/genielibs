@@ -6,7 +6,7 @@
     * Added
         * Vxlan OPS object
         * Unit tests for above Vxlan OPS object
-        * TriggerUnconfigConfigNveVni Trigger to unconfigure and reconfigure a
+        * TriggerUnconfigConfigNveVni Trigger to unconfigure and reconfigure a L2 or L3 VNI part of an NVE interface
 
 * nxos
     * Added OSPFv3 conf model

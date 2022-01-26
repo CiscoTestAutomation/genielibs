@@ -415,3 +415,60 @@ def execute_clear_platform_software_fed_switch_acl_counters_hardware(device,swit
     except SubCommandFailure as e:
         raise SubCommandFailure("Could not clear counters on {device}. Error:\n{e}")
 
+def execute_issu_install_package(device, image_dir, image, save_system_config=True,
+                            install_timeout=660, reconnect_max_time=600,
+                            reconnect_interval=60):
+    """ Installs issu package
+        Args:
+            device ("obj"): Device object
+            image_dir ("str"): Directory image is located in
+            image ("str"): Image name
+            save_system_config ("bool"): If config changed do we save it?
+            install_timeout ("int"): Maximum time for install. Default 660
+            reconnect_max_time ("int"): Maximum time for reconnect. Default 600
+            reconnect_interval ("int"): Time between reconnect attempts. Default 60
+
+        Raises:
+            Exception
+
+        Returns:
+            True if install succeeded else False
+    """
+
+    dialog = Dialog([
+        Statement(pattern=r'Press Quit\(q\) to exit, you may save configuration and re-enter the command.*\[y\/n\/q\]',
+                  action='sendline(y)' if save_system_config else 'sendline(n)',
+                  loop_continue=True,
+                  continue_timer=False),
+        Statement(pattern=r'^.*RETURN to get started.*',
+                  action='sendline()',
+                  loop_continue=True,
+                  continue_timer=False)
+        ])
+
+    cmd = """install add file {dir}:{image} act issu commit""".format(dir=image_dir, image=image)
+
+    try:
+        device.execute(cmd, reply=dialog, timeout=install_timeout)
+    except SubCommandFailure as e:
+         raise SubCommandFailure(
+             "Could not execute on {device}. Error:\n{error}".format(device=device, error=e))
+    time.sleep(100)
+    log.info(f"Waiting for {device.hostname} to reload")
+
+    timeout = Timeout(reconnect_max_time,reconnect_interval)
+    while timeout.iterate():
+                timeout.sleep()
+                device.destroy()
+
+                try:
+                    device.connect(learn_hostname=True)
+                except Exception as e:
+                    connect_exception = e
+                    log.info("The device is not ready")
+                else:
+                    return True
+
+    log.info("Failed to reload", from_exception=connect_exception)
+    return False
+
