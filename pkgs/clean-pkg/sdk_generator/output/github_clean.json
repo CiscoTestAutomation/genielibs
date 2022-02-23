@@ -370,6 +370,28 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/nxos/stages.py#L212"
     }
   },
+  "VerifyApAssociation": {
+    "iosxe": {
+      "c9800": {
+        "doc": " This stage verifies the given access point has configured.\n\n    Stage Schema\n    ------------\n    verify_accesspoint_association:\n\n        access_points(list):access_point to be verified if present\n\n    Examples:\n        verify_accesspoint_association:\n            access_points:\n                - \"AP188B.4500.44C8\"            \n    ",
+        "module_name": "stages.stages",
+        "package": "genie.libs.clean",
+        "uid": "VerifyApAssociation",
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/c9800/stages.py#L83"
+      }
+    }
+  },
+  "VerifyApMode": {
+    "iosxe": {
+      "c9800": {
+        "doc": " This stage verifies the mode of a given access point.\n\n    Stage Schema\n    ------------\n    verify_accesspoint_mode:\n\n        access_points(list):mode of a given access_point\n        ap_mode(str,optional):mode of accesspoint (i.e: local or flexmode)\n\n    Examples:\n        verify_accesspoint_mode:\n            access_point:\n                - \"AP188B.4500.44C8\"\n            ap_mode:\"local\"\n    ",
+        "module_name": "stages.stages",
+        "package": "genie.libs.clean",
+        "uid": "VerifyApMode",
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/c9800/stages.py#L18"
+      }
+    }
+  },
   "VerifyRunningImage": {
     "com": {
       "doc": "This stage verifies the current running image is the expected image.\nThe verification can be done by either MD5 hash comparison or by filename\ncomparison.\n\nStage Schema\n------------\nverify_running_image:\n\n    images (list): Image(s) that should be running on the device. If not\n        using verify_md5 then this should be the image path on the device.\n        If using verify_md5 then this should be the original image location\n        from the linux server.\n\n    verify_md5 (dict, optional): When this dictionary is defined, the image\n            verification will by done by comparing the MD5 hashes of the\n            running image against the expected image.\n\n        hostname (str): Linux server that is used to generate the MD5\n            hashes. This server must exist in the testbed servers block.\n\n        timeout (int, optional): Maximum time in seconds allowed for the\n            hashes to generate. Defaults to 60.\n\nExample\n-------\nverify_running_image:\n    images:\n        - test_image.bin\n",
@@ -377,6 +399,13 @@
       "package": "genie.libs.clean",
       "uid": "VerifyRunningImage",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L1652"
+    },
+    "iosxr": {
+      "doc": "This stage verifies the current running image is the expected image.\nThe verification will be done by compare the result of 'show version' and provided\nimage name under 'images' keyword in the clean yaml file.\n\nStage Schema\n------------\nverify_running_image:\n\n    images (list): Image(s) that should be running on the device. \n\nExample\n-------\nverify_running_image:\n    images:\n        - test_image-7.5.4.08I.ios\n",
+      "module_name": "stages.stages",
+      "package": "genie.libs.clean",
+      "uid": "VerifyRunningImage",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxr/stages.py#L593"
     }
   },
   "WriteErase": {

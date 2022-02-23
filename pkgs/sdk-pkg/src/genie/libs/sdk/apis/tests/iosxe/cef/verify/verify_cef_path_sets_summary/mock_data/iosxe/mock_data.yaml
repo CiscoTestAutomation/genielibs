@@ -1,0 +1,60 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: C9400-SVL(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: C9400-SVL(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    'show cef path set id 00000050 detail | in Replicate oce:':
+      response:
+      - "  Replicate oce: 0x7EFFCA098B10 UID:4295\r\n  Replicate oce: 0x7EFFCA098898\
+        \ UID:4296"
+      - "  Replicate oce: 0x7EFFCA098B10 UID:4295\r\n  Replicate oce: 0x7EFFCA098898\
+        \ UID:4296"
+      response_type: circular
+    'show cef path set id 0000005E detail | in Replicate oce:':
+      response:
+      - "  Replicate oce: 0x7EFFCA097C40 UID:4291\r\n  Replicate oce: 0x7EFFCA0979C8\
+        \ UID:4292"
+      - "  Replicate oce: 0x7EFFCA097C40 UID:4291\r\n  Replicate oce: 0x7EFFCA0979C8\
+        \ UID:4292"
+      response_type: circular
+    'show cef path set id 00000061 detail | in Replicate oce:':
+      response:
+      - "  Replicate oce: 0x7EFFCA097750 UID:4299\r\n  Replicate oce: 0x7EFFCA0974D8\
+        \ UID:4300"
+      - "  Replicate oce: 0x7EFFCA097750 UID:4299\r\n  Replicate oce: 0x7EFFCA0974D8\
+        \ UID:4300"
+      response_type: circular
+    show cef path sets summary:
+      response:
+      - " Path Set Id 0x0000005E   Num Paths 2\r\n Path Set Id 0x00000050   Num Paths\
+        \ 1\r\n Path Set Id 0x00000061   Num Paths 1"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: C9400-SVL#

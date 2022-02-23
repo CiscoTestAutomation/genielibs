@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 
 def health_cpu(device,
-               command='show processes cpu',
+               command='show processes cpu sorted | exclude 0.00%',
                processes=None,
                check_key='five_sec_cpu',
                check_key_total='five_sec_cpu_total',
@@ -123,14 +123,17 @@ def health_cpu(device,
 
 
 def health_memory(device,
-                  command='show processes memory',
+                  command='show processes memory | section ^Processor',
                   processes=None,
                   check_key='processor_pool',
                   output=None,
                   add_total=False,
                   timeout=None,
+                  threshold=90,
                   health=True):
-    '''Get memory usage on device
+    '''Get memory usage on device. Threshold can be passed as argument.
+       Check memory usage from header of show command first, then in case 
+       the usage exceeds threshold, capture all the show output for detail.
 
         Args:
             device         (`obj`): Device object
@@ -144,6 +147,8 @@ def health_memory(device,
             add_total    (`bool`): If True, add total memory usage
             output         (`str`): Output of show command
             timeout       (`int`): Timeout(secs). Defaults to None
+            threshold     (`int`): Threshold(%) of memory usage
+                                   Defaults to 90
         Returns:
             memory_usage_dict (`dict`): memory usage dict on the device (percentage)
                                         example:
@@ -163,6 +168,8 @@ def health_memory(device,
 
     regex_items = []
     memory_usage_dict = {}
+    threshold_exceed = False
+
     try:
         parsed = device.parse(command, output=output, timeout=timeout)
     except SchemaEmptyParserError as e:
@@ -170,59 +177,77 @@ def health_memory(device,
                   format(cmd=command, msg=str(e)))
         return None
 
-    if isinstance(processes, list):
-        for item in processes:
-            regex_items += parsed.q.contains_key_value(
-                'process', item, value_regex=True).get_values('process')
+    # check if total usage exceeds threshold or not
+    if (parsed[check_key]['used'] / parsed[check_key]['total'])*100 > threshold:
+        threshold_exceed = True
 
-    if regex_items:
-        processes = regex_items
+    # get each of processes usage only when exceeding threshold
+    if threshold_exceed:
 
-    if processes:
-        for ps_item in processes:
-            # To get process id based on check_key
-            # {
-            #   "processor_pool": {
-            #     "total": 735981852,
-            #     "used": 272743032,
-            #     "free": 463238820
-            #   },
-            #   (snip)
-            #   "pid": {
-            #     "0": {
-            #       "index": {
-            #         "1": {
-            #           "pid": 0,
-            #           "tty": 0,
-            #           "allocated": 256940960,
-            #           "freed": 73576632,
-            #           "holding": 158001024,
-            #           "getbufs": 392,
-            #           "retbufs": 12905093,
-            #           "process": "*Init*"
-            #         },
-            pids = []
-            p = re.compile(ps_item.replace('*', r'\*'))
-            for pid, pid_value in parsed['pid'].items():
-                for index_value in pid_value['index'].values():
-                    m = p.match(index_value['process'])
-                    if m and index_value['process'] == ps_item:
-                        pids.append(pid)
+        try:
+            parsed = device.parse("show processes memory", output=output, timeout=timeout)
+        except SchemaEmptyParserError as e:
+            log.error("Command '{cmd}' did not return any output\n{msg}".\
+                      format(cmd=command, msg=str(e)))
+            return None
 
-            memory_holding = 0
-            for pid in pids:
-                # use `sum` because it's possible one pid returns multiple `holding`
-                for idx in parsed['pid'][pid]['index']:
-                    if parsed['pid'][pid]['index'][idx]['process'] == ps_item:
-                        memory_holding += parsed['pid'][pid]['index'][idx][
-                            'holding']
+        if isinstance(processes, list):
+            for item in processes:
+                regex_items += parsed.q.contains_key_value(
+                    'process', item, value_regex=True).get_values('process')
 
-            if parsed.get(check_key, {}).get('total', 0) == 0:
-                memory_usage = 0
-            else:
-                memory_usage = memory_holding / parsed[check_key]['total']
+        if regex_items:
+            processes = regex_items
 
-            memory_usage_dict.update({ps_item: memory_usage * 100})
+        if processes:
+            for ps_item in processes:
+                # To get process id based on check_key
+                # {
+                #   "processor_pool": {
+                #     "total": 735981852,
+                #     "used": 272743032,
+                #     "free": 463238820
+                #   },
+                #   (snip)
+                #   "pid": {
+                #     "0": {
+                #       "index": {
+                #         "1": {
+                #           "pid": 0,
+                #           "tty": 0,
+                #           "allocated": 256940960,
+                #           "freed": 73576632,
+                #           "holding": 158001024,
+                #           "getbufs": 392,
+                #           "retbufs": 12905093,
+                #           "process": "*Init*"
+                #         },
+                pids = []
+                p = re.compile(ps_item.replace('*', r'\*'))
+                if 'pid' in parsed:
+                    for pid, pid_value in parsed['pid'].items():
+                        for index_value in pid_value['index'].values():
+                            m = p.match(index_value['process'])
+                            if m and index_value['process'] == ps_item:
+                                pids.append(pid)
+
+                    memory_holding = 0
+                    for pid in pids:
+                        # use `sum` because it's possible one pid returns multiple `holding`
+                        for idx in parsed['pid'][pid]['index']:
+                            if parsed['pid'][pid]['index'][idx]['process'] == ps_item:
+                                memory_holding += parsed['pid'][pid]['index'][idx][
+                                    'holding']
+
+                if parsed.get(check_key, {}).get('total', 0) == 0:
+                    memory_usage = 0
+                else:
+                    try:
+                        memory_usage = memory_holding / parsed[check_key]['total']
+                    except Exception:
+                        memory_usage = parsed[check_key]['used'] / parsed[check_key]['total']
+
+                memory_usage_dict.update({ps_item: memory_usage * 100})
 
     # if health is True, change the dict
     # from:

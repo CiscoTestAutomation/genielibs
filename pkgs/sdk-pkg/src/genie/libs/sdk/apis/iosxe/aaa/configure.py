@@ -217,6 +217,7 @@ def configure_coa(device, config_dict):
                                                     any(Matches when all sent attributes match)
                                                     session-key(Matches with session key attribute only)
                 hostname(hostname/ipv4/ipv6) : Ip/ipv6 or hostname of the RADIUS client
+                vrf : VRF name
                 encryption_type(0,6,7): 0(UNENCRYPTED), 6(ENCRYPTED), 7(HIDDEN)
                 server_key(str) : Specify a RADIUS client server-key
                 ignore_retransmission(bool) : Drop packets using same radius id
@@ -229,6 +230,7 @@ def configure_coa(device, config_dict):
     Example: {
                 'auth_type': 'all',
                 'hostname': 'hostname',
+                'vrf': 'vrf1',
                 'encryption_type' : 0,
                 'server_key' : 'secretkey',
                 'ignore_retransmission': True,
@@ -254,8 +256,14 @@ def configure_coa(device, config_dict):
             config_list.append("client {} server-key {} {}".
                                format(config_dict['hostname'], config_dict['encryption_type'],
                                       config_dict['server_key']))
+        elif 'vrf' in config_dict:
+            config_list.append("client {} vrf {} server-key {}".format(config_dict['hostname'], 
+                                                                       config_dict['vrf'], 
+                                                                       config_dict['server_key']))
+
         elif 'server_key' in config_dict:
-            config_list.append("client {} server-key {}".format(config_dict['hostname'], config_dict['server_key']))
+            config_list.append("client {} server-key {}".format(config_dict['hostname'], 
+                                                                config_dict['server_key']))
 
     # ignore retransmission
     # ignore server-key
@@ -272,7 +280,6 @@ def configure_coa(device, config_dict):
     except SubCommandFailure:
         logger.error('Failed configuring COA on device {}'.format(device))
         raise
-
 
 def configure_enable_aes_encryption(device, master_key):
     """
@@ -1053,4 +1060,430 @@ def unconfigure_service_password_encryption(device):
     except SubCommandFailure:
         raise SubCommandFailure(
             "Could not unconfigure service password encryption"
+        )
+
+def configure_aaa_auth_proxy(device, server_grp):
+
+    """
+    Configure AAA auth proxy
+    Args:
+        device (`obj`): Device object
+        server_grp ('str'): Name of the server group
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed configuring AAA auth proxy
+    """
+    try:
+        device.configure([
+            f"aaa authorization auth-proxy default group {server_grp}"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure AAA auth proxy'
+        )
+
+def unconfigure_aaa_auth_proxy(device, server_grp):
+
+    """
+    Unconfigure AAA auth proxy
+    Args:
+        device (`obj`): Device object
+        server_grp ('str'): Name of the server group
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed unconfiguring AAA auth proxy
+    """
+    try:
+        device.configure([
+            f"no aaa authorization auth-proxy default group {server_grp}"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure AAA auth proxy'
+        )
+
+def configure_wired_radius_attribute(device, attr_num, attr_profile):
+
+    """ To configure radius attribute
+    Args:
+        device (`obj`): Device object
+        attr_num ('str'): Attribute number to be configured
+        attr_profile ('str'): Attribute profile to be configured
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed configuring radius attribute
+    """
+    try:
+        device.configure([
+            f"radius-server attribute {attr_num} {attr_profile}"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure wired radius attribute'
+        )
+
+def unconfigure_wired_radius_attribute(device, attr_num, attr_profile):
+
+    """ To unconfigure radius attribute
+    Args:
+        device (`obj`): Device object
+        attr_num ('int'): Attribute number to be configured
+        attr_profile ('str'): Attribute profile to be configured
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed unconfiguring radius attribute
+    """
+    try:
+        device.configure([
+            f"no radius-server attribute {attr_num} {attr_profile}"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure wired radius attribute'
+        )
+
+def configure_radius_server_dead_criteria(device, server_time, tries=1):
+
+    """ To configure radius server dead criteria
+    Args:
+        device (`obj`): Device object
+        server_time ('int'): time during which no response must be recieved from the server
+        tries ('int',optional): Number of transmits to server without responses before marking it as dead. Defaults to 1
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed configuring radius server dead criteria
+    """
+    try:
+        device.configure([
+            f"radius-server dead-criteria time {server_time} tries {tries}"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure radius server dead criteria'
+        )
+
+def unconfigure_radius_server_dead_criteria(device, server_time, tries):
+
+    """ To unconfigure radius server dead criteria
+    Args:
+        device (`obj`): Device object
+        server_time ('int'): time during which no response must be recieved from the server
+        tries ('int',optional): Number of transmits to server without responses before marking it as dead. Defaults to 1
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed unconfiguring radius server dead criteria
+    """
+    try:
+        device.configure([
+            f"no radius-server dead-criteria time {server_time} tries {tries}"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure radius server dead criteria'
+        )
+
+def configure_radius_server_deadtime(device, server_time):
+
+    """ To configure radius server deadtime
+    Args:
+        device (`obj`): Device object
+        server_time ('int'): Time to stop using a server that doesn't respond
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed configuring radius server deadtime
+    """
+    try:
+        device.configure([
+            f"radius-server deadtime {server_time} "
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure radius server deadtime'
+        )
+
+def unconfigure_radius_server_deadtime(device, server_time):
+
+    """ To unconfigure radius server deadtime
+    Args:
+        device (`obj`): Device object
+        server_time ('int'): time during which no response must be recieved from the server
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed unconfiguring radius server deadtime
+    """
+    try:
+        device.configure([
+            f"no radius-server deadtime {server_time}"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure radius server deadtime'
+        )
+
+
+def configure_aaa_session_id(device, type):
+
+    """ configure aaa session id
+    Args:
+        device (`obj`): Device object
+        type ('str'): Type of the session ID to be configured
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed configuring AAA session ID
+    """
+    try:
+        device.configure([
+            f"aaa session-id {type}"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure AAA session ID'
+        )
+
+def unconfigure_aaa_session_id(device, type):
+
+    """ unconfigure aaa session id
+    Args:
+        device (`obj`): Device object
+        type ('str'): Type of the session ID to be unconfigured
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed unconfiguring AAA session ID
+    """
+    try:
+        device.configure([
+            f"no aaa session-id {type}"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure AAA session ID'
+        )
+
+def configure_aaa_auth_cred_download(device):
+
+    """ configure aaa authorization credential-download default local 
+    Args:
+        device (`obj`): Device object
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed configuring AAA auth credential download
+    """
+    try:
+        device.configure([
+            "aaa authorization credential-download default local"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure AAA auth credential download'
+        )
+
+def unconfigure_aaa_auth_cred_download(device):
+
+    """ unconfigure aaa authorization credential-download default local
+    Args:
+        device (`obj`): Device object
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed unconfiguring AAA auth credential download
+    """
+    try:
+        device.configure([
+            "no aaa authorization credential-download default local"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure AAA auth credential download'
+        )
+
+def configure_username_aaa_attr_list(device, username, attr_list_name):
+  
+    """ configure username <username> aaa attribute list <attr_list_name>
+    Args:
+        device (`obj`): Device object
+        username ('str'): Username
+        attr_list_name ('str'): Attribute list name
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed configuring Username with attribute list name
+    """
+    try:
+        device.configure([
+               f"username {username} aaa attribute list {attr_list_name}"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure Username with attribute list name'
+        )
+
+def configure_aaa_attr_list(device, attr_list_name, attr_type, secure_type):
+
+    """ configure Attribute list with type
+    Args:
+        device (`obj`): Device object
+        attr_list_name ('str'): Attribute list name
+        attr_type ('str'): Attribute type
+        secure_type ('str'): Secure type
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed configuring Attribute list with type
+
+    """
+    try:
+        device.configure([
+               f"aaa attribute list {attr_list_name}",
+               f"attribute type {attr_type} {secure_type}"
+               ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure Attribute list with type'
+        )
+
+        
+def unconfigure_aaa_attr_list(device, attr_list_name):
+
+    """ Unconfigure Attribute list with type
+    Args:
+        device (`obj`): Device object
+        attr_list_name ('str'): Attribute list name
+        
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed unconfiguring Attribute list with type
+
+    """
+    try:
+        device.configure([
+               f"no aaa attribute list {attr_list_name}"               
+               ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure Attribute list with type'
+        )
+
+def configure_aaa_local_auth(device):
+
+    """ configure aaa local authentication default authorization default 
+    Args:
+        device (`obj`): Device object
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed configuring AAA local auth 
+    """
+    try:
+        device.configure([
+            "aaa authentication dot1x default local",
+            "aaa local authentication default authorization default",
+            "aaa authorization network default local"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not configure AAA local auth'
+        )
+
+def unconfigure_aaa_local_auth(device):
+
+    """ unconfigure aaa local authentication default authorization default
+    Args:
+        device (`obj`): Device object
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed unconfiguring AAA local auth 
+    """
+    try:
+        device.configure([
+            "no aaa authorization network default local",
+            "no aaa local authentication default authorization default",
+            "no aaa authentication dot1x default local"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure AAA local auth'
+        )
+
+def unconfigure_aaa_new_model(device):
+
+    """ unconfigure aaa new-model
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "no aaa new-model"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not unconfigure AAA new-model'
+        )
+
+def unconfigure_coa(device):
+
+    """ unconfigure COA Configuration
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "no aaa server radius dynamic-author"
+        ])
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not remove dynamic-author config'
         )

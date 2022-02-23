@@ -1,0 +1,54 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+  prompt: switch(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: switch(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+disconnect:
+  commands:
+    null:
+      response:
+      - null
+      - null
+      response_type: circular
+  prompt: switch#
+execute:
+  commands:
+    y: ''
+    config term:
+      new_state: configure
+    term length 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+    write erase:
+      response:
+      - "Warning: This command will erase the startup-configuration.\r\n\rDo you wish\
+        \ to proceed anyway? (y/n)  [n] y"
+      response_type: circular
+  prompt: switch#
+reload:
+  commands:
+    null:
+      response:
+      - true
+      response_type: circular
+  prompt: switch#

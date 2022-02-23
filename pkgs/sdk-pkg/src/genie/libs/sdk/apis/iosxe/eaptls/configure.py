@@ -84,17 +84,17 @@ def configure_pki_authenticate_certificate(device, certificate, label_name):
             )
 
 def configure_pki_enroll_certificate(device, label_name):
-    """ Enrolls certificate on device
+    """ Enrolls certificate on device and returns the certificate
 
         Args:
             device (`obj`): Device object
             label_name ('str'): Label name
 
         Returns:
-            None
+            Enrolled certificate
 
         Raise:
-            SubCommandFailure: Failed to enroll certificate on device
+            SubCommandFailure: Failed to enroll certificate on device and return it
     """
 
     dialog = Dialog(
@@ -123,13 +123,15 @@ def configure_pki_enroll_certificate(device, label_name):
             )
 
     try:
-       device.configure("crypto pki enroll {label_name}".
+       output = device.configure("crypto pki enroll {label_name}".
                         format(label_name=label_name), reply=dialog, timeout=200)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Could not Enroll certificate on device "
+            "Could not Enroll certificate on device and return it"
             "Error: {error}".format(error=e)
             )
+
+    return output
 
 def unconfigure_crypto_pki_server(device, server_name):
     """ Unconfigures crypto pki server on device
@@ -265,27 +267,6 @@ def configure_crypto_pki_server(
     except SubCommandFailure:
         raise SubCommandFailure("Could not configure crypto pki server on device")
 
-
-def unconfigure_crypto_pki_server(device, server_name):
-    """ Unconfigures crypto pki server on device
-        Args:
-            device (`obj`): Device object
-            server_name ('str'): Name of the server
-
-        Returns:
-            None
-
-        Raise:
-            SubCommandFailure: Failed to unconfigure crypto pki server on device
-    """
-
-    try:
-        device.configure([f"no crypto pki server {server_name}"])
-
-    except SubCommandFailure:
-        raise SubCommandFailure(
-            "Could not unconfigure crypto pki server on device"
-        )
 
 def unconfigure_trustpoint_switch(device, label_name):
     """ Unconfigures Trustpoint related config on device

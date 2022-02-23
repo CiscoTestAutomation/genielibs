@@ -29,6 +29,6 @@ class TestConfigureControlPolicies(unittest.TestCase):
         )
 
     def test_configure_control_policies(self):
-        result = configure_control_policies(self.device, 'MAB', 'session-started', 'match-all', 1, None, 'do-until-failure', 1, 'authenticate', 'mab')
+        result = configure_control_policies(self.device, 'DOT1X_POLICY_RADIUS', 'session-started', 'match-all', 10, None, 'do-until-failure', 10, 'authenticate', 'dot1x', None, None, 10, None, 2, 0)
         expected_output = None
         self.assertEqual(result, expected_output)

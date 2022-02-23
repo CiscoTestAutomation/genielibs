@@ -1,0 +1,40 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no aaa authentication dot1x default local: "no aaa authentication dot1x default\
+      \ local\r\n"
+    no aaa authorization network default local: "no aaa authorization network default\
+      \ local\r\n"
+    no aaa local authentication default authorization default: "no aaa local authentication\
+      \ default authorization default\r\n"
+    no logging console: ''
+  prompt: LG-PK(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: LG-PK(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: LG-PK#

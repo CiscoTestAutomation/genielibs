@@ -1,15 +1,18 @@
 configure:
   commands:
-    1 authenticate using mab: "1 authenticate using mab\r\n"
-    1 class always do-until-failure: "1 class always do-until-failure\r\n"
+    10 authenticate using dot1x retries 2 retry-time 0 priority 10: "10 class always\
+      \ do-until-failure\r\n"
+    10 class always do-until-failure: "event session-started match-all\r\n"
     end:
       new_state: execute
-    event session-started match-all: "event session-started match-all\r\n"
+    event session-started match-all: "%Warning, modifying policy-map \"DOT1X_POLICY_RADIUS\"\
+      \ may impact sessions hosted on ports for which \"DOT1X_POLICY_RADIUS\" has\
+      \ already been applied.\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    policy-map type control subscriber MAB: "policy-map type control subscriber MAB\r\
-      \n"
+    policy-map type control subscriber DOT1X_POLICY_RADIUS: "policy-map type control\
+      \ subscriber DOT1X_POLICY_RADIUS\r\n"
   prompt: VCR(config)#
 configure_line:
   commands:

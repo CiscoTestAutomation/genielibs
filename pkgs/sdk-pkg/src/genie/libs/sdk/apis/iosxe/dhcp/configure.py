@@ -1,5 +1,4 @@
 """Common configure functions for dhcp"""
-
 # Python
 import logging
 
@@ -261,3 +260,117 @@ def disable_dhcp_snooping(device):
         raise SubCommandFailure(
             "Could not disable DHCP snooping globally"
             )
+
+
+def configure_ip_dhcp_snooping_database(device, image='', write_delay=False, delay_time=10):
+
+    """ Configuring ip dhcp snooping database 
+        Args:
+            device ('obj'): device to use
+            image ('str',optional): image to use ,defaut is empty string
+            write_delay ('bool',optional): True or False ,default is False
+            delay_time ('int',optional): delay time ,default is 10
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure ip dhcp snooping database
+    """
+
+    log.info("Configuring ip dhcp snooping database")
+
+    cmd = "ip dhcp snooping database "
+
+    if write_delay:
+
+        cmd += f"write-delay {delay_time}"
+
+    else:
+        cmd += f"{image}"
+    try:
+        device.configure(
+            [
+                cmd
+            ]
+        )
+
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to configure ip dhcp snooping database")
+
+
+def unconfigure_ip_dhcp_snooping_database(device, image='', write_delay=False, delay_time=10):
+
+    """ Unconfiguring ip dhcp snooping database
+        Args:
+            device ('obj'): device to use
+            image ('str',optional): image to use ,default is empty string
+            write_delay ('bool',optional): True or False ,default is False
+            delay_time ('int',optional): time interval ,default is 10
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure ip dhcp snooping database
+    """
+
+    log.info("Unconfiguring ip dhcp snooping database")
+
+    cmd = f"no ip dhcp snooping database "
+    if write_delay:
+        cmd += f"write-delay {delay_time}"
+    else:
+        cmd += f"{image}"
+    try:
+        device.configure(
+            [
+                cmd
+            ]
+        )
+
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to unconfigure ip dhcp snooping database")
+
+
+def create_dhcp_pool_withoutrouter(
+    device, pool_name, network, mask, lease_days,lease_hrs,lease_mins
+):
+
+    """ Create DHCP pool
+        Args:
+            device ('obj'): device to use
+            pool_name ('str'): name of the pool to be created
+            network ('str'): IP of the network pool
+            mask ('str'): Subnet mask of the network pool
+            lease_days ('int'):Parameters for lease days config
+            lease_hrs ('int'):Parameters for lease hrs config
+            lease_mins ('int'): Parameters for lease mins config
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed creating dhcp pool
+    """
+
+    log.info(
+        "Configuring DHCP pool with name={}, network={}, mask={}, and "
+        "Lease Time days={},hrs={},mins={}".format(pool_name, network, mask, lease_days,lease_hrs,lease_mins)
+    )
+
+    try:
+        device.configure(
+            [
+            f"ip dhcp pool {pool_name}",
+            f"network  {network} {mask}",
+            f"lease {lease_days} {lease_hrs} {lease_mins}"
+            ]
+        )
+
+    except SubCommandFailure as e:
+
+        log.error(e)
+        raise SubCommandFailure(
+            "Could not configure DHCP pool {pool_name}".format(
+                pool_name=pool_name
+            )
+        )

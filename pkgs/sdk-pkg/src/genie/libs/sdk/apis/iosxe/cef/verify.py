@@ -171,3 +171,61 @@ def verify_cef_outgoing_interface(device, vrf, dst_pfx, out_intf,
                 pass
         timeout.sleep()
     return False
+
+def verify_cef_uid_on_active_standby(device):
+    
+    """ Verify cef id on both active and standby device
+        Args:
+            device('obj'): device 
+        returns:
+            True if cef uid is same on both active and standby, false in all other cases
+    """
+
+    try:
+        active_uid=device.parse("show cef uid")
+        output=device.execute('show cef uid', target="standby")
+        stanby_uid=device.parse("show cef uid", output=output)
+    except SchemaEmptyParserError:
+        raise SchemaEmptyParserError(
+            "Failed to parse commands"
+        )
+    active_client_key_node=active_uid.q.get_values('client_key_nodes')[0]
+    standby_client_key_node=stanby_uid.q.get_values('client_key_nodes')[0]
+    active_uid_table_entry = active_uid.q.get_values('uid_table_entries')[0]
+    standby_uid_table_entry = stanby_uid.q.get_values('uid_table_entries')[0]
+    return ((active_client_key_node == standby_client_key_node) and \
+           (active_uid_table_entry == standby_uid_table_entry))
+           
+def verify_cef_path_sets_summary(device):
+    """ Verify cef path sets summary on active and standby device
+        Args:
+            device('obj'): device
+        returns:
+            True if cef path set uid is same on both active and standby, false in all other cases
+    """
+    try:    
+        output = device.parse("show cef path sets summary")
+    except SchemaEmptyParserError:
+        raise SchemaEmptyParserError(
+            "Failed to parse commands"
+        )
+
+    uids=output.q.get_values('path_set_id')    
+    # verify uid to be same on active and standby devices
+    for uid in uids:
+    
+        # Path Set Id 0x00000001 - gets 00000001
+        u_id=uid.split("x")[1]
+        try:
+            active_uid=device.parse(f"show cef path set id {u_id} detail | in Replicate oce:")
+            out=device.execute(f"show cef path set id {u_id} detail | in Replicate oce:", target="standby")
+            standby_uid=device.parse(f"show cef path set id {u_id} detail | in Replicate oce:", output=out)
+        except SchemaEmptyParserError:
+            raise SchemaEmptyParserError(
+                "Failed to parse commands"
+            )
+        active_u_id=active_uid.q.get_values('uid')
+        standby_u_id=active_uid.q.get_values('uid')
+        if not ((set(active_u_id) == set(standby_u_id))):
+            return False
+    return True

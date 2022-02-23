@@ -17,7 +17,7 @@ def health_cpu(device,
                command='show processes cpu',
                processes=None,
                check_key='one_sec',
-               check_key_total='five_sec_cpu_total',
+               check_key_total=None,
                output=None,
                add_total=False,
                timeout=None,
@@ -31,8 +31,7 @@ def health_cpu(device,
             processes (`list`): List of processes to check
             check_key  (`str`): Key to check in parsed output
                                 Default to `one_sec`
-            check_key_total (`str`): Key to check in parsed output for Total
-                                     Default to `five_sec_cpu_total`
+            check_key_total (`str`): N/A
             add_total (`bool`): If True, add total cpu load
             output     (`str`): Output of show command
             timeout    (`int`): Timeout(secs). Defaults to None
@@ -110,14 +109,14 @@ def health_cpu(device,
         health_data.setdefault('health_data', [])
         health_data['health_data'].append({
             'process': 'ALL_PROCESSES',
-            'value': float(parsed['five_sec_cpu_total'])
+            'value': float(parsed['user_percent']+parsed['kernel_percent'])
         })
         for k, v in cpu_load_dict.items():
             health_data['health_data'].append({'process': k, 'value': v})
         return health_data
 
     if add_total:
-        cpu_load_dict = {'ALL_PROCESSES': float(parsed['five_sec_cpu_total'])}
+        cpu_load_dict = {'ALL_PROCESSES': float(parsed['user_percent']+parsed['kernel_percent'])}
 
     return cpu_load_dict
 
@@ -130,6 +129,7 @@ def health_memory(device,
                   output=None,
                   add_total=False,
                   timeout=None,
+                  threshold=None,
                   health=True):
     '''Get memory usage on device
 
@@ -145,6 +145,7 @@ def health_memory(device,
             add_total    (`bool`): If True, add total memory usage
             output         (`str`): Output of show command
             timeout        (`int`): Timeout(secs). Defaults to None
+            threshold      (`int`): N/A
         Returns:
             memory_usage_dict (`dict`): memory usage dict on the device (percentage)
                                         example:

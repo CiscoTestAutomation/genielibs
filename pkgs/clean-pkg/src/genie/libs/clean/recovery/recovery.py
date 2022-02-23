@@ -46,14 +46,6 @@ def _disconnect_reconnect(device):
     # Let's try to reconnect
     log.info("Trying to reconnect to device '{}'".format(device.name))
     try:
-        # If the device is in rommon, just raise an exception
-        rommon = Statement(pattern=r'^(.*)(rommon(.*)|loader(.*))+>.*$',
-                           action=rommon_raise_exception,
-                           args={},
-                           loop_continue=False,
-                           continue_timer=False)
-        device.instantiate(learn_hostname=True)
-        device.connect_reply.append(rommon)
         device.connect(learn_hostname=True)
     except Exception as e:
         # Cant connect!
@@ -65,15 +57,7 @@ def _disconnect_reconnect(device):
         # Can connect all good
         log.info('Connected to the device successfully')
         return True
-    finally:
-        try:
-            device.connect_reply.remove(rommon)
-        except Exception:
-            pass
 
-def rommon_raise_exception():
-    log.error('Device is in rommon')
-    raise Exception('Device is in rommon')
 
 def _connectivity(device, console_activity_pattern=None, console_breakboot_char=None,
                   grub_activity_pattern=None, grub_breakboot_char=None, break_count=10,

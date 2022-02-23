@@ -1,0 +1,45 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: A2-9300-3M(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: A2-9300-3M(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show interfaces transceiver:
+      response:
+      - "If device is externally calibrated, only calibrated values are printed.\r\
+        \n++ : high alarm, +  : high warning, -  : low warning, -- : low alarm.\r\n\
+        NA or N/A: not applicable, Tx: transmit, Rx: receive.\r\nmA: milliamperes,\
+        \ dBm: decibels (milliwatts).\r\n\r\n                                    \
+        \         Optical   Optical\r\n             Temperature  Voltage  Current\
+        \   Tx Power  Rx Power\r\nPort         (Celsius)    (Volts)  (mA)      (dBm)\
+        \     (dBm)\r\n---------    -----------  -------  --------  --------  --------\r\
+        \nTe3/1/1      23.3       3.33       0.1     -20.3     -40.0"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: A2-9300-3M#

@@ -114,6 +114,7 @@ pyats_health_processors:
                             - .*
                           add_total: True
                           timeout: 120
+                          threshold: "%VARIABLES{testscript.health_settings.threshold.memory}"
                         device: "%VARIABLES{dev._keys}"
                         function: health_memory
                         health_tc_sections:

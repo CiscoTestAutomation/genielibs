@@ -18,6 +18,7 @@ from pyats.easypy import runtime
 from pyats.aetest.steps import Steps
 from pyats.aetest.parameters import ParameterMap
 from pyats.easypy.common_funcs import init_runtime
+from pyats.aetest.signals import TerminateStepSignal, AEtestPassedSignal
 from pyats.results import Passed, Failed, Errored, Skipped,\
                           Aborted, Passx, Blocked
 
@@ -243,6 +244,125 @@ class TestCondition(unittest.TestCase):
                   command: aa
     """
 
+    condition_8 = """
+        - if : "%VARIABLES{execute_id} == id1"
+          actions:
+            - execute:
+                  alias: exec_1
+                  custom_start_step_message: inside if condition
+                  device: PE1
+                  command: cmd
+
+        - elif : "%VARIABLES{execute_id} == id2"
+          actions:
+            - configure:
+                  custom_start_step_message: inside first elif condition
+                  device: PE1
+                  command: feature bgp
+
+        - elif : "%VARIABLES{execute_id} == id3"
+          actions:
+            - configure:
+                  custom_start_step_message: inside second elif condition
+                  device: PE1
+                  command: feature bgp
+
+        - else :
+          actions:
+           - execute:
+                  alias: exec_2
+                  custom_start_step_message: inside else condition
+                  device: PE2
+                  command: another
+    """
+
+    condition_9 = """
+        - if : "%VARIABLES{nonexist} == None"
+          actions:
+            - execute:
+                  alias: exec_1
+                  device: PE1
+                  command: cmd
+            - execute:
+                  alias: exec_2
+                  device: PE2
+                  command: another
+            - configure:
+                  device: PE1
+                  command: feature bgp
+            - execute:
+                  device: PE1
+                  command: aa
+    """
+
+    condition_10 = """
+        - if : "%VARIABLES{execute_id} == id1"
+          actions:
+            - execute:
+                  alias: exec_1
+                  custom_start_step_message: inside if condition
+                  device: PE1
+                  command: cmd
+        - else :
+          actions:
+           - execute:
+                  alias: exec_2
+                  custom_start_step_message: inside else condition
+                  device: PE2
+                  command: another
+    """
+
+    condition_11 = """
+        - elif : "%VARIABLES{execute_id} == id1"
+          actions:
+            - execute:
+                  alias: exec_1
+                  custom_start_step_message: inside if condition
+                  device: PE1
+                  command: cmd
+        - else :
+          actions:
+           - execute:
+                  alias: exec_2
+                  custom_start_step_message: inside else condition
+                  device: PE2
+                  command: another
+    """
+
+    condition_12 = """
+        - if : "%VARIABLES{execute_id} == id1"
+          actions:
+            - execute:
+                  alias: exec_1
+                  custom_start_step_message: inside if condition
+                  device: PE1
+                  command: cmd
+        - if :
+          actions:
+           - execute:
+                  alias: exec_2
+                  custom_start_step_message: inside else condition
+                  device: PE2
+                  command: another
+    """
+
+    condition_13 = """
+        - else : "%VARIABLES{execute_id} == id1"
+          actions:
+            - execute:
+                  alias: exec_1
+                  custom_start_step_message: inside if condition
+                  device: PE1
+                  command: cmd
+        - else :
+          actions:
+           - execute:
+                  alias: exec_2
+                  custom_start_step_message: inside else condition
+                  device: PE2
+                  command: another
+    """
+
     def setUp(self):
 
         dir_name = os.path.dirname(os.path.abspath(__file__))
@@ -389,6 +509,99 @@ class TestCondition(unittest.TestCase):
         self.assertNotEqual(out['substeps'], [])
         self.assertEqual(out['run_condition_skipped'], False)
 
+    def test_condition_if(self):
+
+        steps = Steps()
+        data = yaml.safe_load(self.condition_8)
+        self.kwargs.update({'steps': steps, 'action_item': data})
+        self.blitz_obj.parameters['save_variable_name'] = {'execute_id': 'id1'}
+        out = run_condition(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+        self.assertEqual(steps.details[0].name, 'inside if condition')
+
+    def test_condition_elif_1(self):
+
+        steps = Steps()
+        data = yaml.safe_load(self.condition_8)
+        self.kwargs.update({'steps': steps, 'action_item': data})
+        self.blitz_obj.parameters['save_variable_name'] = {'execute_id': 'id2'}
+        out = run_condition(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+        self.assertEqual(steps.details[0].name, 'inside first elif condition')
+
+    def test_condition_elif_2(self):
+
+        steps = Steps()
+        data = yaml.safe_load(self.condition_8)
+        self.kwargs.update({'steps': steps, 'action_item': data})
+        self.blitz_obj.parameters['save_variable_name'] = {'execute_id': 'id3'}
+        out = run_condition(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+        self.assertEqual(steps.details[0].name, 'inside second elif condition')
+
+    def test_condition_else(self):
+
+        steps = Steps()
+        data = yaml.safe_load(self.condition_8)
+        self.kwargs.update({'steps': steps, 'action_item': data})
+        self.blitz_obj.parameters['save_variable_name'] = {'execute_id': 'id5'}
+        out = run_condition(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+        self.assertEqual(steps.details[0].name, 'inside else condition')
+
+    def test_condition_eq_none_2(self):
+
+        steps = Steps()
+        data = yaml.safe_load(self.condition_9)
+        self.kwargs.update({'steps': steps, 'action_item': data})
+        self.blitz_obj.parameters['save_variable_name'] = {}
+        out = run_condition(**self.kwargs)
+        self.assertNotEqual(out['substeps'], [])
+        self.assertEqual(out['run_condition_skipped'], False)
+
+    def test_condition_if_else(self):
+
+        steps = Steps()
+        data = yaml.safe_load(self.condition_10)
+        self.kwargs.update({'steps': steps, 'action_item': data})
+        self.blitz_obj.parameters['save_variable_name'] = {'execute_id': 'id5'}
+        out = run_condition(**self.kwargs)
+        self.assertEqual(steps.result, Passed)
+        self.assertEqual(steps.details[0].name, 'inside else condition')
+
+    def test_condition_mandatory_if_exception(self):
+        steps = Steps()
+        data = yaml.safe_load(self.condition_11)
+        self.kwargs.update({'steps': steps, 'action_item': data})
+        self.blitz_obj.parameters['save_variable_name'] = {'execute_id': 'id5'}
+        # To check if the exception is raised when no if condition is passed
+        with self.assertRaises(Exception) as err:
+            out = run_condition(**self.kwargs)
+        self.assertEqual(err.exception.args[0], "At least one if condition should be passed")
+
+    def test_condition_multiple_if_exception(self):
+
+        steps = Steps()
+        data = yaml.safe_load(self.condition_12)
+        self.kwargs.update({'steps': steps, 'action_item': data})
+        self.blitz_obj.parameters['save_variable_name'] = {'execute_id': 'id5'}
+        # To check if the exception is raised when multiple if conditions are passed
+        with self.assertRaises(Exception) as err:
+            out = run_condition(**self.kwargs)
+        self.assertEqual(err.exception.args[0], "Multple if conditions have been passed, "\
+         "please provide only one if condition")
+
+    def test_condition_multiple_else_exception(self):
+
+        steps = Steps()
+        data = yaml.safe_load(self.condition_13)
+        self.kwargs.update({'steps': steps, 'action_item': data})
+        self.blitz_obj.parameters['save_variable_name'] = {'execute_id': 'id5'}
+        # To check if the exception is raised when multiple else conditions are passed
+        with self.assertRaises(Exception) as err:
+            out = run_condition(**self.kwargs)
+        self.assertEqual(err.exception.args[0], "Multiple else conditions have been passed, "\
+         "please provide only one else condition")
 
 if __name__ == '__main__':
     unittest.main()

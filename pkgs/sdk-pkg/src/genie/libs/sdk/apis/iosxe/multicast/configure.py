@@ -359,3 +359,38 @@ def unconfigure_static_ipv6_pim_rp_address(device,ipv6_address,vrf=None):
         log.error(e)
         raise SubCommandFailure("Failed to unconfigure rp-address {ipv6_address} on device {dev}. Error:\n{error}".format(ipv6_address=ipv6_address,vrf=vrf,dev=device.name,error=e)
         )
+
+def configure_ipv6_multicast_routing(device):
+    """ Configure Enable IPv6 multicast routing
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "ipv6 multicast-routing"
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ipv6 multicast routing. Error:\n{error}".format(error=e)
+        )
+
+def unconfigure_ipv6_multicast_routing(device):
+    """ Configure Enable IPv6 multicast routing
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+
+    try:
+        device.configure("no ipv6 multicast-routing")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure Multicast routing. Error:\n{error}".format(error=e)
+        )

@@ -1,0 +1,42 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface Tunnel60: "interface Tunnel60\r\n"
+    ipv6 address 1:2:3::4/64: "ipv6 address 1:2:3::4/64\r\n"
+    keepalive 10: "keepalive 10\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    tunnel destination 77:12::2: "tunnel destination 77:12::2\r\n"
+    tunnel mode ipsec ipv6: "tunnel mode ipsec ipv6\r\n"
+    tunnel protection ipsec profile ipsecprofilev6overv6: "tunnel protection ipsec\
+      \ profile ipsecprofilev6overv6\r\n"
+    tunnel source 66:12::1: "tunnel source 66:12::1\r\n"
+  prompt: 9300x-A(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: 9300x-A(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: 9300x-A#

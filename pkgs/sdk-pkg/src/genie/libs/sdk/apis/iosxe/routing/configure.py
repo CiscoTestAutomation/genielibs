@@ -241,6 +241,30 @@ def enable_ipv6_unicast_routing(device):
             "device. Error:\n{e}".format(e=e)
         )
 
+
+def unconfigure_ipv6_unicast_routing(device):
+    """ Disables ipv6 unicast routing on device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        'Disables ipv6 unicast routing on device '
+    )
+
+    try:
+        device.configure(
+            "no ipv6 unicast-routing"
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not disable ipv6 unicast routing on "
+            "device. Error:\n{e}".format(e=e)
+        )
+
 def disable_ip_routing(device):
     """ Disables ip routing on device
 

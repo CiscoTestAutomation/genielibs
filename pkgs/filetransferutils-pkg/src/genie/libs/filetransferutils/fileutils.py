@@ -30,8 +30,7 @@ logger = logging.getLogger(__name__)
 FAIL_MSG = ['Permission denied[^,]', 'failed to copy', 'Unable to find', 'Error opening', 'Error', 'operation failed',
             'Compaction is not supported', 'Copy failed', 'No route to host', 'Connection timed out', 'not found',
             'No space', 'not a remote file', 'Could not resolve', 'Invalid URI', "couldn't connect to host",
-            "protocol identification string lack carriage return", "no such file or directory (invalid server)",
-            ".*Cannot overwrite/delete.*"]
+            "no such file or directory (invalid server)", ".*Cannot overwrite/delete.*", "No such file or directory"]
 
 
 class FileUtils(FileUtilsBase):

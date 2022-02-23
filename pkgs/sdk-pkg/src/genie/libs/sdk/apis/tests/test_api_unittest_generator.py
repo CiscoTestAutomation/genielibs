@@ -108,6 +108,39 @@ class TestAPIUnittestGenerator(TestCase):
         )
         self.assertEqual(ut_gen.test_arguments, expected_arguments)
 
+    def test_load_arguments_yaml_no_default(self):
+
+        test_args_yaml = 'fakepath/ta.yaml'
+
+        # skips module import
+        with patch.object(TestGenerator, '_get_apis'):
+            with patch("builtins.open", mock_open()) as mo:
+                mo.return_value = MagicMock()
+                # mock loading a yaml file
+                with patch("yaml.load") as md:
+                    md.return_value = {
+                        'get_interface_carrier_delay': {
+                            'arguments': {
+                                'delay_type': 'up',
+                            }
+                        }
+                    }
+                    ut_gen = TestGenerator(
+                        testbed=self.testbed,
+                        device='blah',
+                        module='interface.get',
+                        test_arguments_yaml=test_args_yaml
+                    )
+        expected_arguments = {
+            'get_interface_carrier_delay': {
+                'arguments': {
+                        'delay_type': 'up',
+                }
+            }
+        }
+
+        self.assertEqual(ut_gen.test_arguments, expected_arguments)
+
     def test_get_api_expected_output(self):
         # skipping __init__ as it is not necessary for this test
         with patch.object(TestGenerator, '__init__') as mt:

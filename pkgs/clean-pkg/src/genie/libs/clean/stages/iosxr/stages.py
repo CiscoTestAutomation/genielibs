@@ -588,3 +588,59 @@ install_image_and_packages:
                     step.failed("The command 'install commit' aborted ")
             except Exception as e:
                 step.failed("The command 'install commit' failed. Reason: {}".format(str(e)))
+
+
+class VerifyRunningImage(BaseStage):
+    """This stage verifies the current running image is the expected image.
+The verification will be done by compare the result of 'show version' and provided
+image name under 'images' keyword in the clean yaml file.
+
+Stage Schema
+------------
+verify_running_image:
+
+    images (list): Image(s) that should be running on the device. 
+
+Example
+-------
+verify_running_image:
+    images:
+        - test_image-7.5.4.08I.ios
+"""
+
+    # ============
+    # Stage Schema
+    # ============
+    schema = {
+        'images': list,
+    }
+
+    # ==============================
+    # Execution order of Stage steps
+    # ==============================
+    exec_order = [
+        'verify_running_image'
+    ]
+
+    def verify_running_image(self, steps, device, images):
+        # Verify via filename comparison
+        with steps.start("Verify running image on device {}". \
+                                    format(device.name)) as step:
+            try:
+                sh_ver = device.api.get_software_version()
+            except Exception as e:
+                step.failed("Failed to retrieve the version of the running image {}". \
+                            format(str(e)))
+
+            provided_image_version = re.findall(r'\d\.\d\.\d\.\w+', images[0])
+
+            if not provided_image_version:
+                step.failed("Could not determine the version in the image provided.")
+            
+            if sh_ver == provided_image_version[0]:
+                step.passed(
+                    "Successfully verified running image on device {}". \
+                    format(device.name))
+            else:
+                step.failed(f"Running version {sh_ver} is not the same with \
+                    submitted image {provided_image_version[0]}")

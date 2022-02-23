@@ -1,0 +1,276 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+  prompt: R3_nx(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: R3_nx(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    show processes cpu:
+      response:
+      - "\r\n\r\nPID    Runtime(ms)  Invoked   uSecs  1Sec    Process\r\n-----  -----------\
+        \  --------  -----  ------  -----------\r\n    1         9104      3238  \
+        \ 2811   0.00%  init\r\n    2           22       190    118   0.00%  kthreadd\r\
+        \n    3         1839     55559     33   0.00%  ksoftirqd/0\r\n    5      \
+        \      0         7     25   0.00%  kworker/0:0H\r\n    7        14482    573820\
+        \     25   0.00%  rcu_sched\r\n    8            0         2      1   0.00%\
+        \  rcu_bh\r\n    9         1302     14352     90   0.00%  migration/0\r\n\
+        \   10           16      2990      5   0.00%  watchdog/0\r\n   11        \
+        \   17      2990      5   0.00%  watchdog/1\r\n   12         1538     15455\
+        \     99   0.00%  migration/1\r\n   13         7840    639371     12   0.00%\
+        \  ksoftirqd/1\r\n   15            0         8     19   0.00%  kworker/1:0H\r\
+        \n   16            0         2      0   0.00%  khelper\r\n   17          \
+        \ 30       128    241   0.00%  kdevtmpfs\r\n   18            0         2 \
+        \    49   0.00%  netns\r\n   19            0         2      0   0.00%  perf\r\
+        \n   20           12       101    128   0.00%  khungtaskd\r\n   21       \
+        \     0         2      3   0.00%  writeback\r\n   22       830673    912711\
+        \    910   6.25%  ksmd\r\n   23            0         2      0   0.00%  crypto\r\
+        \n   24            0         2      0   0.00%  kintegrityd\r\n   25      \
+        \      0         2      0   0.00%  bioset\r\n   26            0         2\
+        \     48   0.00%  kblockd\r\n   27            0         2      0   0.00% \
+        \ ata_sff\r\n   28            0         2      2   0.00%  edac-poller\r\n\
+        \   29            0         2     12   0.00%  rpciod\r\n   30        80960\
+        \     92524    875   0.00%  kworker/0:1\r\n   31           60       375  \
+        \  160   0.00%  kworker/1:1\r\n   54            0         3    131   0.00%\
+        \  kswapd0\r\n   55            0         7     81   0.00%  fsnotify_mark\r\
+        \n   56            0         2    119   0.00%  nfsiod\r\n   72           \
+        \ 0         2      0   0.00%  acpi_thermal_pm\r\n   73            2      \
+        \  19    156   0.00%  scsi_eh_0\r\n   74            0         2      2   0.00%\
+        \  scsi_tmf_0\r\n   75            2        16    162   0.00%  scsi_eh_1\r\n\
+        \   76            0         2     59   0.00%  scsi_tmf_1\r\n   77        \
+        \    2        16    130   0.00%  scsi_eh_2\r\n   78            0         2\
+        \      2   0.00%  scsi_tmf_2\r\n   79            2        16    155   0.00%\
+        \  scsi_eh_3\r\n   80            0         2     58   0.00%  scsi_tmf_3\r\n\
+        \   81            2        16    155   0.00%  scsi_eh_4\r\n   82         \
+        \   0         2      2   0.00%  scsi_tmf_4\r\n   83            2        16\
+        \    127   0.00%  scsi_eh_5\r\n   84            0         2     63   0.00%\
+        \  scsi_tmf_5\r\n   90            0         2    175   0.00%  ipv6_addrconf\r\
+        \n   91            0         2      1   0.00%  deferwq\r\n  219          \
+        \  0         2      2   0.00%  kloopd0\r\n  346        10165     11891   \
+        \ 854   0.00%  aclqos\r\n  347          221       476    465   0.00%  ptplc\r\
+        \n  352          252       842    300   0.00%  monc\r\n  498         1733\
+        \    600469      2   0.00%  kworker/1:1H\r\n 1163            0         3 \
+        \   252   0.00%  scsi_eh_6\r\n 1164            0         2     59   0.00%\
+        \  scsi_tmf_6\r\n 1165            7        12    609   0.00%  scsi_eh_7\r\n\
+        \ 1166            0         2      2   0.00%  scsi_tmf_7\r\n 1167        \
+        \    1        28     49   0.00%  kworker/0:2\r\n 1790            0       \
+        \  2      6   0.00%  kloopd10\r\n 1848            5       101     57   0.00%\
+        \  jbd2/loop10-8\r\n 1851            0         2     55   0.00%  ext4-rsv-conver\r\
+        \n 2089          141       841    168   0.00%  libvirt_lxc\r\n 2091      \
+        \    227      1776    127   0.00%  systemd\r\n 2105           66       250\
+        \    266   0.00%  systemd-journal\r\n 2126           45       207    217 \
+        \  0.00%  systemd-logind\r\n 2129           10        95    111   0.00%  dbus-daemon\r\
+        \n 2134          115       318    363   0.00%  crond\r\n 2135            3\
+        \        37     93   0.00%  agetty\r\n 2136            2        32     75\
+        \   0.00%  agetty\r\n 2137            3        31     99   0.00%  agetty\r\
+        \n 2138            2        33     74   0.00%  agetty\r\n 2139           \
+        \ 2        35     76   0.00%  agetty\r\n 2150           21       127    173\
+        \   0.00%  sshd\r\n 2220            0         2    112   0.00%  kloopd1\r\n\
+        \ 2223            0         2      2   0.00%  kloopd2\r\n 2239           \
+        \ 0         2      4   0.00%  kloopd3\r\n 2241            0         2    199\
+        \   0.00%  kloopd4\r\n 2247            0         2      3   0.00%  kloopd5\r\
+        \n 2249            0         2      2   0.00%  kloopd6\r\n 3715          \
+        \ 68       652    105   0.00%  kworker/0:1H\r\n 3716           67       291\
+        \    232   0.00%  jbd2/sda4-8\r\n 3717            0         2      3   0.00%\
+        \  ext4-rsv-conver\r\n 4253            0         2    188   0.00%  trigger\r\
+        \n 7168            1        10    177   0.00%  jbd2/sda5-8\r\n 7169      \
+        \      0         2     86   0.00%  ext4-rsv-conver\r\n 7174            0 \
+        \        9    110   0.00%  jbd2/sda6-8\r\n 7175            0         2   \
+        \  26   0.00%  ext4-rsv-conver\r\n 8908            0         2      8   0.00%\
+        \  wq_gnetlink0\r\n 9586         2562     11898    215   0.00%  jbd2/sda2-8\r\
+        \n 9587            0         2     64   0.00%  ext4-rsv-conver\r\n10537  \
+        \      54686     40915   1336   0.00%  kworker/1:2\r\n13032            0 \
+        \        1    882   0.00%  sshd\r\n13511            0         2    178   0.00%\
+        \  kloopd7\r\n13514            0         2     71   0.00%  kloopd8\r\n13727\
+        \          232       933    249   0.00%  jbd2/sda3-8\r\n13728            0\
+        \         2    115   0.00%  ext4-rsv-conver\r\n13810          501      1929\
+        \    259   0.00%  jbd2/sda7-8\r\n13811            0         2    101   0.00%\
+        \  ext4-rsv-conver\r\n13996            6        36    174   0.00%  portmap\r\
+        \n14144            0         2      7   0.00%  lockd\r\n14145            0\
+        \         6    146   0.00%  nfsd\r\n14146            0         6    123  \
+        \ 0.00%  nfsd\r\n14147            0         6     70   0.00%  nfsd\r\n14148\
+        \            0         6     62   0.00%  nfsd\r\n14149            0      \
+        \   6     40   0.00%  nfsd\r\n14150            0         6      3   0.00%\
+        \  nfsd\r\n14151            0         6     61   0.00%  nfsd\r\n14152    \
+        \        0         5     31   0.00%  nfsd\r\n14154            0         1\
+        \    464   0.00%  rpc.mountd\r\n14156            3         6    643   0.00%\
+        \  rpc.statd\r\n15790            0         2    203   0.00%  kloopd9\r\n15791\
+        \            0         2    142   0.00%  ext4-rsv-conver\r\n18439        \
+        \    8        13    661   0.00%  libvirtd_mon.sh\r\n18440            2   \
+        \      9    314   0.00%  sh\r\n18441         5234     29099    179   0.00%\
+        \  sysmgr\r\n18442         3525     24957    141   0.00%  sysmgr\r\n18471\
+        \         7636     50373    151   0.00%  libvirtd\r\n19035            0  \
+        \       1    663   0.00%  inotifywait\r\n19338           10        92    108\
+        \   0.00%  kworker/u5:2\r\n19813          681      2692    253   0.00%  vsh.bin\r\
+        \n21994           19       253     78   0.00%  kworker/u4:1\r\n22806     \
+        \       1         2    560   0.00%  mping-thread\r\n22807            0   \
+        \      2    101   0.00%  mping-thread\r\n22996            0        17    \
+        \ 54   0.00%  kworker/u5:1\r\n22998           21       254     83   0.00%\
+        \  kworker/u4:2\r\n23076            0         2     80   0.00%  cctrl_kthread\r\
+        \n23637            6        82     80   0.00%  kworker/u4:0\r\n23682     \
+        \       0         3    101   0.00%  redun_kthread\r\n23959            0  \
+        \       2    229   0.00%  usd_mts_kthread\r\n23970            6         3\
+        \   2243   0.00%  vsh.bin\r\n23971           22         4   5712   0.00% \
+        \ ps\r\n24500          137      5942     23   0.00%  ls-notify-mts-t\r\n28568\
+        \          102        65   1579   0.00%  sdwrapd\r\n28570         5065   \
+        \  14800    342   0.00%  pfmclnt\r\n28596            7         6   1253  \
+        \ 0.00%  xinetd\r\n28597            7         6   1234   0.00%  tftpd\r\n\
+        28598           73        30   2434   0.00%  sdwrapd\r\n28600          301\
+        \      4044     74   0.00%  dme_proxy\r\n28602        12703     33062    384\
+        \   0.00%  platform\r\n28605          266      4003     66   0.00%  dme_bootup_proxy\r\
+        \n28606          665       348   1912   3.09%  event_manager\r\n28607    \
+        \      772       312   2475   0.00%  policyelem\r\n28637         1532    \
+        \ 12459    122   0.00%  syslogd\r\n28641          524      3588    146   0.00%\
+        \  vshd\r\n28642          293       397    739   0.00%  template_manager\r\
+        \n28643          176       475    372   0.00%  tamnw\r\n28644           67\
+        \        48   1398   0.00%  smm\r\n28645          808     12188     66   0.00%\
+        \  psshelper\r\n28646          593      2711    218   0.00%  pixm_vl\r\n28647\
+        \          542      2625    206   0.00%  pixm_gl\r\n28649          428   \
+        \    494    868   0.00%  nginx\r\n28650          200       302    664   0.00%\
+        \  mmode\r\n28651           87       278    315   0.00%  lmgrd\r\n28652  \
+        \        735      1087    676   0.00%  fs-daemon\r\n28653          448   \
+        \   1586    282   0.00%  feature-mgr\r\n28654          101       405    249\
+        \   0.00%  confcheck\r\n28655          161      1277    126   0.00%  capability\r\
+        \n28656          299      2325    128   0.00%  bloggerd\r\n28657         \
+        \ 759     11976     63   0.00%  psshelper_gsvc\r\n28662         1583     \
+        \ 8398    188   0.00%  tams_proc\r\n28669        21412     26708    801  \
+        \ 0.00%  clis\r\n28670          312      2598    120   0.00%  licmgr\r\n28677\
+        \           74       223    332   0.00%  cisco\r\n28685         1975     \
+        \ 6819    289   0.00%  tamd_proc\r\n28705          348      4010     86  \
+        \ 0.00%  xmlma\r\n28706          319      2500    127   0.00%  vmm\r\n28707\
+        \          577      2878    200   0.00%  vdc_mgr\r\n28708          478   \
+        \   2602    183   0.00%  usbhsd\r\n28709          734      6381    115   0.00%\
+        \  ttyd\r\n28710         6016     13863    433   0.00%  sysinfo\r\n28711 \
+        \         217      1375    158   0.00%  snmpmib_proc\r\n28712           98\
+        \        66   1493   0.00%  sksd\r\n28714          217       412    528  \
+        \ 0.00%  res_mgr\r\n28715          730     11952     61   0.00%  plugin\r\n\
+        28716          432      3302    130   0.00%  plog_sup\r\n28717          676\
+        \     12112     55   0.00%  patch-installer\r\n28718           63        69\
+        \    926   0.00%  nxapi\r\n28719          169       868    195   0.00%  mvsh\r\
+        \n28720          156       215    727   0.00%  mts_mgr\r\n28721          \
+        \ 62        39   1593   0.00%  mping_server\r\n28722         2418      8109\
+        \    298   0.00%  module\r\n28723          176       370    477   0.00%  kim\r\
+        \n28724          167       128   1306   0.00%  issu_helper\r\n28725      \
+        \    157       900    174   0.00%  evms\r\n28727          103        53  \
+        \ 1956   0.00%  epld_upgrade_stdby\r\n28728         4738      4347   1090\
+        \   0.00%  diagclient\r\n28729          428      2667    160   0.00%  dhclient\r\
+        \n28730          767      2052    373   0.00%  crdcfg_server\r\n28731    \
+        \       80       107    750   0.00%  core-dmon\r\n28732          214     \
+        \  363    591   0.00%  confelem\r\n28733          319      1168    273   0.00%\
+        \  clk_mgr\r\n28737          140      2449     57   0.00%  bios_daemon\r\n\
+        28738          390      1679    232   0.00%  ascii-cfg\r\n28740          \
+        \ 21       256     85   0.00%  klogd\r\n28741         1315     12629    104\
+        \   0.00%  securityd\r\n28742          924     11974     77   0.00%  cert_enroll\r\
+        \n28743         1133     12314     92   0.00%  aaa\r\n28745          308 \
+        \      868    355   0.00%  urib\r\n28754          172      1665    103   0.00%\
+        \  obfl\r\n28755          736      1626    452   0.00%  aclmgr\r\n28756  \
+        \        163      1012    161   0.00%  evmc\r\n28771           82        37\
+        \   2232   0.00%  ExceptionLog\r\n28772          635      6175    102   0.00%\
+        \  bootvar\r\n28773         5172      8261    626   0.00%  diagmgr\r\n28820\
+        \          341      2498    136   0.00%  cardclient\r\n28821         1423\
+        \     13862    102   0.00%  device_test\r\n28822          973      2943  \
+        \  330   0.00%  ifmgr\r\n28823          226      1328    170   0.00%  xbar\r\
+        \n28825          268       300    895   0.00%  l3vm\r\n28861          210\
+        \      1386    151   0.00%  statsclient\r\n28862            2         4  \
+        \  506   0.00%  nginx\r\n28936          126       138    914   0.00%  npacl\r\
+        \n28980         1342     23739     56   0.00%  nginx\r\n29021          226\
+        \       379    598   0.00%  adjmgr\r\n29022          263       526    500\
+        \   0.00%  u6rib\r\n29045          459      1201    382   0.00%  l2fwd\r\n\
+        29050           41       228    181   0.00%  incrond\r\n29051         1395\
+        \     23751     58   0.00%  nginx\r\n29059          267       278    963 \
+        \  0.00%  arp\r\n29060          270       839    322   0.00%  icmpv6\r\n29062\
+        \          143       387    370   0.00%  pktmgr\r\n29077          574    \
+        \   731    786   0.00%  netstack\r\n29092         1348     23732     56  \
+        \ 0.00%  nginx\r\n29187         1298     12103    107   0.00%  radius\r\n\
+        29188         1613      4943    326   0.00%  cdp\r\n29190          631   \
+        \   3488    181   0.00%  cfs\r\n29191           61        58   1063   0.00%\
+        \  ip_dummy\r\n29198           59        60    993   0.00%  ipv6_dummy\r\n\
+        29200          420      2715    154   0.00%  otm\r\n29201         2588   \
+        \   6021    429   0.00%  snmpd\r\n29202           56        69    816   0.00%\
+        \  tcpudp_dummy\r\n29208           70        51   1375   0.00%  dcos-xinetd\r\
+        \n29339          754     12009     62   0.00%  callhome\r\n31003         1900\
+        \      4462    425   0.00%  port-profile\r\n31023         8360     29066 \
+        \   287   0.00%  vman\r\n31024          526       653    806   0.00%  spm\r\
+        \n31025          314       236   1331   0.00%  rpm\r\n31026          887 \
+        \     2690    329   0.00%  pltfm_config\r\n31027          242       410  \
+        \  591   0.00%  plcmgr\r\n31028         5104      5342    955   0.00%  pfstat\r\
+        \n31043         2305     13541    170   0.00%  ntp\r\n31044          185 \
+        \      463    400   0.00%  nbproxy\r\n31046          484      3133    154\
+        \   0.00%  monitor\r\n31047        10157     10620    956   0.00%  lldp\r\n\
+        31048          589      3137    187   0.00%  lim\r\n31049         1588   \
+        \  12649    125   0.00%  l2rib\r\n31051          588      1353    434   0.00%\
+        \  ipfib\r\n31052          374       352   1064   0.00%  igmp\r\n31053   \
+        \       982      7038    139   0.00%  eth_port_channel\r\n31054          \
+        \ 88       131    675   0.00%  ecp\r\n31055          133       564    236\
+        \   0.00%  adbm\r\n31056          380      1730    219   0.00%  acllog\r\n\
+        31063          708      2323    304   0.00%  eltm\r\n31084         2312  \
+        \   18764    123   0.00%  ntpd\r\n31094          994      2525    393   0.00%\
+        \  vlan_mgr\r\n31101          259      4335     59   0.00%  eth_dstats\r\n\
+        31102         6046     18207    332   0.00%  ipqosmgr\r\n31103         1827\
+        \      4127    442   0.00%  lacp\r\n31118          353       820    430  \
+        \ 0.00%  aclqos\r\n31120          435      2734    159   0.00%  diag_port_lb\r\
+        \n31121         2963      5426    546   0.00%  ethpm\r\n31122          612\
+        \      1925    318   0.00%  l2fm\r\n31140         6389     50655    126  \
+        \ 0.00%  stp\r\n31141          258      2419    107   0.00%  stripcl\r\n31149\
+        \          823       686   1200   0.00%  copp\r\n31152          803      3024\
+        \    265   0.00%  ufdm\r\n31153          160      1300    123   0.00%  u2\r\
+        \n31154          280      2524    111   0.00%  sal\r\n31155          308 \
+        \      447    690   0.00%  mrib\r\n31156         1765      3108    568   0.00%\
+        \  mfdm\r\n31157          296      2462    120   0.00%  mcm\r\n31158     \
+        \     265       142   1868   0.00%  m6rib\r\n31163         5044     14349\
+        \    351   0.00%  l2pt\r\n31164          340       504    675   0.00%  bgp\r\
+        \n31176           70       115    609   0.00%  rip\r\n31177          306 \
+        \      309    992   0.00%  ospfv3\r\n31178          310       297   1045 \
+        \  0.00%  ospf\r\n31179          143        72   1995   0.00%  isis\r\n31181\
+        \           86       151    575   0.00%  eigrp\r\n31203          174     \
+        \  753    231   0.00%  m2rib\r\n31210          144       216    671   0.00%\
+        \  mcastfwd\r\n31211          240       338    710   0.00%  msdp\r\n31212\
+        \          321       482    667   0.00%  pim\r\n31218          314       485\
+        \    647   0.00%  pim6\r\n31513          210      5894     35   0.00%  wdpunch_thread\r\
+        \n32106            0         2      4   0.00%  bkncmd\r\n32109           \
+        \ 0         2     19   0.00%  bknevt\r\n32205          173      1295    133\
+        \   0.00%  bloggerd\r\n32207          737     11842     62   0.00%  psshelper\r\
+        \n32208          725     11826     61   0.00%  psshelper\r\n32209       208534\
+        \    695053    300   0.00%  plog_lc\r\n32210          531     11829     44\
+        \   0.00%  patch_installer\r\n32211          132      1524     87   0.00%\
+        \  obfl_lc\r\n32212           80       813     98   0.00%  mvsh\r\n32221 \
+        \          81       699    116   0.00%  evmc\r\n32222         1203     12173\
+        \     98   0.00%  dt_helper\r\n32227          143       555    257   0.00%\
+        \  diagclient\r\n32228        47835    212262    225   0.00%  crdcfg_server\r\
+        \n32230          105      1207     86   0.00%  capability\r\n32261       \
+        \ 93177     10673   8730   0.00%  crdclient\r\n32270         1000     12007\
+        \     83   0.00%  device_test\r\n32274         4567     14245    320   0.00%\
+        \  t2usd\r\n32277          164       281    586   0.00%  login\r\n32543  \
+        \        857      8927     96   0.00%  bfdc\r\n32544          843      2328\
+        \    362   0.00%  iftmc\r\n32545          444      2707    164   0.00%  pixc\r\
+        \n32547         6257     11602    539   0.00%  port_client\r\n32551      \
+        \ 118940    228589    520   0.00%  stats_client\r\n32694          451    \
+        \   717    630   0.00%  mtm\r\n32756          820      1610    509   0.00%\
+        \  ipfib\r\nCPU util  :    2.61% user,   15.70% kernel,   81.67% idle\r\n\
+        \ Please note that only processes from the requested vdc are shown above"
+      response_type: circular
+    term length 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: R3_nx#

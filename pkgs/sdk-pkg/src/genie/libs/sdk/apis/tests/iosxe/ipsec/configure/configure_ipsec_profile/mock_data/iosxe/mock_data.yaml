@@ -1,0 +1,53 @@
+configure:
+  commands:
+    crypto ipsec profile IPSec_PROFILE: "crypto ipsec profile IPSec_PROFILE\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    responder-only: "responder-only\r\n"
+    reverse-route remote-peer 1.1.1.1: "set reverse-route distance 250\r\n"
+    set ikev2-profile IKEv2_PRFOILE: "set ikev2-profile IKEv2_PRFOILE\r\n"
+    set mixed-mode: "set security-association replay window-size 256\r\n"
+    set pfs group19: "set mixed-mode\r\n"
+    set reverse-route distance 250: "set pfs group19\r\n"
+    set security-association dfbit clear: "set security-association dfbit clear\r\n"
+    set security-association ecn discard: "set security-association ecn discard\r\n"
+    set security-association idle-time 100: "set security-association idle-time 100\r\
+      \n"
+    set security-association level per-host: "set security-association level per-host\r\
+      \n"
+    set security-association lifetime days 20: "set security-association lifetime\
+      \ days 20\r\n"
+    set security-association replay window-size 256: "SA lifetime configs of more\
+      \ than 86400 seconds are meant to be used with GDOI. If used in non-GDOI cases,\
+      \ SA lifetime would be capped to 86400 seconds.\r\n"
+    set transform-set IPSec_TRANSFORM: "set transform-set IPSec_TRANSFORM\r\n"
+  prompt: TLS_Mad2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: TLS_Mad2(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: TLS_Mad2#

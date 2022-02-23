@@ -282,17 +282,23 @@ def enable_dot1x_sysauthcontrol(device):
             "Failed to enable dot1x system auth-control.Error: {}".format(str(e))
         )
 
-def clear_access_session(device):
+def clear_access_session(device, interface=None):
     """ executes clear access-sesssion CLI 
         Args:
             device ('obj'): device to use
+            interface (`str`): Interface name
         Returns:
             None
         Raises:
             SubCommandFailure: Failed to execute clear access-sesssion.
     """
-    cmd = ""
-    cmd += "clear access-session\n"
+    converted_interface = Common.convert_intf_name(interface)
+    cmd = "clear access-session"
+
+    if interface:
+        cmd += " interface {intf}".format(intf=converted_interface)
+
+    cmd += "\n"
     try:
         device.execute(cmd)
     except SubCommandFailure as e:
@@ -914,3 +920,280 @@ def configure_dot1x_cred_pki(device, profile_name, user_name, pki_trustpoint):
             "Could not configure dot1x credential profile with PKI{}.Error: {}".format(profile_name, str(e))
         )
 
+def configure_dot1x_pae(device, intf, mode='both'):
+
+    """Configure 
+    dot1x pae {mode}
+
+    Args:
+        device (`obj`): Device object
+        intf (`str`): Interface to configure
+        mode ('str', optional): Mode to configure, defaults to 'both'
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed configuring dot1x pae on interface
+    """
+
+    try:
+        device.configure([
+            f"interface {intf}",
+            f"dot1x pae {mode}"
+        ])
+
+    except SubCommandFailure:
+        log.error('Failed configuring dot1x pae command on interface')
+
+
+def unconfigure_dot1x_pae(device, intf, mode='both'):
+
+    """Unconfigure
+    no dot1x pae {mode}
+
+    Args:
+        device (`obj`): Device object
+        intf (`str`): Interface to configure
+        mode ('str', optional): Mode to unconfigure, defaults to 'both'
+
+    Return:
+        None
+
+    Raise:
+        SubCommandFailure: Failed unconfiguring dot1x pae on interface
+    """
+
+    try:
+        device.configure([
+            f"interface {intf}",
+            f"no dot1x pae {mode}"
+        ])
+
+    except SubCommandFailure:
+        log.error('Failed configuring dot1x pae command on interface')
+        
+
+def configure_service_template_linksec(device, template, session_type):
+    """Configure Service template with link security
+        Args:
+            device ('obj'): device to use
+            template (`str`): template name
+            session_type (`str`): session type to be configured
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure: Failed to configure Service template with link security
+    """
+    
+    cmd = [
+        f'service-template {template}',
+        f'linksec policy {session_type}',
+    ]
+
+    log.debug("Configure Service template with link security")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure Service template with link security")
+
+        
+def unconfigure_service_template(device, template):
+    """Unconfigure Service template 
+        Args:
+            device ('obj'): device to use
+            template (`str`): template name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure: Failed to unconfigure Service template 
+    """
+    cmd = f'no service-template {template}'
+
+    log.debug("Unconfigure Service template")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure Service template")
+
+
+def configure_service_template_voice(device, template):
+    """Configure Service template with voice
+        Args:
+            device ('obj'): device to use
+            template (`str`): template name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure: Failed to configure Service template with voice
+    """
+    
+    cmd = [
+        f'service-template {template}',
+        'voice vlan'
+          ]
+
+    log.debug("Configure Service template with voice")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure Service template with voice")
+
+
+def configure_class_map_subscriber(device, 
+                                   map_name, 
+                                   match_type, 
+                                   result_type=None,
+                                   auth_status=None,
+                                   method_type=None, 
+                                   dot1x_type=None,
+                                   priority_type=None,
+                                   priority=None):
+    """Configure Class Map Subscriber
+        Args:
+            device ('obj'): device to use
+            map_name ('str'): map name
+            match_type ('str'): Match type 
+            result_type ('str', optional): Result type, defaults to None
+            auth_status ('str', optional): Authorization status, defaults to None
+            method_type ('str', optional): Method type, defaults to None
+            dot1x_type ('str', optional): Dot1x type, defaults to None
+            priority_type('str', optional): Priority type, defaults to None
+            priority ('str', optional): Priorit value, defaults to None
+            
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure: Failed to configure Class map Subscriber
+    """
+    log.debug("Configure Class map Subscriber")
+
+    cmd = [f'class-map type control subscriber match-all {map_name}']
+    if result_type and method_type and dot1x_type:
+       cmd.append (f'match {match_type} {result_type} {method_type} {dot1x_type}')
+    elif result_type:
+       cmd.append (f'match {match_type} {result_type}')
+    elif auth_status:
+       cmd.append (f'match {match_type} {auth_status}')
+    elif method_type:
+       cmd.append (f'match {match_type} {method_type}')
+    elif priority_type:
+       cmd.append (f'match {match_type} {priority_type} {priority}')
+       
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+         "Could not configure Class map Subscriber")
+    return
+
+def unconfigure_class_map_subscriber(device, map_name):
+    """Unconfigure Class Map Subscriber
+        Args:
+            device ('obj'): device to use
+            map_name (`str`): map name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure: Failed to unconfigure Class Map Subscriber
+    """
+    cmd = f'no class-map type control subscriber match-all {map_name}'
+
+    log.debug("Unconfigure Class Map Subscriber")
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not Unconfigure Class Map Subscriber") 
+   
+
+def configure_dot1x_cred_int(device, interface, cred_profile_name=None, eap_profile=None, auth_profile=None):
+    """Configure Dot1x credential on interface
+    Args:
+        device ('obj'): device to use
+        interface (`str`): Interface name
+        cred_profile_name (`str', optional): dot1x credential profile name
+        eap_profile (`str`, optional): eap profile name (Default is None)
+        auth_profile (`str`, optional): Auth profile name(Default is None)
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to configure Dot1x credential on interface
+    """
+    converted_interface = Common.convert_intf_name(interface)
+    cmd = []
+    cmd.append(f'interface {converted_interface}')
+
+    if cred_profile_name:
+        cmd.append(f'dot1x credentials {cred_profile_name}')
+
+    if eap_profile is not None:
+        cmd.append(f'dot1x supplicant eap profile {eap_profile}')
+
+    if auth_profile is not None:
+       cmd.append(f'dot1x authenticator eap profile {auth_profile}')
+    
+
+    log.debug("Configure dot1x credential on interface")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure credential on interface on {}.Error: {}".format(converted_interface, str(e))
+        )
+
+
+def unconfigure_dot1x_cred_int(device, interface, cred_profile_name=None, eap_profile=None, auth_profile=None):
+    """Unconfigure Dot1x credential on interface
+    Args:
+        device ('obj'): device to use
+        interface (`str`): Interface name
+        cred_profile_name (`str', optional): dot1x credential profile name (Default is None)
+        eap_profile (`str`, optional): eap profile name (Default is None)
+        auth_profile (`str`, optional): Auth profile name (Default is None)
+
+    Returns:
+        None
+
+    Raises:
+        SubCommandFailure: Failed to unconfigure Dot1x credential on interface
+    """
+    converted_interface = Common.convert_intf_name(interface)
+    cmd = []
+    cmd.append(f'interface {converted_interface}')
+
+    if cred_profile_name:
+        cmd.append(f'no dot1x credentials {cred_profile_name}')
+
+    if eap_profile is not None:
+        cmd.append(f'no dot1x supplicant eap profile {eap_profile}')
+
+    if auth_profile is not None:
+       cmd.append(f'no dot1x authenticator eap profile {auth_profile}')
+
+
+    log.debug("Unconfigure dot1x credential on interface")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure credential on interface on {}.Error: {}".format(converted_interface, str(e))
+        )

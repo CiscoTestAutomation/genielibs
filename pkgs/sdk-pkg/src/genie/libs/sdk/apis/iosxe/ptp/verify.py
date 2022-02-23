@@ -277,3 +277,116 @@ def verify_ptp_calibration_states(
             return True
         timeout.sleep()
     return False
+
+def verify_ptp_8275_local_clock_priority(
+    device, local_priority, max_time=15, check_interval=5
+):
+
+    """ Verify ptp 8275 local clock priority value in show ptp clock command
+        Args:
+            device ('obj'): Device object
+            local_priority ('int'): PTP local clock priority
+            max_time ('int'): Maximum wait time for the trigger,
+                            in second. Default: 15
+            check_interval ('int'): Wait time between iterations when looping is needed,
+                            in second. Default: 5
+            
+        Returns:
+            True
+            False
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        out = None
+        try:
+            out = device.parse("show ptp clock")
+        except SchemaEmptyParserError:
+            pass
+        if out:
+            loc_prio = out['ptp_clock_info']['local_clock_priority']
+            if (int(loc_prio) == int(local_priority)):
+                result = True
+            else:
+                result = False
+
+        if result:
+            return True
+        timeout.sleep()            
+    return False
+
+def verify_ptp_8275_local_clock_port_priority(
+    device, interfaces, local_port_priority, max_time=15, check_interval=5
+):
+
+    """ Verify ptp 8275 local clock port priority value in show ptp clock command
+        Args:
+            device ('obj'): Device object
+            interface ('list'): PTP interface
+            local_port_priority ('int'): PTP local clock port priority
+            max_time ('int'): Maximum wait time for the trigger,
+                            in second. Default: 15
+            check_interval ('int'): Wait time between iterations when looping is needed,
+                            in second. Default: 5
+            
+        Returns:
+            True
+            False
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        out = None
+        for intf in interfaces:
+            try:
+                out = device.parse("show ptp port {intf}".format(intf=intf))
+            except SchemaEmptyParserError:
+                pass
+        if out:
+            loc_port_prio = out['local_port_priority']
+            if (int(loc_port_prio) == int(local_port_priority)):
+                result = True
+            else:
+                result = False
+
+        if result:
+            return True
+        timeout.sleep()            
+    return False
+
+def verify_ptp_8275_holdover_spec_duration(
+    device, holdover, max_time=15, check_interval=5
+):
+
+    """ Verify ptp 8275 holdover spec duration value in show ptp clock command
+        Args:
+            device ('obj'): Device object
+            holdover ('int'): PTP 8275 holdover spec duration
+            max_time ('int'): Maximum wait time for the trigger,
+                            in second. Default: 15
+            check_interval ('int'): Wait time between iterations when looping is needed,
+                            in second. Default: 5
+            
+        Returns:
+            True
+            False
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        out = None
+        try:
+            out = device.parse("show ptp clock")
+        except SchemaEmptyParserError:
+            pass
+        if out:
+            hold_timer = out['ptp_clock_info']['holdover_timer']
+            if (int(hold_timer) == int(holdover)):
+                result = True
+            else:
+                result = False
+
+        if result:
+            return True
+        timeout.sleep()            
+    return False

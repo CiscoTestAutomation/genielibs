@@ -3,6 +3,7 @@
 # Python
 import logging
 from netaddr import IPNetwork
+import ipaddress
 import re
 
 # Unicon
@@ -173,12 +174,21 @@ def verify_mpls_mldp_root(
     return res
 
 def verify_mfib_vrf_hardware_rate(
-    device, vrf, num_of_igmp_groups, var, rate_pps, max_time=60, check_interval=10):
+        device,
+        vrf,
+        num_of_igmp_groups,
+        var,
+        max_time=60,
+        check_interval=10):
     """Verify mfib vrf hardware rate
+
     Args:
             device ('obj'): Device object
-            neighbors (`list`): neighbors to be verified
-            max_time (`int`, optional): Max time, default: 30
+            vrf (`str`): vrf name
+            num_of_igmp_groups (`dict`): contains group ip with traffic sent pps and number of joins
+                Eg:{"229.1.1.1":{'rate_pps':20000,'num_of_igmp_groups':10}
+            var (`int`): variance
+            max_time (`int`, optional): Max time, default: 60
             check_interval (`int`, optional): Check interval, default: 10
     """
 
@@ -187,32 +197,44 @@ def verify_mfib_vrf_hardware_rate(
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
         try:
-            output=device.parse("show ip mfib vrf {vrf} active".format(vrf=vrf))            
+            output = device.parse(
+                "show ip mfib vrf {vrf} active".format(
+                    vrf=vrf))
         except SubCommandFailure as e:
             timeout.sleep()
             continue
-            
-        ip_list,hd_rt=[],0
-        
-        ##Verify wether the ips learnet have expected harware rate or not
-        for ip in output.q.get_values('groups'):
-            hd_rt=output.q.contains(ip).get_values('hw_rate_utilized')[0]
-            rate1 = int(rate_pps)/int(num_of_igmp_groups)
-            max_r = int(rate1)+int(var)
-            min_r = int(rate1)-int(var)
-            if hd_rt>= min_r and hd_rt<=max_r:
-                ip_list.append(ip)
-            else:
-                log.error("The ip {ip} has unexpected hardware rate {hd_rt}, while expected should be between {min_r} and {max_r}".format(ip=ip, hd_rt=hd_rt, min_r=min_r, max_r=max_r))
-                res = False             
-            
+
+        ip_list, hw_rt = [], 0
+        for ip in num_of_igmp_groups:
+            exp_ip = ip
+            for cnt in range(1, int(num_of_igmp_groups[ip]['num_of_igmp_groups'])):
+                if exp_ip in output.q.get_values('groups'):
+                    hw_rt = output.q.contains(
+                        ip).get_values('hw_rate_utilized')[0]
+                    rate1 = int(
+                        num_of_igmp_groups[ip]['rate_pps']) / int(
+                        num_of_igmp_groups[ip]['num_of_igmp_groups'])
+                    max_r = int(rate1) + int(var)
+                    min_r = int(rate1) - int(var)
+                    if hw_rt >= min_r and hw_rt <= max_r:
+                        ip_list.append(exp_ip)
+                    else:
+                        log.debug(
+                            f"The ip {exp_ip} has unexpected hardware rate {hw_rt},"
+                            f"while expected should be between {min_r} and {max_r}")
+                        res = False
+                else:
+                    log.debug(f"{exp_ip} was not found in the output")
+                    res = False
+                exp_ip = str(ipaddress.ip_address(exp_ip) + 1)
+            if res:
+                ips = ",".join(ip_list)
+                log.info(f"ip {ips} have expected hardware rate {hw_rt}")
+                ip_list = []
         if res:
-            ips=",".join(ip_list)
-            log.info("ip {ip_list} have expected hardware rate {hd_rt}".format(ip_list=ips,hd_rt=hd_rt))
             return True
-            
         timeout.sleep()
-    return res
+    return False
     
 def verify_mfib_vrf_summary(
     device, vrf, s_g, g, g_m, max_time=60, check_interval=10):
@@ -434,3 +456,72 @@ def verify_bidir_groupip(
             
         timeout.sleep()
     return res            
+
+def verify_mpls_mldp_count(
+    device, 
+    mp2mp_entries, 
+    p2mp_entries, 
+    mldp_roots, 
+    mldp_neighbors, 
+    max_time=60, 
+    check_interval=10):
+    """Verify mpls mldp count
+
+    Args:
+            device ('obj'): Device object
+            mp2mp_entries ('int'): number of m2mp entries
+            p2mp_entries ('int'): number of p2mp entries
+            mldp_roots ('int'): number of mldp root
+            mldp_neighbors (`int`): number of mldp neighbotss
+            max_time (`int`, optional): Max time, default: 30
+            check_interval (`int`, optional): Check interval, default: 10
+    """
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        res = True
+        try:
+            out = device.parse("show mpls mldp count")
+        except SubCommandFailure as e:
+            timeout.sleep()
+            continue
+            
+        ##verify mp2mp entry
+        if str(out.q.get_values('number_of_mp2mp_entries')[0]):
+            expected_mp2mp_entries=out.q.get_values('number_of_mp2mp_entries')[0]
+            if mp2mp_entries != expected_mp2mp_entries:
+                res = False
+        else:
+            log.debug("no mp2mp entries found in the output, please verify!")
+            res = False
+
+        ##verify p2mp entries
+        if str(out.q.get_values('number_of_p2mp_entries')[0]):
+            expected_p2mp_entries=out.q.get_values('number_of_p2mp_entries')[0]
+            if not (expected_p2mp_entries <= p2mp_entries and expected_p2mp_entries>= p2mp_entries):
+                res = False
+        else:
+            log.debug("no p2mp entries found in the output")
+            res = False    
+
+        ##verify mldp root entries
+        if out.q.get_values('total_number_of_mldp_roots')[0]:
+            expected_mldp_roots=out.q.get_values('total_number_of_mldp_roots')[0]
+            if mldp_roots != expected_mldp_roots:
+                res = False
+        else:
+            res = False
+
+        ##verify mldp neighbor entries
+        if str(out.q.get_values('total_number_of_mldp_neighbors')[0]):
+            expected_mldp_neighbors=out.q.get_values('total_number_of_mldp_neighbors')[0]
+            if mldp_neighbors != expected_mldp_neighbors:
+                res = False
+        else:
+            log.debug("no mldp neighbors found in the output")
+            res = False   
+            
+        if res:
+            return True
+        timeout.sleep()
+    return res

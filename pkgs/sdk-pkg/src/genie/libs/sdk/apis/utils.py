@@ -1051,17 +1051,16 @@ def copy_from_device(device,
     """
 
     fu = FileUtils.from_device(device, protocol=protocol)
-
     if server:
 
         if remote_path:
             if pathlib.Path(remote_path).is_dir():
                 filename = pathlib.Path(os.path.basename(local_path.split(':')[-1]))
-                remote_path = pathlib.Path(remote_path) / str(slugify(filename.stem) + filename.suffix)
-            remote_path = str(remote_path).lstrip('/')
+                remote_path = pathlib.Path(remote_path) /str(slugify((filename.stem.split('.')[0]))+''.join(filename.suffixes))
+
         else:
             filename = pathlib.Path(os.path.basename(local_path.split(':')[-1]))
-            remote_path = slugify(filename.stem) + filename.suffix
+            remote_path =str(slugify((filename.stem.split('.')[0]))) + ''.join(filename.suffixes)
 
         if protocol is None:
             server_block = fu.get_server_block(server)

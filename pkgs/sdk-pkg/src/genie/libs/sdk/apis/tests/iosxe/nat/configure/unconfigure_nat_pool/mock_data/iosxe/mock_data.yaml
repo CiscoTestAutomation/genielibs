@@ -1,0 +1,42 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no ip nat pool pool_p 192.168.201.4 192.168.201.6 netmask 255.255.255.128: "no\
+      \ ip nat pool pool_p 192.168.201.4 192.168.201.6 netmask 2\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b$ool pool_p 192.168.201.4 192.168.201.6 netmask 25 \
+      \        \b\b\b\b\b\b\b\b\b5.255.255\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \ 192.168.201.4 192.168.201.6 netmask 255.255.255.         \b\b\b\b\b\b\b\b\b\
+      128\r\n"
+    no logging console: ''
+  prompt: Stargazer(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Stargazer(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Stargazer#
