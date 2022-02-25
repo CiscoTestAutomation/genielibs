@@ -2165,3 +2165,227 @@ def verify_bgp_rt2_label(
         )
 
     return False
+
+
+def verify_bgp_evi_rt2_mac_localhost(
+    device, address_family, evi, mac, expected_host, max_time=30, check_interval=10
+):
+    """ Verify bgp local host in for route type 2 mac in 'show ip bgp 
+         {address_family} evi route-type 2 0 {mac} *'
+ 
+         Args:
+             device ('obj'): device to use
+             address_family ('str'): address family
+             evi ('str'): evi instance
+             mac('str'): Mac address
+             expected_host('str'): Expected local host
+             max_time ('int', optional): maximum time to wait in seconds,
+                 default is 30
+             check_interval ('int', optional): how often to check in seconds,
+                 default is 10
+         Returns:
+             result ('bool'): verified result
+         Raises:
+             None
+    """
+    timeout = Timeout(max_time, check_interval)
+    rt2_evi_out = ''
+    while timeout.iterate():
+        try:
+            rt2_evi_out = device.parse("show ip bgp {} evi {} route-type " \
+                " 2 0 {} *".format(address_family,evi,mac)
+            )
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+        if rt2_evi_out:
+            actual_evi = 'evi' + "_" + evi
+            addr_family = rt2_evi_out['instance']['default']['vrf'][actual_evi]\
+                          ['address_family'][address_family]
+            for prefix in addr_family.get('prefixes', {}):
+                nlr = addr_family['prefixes'][prefix].get('nlri_data', {})
+                rd = nlr['rd']
+                actual_host = rd.split(":")
+                if actual_host[0] == expected_host:
+                    return True
+    return False
+
+
+def verify_bgp_neighbor_state(
+    device, address_family, expected_state, neighbor_address=None,
+    vrf=None, max_time=30, check_interval=10
+):
+    """ Verify bgp neighbor state in 'show ip bgp l2vpn evpn summary' or
+        state for particular neighbor if neighbor_address is given.
+             
+        Args:
+            device ('obj'): device to use
+            address_family ('str'): address family
+            expected_state ('str'): Expected state(Idle or number)
+            neighbor_address ('str',optional): Neighbor ip address
+                default is none
+            vrf('str',optional): vrf id, default is none 
+            max_time ('int', optional): maximum time to wait in seconds,
+                default is 30
+            check_interval ('int', optional): how often to check in seconds,
+                default is 10
+        Returns:
+            result ('bool'): verified result
+        Raises:
+            None
+    """ 
+    timeout = Timeout(max_time, check_interval)
+    # Assigning vrf as 'default' incase of no vrf
+    # to get states related to default vrf
+    if not vrf:
+        new_vrf = "default"
+    else:
+        new_vrf = vrf
+
+    while timeout.iterate():
+        summary = device.api.get_ip_bgp_summary(
+             address_family=address_family,
+             vrf=vrf,
+             )
+        if summary:
+            # verifying for neghbor state incase of neghbor address is given
+            if neighbor_address:
+                state_rcvd = summary["vrf"][new_vrf]["neighbor"][neighbor_address]\
+                    ["address_family"][address_family]["state_pfxrcd"]
+                if expected_state == state_rcvd:
+                    return True
+            else:
+                all_states = []
+                # Collecting all states of all neigbors
+                for neighbor in summary["vrf"][new_vrf].get("neighbor",{}):
+                    state = summary['vrf'][new_vrf]['neighbor'][neighbor]\
+                        ["address_family"][address_family]["state_pfxrcd"]
+                    all_states.append(state)
+                #Verifying state in actual states
+                if expected_state in all_states:
+                    return True
+        timeout.sleep()
+
+    if not summary:
+        log.error("Could not get neighbors and states data, output is empty")
+
+    return False
+
+
+def verify_bgp_neighbor_route_zero_prefixes(device, address_family, neighbor):
+    """ Verify for zero number of prefixes in 'show ip bgp {address_family} 
+        neighbors {neighbor} routes'
+
+        Args:
+            device ('obj'): device to use
+            address_family ('str'): address family
+            neighbor ('str'): neighbor ip 
+        Returns:
+            result ('bool'): verified result
+        Raises:
+            None
+    """
+    total_prefixes = ""
+    try:
+        total_prefixes = device.parse("show ip bgp {} neighbors {} routes".format \
+               (address_family, neighbor)
+            )
+    except SchemaEmptyParserError as e:
+        return False
+    
+    if total_prefixes.get("total_num_of_prefixes") == 0:
+        return True
+
+    return False
+
+
+def verify_bgp_evi_orig_route(
+    device, address_family, evi, rd, expected_orig_route, max_time=30, check_interval=10
+):
+    """ Verify bgp evi originated route related to particular rd in 'show ip
+        bgp {address_family} evi {evi} detail'
+
+        Args:
+            device ('obj'): device to use
+            address_family ('str'): address family
+            evi ('str'):Ethernet tag in decimal <0-4294967295>
+            rd ('str'): Route distinguisher
+            expected_orig_route ('str'): Expected originated route
+            max_time ('int', optional): maximum time to wait in seconds,
+                default is 30
+            check_interval ('int', optional): how often to check in seconds,
+                default is 10
+        Returns:
+            result ('bool'): verified result
+        Raises:
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+    evi_out = ''
+    while timeout.iterate():
+        try:
+            evi_out = device.parse("show ip bgp {} evi {} detail".format( \
+                address_family,evi)
+            )
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        if evi_out:
+            actual_evi = 'evi' + "_" + evi
+            addr_family = evi_out['instance']['default']['vrf'][actual_evi] \
+                ['address_family'][address_family]
+            for prefix in addr_family.get('prefixes', {}):
+                nlr = addr_family['prefixes'][prefix].get('nlri_data', {})
+                actual_rd = nlr["rd"].split(":")
+                if (actual_rd[0] == rd) and ("orig_rtr_id" in nlr.keys()):
+                    if nlr['orig_rtr_id'] == expected_orig_route:
+                        return True
+    return False
+
+
+def verify_bgp_evi_mac_ipprefix(
+    device, address_family, evi, expected_rd, expected_mac, expected_ipprx, \
+    max_time=30, check_interval=10
+):
+    """ Verify bgp evi ip prefix related to particular rd and mac in 
+        'show ip bgp {address-family} evi {evi} detail'
+
+        Args:
+            device ('obj'): device to use
+            address_family ('str'): address family
+            evi ('str'): evi instance
+            expected_rd ('str'): expected rd 
+            expected_mac ('str'): Expected mac
+            expected_ipprx ('str'): Expected ip prefix
+            max_time ('int', optional): maximum time to wait in seconds,
+                default is 30
+            check_interval ('int', optional): how often to check in seconds,
+                default is 10
+        Returns:
+            result ('bool'): verified result
+        Raises:
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+    evi_out = ''
+    while timeout.iterate():
+        try:
+            evi_out = device.parse("show ip bgp {} evi {} detail".format( \
+                address_family,evi)
+            )
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+        actual_evi = 'evi' + "_" + evi
+        if evi_out:
+            addr_family = evi_out['instance']['default']['vrf'][actual_evi] \
+            ['address_family'][address_family]
+            for prefix in addr_family.get('prefixes', {}):
+                nlr = addr_family['prefixes'][prefix].get('nlri_data', {})
+                actual_rd = nlr["rd"].split(":")
+                if (actual_rd[0] == expected_rd) and ('mac' and 'ip_prefix' in nlr.keys()):
+                    if (nlr['mac'] == expected_mac.upper()) and (nlr['ip_prefix'] == expected_ipprx):
+                        return True
+    return False
+

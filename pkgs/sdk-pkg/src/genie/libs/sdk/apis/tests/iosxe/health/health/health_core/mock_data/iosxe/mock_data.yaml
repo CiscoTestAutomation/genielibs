@@ -1,0 +1,44 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: R1_xe(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: R1_xe(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    dir bootflash:/core/:
+      response:
+      - "Directory of bootflash:/core/\r\n\r\n120961  drwx             4096  Oct 30\
+        \ 2021 09:50:17 +00:00  modules\r\n\r\n6286540800 bytes total (5429526528\
+        \ bytes free)"
+      response_type: circular
+    dir harddisk:/core/:
+      response:
+      - '% Invalid command at ''^'' marker.'
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: R1_xe#

@@ -808,7 +808,7 @@ def configure_ospf_routing_on_interface(device, interface, ospf_process_id,
         )
              
         
-def configure_ip_prefix_list(device, prefix_list_name, seq, ip_address):
+def configure_ip_prefix_list(device, prefix_list_name, seq, ip_address, subnet_id=32):
     """ configure prefix-list to pass a prefix
 
         Args:
@@ -816,6 +816,7 @@ def configure_ip_prefix_list(device, prefix_list_name, seq, ip_address):
             prefix_list_name (`int`): prefix list name to be used
             seq (`int`): Sequence to insert to existing route-map entry
             ip_address (`str`): ip address to be used
+            subnet_id (`int`): subnet_id to be used, default value is 32
         Return:
             None
 
@@ -824,9 +825,9 @@ def configure_ip_prefix_list(device, prefix_list_name, seq, ip_address):
     """
     try:
         device.configure(
-            "ip prefix-list {prefix_list_name} seq {seq} permit {ip_address}/32"
+            "ip prefix-list {prefix_list_name} seq {seq} permit {ip_address}/{subnet_id}"
             .format(prefix_list_name=prefix_list_name, seq=seq, 
-                    ip_address=ip_address)  
+                    ip_address=ip_address, subnet_id=subnet_id)  
         )
     except SubCommandFailure as e:
         raise SubCommandFailure(
@@ -860,7 +861,7 @@ def unconfigure_ospf_on_device(device, ospf_process_id):
                     ospf_process_id=ospf_process_id, error=e))
     
         
-def unconfigure_ip_prefix_list(device, prefix_list_name, seq, ip_address):
+def unconfigure_ip_prefix_list(device, prefix_list_name, seq, ip_address, subnet_id=32):
     """ unconfigure prefix-list
 
         Args:
@@ -868,6 +869,7 @@ def unconfigure_ip_prefix_list(device, prefix_list_name, seq, ip_address):
             prefix_list_name (`int`): prefix-list name
             seq (`int`): Sequence number of a prefix list
             ip_address (`str`): ip address to be pass
+            subnet_id('int'): default value is 32
         Return:
             None
 
@@ -877,8 +879,8 @@ def unconfigure_ip_prefix_list(device, prefix_list_name, seq, ip_address):
     try:
         device.configure(
             "no ip prefix-list {prefix_list_name} seq {seq} permit "
-            "{ip_address}/32".format(prefix_list_name=prefix_list_name, 
-                                     seq=seq, ip_address=ip_address)  
+            "{ip_address}/{subnet_id}".format(prefix_list_name=prefix_list_name, 
+                                     seq=seq, ip_address=ip_address, subnet_id=subnet_id)  
         )
     except SubCommandFailure as e:
         raise SubCommandFailure(

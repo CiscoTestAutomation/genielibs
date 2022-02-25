@@ -122,11 +122,6 @@ class test_filetransferutils(unittest.TestCase):
 
     '''
 
-    raw10 = """
-    copy scp://user@192.168.0.253//path/to/images/n9k/nxos64.10.2.1.89.F_755078.bin bootflash:/nxos64.10.2.1.89.F_755078.bin vrf management use-kstack
-    protocol identification string lack carriage return
-    """
-
     raw11 = """
     copy tftp://192.168.0.253//auto/tftp-ssr/golden/fake_extrafake2_n7000-s2-kickstart.8.4.4.bin bootflash:/fake_extrafake2_n7000-s2-kickstart.8.4.4.bin vrf management
     no such file or directory (invalid server)
@@ -144,8 +139,6 @@ class test_filetransferutils(unittest.TestCase):
     outputs['copy running-config sftp://myuser@1.1.1.1//home/virl'] = raw8
     outputs['copy bootflash:/virtual-instance.conf '
         'ftp://10.1.0.214//auto/tftp-ssr/virtual-instance.conf vrf management'] = raw9
-    outputs['copy scp://user@192.168.0.253//path/to/images/n9k/nxos64.10.2.1.89.F_755078.bin ' \
-            'bootflash:/nxos64.10.2.1.89.F_755078.bin vrf management use-kstack'] = raw10
     outputs['copy tftp://192.168.0.253//auto/tftp-ssr/golden/fake_extrafake2_n7000-s2-kickstart.8.4.4.bin ' \
             'bootflash:/fake_extrafake2_n7000-s2-kickstart.8.4.4.bin vrf management'] = raw11
 
@@ -285,16 +278,6 @@ class test_filetransferutils(unittest.TestCase):
         self.fu_device.copyconfiguration(source='running-config',
           destination='tftp://10.1.7.250//auto/tftp-ssr/test_config.py',
           timeout_seconds=300, device=self.device)
-
-    def test_scp_stringlackcarriagereturn(self):
-        self.device.execute = Mock()
-        self.device.execute.side_effect = self.mapper
-
-        with self.assertRaises(SubCommandFailure):
-            self.fu_device.copyfile(source='scp://user@192.168.0.253//path/to/images/n9k/nxos64.10.2.1.89.F_755078.bin',
-                                    destination='bootflash:/nxos64.10.2.1.89.F_755078.bin',
-                                    vrf='management',
-                                    use_kstack=True)
 
     def test_ftp_invalidserver(self):
         self.device.execute = Mock()

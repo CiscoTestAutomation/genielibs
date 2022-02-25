@@ -833,3 +833,47 @@ def verify_routing_subnet_entry(
         )
 
     return False
+
+
+def verify_route_vrf_nexthop_with_source_protocol(
+    device, vrf, route_ip, address_family, protocol, out_intf, expected_nexthop, max_time=20, check_interval=2
+):
+    """ Verify route target is present
+        Args:
+            device ('obj'): Device object
+            vrf ('str'): VRF name
+            address_family ('str'): address family to check
+            route_ip ('list'): list of routes to compare
+                ex.) routes = ['192.168.1.1', '192.168.1.2']
+            ignore_routes ('list'): list of routes to ignore with type
+                ex.) ignore_routes = ['L', 'B', 'C']
+        Returns:
+            True
+            False
+        Raises:
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+
+        if address_family == "ipv6":
+            routes_received = device.api.get_routing_ipv6_routes(vrf)
+        else:
+            routes_received = device.api.get_routing_routes(vrf,address_family)
+
+        if routes_received:
+            for route in routes_received.keys():
+                actual_route=route.split("/")
+            # Getting specific route ip
+                if route_ip == actual_route[0]:
+                # Matching with specific source protocol
+                    if routes_received[route]['source_protocol'] == 'bgp':
+                        n_hop_list = routes_received[route]['next_hop'].get("next_hop_list","")
+                        for indx in n_hop_list.keys():
+                        # Verifying for specific outgoing interface
+                            if n_hop_list[indx]['outgoing_interface'] == out_intf:
+                                if n_hop_list[indx]['next_hop'] == expected_nexthop:
+                                    return True
+        timeout.sleep()
+         
+    return False

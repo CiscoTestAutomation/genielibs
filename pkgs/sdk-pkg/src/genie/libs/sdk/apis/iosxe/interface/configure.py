@@ -593,7 +593,8 @@ def config_ip_on_interface(
     eth_encap_type=None,
     eth_encap_val=None,
     sub_interface=None,
-    disable_switchport=False
+    disable_switchport=False,
+    dhcpv4=False
 ):
     """ Configure IP on an interface
 
@@ -606,6 +607,7 @@ def config_ip_on_interface(
             eth_encap_type (`str`): Encapsulation type
             eth_encap_val (`str`): Encapsulation value
             sub_interface (`str`): Subinterface to be added to interface name
+            dhcpv4 ('bool): configure for ipv4 dhcp
 
         Returns:
             None
@@ -643,6 +645,9 @@ def config_ip_on_interface(
                    "ipv6 address {ipv6}\n".format(
             ipv6=ipv6_address
         )
+    # configure port to receive ipv4 address via dhcp
+    if dhcpv4:
+        cfg_str += "ip address dhcp\n"
 
     # Configure device
     try:
@@ -658,6 +663,49 @@ def config_ip_on_interface(
             )
         )
 
+def config_ip_subinterface(
+        device,
+        interface,
+        sub_interface_num,
+        ip_address,
+        prefix,
+        encap_type,
+):
+    """ Configure sub-interface with IP addresses on device
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            sub_interface_num (`int`): Subinterface to be added to
+                                 interface name
+            ip_address(`str`): IP addressed to be configured on interface
+            prefix(`str`): prefix to be used in configuration
+            encap_type (`str`): Encapsulation type
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    # interface {interface}.999
+    #  encapsulation dot1Q 999
+    #  ip address 10.4.0.1 255.255.255.0
+    name = interface + "." + str(sub_interface_num)
+    sub_intf = Interface(device=device, name=name)
+    sub_intf.eth_encap_type1 = encap_type
+    sub_intf.eth_encap_val1 = sub_interface_num
+    ipv4a = IPv4Addr(device=device)
+    ipv4a.ipv4 = IPv4Address(ip_address)
+    ipv4a.prefix_length = prefix
+    sub_intf.add_ipv4addr(ipv4a)
+
+    try:
+        config = str(sub_intf.build_config(apply=False))
+        sub_intf.build_config()
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure sub-interface {interface}. Error:\n{error}".format(
+                interface=sub_intf, error=e
+            )
+        )
 
 def config_interface_subinterface_and_secondary_addresses(
         device,
@@ -1122,7 +1170,7 @@ def configure_interfaces_on_port_channel(
             )
 
 
-def configure_interface_switchport_trunk(device, interfaces, vlan_id=None):
+def configure_interface_switchport_trunk(device, interfaces, vlan_id, oper=None):
 
     """ configure switchport mode trunk to the interface
 
@@ -1130,6 +1178,7 @@ def configure_interface_switchport_trunk(device, interfaces, vlan_id=None):
             device (`obj`): Device object
             interface (`list`): list of Interface to be added to port channel
             vlan (`str`): vlan to be added to the port
+            oper (`str`): "default(None) Vlan operation to be added"
         Returns:
             None
     """
@@ -1140,20 +1189,24 @@ def configure_interface_switchport_trunk(device, interfaces, vlan_id=None):
     )
 
     try:
+        config = []
         for intf in interfaces:
-            confg="interface {intf} \n".format(intf=intf)
-            confg+="switchport \n"
-            confg+="switchport mode trunk \n"
-            confg+="switchport trunk allowed vlan {vlan_id}".format(
-                                                    vlan_id=vlan_id)
-            device.configure(confg)
+            config.append("interface {intf}".format(intf=intf))
+            config.append("switchport")
+            config.append("switchport mode trunk")
+            if oper is None:
+                config.append("switchport trunk allowed vlan {vlan_id}".format(
+                                                        vlan_id=vlan_id))
+            elif oper == 'add':
+                config.append("switchport trunk allowed vlan add {vlan_id}".format(
+                                                        vlan_id=vlan_id))
+        device.configure('\n'.join(config))
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Failed to configure switchport on {interface}. Error:\n{error}"\
-                .format(interfaces=interfaces, error=e
+                        .format(interfaces=interfaces, error=e
             )
         )
-
 
 def configure_lacp_on_interface(
         device, interface, min_max_bundle, minumum_bundle=False
@@ -2592,59 +2645,73 @@ def configure_interface_switchport_trunk_vlan(device, interface, trunk_mode, vla
             error=e)
         )
 
-
 def configure_ip_on_tunnel_interface(
     device,
     interface,
-    ip_address,
-    mask,
-    tunnel_source,
-    tunnel_destination,
+    ip_address=None,
+    mask=None,
+    tunnel_source=None,
+    tunnel_destination=None,
     keepalive_timer = 10,
     ip_mtu = None,
-    ipv6_address=None
+    ipv6_address=None,
+    v6_mask=None,
+    mode=None,
+    tunnel_protection=None,
+    profile=None
 ):
     """ Configure tunnel interface
-
         Args:
             device (`obj`): Device object
             interface (`str`): Interface to get address
-            ip_address (`str`): IP addressed to be configured on interface
-            mask (`str`): Mask address to be used in configuration
+            ip_address (`str`,optional): IPv4 addressed to be configured on interface
+            mask (`str`,optional): IPv4 Mask address to be used in configuration
             tunnel_source (`str`): tunnel source address
             tunnel_destination (`str`): tunnel destination address
             keepalive_timer ('int',optional): tunnel keepalive timer,default value is 10
             ip_mtu ('str',optional): tunnel mtu, default value is None
             ipv6_address (`str`,optional): IPv6 address with subnet mask,default value is None
-
-
+            v6_mask ('str',optional): IPv6 mask (Default None)
+            mode ('str',optional): Tunnel mode. Default is gre
+            tunnel_protection ('str',optional): Protection type (i.e ipsec,dike)
+            profile ('str',optional): Tunnel protection profile name
         Returns:
             None
-
         Raises:
             SubCommandFailure
     """
     configs = []
     configs.append("interface {intf}".format(intf=interface))
-    configs.append("ip address {ip} {mask}".format(ip=ip_address,mask=mask))
+    if ip_address:
+        configs.append("ip address {ip} {mask}".format(ip=ip_address,mask=mask))
+
+        if mode:
+            # IOSXE Defaults to GRE
+            configs.append("tunnel mode {mode} ipv4".format(mode=mode))
+
     configs.append("tunnel source {ip}".format(ip=tunnel_source))
     configs.append("tunnel destination {ip}".format(ip=tunnel_destination))
-    configs.append("keepalive {timer}".format(timer=keepalive_timer))
-
+    if keepalive_timer:
+        configs.append("keepalive {timer}".format(timer=keepalive_timer))
     if ip_mtu:
         configs.append("ip mtu {mtu}".format(mtu=ip_mtu))
-
     if ipv6_address:
-        configs.append("tunnel mode gre ipv6")
-        configs.append("ipv6 address {ipv6}".format(ipv6=ipv6_address))
+        configs.append("tunnel mode {mode} ipv6".format(mode=mode))
+        # Check if mask needs to be configured with IPv6 address
+        if v6_mask:
+            configs.append("ipv6 address {ipv6}/{v6_mask}".format(ipv6=ipv6_address, v6_mask=v6_mask))
+        else:
+            configs.append("ipv6 address {ipv6}".format(ipv6=ipv6_address))
 
+    if tunnel_protection:
+        configs.append("tunnel protection {tunnel_protection} profile {profile}".
+                       format(tunnel_protection=tunnel_protection,profile=profile))
     try:
         device.configure(configs)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Failed to configure IP address {ip} on Tunnel interface "
+            "Failed to configure Tunnel interface "
             "{interface} on device {dev}. Error:\n{error}".format(
-                ip=ip_address,
                 interface=interface,
                 dev=device.name,
                 error=e,
@@ -3388,7 +3455,12 @@ def configure_control_policies(
     action_number=None,
     action=None,
     action_method=None,
-
+    auth_rest_timer=None,
+    template_name=None,
+    priority=None,
+    dot1x_type=None,
+    retries=None,
+    retry_time=None
 ):
     """ Configure policy-map on an device
 
@@ -3403,6 +3475,12 @@ def configure_control_policies(
             action_number (`int`,optional): action number between 1 to 254, default value is None
             action (`str`,optional): action to be perform under this class, default value is None
             action_method (`str`,optional): Mab or dot1x or webauth, default value is None
+            auth_rest_timer ('int', optional): Authentication restart timer, default value is None
+            template_name (`str`,optional): Template name, default value is None
+            priority ('int', optional): Priority vlaue, default value is None
+            dot1x_type (`str`,optional): Dot1 type. default value is None
+            retries (`str`,optional): retries option. default value is None
+            retry_time (`str`,optional): retry-time option. default value is None
 
         Returns:
             None
@@ -3413,24 +3491,32 @@ def configure_control_policies(
 
     # Build config list
     cfg_lst = []
-    class_str = ' '
-    cfg_lst.append("policy-map type control subscriber {policy_name}".format(
-            policy_name=policy_name))
-
+    cfg_lst.append(f"policy-map type control subscriber {policy_name}")
 
     # Add encap
     if event and match:
-        cfg_lst.append("event {event} {match}".format(
-            event=event, match=match))
+        cfg_lst.append(f"event {event} {match}")
     if class_number and class_name:
-        cfg_lst.append("{class_number} class {class_name} {class_action}".format(
-            class_number=class_number,class_name=class_name,class_action=class_action))
+        cfg_lst.append(f"{class_number} class {class_name} {class_action}")
     else:
-        cfg_lst.append("{class_number} class always {class_action}".format(
-            class_number=class_number,class_action=class_action))
+        cfg_lst.append(f"{class_number} class always {class_action}")
     if action_number and action and action_method:
-        cfg_lst.append("{action_number} {action} using {action_method}".format(
-            action_number=action_number,action=action,action_method=action_method))
+        if template_name:
+            cfg_lst.append(f"{action_number} {action} {action_method} {template_name}")
+        elif action == 'authenticate':
+
+            if priority and retries:
+                cfg_lst.append(f"{action_number} {action} using {action_method} retries {retries} retry-time {retry_time} priority {priority}")
+            elif priority:
+                cfg_lst.append(f"{action_number} {action} using {action_method} priority {priority}")
+            elif dot1x_type:
+                cfg_lst.append(f"{action_number} {action} using {action_method} {dot1x_type}")
+            else:
+                cfg_lst.append(f"{action_number} {action} using {action_method}")
+        else:
+            cfg_lst.append(f"{action_number} {action} {action_method}")
+    if auth_rest_timer:
+        cfg_lst.append(f"{action_number} {action} {auth_rest_timer}")
 
     # Configure device
     try:
@@ -3443,3 +3529,214 @@ def configure_control_policies(
                 error=e,
             )
         )
+
+def configure_subinterface(
+    device, 
+    physical_port, 
+    any_number,
+    ip_address,
+    sub_mask
+):
+    """ Configure subinterface 
+        Args:
+            device ('obj'): device to use
+            physical_port ('str'): physical port
+            any_number ('str'): any number
+            ip_address ('str'): Ip address
+            sub_mask ('str'): Subnet mask        
+        Returns:
+            console output
+        Raises:
+            SubCommandFailure: subinterface not enabled
+    """
+    cmd = [
+            "interface {}.{}".format(physical_port,any_number),
+            "encapsulation dot1q {} native".format(any_number),
+            "ip address {} {}".format(ip_address,sub_mask)
+          ]
+  
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not Configure subinterface")
+
+def configure_interface_reg_segment(
+        device,
+        interface,
+        segment_no,
+        edge = False,
+        preferred = False):
+    """ Config Reg segment on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            segment_no ('int'): rep segment number
+            edge('bool'): edge preferred. Default is False
+            preferred  ('bool'): neighbor preferred . Default is False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Config Reg segment on  interface {interface}")
+    cmd = f"rep segment {segment_no}"
+    if edge :
+         cmd += " edge no-neighbor"
+    if preferred:
+         cmd += " preferred"
+    try:
+        device.configure(
+            [
+                f"interface {interface}",
+                cmd,
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to config rep segment  on {interface}. Error:\n{e}")
+
+def unconfigure_interface_reg_segment(
+        device,
+        interface,
+        segment_no,
+        edge = False,
+        preferred = False):
+    """ Unconfig Reg segment on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            segment_no ('int'): rep segment number
+            edge('bool'): edge preferred. Default is False
+            preferred  ('bool'): neighbor preferred. Default is False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"unconfig Reg segment on  interface {interface}")
+    cmd = f"no rep segment {segment_no}"
+    if edge :
+         cmd += " edge no-neighbor"
+    if preferred:
+         cmd += " preferred"
+
+    try:
+        device.configure(
+            [
+                f"interface {interface}",
+                cmd,
+            ]
+        )
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfig rep segment  on {interface}. Error:\n{e}")
+
+def configure_interface_reg_segment_timer(
+        device,
+        interface,
+        segment_timer):
+    """ Config Reg segment timer on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            segment_timer ('int'): rep segment timer
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Config Reg segment timer on interface {interface}")
+
+    cmd = f'rep lsl-age-timer {segment_timer}'
+    try:
+        device.configure(
+            [
+                f"interface {interface}",
+                cmd,
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to config rep segment timer on {interface}. Error:\n{e}")
+
+def unconfigure_interface_reg_segment_timer(
+        device,
+        interface,
+        segment_timer):
+    """ Unconfig Reg segment timer on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+            segment_timer ('int'): rep segment timer
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"unconfig Reg segment timer on interface {interface}")
+
+    cmd = f'no rep lsl-age-timer {segment_timer}'
+    try:
+        device.configure(
+            [
+                f"interface {interface}",
+                cmd,
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfig rep segment timer on {interface}. Error:\n{e}")
+def configure_switchport_nonegotiate(
+        device,
+        interface):
+    """ Config switchport nonegotiate on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Config switchport nonegotiate on interface {interface}")
+
+    cmd = 'switchport nonegotiate'
+    try:
+        device.configure(
+            [
+                f"interface {interface}",
+                cmd,
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to config switchport nonegotiate on {interface}. Error:\n{e}")
+
+def unconfigure_switchport_nonegotiate(
+        device,
+        interface):
+    """ Unconfig switchport nonegotiate on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): Interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(f"Unconfig switchport nonegotiate on interface {interface}")
+
+    cmd = 'no switchport nonegotiate'
+    try:
+        device.configure(
+            [
+                f"interface {interface}",
+                cmd,
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unonfig switchport nonegotiate on {interface}. Error:\n{e}")
+

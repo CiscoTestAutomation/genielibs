@@ -49,6 +49,10 @@ def configure_ptp_modes(device, mode):
         configs.append("ptp mode e2etransparent")
     elif mode == "tcp2p":
         configs.append("ptp mode p2ptransparent")
+    elif mode == "g8275bc":
+        configs.append("ptp profile 8275.1 clock-mode boundary")
+    elif mode == "g8275tc":
+        configs.append("ptp profile 8275.1 clock-mode transparent")
     else:
         configs.append("ptp mode boundary delay-req")
 
@@ -170,8 +174,8 @@ def unconfigure_ptp_modes(device, mode):
             SubCommandFailure
     """
     configs = []
-    if mode == "dot1as":
-        configs.append("no ptp profile dot1as")
+    if mode == "dot1as" or mode == "g8275":
+        configs.append("no ptp profile")
     else:
         configs.append("no ptp mode")
 
@@ -245,4 +249,134 @@ def unconfigure_ptp_domain(device, domain):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not configure PTP domain as per provided argument"
+        )
+
+def configure_ptp_8275_local_priority(device, priority, intf_list=None):
+    """ PTP 8275 local priority global and interface configuration
+        Args:
+            device (`obj`): Device object
+            priority (`str`): PTP local priority
+            intf_list ('list', optional): PTP interface list, default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    if not intf_list:
+        configs.append("ptp local-clock priority {priority}".format(priority=priority))
+    else:
+        for intf in intf_list:
+            configs.append("interface {intf}".format(intf=intf))
+            configs.append("ptp localPriority {priority}".format(priority=priority))
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure PTP 8275 local priority as per provided argument"
+        )
+
+def unconfigure_ptp_8275_local_priority(device, priority, intf_list=None):
+    """ PTP 8275 local priority global and interface unconfiguration
+        Args:
+            device (`obj`): Device object
+            priority (`str`): PTP local priority
+            intf_list ('list', optional): PTP interface list, default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    if not intf_list:
+        configs.append("no ptp local-clock priority {priority}".format(priority=priority))
+    else:
+        for intf in intf_list:
+            configs.append("interface {intf}".format(intf=intf))
+            configs.append("no ptp localPriority {priority}".format(priority=priority))
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure PTP 8275 local priority as per provided argument"
+        )
+
+def configure_ptp_role_primary(device, intf_list):
+    """ PTP role interface configuration
+        Args:
+            device (`obj`): Device object
+            intf_list ('list'): PTP interface list
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    for intf in intf_list:
+        configs.append("interface {intf}".format(intf=intf))
+        configs.append("ptp role primary")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure PTP role interface as per provided argument"
+        )
+
+def unconfigure_ptp_role_primary(device, intf_list):
+    """ PTP role interface configuration
+        Args:
+            device (`obj`): Device object
+            intf_list ('list'): PTP interface list
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    for intf in intf_list:
+        configs.append("interface {intf}".format(intf=intf))
+        configs.append("no ptp role primary")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure PTP role interface as per provided argument"
+        )
+
+def configure_ptp_8275_holdover_spec_duration(device, holdover):
+    """ PTP 8275 holdover spec-duration configuration
+        Args:
+            device (`obj`): Device object
+            holdover (`int`): PTP holdover spec-duration in seconds
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(["ptp holdover 8275.1 spec-duration {holdover}".format(holdover=holdover)])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure PTP 8275 holdover spec-duration"
+        )
+
+def unconfigure_ptp_8275_holdover_spec_duration(device):
+    """ PTP 8275 holdover spec-duration unconfiguration
+        Args:
+            device (`obj`): Device object
+            domain (`str`): PTP domain
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure("no ptp holdover 8275.1 spec-duration")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure PTP 8275 holdover spec-duration"
         )

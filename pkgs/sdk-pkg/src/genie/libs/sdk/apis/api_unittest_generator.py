@@ -434,7 +434,7 @@ class TestGenerator:
 
         test_args = []
         default = self.test_arguments.get('default', {}).\
-            get('arguments')
+            get('arguments', {})
         api_name = self.test_arguments.get(api_name, {}).\
             get('arguments')
 

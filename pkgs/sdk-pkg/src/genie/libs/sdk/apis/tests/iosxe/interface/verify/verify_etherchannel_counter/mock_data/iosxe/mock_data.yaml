@@ -1,0 +1,46 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: c9300-SVL(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: c9300-SVL(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show interfaces Port-channel10 counter etherchannel:
+      response:
+      - "\r\nPort               InOctets    InUcastPkts    InMcastPkts    InBcastPkts\
+        \ \r\nPo10           370608838140      264719130          20408          \
+        \    0 \r\nTe1/1/3        370608352095      264719130          17717     \
+        \         0 \r\nTe2/1/5              486045              0           2691\
+        \              0 \r\n\r\nPort              OutOctets   OutUcastPkts   OutMcastPkts\
+        \   OutBcastPkts \r\nPo10                2613620          14218          10685\
+        \              1 \r\nTe1/1/3             2144540          14218          \
+        \ 8078              1 \r\nTe2/1/5              469080              0     \
+        \      2607              0"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: c9300-SVL#

@@ -472,3 +472,52 @@ def execute_issu_install_package(device, image_dir, image, save_system_config=Tr
     log.info("Failed to reload", from_exception=connect_exception)
     return False
 
+def execute_clear_platform_software_fed_switch_active_cpu_interface(device):
+    """ clear platform software fed switch active cpu-interface
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+       device.execute("clear platform software fed switch active cpu-interface")
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not clear active cpu-interface on device")
+
+def execute_clear_platform_software_fed_switch_mode_acl_stats(device,switch_mode):
+    """ clear platform software fed {switch_mode} acl stats
+        Args:
+            device ('obj'): Device object
+            switch_mode ('str'): active|standby|switch active|switch standby
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+
+        device.execute(f'clear platform software fed {switch_mode} acl stats')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not clear counters on {device}. Error:\n{e}")
+
+def execute_clear_ipdhcp_snooping_database_statistics(device):
+
+    """ clear ip dhcp  snooping database statistics
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.execute('clear ip dhcp  snooping database statistics')
+
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure('Could not clear ip dhcp  snooping database statistics')
+
+

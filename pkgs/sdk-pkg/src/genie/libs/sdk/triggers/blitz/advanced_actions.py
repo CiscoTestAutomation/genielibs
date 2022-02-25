@@ -129,59 +129,173 @@ def run_condition(self, steps, testbed, section, name, action_item):
     Running actions with regards to a condition
     """
     ret_list = []
-    # the if statement
-    condition = action_item.get('if')
-    # function to be applied if condition is met
-    function = action_item.get('function')
-    # actions to run or not run below run_condition
-    actions = action_item.get('actions')
 
-    # customized description of the conditional statement
-    desc = action_item.get('description', '')
+    # Legacy implementation
+    if isinstance(action_item, dict):
 
-    condition_bool = blitz_control(self, section, condition, 'if')
-    kwargs = {
-        'self': self,
-        'steps': steps,
-        'testbed': testbed,
-        'section': section,
-        'name': name,
-        'data': actions,
-    }
+        # the if statement
+        condition = action_item.get('if')
+        # function to be applied if condition is met
+        function = action_item.get('function')
+        # actions to run or not run below run_condition
+        actions = action_item.get('actions')
 
-    if not function:
-        return _run_condition_with_optional_func(condition_bool,
-                                                 condition,
-                                                 kwargs,
-                                                 description=desc)
+        # customized description of the conditional statement
+        desc = action_item.get('description', '')
 
-    msg = action_item.pop('custom_substep_message',
-                          'Checking the condition {}'.format(condition))
+        condition_bool = blitz_control(self, section, condition, 'if')
+        kwargs = {
+            'self': self,
+            'steps': steps,
+            'testbed': testbed,
+            'section': section,
+            'name': name,
+            'data': actions,
+        }
 
-    with steps.start(msg, continue_=True) as step:
+        if not function:
+            return _run_condition_with_optional_func(condition_bool,
+                                                    condition,
+                                                    kwargs,
+                                                    description=desc)
 
-        if condition_bool:
+        msg = action_item.pop('custom_substep_message',
+                            'Checking the condition {}'.format(condition))
 
-            getattr(step,
-                    function)("{c} is equal True. The run_condition "
-                              "step result is set to {f}".format(c=condition,
-                                                                 f=function))
+        with steps.start(msg, continue_=True) as step:
 
-        kwargs.update({'steps': step})
-        ret_list = list(callback_blitz_dispatcher_gen(**kwargs))[0]
-    # if actions actually ran the output list of outputs
-    # should be added to this dict to return
-    # mainly useful to be unpacked in parallel
+            if condition_bool:
 
-    return {
-        'action': 'run_condition',
-        'step_result': step.result,
-        'substeps': ret_list,
-        'advanced_action': True,
-        'run_condition_skipped': condition_bool,
-        'condition': condition
-    }
+                getattr(step,
+                        function)("{c} is equal True. The run_condition "
+                                "step result is set to {f}".format(c=condition,
+                                                                    f=function))
 
+            kwargs.update({'steps': step})
+            ret_list = list(callback_blitz_dispatcher_gen(**kwargs))[0]
+        # if actions actually ran the output list of outputs
+        # should be added to this dict to return
+        # mainly useful to be unpacked in parallel
+
+        return {
+            'action': 'run_condition',
+            'step_result': step.result,
+            'substeps': ret_list,
+            'advanced_action': True,
+            'run_condition_skipped': condition_bool,
+            'condition': condition
+        }
+
+    # Implementation that supports if, elif and else
+    else:
+        step_result = steps.result
+        run_condition_skipped = False
+        if_flag=False
+        else_flag=False
+
+        # Check multiple conditions have been passed
+        for item in action_item:
+            # To check multiple if
+            if 'if' in item.keys():
+                if not if_flag:
+                    if_flag = True
+                    continue
+                else:
+                    log.info(action_item)
+                    raise Exception("Multple if conditions have been passed, please provide only one"\
+                    " if condition")
+
+            # To check multiple else
+            if 'else' in item.keys():
+                if not else_flag:
+                    else_flag = True
+                    continue
+                else:
+                    log.info(action_item)
+                    raise Exception("Multiple else conditions have been passed, please provide only one"\
+                    " else condition")
+
+        # To check if atleast one if condition is passed
+        if not if_flag:
+            log.info(action_item)
+            raise Exception("At least one if condition should be passed")
+
+        # Implementation of if, elif, else
+        for item in action_item:
+            # the condition
+            if 'if' in item:
+                condition = item.get('if')
+            elif 'elif' in item:
+                condition = item.get('elif')
+            else:
+                condition = None
+
+            # function to be applied if condition is met
+            function = item.get('function')
+
+            # actions to run or not run below run_condition
+            actions = item.get('actions')
+
+            # customized description of the conditional statement
+            desc = item.get('description', '')
+
+            # To check the given condition
+            if condition:
+                condition_bool = blitz_control(self, section, condition, 'if')
+                if not condition_bool:
+                    run_condition_skipped = True
+                    continue
+
+            kwargs = {
+                'self': self,
+                'steps': steps,
+                'testbed': testbed,
+                'section': section,
+                'name': name,
+                'data': actions,
+            }
+
+            # Only executes when condition is True
+            if not function and condition_bool:
+                return _run_condition_with_optional_func(condition_bool,
+                                                        condition,
+                                                        kwargs,
+                                                        description=desc)
+
+            # When condition is True and function
+            if function and condition_bool:
+                msg = item.pop('custom_substep_message',
+                            'Checking the condition {}'.format(condition))
+
+                with steps.start(msg, continue_=True) as step:
+                    if condition_bool:
+                        getattr(step,
+                                function)("{c} is equal True. The run_condition "
+                                        "step result is set to {f}".format(c=condition,
+                                                                            f=function))
+                    kwargs.update({'steps': step})
+                    ret_list = list(callback_blitz_dispatcher_gen(**kwargs))[0]
+                step_result = step.result
+
+            # To execute actions under else condition
+            if 'else' in item.keys():
+                ret_list = list(callback_blitz_dispatcher_gen(**kwargs))[0]
+
+            # To break when condition passes
+            if condition_bool:
+                break
+
+        # if actions actually ran the output list of outputs
+        # should be added to this dict to return
+        # mainly useful to be unpacked in parallel
+        return {
+            'action': 'run_condition',
+            'step_result': step_result,
+            'substeps': ret_list,
+            'advanced_action': True,
+            'run_condition_skipped': run_condition_skipped,
+            'condition': condition
+        }
 
 advanced_actions = {
     'parallel': parallel,

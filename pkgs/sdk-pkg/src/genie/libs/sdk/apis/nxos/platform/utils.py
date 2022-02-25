@@ -25,6 +25,7 @@ def write_erase_reload_device_without_reconfig(
     password=None,
     reload_creds=None,
     reload_hostname='Router',
+    sleep_after_reload=15
 ):
     """Execute 'write erase' on device and reload without reconfiguring.
 
@@ -33,6 +34,8 @@ def write_erase_reload_device_without_reconfig(
             via_console(`str`): Via to use to reach the device console.
             reload_timeout(`int`): Maximum time to wait for reload to complete
             reload_creds(`str or list`): Creds to apply if reloading device asks
+            sleep_after_reload (int, optional): Amount of time to sleep after reload.
+                Defaults to 15 seconds.
     """
 
 
@@ -105,28 +108,22 @@ def write_erase_reload_device_without_reconfig(
     # Wait until reload has completed and device can be reachable
     log.info(
         "\n\nWaiting '{}' seconds for device to reboot after reload...".format(
-            reload_timeout
+            sleep_after_reload
         )
     )
-    time.sleep(reload_timeout)
+    time.sleep(sleep_after_reload)
 
     # Reconnect to device
     log.info(
         "\n\nReconnecting to device '{}' after reload...".format(hostname)
     )
-    new_device = Connection(
-        credentials=dict(default=dict(username=username, password=password)),
-        os=os,
-        hostname=reload_hostname,
-        start=["telnet {ip} {port}".format(ip=ip, port=port)],
-        prompt_recovery=True,
-    )
+
     try:
-        new_device.connect()
+        device.connect()
     except (ConnectionError, TimeoutError) as e:
         # Connection or Timeout Error but 'no' has been sent
         # simply destroy handle at this point
-        new_device.disconnect()
+        device.disconnect()
         log.info(
             "Reconnected to device '{}' after 'write erase' and reload'".format(
                 hostname
@@ -138,7 +135,7 @@ def write_erase_reload_device_without_reconfig(
             " and reload".format(hostname)
         ) from e
     else:
-        new_device.disconnect()
+        device.disconnect()
         log.info(
             "Successully reconnected to device '{}' after 'write erase' "
             "and reload'".format(hostname)

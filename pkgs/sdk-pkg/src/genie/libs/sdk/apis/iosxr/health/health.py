@@ -133,6 +133,7 @@ def health_memory(device,
                   output=None,
                   add_total=False,
                   timeout=None,
+                  threshold=None,
                   health=True):
     '''Get memory usage on device
 
@@ -150,6 +151,7 @@ def health_memory(device,
             output         (`str`): Output of show command
                                     Deault to None
             timeout        (`int`): Timeout(secs). Defaults to None
+            threshold      (`int`): N/A
         Returns:
             memory_usage_dict (`dict`): memory usage dict on the device (percentage)
                                         example:

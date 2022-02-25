@@ -130,6 +130,7 @@ setup(
                 'sphinx-rtd-theme',
                 'xmltodict',
                 'rest.connector',
+                'grpcio==1.40.0'
                 'protobuf'],
     },
 

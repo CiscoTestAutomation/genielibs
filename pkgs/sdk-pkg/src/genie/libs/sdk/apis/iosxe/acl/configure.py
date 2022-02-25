@@ -340,3 +340,150 @@ def remove_acl_from_interface(device, interface, acl_name, inbound=True):
                 acl=acl_name, interface=interface
             )
         )
+
+def configure_ipv6_acl(
+        device,
+        acl_name,
+        service_type,
+        src_nw,
+        dst_nw,
+        rule,
+        host_option=True,
+        prefix=None,
+        dst_port=None,
+        log_option=None,
+        sequence_num=None
+):
+    """ Configure IPv6 ACL
+
+        Args:
+            device (`obj`): Device object
+            acl_name ('str'): access-list name
+            service_type ('str'): service type to configure
+            src_nw ('str'): name of the source network object-group or any
+            dst_nw ('str'): name of the destination network object-group or any
+            rule ('str'): ACL rule permit/deny
+            host_option('bool',optional): True to configure ace with host keyword, False if host keyword not required. Default value is True
+            prefix('str',optional): Prefix value in case of network,default value is None
+            dst_port ('str',optional): Acl destination port,default value is None
+            log_option ('str',optional): Option to log ACL match,default value is None
+            sequence_num ('str',optional): specific sequence number,default value is None
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'ipv6 access-list {acl_name}\n'
+
+    if sequence_num:
+        cmd += f'sequence {sequence_num} '
+
+    cmd += f'{rule} {service_type} '
+
+    if src_nw == 'any':
+        cmd += 'any '
+    elif host_option:
+        cmd += f'host {src_nw} '
+
+    else:
+        cmd += f'{src_nw}/{prefix} '
+
+    if dst_nw == 'any':
+        cmd += 'any '
+    elif host_option:
+        cmd += f'host {dst_nw} '
+    else:
+        cmd += f'{dst_nw}/{prefix} '
+
+    if dst_port:
+        cmd += f'eq {dst_port} '
+
+    if log_option:
+        cmd += f'{log_option} '
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure IPv6 ACL {acl} on device {dev}. Error:\n{error}".format(
+                acl=acl_name,
+                dev=device.name,
+                error=e,
+            )
+        )
+
+def unconfigure_ipv6_acl_ace(
+        device,
+        acl_name,
+        service_type,
+        src_nw,
+        dst_nw,
+        rule,
+        host_option=True,
+        prefix=None,
+        dst_port=None,
+        log_option=None,
+        sequence_num=None
+):
+    """ Unconfigure IPv6 ACL ACE
+
+        Args:
+            device (`obj`): Device object
+            acl_name ('str'): access-list name
+            service_type ('str'): service type to configure
+            src_nw ('str'): name of the source network object-group or any
+            dst_nw ('str'): name of the destination network object-group or any
+            rule ('str'): ACL rule permit/deny
+            host_option('bool',optional): True to configure ace with host keyword, False if host keyword not required. Default value is True
+            prefix('str',optional): Prefix value in case of network option,default value is None
+            dst_port ('str',optional): Acl destination port,default value is None
+            log_option ('str',optional): Option to log ACL match counters,default value is None
+            sequence_num ('str',optional): specific sequence number,default value is None
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f'ipv6 access-list {acl_name}\n'
+
+    if sequence_num:
+        cmd += f'no sequence {sequence_num} '
+
+    else:
+        cmd += f'no {rule} {service_type} '
+
+        if src_nw == 'any':
+            cmd += 'any '
+        elif host_option:
+            cmd += f'host {src_nw} '
+
+        else:
+            cmd += f'{src_nw}/{prefix} '
+
+        if dst_nw == 'any':
+            cmd += 'any '
+        elif host_option:
+            cmd += f'host {dst_nw} '
+        else:
+            cmd += f'{dst_nw}/{prefix} '
+
+        if dst_port:
+            cmd += f'eq {dst_port} '
+
+        if log_option:
+            cmd += f'{log_option} '
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure IPv6 ACL {acl} on the device {dev}. Error:\n{error}".format(
+                acl=acl_name,
+                dev=device.name,
+                error=e,
+            )
+        )

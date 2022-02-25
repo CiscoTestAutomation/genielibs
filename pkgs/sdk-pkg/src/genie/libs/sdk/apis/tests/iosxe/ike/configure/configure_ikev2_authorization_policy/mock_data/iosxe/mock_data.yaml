@@ -1,0 +1,66 @@
+configure:
+  commands:
+    aaa attribute list test: "aaa attribute list test\r\n"
+    backup-gateway 200.200.200.1: "backup-gateway 200.200.200.1\r\n"
+    configuration version 5: "configuration version 5\r\n"
+    crypto ikev2 authorization policy IKEv2_AUTH_POLICY: "crypto ikev2 authorization\
+      \ policy IKEv2_AUTH_POLICY\r\n"
+    def-domain cisco.com: "def-domain cisco.com\r\n"
+    dhcp giaddr 100.100.100.1: "dhcp giaddr 100.100.100.1\r\n"
+    dhcp server 50.50.50.1: "dhcp server 50.50.50.1\r\n"
+    dhcp timeout 30: "dhcp timeout 30\r\n"
+    dns 1.1.1.1 2.2.2.2: "dns 1.1.1.1 2.2.2.2\r\n"
+    end:
+      new_state: execute
+    ipsec flow-limit 100: "ipsec flow-limit 100\r\n"
+    ipv6 dns 5001::1: "ipv6 dns 5001::1\r\n"
+    ipv6 pool ipv6_pool: "ipv6 pool ipv6_pool\r\n"
+    ipv6 prefix 128: "ipv6 prefix 128\r\n"
+    line console 0:
+      new_state: configure_line
+    netmask 255.255.255.0: "netmask 255.255.255.0\r\n"
+    no logging console: ''
+    pfs: "pfs\r\n"
+    pool ppool: "pool ppool\r\n"
+    route set access-list ipv4_acl: "route set access-list ipv4_acl\r\n"
+    route set access-list ipv6 ipv6_acl: "route set access-list ipv6 ipv6_acl\r\n"
+    route set interface: "route set interface\r\n"
+    route set local ipv4 20.20.20.0 255.255.255.0: "route set local ipv4 20.20.20.0\
+      \ 255.255.\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b$ocal ipv4 20.20.20.0 255.255.2         \b\b\b\b\b\b\b\b\b55.0\r\
+      \n"
+    route set local ipv4 30.30.30.0 255.255.255.255: "route set local ipv4 30.30.30.0\
+      \ 255.255.\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b$ocal ipv4 30.30.30.0 255.255.2         \b\b\b\b\b\b\b\b\b55.255\r\
+      \n"
+    route set local ipv6 2001::/64: "route set local ipv6 2001::/64\r\n"
+    route set local ipv6 3001::/64: "route set local ipv6 3001::/64\r\n"
+    session-lifetime 1200: "session-lifetime 1200\r\n"
+    split-dns 1.1.1.1: "split-dns 1.1.1.1\r\n"
+  prompt: TLS_Mad2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: TLS_Mad2(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: TLS_Mad2#

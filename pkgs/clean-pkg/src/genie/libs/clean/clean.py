@@ -23,7 +23,7 @@ from genie.libs.clean.utils import (
     get_clean_function,
     load_clean_json,
     get_image_handler)
-from genie.metaparser.util.schemaengine import Schema
+from genie.metaparser.util.schemaengine import Schema, Optional
 from genie.libs.clean.recovery import recovery_processor, block_section
 
 # Logger
@@ -151,9 +151,9 @@ class CleanTestcase(Testcase):
         while True:
             for stage in order:
                 if stage not in self.stages:
-                    self.failed("Stage '{}' has no configuration"
-                                " in clean.yaml for device {}"
-                                .format(stage, self.device.name))
+                    raise Exception("Stage '{}' has no configuration"
+                                    " in clean.yaml for device {}"
+                                    .format(stage, self.device.name))
 
                 # Check if stage has hit execution limits to protect
                 # against an infinite loop scenario
@@ -300,6 +300,12 @@ class CleanTestcase(Testcase):
 
             if hasattr(stage_func, 'schema'):
                 clean_schema[stage_func.__name__] = stage_func.schema
+
+                # Add schema that is common to all stages
+                clean_schema[stage_func.__name__].update({
+                        Optional('source'): dict
+                })
+
                 clean_to_validate[stage_func.__name__] = stage_data
 
             # Save for use later in __iter__()

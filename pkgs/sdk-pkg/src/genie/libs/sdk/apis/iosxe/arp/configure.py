@@ -121,3 +121,106 @@ def configure_static_arp(device, ip_address, mac_address):
                 e=str(e),
             )
         ) from e
+
+def configure_ip_arp_inspection_vlan(
+        device,
+        vlan):
+
+    """ Config ip arp inspection vlan on device
+        Args:
+            device ('obj'): Device object
+            vlan  ('int'): vlan id
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+               f"ip arp inspection vlan {vlan}",
+            ]
+        )
+
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to config ip arp inspection vlan.")
+
+
+def unconfigure_ip_arp_inspection_vlan(
+        device,
+        vlan):
+
+    """ Unconfig ip arp inspection vlan on device
+        Args:
+            device ('obj'): Device object
+            vlan  ('int'): vlan id
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        device.configure(
+            [
+               f"no ip arp inspection vlan {vlan}",
+            ]
+        )
+
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to unconfig ip arp inspection vlan")
+
+
+def configure_ip_arp_inspection_validateip(
+        device):
+
+    """ Config ip arp inspection validate ip  on device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        device.configure(
+            [
+               "ip arp inspection validate ip",
+            ]
+        )
+
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            f"Failed to config ip arp inspection validate ip.")
+
+
+def unconfigure_ip_arp_inspection_validateip(
+        device):
+
+    """ Unonfig ip arp inspection validate ip  on device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        device.configure(
+            [
+               "no ip arp inspection validate ip",
+            ]
+        )
+
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to unconfig ip arp inspection validate ip.")
+

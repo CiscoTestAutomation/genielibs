@@ -328,3 +328,35 @@ def get_routing_vrf_entries(device, prefix, vrf=None):
         entries.append(received_entry)
 
     return entries
+
+
+def get_routing_ipv6_routes(device, vrf):
+    """Execute 'show ipv6 route vrf <vrf>' and retrieve the routes
+
+        Args:
+            device (`obj`): Device object
+            vrf (`str`): VRF name
+
+        Returns:
+            Dictionary: received routes
+            {}: When exception is hit
+
+        Raises:
+            SchemaEmptyParserError
+            KeyError
+
+    """
+    try:
+        out = device.parse("show ipv6 route vrf {}".format(vrf))
+    except SchemaEmptyParserError:
+        log.error(
+            "Parser did not return any routes for vrf {vrf}".format(vrf=vrf))
+        return {}
+    try:
+        routes_received = out["vrf"][vrf]["address_family"]['ipv6'][
+            "routes"]
+    except KeyError as e:
+        log.error("Key issue with exception : {}".format(str(e)))
+        return {}
+
+    return routes_received

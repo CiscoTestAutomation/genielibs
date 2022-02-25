@@ -221,3 +221,113 @@ def verify_module_status(device, timeout=180, interval=30, ignore_modules=None):
     else:
         raise Exception("Modules on '{}' are not in stable state".\
                         format(device.name))
+
+def verify_mpls_rlist_summary_before_and_after_sso(device,
+                                                   active_rlist_summary_bsso,
+                                                   standby_rlist_summary_bsso):
+    ''' Verify whether rlist summary is same before and after sso on both active and standby device
+        Args:
+            device ('obj'): Device object
+            active_rlist_summary_bsso ('int'): active device rlist summary result before sso
+            standby_rlist_summary_bsso ('int'): standby device rlist summary result before sso
+        Return:
+            True if rlist summary are same on active and standby device before and after sso
+            or else returns False
+    '''
+
+    # current count Rlist
+    active_rlist_bsso = active_rlist_summary_bsso.q.contains(
+        "current_count").get_values("rlist")[0]
+    standby_rlist_bsso = standby_rlist_summary_bsso.q.contains(
+        "current_count").get_values("rlist")[0]
+
+    # current count Rentry
+    active_rentry_bsso = active_rlist_summary_bsso.q.contains(
+        "current_count").get_values("rentry")[0]
+    standby_rentry_bsso = standby_rlist_summary_bsso.q.contains(
+        "current_count").get_values("rentry")[0]
+
+    try:
+        active_rlist_summary_asso = device.parse(
+            "show platform software fed switch active mpls rlist summary")
+        standby_rlist_summary_asso = device.parse(
+            "show platform software fed switch standby mpls rlist summary")
+    except SchemaEmptyParserError:
+        raise SchemaEmptyParserError(
+            "Failed to parse commands"
+        )
+
+    active_rlist_asso = active_rlist_summary_asso.q.contains(
+        "current_count").get_values("rlist")[0]
+    standby_rlist_asso = standby_rlist_summary_asso.q.contains(
+        "current_count").get_values("rlist")[0]
+    active_rentry_asso = active_rlist_summary_asso.q.contains(
+        "current_count").get_values("rentry")[0]
+    standby_rentry_asso = standby_rlist_summary_asso.q.contains(
+        "current_count").get_values("rentry")[0]
+
+    # verify rlist
+    if not ((active_rlist_bsso == active_rlist_asso) and (
+            active_rentry_bsso == active_rentry_asso)):
+        log.debug("Current count rlist and rentry verification failed after sso")
+        return False
+        
+    # verify rentry
+    if not ((standby_rlist_bsso == standby_rlist_asso) and (
+            standby_rentry_bsso == standby_rentry_asso)):
+        log.debug("Current count rlist and rentry verification failed after sso")
+        return False
+
+    # Maximum reached Rlist
+    active_rlist_bsso = active_rlist_summary_bsso.q.contains(
+        "maximum_reached").get_values("rlist")[0]
+    active_rlist_asso = active_rlist_summary_asso.q.contains(
+        "maximum_reached").get_values("rlist")[0]
+    standby_rlist_bsso = standby_rlist_summary_bsso.q.contains(
+        "maximum_reached").get_values("rlist")[0]
+    standby_rlist_asso = standby_rlist_summary_asso.q.contains(
+        "maximum_reached").get_values("rlist")[0]
+        
+    # Maximum reached Rentry
+    active_rentry_bsso = active_rlist_summary_bsso.q.contains(
+        "maximum_reached").get_values("rentry")[0]
+    active_rentry_asso = active_rlist_summary_asso.q.contains(
+        "maximum_reached").get_values("rentry")[0]
+    standby_rentry_bsso = standby_rlist_summary_bsso.q.contains(
+        "maximum_reached").get_values("rentry")[0]
+    standby_rentry_asso = standby_rlist_summary_asso.q.contains(
+        "maximum_reached").get_values("rentry")[0]
+
+    if not ((active_rlist_bsso <= active_rlist_asso *
+         2 and active_rlist_bsso >= active_rlist_asso) and (
+            active_rentry_bsso <= active_rentry_asso *
+            2 and active_rentry_asso >= active_rentry_bsso)):
+        log.debug("Maximum Reached entry verification failed on active switch")
+        return False
+
+    if not ((standby_rlist_bsso <= standby_rlist_asso *
+         2 and standby_rlist_bsso >= standby_rlist_asso) and (
+            standby_rentry_bsso <= standby_rentry_asso *
+            2 and standby_rentry_asso >= standby_rentry_bsso)):
+        log.debug("Maximum Reached entry verification failed on standby switch")
+        return False
+
+    # Currrent lspvif adj label count
+    active_adj_bsso = active_rlist_summary_bsso.q.get_values(
+        "current_lspvif_adj_label_count")[0]
+    active_adj_asso = active_rlist_summary_asso.q.get_values(
+        "current_lspvif_adj_label_count")[0]
+    if not active_adj_bsso == active_adj_asso:
+        log.debug(
+            "current_lspvif_adj_label_count verification failed on active switch")
+        return False
+
+    standby_adj_bsso = standby_rlist_summary_bsso.q.get_values(
+        "current_lspvif_adj_label_count")[0]
+    standby_adj_asso = standby_rlist_summary_asso.q.get_values(
+        "current_lspvif_adj_label_count")[0]
+    if not standby_adj_bsso == standby_adj_asso:
+        log.debug(
+            "current_lspvif_adj_label_count verification failed on standby switch")
+        return False
+    return True

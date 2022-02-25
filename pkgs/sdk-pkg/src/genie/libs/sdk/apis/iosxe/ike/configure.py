@@ -97,3 +97,576 @@ def configure_ikev2_profile(device,
              "Error:\n{error}".format(error=e)
         )
         raise
+
+def configure_ikev2_proposal(device,
+                            proposal_name,
+                            encr_algos,
+                            dh_group,
+                            integrity_algos=None,
+                            prf_algos=None
+                        ):
+    """ Configures IKEV2 Proposal
+        Args:
+            device (`obj`): Device object
+            proposal_name ('str'): ikev2 proposal name
+            encr_algos ('str'): encryption algorithms
+            integrity_algos ('str'): integrity or authentication algorithms
+            dh_group ('str'): Diffie Hellman group
+            prf_algos ('str'): Psuedo random number function
+        Returns:
+            True/False
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring IKEV2 Proposal"
+    )
+
+    configs = []
+    configs.append(f"crypto ikev2 proposal {proposal_name}")
+    configs.append(f"encryption {encr_algos}")
+    if not re.search("aes\-gcm\-.*", encr_algos):
+        configs.append(f"integrity {integrity_algos}")
+    configs.append(f"group {dh_group}")
+    if prf_algos is not None:
+        configs.append(f"prf {prf_algos}")
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error("Failed to configure ikev2 proposal,"
+             "Error:\n{error}".format(error=e)
+        )
+        raise
+
+def configure_ikev2_policy(device,
+                        policy_name,
+                        proposal_name,
+                        local_address=None,
+                        fvrf=None
+                        ):
+    """ Configures IKEV2 Policy
+        Args:
+            device (`obj`): Device object
+            policy_name ('str'): ikev2 policy name
+            proposal_name ('str'): ikev2 profile name
+            local_address ('str'): local device address
+            fvrf ('str'): fvrf name
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring IKEV2 Policy"
+    )
+
+    configs = []
+    configs.append(f"crypto ikev2 policy {policy_name}")
+    if local_address is not None:
+        configs.append(f"match address local {local_address}")
+    
+    if fvrf is not None:
+        configs.append(f"match fvrf {fvrf}")
+    configs.append(f"proposal {proposal_name}")
+    try:
+        device.configure(configs, error_pattern=[f"% fvrf {fvrf} not configured",
+                                f"% No Proposal exists with the specified name {proposal_name}"])
+    except SubCommandFailure as e:
+        log.error("Failed to configure ikev2 policy,"
+             "Error:\n{error}".format(error=e)
+        )
+        raise
+
+def configure_ikev2_authorization_policy(device,
+                            policy_name,
+                            set_interface=False,
+                            interface=None,
+                            ipv4_acl=None,
+                            ipv6_acl=None,
+                            local_prefix=None,
+                            local_netmask=None,
+                            local_ipv6_prefix=None,
+                            local_ipv6_netmask=None,
+                            remote_prefix=None,
+                            remote_netmask=None,
+                            remote_ipv6_prefix=None,
+                            remote_ipv6_netmask=None,
+                            dhcp_giaddr=None,
+                            dhcp_server=None,
+                            dhcp_timeout=None,
+                            pool_name=None,
+                            ipsec_flow_limit=None,
+                            primary_dns=None,
+                            secondary_dns=None,
+                            aaa_attribute=None,
+                            net_mask=None,
+                            pfs=False,
+                            ipv6_dns=None,
+                            ipv6_pool=None,
+                            ipv6_prefix_len=None,
+                            lifetime=None,
+                            config_url=None,
+                            config_version=None,
+                            backup_gateway=None,
+                            default_domain=None,
+                            split_dns=None):
+    """ Configures IKEV2 authorization policy
+        Args:
+            device (`obj`): Device object
+            policy_name ('str'): ikev2 authorization policy name
+            set_interface ('boolean'): knob to configure "route set interface"
+            interface ('str'): configuring interface in "route set interface"
+            ipv4_acl ('str'): configuring ipv4 acl in "route set access-list"
+            ipv6_acl ('str'): configuring ipv6 acl in "route set access-list"
+            local_prefix ('str'): setting local prefix
+            local_netmask ('str'): setting mask for local prefix
+            local_ipv6_prefix ('str'): setting local ipv6 prefix
+            local_ipv6_netmask ('str'): setting local ipv6 netmask
+            remote_prefix ('str'): setting remote prefix
+            remote_netmask ('str'): setting mask for remote prefix
+            remote_ipv6_prefix ('str'): setting remote ipv6 prefix
+            remote_ipv6_netmask ('str'): setting remote ipv6 netmask
+            dhcp_giaddr ('str'): configuring dhcp giaddr address
+            dhcp_server ('str'): configuring dhcp server address
+            dhcp_timeout ('int'): configuring dhcp timeout(4-30)
+            pool_name ('str'): dhcp pool name
+            ipsec_flow_limit ('str'): configuring ipsec flow limit
+            primary_dns ('str'): Primary DNS server IP
+            secondary_dns ('str'): Secondary DNS server IP
+            aaa_attribute ('str'): AAA attribute for connections
+            net_mask ('str'): subnet mask
+            pfs ('boolean'): Enabling Prefect forward secrecy
+            ipv6_dns ('str'): Configuring ipv6 DNS address
+            ipv6_pool ('str'): Configuring ipv6 pool name
+            ipv6_prefix_len ('int') : configuring ipv6 prefix length
+            lifetime ('int') : configuring session lifetime
+            config_url ('str'): Configuring http url for fetching configuration
+            config_version ('int'): Configuring configuration version
+            backup_gateway ('str'): Configuring backup gateway
+            default_domain ('str'): Configuring default domain name
+            split_dns ('str') : Configuring split dns domain name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring IKEV2 Authorization"
+    )
+
+    configs = []
+    configs.append(f"crypto ikev2 authorization policy {policy_name}")
+
+    if set_interface == True and interface is None:
+        configs.append("route set interface")
+    if set_interface == True and interface is not None:
+        configs.append(f"route set interface {interface}")
+    
+    if ipv4_acl is not None:
+        configs.append(f"route set access-list {ipv4_acl}")
+
+    if ipv6_acl is not None:
+        configs.append(f"route set access-list ipv6 {ipv6_acl}")
+
+    if local_prefix is not None and local_netmask is not None:
+        configs.append(f"route set local ipv4 {local_prefix} {local_netmask}")
+    
+    if local_ipv6_prefix is not None and local_ipv6_netmask is not None:
+        configs.append(f"route set local ipv6 {local_ipv6_prefix}/{local_ipv6_netmask}")
+    
+    if remote_prefix is not None and remote_netmask is not None:
+        configs.append(f"route set local ipv4 {remote_prefix} {remote_netmask}")
+    
+    if remote_ipv6_prefix is not None and remote_ipv6_netmask is not None:
+        configs.append(f"route set local ipv6 {remote_ipv6_prefix}/{remote_ipv6_netmask}")
+
+    if dhcp_giaddr is not None:
+        configs.append(f"dhcp giaddr {dhcp_giaddr}")
+
+    if dhcp_server is not None:
+        configs.append(f"dhcp server {dhcp_server}")
+
+    if dhcp_timeout is not None:
+        configs.append(f"dhcp timeout {dhcp_timeout}")
+
+    if pool_name is not None:
+        configs.append(f"pool {pool_name}")
+
+    if ipsec_flow_limit is not None:
+        configs.append(f"ipsec flow-limit {ipsec_flow_limit}")
+
+    if primary_dns is not None and secondary_dns is None:
+        configs.append(f"dns {primary_dns}")
+    
+    if primary_dns is not None and secondary_dns is not None:
+        configs.append(f"dns {primary_dns} {secondary_dns}")
+    
+    if aaa_attribute is not None:
+        configs.append(f"aaa attribute list {aaa_attribute}")
+
+    if net_mask is not None:
+        configs.append(f"netmask {net_mask}")
+
+    if pfs == True:
+        configs.append("pfs")
+    
+    if ipv6_dns is not None:
+        configs.append(f"ipv6 dns {ipv6_dns}")
+    
+    if ipv6_pool is not None:
+        configs.append(f"ipv6 pool {ipv6_pool}")
+
+    if ipv6_prefix_len is not None:
+        configs.append(f"ipv6 prefix {ipv6_prefix_len}")
+    
+    if lifetime is not None:
+        configs.append(f"session-lifetime {lifetime}")
+    
+    if config_url is not None:
+        configs.append(f"configuration url {config_url}")
+
+    if config_version is not None:
+        configs.append(f"configuration version {config_version}")
+
+    if backup_gateway is not None:
+        configs.append(f"backup-gateway {backup_gateway}")
+
+    if default_domain is not None:
+        configs.append(f"def-domain {default_domain}")
+
+    if split_dns is not None:
+        configs.append(f"split-dns {split_dns}")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error("Failed to configure ikev2 authorization policy,"
+             "Error:\n{error}".format(error=e)
+        )
+        raise
+
+def configure_ikev2_profile_advanced(device,
+                        profile_name,
+                        remote_auth=None,
+                        local_auth=None,
+                        keyring_aaa=None,
+                        keyring_local=None,
+                        dpd_interval=None,
+                        dpd_retry=None,
+                        dpd_query=None,
+                        auth_method=None,
+                        aaa_list=None,
+                        override=False,
+                        auth_type=None,
+                        cached=False,
+                        anyconnect_prof_name=None,
+                        auth_eap_method=None,
+                        auth_uname=None,
+                        auth_pwd_type=None,
+                        auth_password=None,
+                        double_auth=False,
+                        eap_query=False,
+                        eap_timeout=None,
+                        conf_exch_accept=False,
+                        conf_set_accept=False,
+                        conf_set_send=False,
+                        id_local=False,
+                        id_local_addr=None,
+                        id_local_dn=False,
+                        id_local_email=None,
+                        id_local_fqdn=None,
+                        id_local_key_id=None,
+                        initial_contact=False,
+                        ivrf=None,
+                        lifetime=None,
+                        match_address=None,
+                        match_cert_map=None,
+                        match_fvrf=None,
+                        id_remote=False,
+                        id_remote_addr=None,
+                        id_remote_any=False,
+                        id_remote_email=None,
+                        id_remote_email_domain=None,
+                        id_remote_fqdn=None,
+                        id_remote_fqdn_domain=None,
+                        id_remote_key_id=None,
+                        nat_encap=False,
+                        nat_keepalive=None,
+                        trustpoint=None,
+                        trustpoint_verify=False,
+                        trustpoint_sign=False,
+                        ppk_dynamic=None,
+                        ppk_manual=None,
+                        reconnect_timer=None,
+                        ikev2_redirect=False,
+                        shutdown=False,
+                        vt_number=None,
+                        vt_mode_auto=False,
+                        dynamic_enabled=False
+                        ):
+    """ Configures IKEV2 keyring or Preshared Key (PSK)
+        Args:
+            device (`obj`): Device object
+            profile_name ('str') : ikev2 profile name
+            remote_auth ('str') : Remote authentication method
+            local_auth ('str') : Local authentication method
+            keyring_aaa ('str') : Keyring name for AAA
+            keyring_local ('str') : Local keyring name
+            dpd_interval ('int') : DPD interval
+            dpd_retry ('int') : DPD retry times
+            dpd_query ('str') : DPD query type
+            auth_method ('str') : AAA Authentication method
+            aaa_list ('str') : AAA list name
+            override ('str') : Override user authorization with group authorization 
+            auth_type ('str') : Authorization type, User or Group
+            cached ('boolean') : Caching User authorization True/False
+            anyconnect_prof_name ('str') : AnyConnect Profile Name
+            auth_eap_method ('str') : local EAP authentication method
+            auth_uname ('str') : username of local/Remote EAP and PSK authentication
+            auth_pwd_type('int') : Encryption type of password of Local/Remote authentication
+            auth_password('str') : Password for Local/Remote EAP and PSK authentication
+            double_auth ('Boolean') : Double authentication
+            eap_query ('Boolean') : EAP authentication EAP query identity
+            eap_timeout ('str') : EAP authentication timeout timer
+            conf_exch_accept ('Boolean') : Configuration Exchange accept True/False
+            conf_set_accept ('Boolean') : Configuration set accept True/False
+            conf_set_send ('Boolean') : Configuration set send True/False
+            id_local ('Boolean') : knob for local identity 
+            id_local_addr ('str') : Identity local IP address 
+            id_local_dn ('str') : Identity local distingushed name
+            id_local_email ('str') : Identity local email id
+            id_local_fqdn ('str') : Identity local Fully Qualified Domain name
+            id_local_key_id ('str') : Identity local key id
+            initial_contact ('Boolean') : Initial contact enable True/False
+            ivrf ('str') : IVRF name
+            lifetime ('int') : lifetime in seconds
+            match_address ('str') : Match remote peer IP address
+            match_cert_map ('str') : Match remote incoming certificate parameters using cert map
+            match_fvrf ('str') : Match remote fvrf 
+            id_remote ('Boolean') : Knob for remote identity
+            id_remote_addr ('str') : Identity remote IP address 
+            id_remote_any ('Boolean') : Match remote identity any
+            id_remote_email ('str') : Match remote identity email 
+            id_remote_email_domain ('str') : Match remote identity email domain
+            id_remote_fqdn ('str') : Match remote identity Fully Qualified domain name
+            id_remote_fqdn_domain ('str') : Match remote identity FQDN domain name
+            id_remote_key_id ('str') : Match remote key id
+            nat_encap ('Boolean') : NAT encapsulation force
+            nat_keepalive ('int') : NAT keepalive interval 
+            trustpoint ('str') : PKI trustpoint name
+            trustpoint_verify ('boolean') : Trustpoint to verify True/False
+            trustpoint_sign ('boolean') : Trustpoint to sign True/False
+            ppk_dynamic ('str') : PPK config dynamic label
+            ppk_manual ('str') : PPK config manual label
+            reconnect_timer ('int') : AnyConnect Reconnect timer 
+            ikev2_redirect ('Boolean') : IKEv2 Redirect enable True/False
+            shutdown ('Boolean') : Shutdown ikev2 profile
+            vt_number ('int') : Vurtual Template number
+            vt_mode_auto ('Boolean') : Auto mode enable True/False
+            dynamic_enabled ('Boolean') : Dynamic authentication method
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring IKEV2 Profile"
+    )
+
+    configs = []
+    configs.append(f"crypto ikev2 profile {profile_name}")
+    
+    if auth_method is not None and aaa_list is not None:
+        configs.append(f"aaa accounting {auth_method} {aaa_list}")
+    
+    if auth_method == "anyconnect-eap" or auth_method == "eap" and aaa_list is not None:
+        configs.append(f"aaa authentication {auth_method} {aaa_list}")
+    
+    if auth_type is not None and aaa_list is not None and auth_method is not None:
+        configs.append(f"aaa authorization {auth_type} {auth_method} list {aaa_list}")
+    
+    if auth_type == "group" and override is True and aaa_list is not None and auth_method is not None:
+        configs.append(f"aaa authorization group override {auth_method} list {aaa_list}")
+    
+    if auth_type == "user" and cached is True and auth_method != "cert" :
+        configs.append(f"aaa authorization user {auth_method} cached")
+
+    if anyconnect_prof_name is not None:
+        configs.append(f"anyconnect profile {anyconnect_prof_name}")
+
+    if local_auth == "rsa-sig" or local_auth == "ecdsa-sig":
+        configs.append(f"authentication local {local_auth}")
+    
+    if local_auth == "eap" and auth_eap_method is not None and auth_uname is None and \
+        auth_pwd_type is not None and auth_password is not None:
+        configs.append(f"authentication local eap {auth_eap_method} password {auth_pwd_type} {auth_password}") 
+    
+    if local_auth == "eap" and auth_eap_method is not None and auth_uname is not None and \
+        auth_pwd_type is not None and auth_password is not None:
+        configs.append(f"authentication local eap {auth_eap_method} username {auth_uname} password {auth_pwd_type} {auth_password}")
+        
+    if local_auth == "eap" and auth_eap_method is not None and auth_uname is None and \
+        auth_pwd_type is None and auth_password is not None:
+        configs.append(f"authentication local eap {auth_eap_method} password {auth_password}") 
+
+    if local_auth == "eap" and auth_eap_method is not None and auth_uname is not None and \
+        auth_pwd_type is None and auth_password is not None:
+        configs.append(f"authentication local eap {auth_eap_method} username {auth_uname} password {auth_password}")
+
+    if local_auth == "pre-share" and auth_pwd_type is not None and auth_password is not None:
+        configs.append(f"authentication local pre-share key {auth_pwd_type} {auth_password}") 
+            
+    if local_auth == "pre-share" and auth_pwd_type is None and auth_password is not None:
+        configs.append(f"authentication local pre-share key {auth_password}") 
+
+    if remote_auth == "rsa-sig" or remote_auth == "ecdsa-sig":
+        configs.append(f"authentication remote {remote_auth}")
+
+    if (local_auth == "rsa-sig" or local_auth == "ecdsa-sig") and remote_auth == "anyconnect-eap":
+        if double_auth:
+            configs.append(f"authentication remote {remote_auth} aggregate cert-request")
+        else:
+            configs.append(f"authentication remote {remote_auth} aggregate")
+    
+    
+    if (local_auth == "rsa-sig" or local_auth == "ecdsa-sig") and remote_auth == "eap" and \
+        eap_query == False and eap_timeout is not None:
+        configs.append(f"authentication remote {remote_auth}")
+    
+    if (local_auth == "rsa-sig" or local_auth == "ecdsa-sig") and remote_auth == "eap" and eap_query:
+        configs.append(f"authentication remote eap query-identity")
+
+    if (local_auth == "rsa-sig" or local_auth == "ecdsa-sig") and remote_auth == "eap" and eap_timeout is not None:
+        configs.append(f"authentication remote eap timeout {eap_timeout}")
+    
+    if remote_auth == "pre-share" and auth_pwd_type is not None and auth_password is not None:
+        configs.append(f"authentication remote pre-share key {auth_pwd_type} {auth_password}") 
+    
+    if remote_auth == "pre-share" and auth_pwd_type is  None and auth_password is not None:
+        configs.append(f"authentication remote pre-share key {auth_password}")
+        
+    
+    if conf_exch_accept:
+        configs.append(f"config-exchange request")
+
+    if conf_set_accept:
+        configs.append(f"config-exchange set accept")
+    
+    if conf_set_send:
+        configs.append(f"config-exchange set send")
+
+    if dpd_interval is not None and dpd_retry is not None and dpd_query is not None:
+        configs.append(f"dpd {dpd_interval} {dpd_retry} {dpd_query}")
+    
+    if id_local:
+        if id_local_addr is not None:
+            configs.append(f"identity local address {id_local_addr}")
+        
+        if id_local_dn:
+            configs.append(f"identity local dn")
+
+        if id_local_email is not None:
+            configs.append(f"identity local email {id_local_email}")
+        
+        if id_local_fqdn is not None:
+            configs.append(f"identity local fqdn {id_local_fqdn}")
+        
+        if id_local_key_id is not None:
+            configs.append(f"identity local key-id {id_local_key_id}")
+        
+    if initial_contact:
+        configs.append(f"initial-contact force")
+    
+    if ivrf is not None:
+        configs.append(f"ivrf {ivrf}")
+
+    if keyring_aaa is not None:
+        configs.append(f"keyring aaa {keyring_aaa}")
+
+    if keyring_local is not None:
+        configs.append(f"keyring local {keyring_local}")
+
+    if lifetime is not None:
+        configs.append(f"lifetime {lifetime}")
+    
+    if match_address is not None:
+        configs.append(f"match address local {match_address}")
+
+    if match_cert_map is not None:
+        configs.append(f"match certificate {match_cert_map}")
+    
+    if match_fvrf is not None:
+        configs.append(f"match fvrf {match_fvrf}")
+
+    if id_remote:
+        if id_remote_addr is not None:
+            configs.append(f"match identity remote address {id_remote_addr}")
+        
+        if id_remote_any:
+            configs.append(f"match identity remote any")
+
+        if id_remote_email is not None:
+            configs.append(f"match identity remote email {id_remote_email}")
+        
+        if id_remote_email_domain is not None:
+            configs.append(f"match identity remote email domain {id_remote_email_domain}")
+        
+        if id_remote_fqdn is not None:
+            configs.append(f"match identity remote fqdn {id_remote_fqdn}")
+
+        if id_remote_fqdn_domain is not None:
+            configs.append(f"match identity remote fqdn domain {id_remote_fqdn_domain}")
+        
+        if id_remote_key_id is not None:
+            configs.append(f"match identity remite key-id {id_remote_key_id}")
+    
+    if local_auth is None and remote_auth is None and id_local == False and \
+        id_remote == False and dynamic_enabled == True:
+        configs.append(f"dynamic")
+
+    if nat_encap:
+        configs.append(f"nat force-encap")
+    
+    if nat_keepalive is not None:
+        configs.append(f"nat keepalive {nat_keepalive}")
+        
+    if trustpoint is not None and trustpoint_verify:
+        configs.append(f"pki trustpoint {trustpoint} verify")
+
+    if trustpoint is not None and trustpoint_sign:
+        configs.append(f"pki trustpoint {trustpoint} sign")
+
+    if ppk_dynamic is not None:
+        configs.append(f"ppk dynamic {ppk_dynamic}")
+
+    if ppk_manual is not None:
+        configs.append(f"ppk manual {ppk_dynamic}")
+    
+    if reconnect_timer is not None:
+        configs.append(f"reconnect timeout {reconnect_timer}")
+
+    if ikev2_redirect:
+        configs.append(f"redirect gateway auth")
+    
+    if shutdown:
+        configs.append(f"shutdown")
+    
+    if vt_number is not None and ivrf is None:
+        configs.append(f"virtual-template {vt_number}")
+    
+    if vt_number is not None and ivrf is None and vt_mode_auto:
+        configs.append(f"virtual-template {vt_number} mode auto")
+    
+    errors = [f"% vrf {ivrf} not configured",
+    f"% Invalid keyring {keyring_local}",
+    f"% No such trustpoint {trustpoint}",
+    "Reconnect can not be configured if either Keyring, PSK  authentication or PSK authorization enabled in profile.",
+    " \! \(IKEv2 Cluster load-balancer is not enabled\)"
+    ]
+    try:
+        device.configure(configs, error_pattern = errors)
+    except SubCommandFailure as e:
+        log.error("Failed to configure ikev2 profile,"
+             "Error:\n{error}".format(error=e)
+        )

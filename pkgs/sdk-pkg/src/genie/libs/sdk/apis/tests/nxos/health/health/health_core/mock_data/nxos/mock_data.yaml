@@ -1,0 +1,39 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+  prompt: R3_nx(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: R3_nx(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    show cores:
+      response:
+      - "VDC  Module  Instance  Process-name     PID       Date(Year-Month-Day Time)\r\
+        \n---  ------  --------  ---------------  --------  -------------------------\r\
+        \n1    1       1         sysmgr           18436     2022-02-16 10:16:51"
+      response_type: circular
+    term length 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: R3_nx#

@@ -18,14 +18,14 @@ def configure_policy_map(device,
              device ('obj'): device to use
              policy_name('str) : name of the policy name
              class_map_list('list'): list of data type hold number class map information
-             [ 
+             [
              {
-             class_map_name('str') : name of the class 
+             class_map_name('str') : name of the class
              policer_val('int',optional): police rate value,
              match_mode('list',optional): match mode name for cos,
              matched_value('list',optional): match mode values for cos traffic_class and dscp,
              table_map_name('str',optional): to set the table name for policy_map,
-             table_map_mode('str',optional : name of the tablemode 
+             table_map_mode('str',optional : name of the tablemode
              } ]
 
         example:
@@ -46,7 +46,7 @@ def configure_policy_map(device,
         "Configuring policy_map {policy_name} with {class_map_name} ".format(
             policy_name=policy_name,
             class_map_name=class_map_list[0]['class_map_name'],
-        
+
         )
     )
     cmd = [f"policy-map {policy_name}"]
@@ -99,7 +99,6 @@ def unconfigure_policy_map(device, policy_name):
             )
         )
 
-        
 
 def configure_hqos_policer_map(device,
         policy_name,
@@ -158,7 +157,6 @@ def configure_hqos_policer_map(device,
     if match_mode and matched_value :
         for mat_mode, mat_value in zip(match_mode, matched_value):
                 cmd.append(f"set {mat_mode} {mat_value}")
-    
     if set_table_map:
         cmd.append(f"set {table_map_mode} {table_map_mode} table {table_map_name}")
 
@@ -172,5 +170,67 @@ def configure_hqos_policer_map(device,
             "Could not configure class_map. Error:\n{error}".format(
                 error=e
             )
+        )
+
+def configure_shape_map(device,
+        queue_name,
+        class_map_list
+        ):
+    """ Configures policy_map type queueing
+        Args:
+             device('obj'): device to use
+             queue_name('str'): name of the queue policy name
+             class_map_list('list'): list of dict type hold number of class map
+             [
+             {
+             class_map_name('str'): name of the class
+             priority_level('int',optional): value of priority queue for 0 to 7
+             shape_average('str',optional): value of the shape average
+             bandwidth('int',optional): bandwidth value
+             queue_limit('int',optional): queue_limit value
+             child_policy('str',optional): name of the child policy
+             }
+             ]
+
+        example:
+             class_map_list=[{'class_map_name':'queue_name',
+             priority_level:7,
+             shape_average:'2000000000' or 'rate 20'
+             bandwidth: 20
+             queue_limit: 10000
+             }]
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Configuring policy_map type {queue_name} with {class_map_name}".format(queue_name=queue_name,class_map_name=class_map_list[0]['class_map_name'],
+            )
+        )
+
+    cmd = [f"policy-map type queueing {queue_name}"]
+    for class_map in class_map_list:
+        cmd.append(f"class {class_map['class_map_name']}")
+        if 'priority_level' in class_map:
+            cmd.append(f"priority level {class_map['priority_level']}")
+        if 'shape_average' in class_map:
+            cmd.append(f"shape average {class_map['shape_average']}")
+        if 'bandwidth' in class_map:
+            cmd.append(f"bandwidth remaining ratio {class_map['bandwidth']}")
+        if 'queue_limit' in class_map:
+            cmd.append(f"queue-limit {class_map['queue_limit']} bytes")
+        if 'child_policy' in class_map:
+            cmd.append(f"service-policy {class_map['child_policy']}")
+
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+                "Could not configure queueing policy_map. Error:\n{error}".format(
+                    error=e
+                 )
         )
 

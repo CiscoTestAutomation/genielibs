@@ -951,3 +951,56 @@ def verify_port_channel_member_state(device,port_channel,interfaces,bundle_state
         else:
             timeout.sleep()
     return result
+
+def verify_etherchannel_counter(
+        device,
+        port_channel,
+        field,
+        transmitted_pkts,
+        pps,
+        percent):
+    """Verifies packet flow on port-channel interface
+
+        Args:
+            device (`obj`): Device object
+            port_channel (`str`): Port-channel interface (i.e. Port-channel5)
+            field (`list`): fields be to checked in interface for multicast traffic
+                            Eg:["incoming","outgoing"]
+            transmitted_pkts (`int`): packets sent through ixia
+            pps ('int'): packet per second
+            percent ('int'): expected percent of traffic to flow from transmitted_pkts
+        Returns:
+            result(`bool`): True if is packets recieved on port-channel are distributed among member interface
+                            or else return Flase
+    """
+
+    try:
+        output = device.parse(
+            f"show interfaces {port_channel} counter etherchannel")
+    except SchemaEmptyParserError:
+        raise SchemaEmptyParserError(
+            "Failed to parse commands"
+        )
+    counters = []
+    expected_packet_flow = percent / 100 * transmitted_pkts
+    for direction in field:
+        po_counter = output.q.contains(port_channel).contains(
+            direction).get_values("mcast_pkts")
+        for etherchannel in output.q.get_values("interface")[1:]:
+            incmg_pkt = output.q.contains(etherchannel).contains(
+                direction).get_values('mcast_pkts')[0]
+            if incmg_pkt > expected_packet_flow:
+                pkt = output.q.contains(etherchannel).contains(
+                    direction).get_values('mcast_pkts')[0]
+                counters.append(pkt)
+            else:
+                return False
+
+        if not ((sum(counters) < po_counter[0] + pps) and (
+                sum(counters) > po_counter[0] - pps)):
+            log.info(
+                f"packets flowed on {port_channel} is {po_counter}, "
+                 "packets flowed on members are {sum(counters)}")
+            return False
+        counters.clear()
+    return True

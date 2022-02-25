@@ -40,7 +40,7 @@ class Routing(SuperRouting):
                 self.list_of_vrfs = []
 
             if 'default' not in self.list_of_vrfs:
-                self.list_of_vrfs.append('default')
+                self.list_of_vrfs.append('')
         
         kwargs = {k: v for k, v in locals().items() if v}
         [kwargs.pop(x, None) for x in ['address_family', 'self']]
@@ -51,7 +51,7 @@ class Routing(SuperRouting):
                 src_routing_route = '[entry][(?P<entry>.*)]'
                 dest_routing_route = 'info[vrf][{vrf}][address_family][{address_family}]' \
                     '[routes][(?P<entry>.*)]'.format(
-                        vrf=vrf if vrf else 'default',
+                        vrf= '' if not vrf else vrf,
                         address_family=address_family if address_family else 'ipv4')
                 src_routing_intf = src_routing_route + '[paths][(?P<paths>.*)]'
                 dest_routing_intf = dest_routing_route + '[next_hop]'
@@ -141,3 +141,4 @@ class Routing(SuperRouting):
                     kwargs.update({'dest': dest_routing_hop + '[{}]'.format(key)})
                     self.add_leaf(**kwargs)
         self.make(final_call=True)
+
