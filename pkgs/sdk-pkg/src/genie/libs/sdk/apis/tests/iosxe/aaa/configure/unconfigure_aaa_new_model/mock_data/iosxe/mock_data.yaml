@@ -4,10 +4,21 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no aaa new-model: "no aaa new-model\r\nChanging configuration back to no aaa new-model\
-      \ is not supported. \r\nContinue?[confirm]\r\n"
+    no aaa new-model:
+      new_state: no_aaa_model
     no logging console: ''
   prompt: HCR_pk(config)#
+
+no_aaa_model:
+  preface: |
+    no aaa new-model
+    Changing configuration back to no aaa new-model is not supported.
+  prompt: "Continue?[confirm]"
+  commands:
+    '':
+      new_state: configure
+
+
 configure_line:
   commands:
     end:
