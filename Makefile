@@ -34,11 +34,6 @@
 BUILD_DIR     = $(shell pwd)/__build__
 DIST_DIR      = $(BUILD_DIR)/dist
 BUILD_CMD     = python3 setup.py bdist_wheel --dist-dir=$(DIST_DIR)
-PROD_USER     = pyadm@pyats-ci
-PROD_PKGS     = /auto/pyats/packages
-STAGING_PKGS  = /auto/pyats/staging/packages
-STAGING_EXT_PKGS  = /auto/pyats/staging/packages_external
-PROD_SCRIPTS  = /auto/pyats/bin
 TESTCMD       = runAll
 WATCHERS      = asg-genie-dev@cisco.com
 HEADER        = [Watchdog]
