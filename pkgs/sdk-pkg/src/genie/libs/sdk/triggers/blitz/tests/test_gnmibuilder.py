@@ -18,7 +18,7 @@ format1 = {
     'sample_interval': 5,
     'stream_max': 20,
     'sub_mode': 'SAMPLE',
-    'prefix': True,
+    'prefix': False,
     'origin': 'openconfig'
 }
 
@@ -100,15 +100,12 @@ request1 = {
 }
 
 json_decoded = {
-  'prefix': {
-    'origin': 'openconfig'
-  },
   'update': [
     {
       'path': {
         'elem': [
           {
-            'name': 'openconfig-network-instance:network-instances'
+            'name': 'network-instances'
           },
           {
             'key': {
@@ -140,10 +137,10 @@ json_val_decoded = {
         }
       },
       'config': {
-        'identifier': 'openconfig-policy-types:OSPF',
+        'identifier': 'OSPF',
         'name': '100'
       },
-      'identifier': 'openconfig-policy-types:OSPF',
+      'identifier': 'OSPF',
       'name': '100'
     }
   }

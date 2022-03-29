@@ -17,6 +17,8 @@ from unicon.core.errors import (
     TimeoutError,
     ConnectionError,
 )
+# Genie
+from genie.metaparser.util.exceptions import SchemaEmptyParserError
 
 # Logger
 log = logging.getLogger(__name__)
@@ -352,3 +354,89 @@ def is_connected_via_vty(device, alias=None):
     if re.search(' vty', show_users):
         return True
     return False
+
+def fp_switchover(device,timeout=420):
+    """Perform FP switchover on device.
+        Args:
+            device(`obj`): Device object
+            timeout ('int'): timeout in seconds for FP switchover
+                            if not provided default is 420 seconds,
+        Returns:
+            True if FP switchover is success else False
+        Raises:
+            None
+    """
+
+    # Capture the parsed output of "show platform"
+    output = device.parse("show platform")
+
+    # Check if FP data is available in parsed output
+    if 'F0' in output['slot'] and 'F1' in output['slot']:
+
+        log.info("Dual FP exists... Checking if both FP are in OK state")
+
+        # Fetch both FP type info from parsed output to fetch FP state
+        fp0_type = list(output['slot']['F0']['other'].keys())[0]
+        fp1_type = list(output['slot']['F1']['other'].keys())[0]
+
+        # Fetch both FP state before FP switchover
+        fp0_state_before_sso = output['slot']['F0']['other'][fp0_type]['state']
+        fp1_state_before_sso = output['slot']['F1']['other'][fp1_type]['state']
+
+        # check which is Active FP and Which is standby FP before swithcover
+        if fp0_state_before_sso == "ok, active" and fp1_state_before_sso == "ok, standby":
+            log.info("F0 is in Active state")
+            log.info("F1 is in Standby state")
+            log.info("Proceeding with FP Switchover")
+        elif fp1_state_before_sso == "ok, active" and fp0_state_before_sso == "ok, standby":
+            log.info("F0 is in Standby state")
+            log.info("F1 is in Active state")
+            log.info("Proceeding with FP Switchover")
+        else:
+            log.info("FP's are not in active and standby state... Cannot perform FP SSO")
+            return False
+
+        dialog = Dialog([
+                 Statement(pattern=r'.*Proceed with switchover to standby FP? [confirm]',
+                 action='sendline(\r)',
+                 loop_continue=True,
+                 continue_timer=False)])
+
+        # execute write operation before FP Switchover
+        device.execute("write")
+        # Perform FP switchover
+        device.execute("redundancy force-switchover fp", reply=dialog)
+
+        # declare wait_time as 0 to capture the total wait time to compare it with given timeout
+        wait_time = 0
+        while wait_time < timeout:
+            # Fetch both FP state during FP switchover
+            try:
+                output = device.parse("show platform")
+            except SchemaEmptyParserError as e:
+                log.error("Failed to parse 'show platform', Error: {}".format(str(e)))
+                return False
+            fp0_state_after_sso = output['slot']['F0']['other'][fp0_type]['state']
+            fp1_state_after_sso = output['slot']['F1']['other'][fp1_type]['state']
+
+            # check if FP states are swapped after FP switchover
+            if fp0_state_after_sso == fp1_state_before_sso and fp1_state_after_sso == fp0_state_before_sso:
+                log.info("FP switchover is Successful")
+                return True
+            else:
+                log.info(f"FP0 State is {fp0_state_after_sso}")
+                log.info(f"FP1 State is {fp1_state_after_sso}")
+                log.info("Wait for 10 seconds... FP switchover is in progress...")
+                time.sleep(10)
+                wait_time += 10
+        if wait_time >= timeout:
+            log.info("Maximum wait time reached after Switchover.....")
+            log.info(f"FP0 State is {fp0_state_after_sso}")
+            log.info(f"FP1 State is {fp1_state_after_sso}")
+            log.info("FP Switchover failed")
+            return False
+    else:
+        log.info("No Dual FP present in the device...Cannot perform FP SSO")
+        return True
+
+

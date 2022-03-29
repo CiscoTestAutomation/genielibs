@@ -152,3 +152,79 @@ def unconfigure_bfd_on_interface(
                 interface=interface
             )
         )
+
+def configure_bfd_neighbor_on_interface(
+    device, interface, address_family, neighbor_address
+):
+    """ Configures bfd neighbor on interface
+
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+            address_family ('str'): ipv4|ipv6 address family
+            neighbor_address ('str'): neighbor address
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring bfd on interface
+
+    """
+    log.debug(
+        "Configuring bfd with address_family={}, neighbor_address={} on "
+        "interface {}".format(address_family, neighbor_address, interface)
+    )
+
+    try:
+        device.configure(
+            [
+                "interface {}".format(interface),
+                "bfd neighbor {} {} ".format(
+                    address_family, neighbor_address
+                ),
+            ]
+        )
+
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not configure bfd neighbor on interface {interface}".format(
+                interface=interface
+            )
+        )
+
+def unconfigure_bfd_neighbor_on_interface(
+    device, interface, address_family, neighbor_address
+):
+    """ Unconfigures bfd on interface
+
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+            address_family ('str'): ipv4|ipv6 address family
+            neighbor_address ('str'): neighbor address
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring bfd on interface
+
+    """
+    log.debug(
+        "UnConfiguring bfd with address_family={}, neighbor_address={} on "
+        "interface {}".format(address_family, neighbor_address, interface)
+    )
+
+    try:
+        device.configure(
+            [
+                "interface {}".format(interface),
+                "no bfd neighbor {} {} ".format(
+                    address_family, neighbor_address
+                ),
+            ]
+        )
+
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not unconfigure bfd neighbor on interface {interface}".format(
+                interface=interface
+            )
+        )

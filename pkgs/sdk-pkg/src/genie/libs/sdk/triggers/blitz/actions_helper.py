@@ -281,6 +281,35 @@ def api_handler(step,
 
     return _output_query_template(**kwargs)
 
+def yang_handler(step,
+                 device,
+                 protocol,
+                 include=None,
+                 exclude=None,
+                 continue_=True,
+                 max_time=None,
+                 check_interval=None,
+                 **extra_kwargs):
+
+    # To handle yang action
+    kwargs = {
+        'output': extra_kwargs.pop('output', None),
+        'steps': step,
+        'device': device,
+        'command': protocol,
+        'include': include,
+        'exclude': exclude,
+        'max_time': max_time,
+        'check_interval': check_interval,
+        'continue_': continue_,
+        'action': 'yang',
+        'extra_kwargs': extra_kwargs
+    }
+
+    # go through the include/exclude process
+    return _output_query_template(**kwargs)
+
+
 def _api_device_update(arguments, testbed, step, command, device=None, common_api=None):
     """
         Updating the device obj with regards to the user input
@@ -504,8 +533,9 @@ def _output_query_template(output,
         extra_kwargs = {}
 
     keys = _include_exclude_list(include, exclude)
-    max_time, check_interval = _get_timeout_from_ratios(
-        device=device, max_time=max_time, check_interval=check_interval)
+    if not action == 'yang':
+        max_time, check_interval = _get_timeout_from_ratios(
+            device=device, max_time=max_time, check_interval=check_interval)
     timeout = Timeout(max_time, check_interval)
 
     for query, style in keys:

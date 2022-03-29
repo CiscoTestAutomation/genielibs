@@ -356,5 +356,3 @@
 
 * apis
     * Modified creating the remote path so the files with more than one suffixes
-
-

@@ -109,6 +109,10 @@ class FileUtils(FileUtilsBase):
                       action='sendline()',
                       loop_continue=True,
                       continue_timer=False),
+            Statement(pattern=r'Abort Copy?\[confirm\]',
+                      action='sendline(n)',
+                      loop_continue=True,
+                      continue_timer=False),
             Statement(pattern=r'\[confirm\]',
                       action='sendline()',
                       loop_continue=True,
@@ -165,7 +169,7 @@ class FileUtils(FileUtilsBase):
                       action='sendline({overwrite})'.format(overwrite='yes' if kwargs.get('overwrite', True) else 'no'),
                       loop_continue=True,
                       continue_timer=False),
-            Statement(pattern=r'.*Do you want to (overwrite|overwritte).*',
+            Statement(pattern=r'.*Do you want to (overwrite|overwritte|overwrit).*',
                       action='sendline({overwrite})'.format(
                           overwrite='y' if kwargs.get('overwrite', True) else 'n'),
                       loop_continue=True,
@@ -184,6 +188,16 @@ class FileUtils(FileUtilsBase):
         # Check if user passed extra error/fail patterns to be caught
         if invalid:
             error_pattern.extend(invalid)
+
+        if hasattr(device, 'testbed'):
+            if hasattr(device.testbed, 'custom'):
+                if hasattr(device.testbed.custom, 'fileutils'):
+                    error_pattern = device.testbed.custom.fileutils.get('error_pattern')
+                    if isinstance(error_pattern, list):
+                        error_pattern = error_pattern
+                    append_error_pattern = device.testbed.custom.fileutils.get('append_error_pattern')
+                    if isinstance(append_error_pattern, list):
+                        error_pattern.extend(append_error_pattern)
 
         output = device.execute(cli,
                                 timeout=timeout_seconds,

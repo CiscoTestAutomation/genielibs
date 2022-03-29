@@ -1,0 +1,52 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: CL1-c9300(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: CL1-c9300(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show nve peers peer-ip 20.0.101.2:
+      response:
+      - "'M' - MAC entry download flag  'A' - Adjacency download flag\r\n'4' - IPv4\
+        \ flag  '6' - IPv6 flag\r\n\r\nInterface  VNI      Type Peer-IP          RMAC/Num_RTs\
+        \   eVNI     state flags UP time\r\nnve1       2000101  L2CP 20.0.101.2  \
+        \     1              2000101    UP   N/A  04:34:19\r\nnve1       2000102 \
+        \ L2CP 20.0.101.2       1              2000102    UP   N/A  04:34:19\r\nnve1\
+        \       2000103  L2CP 20.0.101.2       1              2000103    UP   N/A\
+        \  04:34:19\r\nnve1       2000104  L2CP 20.0.101.2       1              2000104\
+        \    UP   N/A  04:34:19\r\nnve1       2000105  L2CP 20.0.101.2       1   \
+        \           2000105    UP   N/A  04:34:19\r\nnve1       2000111  L2CP 20.0.101.2\
+        \       1              2000111    UP   N/A  04:34:19\r\nnve1       2000112\
+        \  L2CP 20.0.101.2       1              2000112    UP   N/A  04:34:19\r\n\
+        nve1       2000113  L2CP 20.0.101.2       1              2000113    UP   N/A\
+        \  04:34:19\r\nnve1       2000114  L2CP 20.0.101.2       1              2000114\
+        \    UP   N/A  04:34:19\r\nnve1       2000115  L2CP 20.0.101.2       1   \
+        \           2000115    UP   N/A  04:34:19"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: CL1-c9300#

@@ -1325,6 +1325,36 @@ TriggerProcessKillRestartVpc:
         pkg: genie.libs.sdk
         class: triggers.processrestart.vpc.processrestart.TriggerProcessKillRestartVpc
 
+TriggerProcessCrashRestartMonitor:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.monitor.processrestart.TriggerProcessCrashRestartMonitor
+
+TriggerProcessKillRestartMonitor:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.monitor.processrestart.TriggerProcessKillRestartMonitor
+
+TriggerProcessCrashRestartIntersight:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.intersight.processrestart.TriggerProcessCrashRestartIntersight
+
+TriggerProcessKillRestartIntersight:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.intersight.processrestart.TriggerProcessKillRestartIntersight
+
+TriggerProcessCrashRestartNXOSDC:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.nxosdc.processrestart.TriggerProcessCrashRestartNXOSDC
+
+TriggerProcessKillRestartNXOSDC:
+    source:
+        pkg: genie.libs.sdk
+        class: triggers.processrestart.nxosdc.processrestart.TriggerProcessKillRestartNXOSDC
+
 
 # ==============================================================================
 #                               FEATURE: HA

@@ -353,3 +353,43 @@ def unconfig_vlan_tag_native(device):
                 error=e)
         )
 
+def configure_vlan_shutdown(device, vlanid):
+    """ Shutdown a VLAN on Interface or Device
+    e.g.
+    vlan 666
+	  shutdown
+
+        Args:
+            device (`obj`): Device object
+            vlanid (`str`): Vlan id
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring interface
+    """
+    configs = ["vlan {vlanid}".format(vlanid=vlanid), "shutdown"]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not shutdown vlan {vlanid}, Error: {error}'.format(
+                vlanid=vlanid, error=e)
+        )
+        
+def unconfigure_vlan_configuration(device, vlanid):
+    """ Unconfigure vlan configuration
+        Args:
+            device (`obj`): Device object
+            vlanid (`str`): Vlan id
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring interface
+    """
+    try:
+        device.configure("no vlan configuration {vlanid}".format(vlanid=vlanid))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not remove vlan configuration {vlanid}, Error: {error}'.format(
+                vlanid=vlanid, error=e)
+        )

@@ -2,18 +2,18 @@ configure:
   commands:
     end:
       new_state: execute
-    ip nat inside source static 10.10.10.1 172.16.131.1: "ip nat inside source static\
-      \ 10.10.10.1 172.16.131.1\r\n"
+    ip nat inside source static udp 21.21.21.22 500 21.21.21.22 600 extendable: "ip\
+      \ nat inside source static udp 21.21.21.22 500 21.21.21.22 600 extendable\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: Stargazer(config)#
+  prompt: FE2(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: Stargazer(config-line)#
+  prompt: FE2(config-line)#
 connect:
   commands:
     ? ''
@@ -33,4 +33,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: Stargazer#
+  prompt: FE2#

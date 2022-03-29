@@ -578,6 +578,9 @@ install_image:
                           action='sendline(y)',
                           loop_continue=True,
                           continue_timer=False),
+                Statement(pattern=r".*Add succeed with reason: Same Image File-No Change.*",
+                          loop_continue=False,
+                          continue_timer=False),
                 Statement(pattern=r".*reload of the system\. "
                                   r"Do you want to proceed\? \[y\/n\]",
                           action='sendline(y)',

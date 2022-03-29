@@ -1431,7 +1431,8 @@ def unconfigure_bgp_neighbor_activate(
         else:
             cmd += ("address-family {address_family}\n"
                      "no neighbor {neighbor_address} activate".format(
-                        address_family=address_family
+                        address_family=address_family,
+                        neighbor_address=neighbor_address
                     )
                 )
     try:
@@ -1481,3 +1482,38 @@ def unconfigure_bgp_neighbor_remote_as(
             "for router bgp {bgp_as}".format(neighbor_address=neighbor_address,
                 bgp_as=bgp_as)
         )
+     
+def configure_bgp_update_delay(device, bgp_as, delay):
+    """ Configures update_delay time on BGP router
+        Args:
+            device('obj'): device to configure on
+            bgp_as('str'): bgp_as to configure
+            delay('int'): router_id of device
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+
+    log.debug(
+        "Configuring update_delay time BGP on {hostname}\n"
+        "    -local AS number: {bgp_as}\n"
+        "    -bgp update_delay: {delay}".format(
+            hostname=device.hostname, bgp_as=bgp_as, delay=delay
+        )
+    )
+
+    
+    config = [
+                'router bgp {bgp_as}'.format(bgp_as=bgp_as),
+                'bgp update-delay {delay}'.format(delay=delay)
+            ]
+    
+    try:
+        device.configure(config)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not configure update_delay {delay} on "
+            "BGP router {bgp_as}".format(delay=delay, bgp_as=bgp_as)
+        )
+

@@ -680,7 +680,7 @@ def configure_ospfv3(device, pid, router_id=None, vrf=None, nsr=None,
         )
 
 def configure_ospf_routing(device, ospf_process_id, router_id=None,
-                           router_config=True, nsf=None,
+                           router_config=True, nsf=None, nsf_options=None, nsr=None, nsr_options=None,
                            vrf_name=None, vrf_id=None):
     """ Configures ospf and ip routing on device
 
@@ -691,6 +691,9 @@ def configure_ospf_routing(device, ospf_process_id, router_id=None,
             router_config ('bool', optional): To configure router-id or not, 
                                               default value is None
             nsf ('bool', optional): nsf configuration, default value is None
+            nsf_options ('str', optional): nsf params, default value is None
+            nsr ('bool', optional): nsf configuration, default value is None
+            nsr_options ('str', optional): nsr params, default value is None
             vrf_name ('str', optional): vrf name, default value is None
             vrf_id ('str', optional): vrf id, default value is None
 
@@ -722,7 +725,18 @@ def configure_ospf_routing(device, ospf_process_id, router_id=None,
         config.append('router ospf {ospf_process_id}'.format(
             ospf_process_id=ospf_process_id))
     if nsf:
-        config.append('nsf')
+        if nsf_options:
+            config.append('nsf {nsf_options}'.format(
+                        nsf_options=nsf_options))
+        else:
+            config.append('nsf')
+    
+    if nsr:
+        if nsr_options:
+            config.append('nsr {nsr_options}'.format(
+                        nsr_options=nsr_options))
+        else:
+            config.append('nsr')
 
     try:
         device.configure(config)
@@ -1332,5 +1346,29 @@ def unconfigure_ipv6_ospf_routing_on_interface(device, interface, ospf_process_i
                 interface=interface,
                 ospf_process_id=ospf_process_id,
                 areaid=areaid, error=e
+            )
+        )
+
+def configure_ospf_redistributed_static(device, ospf_process_id):
+
+    """ configure redistribute static under ospf
+        Args:
+            device (`obj`): device to execute on
+            ospf_process_id (`int`): process id of ospf
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    config=["router ospf {ospf_process_id}".format(
+                                    ospf_process_id=ospf_process_id), "redistribute static"]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure redistribute static under ospf "
+            "{ospf_process_id}, Error: {error}".format(
+               ospf_process_id=ospf_process_id,
+               error=e
             )
         )

@@ -193,8 +193,15 @@ def initialize_clean_sections(image_handler, order):
     for section in order:
         getattr(image_handler, 'update_section')(section)
 
+clean_json = None
+
 def load_clean_json():
     """get all clean data in json file"""
+    global clean_json
+
+    if clean_json:
+        return clean_json
+
     try:
         mod = importlib.import_module("genie.libs.clean")
         functions = os.path.join(mod.__path__[0], "clean.json")
@@ -227,9 +234,9 @@ def load_clean_json():
         ))
 
         plugin_clean_data = ext.output
-        clean_data = merge_dict(clean_data, plugin_clean_data, update=True)
+        clean_json = merge_dict(clean_data, plugin_clean_data, update=True)
 
-    return clean_data
+    return clean_json
 
 def get_clean_function(clean_name, clean_data, device):
     """From a clean function and device, return the function object"""
@@ -279,9 +286,7 @@ def get_clean_function(clean_name, clean_data, device):
         pkg = importlib.import_module(iterated_data['package'])
     else:
         pkg = clean
-
     lookup = Lookup.from_device(device, packages={"clean": pkg})
-
     try:
         return getattr(_get_submodule(lookup.clean, iterated_data["module_name"]), name)
     except Exception:

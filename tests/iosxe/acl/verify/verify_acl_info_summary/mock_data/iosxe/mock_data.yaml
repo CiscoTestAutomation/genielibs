@@ -1,0 +1,46 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Intrepid-DUT-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: Intrepid-DUT-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show platform software fed active acl info summary: " CG id    ACL name      \
+      \                              No of ACEs  Protocol  Ingress    Egress\r\n-----------------------------------------------------------------------------------------------\r\
+      \n 20        v4denytest                                    23         IPv4 \
+      \       Y       N\r\n 31        bfd1                                       \
+      \    7         IPv6        Y       N\r\n 59        ogdeny                  \
+      \                       5         IPv6        Y       N"
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: Intrepid-DUT-1#

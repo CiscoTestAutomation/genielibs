@@ -712,3 +712,24 @@ def get_platform_type(device):
         return None
 
     return out.q.contains('platform').get_values('name', 0)
+
+def get_slice_id_of_interface(device,interface):
+    """Get the slice id of the interface
+
+    Args:
+        device (obj): Device object
+        interface ('str'): interface name
+
+    Return:
+        str: Slice ID that the interface belongs to
+    """
+
+    try:
+        out = device.parse('show platform software fed active ifm mappings')
+    except SubCommandFailure:
+        log.error('Could not get ifm mappings')
+        return None
+
+    slice_id = out['interface'][interface]['Core']
+
+    return slice_id

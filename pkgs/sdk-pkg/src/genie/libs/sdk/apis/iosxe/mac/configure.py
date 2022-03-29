@@ -133,4 +133,3 @@ def configure_mac_address_table_aging(device, aging_time):
         raise SubCommandFailure(
             "Could not configure aging time"
             ) 
-

@@ -1,0 +1,41 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: a2_acc_9300(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: a2_acc_9300(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    clear mac address-table dynamic:
+      response:
+      - ''
+      response_type: circular
+    clear mac address-table dynamic address dead.beef.0000 interface te1/0/1 vlan 1:
+      response:
+      - $le dynamic address dead.beef.0000 interface te1/0/1 vlan 1
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: a2_acc_9300#

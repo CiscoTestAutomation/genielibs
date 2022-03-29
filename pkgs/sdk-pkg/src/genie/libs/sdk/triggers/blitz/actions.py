@@ -22,7 +22,8 @@ from .yangexec import run_netconf, run_gnmi, run_restconf, notify_wait
 from .actions_helper import (configure_handler, api_handler, learn_handler,
                              parse_handler, execute_handler, _get_exclude,
                              _condition_validator, rest_handler,
-                             bash_console_handler, dialog_handler)
+                             bash_console_handler, dialog_handler,
+                             yang_handler)
 
 # skip in case pyats.contrib is not installed
 try:
@@ -722,6 +723,10 @@ def yang(self,
          health_uids=None,
          health_groups=None,
          health_sections=None,
+         include=None,
+         exclude=None,
+         max_time=None,
+         check_interval=None,
          *args,
          **kwargs):
 
@@ -746,6 +751,7 @@ def yang(self,
         'restconf': run_restconf
     }
 
+
     if protocol in protocols:
         result = protocols[protocol](operation=operation,
                                      device=device,
@@ -754,6 +760,27 @@ def yang(self,
                                      rpc_data=content,
                                      returns=returns,
                                      **kwargs)
+
+        msg = kwargs.pop('custom_substep_message',
+                     "Submitting a '{m}' call".\
+                     format(m=protocol))
+
+        with steps.start(msg, continue_=continue_) as step:
+
+            handler_kwargs = {
+                'step': step,
+                'device': device,
+                'protocol': protocol,
+                'alias': alias,
+                'include': include,
+                'exclude': exclude,
+                'max_time': max_time,
+                'check_interval': check_interval,
+                'continue_': continue_,
+                'output': result
+                }
+
+            result = yang_handler(**handler_kwargs)
     else:
         result = None
 

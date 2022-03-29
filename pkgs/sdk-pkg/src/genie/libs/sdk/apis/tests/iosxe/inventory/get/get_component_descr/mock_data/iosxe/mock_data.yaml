@@ -1,0 +1,167 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: 9600_Switch(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: 9600_Switch(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    show inventory raw: "NAME: \"Chassis\", DESCR: \"Cisco Catalyst 9600 Series 6\
+      \ Slot Chassis\"\r\nPID: C9606R            , VID: V01  , SN: FXS2429Q4HV\r\n\
+      \r\nNAME: \"Backplane\", DESCR: \"Cisco Catalyst 9600 Series 6 Slot Chassis\
+      \ Backplane\"\r\nPID:                   , VID:      , SN:            \r\n\r\n\
+      NAME: \"slot 1\", DESCR: \"Cisco Catalyst 9600 Series Carrier Card Module Container\"\
+      \r\nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"slot\
+      \ 2\", DESCR: \"Cisco Catalyst 9600 Series Carrier Card Module Container\"\r\
+      \nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"slot 3\"\
+      , DESCR: \"Cisco Catalyst 9600 Series Carrier Card Module Container\"\r\nPID:\
+      \                   , VID:      , SN:            \r\n\r\nNAME: \"slot 4\", DESCR:\
+      \ \"Cisco Catalyst 9600 Series Carrier Card Module Container\"\r\nPID:     \
+      \              , VID:      , SN:            \r\n\r\nNAME: \"slot 5\", DESCR:\
+      \ \"Cisco Catalyst 9600 Series Carrier Card Module Container\"\r\nPID:     \
+      \              , VID:      , SN:            \r\n\r\nNAME: \"slot 6\", DESCR:\
+      \ \"Cisco Catalyst 9600 Series Carrier Card Module Container\"\r\nPID:     \
+      \              , VID:      , SN:            \r\n\r\nNAME: \"slot R0\", DESCR:\
+      \ \"Cisco Catalyst 9600 Series Routing Processor Module Container\"\r\nPID:\
+      \                   , VID:      , SN:            \r\n\r\nNAME: \"Slot 3 Supervisor\"\
+      , DESCR: \"Supervisor 1 Module\"\r\nPID: C9600-SUP-1       , VID: V02  , SN:\
+      \ FDO24261BQN\r\n\r\nNAME: \"Slot 3 - USB Port0\", DESCR: \"USB Port\"\r\nPID:\
+      \                   , VID:      , SN:            \r\n\r\nNAME: \"Hard Disk Container\
+      \ R0\", DESCR: \"Hard Disk Container\"\r\nPID:                   , VID:    \
+      \  , SN:            \r\n\r\nNAME: \"Slot 3 - USB Port1\", DESCR: \"USB Port\"\
+      \r\nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"Slot\
+      \ 3 Temp: UADP_0_0\", DESCR: \"Temp: UADP_0_0\"\r\nPID:                   ,\
+      \ VID:      , SN:            \r\n\r\nNAME: \"Slot 3 Temp: UADP_0_1\", DESCR:\
+      \ \"Temp: UADP_0_1\"\r\nPID:                   , VID:      , SN:           \
+      \ \r\n\r\nNAME: \"Slot 3 Temp: UADP_0_2\", DESCR: \"Temp: UADP_0_2\"\r\nPID:\
+      \                   , VID:      , SN:            \r\n\r\nNAME: \"Slot 3 Temp:\
+      \ UADP_0_3\", DESCR: \"Temp: UADP_0_3\"\r\nPID:                   , VID:   \
+      \   , SN:            \r\n\r\nNAME: \"Slot 3 Temp: UADP_0_4\", DESCR: \"Temp:\
+      \ UADP_0_4\"\r\nPID:                   , VID:      , SN:            \r\n\r\n\
+      NAME: \"Slot 3 Temp: UADP_0_5\", DESCR: \"Temp: UADP_0_5\"\r\nPID:         \
+      \          , VID:      , SN:            \r\n\r\nNAME: \"Slot 3 Temp: UADP_0_6\"\
+      , DESCR: \"Temp: UADP_0_6\"\r\nPID:                   , VID:      , SN:    \
+      \        \r\n\r\nNAME: \"Slot 3 Temp: UADP_0_7\", DESCR: \"Temp: UADP_0_7\"\r\
+      \nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"Slot 3\
+      \ Temp: UADP_0_8\", DESCR: \"Temp: UADP_0_8\"\r\nPID:                   , VID:\
+      \      , SN:            \r\n\r\nNAME: \"Slot 3 Temp: UADP_1_0\", DESCR: \"Temp:\
+      \ UADP_1_0\"\r\nPID:                   , VID:      , SN:            \r\n\r\n\
+      NAME: \"Slot 3 Temp: UADP_1_1\", DESCR: \"Temp: UADP_1_1\"\r\nPID:         \
+      \          , VID:      , SN:            \r\n\r\nNAME: \"Slot 3 Temp: UADP_1_2\"\
+      , DESCR: \"Temp: UADP_1_2\"\r\nPID:                   , VID:      , SN:    \
+      \        \r\n\r\nNAME: \"Slot 3 Temp: UADP_1_3\", DESCR: \"Temp: UADP_1_3\"\r\
+      \nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"Slot 3\
+      \ Temp: UADP_1_4\", DESCR: \"Temp: UADP_1_4\"\r\nPID:                   , VID:\
+      \      , SN:            \r\n\r\nNAME: \"Slot 3 Temp: UADP_1_5\", DESCR: \"Temp:\
+      \ UADP_1_5\"\r\nPID:                   , VID:      , SN:            \r\n\r\n\
+      NAME: \"Slot 3 Temp: UADP_1_6\", DESCR: \"Temp: UADP_1_6\"\r\nPID:         \
+      \          , VID:      , SN:            \r\n\r\nNAME: \"Slot 3 Temp: UADP_1_7\"\
+      , DESCR: \"Temp: UADP_1_7\"\r\nPID:                   , VID:      , SN:    \
+      \        \r\n\r\nNAME: \"Slot 3 Temp: UADP_1_8\", DESCR: \"Temp: UADP_1_8\"\r\
+      \nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"Slot 3\
+      \ Temp: UADP_2_0\", DESCR: \"Temp: UADP_2_0\"\r\nPID:                   , VID:\
+      \      , SN:            \r\n\r\nNAME: \"Slot 3 Temp: UADP_2_1\", DESCR: \"Temp:\
+      \ UADP_2_1\"\r\nPID:                   , VID:      , SN:            \r\n\r\n\
+      NAME: \"Slot 3 Temp: UADP_2_2\", DESCR: \"Temp: UADP_2_2\"\r\nPID:         \
+      \          , VID:      , SN:            \r\n\r\nNAME: \"Slot 3 Temp: UADP_2_3\"\
+      , DESCR: \"Temp: UADP_2_3\"\r\nPID:                   , VID:      , SN:    \
+      \        \r\n\r\nNAME: \"Slot 3 Temp: UADP_2_4\", DESCR: \"Temp: UADP_2_4\"\r\
+      \nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"Slot 3\
+      \ Temp: UADP_2_5\", DESCR: \"Temp: UADP_2_5\"\r\nPID:                   , VID:\
+      \      , SN:            \r\n\r\nNAME: \"Slot 3 Temp: UADP_2_6\", DESCR: \"Temp:\
+      \ UADP_2_6\"\r\nPID:                   , VID:      , SN:            \r\n\r\n\
+      NAME: \"Slot 3 Temp: UADP_2_7\", DESCR: \"Temp: UADP_2_7\"\r\nPID:         \
+      \          , VID:      , SN:            \r\n\r\nNAME: \"Slot 3 Temp: UADP_2_8\"\
+      , DESCR: \"Temp: UADP_2_8\"\r\nPID:                   , VID:      , SN:    \
+      \        \r\n\r\nNAME: \"Slot 3 Temp: InltFrnt\", DESCR: \"Temp: InltFrnt\"\r\
+      \nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"Slot 3\
+      \ Temp: InltRear\", DESCR: \"Temp: InltRear\"\r\nPID:                   , VID:\
+      \      , SN:            \r\n\r\nNAME: \"Slot 3 Temp: OtltFrnt\", DESCR: \"Temp:\
+      \ OtltFrnt\"\r\nPID:                   , VID:      , SN:            \r\n\r\n\
+      NAME: \"Slot 3 Temp: OtltRear\", DESCR: \"Temp: OtltRear\"\r\nPID:         \
+      \          , VID:      , SN:            \r\n\r\nNAME: \"Slot 3 HotSwap: Volts\"\
+      , DESCR: \"HotSwap: Volts\"\r\nPID:                   , VID:      , SN:    \
+      \        \r\n\r\nNAME: \"Slot 3 HotSwap: Power\", DESCR: \"HotSwap: Power\"\r\
+      \nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"Slot 3\
+      \ - NME\", DESCR: \"Network Management Ethernet\"\r\nPID:                  \
+      \ , VID:      , SN:            \r\n\r\nNAME: \"R0 - NMTGE\", DESCR: \"Network\
+      \ Management TenGigEthernet\"\r\nPID:                   , VID:      , SN:  \
+      \          \r\n\r\nNAME: \"Slot 3 CPU\", DESCR: \"Intel CPU x86-64\"\r\nPID:\
+      \                   , VID:      , SN:            \r\n\r\nNAME: \"slot R1\",\
+      \ DESCR: \"Cisco Catalyst 9600 Series Routing Processor Module Container\"\r\
+      \nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"slot F0\"\
+      , DESCR: \"Cisco Catalyst 9600 Series Slot\"\r\nPID:                   , VID:\
+      \      , SN:            \r\n\r\nNAME: \"slot F1\", DESCR: \"Cisco Catalyst 9600\
+      \ Series Slot\"\r\nPID:                   , VID:      , SN:            \r\n\r\
+      \nNAME: \"Power Supply Bay 1\", DESCR: \"Cisco Catalyst 9600 Series Power Supply\
+      \ Bay Module Container\"\r\nPID:                   , VID:      , SN:       \
+      \     \r\n\r\nNAME: \"Power Supply Module 1\", DESCR: \"Cisco Catalyst 9600\
+      \ Series 2000W AC Power Supply\"\r\nPID: C9600-PWR-2KWAC   , VID: V01  , SN:\
+      \ QCS24274X53\r\n\r\nNAME: \"Power Supply 1\", DESCR: \"Cisco Catalyst 9600\
+      \ Series Power Supply\"\r\nPID:                   , VID:      , SN:        \
+      \    \r\n\r\nNAME: \"Fan 1/1\", DESCR: \"Cisco Catalyst 9600 Series Fan\"\r\n\
+      PID:                   , VID:      , SN:            \r\n\r\nNAME: \"Fan 1/2\"\
+      , DESCR: \"Cisco Catalyst 9600 Series Fan\"\r\nPID:                   , VID:\
+      \      , SN:            \r\n\r\nNAME: \"Power Supply Bay 2\", DESCR: \"Cisco\
+      \ Catalyst 9600 Series Power Supply Bay Module Container\"\r\nPID:         \
+      \          , VID:      , SN:            \r\n\r\nNAME: \"Power Supply Module\
+      \ 2\", DESCR: \"Cisco Catalyst 9600 Series 2000W AC Power Supply\"\r\nPID: C9600-PWR-2KWAC\
+      \   , VID: V01  , SN: QCS24274X4L\r\n\r\nNAME: \"Power Supply 2\", DESCR: \"\
+      Cisco Catalyst 9600 Series Power Supply\"\r\nPID:                   , VID: \
+      \     , SN:            \r\n\r\nNAME: \"Fan 2/1\", DESCR: \"Cisco Catalyst 9600\
+      \ Series Fan\"\r\nPID:                   , VID:      , SN:            \r\n\r\
+      \nNAME: \"Fan 2/2\", DESCR: \"Cisco Catalyst 9600 Series Fan\"\r\nPID:     \
+      \              , VID:      , SN:            \r\n\r\nNAME: \"Power Supply Bay\
+      \ 3\", DESCR: \"Cisco Catalyst 9600 Series Power Supply Bay Module Container\"\
+      \r\nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"Power\
+      \ Supply Bay 4\", DESCR: \"Cisco Catalyst 9600 Series Power Supply Bay Module\
+      \ Container\"\r\nPID:                   , VID:      , SN:            \r\n\r\n\
+      NAME: \"Fan Tray Bay\", DESCR: \"Cisco Catalyst 9600 Series Fan Tray Bay Module\
+      \ Container\"\r\nPID:                   , VID:      , SN:            \r\n\r\n\
+      NAME: \"Fan Tray\", DESCR: \"Cisco Catalyst 9600 Series C9606 Chassis Fan Tray\"\
+      \r\nPID: C9606-FAN         , VID: V01  , SN: DCH2413W086\r\n\r\nNAME: \"Fan\
+      \ 5/1\", DESCR: \"Cisco Catalyst 9600 Series Fan\"\r\nPID:                 \
+      \  , VID:      , SN:            \r\n\r\nNAME: \"Fan 5/2\", DESCR: \"Cisco Catalyst\
+      \ 9600 Series Fan\"\r\nPID:                   , VID:      , SN:            \r\
+      \n\r\nNAME: \"Fan 5/3\", DESCR: \"Cisco Catalyst 9600 Series Fan\"\r\nPID: \
+      \                  , VID:      , SN:            \r\n\r\nNAME: \"Fan 5/4\", DESCR:\
+      \ \"Cisco Catalyst 9600 Series Fan\"\r\nPID:                   , VID:      ,\
+      \ SN:            \r\n\r\nNAME: \"Fan 5/5\", DESCR: \"Cisco Catalyst 9600 Series\
+      \ Fan\"\r\nPID:                   , VID:      , SN:            \r\n\r\nNAME:\
+      \ \"Fan 5/6\", DESCR: \"Cisco Catalyst 9600 Series Fan\"\r\nPID:           \
+      \        , VID:      , SN:            \r\n\r\nNAME: \"Fan 5/7\", DESCR: \"Cisco\
+      \ Catalyst 9600 Series Fan\"\r\nPID:                   , VID:      , SN:   \
+      \         \r\n\r\nNAME: \"Fan 5/8\", DESCR: \"Cisco Catalyst 9600 Series Fan\"\
+      \r\nPID:                   , VID:      , SN:            \r\n\r\nNAME: \"Fan\
+      \ 5/9\", DESCR: \"Cisco Catalyst 9600 Series Fan\"\r\nPID:                 \
+      \  , VID:      , SN:"
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: 9600_Switch#

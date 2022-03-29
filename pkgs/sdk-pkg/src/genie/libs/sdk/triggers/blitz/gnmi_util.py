@@ -54,7 +54,7 @@ class GnmiNotification(Thread):
         self.namespace = request.get('namespace')
         self.sub_mode = request.get('sub_mode')
         self.encoding = request.get('encoding')
-        self.sample_interval = request.get('sample_interval')
+        self.sample_interval = request.get('sample_interval', 0)
         self.stream_max = request.get('stream_max', 0)
         self.time_delta = 0
         self.result = None
@@ -104,6 +104,8 @@ class GnmiNotification(Thread):
         try:
             while True:
                 for response in self.responses:
+                    self.log.info("gNMI SUBSCRIBE Response\n" + "=" * 23 + "\n{}"
+                                  .format(response))
                     if response.HasField('sync_response'):
                         self.log.info('Subscribe sync_response')
                     if response.HasField('update'):
@@ -484,10 +486,17 @@ class GnmiMessage:
                 response,
                 **request
             )
-            if request['request_mode'] == 'ONCE':
+            if request['request_mode'] in ['ONCE', 'POLL']:
                 subscribe_thread.event_triggered = True
             device.active_notifications[device] = subscribe_thread
             subscribe_thread.start()
+
+            # When request mode is ONCE or POLL, it is better to wait until
+            # subscribe_thread is finished.
+            if request['request_mode'] in ['ONCE', 'POLL']:
+                log.info('Subscribe request mode is ONCE or POLL, so wait for '
+                         'subscribe_thread to finish...')
+                subscribe_thread.join()
 
             return True
         except Exception as exc:
@@ -1023,7 +1032,7 @@ class GnmiMessageConstructor:
 
                 for pfx, mod in self.namespace_modules.items():
                     if isinstance(value, string_types) and pfx in value:
-                        if mod != module:
+                        if mod != module and self.origin == 'rfc7951':
                             value = value.replace(pfx + ":", mod + ':')
                         else:
                             value = value.replace(pfx + ":", '')
@@ -1036,7 +1045,7 @@ class GnmiMessageConstructor:
                             seg = seg.replace(pfx + ":", module + ':')
                             xp[i] = seg
                             continue
-                        if mod != module:
+                        if mod != module and self.origin == 'rfc7951':
                             # From another module so this is required.
                             seg = seg.replace(pfx + ":", mod + ':')
                         else:

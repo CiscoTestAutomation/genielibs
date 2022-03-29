@@ -898,3 +898,33 @@ def get_ospf_process_id_on_interface(device, interface):
         return keys[0]['instance']
     else:
         return None
+
+def get_ipv6_ospf_neighbor_address_in_state(device, state=None):
+    """ Gets the ipv6 ospf neighbors address' in state
+
+        Args:
+            device ('obj'): Device to use
+            state ('str'): full/sub-string of the state you want
+                           search for
+
+        Returns:
+            ('list'): of ospf neighbor address' in specified state
+
+        Raises:
+            N/A
+    """
+    addresses = []
+
+    try:
+        out = device.parse("show ipv6 ospf neighbor")
+    except SchemaEmptyParserError:
+        return addresses
+
+    for intf in out.get("interfaces", {}):
+        dev_intf = out["interfaces"][intf]
+        for neighbor in dev_intf.get("neighbors", {}):
+            neighbor_state = out["interfaces"][intf]["neighbors"][neighbor].get("state", "").lower()
+            if not state or state.lower() in neighbor_state:
+                addresses.append(neighbor)
+
+    return addresses

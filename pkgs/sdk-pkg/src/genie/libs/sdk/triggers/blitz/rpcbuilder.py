@@ -286,6 +286,8 @@ https://tools.ietf.org/html/rfc6020#section-9.13
         r"|"                 # or
         r"'([^']*)'"         # 'single-quoted value'
         r"|"                 # or
+        r"([0-9]*)"          # integer value
+        r"|"                 # or
         r"concat\((.*)\)"    # concat()
         r")\]"
     )
@@ -323,17 +325,17 @@ https://tools.ietf.org/html/rfc6020#section-9.13
 
           >>> YSNetconfRPCBuilder._XPATH_KEY_RE.findall(
           ...      '''foo[bar="baz"][bat-qux='frobozz']''')
-          [('bar', 'baz', '', ''), ('bat-qux', '', 'frobozz', '')]
+          [('bar', 'baz', '', '', ''), ('bat-qux', '', 'frobozz', '', '')]
           >>> YSNetconfRPCBuilder._XPATH_KEY_RE.findall(
           ... 'ipv6[ip="2001:0dB8:AC10:FE01::"][prefix="/64"]')
-          [('ip', '2001:0dB8:AC10:FE01::', '', ''), ('prefix', '/64', '', '')]
+          [('ip', '2001:0dB8:AC10:FE01::', '', '', ''), ('prefix', '/64', '', '', '')]
           >>> YSNetconfRPCBuilder._XPATH_KEY_RE.findall(
           ... "ipv4[ip='10.0.10.77'][prefix='/24']")
-          [('ip', '', '10.0.10.77', ''), ('prefix', '', '/24', '')]
+          [('ip', '', '10.0.10.77', '', ''), ('prefix', '', '/24', '', '')]
           >>> YSNetconfRPCBuilder._XPATH_KEY_RE.findall(
           ... '''foo:bar[description=concat("I said ", \'"\', ''' +
           ... '''"I said, \'hello\'", \'"\', "!")]''')
-          [('description', '', '', '"I said ", \'"\', "I said, \'hello\'", \'"\', "!"')]
+          [('description', '', '', '', '"I said ", \'"\', "I said, \'hello\'", \'"\', "!"')]
           >>> tokens = YSNetconfRPCBuilder._XPATH_CONCAT_TOKEN_RE.findall(
           ... '"I said ", \'"\', "I said, \'hello\'", \'"\', "!"')
           >>> tokens
@@ -416,9 +418,10 @@ https://tools.ietf.org/html/rfc6020#section-9.13
             keys_values = OrderedDict()
             while self._XPATH_KEY_RE.match(xpath):
                 # _XPATH_KEY_RE may match as:
-                # key, value, '', ''
-                # key, '', value, ''
-                # key, '', '', value
+                # key, value, '', '', ''
+                # key, '', value, '', ''
+                # key, '', '', value, ''
+                # key, '', '', '', value
                 pred_key_value = self._XPATH_KEY_RE.match(xpath)
                 pred_key = pred_key_value.group(1)
                 pred_value = ""
@@ -426,9 +429,11 @@ https://tools.ietf.org/html/rfc6020#section-9.13
                     pred_value = pred_key_value.group(2)
                 elif pred_key_value.group(3):   # single-quoted string
                     pred_value = pred_key_value.group(3)
-                elif pred_key_value.group(4):   # concat(....)
+                elif pred_key_value.group(4):   # integer value
+                    pred_value = pred_key_value.group(4)
+                elif pred_key_value.group(5):   # concat(....)
                     concat_tokens = self._XPATH_CONCAT_TOKEN_RE.findall(
-                        pred_key_value.group(4))
+                        pred_key_value.group(5))
                     pred_value = ''.join(''.join(tok) for tok in concat_tokens)
                 keys_values[pred_key] = pred_value
                 xpath = xpath[pred_key_value.end():]

@@ -1513,3 +1513,60 @@ def verify_ospf_database_contains_sid_neighbor_address_pairs(device, router_id, 
 
     return False
 
+def verify_ipv6_ospf_neighbor_address_in_state(device, addresses, state, max_time=60, check_interval=10):
+    """ Verifies that an ipv6 ospf neighbor using the provided address is in a specific state
+
+        Args:
+            device ('obj'): Device to use
+            addresses ('list'): List of addresses to check
+            state ('str'): State to verify the interfaces are in
+            max_time ('int'): Maximum time to wait
+            check_interval ('int'): How often to check
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        addresses_in_state = device.api.get_ipv6_ospf_neighbor_address_in_state(state)
+        if set(addresses).issubset(addresses_in_state):
+            return True
+
+        log.debug("The following addresses are not in state {state}: {addresses}"
+                 .format(state=state, addresses=set(addresses)-set(addresses_in_state)))
+
+        timeout.sleep()
+
+    return False
+
+
+def verify_ipv6_ospf_neighbor_addresses_are_not_listed(device, addresses, max_time=60, check_interval=10):
+    """ Verifies that an ipv6 ospf neighbor using the provided address is not listed
+
+        Args:
+            device ('obj'): Device to use
+            addresses ('list'): List of addresses to check
+            max_time ('int'): Maximum time to wait
+            check_interval ('int'): How often to check for the neighborship
+
+        Returns:
+            True/False
+
+        Raises:
+            N/A
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        addresses_listed = device.api.get_ipv6_ospf_neighbor_address_in_state()
+        if (set(addresses).isdisjoint(addresses_listed)):
+            return True
+
+        log.debug('The following addresses are still listed: {}'
+                 .format(list(set(addresses).intersection(addresses_listed))))
+
+        timeout.sleep()
+
+    return False

@@ -670,3 +670,266 @@ def configure_ikev2_profile_advanced(device,
         log.error("Failed to configure ikev2 profile,"
              "Error:\n{error}".format(error=e)
         )
+
+def configure_ikev2_dpd(device,
+                        interval=10,
+                        retry=2,
+                        dpd_query="on-demand"
+                        ):
+    """ Configures IKEV2 DPD
+        Args:
+            device (`obj`): Device object
+            interval ('int', optional): dpd interval, default is 10
+            retry ('int', optional): dpd retry, default is 2
+            dpd_query ('str'): dpd query, default is on-demand
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Configuring IKEV2 DPD"
+    )
+
+    configs = []
+    configs.append(f"crypto ikev2 dpd {interval} {retry} {dpd_query}")
+   
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error("Failed to configure ikev2 DPD,"
+             "Error:\n{error}".format(error=e)
+        )
+        raise
+
+def configure_ikev2_fragmentation(device,
+                        mtu
+                        ):
+    """ Configures IKEV2 Fragmentation
+        Args:
+            device (`obj`): Device object
+            mtu ('int'): IKEv2 MTU 
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Configuring IKEV2 Fragmentation"
+    )
+
+    configs = []
+    configs.append(f"crypto ikev2 fragmentation mtu {mtu}")
+   
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error("Failed to configure ikev2 fragmentation,"
+             "Error:\n{error}".format(error=e)
+        )
+        raise
+
+def configure_ikev2_cac(device,
+                        in_nego=0,
+                        sa=0
+                        ):
+    """ Configures IKEV2 CAC
+        Args:
+            device (`obj`): Device object
+            in_nego ('int', optional): Maximum IKEv2 in negotiation sa, default is 0
+            sa ('int',optional): Maximum IKEv2 sa, default is 0
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Configuring IKEV2 CAC"
+    )
+
+    configs = []
+    if in_nego:
+        configs.append(f"crypto ikev2 limit max-in-negotation-sa {in_nego}")
+   
+    if sa:
+        configs.append(f"crypto ikev2 limit max-sa {sa}")
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error("Failed to configure ikev2 CAC,"
+             "Error:\n{error}".format(error=e)
+        )
+        raise
+
+def unconfigure_ikev2_proposal(device,
+                        proposal_name
+                        ):
+    """ Unconfigures IKEV2 Policy
+        Args:
+            device (`obj`): Device object
+            proposal_name ('str'): ikev2 proposal name
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Unconfiguring IKEV2 proposal"
+    )
+
+    configs = []
+    configs.append(f"no crypto ikev2 proposal {proposal_name}")
+   
+    try:
+        device.configure(configs, error_pattern=['% Cannot remove as proposal is in use\.'])
+    except SubCommandFailure as e:
+        log.error("Failed to configure ikev2 policy,"
+             "Error:\n{error}".format(error=e)
+        )
+        raise
+
+def unconfigure_ikev2_policy(device,
+                        policy_name
+                        ):
+    """ Unconfigures IKEV2 Policy
+        Args:
+            device (`obj`): Device object
+            policy_name ('str'): ikev2 policy name
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Unconfiguring IKEV2 Policy"
+    )
+
+    configs = []
+    configs.append(f"no crypto ikev2 policy {policy_name}")
+   
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error("Failed to configure ikev2 policy,"
+             "Error:\n{error}".format(error=e)
+        )
+        raise
+
+def unconfigure_ikev2_dpd(device,
+                        interval,
+                        retry,
+                        dpd_query
+                        ):
+    """ Unconfigure IKEV2 DPD
+        Args:
+            device (`obj`): Device object
+            interval ('int'): Determine in what interval Dead Peer Detection should happen
+            retry ('int'): Number of time DPD should retry before making the peer dead 
+            dpd_query ('str'): Determine whether query is on-demand or periodic
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Configuring IKEV2 DPD"
+    )
+
+    configs = []
+    configs.append(f"no crypto ikev2 dpd {interval} {retry} {dpd_query}")
+   
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error("Failed to unconfigure ikev2 DPD,"
+             "Error:\n{error}".format(error=e)
+        )
+        raise
+
+def unconfigure_ikev2_fragmentation(device,
+                        mtu
+                        ):
+    """ Unonfigure IKEV2 Fragmentation
+        Args:
+            device (`obj`): Device object
+            mtu ('int'): IKEv2 MTU Fragmentation
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Unconfiguring IKEV2 Fragmentation"
+    )
+
+    configs = []
+    configs.append(f"no crypto ikev2 fragmentation mtu {mtu}")
+   
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error("Failed to unconfigure ikev2 fragmentation,"
+             "Error:\n{error}".format(error=e)
+        )
+        raise
+
+def unconfigure_ikev2_cac(device,
+                        in_nego,
+                        sa=0
+                        ):
+    """ Unonfigure IKEV2 CAC
+        Args:
+            device (`obj`): Device object
+            in_nego ('int'): Maximum IKEv2 in negotiation sa
+            sa ('int',optional): Maximum IKEv2 sa, default is 0
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Unconfiguring IKEV2 CAC"
+    )
+
+    configs = []
+    if in_nego:
+        configs.append(f"no crypto ikev2 limit max-in-negotation-sa {in_nego}")
+   
+    if sa:
+        configs.append(f"no crypto ikev2 limit max-sa {sa}")
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error("Failed to unconfigure ikev2 CAC,"
+             "Error:\n{error}".format(error=e)
+        )
+        raise
+
+def unconfigure_ikev2_authorization_policy(device,
+                    policy_name
+                    ):
+    """ Unonfigure IKEV2 Authorization policy
+        Args:
+            device (`obj`): Device object
+            policy_name ('str'): IKEv2 authorization policy
+        Returns:
+            NA
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Unconfiguring IKEV2 Authorization Policy"
+    )
+
+    configs = []
+    configs.append(f"no crypto ikev2 authorization policy {policy_name}")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error("Failed to unconfigure ikev2 authorization policy,"
+             "Error:\n{error}".format(error=e)
+        )
+        raise

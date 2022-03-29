@@ -1,0 +1,38 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface Te0/1/1: "interface Te0/1/1\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    no macsec: "no macsec\r\n"
+    no mka policy POLICY: "MACSEC changed IP MTU on Te0/1/1 from 1468 to 1500\r\n"
+    no mka pre-shared-key key-chain K1: "\r\n"
+  prompt: FUGAZI(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: FUGAZI(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: FUGAZI#

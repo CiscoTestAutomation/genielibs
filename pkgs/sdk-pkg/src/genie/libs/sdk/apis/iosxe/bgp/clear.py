@@ -67,3 +67,22 @@ def clear_bgp_neighbors_soft(device, direction="", neighbor_address="ALL"):
         raise SubCommandFailure(
             "Could not soft clear device {dev}".format(dev=device.name)
         )
+
+def clear_ip_bgp(device):
+    """ clear ip bgp *
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+
+    log.debug("Clearing ip bgp on {device}".format(device=device))
+
+    try:
+        device.execute("clear ip bgp *")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not clear ip bgp on {device}. Error:\n{error}".format(device=device, error=e)
+        )

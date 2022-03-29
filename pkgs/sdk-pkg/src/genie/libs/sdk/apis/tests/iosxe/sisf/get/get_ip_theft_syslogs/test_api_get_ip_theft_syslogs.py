@@ -39,5 +39,8 @@ class TestGetIpTheftSyslogs(unittest.TestCase):
               'mac': 'dead.beef.0001',
               'new_interface': 'Twe1/0/5',
               'new_mac': 'dead.beef.0002',
-              'vlan': '20'}]}
+              'vlan': '20'},
+             {'ip': '2001:DB8::105', 'vlan': '20',
+              'new_mac': 'dead.beef.0002',
+              'new_interface': 'Twe1/0/1'}]}
         self.assertEqual(result, expected_output)

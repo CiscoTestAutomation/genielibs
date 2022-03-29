@@ -30,9 +30,10 @@ class TestConfigureShapeMap(unittest.TestCase):
 
     def test_configure_shape_map(self):
         result = configure_shape_map(self.device, 'queue1', [{'bandwidth': '20',
+  'child_policy': 'queue2',
   'class_map_name': 'tc7',
   'priority_level': 1,
   'queue_limit': '30',
-  'shape_average': '2000000000'}])
+  'shape_average': '2000000000'}], 'no service-policy')
         expected_output = None
         self.assertEqual(result, expected_output)

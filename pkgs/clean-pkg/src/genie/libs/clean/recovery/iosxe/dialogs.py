@@ -145,8 +145,11 @@ class RommonDialog(TelnetDialog):
 
         # Get index for selected_line and desired_line
         for index, line in enumerate(lines):
-            if '*' in line:
+
+            # \x1b[7m is reverse video (inverted colors)
+            if '*' in line or '\x1b[7m' in line:
                 selected_line = index
+
             if context['boot_image'] in line:
                 desired_line = index
 

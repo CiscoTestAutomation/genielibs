@@ -67,3 +67,52 @@ def unconfigure_cdp(device, interfaces=None):
     if skipped_ints:
         log.info('Skipped interfaces {} due to type incompatability'.format(skipped_ints))
     device.configure(command_list)
+
+def configure_cdp_interface(device, interface):
+    """ Configure CDP on interface
+
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface on which CDP to be configured
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure CDP on interface")
+    configs = []
+    configs.append("cdp run")
+    configs.append(f"interface {interface}")
+    configs.append("cdp enable")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure CDP on interface"
+            "Error: {error}".format(error=e)
+            )
+
+def unconfigure_cdp_interface(device, interface):
+    """ Unconfigure CDP on interface
+
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface on which CDP to be configured
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Unonfigure CDP on interface")
+    configs = []
+    configs.append(f"interface {interface}")
+    configs.append("no cdp enable")
+    configs.append("no cdp run")
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure CDP on interface"
+            "Error: {error}".format(error=e)
+            )

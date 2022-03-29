@@ -1645,8 +1645,8 @@ apply_configuration:
                          format(device.name)) as step:
             log.info("Sleeping for '{}' seconds".format(config_stable_time))
             time.sleep(config_stable_time)
-            self.passed("Successfully applied configuration after reloading "
-                           "device {}".format(device.name))
+            step.passed("Successfully applied configuration on device {}".format(
+                device.name))
 
 
 class VerifyRunningImage(BaseStage):

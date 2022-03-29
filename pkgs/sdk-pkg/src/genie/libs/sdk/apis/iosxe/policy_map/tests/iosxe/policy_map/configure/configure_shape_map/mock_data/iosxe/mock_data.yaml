@@ -7,6 +7,7 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
+    no service-policy queue2: "queue-limit 30 bytes\r\n"
     policy-map type queueing queue1: "policy-map type queueing queue1\r\n"
     priority level 1: "priority level 1\r\n"
     queue-limit 30 bytes: "Bandwidth not allowed with priority\r\n"

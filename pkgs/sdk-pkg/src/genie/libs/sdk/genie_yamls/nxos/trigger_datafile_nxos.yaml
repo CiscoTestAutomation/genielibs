@@ -2657,6 +2657,48 @@ TriggerProcessKillRestartVpc:
       interval: 15
     devices: ['uut']
 
+TriggerProcessKillRestartMonitor:
+    groups: ['restart', 'monitor', 'span']
+    timeout:
+      max_time: 180
+      interval: 15
+    devices: ['uut']
+
+TriggerProcessCrashRestartMonitor:
+    groups: ['restart', 'monitor', 'span']
+    timeout:
+      max_time: 180
+      interval: 15
+    devices: ['uut']
+
+TriggerProcessKillRestartIntersight:
+    groups: ['restart', 'intersight', 'nxosdc']
+    timeout:
+      max_time: 180
+      interval: 15
+    devices: ['uut']
+
+TriggerProcessCrashRestartIntersight:
+    groups: ['restart', 'intersight', 'nxosdc']
+    timeout:
+      max_time: 180
+      interval: 15
+    devices: ['uut']
+
+TriggerProcessKillRestartNXOSDC:
+    groups: ['restart', 'intersight', 'nxosdc']
+    timeout:
+      max_time: 180
+      interval: 15
+    devices: ['uut']
+
+TriggerProcessCrashRestartNXOSDC:
+    groups: ['restart', 'intersight', 'nxosdc']
+    timeout:
+      max_time: 180
+      interval: 15
+    devices: ['uut']
+        
 #===============================================================================
 #                               SWITCHOVER
 #===============================================================================

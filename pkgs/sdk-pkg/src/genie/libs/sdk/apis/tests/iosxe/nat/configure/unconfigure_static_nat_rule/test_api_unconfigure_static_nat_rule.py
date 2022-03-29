@@ -9,7 +9,7 @@ class TestUnconfigureStaticNatRule(unittest.TestCase):
     def setUpClass(self):
         testbed = """
         devices:
-          Stargazer:
+          FE2:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,10 +18,10 @@ class TestUnconfigureStaticNatRule(unittest.TestCase):
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: c9600
+            type: c9500
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['Stargazer']
+        self.device = self.testbed.devices['FE2']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -29,6 +29,6 @@ class TestUnconfigureStaticNatRule(unittest.TestCase):
         )
 
     def test_unconfigure_static_nat_rule(self):
-        result = unconfigure_static_nat_rule(self.device, '10.10.10.1', '172.16.131.1')
+        result = unconfigure_static_nat_rule(self.device, '21.21.21.22', '21.21.21.22', 'udp', 500, 600, True)
         expected_output = None
         self.assertEqual(result, expected_output)

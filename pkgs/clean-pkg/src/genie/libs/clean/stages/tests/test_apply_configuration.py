@@ -43,12 +43,11 @@ class Applyconfiguration(unittest.TestCase):
         self.device.configure = Mock()
 
         # Call the method to be tested (clean step inside class)
-        with self.assertRaises(AEtestPassedSignal):
-            self.cls.apply_configuration(
-                steps=steps, device=self.device, config_stable_time=4,\
-                configuration=configuration, copy_vdc_all=True,\
-                copy_directly_to_startup=True, skip_copy_run_start=True
-            )
+        self.cls.apply_configuration(
+            steps=steps, device=self.device, config_stable_time=4,\
+            configuration=configuration, copy_vdc_all=True,\
+            copy_directly_to_startup=True, skip_copy_run_start=True
+        )
 
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[1].result)

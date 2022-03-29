@@ -177,12 +177,15 @@ def health_memory(device,
                   format(cmd=command, msg=str(e)))
         return None
 
+    # default command
+    default_command = 'show processes memory | section ^Processor'
+
     # check if total usage exceeds threshold or not
-    if (parsed[check_key]['used'] / parsed[check_key]['total'])*100 > threshold:
+    if command == default_command and (parsed[check_key]['used'] / parsed[check_key]['total'])*100 > threshold:
         threshold_exceed = True
 
     # get each of processes usage only when exceeding threshold
-    if threshold_exceed:
+    if threshold_exceed or command != default_command:
 
         try:
             parsed = device.parse("show processes memory", output=output, timeout=timeout)

@@ -349,15 +349,21 @@ def delete_unprotected_files(device,
         log.info(
             "No files will be deleted, the following files are protected:\n{}".
             format('\n'.join(protected_set)))
-def execute_card_OIR(device, card_number, timeout=60):
+
+def execute_card_OIR(device, card_number, switch_id = None, timeout=60):
     ''' Execute 'hw-module subslot <slot> oir power-cycle' on the device
         Args:
             device ('obj'): Device object
             card_number ('str'): Card number on which OIR has to be performed
+            switch_id ('str', optional): Switch number(In case of SVL/Stack) on which OIR has to be performed. Default is None.
             timeout ('int',optional): Max time for card oir execution to complete in seconds.Defaults to 60
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
     '''
 
-    log.info("Executing 'hw-module subslot <slot> oir power-cycle' on the device")
+    log.info("Executing 'hw-module [switch <switch_id>] subslot <slot> oir power-cycle' on the device")
 
     # Unicon Statement/Dialog
     dialog = Dialog([
@@ -367,7 +373,9 @@ def execute_card_OIR(device, card_number, timeout=60):
              loop_continue=True,
              continue_timer=False)
              ])
-    command = 'hw-module subslot ' + card_number + ' oir power-cycle'
+    command = f'hw-module subslot {card_number} oir power-cycle'
+    if switch_id:
+        command = f'hw-module switch {switch_id} subslot {card_number} oir power-cycle'
 
     try:
        output = device.execute(
@@ -375,14 +383,86 @@ def execute_card_OIR(device, card_number, timeout=60):
                 reply=dialog,
                 timeout=timeout,
                 append_error_pattern=['.*Command cannot be executed.*'])
-    except Exception as err:
-        log.error("Failed to execute 'hw-module subslot <slot> oir power-cycle': {err}".format(err=err))
-        raise Exception(err)
+    except SubCommandFailure as err:
+        log.error(f"Failed to execute {command}': {err}".format(err=err))
+        raise
 
-    if output:
-        log.info("Successfully executed 'hw-module subslot <slot> oir power-cycle'")
-    else:
-        raise Exception("Failed to execute 'hw-module subslot <slot> oir power-cycle'")
+
+def execute_card_OIR_remove(device, card_number, switch_id = None, timeout=60):
+    ''' Execute 'hw-module subslot <slot> oir remove' on the device
+        Args:
+            device ('obj'): Device object
+            card_number ('str'): Card number on which OIR remove has to be performed
+            switch_id ('str', optional): Switch number(In case of SVL/Stack) on which OIR remove has to be performed. Default is None.
+            timeout ('int',optional): Max time for card oir removal to complete in seconds.Defaults to 60
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+
+    log.info("Executing 'hw-module [switch <switch_id>] subslot <slot> oir remove' on the device")
+
+    # Unicon Statement/Dialog
+    dialog = Dialog([
+             Statement(
+             pattern=r"Proceed with removal of module? [confirm]",
+             action='sendline()',
+             loop_continue=True,
+             continue_timer=False)
+             ])
+    command = f'hw-module subslot {card_number} oir remove'
+    if switch_id:
+        command = f'hw-module switch {switch_id} subslot {card_number} oir remove'
+
+    try:
+       output = device.execute(
+                command,
+                reply=dialog,
+                timeout=timeout,
+                append_error_pattern=['.*Command cannot be executed.*'])
+    except SubCommandFailure as err:
+        log.error(f"Failed to execute {command}': {err}".format(err=err))
+        raise
+
+
+
+def execute_card_OIR_insert(device, card_number, switch_id = None, timeout=60):
+    ''' Execute 'hw-module subslot <slot> oir insert' on the device
+        Args:
+            device ('obj'): Device object
+            card_number ('str'): Card number on which OIR insert has to be performed
+            switch_id ('str', optional): Switch number(In case of SVL/Stack) on which OIR insert has to be performed. Default is None.
+            timeout ('int',optional): Max time for card oir insertion to complete in seconds.Defaults to 60
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+
+    log.info("Executing 'hw-module [switch <switch_id>] subslot <slot> oir insert' on the device")
+
+    # Unicon Statement/Dialog
+    dialog = Dialog([
+             Statement(
+             pattern=r"Proceed with insertion of module? [confirm]",
+             action='sendline()',
+             loop_continue=True,
+             continue_timer=False)
+             ])
+    command = f'hw-module subslot {card_number} oir insert'
+    if switch_id:
+        command = f'hw-module switch {switch_id} subslot {card_number} oir insert'
+
+    try:
+       output = device.execute(
+                command,
+                reply=dialog,
+                timeout=timeout,
+                append_error_pattern=['.*Command cannot be executed.*'])
+    except SubCommandFailure as err:
+        log.error(f"Failed to execute {command}': {err}".format(err=err))
+        raise
 
 
 def execute_clear_platform_software_fed_active_acl_counters_hardware(device):
@@ -520,4 +600,53 @@ def execute_clear_ipdhcp_snooping_database_statistics(device):
         log.error(e)
         raise SubCommandFailure('Could not clear ip dhcp  snooping database statistics')
 
+def execute_switch_card_OIR(device, switch_number, slot, timeout=60):
+    ''' Execute 'hw-module switch <switch_number> subslot <slot> oir power-cycle' on the device
+        Args:
+            device ('obj'): Device object
+            switch_number('str'): Switch number on which OIR has to be performed
+            slot ('str'): Slot on which OIR has to be performed
+            timeout ('int',optional): Max time for card oir execution to complete in seconds.Defaults to 60
+    '''
 
+    log.debug("Executing 'hw-module switch <switch_number> subslot <slot> oir power-cycle' on the device")
+
+    # Unicon Statement/Dialog
+    dialog = Dialog([
+             Statement(
+             pattern=r"Proceed with power cycle of module? [confirm]",
+             action='sendline()',
+             loop_continue=True,
+             continue_timer=False)
+             ])
+    command = ["hw-module switch {} subslot {} oir power-cycle".format(switch_number,slot)]
+
+    try:
+       output = device.execute(
+                command,
+                reply=dialog,
+                timeout=timeout,
+                append_error_pattern=['.*Command cannot be executed.*'])
+    except Exception as err:
+        log.error("Failed to execute 'hw-module switch <switch_number> subslot <slot> oir power-cycle': {err}".format(err=err))
+        raise Exception(err)
+
+    if output:
+        log.debug("Successfully executed 'hw-module switch <switch_number> subslot <slot> oir power-cycle'")
+    else:
+        raise Exception("Failed to execute 'hw-module switch <switch_number> subslot <slot> oir power-cycle'")
+        
+def execute_clear_platform_software_fed_active_cpu_interface(device):
+    """ clear platform software fed active cpu-interface
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+       device.execute("clear platform software fed active cpu-interface")
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not clear active cpu-interface on device")
