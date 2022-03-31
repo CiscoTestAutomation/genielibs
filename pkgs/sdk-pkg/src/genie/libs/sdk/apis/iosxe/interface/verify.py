@@ -1004,3 +1004,40 @@ def verify_etherchannel_counter(
             return False
         counters.clear()
     return True
+
+def interface_counter_check(device, interface_name, tx_packets, pkt_rate, direction,
+                            max_time=60, check_interval=10):
+    """Verifies packet flow on interface
+
+        Args:
+            device (`obj`): Device object
+            interface_name (`str`): interface to be verified
+            tx_packets (`int`): packets transmitted by ixia
+            pkt_rate (`int`): packet sent per second
+            direction ('str'): incoming or outgoing
+            max_time (int, optional): Max time in seconds for check. Defaults to 60.
+            check_interval ('int'): Loop interval (default is 10s)
+        Returns:
+            result(`bool`): True if expected number of packets flow on interface
+                            or else return Flase
+    """
+        
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        result = True
+        try:
+            counter=device.parse(f"show interface {interface_name} counters")
+        except SchemaEmptyParserError:
+            raise SubCommandFailure
+        counter=counter.q.get_values(direction)[0]
+        
+        max_pkts=tx_packets+pkt_rate
+        min_pkts=tx_packets-pkt_rate
+        
+        if min_pkts > 0 and (min_pkts <= counter <= max_pkts):
+            return True
+        else:
+            result = False
+            timeout.sleep()
+    return result
+    

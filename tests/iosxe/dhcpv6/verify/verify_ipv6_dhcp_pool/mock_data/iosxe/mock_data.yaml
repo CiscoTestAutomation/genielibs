@@ -1,0 +1,55 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Intrepid-DUT-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: Intrepid-DUT-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ipv6 dhcp pool:
+      response:
+      - "DHCPv6 pool: pool20\r\n  Active clients: 0\r\nDHCPv6 pool: pool1\r\n  Address\
+        \ allocation prefix: 2510:1::/64 valid 300 preferred 300 (1 in use, 0 conflicts)\r\
+        \n  Active clients: 1"
+      - "DHCPv6 pool: pool20\r\n  Active clients: 0\r\nDHCPv6 pool: pool1\r\n  Address\
+        \ allocation prefix: 2510:1::/64 valid 300 preferred 300 (1 in use, 0 conflicts)\r\
+        \n  Active clients: 1"
+      - "DHCPv6 pool: pool20\r\n  Active clients: 0\r\nDHCPv6 pool: pool1\r\n  Address\
+        \ allocation prefix: 2510:1::/64 valid 300 preferred 300 (1 in use, 0 conflicts)\r\
+        \n  Active clients: 1"
+      - "DHCPv6 pool: pool20\r\n  Active clients: 0\r\nDHCPv6 pool: pool1\r\n  Address\
+        \ allocation prefix: 2510:1::/64 valid 300 preferred 300 (1 in use, 0 conflicts)\r\
+        \n  Active clients: 1"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: Intrepid-DUT-1#

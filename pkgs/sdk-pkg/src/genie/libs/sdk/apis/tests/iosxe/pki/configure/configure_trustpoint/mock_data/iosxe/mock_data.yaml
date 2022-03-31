@@ -1,0 +1,93 @@
+configure:
+  commands:
+    authorization password test: "authorization password test\r\n"
+    authorization username alt-subjectname userprinciplename: "authorization username\
+      \ alt-subjectname userprincip\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$on username alt-subjectname\
+      \ userprincipl         \b\b\b\b\b\b\b\b\bename\r\n"
+    authorization username alt-subjectname userprinciplename secondary: "authorization\
+      \ username alt-subjectname userprincip\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$on username alt-subjectname\
+      \ userprincipl         \b\b\b\b\b\b\b\b\bename sec\b\b\b\b\b\b\b\b\b\b\b\b\b\
+      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\be alt-subjectname\
+      \ userprinciplename seco         \b\b\b\b\b\b\b\b\bndary\r\n"
+    authorization username subjectname all: "authorization username subjectname all\r\
+      \n"
+    auto-enroll: "auto-enroll\r\n"
+    auto-enroll 100 regenerate: "auto-enroll 100 regenerate\r\n"
+    auto-trigger: "auto-trigger\r\n"
+    certificate chain bootflash:tp_chain_location_test: "certificate chain bootflash:tp_chain_location_test\r\
+      \n"
+    chain-validation continue True: "chain-validation continue True\r\n"
+    chain-validation stop: "chain-validation stop\r\n"
+    crl cache delete-after 100: "crl cache delete-after 100\r\n"
+    crl cache extend 100: "crl cache extend 100\r\n"
+    crl cache none: "crl cache none \r\n"
+    crypto pki trustpoint test: "crypto pki trustpoint test\r\n"
+    default authorization list: "default authorization list\r\n"
+    eckeypair test: "eckeypair test\r\n"
+    eku request client-auth: "% Please remove RSA keypair before configuring EC key\
+      \ pair\r\n"
+    end:
+      new_state: execute
+    enrollment mode  ra: "eku request client-auth\r\n"
+    enrollment profile test: "% EKU Client Auth already set\r\n"
+    enrollment retry count  10: "enrollment mode  ra\r\n"
+    enrollment retry period 10: "enrollment profile test\r\n"
+    enrollment url bootflash:test_enroll_url: "enrollment retry period 10\r\n"
+    enrollment url http://10.0.0.1:80: "enrollment retry count  10\r\n"
+    exit: " enrollment retry period 10\r\n"
+    fqdn none: "enrollment url http://10.0.0.1:80 \r\n"
+    hash sha512: "enrollment url bootflash:test_enroll_url\r\n"
+    http-proxy test 1000: "fqdn none\r\n"
+    ip-address none: "hash sha512\r\n"
+    ip-extension inherit ipv4: "http-proxy test 1000\r\n"
+    line console 0:
+      new_state: configure_line
+    match eku client-auth: "ip-address none\r\n"
+    no logging console: ''
+    no vrf: " enrollment retry count 10\r\n"
+    ocsp disable-nonce: "match eku client-auth\r\n"
+    ocsp url http://10.0.0.1:80: "ip-extension inherit ipv4\r\n"
+    password test: "% EKU Client Auth already set\r\n"
+    primary: "ocsp url http://10.0.0.1:80\r\n"
+    regenerate: "ocsp disable-nonce\r\n"
+    revocation-check crl: "revocation-check crl\r\n"
+    revocation-check none: "password test\r\n"
+    root proxy http://10.20.20.2: "primary\r\n"
+    rsakeypair test 1024: "rsakeypair test 1024\r\n"
+    rsakeypair test 1024 1024: "regenerate\r\n"
+    serial-number: "revocation-check none\r\n"
+    show: "root proxy http://10.20.20.2\r\n"
+    source interface GigabitEthernet10: "rsakeypair test 1024 1024\r\n"
+    subject-alt-name test: "serial-number\r\n"
+    subject-name C = IN: "subject-name C = IN\r\n"
+    usage ike: "show\r\n"
+    vrf test: " ip-extension inherit ipv4\r\n"
+  prompt: crypto-reg4(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: crypto-reg4(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: crypto-reg4#

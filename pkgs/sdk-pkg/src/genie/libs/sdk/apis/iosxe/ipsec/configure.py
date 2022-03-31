@@ -497,4 +497,407 @@ def unconfigure_ikev2_profile_pre_share(device, profile_name):
             'Could not unconfigure Crypto IPsec Profile. Error: {error}'.format(error=e)
         )
 
+def configure_crypto_ikev2_proposal(device, proposal_name, 
+                                    encryption_name=None, 
+                                    integrity_name=None, 
+                                    group_number=None):
+    """ Configure Cryto Ikev2 proposal
+    Args:
+        device (`obj`): Device object
+        proposal_name (`str`): proposal name
+        encryption_name (`str`,optional): name of encryption (Default None)
+        integrity_name (`str`,optional): name of integrity (Default None)
+        group_number (`str`,optional): group number (Default None)
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    config_list = []
+    config_list.append(f'crypto ikev2 proposal {proposal_name}')
+    # Configure Peer Attributes
+    if encryption_name:
+        config_list.append(f'encryption {encryption_name}')
+    if integrity_name:
+        config_list.append(f'integrity {integrity_name}')
+    if group_number:
+        config_list.append(f'group {group_number}')
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure Crypto Ikev2 Keyring. Error: {e}'
+        )
 
+def unconfigure_crypto_ikev2_proposal(device, proposal_name):
+    """ Unconfigure Crypto Ikev2 proposal
+    Args:
+        device (`obj`): Device object
+        proposal_name (`str`): proposal name
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            f"no crypto ikev2 proposal {proposal_name}"
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure Crypto proposal. Error: {e}"
+        )
+
+def configure_crypto_ipsec_nat_transparency(device):
+    """ Configure crypto ipsec nat-transparency udp-encapsulation
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    config = 'crypto ipsec nat-transparency udp-encapsulation'
+
+    # Configure Peer Attributes
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure crypto ipsec nat-transparency udp-encapsulation. Error: {e}'
+        )
+
+def unconfigure_crypto_ipsec_nat_transparency(device):
+    """ Configure no crypto ipsec nat-transparency udp-encapsulation
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    unconfig = 'no crypto ipsec nat-transparency udp-encapsulation'
+
+    # Configure Peer Attributes
+    try:
+        device.configure(unconfig)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure crypto ipsec nat-transparency udp-encapsulation. Error: {e}'
+        )
+
+def configure_ipsec_fragmentation(device, 
+                after_encr=False,
+                before_encr=False):
+    """ Configure IPSec Fragmentation
+        Args:
+            device ('obj')    : device to use
+            after_encr ('boolean', optional) :  Perform fragmentation of large packets after IPSec
+                    encapsulation, default is False
+            before_encr ('boolean', optional) : Perform fragmentation of large packets before IPSec
+                    encapsulation, default is False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Configuring IPSec fragmentation"
+    )
+    config_list = []
+    if after_encr:
+        config_list.append("crypto ipsec fragmentation after-encryption")
+    
+    if before_encr:
+        config_list.append("crypto ipsec fragmentation before-encryption")
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not configure Crypto IPsec Fragmentation. Error: {error}'.format(error=e)
+        )
+
+def configure_ipsec_df_bit(device, 
+                clear=False,
+                copy=False,
+                set=False):
+    """ Configure IPSec DF bit
+        Args:
+            device ('obj')    : device to use
+            clear ('boolean', optional) :  Clear DF bit for encapsulated packets, default is False
+            copy ('boolean', optional) :  Copy DF bit from inner for encapsulated packets, default is False
+            set ('boolean', optional) : Set DF bit for encapsulated packets, default is False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Configuring IPSec df bit"
+    )
+    config_list = []
+    if clear:
+        config_list.append("crypto ipsec df-bit clear")
+    
+    if copy:
+        config_list.append("crypto ipsec df-bit copy")
+
+    if set:
+        config_list.append("crypto ipsec df-bit set")
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not configure Crypto IPsec DF bit. Error: {error}'.format(error=e)
+        )
+
+def configure_ipsec_sa_global(device,
+                            ecn_discard=False,
+                            ecn_propagate=False,
+                            idle_time=None,
+                            sa_life_days=False,
+                            sa_life_kb_disable=False,
+                            sa_life_kbytes=None,
+                            sa_life_sec=False,
+                            replay_disable=False,
+                            replay_window=None,
+                            multi_sn=False
+                            ):
+    """ Configures IPSec SA global parameters
+        Args:
+            device ('obj'): device to use
+            ecn_discard ('boolean', optional): Discard the Explicit Congestion Notification, default is False
+            ecn_propagate ('boolean', optional): Propagate the Explicit Congestion Notification, default is False
+            idle_time ('int', optional): Automatically delete IPSec SAs after a given idle period, default is None
+            sa_life_days ('boolean', optional): Security association duration in days, default is False
+            sa_life_kb_disable ('boolean', optional): Disable Volume-based Rekey, default is False
+            sa_life_kbytes ('int', optional): Security association duration in kilobytes, default is None
+            sa_life_sec ('boolean', optional): Security association duration in seconds, default is False
+            replay_disable ('boolean', optional): SA replay disable, default is False
+            replay_window ('int', optional): SA replay window size, default is None
+            multi_sn ('boolean', optional): Enable multiple sequence number per IPSec SA, default is False
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Configuring IPSec security association parameters"
+    )
+
+    configs = []
+    
+    if ecn_discard:
+        configs.append("crypto ipsec security-association ecn discard")
+    
+    if ecn_propagate:
+        configs.append("crypto ipsec security-association ecn propagate")
+    
+    if idle_time is not None:
+        configs.append(f"crypto ipsec security-association idle-time {idle_time}")
+
+    if sa_life_days:
+        configs.append(f"crypto ipsec security-association lifetime days 1")
+    
+    if sa_life_kbytes is not None:
+        configs.append(f"crypto ipsec security-association lifetime kilobytes {sa_life_kbytes}")
+
+    if sa_life_kb_disable:
+        configs.append("crypto ipsec security-association lifetime kilobytes disable")
+
+    if sa_life_sec:
+        configs.append(f"crypto ipsec security-association lifetime seconds 86400")
+
+    if replay_disable:
+        configs.append("crypto ipsec security-association replay disable")
+
+    if replay_window:
+        configs.append(f"crypto ipsec security-association replay window-size {replay_window}")
+
+    if multi_sn:
+        configs.append("crypto ipsec security-association multi-sn")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error("Failed to configure ipsec security association parameters globally,"
+             "Error:\n{error}".format(error=e)
+        )
+        raise
+
+def unconfigure_ipsec_fragmentation(device, 
+                no_after_encr=False,
+                no_before_encr=False):
+    """ Configure IPSec Fragmentation
+        Args:
+            device ('obj')    : device to use
+            no_after_encr ('boolean', optional) :  Perform fragmentation of large packets after IPSec
+                    encapsulation, default is False
+            no_before_encr ('boolean', optional) : Perform fragmentation of large packets before IPSec
+                    encapsulation, default is False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Unconfiguring IPSec fragmentation"
+    )
+    config_list = []
+    if no_after_encr:
+        config_list.append("no crypto ipsec fragmentation after-encryption")
+    
+    if no_before_encr:
+        config_list.append("no crypto ipsec fragmentation before-encryption")
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not unconfigure Crypto IPsec Fragmentation. Error: {error}'.format(error=e)
+        )
+
+def unconfigure_ipsec_df_bit(device, 
+                no_clear=False,
+                no_copy=False,
+                no_set=False):
+    """ Configure IPSec DF bit
+        Args:
+            device ('obj')    : device to use
+            no_clear ('boolean', optional) :  Clear DF bit for encapsulated packets, default is False
+            no_copy ('boolean', optional) :  Copy DF bit from inner for encapsulated packets, default is False
+            no_set ('boolean', optional) : Set DF bit for encapsulated packets, default is False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Unconfiguring IPSec df bit"
+    )
+    config_list = []
+    if no_clear:
+        config_list.append("no crypto ipsec df-bit clear")
+    
+    if no_copy:
+        config_list.append("no crypto ipsec df-bit copy")
+
+    if no_set:
+        config_list.append("no crypto ipsec df-bit set")
+
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not unconfigure Crypto IPsec DF bit. Error: {error}'.format(error=e)
+        )
+
+def unconfigure_ipsec_sa_global(device,
+                            no_ecn=False,
+                            no_idle_time=False,
+                            no_sa_life_days=False,
+                            no_sa_life_kbytes=False,
+                            no_sa_life_sec=False,
+                            no_replay_disable=False,
+                            no_replay_window=False,
+                            no_multi_sn=False
+                            ):
+    """ Configures IPSec SA global parameters
+        Args:
+            device ('obj'): device to use
+            no_ecn('boolean', optional): Discard the Explicit Congestion Notification, default is False
+            no_idle_time ('boolean', optional): Automatically delete IPSec SAs after a given idle period, default is False
+            no_sa_life_days ('boolean', optional): Security association duration in days, default is False
+            no_sa_life_kbytes ('boolean', optional): Security association duration in kilobytes, default is False
+            no_sa_life_sec ('boolean', optional): Security association duration in seconds, default is False
+            no_replay_disable ('boolean', optional): SA replay disable, default is False
+            no_replay_window ('boolean', optional): SA replay window size, default is False
+            no_multi_sn ('boolean', optional): Enable multiple sequence number per IPSec SA, default is False
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        "Unconfiguring IPSec security association parameters"
+    )
+
+    configs = []
+    
+    if no_ecn:
+        configs.append("no crypto ipsec security-association ecn")
+    
+    
+    if no_idle_time:
+        configs.append("no crypto ipsec security-association idle-time")
+
+    if no_sa_life_days:
+        configs.append("no crypto ipsec security-association lifetime days")
+    
+    if no_sa_life_kbytes:
+        configs.append("no crypto ipsec security-association lifetime kilobytes")
+
+    if no_sa_life_sec:
+        configs.append("no crypto ipsec security-association lifetime seconds")
+
+    if no_replay_disable:
+        configs.append("no crypto ipsec security-association replay disable")
+
+    if no_replay_window:
+        configs.append("no crypto ipsec security-association replay window-size")
+
+    if no_multi_sn:
+        configs.append("no crypto ipsec security-association multi-sn")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error("Failed to unconfigure ipsec security association parameters globally,"
+             "Error:\n{error}".format(error=e)
+        )
+        raise
+def configure_crypto_ikev2_policy(device, policy_name, proposal_name):
+    """ Configure crypto ikev2 policy ikev2policy
+    Args:
+        device (`obj`): Device object
+        policy_name (`str`): name of ikev2 policy
+        proposal_name (`str`): name of ikev2 proposal
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    config_list = []
+    config_list.append('crypto ikev2 policy {policy_name}'.format(policy_name=policy_name))
+    # Configure Peer Attributes
+    if proposal_name:
+        config_list.append('proposal {proposal_name}'.format(proposal_name=proposal_name))
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not configure Crypto Ikev2 Keyring. Error: {error}'.format(error=e)
+        )
+
+def unconfigure_crypto_ikev2_policy(device,policy_name):
+    """ Unconfigure Crypto Ikev2 proposal
+    Args:
+        device (`obj`): Device object
+        policy_name (`str`): name of ikev2 policy name
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            "no crypto ikev2 policy {policy_name}".format(policy_name=policy_name),
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure Crypto proposal. Error: {error}".format(error=e)
+        )

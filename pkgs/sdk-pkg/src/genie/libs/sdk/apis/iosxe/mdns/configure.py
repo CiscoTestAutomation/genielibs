@@ -1088,4 +1088,107 @@ def configure_mdns_boot_level_license(device, license):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not configure mdns license. Error:\n{error}".format(error=e)
+        )
+        
+def configure_mdns_service_record_ttl(device, cache_record_type):
+
+    """ Configures mdns service record ttl
+
+        Args:
+            device ('obj'): device to use
+            cache_record_type ('str'): cache record like enhanced or original
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configuring mdns service record ttl")
+    try:
+        device.configure([
+            "mdns-sd gateway",
+            "service-record-ttl {cache_record_type}".format(cache_record_type=cache_record_type)
+            
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure mdns ttl. Error:\n{error}".format(error=e)
         ) 
+
+
+def unconfigure_mdns_location_filter(device, location_filter):
+    """ Unconfigures location filter details on vlan
+        Args:
+            device ('obj'): device to use
+            location_filter ('str'): location filter name
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    log.debug(
+        "Unconfiguring location filter {loc_filter} details ".format(loc_filter=location_filter)
+    )
+    try:
+        device.configure([
+            "no mdns-sd location-filter {loc_filter}".format(
+                loc_filter=location_filter)
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure mdns-sd with location-filter"
+            "{loc_filter}, Error: {error}".format(
+                loc_filter=location_filter,  error=e
+            )
+        )
+
+def configure_mdns_service_receiver_purge_timer(device, timer):
+
+    """ Configures mdns service-receiver-purge timer
+
+        Args:
+            device ('obj'): device to use
+            timer ('int'): timer value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configuring mdns service receiver purge timer")
+    try:
+        device.configure([
+            "mdns-sd gateway",
+            "service-receiver-purge timer {timer}".format(timer=timer)
+            
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure mdns purge timer. Error:\n{error}".format(error=e)
+        ) 
+        
+def configure_mdns_query_response_mode(device, mode):
+
+    """ Configures mdns query-response mode
+
+        Args:
+            device ('obj'): device to use
+            mode ('str'): mode like recurring or on-demand
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configuring mdns query-response mode")
+    try:
+        device.configure([
+            "mdns-sd gateway",
+            "query-response mode {mode}".format(mode=mode)
+            
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure mdns query-response mode. Error:\n{error}".format(error=e)
+        )
+        
+

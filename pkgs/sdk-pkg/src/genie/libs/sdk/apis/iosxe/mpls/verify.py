@@ -639,7 +639,6 @@ def verify_mpls_forwarding_table_vrf_mdt(device,
 
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
-
         try:
             parsed_output1 = device.parse(
                 "show mpls forwarding-table vrf {vrf}".format(vrf=vrf))
@@ -669,15 +668,8 @@ def verify_mpls_forwarding_table_vrf_mdt(device,
                     if (int(second_counter) - int(first_counter)) > int(bytes_labeled_switched):
                         count += 1
                     else:
-                        log.debug("Packets are not flowing on prefix {expected_prefix},"
-                            "1st counter-->{first_counter}, second counter {second_counter}"
-                            .format(expected_prefix=expected_prefix, first_counter=first_counter, 
-                            second_counter=second_counter))
-                        return False
-                else:
-                    log.debug("Got unexpected {learnet_prefix}, expected {expected_prefix}"
-                        .format(learnet_prefix=learnet_prefix,expected_prefix=expected_prefix))
-                    return False
+                        if parsed_output1.q.contains(labels).get_values('prefix_no')[0]:
+                            return False
                         
         if count == mdt_cnt:
             return True
@@ -687,9 +679,10 @@ def verify_mpls_forwarding_table_vrf_mdt(device,
 def verify_mpls_forwarding_table_gid_counter(device, 
                                             prefix_type,
                                             bytes_labeled_switched,
-                                            mdt_data_cnt=1,
+                                            mdt_data_cnt=1,                                            
                                             max_time=60,
-                                            check_interval=10):
+                                            check_interval=10,
+                                            expected_prefix_exempted=2):
         
     """ Verifies counters for gid in mpls forwarding-table
 
@@ -699,6 +692,8 @@ def verify_mpls_forwarding_table_gid_counter(device,
             mdt_data_cnt ('int', optional) : expected mdt count to be present in the output
             max_time (`int`, optional): Max time, default: 60
             check_interval (`int`, optional): Check interval, default: 10
+            expected_prefix_exempted ('int', optional): Number of prefixes expected not to learn traffic 
+                                                        default: 2
         Raises:
             Exception
 
@@ -707,8 +702,7 @@ def verify_mpls_forwarding_table_gid_counter(device,
     """
     
     timeout = Timeout(max_time, check_interval)
-    while timeout.iterate():
-    
+    while timeout.iterate():    
         try:
             parsed_output1 = device.parse("show mpls forwarding-table | sect gid")
             time.sleep(20)
@@ -719,6 +713,7 @@ def verify_mpls_forwarding_table_gid_counter(device,
             )
         
         cnt=0
+        prefix_exempted=0
         # Verify counters are incrementing or not for mentioned prefix
         for labels in parsed_output1.q.get_values("local_label"):
             first_counter = parsed_output1.q.contains(
@@ -730,10 +725,11 @@ def verify_mpls_forwarding_table_gid_counter(device,
             if (int(second_counter) - int(first_counter)) > int(bytes_labeled_switched):
                 cnt += 1
             else:
-                log.debug("Packets are not flowing on prefix {prefix},1st counter-->{first_counter},"
-                        "second counter {second_counter}"
-                        .format(prefix=prefix, first_counter=first_counter, second_counter=second_counter))
-                return False
+                if prefix_exempted <= expected_prefix_exempted:
+                    prefix_exempted += 1
+                else:
+                    return False
+                
         
         # verfiy mdt_data_cnt if set
         if cnt == mdt_data_cnt:

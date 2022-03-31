@@ -38,6 +38,32 @@ def enable_debug(device, parameter):
             )
          )
 
+def disable_debug(device, parameter):
+    """ Disable debug for the mentioned parameter
+        Args:
+            device ('obj'): device to use
+            parameter ('str'): parameter for which debug has to be disabled
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed disabling debug
+    """
+    log.debug(
+        "Disabling debug for name={parameter} "
+        .format(parameter=parameter)
+    )
+
+    try:
+        device.execute(
+            "no debug {parameter}".format(parameter=parameter)
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not disable debug for {parameter}".format(
+                parameter=parameter
+            )
+        )
+
 def set_filter_packet_capture_inject(device, filter):
     """ Set filter for packet capture inject
         Args:

@@ -182,7 +182,7 @@ def get_ip_theft_syslogs(device):
 
     # Need to perform additional parsing to extract IP Theft specific data
     # *Sep 15 12:53:06.383 EST:
-    timematch = r'.(?P<timestamp>[A-Za-z]{3}\s+\d+ \d+:\d+:\d+\.\d+( [A-Z]+)?:)'
+    timematch = r'.?(?P<timestamp>[A-Za-z]{3}\s+\d+ \d+:\d+:\d+\.\d+( [A-Z]+)?:)'
 
     # *Sep 15 12:53:06.383 EST: %SISF-4-IP_THEFT: IP Theft IP=2001:DB8::101 VLAN=20 MAC=dead.beef.0001 IF=Twe1/0/1 New MAC=dead.beef.0002 New I/F=Twe1/0/1
     # *Dec 17 13:57:09.293 EST: %SISF-4-IP_THEFT: IP Theft IP=192.168.11.103 VLAN=20 MAC=dead.beef.0001 IF=Twe1/0/1 New(Spoof) MAC=dead.beef.0002 New I/F=Twe1/0/5

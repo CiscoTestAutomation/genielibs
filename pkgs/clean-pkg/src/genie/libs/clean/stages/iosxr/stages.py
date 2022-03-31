@@ -623,24 +623,19 @@ verify_running_image:
     ]
 
     def verify_running_image(self, steps, device, images):
-        # Verify via filename comparison
-        with steps.start("Verify running image on device {}". \
-                                    format(device.name)) as step:
+
+        with steps.start(f"Verify running image on device {device.name}") as step:
+
             try:
-                sh_ver = device.api.get_software_version()
+                current_version = device.api.get_software_version()
             except Exception as e:
-                step.failed("Failed to retrieve the version of the running image {}". \
-                            format(str(e)))
+                step.failed("Failed to retrieve the version of the running image",
+                            from_exception=e)
 
-            provided_image_version = re.findall(r'\d\.\d\.\d\.\w+', images[0])
+            log.info(f"Current running image version: {current_version}\n"
+                     f"Expected running image: {images[0]}")
 
-            if not provided_image_version:
-                step.failed("Could not determine the version in the image provided.")
-            
-            if sh_ver == provided_image_version[0]:
-                step.passed(
-                    "Successfully verified running image on device {}". \
-                    format(device.name))
+            if current_version in images[0]:
+                step.passed("The version of the running image is as expected")
             else:
-                step.failed(f"Running version {sh_ver} is not the same with \
-                    submitted image {provided_image_version[0]}")
+                step.failed("The version of the running image is not as expected")

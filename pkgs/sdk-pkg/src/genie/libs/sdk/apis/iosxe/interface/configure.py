@@ -3740,3 +3740,115 @@ def unconfigure_switchport_nonegotiate(
         raise SubCommandFailure(
             f"Failed to unonfig switchport nonegotiate on {interface}. Error:\n{e}")
 
+
+def configure_interface_pvlan_mode_with_submode(device, interface, primary_mode, sub_mode):
+    """ Configures Private Vlan Switchport mode
+        Args:
+            device ('obj')            : device to use
+            interface ('str')         : interface to configure
+            primary_mode ('str')      : pvlan mode (i.e host or trunk)
+            sub_mode ('str')          : pvlan mode (i.e promiscuous)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        f"Configuring switchport pvlan mode with submode on {interface} with mode = {primary_mode} and sub mode = {sub_mode} "
+    )
+    try:
+        device.configure(
+            [
+                f"interface {interface}",
+                f"switchport mode private-vlan {primary_mode} {sub_mode}",
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure Primary Pvlan with primary and submodes.Error:\n{e}"
+        )
+
+def configure_interface_switchport_pvlan_and_native_vlan(device, interface, mode, vlan_id):
+    """ Configures Private Vlan Switchport mode
+        Args:
+            device ('obj')    : device to use
+            interface ('str') : interface to configure
+            mode ('str')      : pvlan mode (i.e trunk or association)
+	    vlan_id ('int')   : VLAN ID of the native VLAN
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        f"Configuring switchport pvlan mode on {interface} with mode = {mode} and VLAN ID of {vlan_id}"
+    )
+    try:
+        device.configure(
+            [
+                f"interface {interface}",
+                f"switchport private-vlan {mode} native vlan {vlan_id}",
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure Private vlan.Error:\n{e}"
+        )
+
+def configure_interface_switchport_pvlan_association(device, interface, mode, primary_vlan_id, secondary_vlan_id):
+    """ Configures Private Vlan Switchport mode
+        Args:
+            device ('obj')    			: device to use
+            interface ('str') 			: interface to configure
+            mode ('str')      			: pvlan mode (i.e trunk or association)
+	    primary_vlan_id ('int') 	        : Primary VLAN ID of the native VLAN
+	    secondary_vlan_id ('int')   	: Secondary VLAN ID of the native VLAN
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        f"Configuring switchport pvlan association on {interface} with Primary vlan id of {primary_vlan_id} and Secondary vlan id of {secondary_vlan_id}"
+    )
+    try:
+        device.configure(
+            [
+                f"interface {interface}",
+                f"switchport private-vlan association {mode} {primary_vlan_id} {secondary_vlan_id}",
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure Pvlan with primary/secondary vlan ID.Error:\n{e}"
+        )
+
+def configure_interface_switchport_pvlan_mapping(device, interface, mode, primary_vlan_id, secondary_vlan_id):
+    """ Configures Private Vlan Switchport mode
+        Args:
+            device ('obj')    			: device to use
+            interface ('str') 			: interface to configure
+            mode ('str')      			: pvlan mode (i.e trunk or association)
+	    primary_vlan_id ('int') 	        : Primary VLAN ID of the native VLAN
+	    secondary_vlan_id ('int')	        : Secondary VLAN ID of the native VLAN
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug(
+        f"Configuring switchport pvlan mapping on {interface} with Primary vlan id of {primary_vlan_id} and Secondary vlan id of {secondary_vlan_id}"
+    )
+    try:
+        device.configure(
+            [
+                f"interface {interface}",
+                f"switchport private-vlan mapping {mode} {primary_vlan_id} {secondary_vlan_id}",
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure Pvlan mapping with primary/secondary vlan ID.Error:\n{e}"
+        )
+
+

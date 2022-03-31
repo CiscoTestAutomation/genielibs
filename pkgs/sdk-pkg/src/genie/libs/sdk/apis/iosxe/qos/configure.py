@@ -92,3 +92,117 @@ def unconfigure_qos_policy(device, interface, access_type, policy_name):
             )
         )
 
+def configure_auto_qos(device, interface, qos_mode, qos_value):
+    """ Configures the qos_policy on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to configure
+            qos_mode ('str') : qos_mode name
+            qos_value ('str'): qos_value 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring auto_qos on {interface}".format(
+            interface=interface
+        )
+    )
+
+    try:
+        device.configure(
+            [
+                "interface {interface}".format(interface=interface),
+                "auto qos {qos_mode} {qos_value}".format(qos_mode=qos_mode,qos_value=qos_value)
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure auto_qos_policy. Error:\n{error}".format(
+                error=e
+            )
+        )
+
+def unconfigure_auto_qos(device, interface, qos_mode, qos_value):
+    """ Unconfigures the qos_policy on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to unconfigure
+            qos_mode ('str') : qos_mode name
+            qos_value ('str'): qos_value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Unconfiguring auto_qos on {interface}".format(
+            interface=interface
+        )
+    )
+
+    try:
+        device.configure(
+            [
+                "interface {interface}".format(interface=interface),
+                "no auto qos {qos_mode} {qos_value}".format(qos_mode=qos_mode,qos_value=qos_value)
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure auto_qos_policy. Error:\n{error}".format(
+                error=e
+            )
+        )
+
+def configure_auto_qos_global(device,compact):
+    """ Configures the auto qos global compact
+        Args:
+            device ('obj'): device to use
+            compact ('str'): name of compact
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Configuring auto qos global compact" 
+    )
+
+    try:
+        device.configure(
+                "auto qos global {compact}".format(compact=compact) 
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure auto qos global compact. Error:\n{error}".format(
+                error=e
+            )
+        )
+
+def unconfigure_auto_qos_global(device,compact):
+    """ unconfigures the auto qos global compact
+        Args:
+            device ('obj'): device to use
+            compact('str'): name of compact
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "unconfiguring auto qos global compact"
+    )
+
+    try:
+       result= device.configure(
+                "no auto qos global {compact}".format(compact=compact)
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure auto qos global compact. Error:\n{error}".format(
+                error=e
+            )
+        )
+    return  result  

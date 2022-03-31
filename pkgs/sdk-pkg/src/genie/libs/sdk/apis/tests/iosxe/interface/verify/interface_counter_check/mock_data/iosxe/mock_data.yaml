@@ -1,0 +1,42 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: P1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: P1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show interface ten1/0/15 counters:
+      response:
+      - "\r\nPort               InOctets    InUcastPkts    InMcastPkts    InBcastPkts\
+        \ \r\nTe1/0/15           15682788              0          64328          \
+        \    0 \r\n\r\nPort              OutOctets   OutUcastPkts   OutMcastPkts \
+        \  OutBcastPkts \r\nTe1/0/15           54944796          44950         459020\
+        \              2"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: P1#

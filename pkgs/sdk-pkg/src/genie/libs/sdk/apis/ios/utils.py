@@ -459,7 +459,7 @@ def delete_files(device, locations, filenames):
 
 
 def verify_ping(
-    device, address, expected_max_success_rate=100, expected_min_success_rate=0,
+    device, address, expected_max_success_rate=100, expected_min_success_rate=1,
     count=None, source=None, max_time=60, check_interval=10,
 ):
     """Verify ping
@@ -467,8 +467,8 @@ def verify_ping(
     Args:
             device ('obj'): Device object
             address ('str'): Address value
-            expected_max_success_rate (int): Expected maximum success rate
-            expected_min_success_rate (int): Expected minimum success rate
+            expected_max_success_rate (int): Expected maximum success rate (default: 100)
+            expected_min_success_rate (int): Expected minimum success rate (default: 1)
             count ('int'): Count value for ping command
             source ('str'): Source IP address, default: None
             max_time (`int`): Max time, default: 30

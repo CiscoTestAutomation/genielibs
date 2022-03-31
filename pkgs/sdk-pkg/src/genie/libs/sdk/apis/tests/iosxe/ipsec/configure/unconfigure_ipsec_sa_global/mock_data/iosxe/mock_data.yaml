@@ -1,0 +1,44 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no crypto ipsec security-association ecn: "no crypto ipsec security-association\
+      \ ecn\r\n"
+    no crypto ipsec security-association idle-time: "no crypto ipsec security-association\
+      \ idle-time\r\n"
+    no crypto ipsec security-association lifetime days: "no crypto ipsec security-association\
+      \ lifetime days\r\n"
+    no crypto ipsec security-association multi-sn: "no crypto ipsec security-association\
+      \ multi-sn\r\n"
+    no crypto ipsec security-association replay window-size: "no crypto ipsec security-association\
+      \ replay window-size\r\n"
+    no logging console: ''
+  prompt: TLS_Mad1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: TLS_Mad1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: TLS_Mad1#

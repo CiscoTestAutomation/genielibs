@@ -1,0 +1,41 @@
+configure:
+  commands:
+    crypto ikev2 proposal newproposal: "crypto ikev2 proposal newproposal\r\n"
+    encryption aes-cbc-128: "IKEv2 proposal MUST either have a set of an encryption\
+      \ algorithm other than aes-gcm, an integrity algorithm and a DH group configured\
+      \ or \r\n"
+    end:
+      new_state: execute
+    group 16: "encryption aes-cbc-128\r\n"
+    integrity sha1: " encryption algorithm aes-gcm, a prf algorithm and a DH group\
+      \ configured\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: VCR(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: VCR(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: VCR#

@@ -27,3 +27,22 @@ def configure_no_boot_manual(device):
                 .format(device=device, error=e)
         )
 
+def configure_boot_manual(device):
+    """ boot manual
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        device.configure('boot manual')
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not config boot manual on {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
+

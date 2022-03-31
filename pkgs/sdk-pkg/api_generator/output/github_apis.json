@@ -213,6 +213,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/utils.py#L284"
     }
   },
+  "change_nve_source_interface": {
+    "iosxe": {
+      "doc": " change source-interface for nve interface\n\n        Args:\n            device (`obj`)         : Device object\n            nve_num (`str`)        : nve interface number\n            source_interface('str'): source-interface to change to\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "evpn.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "change_nve_source_interface",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/evpn/configure.py#L568"
+    }
+  },
   "change_power_cycler_state": {
     "com": {
       "doc": " Turn on the power cycler\n        Args:\n            device ('obj'): Device object\n            powercycler ('obj'): Powercycler object\n            state ('str'): Power cycler state on/off\n            outlets ('str'): Power cycler outlets\n        Returns:\n            None\n    ",
@@ -474,6 +483,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/apphosting/configure.py#L53"
     }
   },
+  "clear_ip_bgp": {
+    "iosxe": {
+      "doc": " clear ip bgp *\n        Args:\n            device (`obj`): Device object\n        Returns:\n            None\n        Raises:\n            SubCommandFailure: Failed executing command\n    ",
+      "module_name": "bgp.clear",
+      "package": "genie.libs.sdk.apis",
+      "uid": "clear_ip_bgp",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/bgp/clear.py#L71"
+    }
+  },
   "clear_ip_bgp_vrf_af_soft": {
     "iosxe": {
       "doc": " BGP soft clear using vrf, address family and AS number\n\n        Args:\n            device ('obj'): device object\n            vrf ('str'): vrf name\n            address_family ('str'): address family\n            as_number ('int'): BGP AS number\n        Returns:\n            N/A\n        Raises:\n            SubCommandFailure: Failed executing command\n    ",
@@ -560,6 +578,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/nxos/utils.py#L312"
     }
   },
+  "clear_mac_address_table_dynamic": {
+    "iosxe": {
+      "doc": " Clear mac address-table dynamic\n        Args:\n            device (`obj`): device object\n            address ('str', optional):      mac address, default None\n            interface ('str', optional):    interface name, default None\n            vlan ('int', optional):         vlan id, default None\n        Return:\n            None\n        Raises:\n            SubCommandFailure: Failed executing command\n    ",
+      "module_name": "mac.clear",
+      "package": "genie.libs.sdk.apis",
+      "uid": "clear_mac_address_table_dynamic",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mac/clear.py#L11"
+    }
+  },
   "clear_macsec_counters": {
     "iosxe": {
       "doc": " Clears macsec counters on device\n\n        Args:\n            device ('obj'): device to use\n            interfaces ('list'): List of interfaces\n\n        Returns:\n            None\n\n        Raises:\n            SubCommandFailure\n    ",
@@ -621,6 +648,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "clear_mdns_statistics_sp_sdg",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mdns/configure.py#L1034"
+    }
+  },
+  "clear_mka_session": {
+    "iosxe": {
+      "doc": " clear_mka_session\n        Args:\n            device (`obj`): Device object\n            timeout (`int`, optional): Timeout in seconds, default value 30\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "mka.clear",
+      "package": "genie.libs.sdk.apis",
+      "uid": "clear_mka_session",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mka/clear.py#L11"
     }
   },
   "clear_mpls_counters": {
@@ -1465,6 +1501,24 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/dot1x/configure.py#L792"
     }
   },
+  "configure_auto_qos": {
+    "iosxe": {
+      "doc": " Configures the qos_policy on interface\n        Args:\n            device ('obj'): device to use\n            interface ('str'): interface to configure\n            qos_mode ('str') : qos_mode name\n            qos_value ('str'): qos_value \n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "qos.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_auto_qos",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/qos/configure.py#L95"
+    }
+  },
+  "configure_auto_qos_global": {
+    "iosxe": {
+      "doc": " Configures the auto qos global compact\n        Args:\n            device ('obj'): device to use\n            compact ('str'): name of compact\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "qos.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_auto_qos_global",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/qos/configure.py#L159"
+    }
+  },
   "configure_autodiscovery_bgp_signalling_ldp_template": {
     "iosxe": {
       "doc": " Config autodiscovery bgp signaling ldp template\n        Args:\n            device (`obj`): Device object\n            context_name ('str'): context name for the template\n            vpn_id ('str'): vpn id to be configured\n            template_name('str'): name of the template\n        Return:\n            None\n        Raise:\n            SubCommandFailure: Failed configuring interface\n    ",
@@ -1472,6 +1526,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "configure_autodiscovery_bgp_signalling_ldp_template",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mpls/configure.py#L1511"
+    }
+  },
+  "configure_bfd_neighbor_on_interface": {
+    "iosxe": {
+      "doc": " Configures bfd neighbor on interface\n\n        Args:\n            device ('obj'): device to use\n            interface ('str'): interface to configure\n            address_family ('str'): ipv4|ipv6 address family\n            neighbor_address ('str'): neighbor address\n        Returns:\n            None\n        Raises:\n            SubCommandFailure: Failed configuring bfd on interface\n\n    ",
+      "module_name": "bfd.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_bfd_neighbor_on_interface",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/bfd/configure.py#L156"
     }
   },
   "configure_bfd_on_interface": {
@@ -1654,6 +1717,24 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/bgp/configure.py#L1255"
     }
   },
+  "configure_bgp_update_delay": {
+    "iosxe": {
+      "doc": " Configures update_delay time on BGP router\n        Args:\n            device('obj'): device to configure on\n            bgp_as('str'): bgp_as to configure\n            delay('int'): router_id of device\n        Return:\n            N/A\n        Raises:\n            SubCommandFailure: Failed executing command\n    ",
+      "module_name": "bgp.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_bgp_update_delay",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/bgp/configure.py#L1486"
+    }
+  },
+  "configure_boot_manual": {
+    "iosxe": {
+      "doc": " boot manual\n        Args:\n            device (`obj`): Device object\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "platform.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_boot_manual",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/configure.py#L30"
+    }
+  },
   "configure_by_jinja2": {
     "com": {
       "doc": " Configure using Jinja template\n\n        Args:\n            device ('obj'): Device object\n            templates_dir ('str'): Template directory\n            template_name ('str'): Template name\n            kwargs ('obj'): Keyword arguments\n        Returns:\n            Boolean\n        Raises:\n            None\n    ",
@@ -1691,6 +1772,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "configure_cdp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/nxos/cdp/configure.py#L9"
+    }
+  },
+  "configure_cdp_interface": {
+    "iosxe": {
+      "doc": " Configure CDP on interface\n\n        Args:\n            device ('obj'): Device object\n            interface ('str'): interface on which CDP to be configured\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "cdp.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_cdp_interface",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/cdp/configure.py#L71"
     }
   },
   "configure_class_map": {
@@ -1756,6 +1846,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/interface/configure.py#L3447"
     }
   },
+  "configure_crypto_ikev2_NAT_keepalive": {
+    "iosxe": {
+      "doc": " Configure crypto ikev2 nat keepalive <time in sec>\n    Args:\n        device (`obj`): Device object\n        keepalive_time (`int`): keepalive time in secs\n    Return:\n        None\n    Raise:\n        SubCommandFailure: Failed configuring\n    ",
+      "module_name": "nat.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_crypto_ikev2_NAT_keepalive",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/nat/configure.py#L680"
+    }
+  },
   "configure_crypto_ikev2_keyring": {
     "iosxe": {
       "doc": " Configure Cryto Ikev2 Keyring\n    Args:\n        device (`obj`): Device object\n        keyring_name (`str`): Keyring name\n        peer_name (`str`,optional): Peer name for the tunnel endpoint (Default None)\n        preshare_key (`str`,optional): Share key between tunnel endpoints (Default None)\n        address (`str`,optional): IPv4 or IPv6 address (i.e 1.1.1.1 or 1:1:1::1) (Default 0.0.0.0)\n        mask (`str`,optional): IPv4 or IPv6 mask (i.e 0.0.0.0 or 128) (Default 0.0.0.0)\n        type (`str`,optional): IP protocol (ipv4 or ipv6) (Default ipv4)\n    Return:\n        None\n    Raise:\n        SubCommandFailure: Failed configuring\n    ",
@@ -1765,15 +1864,47 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L379"
     }
   },
+  "configure_crypto_ikev2_policy": {
+    "iosxe": {
+      "doc": " Configure crypto ikev2 policy ikev2policy\n    Args:\n        device (`obj`): Device object\n        policy_name (`str`): name of ikev2 policy\n        proposal_name (`str`): name of ikev2 proposal\n    Return:\n        None\n    Raise:\n        SubCommandFailure: Failed configuring\n    ",
+      "module_name": "ipsec.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_crypto_ikev2_policy",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L863"
+    }
+  },
+  "configure_crypto_ikev2_proposal": {
+    "iosxe": {
+      "doc": " Configure Cryto Ikev2 proposal\n    Args:\n        device (`obj`): Device object\n        proposal_name (`str`): proposal name\n        encryption_name (`str`,optional): name of encryption (Default None)\n        integrity_name (`str`,optional): name of integrity (Default None)\n        group_number (`str`,optional): group number (Default None)\n    Return:\n        None\n    Raise:\n        SubCommandFailure: Failed configuring\n    ",
+      "module_name": "ipsec.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_crypto_ikev2_proposal",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L500"
+    }
+  },
+  "configure_crypto_ipsec_nat_transparency": {
+    "iosxe": {
+      "doc": " Configure crypto ipsec nat-transparency udp-encapsulation\n    Args:\n        device (`obj`): Device object\n    Return:\n        None\n    Raise:\n        SubCommandFailure: Failed configuring\n    ",
+      "module_name": "ipsec.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_crypto_ipsec_nat_transparency",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L551"
+    }
+  },
   "configure_crypto_pki_server": {
     "iosxe": {
+      "doc": " \n        Configure crypto pki server\n        Args:\n            device ('obj'): Device object\n            server_name ('str'): Name for the pki server\n            auto_rollover_time('str'): Auto rollover time <days> <hours> <minutes>\n            cdp_url_server ('str') : cdp url server (http | ldap)\n            cdp_url_ip_path ('str') : cdp url ip path \n            database_archive_type ('str') : Database archive type either pem or pkcs12\n            archive_password ('str') : Database archive password\n            archive_encryption_type ('int') : Database archive encryption type (0-9)\n            database_level ('str') : Database level (complete|minimum|names)\n            database_url_server ('str') : Database server (http | ldap) \n            database_ip_path ('str') : Exact path for database file\n            database_url_storage_location ('str') : Database url storage location (cnm|crl|crt etc.)\n            database_url_publish ('bool') : Database url publish option for cnm, crl,crt\n            database_user ('str') : Database username\n            eku_options ('str') : eku options that needs to be configured (1 or more)\n            grant_mode ('str') : Grant request mode (auto | none | ra-auto)\n            grant_rollover_cert ('str') : Grant auto rollover certificate (ca-cert | ra-cert)\n            grant_tp_list ('str') : grant trustpoints (upto 5 trustpoints)\n            grant_trustpoint ('str') : Label of trustpoint holding trusted CA cert\n            hash_type ('str') : Hash algorithm type (md5, sha1, sha256, sha384, sha512)\n            issuer_name ('str') : Issuer name to be configured\n            ca_cert_life ('str') : Ca certificate lifetime in format <days(0-7305)> <hours(0-23)> or  <days(0-7305)> <hours(0-23)> <minutes(0-59)>\n            cert_life ('str') : Certificate lifetime in format <days(0-7305)> <hours(0-23)> or  <days(0-7305)> <hours(0-23)> <minutes(0-59)>\n            crl_life ('str') : crl lifetime in format <hours(0-336)> or  <hours(0-336)> <minutes(0-59)>\n            enrol_req_life ('str') : enrollment request lifetime in format <hours(0-1000)> or  <hours(0-1000)> <minutes(0-59)>\n            mode ('str') : Modes (ra|sub-cs)\n            mode_ra_transparent ('bool') : True if want to enable transparent in ra mode\n            serial_number ('str') : serial number of last issued ceritificate \n            enrollment_ip ('str') : Ip address for CA server enrollment URL\n            enrollment_path ('str') : Path for CA server enrollment URL\n            revoke_chk ('str') : Type of revocation check (none|crl|ocsp)\n            key_len ('int') : Key length for RSA keypair \n            port ('int') : Port number for CA server enrollment\n        Returns:\n            True/False\n    ",
       "eaptls": {
         "doc": "Configures crypto pki server on device\n\n    Args:\n        device (`obj`): Device object\n        domain_name ('str'): Name of the domain to be configured\n        database_level ('str'): Database level to be configured\n        issuer_name ('str'): Issuer name to be configured\n        hash ('str'): Hash to be configured\n        modulus_size ('str'): Modulus size to be configured\n        Password ('str'): Password to be configured\n        server_name ('str'): Name of the server to be configured\n\n    Returns:\n        None\n\n    Raise:\n        SubCommandFailure: Failed to configure crypto pki server on device\n    ",
         "module_name": "configure",
         "package": "genie.libs.sdk.apis",
         "uid": "configure_crypto_pki_server",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/eaptls/configure.py#L159"
-      }
+      },
+      "module_name": "pki.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_crypto_pki_server",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/pki/configure.py#L13"
     }
   },
   "configure_crypto_transform_set": {
@@ -1909,6 +2040,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "configure_disable_aes_encryption",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/aaa/configure.py#L321"
+    }
+  },
+  "configure_disable_sci_dot1q_clear": {
+    "iosxe": {
+      "doc": " Configures MACSec with disable-sci and dot1q-in-clear\n\n        Args:\n            device ('obj'): device to use\n            interface ('str'): Interface name\n            disable_sci ('boolean', 'Optional'): \n                disable sci for MACsec, default is True\n            dot1q_in_clear ('boolean', 'Optional' ): \n                Configure dot1q-in-clear on interface, default is False\n            tag_number('int', 'Optional'):\n                Specify the dot1q tag number(1 or 2), default is 1\n\n        Returns:\n            None\n\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "macsec.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_disable_sci_dot1q_clear",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/macsec/configure.py#L814"
     }
   },
   "configure_dot1x_cred_int": {
@@ -2217,6 +2357,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/flow/configure.py#L192"
     }
   },
+  "configure_global_dual_active_recovery_reload_disable": {
+    "iosxe": {
+      "doc": " Enables global stackwise-virtual dual-active recovery reload on target device\n        Args:\n            device ('obj'): Device object\n        Returns:\n            output: return the chunk of lines for the config of pagp as below..\n            # stackwise-virtual\n            # Please reload the switch for Stackwise Virtual configuration to take effect\n            # Upon reboot, the config will be part of running config but not part of start up config.\n            # dual-active recovery-reload-disable\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "stackwise_virtual.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_global_dual_active_recovery_reload_disable",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/stackwise_virtual/configure.py#L164"
+    }
+  },
   "configure_global_stackwise_virtual": {
     "iosxe": {
       "doc": " Enables global stackwise-virtual on target device\n        Args:\n            device ('obj'): Device object\n            domain ('str'): Stackwise-virtual domain\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
@@ -2251,6 +2400,33 @@
       "package": "genie.libs.sdk.apis",
       "uid": "configure_ikev2_authorization_policy",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ike/configure.py#L181"
+    }
+  },
+  "configure_ikev2_cac": {
+    "iosxe": {
+      "doc": " Configures IKEV2 CAC\n        Args:\n            device (`obj`): Device object\n            in_nego ('int', optional): Maximum IKEv2 in negotiation sa, default is 0\n            sa ('int',optional): Maximum IKEv2 sa, default is 0\n        Returns:\n            NA\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "ike.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_ikev2_cac",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ike/configure.py#L732"
+    }
+  },
+  "configure_ikev2_dpd": {
+    "iosxe": {
+      "doc": " Configures IKEV2 DPD\n        Args:\n            device (`obj`): Device object\n            interval ('int', optional): dpd interval, default is 10\n            retry ('int', optional): dpd retry, default is 2\n            dpd_query ('str'): dpd query, default is on-demand\n        Returns:\n            NA\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "ike.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_ikev2_dpd",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ike/configure.py#L674"
+    }
+  },
+  "configure_ikev2_fragmentation": {
+    "iosxe": {
+      "doc": " Configures IKEV2 Fragmentation\n        Args:\n            device (`obj`): Device object\n            mtu ('int'): IKEv2 MTU \n        Returns:\n            NA\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "ike.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_ikev2_fragmentation",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ike/configure.py#L705"
     }
   },
   "configure_ikev2_keyring": {
@@ -2460,6 +2636,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/interface/configure.py#L3086"
     }
   },
+  "configure_interface_pvlan_mode_with_submode": {
+    "iosxe": {
+      "doc": " Configures Private Vlan Switchport mode\n        Args:\n            device ('obj')            : device to use\n            interface ('str')         : interface to configure\n            primary_mode ('str')      : pvlan mode (i.e host or trunk)\n            sub_mode ('str')          : pvlan mode (i.e promiscuous)\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "interface.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_interface_pvlan_mode_with_submode",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/interface/configure.py#L3744"
+    }
+  },
   "configure_interface_reg_segment": {
     "iosxe": {
       "doc": " Config Reg segment on interface\n        Args:\n            device ('obj'): Device object\n            interface ('str'): Interface name\n            segment_no ('int'): rep segment number\n            edge('bool'): edge preferred. Default is False\n            preferred  ('bool'): neighbor preferred . Default is False\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
@@ -2521,6 +2706,33 @@
       "package": "genie.libs.sdk.apis",
       "uid": "configure_interface_switchport_mode",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/interface/configure.py#L2441"
+    }
+  },
+  "configure_interface_switchport_pvlan_and_native_vlan": {
+    "iosxe": {
+      "doc": " Configures Private Vlan Switchport mode\n        Args:\n            device ('obj')    : device to use\n            interface ('str') : interface to configure\n            mode ('str')      : pvlan mode (i.e trunk or association)\n\t    vlan_id ('int')   : VLAN ID of the native VLAN\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "interface.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_interface_switchport_pvlan_and_native_vlan",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/interface/configure.py#L3771"
+    }
+  },
+  "configure_interface_switchport_pvlan_association": {
+    "iosxe": {
+      "doc": " Configures Private Vlan Switchport mode\n        Args:\n            device ('obj')    \t\t\t: device to use\n            interface ('str') \t\t\t: interface to configure\n            mode ('str')      \t\t\t: pvlan mode (i.e trunk or association)\n\t    primary_vlan_id ('int') \t        : Primary VLAN ID of the native VLAN\n\t    secondary_vlan_id ('int')   \t: Secondary VLAN ID of the native VLAN\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "interface.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_interface_switchport_pvlan_association",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/interface/configure.py#L3798"
+    }
+  },
+  "configure_interface_switchport_pvlan_mapping": {
+    "iosxe": {
+      "doc": " Configures Private Vlan Switchport mode\n        Args:\n            device ('obj')    \t\t\t: device to use\n            interface ('str') \t\t\t: interface to configure\n            mode ('str')      \t\t\t: pvlan mode (i.e trunk or association)\n\t    primary_vlan_id ('int') \t        : Primary VLAN ID of the native VLAN\n\t    secondary_vlan_id ('int')\t        : Secondary VLAN ID of the native VLAN\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "interface.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_interface_switchport_pvlan_mapping",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/interface/configure.py#L3826"
     }
   },
   "configure_interface_switchport_pvlan_mode": {
@@ -2769,7 +2981,7 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_ip_prefix_list",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L811"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L825"
     }
   },
   "configure_ip_rsvp_bandwidth": {
@@ -2781,6 +2993,24 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mpls/configure.py#L492"
     }
   },
+  "configure_ipsec_df_bit": {
+    "iosxe": {
+      "doc": " Configure IPSec DF bit\n        Args:\n            device ('obj')    : device to use\n            clear ('boolean', optional) :  Clear DF bit for encapsulated packets, default is False\n            copy ('boolean', optional) :  Copy DF bit from inner for encapsulated packets, default is False\n            set ('boolean', optional) : Set DF bit for encapsulated packets, default is False\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "ipsec.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_ipsec_df_bit",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L621"
+    }
+  },
+  "configure_ipsec_fragmentation": {
+    "iosxe": {
+      "doc": " Configure IPSec Fragmentation\n        Args:\n            device ('obj')    : device to use\n            after_encr ('boolean', optional) :  Perform fragmentation of large packets after IPSec\n                    encapsulation, default is False\n            before_encr ('boolean', optional) : Perform fragmentation of large packets before IPSec\n                    encapsulation, default is False\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "ipsec.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_ipsec_fragmentation",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L589"
+    }
+  },
   "configure_ipsec_profile": {
     "iosxe": {
       "doc": " Configures ipsec transform set\n        Args:\n            device (`obj`): Device object\n            profile_name ('str'): ipsec profile name\n            transform_set_name ('str'): transform-set name\n            ikev2_profile_name ('str'): ikev2 profile name\n            isakmp_profile_name ('str'): isakmp profile name\n            is_responder_only ('boolean'): Do not initiate SAs\n            sa_dfbit_clear ('boolean'): Clear DF bit for encapsulated packets\n            sa_dfbit_copy ('boolean'): Copy DF bit from inner for encapsulated packets\n            sa_dfbit_set ('boolean'): Set DF bit for encapsulated packets\n            ecn_discard ('boolean'): Discard the Explicit Congestion Notification\n            ecn_propagate ('boolean'): Propagate the Explicit Congestion Notification\n            idle_time ('int'): Automatically delete IPSec SAs after a given idle period\n            sa_granularity ('boolean'): granularity to host level\n            sa_life_days ('int'): Security association duration in days\n            sa_life_kb_disable ('boolean'): Disable Volume-based Rekey\n            sa_life_kbytes ('int'): Security association duration in kilobytes\n            sa_life_sec ('int'): Security association duration in seconds\n            replay_disable ('boolean'): SA replay disable\n            replay_window ('int'): SA replay window size\n            sa_policy_limit ('int'): Set security-policy limit\n            mixed_mode ('boolean'): Enable mixed mode\n            pfs_group ('int') : set PFS group\n            rr_distance ('int') : Routing distance\n            rr_gateway ('str') : Next hop IPv4/IPv6 address of the gateway\n            rr_tag ('str') : Routing Tag ID\n            identity_name ('str') : Identity name\n            rr_route ('str') : IPv4 address overrides remote tunnel endpoint\n            rr_static ('boolean') : Create routes based on static ACLs permanently\n            redundancy_name ('str') : Redundancy group name\n            stateful ('boolean') : enable stateful failover\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
@@ -2788,6 +3018,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "configure_ipsec_profile",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L145"
+    }
+  },
+  "configure_ipsec_sa_global": {
+    "iosxe": {
+      "doc": " Configures IPSec SA global parameters\n        Args:\n            device ('obj'): device to use\n            ecn_discard ('boolean', optional): Discard the Explicit Congestion Notification, default is False\n            ecn_propagate ('boolean', optional): Propagate the Explicit Congestion Notification, default is False\n            idle_time ('int', optional): Automatically delete IPSec SAs after a given idle period, default is None\n            sa_life_days ('boolean', optional): Security association duration in days, default is False\n            sa_life_kb_disable ('boolean', optional): Disable Volume-based Rekey, default is False\n            sa_life_kbytes ('int', optional): Security association duration in kilobytes, default is None\n            sa_life_sec ('boolean', optional): Security association duration in seconds, default is False\n            replay_disable ('boolean', optional): SA replay disable, default is False\n            replay_window ('int', optional): SA replay window size, default is None\n            multi_sn ('boolean', optional): Enable multiple sequence number per IPSec SA, default is False\n\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "ipsec.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_ipsec_sa_global",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L656"
     }
   },
   "configure_ipsec_transform_set": {
@@ -3003,7 +3242,7 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_ipv6_ospf_bfd",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1152"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1166"
     }
   },
   "configure_ipv6_ospf_mtu_ignore": {
@@ -3012,7 +3251,7 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_ipv6_ospf_mtu_ignore",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1210"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1224"
     }
   },
   "configure_ipv6_ospf_routing_on_interface": {
@@ -3021,7 +3260,7 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_ipv6_ospf_routing_on_interface",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1268"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1282"
     }
   },
   "configure_ipv6_raguard_policy": {
@@ -3285,7 +3524,7 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_maximum_path_under_ospf",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1071"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1085"
     }
   },
   "configure_maximum_prefix_to_bgp_neighbor": {
@@ -3342,6 +3581,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mdns/configure.py#L790"
     }
   },
+  "configure_mdns_query_response_mode": {
+    "iosxe": {
+      "doc": " Configures mdns query-response mode\n\n        Args:\n            device ('obj'): device to use\n            mode ('str'): mode like recurring or on-demand\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "mdns.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_mdns_query_response_mode",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mdns/configure.py#L1170"
+    }
+  },
   "configure_mdns_sd_agent": {
     "iosxe": {
       "doc": " Configures mDNS(Multicast Domain Name System) agent\n\n        Args:\n            device (`obj`): Device object\n            timer ('int', optional): Timer value. Default value is None\n            count ('int', optional): Count value. Default value is None\n\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
@@ -3367,6 +3615,24 @@
       "package": "genie.libs.sdk.apis",
       "uid": "configure_mdns_service_definition",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mdns/configure.py#L969"
+    }
+  },
+  "configure_mdns_service_receiver_purge_timer": {
+    "iosxe": {
+      "doc": " Configures mdns service-receiver-purge timer\n\n        Args:\n            device ('obj'): device to use\n            timer ('int'): timer value\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "mdns.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_mdns_service_receiver_purge_timer",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mdns/configure.py#L1146"
+    }
+  },
+  "configure_mdns_service_record_ttl": {
+    "iosxe": {
+      "doc": " Configures mdns service record ttl\n\n        Args:\n            device ('obj'): device to use\n            cache_record_type ('str'): cache record like enhanced or original\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "mdns.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_mdns_service_record_ttl",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mdns/configure.py#L1093"
     }
   },
   "configure_mdns_svi": {
@@ -3448,6 +3714,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "configure_mdt_strict_rpf_interface_vrf",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/vrf/configure.py#L326"
+    }
+  },
+  "configure_mka_macsec": {
+    "iosxe": {
+      "doc": " Configures MKA and MACSec interface\n\n        Args:\n            device ('obj'): device to use\n            interface ('str'): Interface name\n            keychain_name ('str'): Key Chain name\n            policy_name ('str'): MKA policy name\n\n        Returns:\n            None\n\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "macsec.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_mka_macsec",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/macsec/configure.py#L740"
     }
   },
   "configure_mka_policy": {
@@ -3585,6 +3860,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/vrf/configure.py#L303"
     }
   },
+  "configure_nat_extended_acl": {
+    "iosxe": {
+      "doc": " configure NAT extended acl\n        Args:\n            device ('obj'): device to execute on\n            acl ('str'): acl name\n            permission ('str'): permit|deny\n            src_ip ('str'): source ip\n            src_wild_mask ('str'): source wild mask\n            dest_ip('str'): destination ip\n            dest_wild_mask('str'): destination wild mask\n        Return:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "nat.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_nat_extended_acl",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/nat/configure.py#L775"
+    }
+  },
   "configure_nat_in_out": {
     "iosxe": {
       "doc": " Enable nat IN and OUT over interface \n        Args:\n            device ('obj'): device to use\n            inside_interface ('str'): enable nat in over this interface, default value is None\n            outside_interface ('str'): enable nat out over this interface, default value is None\n        Returns:\n            console output\n        Raises:\n            SubCommandFailure: NAT IN OUT not enable over interface\n    ",
@@ -3619,6 +3903,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "configure_nat_port_route_map_rule",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/nat/configure.py#L231"
+    }
+  },
+  "configure_nat_route_map": {
+    "iosxe": {
+      "doc": " configure NAT route map\n        Args:\n            device ('obj'): device to execute on\n            route_map_name ('str'): route map name\n            permission ('str'): permit|deny\n            sequence_number ('str'): sequence number\n            acl_name ('str'): acl name|acl number\n        Return:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "nat.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_nat_route_map",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/nat/configure.py#L719"
     }
   },
   "configure_no_bgp_default": {
@@ -3663,7 +3956,7 @@
       "module_name": "ntp.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_ntp_iburst",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ntp/configure.py#L108"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ntp/configure.py#L128"
     },
     "iosxr": {
       "doc": " Configure ntp iburst using ip address\n\n        Args:\n            device ('obj'): Device object\n            route ('str'): IP address to configure\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
@@ -3695,7 +3988,7 @@
       "module_name": "ntp.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_ntp_server",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ntp/configure.py#L129"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ntp/configure.py#L149"
     },
     "iosxr": {
       "doc": " Configures ntp server\n\n        Args:\n            device ('obj'): device to configure on\n            ntp_config ('list'): List containing server ip address\n                ex.)\n                   ntp_config = [ \n                        '192.168.1.1',\n                        '192.168.1.2'\n                    ]\n            auth_key ('list'): Authentication key number corresponding\n                               to server ip\n                ex.)\n                   auth_key = [\n                        '1',\n                        '2',\n                   ]\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
@@ -3720,7 +4013,7 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_ospf_bfd",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L983"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L997"
     }
   },
   "configure_ospf_cost": {
@@ -3783,7 +4076,7 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_ospf_network_point",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L925"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L939"
     }
   },
   "configure_ospf_networks": {
@@ -3817,12 +4110,21 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_ospf_redistributed_connected",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1014"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1028"
+    }
+  },
+  "configure_ospf_redistributed_static": {
+    "iosxe": {
+      "doc": " configure redistribute static under ospf\n        Args:\n            device (`obj`): device to execute on\n            ospf_process_id (`int`): process id of ospf\n        Return:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "ospf.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_ospf_redistributed_static",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1352"
     }
   },
   "configure_ospf_routing": {
     "iosxe": {
-      "doc": " Configures ospf and ip routing on device\n\n        Args:\n            device ('obj'): Device to use\n            ospf_process_id ('str'): Process id for ospf process\n            router_id ('str', optional): Router id to use, default value is None\n            router_config ('bool', optional): To configure router-id or not, \n                                              default value is None\n            nsf ('bool', optional): nsf configuration, default value is None\n            vrf_name ('str', optional): vrf name, default value is None\n            vrf_id ('str', optional): vrf id, default value is None\n\n        Returns:\n            N/A\n\n        Raises:\n            SubCommandFailure\n    ",
+      "doc": " Configures ospf and ip routing on device\n\n        Args:\n            device ('obj'): Device to use\n            ospf_process_id ('str'): Process id for ospf process\n            router_id ('str', optional): Router id to use, default value is None\n            router_config ('bool', optional): To configure router-id or not, \n                                              default value is None\n            nsf ('bool', optional): nsf configuration, default value is None\n            nsf_options ('str', optional): nsf params, default value is None\n            nsr ('bool', optional): nsf configuration, default value is None\n            nsr_options ('str', optional): nsr params, default value is None\n            vrf_name ('str', optional): vrf name, default value is None\n            vrf_id ('str', optional): vrf id, default value is None\n\n        Returns:\n            N/A\n\n        Raises:\n            SubCommandFailure\n    ",
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_ospf_routing",
@@ -3835,7 +4137,7 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_ospf_routing_on_interface",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L775"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L789"
     }
   },
   "configure_ospf_vrf": {
@@ -3862,7 +4164,7 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_ospfv3_network_point",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1094"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1108"
     }
   },
   "configure_pac_key": {
@@ -4192,7 +4494,7 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_route_map",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L895"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L909"
     }
   },
   "configure_route_map_route_map": {
@@ -4247,6 +4549,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "configure_routing_static_route",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/routing/configure.py#L118"
+    }
+  },
+  "configure_scp_local_auth": {
+    "iosxe": {
+      "doc": " Configures SCP parameters\n        Args:\n            device (`obj`): Device object\n            username ('str'): username of the device\n            password ('str'): password for the device\n            scp_server_enable ('boolean', 'Optional'): \n                Enabling SCP server, default is True\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "scp.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_scp_local_auth",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/scp/configure.py#L13"
     }
   },
   "configure_segment_routing_gb_range": {
@@ -4323,7 +4634,7 @@
   },
   "configure_shape_map": {
     "iosxe": {
-      "doc": " Configures policy_map type queueing\n        Args:\n             device('obj'): device to use\n             queue_name('str'): name of the queue policy name\n             class_map_list('list'): list of dict type hold number of class map\n             [\n             {\n             class_map_name('str'): name of the class\n             priority_level('int',optional): value of priority queue for 0 to 7\n             shape_average('str',optional): value of the shape average\n             bandwidth('int',optional): bandwidth value\n             queue_limit('int',optional): queue_limit value\n             child_policy('str',optional): name of the child policy\n             }\n             ]\n\n        example:\n             class_map_list=[{'class_map_name':'queue_name',\n             priority_level:7,\n             shape_average:'2000000000' or 'rate 20'\n             bandwidth: 20\n             queue_limit: 10000\n             }]\n\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "doc": " Configures policy_map type queueing\n        Args:\n             device('obj'): device to use\n             queue_name('str'): name of the queue policy name\n             class_map_list('list'): list of dict type hold number of class map\n             [\n             {\n             class_map_name('str'): name of the class\n             priority_level('int',optional): value of priority queue for 0 to 7\n             shape_average('str',optional): value of the shape average\n             bandwidth('int',optional): bandwidth value\n             queue_limit('int',optional): queue_limit value\n             child_policy('str',optional): name of the child policy\n             }\n             ],\n             service_policy('str',optional) : service-policy name by default service-policy\n\n        example:\n             class_map_list=[{'class_map_name':'queue_name',\n             priority_level:7,\n             shape_average:'2000000000' or 'rate 20'\n             bandwidth: 20\n             queue_limit: 10000\n             }]\n\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
       "module_name": "policy_map.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_shape_map",
@@ -4373,6 +4684,24 @@
       "package": "genie.libs.sdk.apis",
       "uid": "configure_spanning_tree_priority",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/spanning_tree/configure.py#L57"
+    }
+  },
+  "configure_stackwise_virtual_dual_active_interfaces": {
+    "iosxe": {
+      "doc": " Enables interface as dual-active-detection interface on target device\n        Args:\n            device ('obj'): Device object\n            dad_links ('list'): List object\n                List contains following values: interface ('str'): Interface Name\n                Example:\n                    dad_links = ['HundredGigE1/0/1', 'HundredGigE1/0/2']\n        Returns:\n            output: return the chunk of lines for the config of dual-active-detection as below..\n            # interface HundredGigE1/0/1\n            # stackwise-virtual dual-active-detection\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "stackwise_virtual.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_stackwise_virtual_dual_active_interfaces",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/stackwise_virtual/configure.py#L110"
+    }
+  },
+  "configure_stackwise_virtual_dual_active_pagp": {
+    "iosxe": {
+      "doc": " Enables port-channel interface as pagp dual-active-detection interface on target device\n        Args:\n            device ('obj'): Device object\n            port_channel ('str'): Port channel Value to be configured as dual-active-detection interface.\n\n        Returns:\n            output: return the chunk of lines for the config of pagp as below..\n            # stackwise-virtual\n            # Please reload the switch for Stackwise Virtual configuration to take effect\n            # Upon reboot, the config will be part of running config but not part of start up config.\n            # dual-active detection pagp\n            # dual-active detection pagp trust channel-group 1     \n            # Trusted port-channel 1 is not administratively down. To change the pagp dual-active trust configuration, \"shutdown\" the port-channel first. Remember to \"no shutdown\" the port-channel afterwards.\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "stackwise_virtual.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_stackwise_virtual_dual_active_pagp",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/stackwise_virtual/configure.py#L213"
     }
   },
   "configure_stackwise_virtual_interfaces": {
@@ -4426,7 +4755,7 @@
       "module_name": "nat.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "configure_static_nat_outside_rule",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/nat/configure.py#L614"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/nat/configure.py#L632"
     }
   },
   "configure_static_nat_route_map_rule": {
@@ -4607,6 +4936,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mpls/configure.py#L1641"
     }
   },
+  "configure_trustpoint": {
+    "iosxe": {
+      "doc": "\n    configure crypto pki trustpoint\n    Args:\n        device ('obj'): Device object\n        ca_ip ('string'): enrollment url ip-address\n        tp_name ('string'): crypto pki trustpoint name\n        common_name ('string'): crypto pki subject common name to be used\n        revoke_check ('string'): revocation-check config to be used\n        rsa_key_size ('int'): rsa_key_size value to be used for rsakeypair generation\n        authorization ('string'): authorization config options to be used with variuos options\n        auth_list_name('string'): authorization list name\n        auth_password('string'): authorization password\n        alt_auth_username('string'): alternate authorization username config; example we can use \"yes\"\n        alt_auth_username_sec('string'): configure authorization username alt-subjectname userprinciplename secondary; example we can use \"yes\"\n        auth_username_subjectname_opt('string'): used to configure authorization username subject name option\n        auto_enroll ('bool'): auto enroll needs to be configured or not\n        auto_enroll_regen ('string'): used for auto-enroll regenerate configuration\n        auto_enroll_regen_timer('int'): used for auto enroll regenerate timer configuration\n        auto_trigger ('bool'): if auton trigger needs to be configured\n        certificate_chain_location ('string'): used for certificate chain configuration\n        chain_valid_count ('bool'): used chain valid count with value configuration\n        chain_valid_stop ('bool'): if chain validation needs to be stopped\n        crl_cache ('bool'): used for crl cache config is none\n        crl_cache_delete_timer('int'): used for crl cache delete timer configuration\n        crl_cache_extend_timer('int'): used for crl cache extended timer configuration\n        default_options ('string'): if any tp_config needs to be defaulted\n        eckeypair ('string'): used for eckeypair configuration\n        eku_req_option ('string'): used for eku request configuration\n        enrollment_mode ('bool'): used to enable enrollment mode config\n        enrollment_option('string'): used to configure enrollment except mode, retry timer and enrollment url\n        enrol_retry_count ('int'): used to configure enrollment retry counter\n        enrol_retry_period ('int'): used to configure enrollment retry period\n        ca_type ('string'): used to select enrollment ca server type and config \n        enrollment_url_path ('string'): used to configure enrollment path except ca server type config ex: to take from tftp, bootflash\n        fingerprint ('string'): used to configure fingerprint configuration\n        fqdn_value ('string'): used to configure fully-qualified domain name\n        hash_value ('string'): used to configure hash algorithm to be used\n        http_proxy ('string'): used to configure http proxy \n        ip_address ('string'): if none variable is set ip address with none option will be configured                                 else specified ip address will be getting configured\n        ip_ext ('string'): used to configure ip-extension\n        match_value('string'): to configure match a certificate attibutes/maps\n        ocsp_url ('string'): to configure certificate using Online Certificate Status Protocol\n        ocsp_port('int'): ocsp port to be configured\n        ocsp_disable ('bool'): to disable ocsp\n        on_config ('string'): to create keypair on device\n        password_config ('string'): to configure password\n        primary_flag ('bool'): used to enable primary config\n        regenerate_flag ('bool'): used to configure regenerate\n        revocation_check ('string'): used to configure revocation-check config\n        rsa_key_usage('bool'): used to configure rsakeypair \n        ser_number('string'): serial number to be used\n        show_tp_config('bool'): to display the trustpoint configs\n        source_interface('string'): soure interface to be used\n        storage_location('string'): storage location like bootflash: tftp: \n        sub_alt_name('string'): used for subject-alt-name configuration\n        usage_option('string'): used for usage config\n        vrf('string'): used for crf config\n        no_config('string'): used for unconfiguration of sub configs used in trustpoint\n        exit_flag('bool'): used for exit\n        \n    Returns: \n        None\n    Raises:\n        SubCommandFailure\n        ",
+      "module_name": "pki.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_trustpoint",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/pki/configure.py#L213"
+    }
+  },
   "configure_tunnel_auto_route": {
     "iosxe": {
       "doc": "configure autoroute announce in tunnel.\n        Args: \n\t    device (`obj`): Device object\n\t    tunnel_name (`str`): Tunnel Name\n            autoroute_type (`str`): autoroute type used for tunnel\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
@@ -4713,6 +5051,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "configure_vlan_agent",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mdns/configure.py#L653"
+    }
+  },
+  "configure_vlan_shutdown": {
+    "iosxe": {
+      "doc": " Shutdown a VLAN on Interface or Device\n    e.g.\n    vlan 666\n\t  shutdown\n\n        Args:\n            device (`obj`): Device object\n            vlanid (`str`): Vlan id\n        Return:\n            None\n        Raise:\n            SubCommandFailure: Failed configuring interface\n    ",
+      "module_name": "vlan.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "configure_vlan_shutdown",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/vlan/configure.py#L356"
     }
   },
   "configure_vlan_sp": {
@@ -5239,6 +5586,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/cts/configure.py#L307"
     }
   },
+  "disable_debug": {
+    "iosxe": {
+      "doc": " Disable debug for the mentioned parameter\n        Args:\n            device ('obj'): device to use\n            parameter ('str'): parameter for which debug has to be disabled\n        Returns:\n            None\n        Raises:\n            SubCommandFailure: Failed disabling debug\n    ",
+      "module_name": "debug.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "disable_debug",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/debug/configure.py#L41"
+    }
+  },
   "disable_dhcp_ldra": {
     "iosxe": {
       "doc": "\n    Disabling DHCP ldra\n        Args:\n            device ('obj'): device to use\n        Returns:\n            str: Response of command\n        Raises:\n            SubCommandFailure: Failed to disable ldra\n    ",
@@ -5673,11 +6029,29 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/platform/execute.py#L219"
     },
     "iosxe": {
-      "doc": " Execute 'hw-module subslot <slot> oir power-cycle' on the device\n        Args:\n            device ('obj'): Device object\n            card_number ('str'): Card number on which OIR has to be performed\n            timeout ('int',optional): Max time for card oir execution to complete in seconds.Defaults to 60\n    ",
+      "doc": " Execute 'hw-module subslot <slot> oir power-cycle' on the device\n        Args:\n            device ('obj'): Device object\n            card_number ('str'): Card number on which OIR has to be performed\n            switch_id ('str', optional): Switch number(In case of SVL/Stack) on which OIR has to be performed. Default is None.\n            timeout ('int',optional): Max time for card oir execution to complete in seconds.Defaults to 60\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
       "module_name": "platform.execute",
       "package": "genie.libs.sdk.apis",
       "uid": "execute_card_OIR",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/execute.py#L352"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/execute.py#L353"
+    }
+  },
+  "execute_card_OIR_insert": {
+    "iosxe": {
+      "doc": " Execute 'hw-module subslot <slot> oir insert' on the device\n        Args:\n            device ('obj'): Device object\n            card_number ('str'): Card number on which OIR insert has to be performed\n            switch_id ('str', optional): Switch number(In case of SVL/Stack) on which OIR insert has to be performed. Default is None.\n            timeout ('int',optional): Max time for card oir insertion to complete in seconds.Defaults to 60\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "platform.execute",
+      "package": "genie.libs.sdk.apis",
+      "uid": "execute_card_OIR_insert",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/execute.py#L430"
+    }
+  },
+  "execute_card_OIR_remove": {
+    "iosxe": {
+      "doc": " Execute 'hw-module subslot <slot> oir remove' on the device\n        Args:\n            device ('obj'): Device object\n            card_number ('str'): Card number on which OIR remove has to be performed\n            switch_id ('str', optional): Switch number(In case of SVL/Stack) on which OIR remove has to be performed. Default is None.\n            timeout ('int',optional): Max time for card oir removal to complete in seconds.Defaults to 60\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "platform.execute",
+      "package": "genie.libs.sdk.apis",
+      "uid": "execute_card_OIR_remove",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/execute.py#L391"
     }
   },
   "execute_change_boot_variable": {
@@ -5733,7 +6107,7 @@
       "module_name": "platform.execute",
       "package": "genie.libs.sdk.apis",
       "uid": "execute_clear_ipdhcp_snooping_database_statistics",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/execute.py#L506"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/execute.py#L586"
     }
   },
   "execute_clear_line": {
@@ -5769,7 +6143,16 @@
       "module_name": "platform.execute",
       "package": "genie.libs.sdk.apis",
       "uid": "execute_clear_platform_software_fed_active_acl_counters_hardware",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/execute.py#L388"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/execute.py#L468"
+    }
+  },
+  "execute_clear_platform_software_fed_active_cpu_interface": {
+    "iosxe": {
+      "doc": " clear platform software fed active cpu-interface\n        Args:\n            device ('obj'): Device object\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "platform.execute",
+      "package": "genie.libs.sdk.apis",
+      "uid": "execute_clear_platform_software_fed_active_cpu_interface",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/execute.py#L639"
     }
   },
   "execute_clear_platform_software_fed_switch_acl_counters_hardware": {
@@ -5778,7 +6161,7 @@
       "module_name": "platform.execute",
       "package": "genie.libs.sdk.apis",
       "uid": "execute_clear_platform_software_fed_switch_acl_counters_hardware",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/execute.py#L403"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/execute.py#L483"
     }
   },
   "execute_clear_platform_software_fed_switch_active_cpu_interface": {
@@ -5787,7 +6170,7 @@
       "module_name": "platform.execute",
       "package": "genie.libs.sdk.apis",
       "uid": "execute_clear_platform_software_fed_switch_active_cpu_interface",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/execute.py#L475"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/execute.py#L555"
     }
   },
   "execute_clear_platform_software_fed_switch_mode_acl_stats": {
@@ -5796,7 +6179,7 @@
       "module_name": "platform.execute",
       "package": "genie.libs.sdk.apis",
       "uid": "execute_clear_platform_software_fed_switch_mode_acl_stats",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/execute.py#L490"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/execute.py#L570"
     }
   },
   "execute_copy_run_to_start": {
@@ -5888,6 +6271,15 @@
       }
     }
   },
+  "execute_erase_ap": {
+    "com": {
+      "doc": null,
+      "module_name": "cheetah.ap.execute",
+      "package": "genie.libs.sdk.apis",
+      "uid": "execute_erase_ap",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/cheetah/ap/execute.py#L22"
+    }
+  },
   "execute_install_controller_group_firmware": {
     "apic": {
       "doc": " Installs the controller image onto the controller(s) and verifies install\n    completed.\n\n    Args:\n        device (obj): Device to execute on\n\n        controller_image (str): Image to install. This must exist in the\n            firmware repository.\n\n        error_patterns (list, optional): Any extra error patterns for executing\n            'firmware upgrade controller-group'. Defaults to None.\n\n        controller_upgrade_max_time (int, optional): Max time in seconds allowed\n            for verifying controller upgrade. Defaults to 1800.\n\n        controller_upgrade_check_interval (int, optional): How often in seconds\n            to check upgrade status. Defaults to 60.\n\n        controller_reconnect_max_time (int optional): Max time in seconds allowed\n            for reconnecting to controller if the connection is lost. Defaults\n            to 900.\n\n        controller_reconnect_check_interval (int, optional): How often in\n            seconds to attempt reconnect. Defaults to 60.\n\n        controller_upgrade_after_reconnect_max_time (int, optional): Max time\n            in seconds allowed for verifying controller upgrade after reconnect.\n            Defaults to 300.\n\n        controller_upgrade_after_reconnect_check_interval (int, optional): How\n            often in seconds to check upgrade status after reconnect. Defaults\n            to 60.\n\n    Returns:\n        True if install succeeds\n        False if install failed\n\n    Raises:\n        N/A\n    ",
@@ -5930,7 +6322,7 @@
       "module_name": "platform.execute",
       "package": "genie.libs.sdk.apis",
       "uid": "execute_issu_install_package",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/execute.py#L418"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/execute.py#L498"
     }
   },
   "execute_power_cycle_device": {
@@ -5940,6 +6332,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "execute_power_cycle_device",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/execute.py#L77"
+    }
+  },
+  "execute_prime_ap": {
+    "com": {
+      "doc": null,
+      "module_name": "cheetah.ap.execute",
+      "package": "genie.libs.sdk.apis",
+      "uid": "execute_prime_ap",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/cheetah/ap/execute.py#L12"
     }
   },
   "execute_register_nodes": {
@@ -6017,6 +6418,33 @@
       "package": "genie.libs.sdk.apis",
       "uid": "execute_set_config_register",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxr/platform/execute.py#L133"
+    }
+  },
+  "execute_switch_card_OIR": {
+    "iosxe": {
+      "doc": " Execute 'hw-module switch <switch_number> subslot <slot> oir power-cycle' on the device\n        Args:\n            device ('obj'): Device object\n            switch_number('str'): Switch number on which OIR has to be performed\n            slot ('str'): Slot on which OIR has to be performed\n            timeout ('int',optional): Max time for card oir execution to complete in seconds.Defaults to 60\n    ",
+      "module_name": "platform.execute",
+      "package": "genie.libs.sdk.apis",
+      "uid": "execute_switch_card_OIR",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/execute.py#L603"
+    }
+  },
+  "execute_test_idprom_fake_insert": {
+    "iosxe": {
+      "doc": " \n        Args:\n            device ('obj'): device to use  \n            interface ('str'): Interface for which we are doing SFP Fake-insert\n        Returns:\n            Return the test command execution output\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "interface.execute",
+      "package": "genie.libs.sdk.apis",
+      "uid": "execute_test_idprom_fake_insert",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/interface/execute.py#L11"
+    }
+  },
+  "execute_test_idprom_fake_remove": {
+    "iosxe": {
+      "doc": "   \n        Args:\n            device ('obj'): device to use  \n            interface ('str'): Interface for which we are doing SFP Fake-remove\n        Returns:\n            Return the test command execution output\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "interface.execute",
+      "package": "genie.libs.sdk.apis",
+      "uid": "execute_test_idprom_fake_remove",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/interface/execute.py#L29"
     }
   },
   "execute_test_ngdns_lookup": {
@@ -6126,6 +6554,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/linux/utils.py#L14"
     }
   },
+  "fp_switchover": {
+    "iosxe": {
+      "doc": "Perform FP switchover on device.\n        Args:\n            device(`obj`): Device object\n            timeout ('int'): timeout in seconds for FP switchover\n                            if not provided default is 420 seconds,\n        Returns:\n            True if FP switchover is success else False\n        Raises:\n            None\n    ",
+      "module_name": "platform.utils",
+      "package": "genie.libs.sdk.apis",
+      "uid": "fp_switchover",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/utils.py#L358"
+    }
+  },
   "free_up_disk_space": {
     "apic": {
       "doc": "Delete files to create space on device except protected files\n    Args:\n        device ('Obj') : Device object\n        destination ('str') : Destination directory, i.e bootflash:/\n        required_size ('int') : Check if enough space to fit given size in bytes.\n                                If this number is negative it will be assumed\n                                the required size is not available.\n        skip_deletion ('bool') : Only performs checks, no deletion\n        protected_files ('list') : List of file patterns that wont be deleted.\n        min_free_space_percent ('int'): Minimum acceptable free disk space %.\n                                        Optional,\n        dir_output ('str'): Output of 'dir' command\n                            if not provided, executes the cmd on device\n    Returns:\n         True if there is enough space after the operation, False otherwise\n    ",
@@ -6199,6 +6636,13 @@
     }
   },
   "get_ap_mode": {
+    "com": {
+      "doc": "Get ap mode \n    Args:\n        device (obj): Device object\n    Returns:\n        ap mode in string \n        ",
+      "module_name": "cheetah.ap.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_ap_mode",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/cheetah/ap/get.py#L11"
+    },
     "iosxe": {
       "c9800": {
         "doc": "Get configured ap mode\n    Args:\n        device (obj): Device object\n        ap_name (str): accesspoint name\n    Returns:\n        ap mode (str) if success else empty string\n    Raises:\n        N/A        \n    ",
@@ -6903,6 +7347,24 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/class_of_service/get.py#L16"
     }
   },
+  "get_component_descr": {
+    "iosxe": {
+      "doc": "\n    Get components' description\n\n    Args:\n        device (`obj`): Device object\n    Returns:\n        Dictionary: components' description dict\n            example: {\n                'name': [],\n                'descr': []\n            }\n    Raises:\n        None\n    ",
+      "module_name": "inventory.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_component_descr",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/inventory/get.py#L225"
+    }
+  },
+  "get_component_details": {
+    "iosxe": {
+      "doc": "\n    Get components detail\n\n    Args:\n        device (`obj`): Device object\n    Returns:\n        Dictionary: components' details dict\n            example: {\n                'name': [],\n                'descr_raw': [],\n                'part_number': [],\n                'serial_number': [],\n                'hardware_version': []\n            }\n    Raises:\n        None\n    ",
+      "module_name": "inventory.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_component_details",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/inventory/get.py#L13"
+    }
+  },
   "get_config_commands_from_running_config": {
     "ios": {
       "doc": " Builds configuration command from running config\n\n        Args:\n            device ('obj'): device to run on\n            option ('str'): running config sub option\n\n        Returns:\n            list of config commands\n    ",
@@ -7019,6 +7481,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "get_connection",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L2874"
+    }
+  },
+  "get_controller_name": {
+    "com": {
+      "doc": "Get controller name\n    Args:\n        device (obj): Device object\n    Returns:\n        mwar name in string \n        ",
+      "module_name": "cheetah.ap.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_controller_name",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/cheetah/ap/get.py#L43"
     }
   },
   "get_current_active_pies": {
@@ -7245,6 +7716,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/apic/firmware/get.py#L76"
     }
   },
+  "get_firmware_version": {
+    "iosxe": {
+      "doc": "\n    Get components' firmware version (for cat 9600 and 9400 series)\n    Args:\n        device (`obj`): Device object\n    Returns:\n        Dictionary: components' firmware dict\n            example: {\n                'name': [],\n                'firmware_version': []\n            }\n    Raises:\n        None\n    ",
+      "module_name": "firmware_version.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_firmware_version",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/firmware_version/get.py#L9"
+    }
+  },
   "get_firmware_version_from_image_name": {
     "apic": {
       "doc": " Get the firmware version from the image name.\n\n    Args:\n        image_name (str): image filename\n\n    Returns:\n        string with image version\n    ",
@@ -7355,6 +7835,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "get_hardware_slot_state",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/hardware/get.py#L174"
+    }
+  },
+  "get_hardware_version": {
+    "iosxe": {
+      "doc": "\n    Get components' hardware version\n\n    Args:\n        device (`obj`): Device object\n    Returns:\n        Dictionary: components' hardware version dict\n            example: {\n                'name': [[usbflash1],[Switch1, PowerSupply1/B]],\n                'hardware_version': [[3.10],[P2A, V02]]\n            }\n    Raises:\n        None\n    ",
+      "module_name": "inventory.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_hardware_version",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/inventory/get.py#L292"
     }
   },
   "get_hostname": {
@@ -7995,6 +8484,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/interface/get.py#L831"
     }
   },
+  "get_ip_address": {
+    "com": {
+      "doc": "Get ip address of controller associated to AP\n    Args:\n        device (obj): Device object\n    Returns:\n        IP address\n        ",
+      "module_name": "cheetah.ap.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_ip_address",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/cheetah/ap/get.py#L75"
+    }
+  },
   "get_ip_bgp_neighbors": {
     "iosxe": {
       "doc": " Get Ip Bgp neighbors from the following commands:\n            'show ip bgp {address_family} vrf {vrf} neighbors {neighbor}',\n            'show ip bgp {address_family} vrf {vrf} neighbors',\n            'show ip bgp {address_family} neighbors {neighbor}',\n            'show ip bgp {address_family} neighbors',\n            'show ip bgp {address_family} all neighbors {route}'\n            'show ip bgp neighbors {neighbor}',\n            'show ip bgp neighbors'\n\n        Args:\n            device ('obj')         : Device object \n            address_family ('str') : Address family\n            vrf ('str')            : Vrf name\n            neighbor ('neighbor')  : Neighbor address\n        Returns:\n            Dictionary\n        Raises:\n            None\n        \n    ",
@@ -8038,6 +8536,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "get_ip_packet_scapy",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/utils.py#L1275"
+    }
+  },
+  "get_ip_prefer_mode": {
+    "com": {
+      "doc": "Get ip prefer mode \n    Args:\n        device (obj): Device object\n    Returns:\n        ip prefer mode in string\n        ",
+      "module_name": "cheetah.ap.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_ip_prefer_mode",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/cheetah/ap/get.py#L59"
     }
   },
   "get_ip_theft_syslogs": {
@@ -8088,6 +8595,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "get_ipv6_nd_raguard_policy_configurations",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/sisf/get.py#L78"
+    }
+  },
+  "get_ipv6_ospf_neighbor_address_in_state": {
+    "iosxe": {
+      "doc": " Gets the ipv6 ospf neighbors address' in state\n\n        Args:\n            device ('obj'): Device to use\n            state ('str'): full/sub-string of the state you want\n                           search for\n\n        Returns:\n            ('list'): of ospf neighbor address' in specified state\n\n        Raises:\n            N/A\n    ",
+      "module_name": "ospf.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_ipv6_ospf_neighbor_address_in_state",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/get.py#L902"
     }
   },
   "get_ipv6_source_guard_policy_configurations": {
@@ -8742,6 +9258,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "get_ntp_system_peer_vrf",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ntp/get.py#L191"
+    }
+  },
+  "get_operation_state": {
+    "com": {
+      "doc": "Get operation state \n    Args:\n        device (obj): Device object\n    Returns:\n        operation state in string \n        ",
+      "module_name": "cheetah.ap.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_operation_state",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/cheetah/ap/get.py#L27"
     }
   },
   "get_ospf3_neighbor_count": {
@@ -10159,6 +10684,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L3849"
     }
   },
+  "get_slice_id_of_interface": {
+    "iosxe": {
+      "doc": "Get the slice id of the interface\n\n    Args:\n        device (obj): Device object\n        interface ('str'): interface name\n\n    Return:\n        str: Slice ID that the interface belongs to\n    ",
+      "module_name": "platform.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_slice_id_of_interface",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/get.py#L716"
+    }
+  },
   "get_slot_model": {
     "iosxe": {
       "doc": "Gets the model name of one or all modules\n\n    Args:\n        device (obj): Device object\n        slot (str, optional): Module slot to get. Defaults to None.\n\n    Returns:\n        dict: Dictionary mapped from slot number to model\n    ",
@@ -10228,6 +10762,13 @@
     }
   },
   "get_software_version": {
+    "iosxe": {
+      "doc": "\n    Get software version information of a device\n    Args:\n        device (obj): Device object\n    Returns:\n        str: Device software version information as str\n    Raises:\n        None\n    ",
+      "module_name": "software_version.get",
+      "package": "genie.libs.sdk.apis",
+      "uid": "get_software_version",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/software_version/get.py#L8"
+    },
     "iosxr": {
       "asr9k": {
         "doc": " Gets the version of the current running image\n        Args:\n            device (`obj`): Device object\n        Returns:\n            Image or None\n    ",
@@ -10715,7 +11256,7 @@
       "module_name": "health.health",
       "package": "genie.libs.sdk.apis",
       "uid": "health_core",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/health/health.py#L362"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/health/health.py#L365"
     },
     "iosxr": {
       "doc": "Get the default directory of this device\n\n        Args:\n            device      (`obj`) : Device object\n            default_dir (`str` or `list`) : default directory where core is generated \n                                            on device\n                                            ex.) `harddisk:/dumper`\n            output      (`str`) : Output of `dir` command\n            keyword     (`list`): List of keywords to search\n            num_of_cores (`bool`): flag to return number of core files\n                                   Default to False\n            remote_device (`str`): remote device in testbed yaml\n                                   Default to None\n            remote_path (`str`): path with/without file on remote device\n                                 Default to None\n            remote_via (`str`) : specify connection to get ip\n                                 Default to None\n            protocol (`str`): protocol for copy. Default to scp\n            vrf (`str`): use vrf where scp find route to remote device\n                                 Default to None\n            archive     (`bool`): flag to save the decode output as file in archive\n                                  Defaults to False\n            delete_core (`bool`): flag to delete core files only when copying to\n                                  remove_device is successfully done\n                                  Defaults to False\n\n            ### CISCO INTERNAL ###\n            decode      (`bool`): flag to enable for decoding core\n                                  copy core file to remote_server and decode on remote_server\n            decode_timeout (`int`): timeout to execute decode script\n                                    Default to 300\n\n        Returns:\n            all_corefiles (`dict`): return health_data format.\n                                    ex.)\n                                    {\n                                        \"health_data\": {\n                                            \"num_of_cores\": 1,\n                                            \"core_files\": [\n                                                {\n                                                    \"filename\": \"asr-MIB-1_RP_1_nginx_23178_20210317-175351-UTC.core.gz\",\n                                                    \"decode\": \"\"\"\n                                                        <decode output>\n                                                    \"\"\"\n                                                }\n                                            ]\n                                        }\n                                    }\n    ",
@@ -10768,7 +11309,7 @@
       "module_name": "health.health",
       "package": "genie.libs.sdk.apis",
       "uid": "health_logging",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/health/health.py#L292"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/health/health.py#L295"
     },
     "iosxr": {
       "doc": "Get logging messages\n\n        Args:\n            device    (`obj`): Device object\n            command   (`str`): N/A\n            files    (`list`): Not applicable on this platform\n            keywords (`list`): List of keywords to match\n                               Default to ['traceback', 'Traceback', 'TRACEBACK']\n            output    (`str`): Output of show command\n            num_of_logs (`bool`): flag to return number of log messages\n                                  Default to False\n            clear_log (`bool`): flag to clear logging message\n                                Default to False\n            health (`bool`): wheather return health_data format or not\n                             Default to True\n        Returns:\n            logs     (`dict`): return health_data format.\n                               ex.)\n                                {\n                                    \"health_data\": {\n                                        \"num_of_logs\": 1,\n                                        \"logs\": [\n                                            {\n                                                \"line\": \"-Traceback= D667B8 D66F04 41463C 40FFF8 411834 423A6C A6E428 A64EF8 (EEHYP_CS_801-1)\",\n                                                \"decode\": \"<decode output>\", # Optional\n                                            }\n                                        ]\n                                    }\n                                }\n    ",
@@ -10815,6 +11356,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "int_to_mask",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/utils.py#L343"
+    }
+  },
+  "interface_counter_check": {
+    "iosxe": {
+      "doc": "Verifies packet flow on interface\n\n        Args:\n            device (`obj`): Device object\n            interface_name (`str`): interface to be verified\n            tx_packets (`int`): packets transmitted by ixia\n            pkt_rate (`int`): packet sent per second\n            direction ('str'): incoming or outgoing\n            max_time (int, optional): Max time in seconds for check. Defaults to 60.\n            check_interval ('int'): Loop interval (default is 10s)\n        Returns:\n            result(`bool`): True if expected number of packets flow on interface\n                            or else return Flase\n    ",
+      "module_name": "interface.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "interface_counter_check",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/interface/verify.py#L1008"
     }
   },
   "ipv6_nd_raguard_attach_policy": {
@@ -10922,7 +11472,7 @@
       "module_name": "platform.utils",
       "package": "genie.libs.sdk.apis",
       "uid": "is_connected_via_vty",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/utils.py#L344"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/utils.py#L346"
     },
     "iosxr": {
       "doc": " Check if we are connected via VTY\n    ",
@@ -11651,7 +12201,7 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "redistribute_route_map_under_ospf",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L739"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L753"
     }
   },
   "reload_issu_slot": {
@@ -11906,6 +12456,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/dhcpv6/configure.py#L188"
     }
   },
+  "remove_missing_comp": {
+    "iosxe": {
+      "doc": "\n    Removes the missing components from the API that are absent in the GNMI query for MPTE automation\n    \n    Args:\n        device (`obj`): Device object\n        namespace ('str'): namespace xpath\n        xpath ('str'): xpath\n        key_list ('list'): components' name list\n        value_list ('list'): components' value list, by default, set to None\n    Returns:\n        list: [list of components' name, list of components' value]\n    Raises:\n        None\n    ",
+      "module_name": "mpte_utils.mpte_utils",
+      "package": "genie.libs.sdk.apis",
+      "uid": "remove_missing_comp",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mpte_utils/mpte_utils.py#L10"
+    }
+  },
   "remove_mpls_lable_protocol_from_device": {
     "iosxe": {
       "doc": " Remove mpls label protocol from device\n\n        Args:\n            device (`obj`): Device object\n        Return:\n            None\n        Raise:\n            SubCommandFailure: Failed configuring interface\n    ",
@@ -11956,6 +12515,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "remove_mpls_ldp_router_id_from_device",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mpls/configure.py#L127"
+    }
+  },
+  "remove_ntp_master": {
+    "iosxe": {
+      "doc": " Unconfigure ntp master\n\n        Args:\n            device ('obj'): Device object\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "ntp.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "remove_ntp_master",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ntp/configure.py#L107"
     }
   },
   "remove_ntp_server": {
@@ -12341,7 +12909,7 @@
       "module_name": "debug.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "set_filter_packet_capture_inject",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/debug/configure.py#L41"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/debug/configure.py#L67"
     }
   },
   "set_system_mtu": {
@@ -12445,7 +13013,7 @@
       "module_name": "debug.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "start_packet_capture_inject",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/debug/configure.py#L63"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/debug/configure.py#L89"
     }
   },
   "start_perf": {
@@ -12497,7 +13065,7 @@
       "module_name": "debug.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "stop_packet_capture_inject",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/debug/configure.py#L83"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/debug/configure.py#L109"
     }
   },
   "stop_perf_and_generate_svg": {
@@ -13013,6 +13581,33 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/dot1x/configure.py#L815"
     }
   },
+  "unconfigure_auto_qos": {
+    "iosxe": {
+      "doc": " Unconfigures the qos_policy on interface\n        Args:\n            device ('obj'): device to use\n            interface ('str'): interface to unconfigure\n            qos_mode ('str') : qos_mode name\n            qos_value ('str'): qos_value\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "qos.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_auto_qos",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/qos/configure.py#L127"
+    }
+  },
+  "unconfigure_auto_qos_global": {
+    "iosxe": {
+      "doc": " unconfigures the auto qos global compact\n        Args:\n            device ('obj'): device to use\n            compact('str'): name of compact\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "qos.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_auto_qos_global",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/qos/configure.py#L184"
+    }
+  },
+  "unconfigure_bfd_neighbor_on_interface": {
+    "iosxe": {
+      "doc": " Unconfigures bfd on interface\n\n        Args:\n            device ('obj'): device to use\n            interface ('str'): interface to configure\n            address_family ('str'): ipv4|ipv6 address family\n            neighbor_address ('str'): neighbor address\n        Returns:\n            None\n        Raises:\n            SubCommandFailure: Failed configuring bfd on interface\n\n    ",
+      "module_name": "bfd.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_bfd_neighbor_on_interface",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/bfd/configure.py#L194"
+    }
+  },
   "unconfigure_bfd_on_interface": {
     "iosxe": {
       "doc": " Unconfigures bfd on interface\n\n        Args:\n            device ('obj'): device to use\n            interface ('str'): interface to configure\n        Returns:\n            None\n        Raises:\n            SubCommandFailure: Failed configuring bfd on interface\n\n    ",
@@ -13037,7 +13632,7 @@
       "module_name": "bgp.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_bgp_neighbor_remote_as",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/bgp/configure.py#L1446"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/bgp/configure.py#L1447"
     }
   },
   "unconfigure_bgp_neighbor_send_community": {
@@ -13079,6 +13674,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/nxos/cdp/configure.py#L18"
     }
   },
+  "unconfigure_cdp_interface": {
+    "iosxe": {
+      "doc": " Unconfigure CDP on interface\n\n        Args:\n            device ('obj'): Device object\n            interface ('str'): interface on which CDP to be configured\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "cdp.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_cdp_interface",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/cdp/configure.py#L96"
+    }
+  },
   "unconfigure_class_map": {
     "iosxe": {
       "doc": " Unconfigures class-map\n        Args:\n             device ('obj'): device to use\n             class_name ('str'): name of the class\n             class_match_type ('str',optional): name of the match type, default is 'match-all'\n\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
@@ -13115,6 +13719,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/aaa/configure.py#L927"
     }
   },
+  "unconfigure_crypto_ikev2_NAT_keepalive": {
+    "iosxe": {
+      "doc": " unConfigure crypto ikev2 nat keepalive <time in secs>\n    Args:\n        device (`obj`): Device object\n        keepalive_time (`int`): keepalive time in secs\n    Return:\n        None\n    Raise:\n        SubCommandFailure: Failed configuring\n    ",
+      "module_name": "nat.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_crypto_ikev2_NAT_keepalive",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/nat/configure.py#L700"
+    }
+  },
   "unconfigure_crypto_ikev2_keyring": {
     "iosxe": {
       "doc": " Unconfigure Crypto Ikev2 Keyring\n    Args:\n        device (`obj`): Device object\n        keyring (`str`): Radius server name\n    Return:\n        None\n    Raise:\n        SubCommandFailure: Failed configuring\n    ",
@@ -13122,6 +13735,33 @@
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_crypto_ikev2_keyring",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L412"
+    }
+  },
+  "unconfigure_crypto_ikev2_policy": {
+    "iosxe": {
+      "doc": " Unconfigure Crypto Ikev2 proposal\n    Args:\n        device (`obj`): Device object\n        policy_name (`str`): name of ikev2 policy name\n    Return:\n        None\n    Raise:\n        SubCommandFailure: Failed configuring\n    ",
+      "module_name": "ipsec.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_crypto_ikev2_policy",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L886"
+    }
+  },
+  "unconfigure_crypto_ikev2_proposal": {
+    "iosxe": {
+      "doc": " Unconfigure Crypto Ikev2 proposal\n    Args:\n        device (`obj`): Device object\n        proposal_name (`str`): proposal name\n    Return:\n        None\n    Raise:\n        SubCommandFailure: Failed configuring\n    ",
+      "module_name": "ipsec.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_crypto_ikev2_proposal",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L532"
+    }
+  },
+  "unconfigure_crypto_ipsec_nat_transparency": {
+    "iosxe": {
+      "doc": " Configure no crypto ipsec nat-transparency udp-encapsulation\n    Args:\n        device (`obj`): Device object\n    Return:\n        None\n    Raise:\n        SubCommandFailure: Failed configuring\n    ",
+      "module_name": "ipsec.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_crypto_ipsec_nat_transparency",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L570"
     }
   },
   "unconfigure_crypto_key": {
@@ -13137,13 +13777,18 @@
   },
   "unconfigure_crypto_pki_server": {
     "iosxe": {
+      "doc": "\n        Configure crypto pki server\n        Args:\n            device ('obj'): Device object\n            server_name ('str'): Name for the pki server\n    ",
       "eaptls": {
         "doc": " Unconfigures crypto pki server on device\n\n        Args:\n            device (`obj`): Device object\n            server_name ('str'): Name of the server\n\n        Returns:\n            None\n\n        Raise:\n            SubCommandFailure: Failed to unconfigure crypto pki server on device\n    ",
         "module_name": "configure",
         "package": "genie.libs.sdk.apis",
         "uid": "unconfigure_crypto_pki_server",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/eaptls/configure.py#L136"
-      }
+      },
+      "module_name": "pki.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_crypto_pki_server",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/pki/configure.py#L476"
     }
   },
   "unconfigure_crypto_transform_set": {
@@ -13180,6 +13825,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_device_tracking_binding_options",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/sisf/configure.py#L1898"
+    }
+  },
+  "unconfigure_disable_sci_dot1q_clear": {
+    "iosxe": {
+      "doc": " Unconfigures MACSec with disable-sci and dot1q-in-clear\n\n        Args:\n            device ('obj'): device to use\n            interface ('str'): Interface name\n            no_disable_sci ('boolean', 'Optional'): \n                remove disable sci for MACsec, default is True\n            dot1q_in_clear ('boolean', 'Optional' ): \n                unconfigure dot1q-in-clear on interface, default is True\n\n        Returns:\n            None\n\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "macsec.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_disable_sci_dot1q_clear",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/macsec/configure.py#L856"
     }
   },
   "unconfigure_dot1x_cred_int": {
@@ -13407,6 +14061,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/flow/configure.py#L222"
     }
   },
+  "unconfigure_global_dual_active_recovery_reload_disable": {
+    "iosxe": {
+      "doc": " Enables global stackwise-virtual dual-active recovery reload on target device\n        Args:\n            device ('obj'): Device object\n        Returns:\n                output: return the chunk of lines for the config of pagp as below..\n\n            # stackwise-virtual\n            # Please reload the switch for Stackwise Virtual configuration to take effect\n            # Upon reboot, the config will be part of running config but not part of start up config.\n            # no dual-active recovery-reload-disable\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "stackwise_virtual.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_global_dual_active_recovery_reload_disable",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/stackwise_virtual/configure.py#L188"
+    }
+  },
   "unconfigure_global_stackwise_virtual": {
     "iosxe": {
       "doc": " Disable global stackwise-virtual on target device\n        Args:\n            device ('obj'): Device object\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
@@ -13425,6 +14088,51 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/configure.py#L123"
     }
   },
+  "unconfigure_ikev2_authorization_policy": {
+    "iosxe": {
+      "doc": " Unonfigure IKEV2 Authorization policy\n        Args:\n            device (`obj`): Device object\n            policy_name ('str'): IKEv2 authorization policy\n        Returns:\n            NA\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "ike.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_ikev2_authorization_policy",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ike/configure.py#L910"
+    }
+  },
+  "unconfigure_ikev2_cac": {
+    "iosxe": {
+      "doc": " Unonfigure IKEV2 CAC\n        Args:\n            device (`obj`): Device object\n            in_nego ('int'): Maximum IKEv2 in negotiation sa\n            sa ('int',optional): Maximum IKEv2 sa, default is 0\n        Returns:\n            NA\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "ike.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_ikev2_cac",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ike/configure.py#L877"
+    }
+  },
+  "unconfigure_ikev2_dpd": {
+    "iosxe": {
+      "doc": " Unconfigure IKEV2 DPD\n        Args:\n            device (`obj`): Device object\n            interval ('int'): Determine in what interval Dead Peer Detection should happen\n            retry ('int'): Number of time DPD should retry before making the peer dead \n            dpd_query ('str'): Determine whether query is on-demand or periodic\n        Returns:\n            NA\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "ike.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_ikev2_dpd",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ike/configure.py#L819"
+    }
+  },
+  "unconfigure_ikev2_fragmentation": {
+    "iosxe": {
+      "doc": " Unonfigure IKEV2 Fragmentation\n        Args:\n            device (`obj`): Device object\n            mtu ('int'): IKEv2 MTU Fragmentation\n        Returns:\n            NA\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "ike.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_ikev2_fragmentation",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ike/configure.py#L850"
+    }
+  },
+  "unconfigure_ikev2_policy": {
+    "iosxe": {
+      "doc": " Unconfigures IKEV2 Policy\n        Args:\n            device (`obj`): Device object\n            policy_name ('str'): ikev2 policy name\n        Returns:\n            NA\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "ike.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_ikev2_policy",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ike/configure.py#L792"
+    }
+  },
   "unconfigure_ikev2_profile_pre_share": {
     "iosxe": {
       "doc": " Unconfigure ikev2 Profile\n        Args:\n            device ('obj')    : device to use\n            profile_name ('str).  Ikev2 Profile Name\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
@@ -13432,6 +14140,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_ikev2_profile_pre_share",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L479"
+    }
+  },
+  "unconfigure_ikev2_proposal": {
+    "iosxe": {
+      "doc": " Unconfigures IKEV2 Policy\n        Args:\n            device (`obj`): Device object\n            proposal_name ('str'): ikev2 proposal name\n        Returns:\n            NA\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "ike.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_ikev2_proposal",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ike/configure.py#L765"
     }
   },
   "unconfigure_interface_description": {
@@ -13674,7 +14391,25 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_ip_prefix_list",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L864"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L878"
+    }
+  },
+  "unconfigure_ipsec_df_bit": {
+    "iosxe": {
+      "doc": " Configure IPSec DF bit\n        Args:\n            device ('obj')    : device to use\n            no_clear ('boolean', optional) :  Clear DF bit for encapsulated packets, default is False\n            no_copy ('boolean', optional) :  Copy DF bit from inner for encapsulated packets, default is False\n            no_set ('boolean', optional) : Set DF bit for encapsulated packets, default is False\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "ipsec.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_ipsec_df_bit",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L763"
+    }
+  },
+  "unconfigure_ipsec_fragmentation": {
+    "iosxe": {
+      "doc": " Configure IPSec Fragmentation\n        Args:\n            device ('obj')    : device to use\n            no_after_encr ('boolean', optional) :  Perform fragmentation of large packets after IPSec\n                    encapsulation, default is False\n            no_before_encr ('boolean', optional) : Perform fragmentation of large packets before IPSec\n                    encapsulation, default is False\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "ipsec.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_ipsec_fragmentation",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L731"
     }
   },
   "unconfigure_ipsec_profile": {
@@ -13684,6 +14419,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_ipsec_profile",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L308"
+    }
+  },
+  "unconfigure_ipsec_sa_global": {
+    "iosxe": {
+      "doc": " Configures IPSec SA global parameters\n        Args:\n            device ('obj'): device to use\n            no_ecn('boolean', optional): Discard the Explicit Congestion Notification, default is False\n            no_idle_time ('boolean', optional): Automatically delete IPSec SAs after a given idle period, default is False\n            no_sa_life_days ('boolean', optional): Security association duration in days, default is False\n            no_sa_life_kbytes ('boolean', optional): Security association duration in kilobytes, default is False\n            no_sa_life_sec ('boolean', optional): Security association duration in seconds, default is False\n            no_replay_disable ('boolean', optional): SA replay disable, default is False\n            no_replay_window ('boolean', optional): SA replay window size, default is False\n            no_multi_sn ('boolean', optional): Enable multiple sequence number per IPSec SA, default is False\n\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "ipsec.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_ipsec_sa_global",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipsec/configure.py#L798"
     }
   },
   "unconfigure_ipv4_subnet_to_sgt_mapping": {
@@ -13872,7 +14616,7 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_ipv6_ospf_bfd",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1181"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1195"
     }
   },
   "unconfigure_ipv6_ospf_mtu_ignore": {
@@ -13881,7 +14625,7 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_ipv6_ospf_mtu_ignore",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1239"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1253"
     }
   },
   "unconfigure_ipv6_ospf_routing_on_interface": {
@@ -13890,7 +14634,7 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_ipv6_ospf_routing_on_interface",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1303"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1317"
     }
   },
   "unconfigure_ipv6_unicast_routing": {
@@ -14040,6 +14784,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mdns/configure.py#L128"
     }
   },
+  "unconfigure_mdns_location_filter": {
+    "iosxe": {
+      "doc": " Unconfigures location filter details on vlan\n        Args:\n            device ('obj'): device to use\n            location_filter ('str'): location filter name\n\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "mdns.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_mdns_location_filter",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mdns/configure.py#L1118"
+    }
+  },
   "unconfigure_mdns_location_group": {
     "iosxe": {
       "doc": " Removing location group details on interface\n\n        Args:\n            device ('obj'): device to use\n            location_group ('int'): location group name\n            vlan ('int'): Vlan id value\n\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
@@ -14110,6 +14863,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_mka_keychain_on_interface",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/macsec/configure.py#L627"
+    }
+  },
+  "unconfigure_mka_macsec": {
+    "iosxe": {
+      "doc": " Unonfigures MKA and MACSec interface\n\n        Args:\n            device ('obj'): device to use\n            interface ('str'): Interface name\n            keychain_name ('str'): Key Chain name\n            policy_name ('str'): MKA policy name\n\n        Returns:\n            None\n\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "macsec.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_mka_macsec",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/macsec/configure.py#L779"
     }
   },
   "unconfigure_mka_policy": {
@@ -14211,6 +14973,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/nat/configure.py#L263"
     }
   },
+  "unconfigure_nat_route_map": {
+    "iosxe": {
+      "doc": " unconfigure NAT route map\n        Args:\n            device ('obj'): device to execute on\n            route_map_name ('str'): route map name\n            permission ('str'): permit|deny\n            sequence_number ('str'): sequence number\n        Return:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "nat.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_nat_route_map",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/nat/configure.py#L750"
+    }
+  },
   "unconfigure_nve_interface": {
     "iosxe": {
       "doc": " unconfigure nve interface\n\n        Args:\n            device (`obj`): Device object\n            nve_num (`str`): nve interface number\n\n        Returns:\n            None\n\n        Raises:\n            SubCommandFailure\n\n    ",
@@ -14235,7 +15006,7 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_ospf_on_device",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L841"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L855"
     }
   },
   "unconfigure_ospf_router_id": {
@@ -14253,7 +15024,7 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_ospf_vrf_on_device",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1042"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1056"
     }
   },
   "unconfigure_ospfv3": {
@@ -14271,7 +15042,7 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_ospfv3_network",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1123"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L1137"
     }
   },
   "unconfigure_pbr_route_map": {
@@ -14460,7 +15231,7 @@
       "module_name": "ospf.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_route_map",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L957"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/configure.py#L971"
     }
   },
   "unconfigure_route_map_under_interface": {
@@ -14470,6 +15241,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_route_map_under_interface",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/pbr/configure.py#L41"
+    }
+  },
+  "unconfigure_scp_local_auth": {
+    "iosxe": {
+      "doc": " unonfigures SCP parameters\n        Args:\n            device (`obj`): Device object\n            username ('str'): username of the device\n            password ('str'): password for the device\n            scp_server_disable ('boolean', 'Optional'): \n                Disabling SCP server, default is True\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "scp.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_scp_local_auth",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/scp/configure.py#L56"
     }
   },
   "unconfigure_service_password_encryption": {
@@ -14526,6 +15306,24 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/spanning_tree/configure.py#L83"
     }
   },
+  "unconfigure_stackwise_virtual_dual_active_interfaces": {
+    "iosxe": {
+      "doc": " Disables interface as dual-active-detection interface on target device\n        Args:\n            device ('obj'): Device object\n            dad_links ('list'): List object\n                List contains following values: interface ('str'): Interface Name\n                Example:\n                    dad_links = ['HundredGigE1/0/1', 'HundredGigE1/0/2']\n        Returns:\n            output: return the chunk of lines for the config of dual-active-detection as below..\n            # interface HundredGigE1/0/1\n            # no stackwise-virtual dual-active-detection\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "stackwise_virtual.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_stackwise_virtual_dual_active_interfaces",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/stackwise_virtual/configure.py#L137"
+    }
+  },
+  "unconfigure_stackwise_virtual_dual_active_pagp": {
+    "iosxe": {
+      "doc": " Disables port-channel interface as pagp dual-active-detection interface on target device\n        Args:\n            device ('obj'): Device object\n            port_channel ('str'): Port channel Value to be configured as dual-active-detection interface.\n\n        Returns:\n            output: return the chunk of lines for the unconfig of pagp as below..\n            # stackwise-virtual \n            # Please reload the switch for Stackwise Virtual configuration to take effect\n            # Upon reboot, the config will be part of running config but not part of start up config.\n            # no dual-active detection pagp trust channel-group 1  \n            # No dual-active trust configuration for port-channel 1\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "stackwise_virtual.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_stackwise_virtual_dual_active_pagp",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/stackwise_virtual/configure.py#L241"
+    }
+  },
   "unconfigure_stackwise_virtual_interfaces": {
     "iosxe": {
       "doc": " Disable global stackwise-virtual on target device\n        Args:\n            device ('obj'): Device object\n            svl_links ('dict'): Dict object\n                Dictionary contains following key, values:\n                    key: interface ('str'): Interface Name\n                    value: link_id ('str'): SVL link id\n                Example:\n                    svl_links = {\n                        'HundredGigE1/0/1':'1',\n                        'HundredGigE1/0/2':'1'\n                    }\n        Returns:\n            None\n        Raises:\n            SubCommandFailure\n    ",
@@ -14568,7 +15366,7 @@
       "module_name": "nat.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_static_nat_outside_rule",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/nat/configure.py#L638"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/nat/configure.py#L656"
     }
   },
   "unconfigure_static_nat_route_map_rule": {
@@ -14586,7 +15384,7 @@
       "module_name": "nat.configure",
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_static_nat_rule",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/nat/configure.py#L590"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/nat/configure.py#L599"
     }
   },
   "unconfigure_svi": {
@@ -14697,6 +15495,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "unconfigure_username",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/aaa/configure.py#L739"
+    }
+  },
+  "unconfigure_vlan_configuration": {
+    "iosxe": {
+      "doc": " Unconfigure vlan configuration\n        Args:\n            device (`obj`): Device object\n            vlanid (`str`): Vlan id\n        Return:\n            None\n        Raise:\n            SubCommandFailure: Failed configuring interface\n    ",
+      "module_name": "vlan.configure",
+      "package": "genie.libs.sdk.apis",
+      "uid": "unconfigure_vlan_configuration",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/vlan/configure.py#L379"
     }
   },
   "unconfigure_vlan_interface": {
@@ -14820,7 +15627,25 @@
       "module_name": "acl.verify",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_acl_applied",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/verify.py#L13"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/verify.py#L14"
+    }
+  },
+  "verify_acl_info_summary": {
+    "iosxe": {
+      "doc": " Verify acl info summary\n        Args:\n            device (`obj`): Device object\n            acl_name (`str`): Name of ACL\n            expected_protocol ('str'): Expected protocol IPv4|IPv6\n            expected_no_of_aces ('int'): Expected number of aces\n            expected_direction_ingress ('str'): Expected direction Ingress Y or N\n            expected_direction_egress ('str'): Expected direction Egress Y or N\n            max_time ('int',optional): Maximum wait time for the trigger,\n                            in second. Default: 15\n            check_interval (`int`, optional): Wait time between iterations when looping is needed,\n                            in second. Default: 5\n\n        Returns:\n            True : returns true in case of passed scenario\n            False : returns false if not expected output\n    ",
+      "module_name": "acl.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_acl_info_summary",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/verify.py#L99"
+    }
+  },
+  "verify_acl_log": {
+    "iosxe": {
+      "doc": " Verify acl log messages when log option is enabled\n\n        Args:\n            device (`obj`): Device object\n            acl_name (`str`): ACL name\n            rule ('str'): permitted|denied\n            protocol ('str'): protocol to be matched\n        Returns:\n            True : returns true in case of passed scenario\n            False : returns false if not expected output\n    ",
+      "module_name": "acl.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_acl_log",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/verify.py#L77"
     }
   },
   "verify_acl_usage": {
@@ -14829,7 +15654,7 @@
       "module_name": "acl.verify",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_acl_usage",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/verify.py#L38"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/verify.py#L39"
     }
   },
   "verify_all_ospf3_neighbor_states": {
@@ -15466,7 +16291,7 @@
       "module_name": "multicast.verify",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_bidir_groupip",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L375"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L380"
     }
   },
   "verify_boot_mode_lxc_config": {
@@ -15970,6 +16795,24 @@
       "package": "genie.libs.sdk.apis",
       "uid": "verify_connectivity",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/verify.py#L23"
+    }
+  },
+  "verify_controller_ip": {
+    "com": {
+      "doc": "Verify the controller name to which device is associated\n        Args:\n            device (obj): Device object\n            controller_ip_address (str): IP/IPv6 of the wireless controller\n            max_time (int, optional): Maximum time in seconds. Defaults to 100\n            check_interval (int, optional): check interval in seconds. Defaults to 10\n\n        Returns:\n            True - if the device is associated to expected controller IP/Ipv6 address\n            False - if the device is not associated to expected controller IP/Ipv6 address\n\n        Raises:\n            N/A\n\n        ",
+      "module_name": "cheetah.ap.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_controller_ip",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/cheetah/ap/verify.py#L57"
+    }
+  },
+  "verify_controller_name": {
+    "com": {
+      "doc": "Verify the controller name to which device is associated\n        Args:\n            device (obj): Device object\n            controller_name (str): Name of the wireless controller\n            max_time (int, optional): Maximum time in seconds. Defaults to 100\n            check_interval (int, optional): check interval in seconds. Defaults to 10\n\n        Returns:\n            True - if the device is associated to expected controller\n            False - if the device is not associated to expected controller\n\n        Raises:\n            N/A\n\n        ",
+      "module_name": "cheetah.ap.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_controller_name",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/cheetah/ap/verify.py#L32"
     }
   },
   "verify_crypto_entropy_status": {
@@ -16990,6 +17833,24 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ip_precedence/verify.py#L9"
     }
   },
+  "verify_ipv6_acl_tcam_utilization": {
+    "iosxe": {
+      "doc": " Verify ipv6 acl tcam utilization\n        Args:\n            device (`obj`): Device object\n            slice_id (`int`): Slice ID\n            direction ('str'): Ingress or egress\n            expected_acl_mem_usage ('int'): Expected ACL entries memory usage\n\n        Returns:\n            True : returns true in case of passed scenario\n            False : returns false if not expected output\n    ",
+      "module_name": "acl.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_ipv6_acl_tcam_utilization",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/verify.py#L146"
+    }
+  },
+  "verify_ipv6_dhcp_pool": {
+    "iosxe": {
+      "doc": " Verify ipv6 dhcp pool\n        Args:\n            device (`obj`): Device object\n            pool_name (`str`): IPv6 dhcp pool name\n            expected_address_prefix ('str'): Expected IPv6 address prefix\n            expected_active_clients ('int'): Expected number of active clients\n            max_time ('int',optional): Maximum wait time for the trigger,\n                            in second. Default: 15\n            check_interval (`int`, optional): Wait time between iterations when looping is needed,\n                            in second. Default: 5\n\n        Returns:\n            True : returns true in case of passed scenario\n            False : returns false if not expected output\n    ",
+      "module_name": "dhcpv6.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_ipv6_dhcp_pool",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/dhcpv6/verify.py#L18"
+    }
+  },
   "verify_ipv6_nd_raguard_configuration": {
     "iosxe": {
       "doc": " Verify ipv6 nd raguard configurations\n        Args:\n            device('obj'): device object\n            policy_name('str'): policy name\n            trusted_port('str', optional): trusted port (yes | no). Defaults to None\n            device_role('str', optional): device role. Defaults to None\n            max_hop_limit('int', optional): maximum hop limit. Defaults to None\n            min_hop_limit('int', optional): minimum hop limit. Defaults to None\n            managed_config_flag('str', optional): managed config flag (on | off). Defaults to None\n            other_config_flag('str', optional): other config flag (on | off). Defaults to None\n            max_router_preference('str', optional): maximum router preference. Defaults to None\n            match_ra_prefix('str', optional): match ra prefix-list. Defaults to None\n            match_ipv6_access_list('str', optional): match ipv6 access-list. Defaults to None\n            max_time('int', optional): max check time. Defaults to 20\n            check_interval('int', optional): check intervals. Defaults to 10\n        Returns:\n            True\n            False\n        Raises:\n            None\n    ",
@@ -17015,6 +17876,33 @@
       "package": "genie.libs.sdk.apis",
       "uid": "verify_ipv6_neighbor_state",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/junos/ipv6/verify.py#L15"
+    }
+  },
+  "verify_ipv6_ospf_neighbor_address_in_state": {
+    "iosxe": {
+      "doc": " Verifies that an ipv6 ospf neighbor using the provided address is in a specific state\n\n        Args:\n            device ('obj'): Device to use\n            addresses ('list'): List of addresses to check\n            state ('str'): State to verify the interfaces are in\n            max_time ('int'): Maximum time to wait\n            check_interval ('int'): How often to check\n\n        Returns:\n            True/False\n\n        Raises:\n            N/A\n    ",
+      "module_name": "ospf.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_ipv6_ospf_neighbor_address_in_state",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/verify.py#L1516"
+    }
+  },
+  "verify_ipv6_ospf_neighbor_addresses_are_not_listed": {
+    "iosxe": {
+      "doc": " Verifies that an ipv6 ospf neighbor using the provided address is not listed\n\n        Args:\n            device ('obj'): Device to use\n            addresses ('list'): List of addresses to check\n            max_time ('int'): Maximum time to wait\n            check_interval ('int'): How often to check for the neighborship\n\n        Returns:\n            True/False\n\n        Raises:\n            N/A\n    ",
+      "module_name": "ospf.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_ipv6_ospf_neighbor_addresses_are_not_listed",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/verify.py#L1546"
+    }
+  },
+  "verify_ipv6_pim_neighbor": {
+    "iosxe": {
+      "doc": "Verify IPv6 PIM neighbor\n\n            Args:\n                device (`obj`): Device object\n                interface (`str`): Interface name\n                neighbor_address ('str'): Neighbor address to be verified\n                max_time ('int'): optional, Maximum wait time\n                check_interval ('int'): optional, How often to check for output\n\n            Returns:\n                True\n                False\n        ",
+      "module_name": "ipv6.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_ipv6_pim_neighbor",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ipv6/verify.py#L12"
     }
   },
   "verify_ipv6_source_guard_configuration": {
@@ -17281,6 +18169,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mac/verify.py#L16"
     }
   },
+  "verify_macsec_session": {
+    "iosxe": {
+      "doc": " To fetch and verify MACsec session details\n        Args:\n            device ('obj'): device to use\n            intf1 ('str'): interface details\n            intf2 ('str'): interface details\n            cipher ('str'): cipher details\n            Vlan ('str'): dot1q Vlan details\n            access ('str'): Access control details\n            conf ('int'): conf offset details\n            count ('int'): Number of packets\n        Returns:\n            result (`bool`): Verified result\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "macsec.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_macsec_session",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/macsec/verify.py#L93"
+    }
+  },
   "verify_metric_in_route": {
     "junos": {
       "doc": "Verify metric in 'show route {address}' when given table_name\n\n        Args:\n            device ('obj'): Device to use\n            address ('str'): IP address in show command\n            expected_metric ('int'): Expected metric number\n            table_name ('str'): Table name. E.g. \"inet.3\".\n            max_time ('int', optional): Maximum time to keep checking. Default to 60.\n            check_interval ('int', optional): How often to check. Default to 10.\n\n        Returns:\n            True/False\n\n        Raises:\n            N/A\n    ",
@@ -17344,6 +18241,15 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/sisf/verify.py#L642"
     }
   },
+  "verify_mka_session": {
+    "iosxe": {
+      "doc": " To Verify MKA MACsec sessioN\n        Args:\n            device ('obj'): device to use\n            intf   ('str'): interface details\n            status ('str'): status of MKA\n            ckn    ('str'): ckn of mka\n            timeout('int'): timeout value\n            status2('str'): expected status of MKA\n        Returns:\n            result (`bool`): Verified result\n        Raises:\n            SubCommandFailure\n    ",
+      "module_name": "macsec.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_mka_session",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/macsec/verify.py#L16"
+    }
+  },
   "verify_module_serial_num": {
     "iosxr": {
       "doc": " Verify module serial number is matched with expected number\n\n        Args:\n            device (`obj`): Device object\n            module (`str`): Module name\n            expected_serial_num (`str`): Expected serial number\n            max_time (`int`): Max time\n            check_interval (`int`): Check interval\n        Returns:\n            result (`bool`): Verified result\n    ",
@@ -17403,11 +18309,11 @@
   },
   "verify_mpls_forwarding_table_gid_counter": {
     "iosxe": {
-      "doc": " Verifies counters for gid in mpls forwarding-table\n\n        Args:\n            prefix_type ('str')  : prefix type \n\t\t\tbytes_labeled_switched ('str') : counter value\n            mdt_data_cnt ('int', optional) : expected mdt count to be present in the output\n            max_time (`int`, optional): Max time, default: 60\n            check_interval (`int`, optional): Check interval, default: 10\n        Raises:\n            Exception\n\n        Returns\n            True or False\n    ",
+      "doc": " Verifies counters for gid in mpls forwarding-table\n\n        Args:\n            prefix_type ('str')  : prefix type \n\t\t\tbytes_labeled_switched ('str') : counter value\n            mdt_data_cnt ('int', optional) : expected mdt count to be present in the output\n            max_time (`int`, optional): Max time, default: 60\n            check_interval (`int`, optional): Check interval, default: 10\n            expected_prefix_exempted ('int', optional): Number of prefixes expected not to learn traffic \n                                                        default: 2\n        Raises:\n            Exception\n\n        Returns\n            True or False\n    ",
       "module_name": "mpls.verify",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_mpls_forwarding_table_gid_counter",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mpls/verify.py#L687"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/mpls/verify.py#L679"
     }
   },
   "verify_mpls_forwarding_table_has_prefix_in_subnet_range": {
@@ -17452,7 +18358,7 @@
       "module_name": "multicast.verify",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_mpls_mldp_count",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L460"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/multicast/verify.py#L465"
     }
   },
   "verify_mpls_mldp_neighbor": {
@@ -17475,7 +18381,7 @@
   },
   "verify_mpls_mroute_groupip": {
     "iosxe": {
-      "doc": "Verify SM, SSM group ip output\n\n    Args:\n            device (`obj`): Device object\n            vrf (`str`): Vrf name\n            groupip (`str`): multicast group ip\n            sourceip (`str`, optional): sourceip of the multicast group ip\n            flag (`str`, optional): flag\n            outgng_intf (`str`, optional): outgoing interface\n            max_time (`int`, optional): Max time, default: 30\n            check_interval (`int`, optional): Check interval, default: 10\n    ",
+      "doc": "Verify SM, SSM group ip output\n\n    Args:\n            device (`obj`): Device object\n            vrf (`str`): Vrf name\n            groupip (`str`): multicast group ip\n            sourceip (`str`, optional): sourceip of the multicast group ip\n            flag (`str`, optional): flag\n            outgng_intf (`str`, optional): outgoing interface\n            max_time (`int`, optional): Max time, default: 30\n            check_interval (`int`, optional): Check interval, default: 10\n            next_hop (`str`, optional): next hop address, default: None\n    ",
       "module_name": "multicast.verify",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_mpls_mroute_groupip",
@@ -17493,7 +18399,7 @@
   },
   "verify_mpls_rlist_summary_before_and_after_sso": {
     "iosxe": {
-      "doc": " Verify whether rlist summary is same before and after sso on both active and standby device\n        Args:\n            device ('obj'): Device object\n            active_rlist_summary_bsso ('int'): active device rlist summary result before sso\n            standby_rlist_summary_bsso ('int'): standby device rlist summary result before sso\n        Return:\n            True if rlist summary are same on active and standby device before and after sso\n            or else returns False\n    ",
+      "doc": " Verify whether rlist summary is same before and after sso on both active and standby device\n        Args:\n            device ('obj'): Device object\n            active_rlist_summary_bsso ('int'): active device rlist summary result before sso\n            standby_rlist_summary_bsso ('int'): standby device rlist summary result before sso\n            current_lspvif_adj_label_count ('bool'): True if current lspvif adjaceny label count needs to be verified\n                                                     False if current lspvif adjaceny label count need not be verified\n        Return:\n            True if rlist summary are same on active and standby device before and after sso\n            or else returns False\n    ",
       "module_name": "platform.verify",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_mpls_rlist_summary_before_and_after_sso",
@@ -17699,6 +18605,24 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxr/ntp/verify.py#L103"
     }
   },
+  "verify_nve_evni_peer_ip_state": {
+    "iosxe": {
+      "doc": "Issues `show nve peers peer-ip <>` on device and checks for:\n\n       Args:\n            device ('obj')      : device to execute on\n            peer_ip ('str')     : IP address of peer to be checked\n            local_vni('str')    : VNI field in output\n            evni('str')         : eVNI field in output\n            state('str')        : UP/DOWN\n            max_time('int')     : max time for Timeout\n            check_interval('int): check interval period for Timeout\n       Returns:\n            True/False\n        ",
+      "module_name": "evpn.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_nve_evni_peer_ip_state",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/evpn/verify.py#L13"
+    }
+  },
+  "verify_object_manager_error_objects_statistics": {
+    "iosxe": {
+      "doc": " Verify show platform software object-manager {sp_type} statistics\n        Args:\n            device (`obj`): Device object\n            sp_type (`str`): fp active | fp standby\n            expected_error_objects (`int`): expected no.of error objects\n\n        Returns:\n            True : returns true in case of passed scenario\n            False : returns false if not expected output\n    ",
+      "module_name": "acl.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_object_manager_error_objects_statistics",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/acl/verify.py#L180"
+    }
+  },
   "verify_opaque_type_7_prefix_and_flags": {
     "iosxe": {
       "doc": " Verifies if SID is found in ospf\n        from command 'show ip ospf segment-routing sid-database'\n\n        Args:\n            device (`obj`): Device to be executed command\n            vrf (`str`): VRF name\n            address_family (`str`): Address family\n            instance (`str`): Instance value\n                ex.) instance = '65109'\n            prefix (`str`): IP address to check as prefix in output\n                ex.) prefix = '10.66.12.12/32'\n            flags (`str`): Flags to check in output\n                ex.) flags = 'N-bit'\n        Raises:\n            None\n        Returns\n            True\n            False\n\n    ",
@@ -17706,6 +18630,15 @@
       "package": "genie.libs.sdk.apis",
       "uid": "verify_opaque_type_7_prefix_and_flags",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/ospf/verify.py#L727"
+    }
+  },
+  "verify_operation_state": {
+    "com": {
+      "doc": "Verify the operation state of devcie\n        Args:\n            device (obj): Device object\n            operation_state (str): Operation state of device\n            max_time (int, optional): Maximum time in seconds. Defaults to 100\n            check_interval (int, optional): check interval in seconds. Defaults to 10\n\n        Returns:\n            True - if the expected Operation is seen\n            False - if the expected Operation is NOT seen\n\n        Raises:\n            N/A\n\n        ",
+      "module_name": "cheetah.ap.verify",
+      "package": "genie.libs.sdk.apis",
+      "uid": "verify_operation_state",
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/cheetah/ap/verify.py#L7"
     }
   },
   "verify_optics_in_state": {
@@ -18300,21 +19233,21 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/aireos/verify.py#L22"
     },
     "ios": {
-      "doc": "Verify ping\n\n    Args:\n            device ('obj'): Device object\n            address ('str'): Address value\n            expected_max_success_rate (int): Expected maximum success rate\n            expected_min_success_rate (int): Expected minimum success rate\n            count ('int'): Count value for ping command\n            source ('str'): Source IP address, default: None\n            max_time (`int`): Max time, default: 30\n            check_interval (`int`): Check interval, default: 10\n    ",
+      "doc": "Verify ping\n\n    Args:\n            device ('obj'): Device object\n            address ('str'): Address value\n            expected_max_success_rate (int): Expected maximum success rate (default: 100)\n            expected_min_success_rate (int): Expected minimum success rate (default: 1)\n            count ('int'): Count value for ping command\n            source ('str'): Source IP address, default: None\n            max_time (`int`): Max time, default: 30\n            check_interval (`int`): Check interval, default: 10\n    ",
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_ping",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/ios/utils.py#L461"
     },
     "iosxe": {
-      "doc": "Verify ping\n\n    Args:\n            device ('obj'): Device object\n            address ('str'): Address value\n            expected_max_success_rate (int): Expected maximum success rate\n            expected_min_success_rate (int): Expected minimum success rate\n            count ('int'): Count value for ping command\n            source ('str'): Source IP address, default: None\n            vrf (`str`): vrf id\n            max_time (`int`): Max time, default: 30\n            check_interval (`int`): Check interval, default: 10\n    ",
+      "doc": "Verify ping\n\n    Args:\n            device ('obj'): Device object\n            address ('str'): Address value\n            expected_max_success_rate (int): Expected maximum success rate (default: 100)\n            expected_min_success_rate (int): Expected minimum success rate (default: 1)\n            count ('int'): Count value for ping command\n            source ('str'): Source IP address, default: None\n            vrf (`str`): vrf id\n            max_time (`int`): Max time, default: 30\n            check_interval (`int`): Check interval, default: 10\n    ",
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_ping",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/utils.py#L467"
     },
     "iosxr": {
-      "doc": "Verify ping\n\n    Args:\n            device ('obj'): Device object\n            address ('str'): Address value\n            expected_max_success_rate (int): Expected maximum success rate\n            expected_min_success_rate (int): Expected minimum success rate\n            count ('int'): Count value for ping command\n            source ('str'): Source IP address, default: None\n            max_time (`int`): Max time, default: 30\n            check_interval (`int`): Check interval, default: 10\n    ",
+      "doc": "Verify ping\n\n    Args:\n            device ('obj'): Device object\n            address ('str'): Address value\n            expected_max_success_rate (int): Expected maximum success rate (default: 100)\n            expected_min_success_rate (int): Expected minimum success rate (default: 1)\n            count ('int'): Count value for ping command\n            source ('str'): Source IP address, default: None\n            max_time (`int`): Max time, default: 30\n            check_interval (`int`): Check interval, default: 10\n    ",
       "module_name": "utils",
       "package": "genie.libs.sdk.apis",
       "uid": "verify_ping",
@@ -19716,7 +20649,7 @@
       "module_name": "platform.utils",
       "package": "genie.libs.sdk.apis",
       "uid": "write_erase_reload_device",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/utils.py#L183"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/utils.py#L185"
     }
   },
   "write_erase_reload_device_without_reconfig": {
@@ -19732,7 +20665,7 @@
       "module_name": "platform.utils",
       "package": "genie.libs.sdk.apis",
       "uid": "write_erase_reload_device_without_reconfig",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/utils.py#L25"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/sdk-pkg/src/genie/libs/sdk/apis/iosxe/platform/utils.py#L27"
     },
     "nxos": {
       "doc": "Execute 'write erase' on device and reload without reconfiguring.\n\n        Args:\n            device(`obj`): Device object\n            via_console(`str`): Via to use to reach the device console.\n            reload_timeout(`int`): Maximum time to wait for reload to complete\n            reload_creds(`str or list`): Creds to apply if reloading device asks\n            sleep_after_reload (int, optional): Amount of time to sleep after reload.\n                Defaults to 15 seconds.\n    ",

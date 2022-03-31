@@ -598,7 +598,7 @@ class RpcVerify():
         log.error(log_msg)
         return False
 
-    def process_operational_state(self, response, returns, key=False):
+    def process_operational_state(self, response, returns, key=False, sequence=None):
         """Test NETCONF or GNMI operational state response.
 
         Args:
@@ -627,12 +627,37 @@ class RpcVerify():
             # yang.connector only returned one list of fields
             response = [response]
 
+        # To process the operational state in a sequence
+        if sequence:
+            log.info('RETURNS SEQUENCE ENFORCED')
+            # To map the sequence with the first return value
+            field = returns[0]
+            seq_count=0
+            for resp in response:
+                for reply, reply_xpath in resp:
+                    seq_count+=1
+                    if self.et.iselement(reply):
+                        # NETCONF response
+                        value_state = self._process_values(reply, '')
+                        value = value_state.get('reply_val', 'empty')
+                        name = self.et.QName(reply).localname
+
+                    if 'xpath' in field and field['xpath'] == reply_xpath and \
+                        name == field['name']:
+                        result, log_msg = self.check_opfield(value, field)
+                        if result:
+                            # If the result matches, ignore the previous values
+                            response = [resp[seq_count-1:]]
+                            break
+
         for field in returns:
             sel = field.get('selected', False)
             if sel is False or str(sel).lower() == 'false':
                 continue
             if not self.process_one_operational_state(response, field, key):
                 result = False
+            if sequence and not result:
+                return result
 
         return result
 

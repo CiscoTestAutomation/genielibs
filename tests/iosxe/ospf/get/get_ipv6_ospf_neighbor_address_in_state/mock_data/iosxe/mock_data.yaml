@@ -1,0 +1,44 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Intrepid-DUT-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: Intrepid-DUT-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ipv6 ospf neighbor: "\r\n            OSPFv3 Router with ID (1.1.1.1) (Process\
+      \ ID 1)\r\n\r\nNeighbor ID     Pri   State           Dead Time   Interface ID\
+      \    Interface\r\n3.3.3.3           0   FULL/  -        00:00:30    23     \
+      \         HundredGigE1/0/21"
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: Intrepid-DUT-1#

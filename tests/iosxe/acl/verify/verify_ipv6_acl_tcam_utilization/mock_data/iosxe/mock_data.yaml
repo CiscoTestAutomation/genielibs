@@ -1,0 +1,59 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Intrepid-DUT-1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+    line vty: ''
+    terminal width 511: ''
+  prompt: Intrepid-DUT-1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show platform hardware fed active fwd-asic resource tcam utilization: "-------------------------------------------------------------------------------------------------------------------\r\
+      \n***Number of TCAM entries shown under Free is for unidimensional scale. Using\
+      \ the TCAM for one of the feature will\r\n***change the available TCAM for other\
+      \ features in the same slice\r\n-------------------------------------------------------------------------------------------------------------------\r\
+      \n                                         Slice0       Slice1       Slice2\
+      \       Slice3       Slice4       Slice5\r\n-------------------------------------------------------------------------------------------------------------------\r\
+      \n       Resource                        Used  Free   Used  Free   Used  Free\
+      \   Used  Free   Used  Free   Used  Free\r\n-------------------------------------------------------------------------------------------------------------------\r\
+      \nIPv4 LPTS TCAM entries                   35  8638     35  8638     35  8610\
+      \     35  8638     35  8638     35  8603\r\nIPv6 LPTS TCAM entries         \
+      \          29  4542     29  4542     29  4514     29  4542     29  4542    \
+      \ 29  4507\r\nEgress Narrow_Pool_0 TCAM entries         1  8702      1  8702\
+      \      1  8702      1  8702      1  8702      1  8702\r\nEgress Wide TCAM entries\
+      \                  1  4606      1  4606      1  4606      1  4606      1  4606\
+      \      1  4606\r\nIngress Narrow_Pool_0 TCAM entries        1  8638      1 \
+      \ 8638     24  8610      1  8638      1  8638     24  8603\r\nIngress Narrow_Pool_1\
+      \ TCAM entries        0  8674      0  8674      0  8669      0  8674      0\
+      \  8674      0  8662\r\nIngress Wide TCAM entries                 1  4542  \
+      \    1  4542      6  4514      1  4542      1  4542     13  4507"
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: Intrepid-DUT-1#

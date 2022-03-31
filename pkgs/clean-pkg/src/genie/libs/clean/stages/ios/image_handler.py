@@ -62,7 +62,7 @@ But got the following structure
         if not images:
             return False
         else:
-            setattr(self, 'system', images[0:1])
+            setattr(self, 'image', images[0:1])
             setattr(self, 'other', images[1:])
             return True
 

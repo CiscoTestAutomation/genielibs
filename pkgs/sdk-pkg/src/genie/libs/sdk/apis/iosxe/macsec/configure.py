@@ -737,5 +737,157 @@ def unconfigure_pki_trustpoint(device, label_name):
             "Error: {error}".format(error=e)
             )
 
+def configure_mka_macsec(device,
+        interface,
+        keychain_name,
+        policy_name
+        ):
+    """ Configures MKA and MACSec interface
+
+        Args:
+            device ('obj'): device to use
+            interface ('str'): Interface name
+            keychain_name ('str'): Key Chain name
+            policy_name ('str'): MKA policy name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configure MKA and MACSec on interface")
+    configs = []
+    configs.append(f"interface {interface}")
+    configs.append(f"mka pre-shared-key key-chain {keychain_name}")
+    configs.append(f"mka policy {policy_name}")
+    configs.append("macsec")
+
+    errors = [f"% MKA policy \"{policy_name}\" has not been configured.",
+    f"% Either the Key-Chain \"{keychain_name}\" is not defined or there is no valid key in the key-chain\."
+    ]
+
+    try:
+        device.configure(configs, error_pattern = errors)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure MACSec on interface"
+            "Error: {error}".format(error=e)
+            )
 
 
+def unconfigure_mka_macsec(device,
+        interface,
+        keychain_name,
+        policy_name
+        ):
+    """ Unonfigures MKA and MACSec interface
+
+        Args:
+            device ('obj'): device to use
+            interface ('str'): Interface name
+            keychain_name ('str'): Key Chain name
+            policy_name ('str'): MKA policy name
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Unconfigure MKA and MACSec on interface")
+    configs = []
+    configs.append(f"interface {interface}")
+    configs.append("no macsec")
+    configs.append(f"no mka policy {policy_name}")
+    configs.append(f"no mka pre-shared-key key-chain {keychain_name}")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure MACSec on interface"
+            "Error: {error}".format(error=e)
+            )
+        
+
+def configure_disable_sci_dot1q_clear(device,
+        interface,
+        disable_sci=True,
+        dot1q_in_clear=False,
+        tag_number=1
+        ):
+    """ Configures MACSec with disable-sci and dot1q-in-clear
+
+        Args:
+            device ('obj'): device to use
+            interface ('str'): Interface name
+            disable_sci ('boolean', 'Optional'): 
+                disable sci for MACsec, default is True
+            dot1q_in_clear ('boolean', 'Optional' ): 
+                Configure dot1q-in-clear on interface, default is False
+            tag_number('int', 'Optional'):
+                Specify the dot1q tag number(1 or 2), default is 1
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configures MACSec with disable-sci and/or dot1q-in-clear")
+    configs = []
+    configs.append(f"interface {interface}")
+    if disable_sci:
+        configs.append("macsec disable-sci")
+    
+    if dot1q_in_clear:
+        configs.append(f"macsec dot1q-in-clear {tag_number}")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure MACSec with disable-sci and/or dot1q-in-clear"
+            "Error: {error}".format(error=e)
+            )
+
+
+def unconfigure_disable_sci_dot1q_clear(device,
+        interface,
+        no_disable_sci=True,
+        no_dot1q_in_clear=True
+        ):
+    """ Unconfigures MACSec with disable-sci and dot1q-in-clear
+
+        Args:
+            device ('obj'): device to use
+            interface ('str'): Interface name
+            no_disable_sci ('boolean', 'Optional'): 
+                remove disable sci for MACsec, default is True
+            dot1q_in_clear ('boolean', 'Optional' ): 
+                unconfigure dot1q-in-clear on interface, default is True
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Configures MACSec with disable-sci and/or dot1q-in-clear")
+    configs = []
+    configs.append(f"interface {interface}")
+    if no_disable_sci:
+        configs.append("no macsec disable-sci")
+    
+    if no_dot1q_in_clear:
+        configs.append("no macsec dot1q-in-clear")
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure MACSec with disable-sci and/or dot1q-in-clear"
+            "Error: {error}".format(error=e)
+            )
+        

@@ -224,12 +224,15 @@ def verify_module_status(device, timeout=180, interval=30, ignore_modules=None):
 
 def verify_mpls_rlist_summary_before_and_after_sso(device,
                                                    active_rlist_summary_bsso,
-                                                   standby_rlist_summary_bsso):
+                                                   standby_rlist_summary_bsso,
+                                                   current_lspvif_adj_label_count=False):
     ''' Verify whether rlist summary is same before and after sso on both active and standby device
         Args:
             device ('obj'): Device object
             active_rlist_summary_bsso ('int'): active device rlist summary result before sso
             standby_rlist_summary_bsso ('int'): standby device rlist summary result before sso
+            current_lspvif_adj_label_count ('bool'): True if current lspvif adjaceny label count needs to be verified
+                                                     False if current lspvif adjaceny label count need not be verified
         Return:
             True if rlist summary are same on active and standby device before and after sso
             or else returns False
@@ -246,7 +249,7 @@ def verify_mpls_rlist_summary_before_and_after_sso(device,
         "current_count").get_values("rentry")[0]
     standby_rentry_bsso = standby_rlist_summary_bsso.q.contains(
         "current_count").get_values("rentry")[0]
-
+        
     try:
         active_rlist_summary_asso = device.parse(
             "show platform software fed switch active mpls rlist summary")
@@ -312,22 +315,23 @@ def verify_mpls_rlist_summary_before_and_after_sso(device,
         log.debug("Maximum Reached entry verification failed on standby switch")
         return False
 
-    # Currrent lspvif adj label count
-    active_adj_bsso = active_rlist_summary_bsso.q.get_values(
-        "current_lspvif_adj_label_count")[0]
-    active_adj_asso = active_rlist_summary_asso.q.get_values(
-        "current_lspvif_adj_label_count")[0]
-    if not active_adj_bsso == active_adj_asso:
-        log.debug(
-            "current_lspvif_adj_label_count verification failed on active switch")
-        return False
-
-    standby_adj_bsso = standby_rlist_summary_bsso.q.get_values(
-        "current_lspvif_adj_label_count")[0]
-    standby_adj_asso = standby_rlist_summary_asso.q.get_values(
-        "current_lspvif_adj_label_count")[0]
-    if not standby_adj_bsso == standby_adj_asso:
-        log.debug(
-            "current_lspvif_adj_label_count verification failed on standby switch")
-        return False
+    if current_lspvif_adj_label_count:
+        # Currrent lspvif adj label count
+        active_adj_bsso = active_rlist_summary_bsso.q.get_values(
+            "current_lspvif_adj_label_count")[0]
+        active_adj_asso = active_rlist_summary_asso.q.get_values(
+            "current_lspvif_adj_label_count")[0]
+        if not active_adj_bsso == active_adj_asso:
+            log.debug(
+                "current_lspvif_adj_label_count verification failed on active switch")
+            return False
+        
+        standby_adj_bsso = standby_rlist_summary_bsso.q.get_values(
+            "current_lspvif_adj_label_count")[0]
+        standby_adj_asso = standby_rlist_summary_asso.q.get_values(
+            "current_lspvif_adj_label_count")[0]
+        if not standby_adj_bsso == standby_adj_asso:
+            log.debug(
+                "current_lspvif_adj_label_count verification failed on standby switch")
+            return False
     return True

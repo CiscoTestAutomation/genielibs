@@ -565,3 +565,25 @@ def unconfigure_nve_interface(device,nve_num):
         )
 
 
+def change_nve_source_interface(device, nve_num, source_interface):
+    """ change source-interface for nve interface
+
+        Args:
+            device (`obj`)         : Device object
+            nve_num (`str`)        : nve interface number
+            source_interface('str'): source-interface to change to
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = [
+        f"int nve{nve_num}",
+        f"source-interface {source_interface}",
+        ]
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to change source-interface for NVE. Error:\n{e}")

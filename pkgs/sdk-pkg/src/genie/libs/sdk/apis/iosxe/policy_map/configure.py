@@ -174,7 +174,8 @@ def configure_hqos_policer_map(device,
 
 def configure_shape_map(device,
         queue_name,
-        class_map_list
+        class_map_list,
+        service_policy='service-policy'
         ):
     """ Configures policy_map type queueing
         Args:
@@ -190,7 +191,8 @@ def configure_shape_map(device,
              queue_limit('int',optional): queue_limit value
              child_policy('str',optional): name of the child policy
              }
-             ]
+             ],
+             service_policy('str',optional) : service-policy name by default service-policy
 
         example:
              class_map_list=[{'class_map_name':'queue_name',
@@ -222,7 +224,7 @@ def configure_shape_map(device,
         if 'queue_limit' in class_map:
             cmd.append(f"queue-limit {class_map['queue_limit']} bytes")
         if 'child_policy' in class_map:
-            cmd.append(f"service-policy {class_map['child_policy']}")
+            cmd.append(f"{service_policy} {class_map['child_policy']}")
 
     try:
         device.configure(cmd)

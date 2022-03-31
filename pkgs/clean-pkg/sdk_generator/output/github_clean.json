@@ -169,6 +169,17 @@
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2029"
     }
   },
+  "EraseApConfiguration": {
+    "cheetah": {
+      "ap": {
+        "doc": "This stage erases the AP configuration\n\n       Stage Schema\n       ------------\n       erase_ap_configuration:\n           login_credentials_alias (str): Alias of login credentials to use after write erase which will be mentioned in TB yaml\n\n           max_time (int, optional): Maximum time for which this clean stage will try to associate Ap to controller.\n               Defaults to 900\n\n           check_interval (int, optional): Interval for retry mechanism in seconds. Defaults to 30\n\n\n       Example\n       -------\n       erase_ap_configuration:\n            login_credentials_alias: \"erase\"\n            max_time: \"600\"\n   ",
+        "module_name": "stages.stages",
+        "package": "genie.libs.clean",
+        "uid": "EraseApConfiguration",
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/cheetah/ap/stages.py#L118"
+      }
+    }
+  },
   "ExpandImage": {
     "iosxe": {
       "sdwan": {
@@ -247,7 +258,7 @@
       "module_name": "stages.stages",
       "package": "genie.libs.clean",
       "uid": "InstallPackages",
-      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L600"
+      "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/iosxe/stages.py#L603"
     }
   },
   "InstallRemoveInactive": {
@@ -293,6 +304,17 @@
       "package": "genie.libs.clean",
       "uid": "PowerCycle",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/stages.py#L2495"
+    }
+  },
+  "PrimeAp": {
+    "cheetah": {
+      "ap": {
+        "doc": "This stage primes accesspoint to desired controller\n\n    Stage Schema\n    ------------\n    prime_ap:\n\n        controller_name (str):Name of the controller where AP needs to join.\n\n        controller_ip_address (str): IPv4/Ipv6 address of controller where AP needs to join.\n\n        max_time (int, optional): Maximum time for which this clean stage will try to associate Ap to controller .\n                                    Defaults to 900\n\n        check_interval (int, optional): Interval for retry mechanism in seconds. Defaults to 30\n\n        sleep_time (int, optional): Interval for sleeping mechanism in seconds after priming AP to controller.\n                                    Defaults to 30\n\n\n    Example\n    -------\n    prime_ap:\n        controller_name: \"ewlc-5\"\n        controller_ip_address: \"9.4.62.41\"\n",
+        "module_name": "stages.stages",
+        "package": "genie.libs.clean",
+        "uid": "PrimeAp",
+        "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/clean-pkg/src/genie/libs/clean/stages/cheetah/ap/stages.py#L23"
+      }
     }
   },
   "Reload": {
@@ -420,12 +442,14 @@
   "tokens": [
     "aci",
     "aireos",
+    "ap",
     "apic",
     "c9800",
     "c9800_cl",
     "cat3k",
     "cat9500",
     "cat9k",
+    "cheetah",
     "com",
     "ios",
     "iosxe",

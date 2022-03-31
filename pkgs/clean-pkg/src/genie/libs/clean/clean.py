@@ -102,9 +102,17 @@ class BaseStage(TestContainer):
         for func in self:
             # Retrieve a partial func with all func args populated
             func = self.apply_parameters(func, self.parameters)
+
+            # Run it
             func()
 
     def __iter__(self):
+
+        if not self.exec_order:
+            raise AttributeError(
+                f"The class variable 'exec_order' from {self.__class__} is empty "
+                f"or not defined.")
+
         undefined_methods = []
         methods = []
 
@@ -119,8 +127,8 @@ class BaseStage(TestContainer):
 
         if undefined_methods:
             raise AttributeError(
-                "The class variable 'exec_order' from {} contains undefined methods: "
-                "{}".format(self.__class__, ', '.join(undefined_methods)))
+                f"The class variable 'exec_order' from {self.__class__} contains "
+                f"undefined methods: {', '.join(undefined_methods)}")
 
         return iter(methods)
 
@@ -267,7 +275,7 @@ class CleanTestcase(Testcase):
 
         # order is mandatory so verify schema
         clean_schema['order'] = list
-        if self.device.clean.get('order'):
+        if 'order' in self.device.clean:
             clean_to_validate['order'] = self.device.clean['order']
 
         # device_recovery is optional so verify schema only if provided

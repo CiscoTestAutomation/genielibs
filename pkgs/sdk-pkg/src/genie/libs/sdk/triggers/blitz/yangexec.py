@@ -1,5 +1,6 @@
 import logging
 import json
+import xmltodict
 from time import sleep
 from copy import deepcopy
 from six import string_types
@@ -10,6 +11,7 @@ from .rpcverify import RpcVerify
 from .requestbuilder import RestconfRequestBuilder, NO_BODY_METHODS, WITH_BODY_METHODS
 from .yangexec_helper import DictionaryToXML
 from .gnmi_util import GnmiMessage, GnmiMessageConstructor
+from genie.conf.base.utils import QDict
 
 log = logging.getLogger(__name__)
 
@@ -445,6 +447,10 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
     log.debug('NETCONF MESSAGE')
     result = True
 
+    # To check the sequence
+    if kwargs.get('format', None):
+        sequence = kwargs['format'].get('sequence', None)
+
     try:
         device.raise_mode = RaiseMode.NONE
     except NameError:
@@ -465,6 +471,10 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
         negative_test = format.get('negative_test')
     else:
         negative_test = format.get('negative-test', False)
+
+    if negative_test:
+        log.info(banner('NEGATIVE TEST'))
+
     timeout = format.get('timeout', None)
     pause = _validate_pause(format.get('pause', 0))
     if pause:
@@ -614,14 +624,21 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
 
     elif rpc_data['operation'] in ['get', 'get-config']:
         if not returns:
-            log.error(banner('No NETCONF data to compare rpc-reply to.'))
-            return False
+            # To convert xml to dict
+            if len(result) >= 1:
+                op, resp_xml = result[0]
+                xml_to_dict = QDict(dict(xmltodict.parse(resp_xml)))
+                return xml_to_dict
+            else:
+                log.error(banner('No NETCONF data to compare rpc-reply to.'))
+                return False
+
         # should be just one result
         if len(result) >= 1:
             op, resp_xml = result[0]
             resp_elements = rpc_verify.process_rpc_reply(resp_xml)
             verify_result = rpc_verify.process_operational_state(
-                resp_elements, returns
+                resp_elements, returns, sequence=sequence
             )
             return negative_test != verify_result
         else:
@@ -664,6 +681,9 @@ def run_gnmi(operation, device, steps,
         negative_test = format.get('negative_test', False)
     else:
         negative_test = False
+
+    if negative_test:
+        log.info(banner('NEGATIVE TEST'))
 
     if operation == 'edit-config':
         if 'rpc' in rpc_data:
@@ -773,6 +793,9 @@ def run_restconf(operation, device, steps, datastore, rpc_data, returns, **kwarg
         negative_test = format.get('negative_test')
     else:
         negative_test = format.get('negative-test', False)
+
+    if negative_test:
+        log.info(banner('NEGATIVE TEST'))
 
     # Get URL and request body
     request_builder = RestconfRequestBuilder(request_data=rpc_data, returns=returns)

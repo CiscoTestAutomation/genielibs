@@ -104,6 +104,26 @@ def configure_ntp_master(device, stratum=None):
             "be empty or integer value between 1 and 15"
         )
 
+def remove_ntp_master(device):
+    """ Unconfigure ntp master
+
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Unconfigure NTP master")
+    configs = []
+    configs.append("no ntp master")
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure NTP master"
+            "Error: {error}".format(error=e)
+            )
 
 def configure_ntp_iburst(device, route):
     """ Configure ntp iburst using ip address

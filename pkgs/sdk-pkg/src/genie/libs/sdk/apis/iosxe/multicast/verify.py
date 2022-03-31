@@ -298,9 +298,10 @@ def verify_mpls_mroute_groupip(
     groupip, 
     sourceip=None, 
     flag=None,
-    outgng_intf=None, 
+    outgng_intf=None,
     max_time=60, 
-    check_interval=10):
+    check_interval=10,
+    next_hop=None):
     """Verify SM, SSM group ip output
 
     Args:
@@ -312,13 +313,17 @@ def verify_mpls_mroute_groupip(
             outgng_intf (`str`, optional): outgoing interface
             max_time (`int`, optional): Max time, default: 30
             check_interval (`int`, optional): Check interval, default: 10
+            next_hop (`str`, optional): next hop address, default: None
     """
 
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
         try:
             output = device.parse("show ip multicast mpls vif")
-            lspvif_intf = output.q.get_values("interfaces")[0]
+            if next_hop:
+                lspvif_intf = output.q.contains(next_hop).get_values("interfaces")[0]
+            else:
+                lspvif_intf = output.q.get_values("interfaces")[0]
             
             output2 = device.parse("show ip mroute vrf {vrf} {groupip}".format(vrf=vrf, groupip=groupip))
         except SubCommandFailure as e:

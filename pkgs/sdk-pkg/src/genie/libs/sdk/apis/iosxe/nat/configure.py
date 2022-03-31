@@ -566,7 +566,11 @@ def unconfigure_dynamic_nat_rule(
 def configure_static_nat_rule(
     device, 
     inside_local_ip, 
-    inside_global_ip
+    inside_global_ip,
+    l4_protocol = None,
+    inside_port = None,
+    outside_port = None,
+    extendable = False
 ):
     """ Configure static NAT rule
         Args:
@@ -580,6 +584,11 @@ def configure_static_nat_rule(
     """
     cmd = ["ip nat inside source static {} {}".format(
               inside_local_ip,inside_global_ip)]
+    if l4_protocol:
+        cmd = "ip nat inside source static {} {} {} {} {}".format(
+            l4_protocol,inside_local_ip,inside_port,inside_global_ip,outside_port)
+        if extendable:
+            cmd = cmd + ' extendable'
 
     try:
         device.configure(cmd)
@@ -590,7 +599,11 @@ def configure_static_nat_rule(
 def unconfigure_static_nat_rule(
     device, 
     inside_local_ip, 
-    inside_global_ip
+    inside_global_ip,
+    l4_protocol = None,
+    inside_port = None,
+    outside_port = None,
+    extendable = False
 ):
     """ UnConfigure static NAT rule
         Args:
@@ -604,6 +617,11 @@ def unconfigure_static_nat_rule(
     """
     cmd = ["no ip nat inside source static {} {}".format(
               inside_local_ip,inside_global_ip)]
+    if l4_protocol:
+        cmd = "no ip nat inside source static {} {} {} {} {}".format(
+            l4_protocol,inside_local_ip,inside_port,inside_global_ip,outside_port)
+        if extendable:
+            cmd = cmd + ' extendable'
 
     try:
         device.configure(cmd)
@@ -658,3 +676,134 @@ def unconfigure_static_nat_outside_rule(
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not UnConfigure static NAT outside rule")
+
+def configure_crypto_ikev2_NAT_keepalive(device, keepalive_time):
+    """ Configure crypto ikev2 nat keepalive <time in sec>
+    Args:
+        device (`obj`): Device object
+        keepalive_time (`int`): keepalive time in secs
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    config_list = []
+    config_list.append(f'crypto ikev2 nat keepalive {keepalive_time}')
+    # Configure Peer Attributes
+    try:
+        device.configure(config_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure Crypto Ikev2 nat keepalive timer. Error: {e}'
+        )
+
+def unconfigure_crypto_ikev2_NAT_keepalive(device, keepalive_time):
+    """ unConfigure crypto ikev2 nat keepalive <time in secs>
+    Args:
+        device (`obj`): Device object
+        keepalive_time (`int`): keepalive time in secs
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    try:
+        device.configure([
+            f'no crypto ikev2 nat keepalive {keepalive_time}'
+        ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not unconfigure Crypto Ikev2 nat keepalive timer. Error: {e}'
+        )
+
+def configure_nat_route_map(
+    device, 
+    route_map_name, 
+    permission,
+    sequence_number,
+    acl_name=None
+):
+    """ configure NAT route map
+        Args:
+            device ('obj'): device to execute on
+            route_map_name ('str'): route map name
+            permission ('str'): permit|deny
+            sequence_number ('str'): sequence number
+            acl_name ('str'): acl name|acl number
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    configs.append("route-map {} {} {}".format(route_map_name, permission, sequence_number))
+    
+    if acl_name:
+        configs.append("match ip address {}".format(acl_name))
+        
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not Configure NAT route map")
+        
+def unconfigure_nat_route_map(
+    device, 
+    route_map_name, 
+    permission,
+    sequence_number,
+):
+    """ unconfigure NAT route map
+        Args:
+            device ('obj'): device to execute on
+            route_map_name ('str'): route map name
+            permission ('str'): permit|deny
+            sequence_number ('str'): sequence number
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = "no route-map {} {} {}".format(route_map_name, permission, sequence_number)
+        
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not UnConfigure NAT route map")
+        
+def configure_nat_extended_acl(
+    device, 
+    acl_name, 
+    permission=None,
+    src_ip=None,
+    src_wild_mask=None,
+    dest_ip=None,
+    dest_wild_mask=None     
+):
+    """ configure NAT extended acl
+        Args:
+            device ('obj'): device to execute on
+            acl ('str'): acl name
+            permission ('str'): permit|deny
+            src_ip ('str'): source ip
+            src_wild_mask ('str'): source wild mask
+            dest_ip('str'): destination ip
+            dest_wild_mask('str'): destination wild mask
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    configs=[]
+    configs.append("ip access-list extended {}".format(acl_name))
+    
+    if permission:
+        configs.append("{} ip {} {} {} {}".format(permission, src_ip, src_wild_mask, dest_ip, dest_wild_mask))
+        
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not Configure NAT extended acl")
+        
