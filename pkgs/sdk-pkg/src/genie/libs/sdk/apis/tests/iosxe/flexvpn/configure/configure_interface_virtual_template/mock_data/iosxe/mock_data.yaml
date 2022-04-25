@@ -1,0 +1,44 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface Virtual-Template 1 type tunnel: "interface Virtual-Template 1 type tunnel\r\
+      \n"
+    ip nhrp network-id 1: "ip nhrp network-id 1\r\n"
+    ip nhrp redirect: "ip nhrp redirect\r\n"
+    ip unnumbered GigabitEthernet 0/0/2: "ip unnumbered GigabitEthernet 0/0/2\r\n"
+    ipv6 enable: "ipv6 enable\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    tunnel mode ipsec ipv4: "tunnel mode ipsec ipv4\r\n"
+    tunnel protection ipsec profile vpnprof: "tunnel protection ipsec profile vpnprof\r\
+      \n"
+    tunnel source GigabitEthernet 0: "tunnel source GigabitEthernet 0\r\n"
+  prompt: ike-hub(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: ike-hub(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: ike-hub#

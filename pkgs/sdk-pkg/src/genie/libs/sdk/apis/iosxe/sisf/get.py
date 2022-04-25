@@ -6,6 +6,7 @@ import re
 
 # Genie
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
+from genie.libs.parser.utils.common import Common
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -239,9 +240,9 @@ def get_ip_theft_syslogs(device):
             ip = group['ip']
             vlan = group['vlan']
             mac = group['mac']
-            interface = group['interface']
+            interface = Common.convert_intf_name(group['interface'])
             new_mac = group['new_mac']
-            new_interface = group['new_if']
+            new_interface = Common.convert_intf_name(group['new_if'])
 
             entry['ip'] = ip
             entry['vlan'] = vlan
@@ -261,9 +262,9 @@ def get_ip_theft_syslogs(device):
             ip = group['ip']
             vlan = group['vlan']
             mac = group['mac']
-            interface = group['interface']
+            interface = Common.convert_intf_name(group['interface'])
             new_mac = group['new_mac']
-            new_interface = group['new_if']
+            new_interface = Common.convert_intf_name(group['new_if'])
 
             entry['ip'] = ip
             entry['vlan'] = vlan
@@ -283,7 +284,7 @@ def get_ip_theft_syslogs(device):
             ip = group['ip']
             vlan = group['vlan']
             new_mac = group['cand_mac']
-            new_if = group['cand_if']
+            new_if = Common.convert_intf_name(group['cand_if'])
 
             entry['ip'] = ip
             entry['vlan'] = vlan
@@ -301,7 +302,7 @@ def get_ip_theft_syslogs(device):
             ip = group['ip']
             vlan = group['vlan']
             mac = group['mac']
-            new_if = group['if']
+            new_if = Common.convert_intf_name(group['if'])
 
             entry['ip'] = ip
             entry['vlan'] = vlan

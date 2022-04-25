@@ -3,6 +3,7 @@ Common Utilities for Genie Clean
 '''
 
 # Python
+import time
 import re
 import os
 import logging
@@ -213,11 +214,11 @@ def load_clean_json():
             "are running with latest version of "
             "genie.libs.clean"
         )
-        clean_data = {}
+        clean_json = {}
     else:
         # Open all the parsers in json file
         with open(functions) as f:
-            clean_data = json.load(f)
+            clean_json = json.load(f)
 
     for entry in iter_entry_points(group=CLEAN_PLUGIN_ENTRYPOINT):
         log.info('Loading clean APIs from {}'.format(entry.module_name))
@@ -234,7 +235,7 @@ def load_clean_json():
         ))
 
         plugin_clean_data = ext.output
-        clean_json = merge_dict(clean_data, plugin_clean_data, update=True)
+        clean_json = merge_dict(clean_json, plugin_clean_data, update=True)
 
     return clean_json
 
@@ -520,13 +521,13 @@ def validate_clean(clean_file, testbed_file, lint=True):
                 schema.update({'device_recovery': recovery_processor.schema})
                 continue
 
-            clean_data[section].pop('change_order_if_fail', None)
-            clean_data[section].pop('change_order_if_pass', None)
-
             # when no data is provided under stage, change None to dict
             # this is needed for schema validation
             if clean_data[section] is None:
                 clean_data[section] = {}
+
+            clean_data[section].pop('change_order_if_fail', None)
+            clean_data[section].pop('change_order_if_pass', None)
 
             # Load it up so we can grab the schema from the stage
             # If source isnt provided then check if it is inside the clean json
@@ -545,8 +546,9 @@ def validate_clean(clean_file, testbed_file, lint=True):
 
             # Add the stage schema to the base schema
             if hasattr(task, 'schema'):
-                schema.update({task.__name__: task.schema})
-
+                snake_case_class = re.sub(r"([A-Z])", r"_\1", task.__name__)\
+                                     .strip('_').lower()
+                schema.update({Or(snake_case_class, task.__name__): task.schema})
     try:
         Schema(base_schema).validate(clean_dict)
     except Exception as e:
@@ -578,3 +580,41 @@ def get_image_handler(device):
         return ImageHandler(device, device.clean['images'])
     else:
         return None
+
+def deprecate_stage(deprecated_in, removed_in=None, details=None):
+    """ Used to deprecate pyATS clean stages.
+
+    Args:
+        deprecated_in (float): The pkg version when the stage was deprecated.
+            Format is 'year.month'.
+
+        removed_in (float, optional): The pkg version when the stage will
+            be removed from the codebase. Format is 'year.month'.
+
+        details (str): Any extra details to log. For example a replacement stage
+            to use.
+    """
+
+    def wrapper(cls):
+
+        msg = f"Clean stage '{cls.__name__}' deprecated in v{deprecated_in}."
+        if removed_in:
+            msg += f" Scheduled to be removed in v{removed_in}."
+        if details:
+            msg += f"\n{details}"
+
+        def deprecate_msg(self):
+            log.warning(msg)
+
+            log.warning(f"\nSleeping for 15 seconds.")
+            time.sleep(15)
+
+
+
+        setattr(cls, 'deprecate_msg', deprecate_msg)
+        cls.exec_order.insert(0, 'deprecate_msg')
+        cls.__doc__ = msg
+
+        return cls
+
+    return wrapper

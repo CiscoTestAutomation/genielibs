@@ -1,3 +1,4 @@
+import os
 import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.igmp_snooping.configure import configure_ip_igmp_snooping_vlan_query_version
@@ -7,14 +8,14 @@ class TestConfigureIpIgmpSnoopingVlanQueryVersion(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        testbed = """
+        testbed = f"""
         devices:
           Cat9300_VTEP1:
             connections:
               defaults:
                 class: unicon.Unicon
               a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
+                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
             platform: cat9k

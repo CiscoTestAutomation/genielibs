@@ -1,3 +1,4 @@
+import os
 import unittest
 from pyats.topology import loader
 from genie.libs.sdk.apis.iosxe.acl.configure import unconfigure_ipv6_acl_ace
@@ -7,14 +8,14 @@ class TestUnconfigureIpv6AclAce(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        testbed = """
+        testbed = f"""
         devices:
           Intrepid-DUT-1:
             connections:
               defaults:
                 class: unicon.Unicon
               a:
-                command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
+                command: mock_device_cli --os iosxe --mock_data_dir {os.path.dirname(__file__)}/mock_data --state connect
                 protocol: unknown
             os: iosxe
             platform: C9600

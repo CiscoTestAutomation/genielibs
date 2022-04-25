@@ -1190,5 +1190,275 @@ def configure_mdns_query_response_mode(device, mode):
         raise SubCommandFailure(
             "Could not configure mdns query-response mode. Error:\n{error}".format(error=e)
         )
-        
 
+def configure_mdns_service_list(device, name, direction, service_type):
+    """ Configure mDNS(Multicast Domain Name System) service list
+    
+        mdns-sd service-list policie5 IN
+        match apple-tv
+        end
+        
+        Args:
+            device ('obj'): device to use
+            name ('str') : name of the list
+            direction ('str'): direction of the list
+            service_type ('list'): services names
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring mdns service-list
+    """
+    log.debug("Configuring mdns service list with  name={}, direction ={}, service_type={}".format(name, direction, service_type))
+
+    try:
+        for type in service_type:
+            device.configure([
+                "mdns-sd service-list {} {}".format(name, direction),
+                "match {}".format(type)
+            ])
+
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not configure mdns service-list {name}".format(
+                name=name
+            )
+        ) 
+        
+def unconfigure_match_service_type_mdns_service_list(device, name, direction, service_type):
+    """ Unconfigure mDNS(Multicast Domain Name System) service list
+    
+        mdns-sd service-list policie5 IN
+        no match apple-tv
+        end
+    
+        Args:
+            device ('obj'): device to use
+            name ('str') : name of the list
+            direction ('str'): direction of the list
+            service_type ('list'): services names
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring mdns service-list
+    """
+    log.debug("Removing the match entries from the mdns service list name={}".format(name))
+
+    try:
+        for type in service_type:
+            device.configure([
+                "mdns-sd service-list {} {}".format(name, direction),
+                "no match {}".format(type)
+            ])
+
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not unconfigure mdns service-list {name}".format(
+                name=name
+            )
+        )
+        
+def unconfigure_service_type_mdns_service_definition(device, name, service_type):
+    """ Unconfigure mDNS(Multicast Domain Name System) service definition
+    
+        mdns-sd service-definition custom3
+        no service-type  _smb._tcp.local
+        end
+    
+        Args:
+            device ('obj'): device to use
+            name ('str')
+            service_type ('list'):
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring mdns service-definition
+    """
+    log.debug("Removing the specific service type from the mdns service defintion with  name={}".format(name))
+
+    try:
+        for type in service_type:
+            device.configure([
+                "mdns-sd service-definition {}".format(name),
+                "no service-type {}".format(type)
+            ])
+
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not remove the services from mdns service-definition {name}".format(
+                name=name
+            )
+        ) 
+        
+def configure_mdns_controller_service_list(device, name, service_type):
+    """ Configure mDNS(Multicast Domain Name System) controller service list
+    
+        mdns-sd controller service-list contrl-list3
+        match apple-tv
+        end
+    
+        Args:
+            device ('obj'): device to use
+            name ('str') : name of the list
+            service_type ('list'): services names
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring mdns controller service-list
+    """
+    log.debug("Configuring mdns controller service list with  name={}, service_type={}".format(name, service_type))
+
+    try:
+        for type in service_type:
+            device.configure([
+                "mdns-sd controller service-list {}".format(name),
+                "match {}".format(type)
+            ])
+
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not configure mdns controller service-list {name}".format(
+                name=name
+            )
+        ) 
+        
+def unconfigure_match_service_type_mdns_controller_service_list(device, name, service_type):
+    """ Unconfigure mDNS(Multicast Domain Name System) controller service list
+    
+        mdns-sd controller service-list contrl-list3
+        no match airplay
+        end
+    
+        Args:
+            device ('obj'): device to use
+            name ('str') : name of the list
+            service_type ('list'): services names
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring mdns controller service-list
+    """
+    log.debug("Removing the match entries from the controller service list name={}".format(name))
+
+    try:
+        for type in service_type:
+            device.configure([
+                "mdns-sd controller service-list {}".format(name),
+                "no match {}".format(type)
+            ])
+
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not remove match entries from controller service-list {name}".format(
+                name=name
+            )
+        ) 
+
+def configure_controller_service_policy(device, name, service_list):
+    """ Configure mDNS(Multicast Domain Name System) controller service-policy
+    
+        mdns-sd controller service-policy contrl-policy
+        service-list contrl-list3
+        end
+    
+        Args:
+            device ('obj'): device to use
+            name ('str')
+            service_list ('list'):
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring mdns controller service-policy
+    """
+    log.debug("Configuring mdns controller service-policy with  name={}".format(name))
+
+    try:
+        device.configure([
+            "mdns-sd controller service-policy {}".format(name),
+            "service-list {}".format(service_list)
+        ])
+
+
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not configure mdns controller service-policy {name}".format(
+                name=name
+            )
+        )
+
+def unconfigure_controller_service_policy_service_export(device, name, policy_name):
+    """ Unconfigure mDNS(Multicast Domain Name System) controller service-policy
+    
+        service-export mdns-sd controller DNAC
+        no controller-service-policy policy_name contrl-policy
+        end
+    
+        Args:
+            device ('obj'): device to use
+            name ('str'): controller name
+            policy_name ('str'): Policy any name
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring mdns controller service-policy
+    """
+    log.debug("Unconfiguring mdns controller service-policy from service export name={},policy_name={}".format(name, policy_name))
+
+    try:
+            device.configure([
+                "service-export mdns-sd controller {}".format(name),
+                "no controller-service-policy policy_name {}".format(policy_name)
+            ])
+
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not unconfigure mdns controller service-policy from service export {name}".format(
+                name=name
+            )
+        ) 
+       
+def configure_mdns_service_peer_group(device,peer_grp_no,policy_name,peer_ip,loc_grp_no,role):
+    """ Configures service-peer group details for with peer ip and policy name
+    
+        mdns-sd service-peer group
+        peer-group 3
+        service-policy policy44
+        service-peer 20.0.0.20 location-group 4096 role bonjour
+        end
+
+        Args:
+            device ('obj'): device to use
+            peer_grp_no ('int'): peer group number to be configured should in be this range <1-1000> 
+            policy_name ('str'): policy_name to be mapped to peer
+            peer_ip ('str'): service peer ip  to be configured
+            loc_grp_no ('str'): location group number which location group of to be allowed
+            role ('str'): Role name
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+            "Configuring service-peer group details on {peer_grp_no}, for peer {peer_ip}".format(peer_grp_no=peer_grp_no, peer_ip=peer_ip)
+            )
+    try:
+        device.configure([
+            "mdns-sd service-peer group",
+            "peer-group {peer_grp_no}".format(peer_grp_no=peer_grp_no),
+            "service-policy {policy_name}".format(policy_name=policy_name),
+            "service-peer {peer_ip} location-group {loc_grp_no} role {role_name}".format(peer_ip=peer_ip,loc_grp_no=loc_grp_no,role_name=role),
+            ])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure mdns-sd with service-peer group "
+            "{peer_grp_no} for peer {peer_ip}, Error: {error}".format(
+            peer_grp_no=peer_grp_no, peer_ip=peer_ip, error=e
+            )
+        )     

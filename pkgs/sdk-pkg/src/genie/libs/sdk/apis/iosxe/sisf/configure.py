@@ -2063,6 +2063,19 @@ def configure_device_tracking_tracking(device, auto_source=None, retry_interval=
         log.warning("Failed to configure device-tracking tracking")
         raise
 
+def clear_device_tracking_messages(device):
+    """ Clear device-tracking database
+        Args:
+            device ('obj'): device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to execute clear device-tracking messages
+    """
+    try:
+        device.execute('clear device-tracking messages')
+    except SubCommandFailure:
+        log.warning("Failed to clear device-tracking messages")
 
 def clear_device_tracking_database(device, options=None):
     """ Clear device-tracking database
@@ -2179,27 +2192,27 @@ def clear_device_tracking_database(device, options=None):
         )
 
 
-def clear_device_tracking_counters(device, interface=None, vlan=None):
+def clear_device_tracking_counters(device, interface=None, vlan=None, bdi=None):
     """ Clear device-tracking counters
     Args:
         device ('obj'): device object
         interface ('str', optional): interface name. Defaults to None
         vlan ('str', optional): vlan id. Defaults to None.
+        bdi ('str', optional): bdi id. Defaults to None.
     Returns:
         None
     Raises:
          SubCommandFailure: Failed to clear device-tracking counters
     """
 
-    prefix = "clear device-tracking counters"
-    config = []
+    config = "clear device-tracking counters"
 
-    if interface is None and vlan is None:
-        config.append(prefix)
-    elif interface:
-        config.append("{prefix} interface {interface}".format(prefix=prefix, interface=interface))
+    if interface:
+        config += " interface {interface}".format(interface=interface)
     elif vlan:
-        config.append("{prefix} vlan {vlan}".format(prefix=prefix, vlan=vlan))
+        config += " vlan {vlan}".format(vlan=vlan)
+    elif bdi:
+        config += " bdi {bdi}".format(bdi=bdi)
 
     try:
         device.execute(config)

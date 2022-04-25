@@ -1,0 +1,45 @@
+configure:
+  commands:
+    collect counter bytes long: "collect counter bytes long\r\n"
+    collect counter packets long: "collect counter packets long\r\n"
+    collect interface input: "collect interface input\r\n"
+    collect transport tcp flags: "collect transport tcp flags\r\n"
+    end:
+      new_state: execute
+    flow record flow_Po: "flow record flow_Po\r\n"
+    line console 0:
+      new_state: configure_line
+    match ipv4 destination address: "match ipv4 destination address\r\n"
+    match ipv4 protocol: "match ipv4 protocol\r\n"
+    match ipv4 source address: "match ipv4 source address\r\n"
+    match routing vrf input: "match routing vrf input\r\n"
+    match transport destination-port: "match transport destination-port\r\n"
+    match transport source-port: "match transport source-port\r\n"
+    no logging console: ''
+  prompt: LG-PK(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: LG-PK(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: LG-PK#

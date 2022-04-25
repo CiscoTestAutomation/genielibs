@@ -1068,17 +1068,23 @@ def get_interface_names(device):
 
     return [name for name in out.keys()]
 
-def get_ipv6_interface_ip_address(device, interface, link_local=False):
+def get_ipv6_interface_ip_address(device, interface, link_local=False, as_list=False):
     """ Get interface ip address from device
 
         Args:
             interface('str'): Interface to get address
             device ('obj'): Device object
             link_local ('bool'): Link local address Default: False
+            as_list ('bool'): If True, return all IP addresses as a list.
+                              Default: False
         Returns:
             None
             ip_address ('str'): If has multiple addresses
                                 will return the first one.
+            ip_address ('list'): If as_list=True specified, all found IP
+                                 addresses are returned as a list (including
+                                 link local addresses). If no IP addresses are
+                                 found, None is returned.
 
         Raises:
             None
@@ -1130,17 +1136,30 @@ def get_ipv6_interface_ip_address(device, interface, link_local=False):
     # get the interface
     intf = list(out.keys())[0]
 
+    if as_list:
+        ips = []
+
     for sub_key, sub_value in out[intf]['ipv6'].items():
 
         # 'enabled': True,
         if type(sub_value) == dict:
             sub_value_keys = list(sub_value.keys())
             if link_local and 'origin' in sub_value_keys:
-                return sub_value['ip']
+                if as_list:
+                    ips.append(sub_value['ip'])
+                else:
+                    return sub_value['ip']
 
             if 'origin' not in sub_value_keys and 'ip' in sub_value_keys:
-                return sub_value['ip']
-    return None    
+                if as_list:
+                    ips.append(sub_value['ip'])
+                else:
+                    return sub_value['ip']
+
+    if as_list:
+        return ips
+    else:
+        return None
 
 
 def get_interfaces_status(device):

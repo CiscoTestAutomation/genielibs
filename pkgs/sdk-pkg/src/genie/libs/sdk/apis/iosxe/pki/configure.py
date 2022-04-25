@@ -209,11 +209,10 @@ def configure_crypto_pki_server(device,
 
     return True
 
-
 def configure_trustpoint(device,
-                      tp_name,
                       revoke_check,
                       rsa_key_size,
+                      tp_name,
                       rsa_key_usage=False,
                       auto_enroll_regen=None,
                       auto_enroll=False,
@@ -271,76 +270,78 @@ def configure_trustpoint(device,
     '''
     configure crypto pki trustpoint
     Args:
-        device ('obj'): Device object
-        ca_ip ('string'): enrollment url ip-address
-        tp_name ('string'): crypto pki trustpoint name
-        common_name ('string'): crypto pki subject common name to be used
-        revoke_check ('string'): revocation-check config to be used
-        rsa_key_size ('int'): rsa_key_size value to be used for rsakeypair generation
-        authorization ('string'): authorization config options to be used with variuos options
-        auth_list_name('string'): authorization list name
-        auth_password('string'): authorization password
-        alt_auth_username('string'): alternate authorization username config; example we can use "yes"
-        alt_auth_username_sec('string'): configure authorization username alt-subjectname userprinciplename secondary; example we can use "yes"
-        auth_username_subjectname_opt('string'): used to configure authorization username subject name option
-        auto_enroll ('bool'): auto enroll needs to be configured or not
-        auto_enroll_regen ('string'): used for auto-enroll regenerate configuration
-        auto_enroll_regen_timer('int'): used for auto enroll regenerate timer configuration
-        auto_trigger ('bool'): if auton trigger needs to be configured
-        certificate_chain_location ('string'): used for certificate chain configuration
-        chain_valid_count ('bool'): used chain valid count with value configuration
-        chain_valid_stop ('bool'): if chain validation needs to be stopped
-        crl_cache ('bool'): used for crl cache config is none
-        crl_cache_delete_timer('int'): used for crl cache delete timer configuration
-        crl_cache_extend_timer('int'): used for crl cache extended timer configuration
-        default_options ('string'): if any tp_config needs to be defaulted
-        eckeypair ('string'): used for eckeypair configuration
-        eku_req_option ('string'): used for eku request configuration
-        enrollment_mode ('bool'): used to enable enrollment mode config
-        enrollment_option('string'): used to configure enrollment except mode, retry timer and enrollment url
-        enrol_retry_count ('int'): used to configure enrollment retry counter
-        enrol_retry_period ('int'): used to configure enrollment retry period
-        ca_type ('string'): used to select enrollment ca server type and config 
-        enrollment_url_path ('string'): used to configure enrollment path except ca server type config ex: to take from tftp, bootflash
-        fingerprint ('string'): used to configure fingerprint configuration
-        fqdn_value ('string'): used to configure fully-qualified domain name
-        hash_value ('string'): used to configure hash algorithm to be used
-        http_proxy ('string'): used to configure http proxy 
-        ip_address ('string'): if none variable is set ip address with none option will be configured \
-                                else specified ip address will be getting configured
-        ip_ext ('string'): used to configure ip-extension
-        match_value('string'): to configure match a certificate attibutes/maps
-        ocsp_url ('string'): to configure certificate using Online Certificate Status Protocol
-        ocsp_port('int'): ocsp port to be configured
-        ocsp_disable ('bool'): to disable ocsp
-        on_config ('string'): to create keypair on device
-        password_config ('string'): to configure password
-        primary_flag ('bool'): used to enable primary config
-        regenerate_flag ('bool'): used to configure regenerate
-        revocation_check ('string'): used to configure revocation-check config
-        rsa_key_usage('bool'): used to configure rsakeypair 
-        ser_number('string'): serial number to be used
-        show_tp_config('bool'): to display the trustpoint configs
-        source_interface('string'): soure interface to be used
-        storage_location('string'): storage location like bootflash: tftp: 
-        sub_alt_name('string'): used for subject-alt-name configuration
-        usage_option('string'): used for usage config
-        vrf('string'): used for crf config
-        no_config('string'): used for unconfiguration of sub configs used in trustpoint
-        exit_flag('bool'): used for exit
+        default:
+            device ('obj'): Device object
+            tp_name ('string'): crypto pki trustpoint name
+            revoke_check ('string'): revocation-check config to be used
+            rsa_key_size ('int'): rsa_key_size value to be used for rsakeypair generation
+        optional:
+            authorization ('string'): authorization config options to be used with variuos options
+            auth_list_name('string'): authorization list name
+            auth_password('string'): authorization password
+            alt_auth_username('string'): alternate authorization username config; example we can use "yes"
+            alt_auth_username_sec('string'): configure authorization username alt-subjectname userprinciplename secondary; example we can use "yes"
+            auth_username_subjectname_opt('string'): used to configure authorization username subject name option
+            auto_enroll ('bool'): auto enroll needs to be configured or not
+            auto_enroll_regen ('string'): used for auto-enroll regenerate configuration
+            auto_enroll_regen_timer('int'): used for auto enroll regenerate timer configuration
+            auto_trigger ('bool'): if auton trigger needs to be configured
+            ca_ip ('string'): enrollment url ip-address
+            certificate_chain_location ('string'): used for certificate chain configuration
+            chain_valid_count ('bool'): used chain valid count with value configuration
+            chain_valid_stop ('bool'): if chain validation needs to be stopped
+            common_name ('string'): crypto pki subject common name to be used
+            crl_cache ('bool'): used for crl cache config is none
+            crl_cache_delete_timer('int'): used for crl cache delete timer configuration
+            crl_cache_extend_timer('int'): used for crl cache extended timer configuration
+            default_options ('string'): if any tp_config needs to be defaulted
+            eckeypair ('string'): used for eckeypair configuration
+            eku_req_option ('string'): used for eku request configuration
+            enrollment_mode ('bool'): used to enable enrollment mode config
+            enrollment_option('string'): used to configure enrollment except mode, retry timer and enrollment url
+            enrol_retry_count ('int'): used to configure enrollment retry counter
+            enrol_retry_period ('int'): used to configure enrollment retry period
+            ca_type ('string'): used to select enrollment ca server type and config 
+            enrollment_url_path ('string'): used to configure enrollment path except ca server type config ex: to take from tftp, bootflash
+            fingerprint ('string'): used to configure fingerprint configuration
+            fqdn_value ('string'): used to configure fully-qualified domain name
+            hash_value ('string'): used to configure hash algorithm to be used
+            http_proxy ('string'): used to configure http proxy 
+            ip_address ('string'): if none variable is set ip address with none option will be configured \
+                                    else specified ip address will be getting configured
+            ip_ext ('string'): used to configure ip-extension
+            match_value('string'): to configure match a certificate attibutes/maps
+            ocsp_url ('string'): to configure certificate using Online Certificate Status Protocol
+            ocsp_port('int'): ocsp port to be configured
+            ocsp_disable ('bool'): to disable ocsp
+            on_config ('string'): to create keypair on device
+            password_config ('string'): to configure password
+            primary_flag ('bool'): used to enable primary config
+            regenerate_flag ('bool'): used to configure regenerate
+            revocation_check ('string'): used to configure revocation-check config
+            rsa_key_usage('bool'): used to configure rsakeypair 
+            ser_number('string'): serial number to be used
+            show_tp_config('bool'): to display the trustpoint configs
+            source_interface('string'): soure interface to be used
+            storage_location('string'): storage location like bootflash: tftp: 
+            sub_alt_name('string'): used for subject-alt-name configuration
+            usage_option('string'): used for usage config
+            vrf('string'): used for crf config
+            no_config('string'): used for unconfiguration of sub configs used in trustpoint
+            exit_flag('bool'): used for exit
         
     Returns: 
         None
     Raises:
         SubCommandFailure
-        '''
+    '''
     
-    tp_config = [] #creating a list of commands
+    logger.debug("configuring crypto pki trustpoint")
+    tp_config = []    
     tp_config.append(f"crypto pki trustpoint {tp_name}")
     tp_config.append("usage ike")
     tp_config.append(f"revocation-check {revoke_check}")
     tp_config.append(f"rsakeypair {tp_name} {rsa_key_size}")
-    '''tp_config.append("C=pki")'''
     if authorization is not None:
         if auth_list_name is not None:
             tp_config.append(f"authorization list {auth_list_name}")
@@ -459,19 +460,20 @@ def configure_trustpoint(device,
     if exit_flag:
         tp_config.append("exit")
     
+    error_patterns = ["The command you have entered is available in the IOS.sh",
+                        "% Authorization list  does not exist",
+                        "is not a valid subject name",
+                        "Explicit device name must be specified",
+                        "% Enrollment profile test does not exist",
+                        "CRYPTO_PKI: There should be atleast one '.' [other than the trailing '.'] in the domain name"]
     try:
-        device.configure(tp_config, error_pattern = ["The command you have entered is available in the IOS.sh", 
-                                                     "% Authorization list  does not exist", 
-                                                     "is not a valid subject name",
-                                                     "Explicit device name must be specified",
-                                                     "% Enrollment profile test does not exist",
-                                                     "CRYPTO_PKI: There should be atleast one '.' [other than the trailing '.'] in the domain name"])
+        device.configure(tp_config, error_pattern = error_patterns)
     except SubCommandFailure as e:
-        logger.error("Failed to configure trust point"
-                  "Error:\n{error}".format(error=e)
+        raise SubCommandFailure(
+            logger.error("Failed to configure trust point",
+                "Error:\n{error}".format(error=e)
         )
-        raise 
-    return True
+    )
 
 def unconfigure_crypto_pki_server(device,
                                   server_name):
@@ -501,4 +503,131 @@ def unconfigure_crypto_pki_server(device,
         return False
 
     return True
+
+def unconfigure_trustpoint(device,
+                           tp_name):
+    '''
+    unconfiguring crypto pki trustpoint
+    Args:
+        device ('obj'): Device object
+        tp_name ('str'): Name of the trsutpoint
+    Returns:
+        None
+    Raises:
+        SubCommandFailure
+    '''
+
+    dialog = Dialog([
+                Statement(pattern=r'.*Are you sure you want to do this.*',
+                    action=f'sendline(yes)',
+                    loop_continue=True,
+                    continue_timer=False)
+                ])
+
+    logger.debug("Unconfiguring crypto pki trustpoint")
+
+    tp_unconfig = (f"no crypto pki trustpoint {tp_name}")
+    try:
+        device.configure(tp_unconfig, reply=dialog, error_pattern=["Can't find policy"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            logger.error("Failed to configure trust point"
+                "Error:\n{error}".format(error=e)
+            )
+        )
+
+def configure_pki_enroll(device,
+                        tp_name,
+                        password):
+    '''
+        Configuring crypto pki enroll
+        Args:
+            device ('obj'): Device object
+            tp_name ('str'): name of the trustpoint
+            password ('str'): password to be configured for the pki enroll
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+
+    dialog = Dialog([
+                Statement(pattern=r'.*Do you want to continue with re\-enrollment\? \[yes/no\].*',
+                    action=f'sendline(yes)',
+                    loop_continue=True,
+                    continue_timer=False),
+                Statement(pattern=r'.*Password:',
+                    action=f'sendline({password})',
+                    loop_continue=True,
+                    continue_timer=False),
+                Statement(pattern=r'.*Re-enter password:',
+                    action=f'sendline({password})',
+                    loop_continue=True,
+                    continue_timer=False),
+                Statement(pattern=r'.*Include the router serial number in the subject name\? \[yes/no\].*',
+                    action=f'sendline(no)',
+                    loop_continue=True,
+                    continue_timer=False),
+                Statement(pattern=r'.*Include an IP address in the subject name\? \[no\].*',
+                    action=f'sendline(no)',
+                    loop_continue=True,
+                    continue_timer=False),
+                Statement(pattern=r'.*Request certificate from CA\? \[yes/no\].*',
+                    action=f'sendline(yes)',
+                    loop_continue=True,
+                    continue_timer=False)
+
+                ])
+    error_patterns = ["CA server trustpoint is not known",
+                       "% You must authenticate the Certificate Authority before you can enroll with it.",
+                       "% Attempting authentication first.",
+                       "% Error in receiving Certificate Authority certificate: status = FAIL, cert length = 0"]
+
+    logger.debug("Configuring crypto pki enroll server")
+    pki_enroll_config = (f"crypto pki enroll {tp_name}")
+    try:
+        device.configure(pki_enroll_config, reply=dialog, error_pattern=error_patterns)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            logger.error("failed to configure crypto pki enroll"
+                "Error:\n{error}".format(error=e)
+            )
+        )
+
+def configure_pki_authenticate(device,
+                        tp_name):
+    '''
+        Configuring crypto pki authenticate server
+        Args:
+            device ('obj'): Device object
+            tp_name ('str'): Name of the trsutpoint
+            
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+
+    dialog = Dialog([
+                Statement(pattern=r'.*Do you accept this certificate\? \[yes/no\].*',
+                    action=f'sendline(yes)',
+                    loop_continue=True,
+                    continue_timer=False)
+                ])
+
+    logger.debug("Configuring crypto pki authenticate server")
+    
+    error_patterns = ["CA server trustpoint is not known",
+                       "% Please delete your existing CA certificate first.",
+                       "% You must use 'no crypto pki trustpoint <trustpoint-name>' to delete the CA certificate",
+                       "% Certificate Authority (trustpoint) {trustpoint_name} is unknown"]
+    pki_authenticate_config = (f"crypto pki authenticate {tp_name}")
+    try:
+        device.configure(pki_authenticate_config, reply=dialog, error_pattern=error_patterns)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            logger.error("failed to configure crypto pki authenticate"
+                "Error:\n{error}".format(error=e)
+            )
+        )
 

@@ -1,0 +1,41 @@
+configure:
+  commands:
+    address-family ipv4: "address-family ipv4\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    neighbor 192.168.1.2 ebgp-multihop 255: "neighbor 192.168.1.2 ebgp-multihop 255\r\
+      \n"
+    neighbor 192.168.1.2 remote-as 64002: "neighbor 192.168.1.2 remote-as 64002\r\n"
+    neighbor 192.168.1.2 update-source GigabitEthernet8: "neighbor 192.168.1.2 update-source\
+      \ GigabitEthernet8\r\n"
+    no logging console: ''
+    router bgp 64001: "router bgp 64001\r\n"
+  prompt: kparames_csr10(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: kparames_csr10(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: kparames_csr10#

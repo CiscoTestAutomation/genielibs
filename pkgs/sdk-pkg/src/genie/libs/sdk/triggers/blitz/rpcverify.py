@@ -868,6 +868,10 @@ class RpcVerify():
                 edit_op in ['delete', 'remove']:
             log.info('NO DATA RETURNED')
             return True
+        elif response and not nodes and \
+                edit_op in ['remove']:
+            log.error(edit_op +' operation not performed')
+            return False
         for node in nodes:
             if not self.process_operational_state(response, [node]):
                 result = False

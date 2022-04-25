@@ -933,3 +933,85 @@ def unconfigure_ikev2_authorization_policy(device,
              "Error:\n{error}".format(error=e)
         )
         raise
+
+def unconfigure_ikev2_keyring(device,keyring_name):
+    """ Unconfigure IKEV2 keyring
+        Args:
+            device (`obj`): Device object
+            keyring_name ('str'): Name for the keyring
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "unConfiguring IKEV2 keyring"
+    )
+
+    configs = []
+    configs.append("no crypto ikev2 keyring {keyring_name}".format(keyring_name=keyring_name))
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to  unconfigure ikev2 keyring "
+            "on device {dev}. Error:\n{error}".format(
+                dev=device,
+                error=e,
+            )
+        )
+
+def unconfigure_ikev2_profile(device,profile_name):
+    """ unconfigure IKEV2 profile
+        Args:
+            device (`obj`): Device object
+            profile_name ('str'): ikev2 profile name
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "unconfiguring IKEV2 Profile"
+    )
+
+    configs = []
+    configs.append("no crypto ikev2 profile {profile_name}".format(profile_name=profile_name))
+
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to  unconfigure ikev2 Profile "
+            "on device {dev}. Error:\n{error}".format(
+                dev=device,
+                error=e,
+            )
+        )
+
+def clear_crypto_session(device):
+    """ Clear all crypto session
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        "Clearing crypto session"
+    )
+
+    try:
+        device.execute("clear crypto session")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to clear crypto session "
+            "on device {dev}. Error:\n{error}".format(
+                dev=device,
+                error=e,
+            )
+        )

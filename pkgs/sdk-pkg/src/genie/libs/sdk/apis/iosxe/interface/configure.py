@@ -550,7 +550,7 @@ def config_interface_ospf(device, interface, ospf_pid, area):
         )
 
 
-def config_interface_ospfv3(device, interface, ospfv3_pid, area):
+def config_interface_ospfv3(device, interface, ospfv3_pid, area, ipv4=False, ipv6=True):
     """config OSPF on interface
 
         Args:
@@ -558,6 +558,8 @@ def config_interface_ospfv3(device, interface, ospfv3_pid, area):
             interface (`str`): Interface name
             ospfv3_pid (`str`): Ospfv3 process id
             area ('int'): Ospf area code
+            ipv4 ('boolean',optional): Flag to configure IPv4 (Default False)
+            ipv6 ('boolean',optional): Flag to configure IPv6 (Default True)
 
         Returns:
             None
@@ -568,15 +570,14 @@ def config_interface_ospfv3(device, interface, ospfv3_pid, area):
     log.info(
         "Configuring OSPF on interface {interface}".format(interface=interface)
     )
-
+    cmd = []
+    cmd.append("interface {interface}".format(interface=interface))
+    if ipv4:
+        cmd.append("ospfv3 {pid} ipv4 area {area}".format(pid=ospfv3_pid, area=area))
+    if ipv6:
+        cmd.append("ospfv3 {pid} ipv6 area {area}".format(pid=ospfv3_pid, area=area))
     try:
-        device.configure(
-            [
-                "interface {interface}".format(interface=interface),
-                "ospfv3 {pid} ipv6 area {area}".format(pid=ospfv3_pid,
-                                                       area=area),
-            ]
-        )
+        device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not configure ospfv3 {pid}. Error:\n{error}"
@@ -3197,14 +3198,16 @@ def disable_ipv6_address_dhcp(device, interface):
             )
         )
         
-def unconfig_interface_ospfv3(device, interface, ospfv3_pid, area):
-    """config OSPF on interface
+def unconfig_interface_ospfv3(device, interface, ospfv3_pid, area, ipv4=False, ipv6=True):
+    """unconfig OSPF on interface
 
         Args:
             device (`obj`): Device object
             interface (`str`): Interface name
             ospfv3_pid (`str`): Ospfv3 process id
             area ('int'): Ospf area code
+            ipv4 ('boolean',optional): Flag to remove IPv4 (Default False)
+            ipv6 ('boolean',optional): Flag to remove IPv6 (Default True)
 
         Returns:
             None
@@ -3214,20 +3217,19 @@ def unconfig_interface_ospfv3(device, interface, ospfv3_pid, area):
     """
 
     log.info(
-        "Configuring OSPF on interface {interface}".format(interface=interface)
+        "Unconfiguring OSPF from interface {interface}".format(interface=interface)
     )
-
+    cmd = []
+    cmd.append("interface {interface}".format(interface=interface))
+    if ipv4:
+        cmd.append("no ospfv3 {pid} ipv4 area {area}".format(pid=ospfv3_pid, area=area))
+    if ipv6:
+        cmd.append("no ospfv3 {pid} ipv6 area {area}".format(pid=ospfv3_pid, area=area))
     try:
-        device.configure(
-            [
-                "interface {interface}".format(interface=interface),
-                "no ospfv3 {pid} ipv6 area {area}".format(pid=ospfv3_pid,
-                                                       area=area),
-            ]
-        )
+        device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Could not configure ospfv3 {pid}. Error:\n{error}"
+            "Could not unconfigure ospfv3 {pid}. Error:\n{error}"
             .format(pid=ospfv3_pid, error=e)
         )
 
@@ -3740,7 +3742,6 @@ def unconfigure_switchport_nonegotiate(
         raise SubCommandFailure(
             f"Failed to unonfig switchport nonegotiate on {interface}. Error:\n{e}")
 
-
 def configure_interface_pvlan_mode_with_submode(device, interface, primary_mode, sub_mode):
     """ Configures Private Vlan Switchport mode
         Args:
@@ -3851,4 +3852,332 @@ def configure_interface_switchport_pvlan_mapping(device, interface, mode, primar
             f"Failed to configure Pvlan mapping with primary/secondary vlan ID.Error:\n{e}"
         )
 
+def configure_virtual_template(device,
+    virtual_template_number,
+    unnumbered_interface,
+    authentication,
+    mtu):
+    
+    """ Configure virtual-template interface
 
+        Args:
+            device (`obj`): Device object
+            virtual_template_number ('int') : virtual template number
+            unnumbered_interface (`str`): Interface name
+            authentication ('str') : PAP, CHAP
+            mtu ('str') : mtu value
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    
+    if not device.is_connected():
+        connect_device(device=device)
+
+    cli = []
+    cli.append(f"interface Virtual-Template {virtual_template_number}")
+    cli.append(f"ip unnumbered {unnumbered_interface}")
+    cli.append(f"ppp authentication {authentication}")
+    
+    if len(mtu) != 0:
+        cli.append(f"mtu {mtu}")
+
+    try:
+        device.configure(cli)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure virtual-template interface on device. Error:\n{e}"
+        )
+
+def unconfigure_virtual_template(device, virtual_template_number):
+    
+    """ Configure virtual-template interface
+
+        Args:
+            device (`obj`): Device object
+            virtual_template_number ('int') : virtual template number
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    
+    if not device.is_connected():
+        connect_device(device=device)
+
+    cli = []
+    cli.append(f"no interface Virtual-Template {virtual_template_number}")
+    
+    try:
+        device.configure(cli)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure virtual-template on device. Error:\n{e}"
+        )
+
+def configure_ipv6_enable(device, interface):
+    """ Enable ipv6
+        Args:
+            device (`obj`): Device object
+            interface ('str'): interface name to enable ipv6
+        Returns:
+            None 
+        Raises: 
+            SubCommandFailure
+    """
+    log.debug("Configuring ipv6 enable under {interface}".format(interface=interface))
+    cmd = []
+    cmd.append("interface {interface}".format(interface=interface))
+    cmd.append("ipv6 enable")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to configure ipv6 enable under {interface}. Error:\n{error}".format(
+                interface=interface, error=e
+            )
+        )
+
+def configure_uplink_interface(device, interfaces, vlan_range, vlan1, vlan2):
+
+    """ configure uplink interface
+        Args:
+            device (`obj`): Device object
+            interfaces (`list`): list of Interface to be added to port channel
+            vlan_range (`str`): vlan range to be added
+            vlan1 (`str`): vlan to be added to the port
+            vlan2 (`str`): vlan to be added to the port
+        Returns:
+            None
+        Raises:
+            SubCommandFailure : Failed to configure uplink interface 
+    """
+    log.debug(f"Configuring uplink interface on {interfaces}")
+    confg = []
+    for intf in interfaces:
+         confg.append(f'interface {intf}')
+         confg.append('switchport')
+         confg.append('switchport mode private-vlan trunk promiscuous')
+         confg.append(f'switchport private-vlan trunk allowed vlan {vlan_range}')
+         confg.append(f'switchport private-vlan mapping trunk {vlan1} {vlan2}')
+         confg.append('ip dhcp snooping trust')
+    try:
+        device.configure(confg)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to uplink interface on {interfaces}. Error:\n{e}"
+            )
+
+def configure_downlink_interface(device, interfaces, vlan_range, vlan1, vlan2):
+
+    """ configure downlink interface
+        Args:
+            device (`obj`): Device object
+            interfaces (`list`): list of Interface to be added to port channel
+            vlan_range (`str`): vlan range to be added
+            vlan1 (`str`): vlan to be added to the port
+            vlan2 (`str`): vlan to be added to the port
+        Returns:
+            None
+        Raises:
+            SubCommandFailure : Failed to configure downlink interface
+    """
+    log.debug(f"Configuring downlink interface on {interfaces}")
+    confg = []
+    for intf in interfaces:
+         confg.append(f'interface {intf}')
+         confg.append('switchport mode private-vlan trunk')
+         confg.append(f'switchport private-vlan trunk allowed vlan {vlan_range}')
+         confg.append(f'switchport private-vlan association trunk {vlan1} {vlan2}')
+
+    try:        
+        device.configure(confg)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to downlink interface on {interfaces}. Error:\n{e}")
+
+
+def configure_switchport_trunk_native_vlan(device, interfaces, native_vlan):
+
+    """ configure switchport trunk native vlan
+        Args:
+            device (`obj`): Device object
+            interfaces (`list`): list of Interface to be added to port channel
+            native_vlan (`str`): native vlan Id to be added
+        Returns:
+            None
+        Raises:
+            SubCommandFailure : Failed to configure switchport trunk native vlan
+    """
+    log.debug(f"Configuring switchport trunk native vlan on {interfaces}")
+    confg = []
+    for intf in interfaces:
+         confg.append(f'interface {intf}')
+         confg.append(f'switchport trunk native vlan {native_vlan}')
+         confg.append('switchport mode trunk')
+
+    try:   
+        device.configure(confg)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure switchport trunk native vlan on {interfaces}. Error:\n{e}")
+
+def configure_switchport_mode_trunk_snooping_trust(device, interfaces):
+
+    """ configure switchport mode trunk snooping trust
+        Args:
+            device (`obj`): Device object
+            interfaces (`list`): list of Interface to be added to port channel
+            
+        Returns:
+            None
+        Raises:
+            SubCommandFailure : Failed to configure switchport mode trunk snooping trust
+    """
+    log.debug(f"Configuring switchport mode trunk snooping trust on {interfaces}")
+    confg = []
+    for intf in interfaces:
+         confg.append(f'interface {intf}')
+         confg.append('switchport mode trunk')
+         confg.append('ip dhcp snooping trust')
+
+    try:   
+        device.configure(confg)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure switchport mode trunk snooping trust on {interfaces}. Error:\n{e}"
+        )
+
+def configure_egress_interface(device, interfaces, native_vlan, vlan_range, vlan1, vlan2):
+
+    """ configure egress interface
+        Args:
+            device (`obj`): Device object
+            interfaces (`list`): list of Interface to be added to port channel
+            native_vlan (`str`): native vlan Id to be added
+            vlan_range (`str`): vlan range to be added
+            vlan1 (`str`): vlan to be added to the port
+            vlan2 (`str`): vlan to be added to the port
+            
+        Returns:
+            None
+        Raises:
+            SubCommandFailure : Failed to configure egress interface
+    """
+    log.debug(f"Configuring egress interface on {interfaces}")
+
+    confg = []
+    for intf in interfaces:
+         confg.append(f'interface {intf}')
+         confg.append('switchport mode private-vlan trunk')
+         confg.append(f'switchport trunk native vlan {native_vlan}')
+         confg.append(f'switchport private-vlan trunk allowed vlan {vlan_range}')
+         confg.append(f'switchport private-vlan association trunk {vlan1} {vlan2}')
+
+    try:
+        device.configure(confg)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure switchport mode trunk snooping trust on {interfaces}. Error:\n{e}")
+        
+def unconfigure_interfaces_on_port_channel(
+    device, interfaces, mode, channel_group,
+    channel_protocol=None, disable_switchport=False,
+    ):
+    """ Add interface <interface> to port channel
+
+        Args:
+            device (`obj`): Device object
+            mode (`str`): Interface mode under Port channel.Default value is None
+            interfaces(`List`): List of interfaces to configure.Default value is None
+            channel_group (`obj`): Channel group.Default value is None
+            channel_protocol (`str`,optional): protocol used for port-channel.Default value is False
+            disable_switchport(`str`,optional): disable switchport.Default value is False
+        Returns:
+            None
+    """
+
+    for intf in interfaces:
+        config_cmd="interface {interface}\n".format(interface=intf)
+        if disable_switchport:
+            config_cmd+="no switchport\n"
+        config_cmd+="no shutdown\n"
+        if channel_protocol:
+            config_cmd+="no channel-protocol {channel_protocol}\n".format(
+                                      channel_protocol=channel_protocol)
+        config_cmd+="no channel-group {channel_group} mode {mode}\n".format(
+                                  channel_group=channel_group, mode=mode)
+        try:
+            device.configure(config_cmd)
+            log.info(
+                "Successfully removed {intf} on "
+                "channel-group {channel_group} in {mode} mode".format(
+                    intf=intf, mode=mode, channel_group=channel_group
+                )
+            )
+        except SubCommandFailure as e:
+            raise SubCommandFailure(
+                "Couldn't remove {intf} on"
+                "channel-group {channel_group} in {mode} mode. Error:\n{error}"\
+                    .format(intf=intf, mode=mode, channel_group=channel_group,
+                            error=e
+                )
+            )
+            
+def unconfigure_ipv6_enable(device, interface):
+    """ Disable ipv6
+        Args:
+            device (`obj`): Device object
+            interface ('str'): interface name to disable ipv6
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Unconfiguring ipv6 enable under {interface}".format(interface=interface))
+    cmd = []
+    cmd.append("interface {interface}".format(interface=interface))
+    cmd.append("no ipv6 enable")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure ipv6 enable under {interface}. Error:\n{error}".format(
+                interface=interface, error=e
+            )
+        )
+
+def configure_interface_service_policy(device, interface, policy_name, direction):
+
+     """ Configure any service policy configured under interface
+
+         Args:
+             device (`obj`): Device object
+             interface (`str`): Interface to remove service policy from
+             policy_name ('str') : service policy name
+             direction (`dict`): direction of service policy
+
+         Returns:
+             None
+
+         Raises:
+             SubCommandFailure
+     """
+
+     configs = []
+
+     configs.append(f"interface {interface}")
+     configs.append(f"service-policy {direction} {policy_name}")
+
+     try:
+         device.configure(configs)
+     except SubCommandFailure as e:
+         raise SubCommandFailure(
+             f"Failed to configure service-policy on iterface:\n{e}"
+         )

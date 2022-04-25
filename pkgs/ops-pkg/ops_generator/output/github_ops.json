@@ -4,6 +4,7 @@
       "class_name": "Acl",
       "doc": null,
       "module_name": "acl.acl",
+      "package": "genie.libs.ops",
       "uid": "acl",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/acl/ios/acl.py#L6"
     },
@@ -11,6 +12,7 @@
       "class_name": "Acl",
       "doc": "ACL Genie Ops Object",
       "module_name": "acl.acl",
+      "package": "genie.libs.ops",
       "uid": "acl",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/acl/iosxe/acl.py#L10"
     },
@@ -18,6 +20,7 @@
       "class_name": "Acl",
       "doc": "ACL Genie Ops Object",
       "module_name": "acl.acl",
+      "package": "genie.libs.ops",
       "uid": "acl",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/acl/iosxr/acl.py#L12"
     },
@@ -25,6 +28,7 @@
       "class_name": "Acl",
       "doc": "Acl Genie Ops Object",
       "module_name": "acl.acl",
+      "package": "genie.libs.ops",
       "uid": "acl",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/acl/nxos/acl.py#L32"
     }
@@ -34,6 +38,7 @@
       "class_name": "Arp",
       "doc": "ARP Genie Ops Object",
       "module_name": "arp.arp",
+      "package": "genie.libs.ops",
       "uid": "arp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/arp/ios/arp.py#L18"
     },
@@ -41,6 +46,7 @@
       "class_name": "Arp",
       "doc": "ARP Genie Ops Object",
       "module_name": "arp.arp",
+      "package": "genie.libs.ops",
       "uid": "arp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/arp/iosxe/arp.py#L18"
     },
@@ -48,6 +54,7 @@
       "class_name": "Arp",
       "doc": "ARP Genie Ops Object",
       "module_name": "arp.arp",
+      "package": "genie.libs.ops",
       "uid": "arp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/arp/iosxr/arp.py#L16"
     },
@@ -55,6 +62,7 @@
       "class_name": "Arp",
       "doc": "ARP Genie Ops Object",
       "module_name": "arp.arp",
+      "package": "genie.libs.ops",
       "uid": "arp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/arp/nxos/arp.py#L15"
     }
@@ -64,6 +72,7 @@
       "class_name": "Bgp",
       "doc": null,
       "module_name": "bgp.bgp",
+      "package": "genie.libs.ops",
       "uid": "bgp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/bgp/ios/bgp.py#L6"
     },
@@ -71,6 +80,7 @@
       "class_name": "Bgp",
       "doc": "BGP Genie Ops Object",
       "module_name": "bgp.bgp",
+      "package": "genie.libs.ops",
       "uid": "bgp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/bgp/iosxe/bgp.py#L12"
     },
@@ -78,12 +88,14 @@
       "class_name": "Bgp",
       "doc": "BGP Genie Ops Object",
       "module_name": "bgp.bgp",
+      "package": "genie.libs.ops",
       "uid": "bgp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/bgp/iosxr/bgp.py#L21",
       "yang": {
         "class_name": "Bgp",
         "doc": "BGP Genie Ops Object",
         "module_name": "bgp.bgp",
+        "package": "genie.libs.ops",
         "uid": "bgp",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/bgp/iosxr/yang/bgp.py#L13"
       }
@@ -92,12 +104,14 @@
       "class_name": "Bgp",
       "doc": "BGP Genie Ops Object",
       "module_name": "bgp.bgp",
+      "package": "genie.libs.ops",
       "uid": "bgp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/bgp/nxos/bgp.py#L28",
       "xml": {
         "class_name": "Bgp",
         "doc": "BGP Genie Ops Object",
         "module_name": "bgp.bgp",
+        "package": "genie.libs.ops",
         "uid": "bgp",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/bgp/nxos/xml/bgp.py#L13"
       },
@@ -105,6 +119,7 @@
         "class_name": "Bgp",
         "doc": "BGP Genie Ops Object",
         "module_name": "bgp.bgp",
+        "package": "genie.libs.ops",
         "uid": "bgp",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/bgp/nxos/yang/bgp.py#L13"
       }
@@ -115,6 +130,7 @@
       "class_name": "Dot1X",
       "doc": null,
       "module_name": "dot1x.dot1x",
+      "package": "genie.libs.ops",
       "uid": "dot1x",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/dot1x/ios/dot1x.py#L6"
     },
@@ -122,6 +138,7 @@
       "class_name": "Dot1X",
       "doc": "Dot1x Genie Ops Object",
       "module_name": "dot1x.dot1x",
+      "package": "genie.libs.ops",
       "uid": "dot1x",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/dot1x/iosxe/dot1x.py#L9"
     }
@@ -131,6 +148,7 @@
       "class_name": "Eigrp",
       "doc": "\n        Eigrp Ops Object\n    ",
       "module_name": "eigrp.eigrp",
+      "package": "genie.libs.ops",
       "uid": "eigrp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/eigrp/ios/eigrp.py#L7"
     },
@@ -138,6 +156,7 @@
       "class_name": "Eigrp",
       "doc": "\n        Eigrp Ops Object\n    ",
       "module_name": "eigrp.eigrp",
+      "package": "genie.libs.ops",
       "uid": "eigrp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/eigrp/iosxe/eigrp.py#L8"
     },
@@ -145,6 +164,7 @@
       "class_name": "Eigrp",
       "doc": "\n        Eigrp Ops object\n    ",
       "module_name": "eigrp.eigrp",
+      "package": "genie.libs.ops",
       "uid": "eigrp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/eigrp/iosxr/eigrp.py#L9"
     },
@@ -152,6 +172,7 @@
       "class_name": "Eigrp",
       "doc": "\n        Eigrp Ops object\n    ",
       "module_name": "eigrp.eigrp",
+      "package": "genie.libs.ops",
       "uid": "eigrp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/eigrp/nxos/eigrp.py#L9"
     }
@@ -161,6 +182,7 @@
       "class_name": "Fdb",
       "doc": null,
       "module_name": "fdb.fdb",
+      "package": "genie.libs.ops",
       "uid": "fdb",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/fdb/ios/fdb.py#L6"
     },
@@ -168,6 +190,7 @@
       "class_name": "Fdb",
       "doc": "Fdb Genie Ops Object",
       "module_name": "fdb.fdb",
+      "package": "genie.libs.ops",
       "uid": "fdb",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/fdb/iosxe/fdb.py#L9"
     },
@@ -175,6 +198,7 @@
       "class_name": "Fdb",
       "doc": "Fdb Genie Ops Object",
       "module_name": "fdb.fdb",
+      "package": "genie.libs.ops",
       "uid": "fdb",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/fdb/nxos/fdb.py#L11"
     }
@@ -184,6 +208,7 @@
       "class_name": "Hsrp",
       "doc": null,
       "module_name": "hsrp.hsrp",
+      "package": "genie.libs.ops",
       "uid": "hsrp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/hsrp/ios/hsrp.py#L6"
     },
@@ -191,6 +216,7 @@
       "class_name": "Hsrp",
       "doc": "HSRP Genie Ops Object",
       "module_name": "hsrp.hsrp",
+      "package": "genie.libs.ops",
       "uid": "hsrp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/hsrp/iosxe/hsrp.py#L13"
     },
@@ -198,6 +224,7 @@
       "class_name": "Hsrp",
       "doc": "HSRP Genie Ops Object",
       "module_name": "hsrp.hsrp",
+      "package": "genie.libs.ops",
       "uid": "hsrp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/hsrp/iosxr/hsrp.py#L12"
     },
@@ -205,6 +232,7 @@
       "class_name": "Hsrp",
       "doc": "HSRP Genie Ops Object",
       "module_name": "hsrp.hsrp",
+      "package": "genie.libs.ops",
       "uid": "hsrp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/hsrp/nxos/hsrp.py#L11"
     }
@@ -214,6 +242,7 @@
       "class_name": "Igmp",
       "doc": null,
       "module_name": "igmp.igmp",
+      "package": "genie.libs.ops",
       "uid": "igmp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/igmp/ios/igmp.py#L6"
     },
@@ -221,6 +250,7 @@
       "class_name": "Igmp",
       "doc": "IGMP Genie Ops Object",
       "module_name": "igmp.igmp",
+      "package": "genie.libs.ops",
       "uid": "igmp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/igmp/iosxe/igmp.py#L11"
     },
@@ -228,6 +258,7 @@
       "class_name": "Igmp",
       "doc": "IGMP Genie Ops Object",
       "module_name": "igmp.igmp",
+      "package": "genie.libs.ops",
       "uid": "igmp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/igmp/iosxr/igmp.py#L13"
     },
@@ -235,6 +266,7 @@
       "class_name": "Igmp",
       "doc": "IGMP Genie Ops Object",
       "module_name": "igmp.igmp",
+      "package": "genie.libs.ops",
       "uid": "igmp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/igmp/nxos/igmp.py#L13"
     }
@@ -244,6 +276,7 @@
       "class_name": "Interface",
       "doc": "Interface Genie Ops Object",
       "module_name": "interface.interface",
+      "package": "genie.libs.ops",
       "uid": "interface",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/interface/ios/interface.py#L11"
     },
@@ -252,6 +285,7 @@
         "class_name": "Interface",
         "doc": "Interface Genie Ops Object",
         "module_name": "interface.interface",
+        "package": "genie.libs.ops",
         "uid": "interface",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/interface/iosxe/asr1k/interface.py#L14"
       },
@@ -259,12 +293,14 @@
         "class_name": "Interface",
         "doc": "Interface Genie Ops Object",
         "module_name": "interface.interface",
+        "package": "genie.libs.ops",
         "uid": "interface",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/interface/iosxe/c3850/interface.py#L14"
       },
       "class_name": "Interface",
       "doc": "Interface Genie Ops Object",
       "module_name": "interface.interface",
+      "package": "genie.libs.ops",
       "uid": "interface",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/interface/iosxe/interface.py#L20"
     },
@@ -272,6 +308,7 @@
       "class_name": "Interface",
       "doc": "Interface Genie Ops Object",
       "module_name": "interface.interface",
+      "package": "genie.libs.ops",
       "uid": "interface",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/interface/iosxr/interface.py#L20"
     },
@@ -279,6 +316,7 @@
       "class_name": "Interface",
       "doc": "Interface Genie Ops Object",
       "module_name": "interface.interface",
+      "package": "genie.libs.ops",
       "uid": "interface",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/interface/nxos/interface.py#L17"
     }
@@ -288,6 +326,7 @@
       "class_name": "Isis",
       "doc": "Isis Genie Ops Object",
       "module_name": "isis.isis",
+      "package": "genie.libs.ops",
       "uid": "isis",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/isis/ios/isis.py#L3"
     },
@@ -295,6 +334,7 @@
       "class_name": "Isis",
       "doc": "Isis Genie Ops Object",
       "module_name": "isis.isis",
+      "package": "genie.libs.ops",
       "uid": "isis",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/isis/iosxe/isis.py#L28"
     },
@@ -302,6 +342,7 @@
       "class_name": "Isis",
       "doc": "Isis Genie Ops Object",
       "module_name": "isis.isis",
+      "package": "genie.libs.ops",
       "uid": "isis",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/isis/iosxr/isis.py#L22"
     },
@@ -309,6 +350,7 @@
       "class_name": "Isis",
       "doc": "Isis Genie Ops Object",
       "module_name": "isis.isis",
+      "package": "genie.libs.ops",
       "uid": "isis",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/isis/nxos/isis.py#L21"
     }
@@ -318,6 +360,7 @@
       "class_name": "Lag",
       "doc": null,
       "module_name": "lag.lag",
+      "package": "genie.libs.ops",
       "uid": "lag",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/lag/ios/lag.py#L6"
     },
@@ -325,6 +368,7 @@
       "class_name": "Lag",
       "doc": "Lag Genie Ops Object",
       "module_name": "lag.lag",
+      "package": "genie.libs.ops",
       "uid": "lag",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/lag/iosxe/lag.py#L9"
     },
@@ -332,6 +376,7 @@
       "class_name": "Lag",
       "doc": "LAG Genie Ops Object",
       "module_name": "lag.lag",
+      "package": "genie.libs.ops",
       "uid": "lag",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/lag/iosxr/lag.py#L13"
     }
@@ -341,6 +386,7 @@
       "class_name": "Lisp",
       "doc": null,
       "module_name": "lisp.lisp",
+      "package": "genie.libs.ops",
       "uid": "lisp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/lisp/ios/lisp.py#L6"
     },
@@ -348,6 +394,7 @@
       "class_name": "Lisp",
       "doc": "Lisp Ops Object",
       "module_name": "lisp.lisp",
+      "package": "genie.libs.ops",
       "uid": "lisp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/lisp/iosxe/lisp.py#L10"
     }
@@ -357,6 +404,7 @@
       "class_name": "Lldp",
       "doc": null,
       "module_name": "lldp.lldp",
+      "package": "genie.libs.ops",
       "uid": "lldp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/lldp/ios/lldp.py#L6"
     },
@@ -364,6 +412,7 @@
       "class_name": "Lldp",
       "doc": "LLDP Genie Ops Object",
       "module_name": "lldp.lldp",
+      "package": "genie.libs.ops",
       "uid": "lldp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/lldp/iosxe/lldp.py#L9"
     },
@@ -371,6 +420,7 @@
       "class_name": "Lldp",
       "doc": "LLDP Genie Ops Object",
       "module_name": "lldp.lldp",
+      "package": "genie.libs.ops",
       "uid": "lldp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/lldp/iosxr/lldp.py#L16"
     },
@@ -378,6 +428,7 @@
       "class_name": "Lldp",
       "doc": "LLDP Genie Ops Object",
       "module_name": "lldp.lldp",
+      "package": "genie.libs.ops",
       "uid": "lldp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/lldp/nxos/lldp.py#L14"
     }
@@ -387,6 +438,7 @@
       "class_name": "Mcast",
       "doc": null,
       "module_name": "mcast.mcast",
+      "package": "genie.libs.ops",
       "uid": "mcast",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/mcast/ios/mcast.py#L6"
     },
@@ -394,6 +446,7 @@
       "class_name": "Mcast",
       "doc": "Mcast Genie Ops Object",
       "module_name": "mcast.mcast",
+      "package": "genie.libs.ops",
       "uid": "mcast",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/mcast/iosxe/mcast.py#L17"
     },
@@ -401,6 +454,7 @@
       "class_name": "Mcast",
       "doc": "Mcast Genie Ops Object",
       "module_name": "mcast.mcast",
+      "package": "genie.libs.ops",
       "uid": "mcast",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/mcast/iosxr/mcast.py#L17"
     },
@@ -408,6 +462,7 @@
       "class_name": "Mcast",
       "doc": "Mcast Genie Ops Object",
       "module_name": "mcast.mcast",
+      "package": "genie.libs.ops",
       "uid": "mcast",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/mcast/nxos/mcast.py#L16"
     }
@@ -417,6 +472,7 @@
       "class_name": "Mld",
       "doc": null,
       "module_name": "mld.mld",
+      "package": "genie.libs.ops",
       "uid": "mld",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/mld/ios/mld.py#L6"
     },
@@ -424,6 +480,7 @@
       "class_name": "Mld",
       "doc": "MLD Genie Ops Object",
       "module_name": "mld.mld",
+      "package": "genie.libs.ops",
       "uid": "mld",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/mld/iosxe/mld.py#L11"
     },
@@ -431,6 +488,7 @@
       "class_name": "Mld",
       "doc": "MLD Genie Ops Object",
       "module_name": "mld.mld",
+      "package": "genie.libs.ops",
       "uid": "mld",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/mld/iosxr/mld.py#L16"
     },
@@ -438,6 +496,7 @@
       "class_name": "Mld",
       "doc": "MLD Genie Ops Object",
       "module_name": "mld.mld",
+      "package": "genie.libs.ops",
       "uid": "mld",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/mld/nxos/mld.py#L12"
     }
@@ -447,6 +506,7 @@
       "class_name": "Msdp",
       "doc": "\n        Msdp Ops Object\n    ",
       "module_name": "msdp.msdp",
+      "package": "genie.libs.ops",
       "uid": "msdp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/msdp/ios/msdp.py#L4"
     },
@@ -454,6 +514,7 @@
       "class_name": "Msdp",
       "doc": "\n        Msdp Ops Object\n    ",
       "module_name": "msdp.msdp",
+      "package": "genie.libs.ops",
       "uid": "msdp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/msdp/iosxe/msdp.py#L9"
     },
@@ -461,6 +522,7 @@
       "class_name": "Msdp",
       "doc": "\n        Msdp Ops Object\n    ",
       "module_name": "msdp.msdp",
+      "package": "genie.libs.ops",
       "uid": "msdp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/msdp/iosxr/msdp.py#L13"
     },
@@ -468,6 +530,7 @@
       "class_name": "Msdp",
       "doc": "Msdp Ops Object",
       "module_name": "msdp.msdp",
+      "package": "genie.libs.ops",
       "uid": "msdp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/msdp/nxos/msdp.py#L10"
     }
@@ -477,6 +540,7 @@
       "class_name": "Nd",
       "doc": "Nd Ops Object",
       "module_name": "nd.nd",
+      "package": "genie.libs.ops",
       "uid": "nd",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/nd/iosxe/nd.py#L9"
     },
@@ -484,6 +548,7 @@
       "class_name": "Nd",
       "doc": "Nd Ops Object",
       "module_name": "nd.nd",
+      "package": "genie.libs.ops",
       "uid": "nd",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/nd/iosxr/nd.py#L10"
     },
@@ -491,6 +556,7 @@
       "class_name": "Nd",
       "doc": "Nd Ops Object",
       "module_name": "nd.nd",
+      "package": "genie.libs.ops",
       "uid": "nd",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/nd/nxos/nd.py#L10"
     }
@@ -500,6 +566,7 @@
       "class_name": "Ntp",
       "doc": "NTP Genie Ops Object",
       "module_name": "ntp.ntp",
+      "package": "genie.libs.ops",
       "uid": "ntp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/ntp/ios/ntp.py#L15"
     },
@@ -507,6 +574,7 @@
       "class_name": "Ntp",
       "doc": "NTP Genie Ops Object",
       "module_name": "ntp.ntp",
+      "package": "genie.libs.ops",
       "uid": "ntp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/ntp/iosxe/ntp.py#L15"
     },
@@ -514,6 +582,7 @@
       "class_name": "Ntp",
       "doc": "NTP Genie Ops Object",
       "module_name": "ntp.ntp",
+      "package": "genie.libs.ops",
       "uid": "ntp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/ntp/iosxr/ntp.py#L15"
     },
@@ -521,6 +590,7 @@
       "class_name": "Ntp",
       "doc": "NTP Genie Ops Object",
       "module_name": "ntp.ntp",
+      "package": "genie.libs.ops",
       "uid": "ntp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/ntp/junos/ntp.py#L13"
     },
@@ -528,6 +598,7 @@
       "class_name": "Ntp",
       "doc": "NTP Genie Ops Object",
       "module_name": "ntp.ntp",
+      "package": "genie.libs.ops",
       "uid": "ntp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/ntp/nxos/ntp.py#L12"
     }
@@ -537,6 +608,7 @@
       "class_name": "Ospf",
       "doc": null,
       "module_name": "ospf.ospf",
+      "package": "genie.libs.ops",
       "uid": "ospf",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/ospf/ios/ospf.py#L6"
     },
@@ -544,12 +616,14 @@
       "class_name": "Ospf",
       "doc": "Ospf Ops Object",
       "module_name": "ospf.ospf",
+      "package": "genie.libs.ops",
       "uid": "ospf",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/ospf/iosxe/ospf.py#L11",
       "yang": {
         "class_name": "Ospf",
         "doc": "Ospf Ops Object",
         "module_name": "ospf.ospf",
+        "package": "genie.libs.ops",
         "uid": "ospf",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/ospf/iosxe/yang/ospf.py#L5"
       }
@@ -558,12 +632,14 @@
       "class_name": "Ospf",
       "doc": "Ospf Ops Object",
       "module_name": "ospf.ospf",
+      "package": "genie.libs.ops",
       "uid": "ospf",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/ospf/iosxr/ospf.py#L25",
       "yang": {
         "class_name": "Ospf",
         "doc": "Ospf Ops Object",
         "module_name": "ospf.ospf",
+        "package": "genie.libs.ops",
         "uid": "ospf",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/ospf/iosxr/yang/ospf.py#L4"
       }
@@ -572,12 +648,14 @@
       "class_name": "Ospf",
       "doc": "Ospf Ops Object",
       "module_name": "ospf.ospf",
+      "package": "genie.libs.ops",
       "uid": "ospf",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/ospf/nxos/ospf.py#L25",
       "yang": {
         "class_name": "Ospf",
         "doc": "Ospf Ops Object",
         "module_name": "ospf.ospf",
+        "package": "genie.libs.ops",
         "uid": "ospf",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/ospf/nxos/yang/ospf.py#L5"
       }
@@ -588,6 +666,7 @@
       "class_name": "Pim",
       "doc": "Pim Genie Ops Object",
       "module_name": "pim.pim",
+      "package": "genie.libs.ops",
       "uid": "pim",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/pim/ios/pim.py#L14"
     },
@@ -595,6 +674,7 @@
       "class_name": "Pim",
       "doc": "Pim Genie Ops Object",
       "module_name": "pim.pim",
+      "package": "genie.libs.ops",
       "uid": "pim",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/pim/iosxe/pim.py#L14"
     },
@@ -602,6 +682,7 @@
       "class_name": "Pim",
       "doc": "Pim Genie Ops Object",
       "module_name": "pim.pim",
+      "package": "genie.libs.ops",
       "uid": "pim",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/pim/nxos/pim.py#L30"
     }
@@ -612,12 +693,14 @@
         "class_name": "Platform",
         "doc": "Platform Ops Object",
         "module_name": "platform.platform",
+        "package": "genie.libs.ops",
         "uid": "platform",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/ios/cat6k/platform.py#L11"
       },
       "class_name": "Platform",
       "doc": "Platform Ops Object",
       "module_name": "platform.platform",
+      "package": "genie.libs.ops",
       "uid": "platform",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/ios/platform.py#L6"
     },
@@ -626,6 +709,7 @@
         "class_name": "Platform",
         "doc": "Platform Ops Object",
         "module_name": "platform.platform",
+        "package": "genie.libs.ops",
         "uid": "platform",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/asr900/platform.py#L13"
       },
@@ -633,6 +717,7 @@
         "class_name": "Platform",
         "doc": "Platform Ops Object",
         "module_name": "platform.platform",
+        "package": "genie.libs.ops",
         "uid": "platform",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/c8200/platform.py#L13"
       },
@@ -640,12 +725,14 @@
         "class_name": "Platform",
         "doc": "Platform Ops Object",
         "module_name": "platform.platform",
+        "package": "genie.libs.ops",
         "uid": "platform",
         "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/c9500/platform.py#L14"
       },
       "class_name": "Platform",
       "doc": "Platform Ops Object",
       "module_name": "platform.platform",
+      "package": "genie.libs.ops",
       "uid": "platform",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxe/platform.py#L13"
     },
@@ -653,6 +740,7 @@
       "class_name": "Platform",
       "doc": "Platform Genie Ops Object",
       "module_name": "platform.platform",
+      "package": "genie.libs.ops",
       "uid": "platform",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/iosxr/platform.py#L16"
     },
@@ -660,6 +748,7 @@
       "class_name": "Platform",
       "doc": "Platform Ops Object",
       "module_name": "platform.platform",
+      "package": "genie.libs.ops",
       "uid": "platform",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/platform/nxos/platform.py#L13"
     }
@@ -669,6 +758,7 @@
       "class_name": "PrefixList",
       "doc": null,
       "module_name": "prefix_list.prefix_list",
+      "package": "genie.libs.ops",
       "uid": "prefixlist",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/prefix_list/ios/prefix_list.py#L6"
     },
@@ -676,6 +766,7 @@
       "class_name": "PrefixList",
       "doc": "Prefix-list Genie Ops Object",
       "module_name": "prefix_list.prefix_list",
+      "package": "genie.libs.ops",
       "uid": "prefixlist",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/prefix_list/iosxe/prefix_list.py#L15"
     },
@@ -683,6 +774,7 @@
       "class_name": "PrefixList",
       "doc": "Prefix-list Genie Ops Object",
       "module_name": "prefix_list.prefix_list",
+      "package": "genie.libs.ops",
       "uid": "prefixlist",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/prefix_list/nxos/prefix_list.py#L15"
     }
@@ -692,6 +784,7 @@
       "class_name": "Rip",
       "doc": null,
       "module_name": "rip.rip",
+      "package": "genie.libs.ops",
       "uid": "rip",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/rip/ios/rip.py#L6"
     },
@@ -699,6 +792,7 @@
       "class_name": "Rip",
       "doc": "Rip Genie Ops Object",
       "module_name": "rip.rip",
+      "package": "genie.libs.ops",
       "uid": "rip",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/rip/iosxe/rip.py#L18"
     },
@@ -706,6 +800,7 @@
       "class_name": "Rip",
       "doc": "Rip Genie Ops Object",
       "module_name": "rip.rip",
+      "package": "genie.libs.ops",
       "uid": "rip",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/rip/iosxr/rip.py#L15"
     }
@@ -715,6 +810,7 @@
       "class_name": "RoutePolicy",
       "doc": null,
       "module_name": "route_policy.route_policy",
+      "package": "genie.libs.ops",
       "uid": "routepolicy",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/route_policy/ios/route_policy.py#L6"
     },
@@ -722,6 +818,7 @@
       "class_name": "RoutePolicy",
       "doc": "RoutePolicy Genie Ops Object",
       "module_name": "route_policy.route_policy",
+      "package": "genie.libs.ops",
       "uid": "routepolicy",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/route_policy/iosxe/route_policy.py#L9"
     },
@@ -729,6 +826,7 @@
       "class_name": "RoutePolicy",
       "doc": "RoutePolicy Genie Ops Object",
       "module_name": "route_policy.route_policy",
+      "package": "genie.libs.ops",
       "uid": "routepolicy",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/route_policy/iosxr/route_policy.py#L11"
     },
@@ -736,6 +834,7 @@
       "class_name": "RoutePolicy",
       "doc": "RoutePolicy Genie Ops Object",
       "module_name": "route_policy.route_policy",
+      "package": "genie.libs.ops",
       "uid": "routepolicy",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/route_policy/nxos/route_policy.py#L12"
     }
@@ -745,6 +844,7 @@
       "class_name": "Routing",
       "doc": null,
       "module_name": "routing.routing",
+      "package": "genie.libs.ops",
       "uid": "routing",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/routing/ios/routing.py#L6"
     },
@@ -752,6 +852,7 @@
       "class_name": "Routing",
       "doc": "Routing Ops Object",
       "module_name": "routing.routing",
+      "package": "genie.libs.ops",
       "uid": "routing",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/routing/iosxe/routing.py#L13"
     },
@@ -759,6 +860,7 @@
       "class_name": "Routing",
       "doc": "Routing Ops Object",
       "module_name": "routing.routing",
+      "package": "genie.libs.ops",
       "uid": "routing",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/routing/iosxr/routing.py#L11"
     },
@@ -766,6 +868,7 @@
       "class_name": "Routing",
       "doc": "Routing Ops Object",
       "module_name": "routing.routing",
+      "package": "genie.libs.ops",
       "uid": "routing",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/routing/nxos/routing.py#L8"
     }
@@ -775,6 +878,7 @@
       "class_name": "StaticRouting",
       "doc": null,
       "module_name": "static_routing.static_routing",
+      "package": "genie.libs.ops",
       "uid": "staticrouting",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/static_routing/ios/static_routing.py#L6"
     },
@@ -782,6 +886,7 @@
       "class_name": "StaticRouting",
       "doc": "StaticRouting Ops Object",
       "module_name": "static_routing.static_routing",
+      "package": "genie.libs.ops",
       "uid": "staticrouting",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/static_routing/iosxe/static_routing.py#L10"
     },
@@ -789,6 +894,7 @@
       "class_name": "StaticRouting",
       "doc": "StaticRouting Ops Object",
       "module_name": "static_routing.static_routing",
+      "package": "genie.libs.ops",
       "uid": "staticrouting",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/static_routing/iosxr/static_routing.py#L7"
     },
@@ -796,6 +902,7 @@
       "class_name": "StaticRouting",
       "doc": "StaticRouting Ops Object",
       "module_name": "static_routing.static_routing",
+      "package": "genie.libs.ops",
       "uid": "staticrouting",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/static_routing/nxos/static_routing.py#L8"
     }
@@ -805,6 +912,7 @@
       "class_name": "Stp",
       "doc": null,
       "module_name": "stp.stp",
+      "package": "genie.libs.ops",
       "uid": "stp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/stp/ios/stp.py#L6"
     },
@@ -812,6 +920,7 @@
       "class_name": "Stp",
       "doc": "Spanning-tree Genie Ops Object",
       "module_name": "stp.stp",
+      "package": "genie.libs.ops",
       "uid": "stp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/stp/iosxe/stp.py#L9"
     },
@@ -819,6 +928,7 @@
       "class_name": "Stp",
       "doc": "STP Genie Ops Object",
       "module_name": "stp.stp",
+      "package": "genie.libs.ops",
       "uid": "stp",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/stp/iosxr/stp.py#L15"
     }
@@ -843,6 +953,7 @@
       "class_name": "Vlan",
       "doc": null,
       "module_name": "vlan.vlan",
+      "package": "genie.libs.ops",
       "uid": "vlan",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/vlan/ios/vlan.py#L6"
     },
@@ -850,6 +961,7 @@
       "class_name": "Vlan",
       "doc": "Vlan Ops Object",
       "module_name": "vlan.vlan",
+      "package": "genie.libs.ops",
       "uid": "vlan",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/vlan/iosxe/vlan.py#L5"
     },
@@ -857,6 +969,7 @@
       "class_name": "Vlan",
       "doc": "Vlan Ops Object",
       "module_name": "vlan.vlan",
+      "package": "genie.libs.ops",
       "uid": "vlan",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/vlan/iosxr/vlan.py#L8"
     },
@@ -864,6 +977,7 @@
       "class_name": "Vlan",
       "doc": "Vlan Ops Object",
       "module_name": "vlan.vlan",
+      "package": "genie.libs.ops",
       "uid": "vlan",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/vlan/nxos/vlan.py#L13"
     }
@@ -873,6 +987,7 @@
       "class_name": "Vrf",
       "doc": null,
       "module_name": "vrf.vrf",
+      "package": "genie.libs.ops",
       "uid": "vrf",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/vrf/ios/vrf.py#L6"
     },
@@ -880,6 +995,7 @@
       "class_name": "Vrf",
       "doc": "Vrf Genie Ops Object",
       "module_name": "vrf.vrf",
+      "package": "genie.libs.ops",
       "uid": "vrf",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/vrf/iosxe/vrf.py#L10"
     },
@@ -887,6 +1003,7 @@
       "class_name": "Vrf",
       "doc": "Vrf Genie Ops Object",
       "module_name": "vrf.vrf",
+      "package": "genie.libs.ops",
       "uid": "vrf",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/vrf/iosxr/vrf.py#L13"
     },
@@ -894,6 +1011,7 @@
       "class_name": "Vrf",
       "doc": "Vrf Genie Ops Object",
       "module_name": "vrf.vrf",
+      "package": "genie.libs.ops",
       "uid": "vrf",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/vrf/nxos/vrf.py#L13"
     }
@@ -903,6 +1021,7 @@
       "class_name": "Vxlan",
       "doc": "Vxlan Ops Object",
       "module_name": "vxlan.vxlan",
+      "package": "genie.libs.ops",
       "uid": "vxlan",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/vxlan/iosxe/vxlan.py#L8"
     },
@@ -910,6 +1029,7 @@
       "class_name": "Vxlan",
       "doc": "Vxlan Ops Object",
       "module_name": "vxlan.vxlan",
+      "package": "genie.libs.ops",
       "uid": "vxlan",
       "url": "https://github.com/CiscoTestAutomation/genielibs/tree/master/pkgs/ops-pkg/src/genie/libs/ops/vxlan/nxos/vxlan.py#L33"
     }

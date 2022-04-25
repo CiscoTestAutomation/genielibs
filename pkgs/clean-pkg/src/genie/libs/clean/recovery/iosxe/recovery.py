@@ -86,16 +86,10 @@ def recovery_worker(start, device, console_activity_pattern=None,
     # Set target
     target = "{}_{}".format(device.hostname, last_word_in_start)
 
-    if len(log.handlers) >= 2:
-        logfile= log.handlers[1].logfile
-    else:
-        logfile = None
-
     spawn = Spawn(spawn_command=start,
                   settings=device.cli.settings,
                   target=target,
-                  log=log,
-                  logfile=logfile)
+                  logger=device.log)
 
     # Stop the device from booting
     break_dialog = BreakBootDialog()

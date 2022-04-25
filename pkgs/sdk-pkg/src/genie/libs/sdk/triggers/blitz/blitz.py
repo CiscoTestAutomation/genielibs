@@ -12,11 +12,12 @@ from pyats.easypy import runtime
 from pyats import aetest
 from pyats.log.utils import banner
 from pyats.aetest.base import Source
+from pyats.datastructures import AttrDict
 from pyats.aetest.parameters import ParameterDict
 from pyats.aetest.loop import loopable, get_iterations
 from pyats.results import Passed, Failed, Errored, Skipped,\
                           Aborted, Passx, Blocked
-from pyats.aetest.signals import TerminateStepSignal                          
+from pyats.aetest.signals import TerminateStepSignal
 
 from .actions import actions
 from .advanced_actions import advanced_actions
@@ -212,7 +213,9 @@ class Blitz(Trigger):
                       self.uid.split('.')[0] + '.' + section.uid,
                       str(section.result))
 
+        # save section.uid and section.parameters as variables
         save_variable(self, section, section.uid, str(section.result))
+        save_variable(self, section, 'section.parameters', AttrDict(section.parameters))
 
         # if continue == false ...
         if not section_continue and section.result != Passed:

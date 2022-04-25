@@ -232,3 +232,9 @@ class ImageHandler(BaseImageHandler, ImageLoader):
 
         install_packages = self.device.clean.setdefault('install_packages'+number, {})
         install_packages.update({'packages': self.packages})
+
+    def update_reload(self, number=''):
+        if self.image:
+            reload_service_args = self.device.clean.setdefault('reload'+number, {}).\
+                setdefault('reload_service_args', {})
+            reload_service_args['image_to_boot'] = self.image[0]

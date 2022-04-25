@@ -586,12 +586,19 @@ install_image:
                           action='sendline(y)',
                           loop_continue=True,
                           continue_timer=False),
+                Statement(pattern=r"FAILED:.* ",
+                          action=None,
+                          loop_continue=False,
+                          continue_timer=False),
             ])
 
             try:
+
                 device.reload('install add file {} activate commit'.format(images[0]),
                                reply=install_add_one_shot_dialog,
-                               timeout=install_timeout)
+                               timeout=install_timeout,
+                               append_error_pattern=[r"FAILED:.* ",])
+
             except Exception as e:
                 step.failed("Failed to install the iamge", from_exception=e)
 

@@ -86,3 +86,71 @@ def configure_tacacs_server(device, server_config):
     except SubCommandFailure as e:
         logger.error(f"Failed to configure tacacs server with error {e}")
         raise
+
+def configure_policy_map(device,
+        policy_name,
+        class_map_list
+        ):
+    """ Configures policy_map
+        Args:
+             device ('obj'): device to use
+             policy_name('str) : name of the policy name
+             class_map_list('list'): list of data type hold number class map information
+             [
+             {
+             class_map_name('str') : name of the class
+             policer_val('int',optional): police,
+             priority_level('int',optional): 1 to 7,
+             bandwidth_percent('int',optional): percentage value
+             shape_average('str',optional): shape value
+             child_policy('str',optional): name of the child policy
+             } 
+             ]
+
+
+        example:
+             class_map_list=[
+             {
+             'class_map_name':'test1',
+             'policer_val':2000000000,
+             'priority_level':1 to 7,
+             'bandwidth_percent':10,
+             'shape_average':2000000000,
+             'child_policy':'child_policy'
+             }
+             ]
+
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    logger.debug(
+        "Configuring policy_map {policy_name} ".format(
+            policy_name=policy_name,
+        )
+    )
+    cmd = [f"policy-map {policy_name}"]
+    for class_map  in class_map_list:
+        cmd.append(f"class {class_map['class_map_name']}")
+        if 'policer_val' in class_map:
+            cmd.append(f"police  {class_map['policer_val']}")
+        if 'priority_level' in class_map:
+            cmd.append(f"priority level  {class_map['priority_level']}")
+        if 'bandwidth_percent' in class_map:
+            cmd.append(f"bandwidth percent {class_map['bandwidth_percent']}")
+        if 'shape_average' in class_map:
+            cmd.append(f"shape average {class_map['shape_average']}")
+        if 'child_policy'  in class_map:
+            cmd.append(f"service-policy {class_map['child_policy']}")
+
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure class_map. Error:\n{error}".format(
+                error=e
+            )
+        )

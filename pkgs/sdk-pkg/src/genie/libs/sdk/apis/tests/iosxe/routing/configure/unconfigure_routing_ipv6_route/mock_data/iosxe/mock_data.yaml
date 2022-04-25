@@ -1,0 +1,36 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no ipv6 route 9001::/64 GigabitEthernet5 8001::100: "no ipv6 route 9001::/64 GigabitEthernet5\
+      \ 8001::100\r\n% No matching route to delete\r\n"
+    no logging console: ''
+  prompt: kparames_csr1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: kparames_csr1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: kparames_csr1#

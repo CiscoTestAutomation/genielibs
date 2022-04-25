@@ -26,7 +26,7 @@ class ProcessRestartLib(object):
     switchover = ["sysmgr", "urib", "mrib"]
 
     # Process which does not generate a core
-    no_core = [""]
+    no_core = ["nxos_dc"]
 
     no_log_check = ['sysmgr', 'syslogd', 'confcheck']
 
@@ -282,7 +282,7 @@ class ProcessRestartLib(object):
                 # Check the if the process has changed pid
                 try:
                     pid = output['instance'][self.instance]['tag'][self.tag]['pid']
-                    sap = output['instance'][self.instance]['tag'][self.tag]['sap']
+                    sap = output['instance'][self.instance]['tag'][self.tag].get('sap')
                     restart_count = output['instance'][self.instance]['tag'][self.tag]['restart_count']
                     last_restart = output['instance'][self.instance]['tag'][self.tag]['last_restart_date']
                     last_restart_time = datetime.datetime.strptime(last_restart,
@@ -322,7 +322,7 @@ class ProcessRestartLib(object):
                     continue
 
                 # exclude sap when the value is not in range [0, 1023]
-                if sap > 1023:
+                if not sap or sap > 1023:
                     self.verify_exclude.append('sap')
           
 

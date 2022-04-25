@@ -393,3 +393,50 @@ def unconfigure_vlan_configuration(device, vlanid):
             'Could not remove vlan configuration {vlanid}, Error: {error}'.format(
                 vlanid=vlanid, error=e)
         )
+
+def unconfigure_vlan_vpls(device, vlanid):
+    """ Unconfig vpls on vlan
+        Args:
+            device (`obj`): Device object
+            vlanid (`str`): Vlan id
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed configuring interface
+    """
+
+    try:
+        device.configure([
+            "no vlan configuration {vlanid}".format(vlanid=vlanid),
+            "no vlan dot1q tag native"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            'Could not unconfigure vpls on vlan {vlanid}, Error: {error}'.format(
+                vlanid=vlanid, error=e)
+        )
+        
+def configure_private_vlan_on_vlan(device, vlan1, vlan2):
+
+    """ configure switchport mode trunk to the interface
+        Args:
+            device (`obj`): Device object
+            vlan1 (`str`): vlan to be added to the port
+            vlan2 (`str`): vlan to be added to the port
+        Returns:
+            None
+    """
+    log.debug("Configuring private vlan on VLAN")
+    
+    try:
+        device.configure(
+            [
+                f"vlan {vlan1}",
+                "private-vlan isolated",
+                f"vlan {vlan2}",
+                "private-vlan primary",
+                f"private-vlan association {vlan1}",
+            ]
+        )
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure private vlan on {vlan1} {vlan2}. Error:\n{e}")

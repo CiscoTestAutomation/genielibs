@@ -1,0 +1,44 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface GigabitEthernet1/1/0/1: "interface GigabitEthernet1/1/0/1\r\n"
+    ip dhcp snooping trust: "%Command rejected: invalid private vlan association between\
+      \ vlan1222 and vlan222. VLAN 1222 data is not available.\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    switchport: "switchport\r\n"
+    switchport mode private-vlan trunk promiscuous: "switchport mode private-vlan\
+      \ trunk promiscuous\r\n"
+    switchport private-vlan mapping trunk 1222 222: "switchport private-vlan mapping\
+      \ trunk 1222 222\r\n"
+    switchport private-vlan trunk allowed vlan 1-4093: "switchport private-vlan trunk\
+      \ allowed vlan 1-4093\r\n"
+  prompt: 9400-D2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: 9400-D2(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: 9400-D2#

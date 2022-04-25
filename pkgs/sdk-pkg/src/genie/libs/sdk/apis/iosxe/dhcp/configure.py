@@ -374,3 +374,113 @@ def create_dhcp_pool_withoutrouter(
                 pool_name=pool_name
             )
         )
+
+def unconfigure_ip_dhcp_snooping_verify(device, verify_type):
+    """ unconfigure ip dhcp scooping verify on device
+        Args:
+            device (`obj`): Device object
+            verify_type (`str`): verify type (i.e mac-address , no-relay-agent-address)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring dhcp snooping verify on device
+    """
+    log.debug("unconfiguring ip dhcp scooping verify on device")
+    
+    try:
+        device.configure(f"no ip dhcp snooping verify {verify_type}")
+        
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not unconfigure ip dhcp scooping verify. Error:\n{e}"
+        )
+
+def configure_ip_dhcp_client(device, dhcp_client_type):
+    """ Configure ip dhcp client on device
+        Args:
+            device (`obj`): Device object
+            dhcp_client_type (`str`): DHCP client type (i.e broadcast-flag, default-router, forcerenew, network-discovery, update)
+        Returns:
+            None
+        Raises:
+            SubCommandFailure : ip dhcp client is not configured
+    """
+    log.debug("configuring DHCP client on device")
+    
+    try:
+        device.configure(f"ip dhcp-client {dhcp_client_type}")
+        
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure ip DHCP client. Error:\n{e}"
+        )
+def enable_ip_dhcp_auto_broadcast(device):
+    """ Enable ip dhcp auto-broadcast on device
+        Args:
+            device ('obj'): device to run on
+        Returns:
+            None
+        Raises:
+            SubCommandFailure : Failed enabling ip dhcp auto-broadcast on device
+    """
+    log.debug("Enabling DHCP auto-broadcast on device")
+    
+    try:
+        device.configure("ip dhcp auto-broadcast")
+    
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not enable DHCP auto-broadcast on device. Error:\n{e}"
+        )
+        
+def disable_ip_dhcp_auto_broadcast(device):
+    """ Disable ip dhcp auto-broadcast on device
+        Args:
+            device ('obj'): device to run on
+        Returns:
+            None
+        Raises:
+            SubCommandFailure : Failed disabling ip dhcp auto-broadcast on device
+    """
+    log.debug("Disabling DHCP auto-broadcast on device")
+    
+    try:
+        device.configure("no ip dhcp auto-broadcast")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not disable DHCP auto-broadcast on device. Error:\n{e}"
+            )
+
+def enable_dhcp_smart_relay(device):
+    """ Enable dhcp smart-relay on device
+        Args:
+            device ('obj'): device to run on
+        Returns:
+            None
+        Raises:
+            SubCommandFailure : Failed enabling smart-relay on device
+    """
+    log.debug("Enabling DHCP smart-relay on device")
+    try:
+        device.configure("ip dhcp smart-relay")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not enable DHCP smart-relay on device. Error:\n{e}"
+            )
+
+def disable_dhcp_smart_relay(device):
+    """ Disable ip dhcp auto-broadcast on device
+        Args:
+            device ('obj'): device to run on
+        Returns:
+            None
+        Raises:
+            SubCommandFailure : Failed disabling smart-relay on device
+    """
+    log.debug("Disabling DHCP smart-relay on device")
+    try:
+        device.configure("no ip dhcp smart-relay")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not disable DHCP smart-relay on device. Error:\n{e}"
+            )

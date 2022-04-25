@@ -529,5 +529,55 @@ class TestYangExec(unittest.TestCase):
         self.assertEqual(result, False)
 
 
+    @patch('genie.libs.sdk.triggers.blitz.yangexec.netconf_send')
+    def test_run_netconf_get_lxml_without_format(self, netconf_send_mock):
+        """ Test run_netconf get action with lxml objects"""
+        operation = 'get'
+        steps = "STEP 1: Starting action yang on device 'CSR1K-5'"
+        datastore = {'lock': True, 'retry': 40, 'type': ''}
+        rpc_data = {
+            'namespace': {
+                'oc-if': 'http://openconfig.net/yang/interfaces',
+            },
+            'nodes': [{
+                'xpath': '/oc-if:interfaces',
+                'nodetype': 'container'
+            }]
+        }
+        returns = [{
+            'id': 0,
+            'name': 'name',
+            'op': '==',
+            'selected': True,
+            'value': 'GigabitEthernet3',
+            'xpath': '/interfaces/interface/config/name'
+        }, {
+            'id': 1,
+            'name': 'type',
+            'op': '==',
+            'selected': True,
+            'value': 'ianaift:ethernetCsmacd',
+            'xpath': '/interfaces/interface/config/type'
+        }]
+
+        netconf_send_mock.return_value = [(
+            'get',
+            '<?xml version="1.0" encoding="UTF-8"?>\n<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"\
+             message-id="urn:uuid:0833adc1-8b89-4365-8bf5-99c607c3232d" xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">\
+             <data><interfaces xmlns="http://openconfig.net/yang/interfaces"><interface><name>GigabitEthernet1</name><config>\
+             <name>GigabitEthernet1</name><type xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">ianaift:ethernetCsmacd</type>\
+             <description>test3</description><enabled>true</enabled></config></interface><interface><name>GigabitEthernet2</name><config>\
+             <name>GigabitEthernet2</name><type xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">ianaift:ethernetCsmacd</type>\
+             <description>mike</description><enabled>true</enabled></config></interface><interface><name>GigabitEthernet3</name><config>\
+             <name>GigabitEthernet3</name><type xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">ianaift:ethernetCsmacd</type>\
+             <description>mike test</description><enabled>false</enabled></config></interface></interfaces></data></rpc-reply>'
+        )]
+
+        result = run_netconf(
+            operation, self.netconf_device, steps, datastore, rpc_data, returns
+        )
+        self.assertEqual(result, True)
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -54,7 +54,7 @@ class StageSection(TestSection):
         -------
             >>> str(section)
         '''
-        return 'stage %s' %(self.uid)
+        return 'stage %s' % self.uid
 
 
 class BaseStage(TestContainer):

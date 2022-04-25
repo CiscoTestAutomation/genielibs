@@ -733,3 +733,39 @@ def get_slice_id_of_interface(device,interface):
     slice_id = out['interface'][interface]['Core']
 
     return slice_id
+
+
+def get_total_asics_cores(device, switch = None):
+    """Get the total number of asics and cores
+
+    Args:   
+        device (obj): Device object
+        switch ('str'): switch to get info
+
+    Return: 
+        total_asics: Number of asics
+        total_cores: Number of cores
+    """
+    
+    if switch is None:
+        try:    
+            output = device.parse('show platform software fed active ifm mappings')
+        except SubCommandFailure:
+            log.error('Could not get ifm mappings')
+            return None
+
+    else:
+        try:
+            output = device.parse('show platform software fed switch active ifm mappings')
+        except SubCommandFailure:
+            log.error('Could not get ifm mappings')
+            return None
+
+    asic = output.q.get_values('asic')
+    core = output.q.get_values('core')
+    total_asics = set(asic)
+    total_asics = list(total_asics)
+    total_cores = set(core)
+    total_cores = list(total_cores)
+
+    return total_asics, total_cores 

@@ -18,8 +18,8 @@ def configure_flow_record(
     match_ipv4_field_2='tos',
     match_transport_field_1='destination-port',
     match_transport_field_2='source-port',
-    collect_counter_bytes='True',
-    collect_counter_packets='True',
+    collect_counter_bytes=True,
+    collect_counter_packets=True,
     collect_int_field='output',
     ):
     
@@ -87,29 +87,24 @@ def configure_flow_monitor(device, monitor_name, exporter_name, record_name,
             exporter_name (`str`): Flow exporter name
             record_name (`str`): Flow record name
             timeout ('int'): Timeout
+            
         Return:
             None
+
         Raise:
             SubCommandFailure: Failed configuring flow monitor
     """
     
     try:
         device.configure([
-                          "flow monitor {monitor_name}".
-                          format(monitor_name=monitor_name),
-                          "exporter {exporter_name}".
-                          format(exporter_name=exporter_name),
-                          "cache timeout inactive {timeout}".
-                          format(timeout=timeout),
-                          "cache timeout active {timeout}".
-                          format(timeout=timeout),
-                          "record {record_name}".
-                          format(record_name=record_name)
+                          f"flow monitor {monitor_name}",
+                          f"exporter {exporter_name}",
+                          f"cache timeout inactive {timeout}",
+                          f"cache timeout active {timeout}",
+                          f"record {record_name}"
                           ])
-
     except SubCommandFailure:
-        raise SubCommandFailure(
-               'Could not configure flow monitor {monitor_name}'.
-               format(monitor_name=monitor_name)
-        )
+            raise SubCommandFailure(
+               f'Could not configure flow monitor {monitor_name}'
+            )
 

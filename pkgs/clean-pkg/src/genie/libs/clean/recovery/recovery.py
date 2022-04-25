@@ -314,6 +314,10 @@ def recovery_processor(
     after:
         None
     '''
+    # If connect stage was not done, don't check recovery
+    if 'Connect' not in section.parent.history:
+        return
+
     log.info('Starting Device Recovery checks!')
 
     # Get device

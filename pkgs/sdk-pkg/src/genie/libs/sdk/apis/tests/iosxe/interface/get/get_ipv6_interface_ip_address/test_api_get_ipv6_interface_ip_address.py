@@ -28,3 +28,23 @@ class TestGetIpv6InterfaceIpAddress(unittest.TestCase):
         result = get_ipv6_interface_ip_address(self.device, 'GigabitEthernet1')
         expected_output = None
         self.assertEqual(result, expected_output)
+
+        result = get_ipv6_interface_ip_address(self.device, 'GigabitEthernet1', as_list=True)
+        expected_output = None
+        self.assertEqual(result, expected_output)
+
+        result = get_ipv6_interface_ip_address(self.device, 'GigabitEthernet2')
+        expected_output = '2001:4::A8BB:1FF:FE03:21'
+        self.assertEqual(result, expected_output)
+
+        result = get_ipv6_interface_ip_address(self.device, 'GigabitEthernet2', link_local=True)
+        expected_output = 'FE80::A8BB:1FF:FE03:21'
+        self.assertEqual(result, expected_output)
+
+        result = get_ipv6_interface_ip_address(self.device, 'GigabitEthernet2', as_list=True)
+        expected_output = ['2001:4::A8BB:1FF:FE03:21', '2001:103::A8BB:1FF:FE03:21']
+        self.assertEqual(result, expected_output)
+
+        result = get_ipv6_interface_ip_address(self.device, 'GigabitEthernet2', link_local=True, as_list=True)
+        expected_output = ['FE80::A8BB:1FF:FE03:21', '2001:4::A8BB:1FF:FE03:21', '2001:103::A8BB:1FF:FE03:21']
+        self.assertEqual(result, expected_output)

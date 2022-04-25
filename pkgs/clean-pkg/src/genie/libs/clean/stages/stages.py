@@ -26,6 +26,8 @@ from unicon.core.errors import SubCommandFailure
 
 # Logger
 log = logging.getLogger(__name__)
+
+
 class Connect(BaseStage):
     """This stage connects to the device that is being cleaned.
 
@@ -493,7 +495,7 @@ copy_to_linux:
                                     file, e))
 
                     if rename_images:
-                        rename_images = rename_images + '_' + str(index)
+                        new_filename = rename_images + '_' + str(index) if index else rename_images
 
                     try:
                         new_name = device.api.modify_filename(
@@ -505,7 +507,7 @@ copy_to_linux:
                             limit=image_length_limit,
                             unique_file_name=unique_file_name,
                             unique_number=unique_number,
-                            new_name=rename_images)
+                            new_name=new_filename)
                     except Exception as e:
                         step.failed(
                             "Can not change file name. Terminating clean:\n{e}".

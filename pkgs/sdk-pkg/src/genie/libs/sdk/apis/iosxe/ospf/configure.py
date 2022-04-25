@@ -722,8 +722,12 @@ def configure_ospf_routing(device, ospf_process_id, router_id=None,
                 ]
         )
     else:
-        config.append('router ospf {ospf_process_id}'.format(
-            ospf_process_id=ospf_process_id))
+        if vrf_name:
+            config.append('router ospf {ospf_process_id} vrf {vrf_name}'.format(
+                ospf_process_id=ospf_process_id, vrf_name=vrf_name))
+        else:
+            config.append('router ospf {ospf_process_id}'.format(
+                ospf_process_id=ospf_process_id))
     if nsf:
         if nsf_options:
             config.append('nsf {nsf_options}'.format(
@@ -852,12 +856,13 @@ def configure_ip_prefix_list(device, prefix_list_name, seq, ip_address, subnet_i
             )
         )
 
-def unconfigure_ospf_on_device(device, ospf_process_id):
+def unconfigure_ospf_on_device(device, ospf_process_id, vrf_name=None):
     """ Unconfigures ospf and ip routing on device
 
         Args:
             device ('obj'): Device to use
             ospf_process_id ('str'): Process id for ospf process
+            vrf_name ('str', optional): vrf name, default value is None
 
         Returns:
             N/A
@@ -865,15 +870,18 @@ def unconfigure_ospf_on_device(device, ospf_process_id):
         Raises:
             SubCommandFailure
     """
+    if vrf_name:
+        cmd = "no router ospf {ospf_process_id} vrf {vrf_name}".format(
+            ospf_process_id=ospf_process_id, vrf_name=vrf_name)
+    else:
+        cmd = "no router ospf {ospf_process_id}".format(
+            ospf_process_id=ospf_process_id)
     try:
-        device.configure('no router ospf {ospf_process_id}'.format(
-            ospf_process_id=ospf_process_id))
+        device.configure(cmd)
     except SubCommandFailure as e:
         raise SubCommandFailure(
-                "Failed to unconfigure router ospf {ospf_process_id} "
-                "on device, Error: {error}".format(
-                    ospf_process_id=ospf_process_id, error=e))
-    
+                "Failed to unconfigure router ospf {ospf_process_id} on device, \
+                    Error: {error}".format(ospf_process_id=ospf_process_id, error=e))
         
 def unconfigure_ip_prefix_list(device, prefix_list_name, seq, ip_address, subnet_id=32):
     """ unconfigure prefix-list

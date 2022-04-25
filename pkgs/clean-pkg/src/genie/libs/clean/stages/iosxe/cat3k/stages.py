@@ -99,19 +99,23 @@ install_image:
                           continue_timer=False),
 
                 Statement(pattern='Press RETURN to get started.*',
-                         action='sendline()',
-                         args=None,
-                         loop_continue=False,
-                         continue_timer=False)
+                          action='sendline()',
+                          args=None,
+                          loop_continue=False,
+                          continue_timer=False),  
+                Statement(pattern=r"FAILED:.* ",
+                          action=None,
+                          loop_continue=False,
+                          continue_timer=False),
             ])
 
             try:
-                device.execute('install add file {} activate commit'.format(images[0]),
+                device.reload('install add file {} activate commit'.format(images[0]),
                                reply=install_add_one_shot_dialog,
-                               append_error_pattern=['FAILED:'],
+                               append_error_pattern=['FAILED:.* '],
                                timeout=install_timeout)
             except Exception as e:
-                step.failed("Failed to install the iamge", from_exception=e)
+                step.failed("Failed to install the image", from_exception=e)
 
             image_mapping = self.history['InstallImage'].parameters.setdefault(
                 'image_mapping', {})

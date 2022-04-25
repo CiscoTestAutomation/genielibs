@@ -1,0 +1,43 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface Tunnel1: "interface Tunnel1\r\n"
+    ip address 192.168.1.1 255.255.255.0: "ip address 192.168.1.1 255.255.255.0\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    tunnel destination 30.30.30.2: "tunnel destination 30.30.30.2\r\n"
+    tunnel mode ipsec dual-overlay: "tunnel mode ipsec dual-overlay\r\n"
+    tunnel protection ipsec profile global_ipsec_profile: "tunnel protection ipsec\
+      \ profile global_ipsec_profile\r\n"
+    tunnel source G1: "tunnel source G1\r\n"
+    tunnel vrf UNDERLAY: "tunnel vrf UNDERLAY\r\n"
+    vrf forwarding OVERLAY: "vrf forwarding OVERLAY\r\n"
+  prompt: kparames_csr1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: kparames_csr1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: kparames_csr1#

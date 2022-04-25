@@ -58,7 +58,7 @@ class RommonDialog(TelnetDialog):
         self.add_statement(Statement(pattern=r'^.*(Username|login): ?$',
                                      action=print_message,
                                      args={'message': 'Device reached login prompt before rommon prompt',
-                                           'raise_exception': True}))
+                                           'raise_exception': False}))
 
          # Would you like to enter the initial configuration dialog? [yes/no]:
         self.add_statement(Statement(pattern=r'^.*(initial|basic) configuration dialog *\?.*',
@@ -105,15 +105,7 @@ class RommonDialog(TelnetDialog):
     # switch:
     @statement_decorator(r'(.*)((rommon(.*))+>|switch *:).*', loop_continue=True)
     def boot_device(spawn, session, context):
-        # Get value for BOOT var
-        boot_image = context['boot_image']
-        # Set BOOT var and wait
-        spawn.sendline('BOOT={}'.format(boot_image))
-        time.sleep(0.5)
-        # # Print vars to log
-        # spawn.sendline('set')
-        # Boot device with BOOT var image
-        spawn.sendline('boot {}'.format(boot_image))
+        spawn.sendline(f"boot {context['boot_image']}")
         time.sleep(0.5)
 
     # Password:
@@ -138,7 +130,7 @@ class RommonDialog(TelnetDialog):
         log.info("Finding an entry that includes the string '{}'".
                  format(context['boot_image']))
 
-        lines = re.split(r'\s{4,}', spawn.buffer)
+        lines = re.split(r'\s{3,}', spawn.buffer)
 
         selected_line = None
         desired_line = None

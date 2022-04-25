@@ -466,46 +466,41 @@ def delete_files(device, locations, filenames):
 
 def verify_ping(
     device, address, expected_max_success_rate=100, expected_min_success_rate=1,
-    count=None, source=None, vrf=None, max_time=60, check_interval=10,
-):
+    count=None, source=None, vrf=None, max_time=60, check_interval=10, size=None):
     """Verify ping
 
     Args:
             device ('obj'): Device object
             address ('str'): Address value
-            expected_max_success_rate (int): Expected maximum success rate (default: 100)
-            expected_min_success_rate (int): Expected minimum success rate (default: 1)
-            count ('int'): Count value for ping command
-            source ('str'): Source IP address, default: None
-            vrf (`str`): vrf id
-            max_time (`int`): Max time, default: 30
-            check_interval (`int`): Check interval, default: 10
+            expected_max_success_rate (int,optional): Expected maximum success rate ( Default is 100 )
+            expected_min_success_rate (int,optional): Expected minimum success rate ( Default is 1 )
+            count ('int',optional): Count value for ping command ( Default is None )
+            source ('str',optional): Source IP address ( Default is None )
+            vrf (`str`,optional): vrf id ( Default is None )
+            max_time (`int`,optional): Max time ( Default is 60 )
+            check_interval (`int`,optional): Check interval ( Default is 10 )
+            size ('int',optional): Datagram size ( Default is None )
     """
 
     p = re.compile(r"Success +rate +is +(?P<rate>\d+) +percent.*")
 
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
-        if address and count and source:
-            cmd = 'ping {address} source {source} repeat {count}'.format(
-                    address=address,
-                    source=source,
-                    count=count)
-        elif address and count:
-            cmd = 'ping {address} repeat {count}'.format(
-                    address=address,
-                    count=count)
-        elif address and source:
-            cmd = 'ping {address} source {source}'.format(
-                    address=address,
-                    source=source)
-        elif address and not vrf:
-            cmd = 'ping {address}'.format(address=address)
-        elif vrf:
-            cmd = "ping vrf {vrf} {address}".format(vrf=vrf,address=address)
-        else:
+
+        if not address:
             log.info('Need to pass address as argument')
             return False
+        if vrf:
+            cmd = "ping vrf {vrf} {address}".format(vrf=vrf,address=address)
+        else:
+            cmd = "ping {address}".format(address=address)
+
+        if source:
+            cmd += " source {source}".format(source=source)
+        if count:
+            cmd += " repeat {count}".format(count=count)
+        if size:
+            cmd += " size {size}".format(size=size)
         try:
             out = device.execute(cmd, error_pattern=['% No valid source address for destination'])
         except SubCommandFailure as e:
