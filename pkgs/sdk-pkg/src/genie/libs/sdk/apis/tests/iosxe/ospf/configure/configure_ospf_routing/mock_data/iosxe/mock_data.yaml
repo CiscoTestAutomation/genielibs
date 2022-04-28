@@ -7,14 +7,14 @@ configure:
     no logging console: ''
     nsf cisco: "nsf cisco\r\n"
     nsr debug detail: "nsr debug detail\r\n"
-    router ospf 1: "router ospf 1\r\n"
-  prompt: C9404R_HA(config)#
+    router ospf 200: "router ospf 200\r\n"
+  prompt: kparames_csr10(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: C9404R_HA(config-line)#
+  prompt: kparames_csr10(config-line)#
 connect:
   commands:
     ? ''
@@ -34,4 +34,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: C9404R_HA#
+  prompt: kparames_csr10#

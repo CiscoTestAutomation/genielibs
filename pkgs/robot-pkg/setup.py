@@ -45,7 +45,7 @@ def version_info(*paths):
 # compute version range
 version, version_range = version_info('src', 'genie', 'libs', 'robot', '__init__.py')
 
-install_requires = ['robotframework']
+install_requires = ['robotframework<5.0']
 
 # launch setup
 setup(

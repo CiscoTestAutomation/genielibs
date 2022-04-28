@@ -338,35 +338,43 @@ def configure_ipsec_tunnel(device,
                             tunnel_src_ip,
                             tunnel_mode,
                             tunnel_dst_ip,
-                            ipsec_profile_name):
-    """ Configures ipsec transform set
+                            ipsec_profile_name,
+                            vrf=None,
+                            tunnel_vrf=None
+                            ):
+    """ Configures ipsec tunnel interface
         Args:
             device (`obj`): Device object
             tunnel_intf ('str'): tunnel interface
             tunnel_ip ('str'): tunnel ip addr
             tunnel_mask ('str'): tunnel mask
             tunnel_src_ip ('str'): tunnel source IP
-            tunnel_mode ('str'): ipv4 or ipv6
+            tunnel_mode ('str'): ipv4 or ipv6 or dual-overlay
             tunnel_dst_ip ('str'): tunnel destination IP
             ipsec_profile_name ('str'): IPSEC profile name
+            vrf ('str',optional): overlay or ivrf of the tunnel, default is None
+            tunnel_vrf ('str',optional): underlay or fvrf name, default is None
 
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-    log.info(
+    log.debug(
         "Configuring IPSEC tunnel"
     )
 
     configs = []
     configs.append("interface {tunnel_intf}".format(tunnel_intf=tunnel_intf))
+    if vrf:
+        configs.append("vrf forwarding {vrf}".format(vrf=vrf))
     configs.append("ip address {tunnel_ip} {tunnel_mask}".format(tunnel_ip=tunnel_ip,tunnel_mask=tunnel_mask))
     configs.append("tunnel source {tunnel_src_ip}".format(tunnel_src_ip=tunnel_src_ip))
     configs.append("tunnel destination {tunnel_dst_ip}".format(tunnel_dst_ip=tunnel_dst_ip))
     configs.append("tunnel mode ipsec {tunnel_mode}".format(tunnel_mode=tunnel_mode))
+    if tunnel_vrf:
+        configs.append("tunnel vrf {tunnel_vrf}".format(tunnel_vrf=tunnel_vrf))
     configs.append("tunnel protection ipsec profile {ipsec_profile_name}".format(ipsec_profile_name=ipsec_profile_name))
-
 
     try:
         device.configure(configs)
@@ -377,7 +385,7 @@ def configure_ipsec_tunnel(device,
         raise
 
 def configure_crypto_ikev2_keyring(device, keyring_name, peer_name=None, preshare_key=None, address='0.0.0.0', mask='0.0.0.0', type='ipv4'):
-    """ Configure Cryto Ikev2 Keyring
+    """ Configure Crypto Ikev2 Keyring
     Args:
         device (`obj`): Device object
         keyring_name (`str`): Keyring name
@@ -429,12 +437,12 @@ def unconfigure_crypto_ikev2_keyring(device,keyring):
         )
 
 def configure_ikev2_profile_pre_share(device, profile_name, auth_local='pre-share', auth_remote='pre-share',
-                                    keyring=None, address=None,mask='', protocol='ipv4',
-                                    dpd_interval=None, dpd_retry='2', dpd_type='periodic'):
+                                    keyring=None, address=None, mask='', protocol='ipv4',
+                                    dpd_interval=None, dpd_retry='2', dpd_type='periodic', fvrf=None):
     """ Configure Ikev2 Profile with pre-share option
         Args:
             device ('obj')    : device to use
-            profile_name ('str).  Ikev2 Profile Name
+            profile_name ('str)  Ikev2 Profile Name
             auth_local ('str,optional). Authentication local (Default is pre-share)
             auth_remote ('str',optional) Authentication (i.e esp-sha-hmac) (Default is pre-share)
             keyring ('str',optional) Ikev2 Keyring name (needs to be pre-configured) (Default is None)
@@ -445,6 +453,7 @@ def configure_ikev2_profile_pre_share(device, profile_name, auth_local='pre-shar
             dpd_interval ('str',optional) DPD interval (Default None)
             dpd_retry ('str',optional) DPD Retries (Default 2)
             dpd_type ('str',optional) DPD type (ie periodic or on-demand) (Default periodic)
+            fvrf ('str',optional) FVRF name (Default None)
         Returns:
             None
         Raises:
@@ -453,6 +462,8 @@ def configure_ikev2_profile_pre_share(device, profile_name, auth_local='pre-shar
     #initialize list variable
     config_list = []
     config_list.append("crypto ikev2 profile {profile_name}".format(profile_name=profile_name))
+    if fvrf:
+        config_list.append("match fvrf {fvrf}".format(fvrf=fvrf))
     if address:
         if protocol == 'ipv4':
                 config_list.append("match identity remote address {address} {mask}".format(address=address, mask=mask))

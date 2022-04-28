@@ -1,0 +1,101 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: router1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: router1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ip route:
+      response:
+      - "Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP\r\
+        \n       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area \r\
+        \n       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2\r\n\
+        \       E1 - OSPF external type 1, E2 - OSPF external type 2, m - OMP\r\n\
+        \       n - NAT, Ni - NAT inside, No - NAT outside, Nd - NAT DIA\r\n     \
+        \  i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2\r\
+        \n       ia - IS-IS inter area, * - candidate default, U - per-user static\
+        \ route\r\n       H - NHRP, G - NHRP registered, g - NHRP registration summary\r\
+        \n       o - ODR, P - periodic downloaded static route, l - LISP\r\n     \
+        \  a - application route\r\n       + - replicated route, % - next hop override,\
+        \ p - overrides from PfR\r\n       & - replicated local route overrides by\
+        \ connected\r\n\r\nGateway of last resort is not set\r\n"
+      - "Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP\r\
+        \n       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area \r\
+        \n       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2\r\n\
+        \       E1 - OSPF external type 1, E2 - OSPF external type 2, m - OMP\r\n\
+        \       n - NAT, Ni - NAT inside, No - NAT outside, Nd - NAT DIA\r\n     \
+        \  i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2\r\
+        \n       ia - IS-IS inter area, * - candidate default, U - per-user static\
+        \ route\r\n       H - NHRP, G - NHRP registered, g - NHRP registration summary\r\
+        \n       o - ODR, P - periodic downloaded static route, l - LISP\r\n     \
+        \  a - application route\r\n       + - replicated route, % - next hop override,\
+        \ p - overrides from PfR\r\n       & - replicated local route overrides by\
+        \ connected\r\n\r\nGateway of last resort is not set\r\n\r\n      10.0.0.0/32\
+        \ is subnetted, 2 subnets\r\nC        10.10.10.0 is directly connected, Loopback0\r\
+        \nO        10.10.10.10 [110/1] via 192.168.103.1, 13:13:12, BDI103\r\n   \
+        \   192.168.103.0/24 is variably subnetted, 2 subnets, 2 masks\r\nC      \
+        \  192.168.103.0/24 is directly connected, BDI103\r\nL        192.168.103.254/32\
+        \ is directly connected, BDI103"
+      response_type: circular
+    show ip route vrf red:
+      response:
+      - "\r\nRouting Table: red\r\nCodes: L - local, C - connected, S - static, R\
+        \ - RIP, M - mobile, B - BGP\r\n       D - EIGRP, EX - EIGRP external, O -\
+        \ OSPF, IA - OSPF inter area \r\n       N1 - OSPF NSSA external type 1, N2\
+        \ - OSPF NSSA external type 2\r\n       E1 - OSPF external type 1, E2 - OSPF\
+        \ external type 2, m - OMP\r\n       n - NAT, Ni - NAT inside, No - NAT outside,\
+        \ Nd - NAT DIA\r\n       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1,\
+        \ L2 - IS-IS level-2\r\n       ia - IS-IS inter area, * - candidate default,\
+        \ U - per-user static route\r\n       H - NHRP, G - NHRP registered, g - NHRP\
+        \ registration summary\r\n       o - ODR, P - periodic downloaded static route,\
+        \ l - LISP\r\n       a - application route\r\n       + - replicated route,\
+        \ % - next hop override, p - overrides from PfR\r\n       & - replicated local\
+        \ route overrides by connected\r\n\r\nGateway of last resort is not set\r\n"
+      - "\r\nRouting Table: red\r\nCodes: L - local, C - connected, S - static, R\
+        \ - RIP, M - mobile, B - BGP\r\n       D - EIGRP, EX - EIGRP external, O -\
+        \ OSPF, IA - OSPF inter area \r\n       N1 - OSPF NSSA external type 1, N2\
+        \ - OSPF NSSA external type 2\r\n       E1 - OSPF external type 1, E2 - OSPF\
+        \ external type 2, m - OMP\r\n       n - NAT, Ni - NAT inside, No - NAT outside,\
+        \ Nd - NAT DIA\r\n       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1,\
+        \ L2 - IS-IS level-2\r\n       ia - IS-IS inter area, * - candidate default,\
+        \ U - per-user static route\r\n       H - NHRP, G - NHRP registered, g - NHRP\
+        \ registration summary\r\n       o - ODR, P - periodic downloaded static route,\
+        \ l - LISP\r\n       a - application route\r\n       + - replicated route,\
+        \ % - next hop override, p - overrides from PfR\r\n       & - replicated local\
+        \ route overrides by connected\r\n\r\nGateway of last resort is 192.168.103.254\
+        \ to network 0.0.0.0\r\n\r\nS*    0.0.0.0/0 [254/0] via 192.168.103.254\r\n\
+        \      192.168.103.0/24 is variably subnetted, 3 subnets, 2 masks\r\nC   \
+        \     192.168.103.0/24 is directly connected, Ethernet0/0.103\r\nS       \
+        \ 192.168.103.1/32 [254/0] via 192.168.103.254, Ethernet0/0.103\r\nL     \
+        \   192.168.103.101/32 is directly connected, Ethernet0/0.103"
+      response_type: circular
+    show ip route vrf nonexist:
+      response:
+      - "% IP routing table vrf nonexist does not exist"
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: router1#

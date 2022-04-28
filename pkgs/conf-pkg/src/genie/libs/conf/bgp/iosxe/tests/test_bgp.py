@@ -712,7 +712,7 @@ class test_bgp(TestCase):
              ' exit',
          ]))
 
-def test_uncfg_as(self):
+    def test_uncfg_as(self):
 
         Genie.testbed = testbed = Testbed()
         dev1 = Device(testbed=testbed, name='PE1', os='iosxe')

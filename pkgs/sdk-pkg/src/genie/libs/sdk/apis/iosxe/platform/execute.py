@@ -497,7 +497,7 @@ def execute_clear_platform_software_fed_switch_acl_counters_hardware(device,swit
 
 def execute_issu_install_package(device, image_dir, image, save_system_config=True,
                             install_timeout=660, reconnect_max_time=600,
-                            reconnect_interval=60):
+                            reconnect_interval=60, append_error_pattern = ['.*FAILED.*']):
     """ Installs issu package
         Args:
             device ("obj"): Device object
@@ -529,10 +529,11 @@ def execute_issu_install_package(device, image_dir, image, save_system_config=Tr
     cmd = """install add file {dir}:{image} act issu commit""".format(dir=image_dir, image=image)
 
     try:
-        device.execute(cmd, reply=dialog, timeout=install_timeout)
+        device.execute(cmd, reply=dialog, timeout=install_timeout,append_error_pattern=append_error_pattern)
     except SubCommandFailure as e:
          raise SubCommandFailure(
              "Could not execute on {device}. Error:\n{error}".format(device=device, error=e))
+
     time.sleep(100)
     log.info(f"Waiting for {device.hostname} to reload")
 
@@ -647,6 +648,22 @@ def execute_clear_platform_software_fed_active_cpu_interface(device):
     """
     try:
        device.execute("clear platform software fed active cpu-interface")
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not clear active cpu-interface on device")
+
+def execute_clear_platform_hardware_fed_active_qos_statistics_interface(device,intf):
+    """ clear platform hardware fed active qos statistics interface
+        Args:
+            device ('obj'): Device object
+            inft ('str'): interface name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+       device.execute("clear platform hardware fed active qos statistics interface {intf}".format(intf=intf))
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not clear active cpu-interface on device")

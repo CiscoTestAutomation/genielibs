@@ -1,7 +1,6 @@
 import logging
 import unittest
-
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import Mock, MagicMock, call, ANY
 from collections import OrderedDict
 
 from genie.libs.clean.stages.iosxe.cat3k.stages import InstallImage
@@ -73,7 +72,7 @@ class Installimage(unittest.TestCase):
 
         # And we want the verify_boot_variable api to be mocked.
         # This simulates the pass case.
-        self.device.execute = Mock()
+        self.device.reload = Mock()
 
         # Call the method to be tested (clean step inside class)
         self.cls.install_image(
@@ -100,3 +99,19 @@ class Installimage(unittest.TestCase):
 
         # Check the overall result is as expected
         self.assertEqual(Failed, steps.details[0].result)
+class TestInstallImage(unittest.TestCase):
+
+    def test_iosxe_install_image(self):
+        steps = Steps()
+        cls = InstallImage()
+        cls.history = MagicMock()
+        cls.new_boot_var = 'image.bin'
+
+        device = Mock()
+        device.reload = Mock()
+
+        cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'])
+        device.reload.assert_has_calls([
+            call('install add file sftp://server/image.bin activate commit', reply=ANY, timeout=500, append_error_pattern=['FAILED:.* '])])
+
+        self.assertEqual(Passed, steps.details[0].result)

@@ -320,6 +320,6 @@ class TestInstallImage(unittest.TestCase):
         cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'])
 
         device.reload.assert_has_calls([
-            call('install add file sftp://server/image.bin activate commit', reply=ANY, timeout=500)])
+            call('install add file sftp://server/image.bin activate commit', reply=ANY, timeout=500, append_error_pattern=['FAILED:.* '])])
 
         self.assertEqual(Passed, steps.details[0].result)

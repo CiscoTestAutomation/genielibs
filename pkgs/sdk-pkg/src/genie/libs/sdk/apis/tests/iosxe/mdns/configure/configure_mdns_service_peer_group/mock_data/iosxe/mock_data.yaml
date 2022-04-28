@@ -1,0 +1,39 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    mdns-sd service-peer group: "mdns-sd service-peer group\r\n"
+    no logging console: ''
+    peer-group 3: "peer-group 3\r\n"
+    service-peer 20.0.0.20 location-group 4096 role bonjour: "service-peer 20.0.0.20\
+      \ location-group 4096 role bonjour\r\n"
+    service-policy policy44: "service-policy policy44\r\n"
+  prompt: C9500H_Sathya(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: C9500H_Sathya(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: C9500H_Sathya#

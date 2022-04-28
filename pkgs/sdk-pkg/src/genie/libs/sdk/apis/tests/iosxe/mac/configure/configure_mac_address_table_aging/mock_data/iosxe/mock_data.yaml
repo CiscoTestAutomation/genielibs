@@ -6,9 +6,7 @@ configure:
       new_state: configure_line
     line console 0:
       new_state: configure_line
-    mac address-table aging-time 1800: "mac address-table aging-time 1800\r\nSwitch(config)#\r\
-      \n*Dec 10 01:24:20.506: %SEC_LOGIN-5-LOGIN_SUCCESS: Login Success [user: miles]\
-      \ [Source: LOCAL] [localport: 0] at 01:24:20 UTC Fri Dec 10 2021\r\n"
+    mac address-table aging-time 1800: "mac address-table aging-time 1800"
     no logging console: ''
   prompt: Switch(config)#
 configure_line:

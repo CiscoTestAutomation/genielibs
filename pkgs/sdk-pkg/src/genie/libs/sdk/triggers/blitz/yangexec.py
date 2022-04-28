@@ -446,6 +446,11 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
     """Form NETCONF message and send to testbed."""
     log.debug('NETCONF MESSAGE')
     result = True
+    sequence = None
+
+    # To check the sequence
+    if kwargs.get('format', None):
+        sequence = kwargs['format'].get('sequence', None)
 
     # To check the sequence
     if kwargs.get('format', None):
@@ -598,7 +603,22 @@ def run_netconf(operation, device, steps, datastore, rpc_data, returns, **kwargs
             errors.append(res)
 
     if errors:
-        return negative_test != False
+        # Verify the error message for the negative test
+        if negative_test:
+            if not returns:
+                log.info(banner("No data to compare the error response"))
+                return negative_test != False
+            if len(result) >= 1:
+                op, resp_xml = result[0]
+                if op == 'traceback':
+                    log.error('TRACEBACK: {0}'.format(str(resp_xml)))
+                    return False
+                resp_elem = rpc_verify.process_rpc_reply(resp_xml)
+                verify_res = rpc_verify.process_operational_state(
+                        resp_elem, returns)
+                return verify_res != False
+        else:
+            return negative_test != False
 
     if rpc_data['operation'] == 'edit-config' and auto_validate:
         # Verify custom rpc's with a follow-up action.
@@ -715,13 +735,14 @@ def run_gnmi(operation, device, steps,
         )
         if not response:
             result = False
-        for resp in response:
-            update = resp.get('update')
-            if not update:
-                result = False
-                continue
-            if not rpc_verify.process_operational_state(update, returns):
-                result = False
+        else:
+            for resp in response:
+                update = resp.get('update')
+                if not update:
+                    result = False
+                    continue
+                if not rpc_verify.process_operational_state(update, returns):
+                    result = False
     elif operation == 'get-config':
         if 'rpc' in rpc_data:
             # Assume we have a well-formed dict representing gNMI get
@@ -740,14 +761,17 @@ def run_gnmi(operation, device, steps,
             result = False
         else:
             result = True
-        for resp in response:
-            if 'update' in resp:
-                updates = True
-                if not rpc_verify.process_operational_state(
-                        resp['update'], returns):
-                    result = False
-            if 'delete' in resp:
-                deletes = True
+
+        if response:
+            for resp in response:
+                if 'update' in resp:
+                    updates = True
+                    if not rpc_verify.process_operational_state(
+                            resp['update'], returns):
+                        result = False
+                if 'delete' in resp:
+                    deletes = True
+
         if not updates and deletes:
             log.info('All configs were deleted')
             result = True

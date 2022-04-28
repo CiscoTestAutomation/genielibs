@@ -1,0 +1,49 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console:
+      new_state: configure_line
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: VCAT9K-LEAF1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: VCAT9K-LEAF1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ipv6 dhcp statistics: "Messages received                16\r\n
+                                Messages sent                    13\r\n
+                                Messages discarded               3\r\n
+                                Messages could not be sent       0\r\n
+                                Messages                         Received\r\n
+                                SOLICIT                          8\r\n
+                                REQUEST                          5\r\n
+                                RELEASE                          3\r\n
+                                Messages                         Sent\r\n
+                                ADVERTISE                        5\r\n
+                                REPLY                            8\r\n"
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+    term width 511: ''
+    terminal session-timeout 0: ''
+  prompt: VCAT9K-LEAF1#

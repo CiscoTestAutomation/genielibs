@@ -1,0 +1,39 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no crypto pki trustpoint test: "no crypto pki trustpoint test\r\n% Removing an\
+      \ enrolled trustpoint will destroy all certificates\r\n received from the related\
+      \ Certificate Authority.\r\n\r\nAre you sure you want to do this? [yes/no]:\
+      \ yes\r\n% Be sure to ask the CA administrator to revoke your certificates.\r\
+      \n\r\n"
+    no logging console: ''
+  prompt: ipsec_reg8_new(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: ipsec_reg8_new(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: ipsec_reg8_new#

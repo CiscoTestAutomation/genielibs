@@ -807,3 +807,119 @@ def configure_nat_extended_acl(
         log.error(e)
         raise SubCommandFailure("Could not Configure NAT extended acl")
         
+def configure_dynamic_nat_outside_rule(
+    device, 
+    acl_name, 
+    pool_name
+):
+    """ Configure dynamic NAT outside rule 
+        Args:
+            device ('obj'): device to use
+            acl_name ('str'): acl name
+            pool_name ('str'): pool name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: dynamic NAT outside rule not configured
+    """
+    cmd = ["ip nat outside source list {} pool {} add-route".format(
+              acl_name,pool_name)]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not Configure dynamic NAT outside rule")
+        
+def unconfigure_dynamic_nat_outside_rule(
+    device, 
+    acl_name, 
+    pool_name
+):
+    """ UnConfigure dynamic NAT outside rule 
+        Args:
+            device ('obj'): device to use
+            acl_name ('str'): acl name
+            pool_name ('str'): pool name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: dynamic NAT outside rule not unconfigured
+    """
+    cmd = ["no ip nat outside source list {} pool {} add-route".format(
+              acl_name,pool_name)]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not UnConfigure dynamic NAT outside rule")
+        
+def configure_disable_nat_scale(device):
+
+    """ Configure disable NAT scale
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    
+    try:
+        device.configure(
+            [
+                "ip nat create flow-entries",
+                "no nat scale"           
+            ]
+        )
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not configure disable NAT scale") 
+        
+
+def configure_nat_translation_timeout(
+    device, 
+    protocol_timeout, 
+    timeout_value
+):
+    """ Configure ip nat translation timeout 
+        Args:
+            device ('obj'): device to use
+            protocol_timeout ('str'): udp-timeout | tcp-timeout | timeout
+            timeout_value ('str'): timeout value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: ip nat translation timeout not configured
+    """
+    cmd = ["ip nat translation {} {}".format(
+              protocol_timeout,timeout_value)]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not Configure ip nat translation timeout") 
+        
+def unconfigure_nat_translation_timeout(
+    device, 
+    protocol_timeout
+):
+    """ UnConfigure ip nat translation timeout 
+        Args:
+            device ('obj'): device to use
+            protocol_timeout ('str'): udp-timeout | tcp-timeout | timeout
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: ip nat translation timeout not unconfigured
+    """
+    cmd = ["no ip nat translation {}".format(
+              protocol_timeout)]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not UnConfigure ip nat translation timeout")       

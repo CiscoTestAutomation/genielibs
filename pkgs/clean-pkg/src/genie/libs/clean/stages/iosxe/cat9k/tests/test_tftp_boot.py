@@ -31,7 +31,7 @@ class Tftpboot(unittest.TestCase):
 
         # And we want the execute_no_boot_variable api to be mocked.
         # This simulates the pass case.
-        self.device.api.execute_no_boot_variable = Mock()
+        self.device.configure = Mock()
 
         # Call the method to be tested (clean step inside class)
         self.cls.delete_boot_variables(
@@ -48,7 +48,7 @@ class Tftpboot(unittest.TestCase):
 
         # And we want the execute_no_boot_variable api to be mocked to raise an 
         # exception when called. This simulates the fail case.
-        self.device.api.execute_no_boot_variable = Mock(side_effect=Exception)
+        self.device.configure = Mock(side_effect=Exception)
 
         # We expect this step to fail so make sure it raises the signal
         with self.assertRaises(TerminateStepSignal):

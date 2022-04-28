@@ -46,6 +46,36 @@ operstate = """<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" \
   </data>
 </rpc-reply>"""
 
+rpcerror = """<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" \
+xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" \
+message-id="urn:uuid:d46bac3e-596e-44d9-a568-d332eb5547bf">
+  <rpc-error>
+    <error-type>application</error-type>
+    <error-tag>invalid-value</error-tag>
+    <error-severity>error</error-severity>
+    <error-message xml:lang="en"> \
+        inconsistent value: Device refused one or more commands</error-message>
+    <error-info>
+      <severity xmlns="http://cisco.com/yang/cisco-ia">error_cli</severity>
+      <detail xmlns="http://cisco.com/yang/cisco-ia">
+        <bad-cli>
+          <bad-command>router bgp 0</bad-command>
+          <error-location>11</error-location>
+          <parser-response/>
+          <parser-context>router bgp 0</parser-context>
+        </bad-cli>
+        <bad-cli>
+          <bad-command> bgp router-id 30.30.30.3</bad-command>
+          <error-location>0</error-location>
+          <parser-response/>
+          <parser-context>router bgp 0 \
+      bgp router-id 30.30.30.3</parser-context>
+        </bad-cli>
+      </detail>
+    </error-info>
+  </rpc-error>
+</rpc-reply>"""
+
 
 class TestGnmi(Gnmi):
     def __init__(self, *args, **kwargs):
@@ -140,6 +170,22 @@ no_data_rpc_reply = """<rpc-reply message-id="101" xmlns="urn:ietf:params:xml:ns
   <data/>
 </rpc-reply>"""
 
+remove_rpc_reply = """<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="101">
+   <data>
+    <evpn xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-um-l2vpn-cfg">
+     <evis>
+      <segment-routing>
+       <srv6>
+        <evi>
+         <vpn-id>32767</vpn-id>
+         <ignore-mtu-mismatch/>
+        </evi>
+       </srv6>
+      </segment-routing>
+     </evis>
+    </evpn>
+   </data>
+</rpc-reply>"""
 
 class TestRpcVerify(unittest.TestCase):
     """Test cases for the rpcverify.RpcVerify methods."""
@@ -1036,6 +1082,24 @@ basic-mode=explicit&also-supported=report-all-tagged']
         resp = self.rpcv.process_rpc_reply(no_data_rpc_reply)
         result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
         self.assertTrue(result)
+    
+    def test_auto_validate_operation_remove_leaf(self):
+        """Test a removed leaf is ok with no data returned."""
+        rpc_data = {
+            'nodes': [
+                {
+                    'edit-op': 'remove',
+                    'nodetype': 'leaf',
+                    'datatype': '',
+                    'value': '3',
+                    'xpath': '/segment-routing/um-segment-routing-traffic-eng-cfg:traffic-eng/um-segment-routing-traffic-eng-cfg:policies/um-segment-routing-traffic-eng-cfg:policy[um-segment-routing-traffic-eng-cfg:policy-id="1"]/um-segment-routing-traffic-eng-cfg:candidate-paths/um-segment-routing-traffic-eng-cfg:preferences/um-segment-routing-traffic-eng-cfg:preference[um-segment-routing-traffic-eng-cfg:preference-id="2"]/um-segment-routing-traffic-eng-cfg:per-flow/um-segment-routing-traffic-eng-cfg:forward-class/um-segment-routing-traffic-eng-cfg:default'
+                }
+            ]
+        }
+        resp = self.rpcv.process_rpc_reply(remove_rpc_reply)
+        # we want this test to fail so we modify the response
+        result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
+        self.assertFalse(result)
 
 
 class Device:
@@ -1045,6 +1109,10 @@ class Device:
 def netconf_send(*args, **kwargs):
     global operstate
     return [('rpc', operstate)]
+
+def netconf_error(*args, **kwargs):
+    global rpcerror
+    return [('rpc', rpcerror)]
 
 
 class TestRpcRun(unittest.TestCase):
@@ -1144,6 +1212,78 @@ basic-mode=explicit&also-supported=report-all-tagged']
             format=self.format
         )
         self.assertTrue(result)
+
+    def test_edit_negative_test_error(self):
+        """Check if edit test returns correct error."""
+        self.format['negative_test'] = True
+        self.format['auto_validate'] = False
+        yangexec.netconf_send = netconf_error
+        rpc_data = {
+            'datastore': 'running',
+            'namespace': {'ios': 'http://cisco.com/ns/yang/Cisco-IOS-XE-native',
+                        'ios-bgp': 'http://cisco.com/ns/yang/Cisco-IOS-XE-bgp'},
+            'nodes': [
+                {'datatype': 'string',
+                 'edit-op': 'create',
+                 'nodetype': 'leaf',
+                 'xpath': '/ios:native/ios:router/ios-bgp:bgp[ios-bgp:id="0"]/ios-bgp:bgp/ios-bgp:router-id/ios-bgp:ip-id',
+                 'value': '30.30.30.3'}
+            ],
+            'operation': 'edit-config'
+        }
+        returns = [{
+            'id': 1,
+            'name': 'error-tag',
+            'op': '==',
+            'selected': True,
+            'value': 'invalid-value',
+            'xpath': '/rpc-reply/rpc-error/error-tag',
+        }]
+        result = yangexec.run_netconf(
+            'edit-config',
+            self.device,
+            None, # steps
+            {}, # datastore
+            rpc_data,
+            returns,
+            format=self.format)
+        self.assertTrue(result)
+
+    def test_edit_negative_error_fail(self):
+        """Check for the failed case of error check."""
+        self.format['negative_test'] = True
+        self.format['auto_validate'] = False
+        yangexec.netconf_send = netconf_error
+        rpc_data = {
+            'datastore': 'running',
+            'namespace': {'ios': 'http://cisco.com/ns/yang/Cisco-IOS-XE-native',
+                        'ios-bgp': 'http://cisco.com/ns/yang/Cisco-IOS-XE-bgp'},
+            'nodes': [
+                {'datatype': 'string',
+                 'edit-op': 'create',
+                 'nodetype': 'leaf',
+                 'xpath': '/ios:native/ios:router/ios-bgp:bgp[ios-bgp:id="0"]/ios-bgp:bgp/ios-bgp:router-id/ios-bgp:ip-id',
+                 'value': '30.30.30.3'}
+            ],
+            'operation': 'edit-config'
+        }
+        returns = [{
+            'id': 1,
+            'name': 'error-tag',
+            'op': '==',
+            'selected': True,
+            'value': 'data-exists',
+            'xpath': '/rpc-reply/rpc-error/error-tag',
+        }]
+        result = yangexec.run_netconf(
+            'edit-config',
+            self.device,
+            None, # steps
+            {}, # datastore
+            rpc_data,
+            returns,
+            format=self.format)
+        self.assertFalse(result)
 
     def test_pause_on(self):
         """Check if pause 2 seconds operates correctly."""

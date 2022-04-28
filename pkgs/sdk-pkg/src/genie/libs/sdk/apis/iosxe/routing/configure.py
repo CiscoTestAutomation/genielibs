@@ -19,7 +19,7 @@ def configure_routing_ip_route(
     """ Configure ip route on device
 
         Args:
-            device ('str'): Device str
+            device ('obj'): Device obj
             ip_address ('str'): ip address for interface
             mask (str): mask the ip address
             interface ('str'): interface name to configure
@@ -70,7 +70,7 @@ def remove_routing_ip_route(
     """ Remove ip route on device
 
         Args:
-            device ('str'): Device str
+            device ('obj'): Device obj
             ip_address ('str'): ip address for interface
             mask (str): mask the ip address
             interface ('str'): interface name to configure
@@ -121,7 +121,7 @@ def configure_routing_static_route(
     """ Configure static ip route on device
 
         Args:
-            device ('str'): Device str
+            device ('obj'): Device obj
             route ('str'): ip address for route
             mask (str): mask the ip address
             interface ('str'): interface name to configure
@@ -164,7 +164,7 @@ def enable_routing_debug_static_route(device, route, mask):
     """ Enables debug route on device
 
         Args:
-            device ('str'): Device str
+            device ('obj'): Device obj
             route ('str'): route
             mask (str): mask the ip address
 
@@ -194,7 +194,7 @@ def enable_ip_routing(device):
     """ Enables ip routing on device
 
         Args:
-            device ('str'): Device str
+            device ('obj'): Device obj
 
         Returns:
             None
@@ -269,7 +269,7 @@ def disable_ip_routing(device):
     """ Disables ip routing on device
 
         Args:
-            device ('str'): Device str
+            device ('obj'): Device obj
 
         Returns:
             None
@@ -295,7 +295,7 @@ def set_system_mtu(device, mtu_value):
     """ Sets mtu value on device
 
         Args:
-            device ('str'): Device str
+            device ('obj'): Device obj
             mtu_value ('str'): MTU value to be set
 
         Returns:
@@ -322,7 +322,7 @@ def disable_keepalive_on_interface(device, interface):
     """ Disables keepalive on interface 
 
         Args:
-            device ('str'): Device str
+            device ('obj'): Device obj
             interface ('str'): MTU value to be configured
 
         Returns:
@@ -350,10 +350,10 @@ def configure_routing_ip_route_vrf(
     interface=None,
     dest_add=None
     ):
-    """ Configure ip route on device
+    """ Configure ip vrf route on device
 
         Args:
-            device ('str'): Device str
+            device ('obj'): Device obj
             ip_address ('str'): ip address to reach
             mask (str): mask the ip address
             vrf(str)  : vrf name
@@ -394,7 +394,53 @@ def configure_routing_ip_route_vrf(
     except SubCommandFailure:
         log.error('Failed to configure the vrf static route')
         raise
-                
+
+def unconfigure_routing_ip_route_vrf(
+    device,
+    ip_address,
+    mask,
+    vrf,
+    interface=None,
+    dest_add=None
+    ):
+    """ Unconfigure ip vrf route on device
+
+        Args:
+            device ('obj'): Device obj
+            ip_address ('str'): ip address to reach
+            mask (str): mask the ip address
+            vrf(str)  : vrf name
+            interface ('str',optional): interface name to configure, default is None
+            dest_add('str',optional): gateway address to configure, default is None
+            
+        Returns:
+            None
+            
+        Raises:
+            SubCommandFailure
+    """
+    cmd = []
+    if interface and dest_add:
+        cmd.append("no ip route vrf {vrf} {ip_address} {mask} {interface} {dest_add}".format(
+            vrf=vrf, ip_address=ip_address, mask=mask, interface=interface, dest_add=dest_add               
+            ))
+    elif interface:
+        cmd.append("no ip route vrf {vrf} {ip_address} {mask} {interface}".format(
+            vrf=vrf, ip_address=ip_address, mask=mask, interface=interface              
+            ))
+    elif dest_add:
+        cmd.append("no ip route vrf {vrf} {ip_address} {mask} {dest_add}".format(
+            vrf=vrf, ip_address=ip_address, mask=mask, dest_add=dest_add               
+            ))
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Configuration failed for removing vrf static route for {ip_address}.\
+                Error:\n{error}".format(ip_address=ip_address, error=e\
+            )
+        )
+              
 def configure_default_gateway(device, gateway_ip):
     """ Configures default gateway
 
@@ -423,7 +469,7 @@ def configure_default_gateway(device, gateway_ip):
 def configure_system_jumbomtu(device, mtu_value):
     """ Sets mtu value on device
         Args:
-            device ('str'): Device str
+            device ('obj'): Device obj
             mtu_value ('int'): MTU value to be set
         Returns:
             None
@@ -490,4 +536,220 @@ def disable_ipv6_multicast_routing(device):
         raise SubCommandFailure(
             "Could not disable ipv6 multicast routing on "
             "device. Error:\n{e}".format(e=e)
+        )
+
+def configure_tftp_source_interface(
+    device,
+    interface
+    ):
+    """ Configure tftp source interface on device
+
+        Args:
+            device ('obj'): Device obj
+            interface ('str'): interface name to configure
+        Returns:
+            None
+            
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            "ip tftp source-interface {interface}".format(interface=interface
+            )
+        )
+
+    except SubCommandFailure:
+        log.error('Failed to configure tftp source interface')
+        raise
+
+def unconfigure_tftp_source_interface(
+    device,
+    interface
+    ):
+    """ Unconfigure tftp source interface on device
+
+        Args:
+            device ('obj'): Device obj
+            interface ('str'): interface name to configure
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            "no ip tftp source-interface {interface}".format(interface=interface
+            )
+        )
+
+    except SubCommandFailure:
+        log.error('Failed to Unconfigure tftp source interface')
+        raise
+    
+def configure_routing_ipv6_route(
+    device, ipv6_address, interface=None, dest_add=None
+):
+    """ Configure ipv6 route on device
+
+        Args:
+            device ('obj'): Device obj
+            ipv6_address ('str'): ipv6 address/mask for interface
+            interface ('str',optional): interface name to configure, default is None
+            dest_add('str',optional): destination address to configure, default is None
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    cmd = []
+    if interface and dest_add:
+        cmd.append("ipv6 route {ipv6_address} {interface} {dest_add}".format(
+            ipv6_address=ipv6_address, interface=interface, dest_add=dest_add
+        ))
+    elif interface:
+        cmd.append("ipv6 route {ipv6_address} {interface}".format(
+            ipv6_address=ipv6_address, interface=interface
+        ))
+    elif dest_add:
+        cmd.append("ipv6 route {ipv6_address} {dest_add}".format(
+            ipv6_address=ipv6_address, dest_add=dest_add
+        ))
+    try:
+        device.configure(cmd)
+    except (UnboundLocalError, SubCommandFailure) as e:
+        raise SubCommandFailure(
+            "Configuration failed for adding route for {ipv6_address}. Error:\n{error}".format(
+                ipv6_address=ipv6_address, error=e
+            )
+        )
+
+def unconfigure_routing_ipv6_route(
+    device, ipv6_address, interface=None, dest_add=None
+):
+    """ Unconfigure ipv6 route on device
+
+        Args:
+            device ('obj'): Device obj
+            ipv6_address ('str'): ipv6 address/mask for interface
+            interface ('str',optional): interface name to configure, default is None
+            dest_add('str',optional): destination address to configure, default is None
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    cmd = []
+    if interface and dest_add:
+        cmd.append("no ipv6 route {ipv6_address} {interface} {dest_add}".format(
+            ipv6_address=ipv6_address, interface=interface, dest_add=dest_add
+        ))
+    elif interface:
+        cmd.append("no ipv6 route {ipv6_address} {interface}".format(
+            ipv6_address=ipv6_address, interface=interface
+        ))
+    elif dest_add:
+        cmd.append("no ipv6 route {ipv6_address} {dest_add}".format(
+            ipv6_address=ipv6_address, dest_add=dest_add
+        ))
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Configuration failed for removing route for {ipv6_address}. Error:\n{error}".format(
+                ipv6_address=ipv6_address, error=e
+            )
+        )
+
+def configure_routing_ipv6_route_vrf(
+    device,
+    ipv6_address,
+    vrf,
+    interface=None,
+    dest_add=None
+    ):
+    """ Configure ipv6 vrf route on device
+
+        Args:
+            device ('obj'): Device obj
+            ipv6_address ('str'): ipv6 address/mask to reach
+            vrf(str)  : vrf name
+            interface ('str',optional): interface name to configure, default is None.
+            dest_add('str',optional): gateway address to configure, default is None.
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """            
+    cmd = []
+    if interface and dest_add:
+        cmd.append("ipv6 route vrf {vrf} {ipv6_address} {interface} {dest_add}".format(
+            vrf=vrf, ipv6_address=ipv6_address, interface=interface, dest_add=dest_add               
+            ))
+    elif interface:
+        cmd.append("ipv6 route vrf {vrf} {ipv6_address} {interface}".format(
+            vrf=vrf, ipv6_address=ipv6_address, interface=interface              
+            ))
+    elif dest_add:
+        cmd.append("ipv6 route vrf {vrf} {ipv6_address} {dest_add}".format(
+            vrf=vrf, ipv6_address=ipv6_address, dest_add=dest_add               
+            ))
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Configuration failed for adding vrf static route for {ipv6_address}.\
+                Error:\n{error}".format(ipv6_address=ipv6_address, error=e
+            )
+        )
+
+def unconfigure_routing_ipv6_route_vrf(
+    device,
+    ipv6_address,
+    vrf,
+    interface=None,
+    dest_add=None
+    ):
+    """ Unconfigure ipv6 vrf route on device
+
+        Args:
+            device ('obj'): Device obj
+            ipv6_address ('str'): ipv6 address/mask to reach
+            vrf(str)  : vrf name
+            interface ('str',optional): interface name to configure, default is None.
+            dest_add('str',optional): gateway address to configure, default is None.
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """  
+    cmd = []
+    if interface and dest_add:
+        cmd.append("no ipv6 route vrf {vrf} {ipv6_address} {interface} {dest_add}".format(
+            vrf=vrf, ipv6_address=ipv6_address, interface=interface, dest_add=dest_add               
+            ))
+    elif interface:
+        cmd.append("no ipv6 route vrf {vrf} {ipv6_address} {interface}".format(
+            vrf=vrf, ipv6_address=ipv6_address, interface=interface              
+            ))
+    elif dest_add:
+        cmd.append("no ipv6 route vrf {vrf} {ipv6_address} {dest_add}".format(
+            vrf=vrf, ipv6_address=ipv6_address, dest_add=dest_add
+            ))
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Configuration failed for removing vrf static route for {ipv6_address}.\
+                Error:\n{error}".format(ipv6_address=ipv6_address, error=e
+            )
         )

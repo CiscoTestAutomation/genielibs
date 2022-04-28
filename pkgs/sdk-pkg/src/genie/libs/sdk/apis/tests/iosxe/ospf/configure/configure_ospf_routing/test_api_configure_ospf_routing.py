@@ -9,7 +9,7 @@ class TestConfigureOspfRouting(unittest.TestCase):
     def setUpClass(self):
         testbed = """
         devices:
-          C9404R_HA:
+          kparames_csr10:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -17,11 +17,11 @@ class TestConfigureOspfRouting(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
-            type: c9500
+            platform: c8000v
+            type: iosxe
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['C9404R_HA']
+        self.device = self.testbed.devices['kparames_csr10']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -29,6 +29,6 @@ class TestConfigureOspfRouting(unittest.TestCase):
         )
 
     def test_configure_ospf_routing(self):
-        result = configure_ospf_routing(self.device, 1, 'None', False, True, 'cisco', True, 'debug detail', 'None', 'None')
+        result = configure_ospf_routing(self.device, 200, None, False, True, 'cisco', True, 'debug detail', None, None)
         expected_output = None
         self.assertEqual(result, expected_output)

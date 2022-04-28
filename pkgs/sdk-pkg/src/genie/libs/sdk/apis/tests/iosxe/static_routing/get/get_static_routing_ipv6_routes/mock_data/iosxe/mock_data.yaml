@@ -1,0 +1,65 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: router1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: router1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ipv6 static detail:
+      response:
+      - "IPv6 Static routes Table - default\r\nCodes: * - installed in RIB, u/m - Unicast/Multicast\
+        \ only\r\nCodes for []: P - permanent I - Inactive permanent\r\n       U -\
+        \ Per-user Static route\r\n       N - ND Static route\r\n       M - MIP Static\
+        \ route\r\n       P - DHCP-PD Static route\r\n       R - RHI Static route\r\
+        \n       V - VxLan Static route\r\n       E - L2EVPN Static route\r\n"
+      - "IPv6 Static routes Table - default\r\nCodes: * - installed in RIB, u/m - Unicast/Multicast\
+        \ only\r\nCodes for []: P - permanent I - Inactive permanent\r\n       U -\
+        \ Per-user Static route\r\n       N - ND Static route\r\n       M - MIP Static\
+        \ route\r\n       P - DHCP-PD Static route\r\n       R - RHI Static route\r\
+        \n       V - VxLan Static route\r\n       E - L2EVPN Static route\r\n*  2001:4::/48\
+        \ via Null0, distance 1"
+      response_type: circular
+    show ipv6 static vrf nonexist detail:
+      response:
+      - "% IPv6 routing table nonexist does not exist"
+    show ipv6 static vrf red detail:
+      response:
+      - "IPv6 Static routes Table - red\r\nCodes: * - installed in RIB, u/m - Unicast/Multicast\
+        \ only\r\nCodes for []: P - permanent I - Inactive permanent\r\n       U -\
+        \ Per-user Static route\r\n       N - ND Static route\r\n       M - MIP Static\
+        \ route\r\n       P - DHCP-PD Static route\r\n       R - RHI Static route\r\
+        \n       V - VxLan Static route\r\n       E - L2EVPN Static route\r\n"
+      - "IPv6 Static routes Table - red\r\nCodes: * - installed in RIB, u/m - Unicast/Multicast\
+        \ only\r\nCodes for []: P - permanent I - Inactive permanent\r\n       U -\
+        \ Per-user Static route\r\n       N - ND Static route\r\n       M - MIP Static\
+        \ route\r\n       P - DHCP-PD Static route\r\n       R - RHI Static route\r\
+        \n       V - VxLan Static route\r\n       E - L2EVPN Static route\r\n    1:1:1:1::/64\
+        \ via 1:1:1:1::254, distance 1\r\n     Route does not fully resolve"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: router1#

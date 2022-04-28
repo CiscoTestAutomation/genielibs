@@ -99,6 +99,8 @@ def configure_bgp_neighbor(
     neighbor_address,
     source_interface=None,
     ebgp=None,
+    address_family=None,
+    vrf=None
 ):
     """ Configures bgp neighbor on bgp router
 
@@ -107,7 +109,10 @@ def configure_bgp_neighbor(
             bgp_as('str'): bgp_as to configure
             neighbor_as('str'): neighbor_as to configure
             neighbor_address('str'): address of neighbor
-            source_interface('str'): used to configure update-source on neighbor
+            source_interface('str',optional): used to configure update-source on neighbor ( Default is None )
+            ebgp('str',optional): used to configure ebgp-mulithop ( Default is None )
+            address_family('str',optional): address family ( Default is None )
+            vrf('str',optional): vrf to configure address_family with ( Default is None )
         Returns:
             N/A
         Raises:
@@ -125,34 +130,37 @@ def configure_bgp_neighbor(
         )
     )
 
-    cmd = (
-        "router bgp {bgp_as}\n"
-        "neighbor {neighbor_address} remote-as {neighbor_as}".format(
-            bgp_as=bgp_as,
-            neighbor_as=neighbor_as,
-            neighbor_address=neighbor_address,
-        )
-    )
+    cmd = []
+    cmd.append("router bgp {bgp_as}".format(bgp_as=bgp_as))
+    if address_family and vrf:
+        cmd.append("address-family {address_family} vrf {vrf}".format(
+            address_family=address_family, vrf=vrf))
+    else:
+        cmd.append("address-family {address_family}".format(
+            address_family=address_family))
+    cmd.append("neighbor {neighbor_address} remote-as {neighbor_as}".format(
+        neighbor_address=neighbor_address, 
+        neighbor_as=neighbor_as))
 
     if source_interface:
         log_msg += "\n    -update-source: {}".format(source_interface)
-        cmd += "\nneighbor {neighbor_address} update-source {source_interface}"\
+        cmd.append("neighbor {neighbor_address} update-source {source_interface}"\
             .format(neighbor_address=neighbor_address,
                     source_interface=source_interface,
-        )
+        ))
 
     if ebgp:
         log_msg += "\n    -ebgp-multihop: {}".format(ebgp)
-        cmd += "\nneighbor {neighbor_address} ebgp-multihop {ebgp}".format(
+        cmd.append("neighbor {neighbor_address} ebgp-multihop {ebgp}".format(
             neighbor_address=neighbor_address, ebgp=ebgp
-        )
+        ))
 
     log.info(log_msg)
     try:
         device.configure(cmd)
     except SubCommandFailure:
         raise SubCommandFailure(
-            "Coult not configure bgp neighbor {neighbor_as} "
+            "Could not configure bgp neighbor {neighbor_as} "
             "on router {bgp_as}".format(neighbor_as=neighbor_as, bgp_as=bgp_as)
         )
 
@@ -893,14 +901,17 @@ def configure_bgp_address_advertisement(
             ip_address, mask
         )
     )
+
+    cmd = []
+    cmd.append("router bgp {}".format(bgp_as))
+    cmd.append("address-family {}".format(address_family))
+    if address_family == 'ipv4':
+        cmd.append("network {} mask {}".format(ip_address, mask))
+    else:
+        cmd.append("network {}".format(ip_address))
+
     try:
-        device.configure(
-            [
-                "router bgp {}".format(bgp_as),
-                "address-family {}".format(address_family),
-                "network {} mask {}".format(ip_address, mask),
-            ]
-        )
+        device.configure(cmd)
     except SubCommandFailure:
         raise SubCommandFailure(
             "Could not configure address advertisement on "

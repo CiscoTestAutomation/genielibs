@@ -1,0 +1,46 @@
+configure:
+  commands:
+    bandwidth percent 10: "bandwidth percent 10\r\n"
+    class cs1: "class cs1\r\n"
+    class cs2: "class cs2\r\n"
+    class cs4: "class cs4\r\n"
+    class cs5: "class cs5\r\n"
+    class cs7: "class cs7\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    police  1000000000: "police  1000000000\r\n"
+    police  2000000000: "police  2000000000\r\n"
+    policy-map policy1: "policy-map policy1\r\n"
+    priority level  1: "priority level  1\r\n"
+    priority level  2: "priority level  2\r\n"
+    shape average 10000000000: "shape average 10000000000\r\n"
+  prompt: dhamu_skyfox(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: dhamu_skyfox(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: dhamu_skyfox#

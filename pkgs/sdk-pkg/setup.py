@@ -47,7 +47,7 @@ def version_info(*paths):
 # compute version range
 version = find_version('src', 'genie', 'libs', 'sdk', '__init__.py')
 
-install_requires = ['ruamel.yaml', 'cisco-gnmi']
+install_requires = ['ruamel.yaml', 'cisco-gnmi', 'yang.connector']
 
 # launch setup
 setup(
@@ -130,7 +130,8 @@ setup(
                 'sphinx-rtd-theme',
                 'xmltodict',
                 'rest.connector',
-                'grpcio <= 1.36.1',
+                'yang.connector',
+                'grpcio',
                 'protobuf'],
     },
 

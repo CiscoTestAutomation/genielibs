@@ -1,0 +1,91 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: host1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: host1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ip static route:
+      response:
+      - "Codes: M - Manual static, A - AAA download, N - IP NAT, D - DHCP,\r\n   \
+        \    G - GPRS, V - Crypto VPN, C - CASA, P - Channel interface processor,\r\
+        \n       B - BootP, S - Service selection gateway\r\n       DN - Default Network,\
+        \ T - Tracking object\r\n       L - TL1, E - OER, I - iEdge\r\n       D1 -\
+        \ Dot1x Vlan Network, K - MWAM Route\r\n       PP - PPP default route, MR\
+        \ - MRIPv6, SS - SSLVPN\r\n       H - IPe Host, ID - IPe Domain Broadcast\r\
+        \n       U - User GPRS, TE - MPLS Traffic-eng, LI - LIIN\r\n       IR - ICMP\
+        \ Redirect, Vx - VXLAN static route\r\n       LT - Cellular LTE, Ev - L2EVPN\
+        \ static route\r\nCodes in []: A - active, N - non-active, B - BFD-tracked,\
+        \ D - Not Tracked, P - permanent, -T Default Track\r\n\r\n\r\nCodes in ():\
+        \ UP - up, DN - Down, AD-DN - Admin-Down, DL - Deleted\r\n"
+      - "Codes: M - Manual static, A - AAA download, N - IP NAT, D - DHCP,\r\n   \
+        \    G - GPRS, V - Crypto VPN, C - CASA, P - Channel interface processor,\r\
+        \n       B - BootP, S - Service selection gateway\r\n       DN - Default Network,\
+        \ T - Tracking object\r\n       L - TL1, E - OER, I - iEdge\r\n       D1 -\
+        \ Dot1x Vlan Network, K - MWAM Route\r\n       PP - PPP default route, MR\
+        \ - MRIPv6, SS - SSLVPN\r\n       H - IPe Host, ID - IPe Domain Broadcast\r\
+        \n       U - User GPRS, TE - MPLS Traffic-eng, LI - LIIN\r\n       IR - ICMP\
+        \ Redirect, Vx - VXLAN static route\r\n       LT - Cellular LTE, Ev - L2EVPN\
+        \ static route\r\nCodes in []: A - active, N - non-active, B - BFD-tracked,\
+        \ D - Not Tracked, P - permanent, -T Default Track\r\n\r\n\r\nCodes in ():\
+        \ UP - up, DN - Down, AD-DN - Admin-Down, DL - Deleted\r\nStatic local RIB\
+        \ for default \r\n\r\nM  1.1.1.0/24 [1/0] via 1.1.1.254 [N]"
+      response_type: circular
+    show ip static route vrf nonexist:
+      response:
+      - "% vrf nonexist does not exist"
+    show ip static route vrf red:
+      response:
+      - "Codes: M - Manual static, A - AAA download, N - IP NAT, D - DHCP,\r\n   \
+        \    G - GPRS, V - Crypto VPN, C - CASA, P - Channel interface processor,\r\
+        \n       B - BootP, S - Service selection gateway\r\n       DN - Default Network,\
+        \ T - Tracking object\r\n       L - TL1, E - OER, I - iEdge\r\n       D1 -\
+        \ Dot1x Vlan Network, K - MWAM Route\r\n       PP - PPP default route, MR\
+        \ - MRIPv6, SS - SSLVPN\r\n       H - IPe Host, ID - IPe Domain Broadcast\r\
+        \n       U - User GPRS, TE - MPLS Traffic-eng, LI - LIIN\r\n       IR - ICMP\
+        \ Redirect, Vx - VXLAN static route\r\n       LT - Cellular LTE, Ev - L2EVPN\
+        \ static route\r\nCodes in []: A - active, N - non-active, B - BFD-tracked,\
+        \ D - Not Tracked, P - permanent, -T Default Track\r\n\r\n\r\nCodes in ():\
+        \ UP - up, DN - Down, AD-DN - Admin-Down, DL - Deleted\r\nStatic local RIB\
+        \ for red \r\n"
+      - "Codes: M - Manual static, A - AAA download, N - IP NAT, D - DHCP,\r\n   \
+        \    G - GPRS, V - Crypto VPN, C - CASA, P - Channel interface processor,\r\
+        \n       B - BootP, S - Service selection gateway\r\n       DN - Default Network,\
+        \ T - Tracking object\r\n       L - TL1, E - OER, I - iEdge\r\n       D1 -\
+        \ Dot1x Vlan Network, K - MWAM Route\r\n       PP - PPP default route, MR\
+        \ - MRIPv6, SS - SSLVPN\r\n       H - IPe Host, ID - IPe Domain Broadcast\r\
+        \n       U - User GPRS, TE - MPLS Traffic-eng, LI - LIIN\r\n       IR - ICMP\
+        \ Redirect, Vx - VXLAN static route\r\n       LT - Cellular LTE, Ev - L2EVPN\
+        \ static route\r\nCodes in []: A - active, N - non-active, B - BFD-tracked,\
+        \ D - Not Tracked, P - permanent, -T Default Track\r\n\r\n\r\nCodes in ():\
+        \ UP - up, DN - Down, AD-DN - Admin-Down, DL - Deleted\r\nStatic local RIB\
+        \ for red \r\n\r\nD  0.0.0.0/0 [254/0] via 192.168.103.254 [A]\r\nD  192.168.103.1/32\
+        \ [254/0] via Ethernet0/0.103 192.168.103.254 [A]"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: host1#

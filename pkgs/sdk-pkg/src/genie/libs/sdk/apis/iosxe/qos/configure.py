@@ -5,6 +5,7 @@ import logging
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
+from unicon.eal.dialogs import Dialog, Statement
 
 # Steps
 from pyats.aetest.steps import Steps
@@ -206,3 +207,94 @@ def unconfigure_auto_qos_global(device,compact):
             )
         )
     return  result  
+
+def copy_running_config_to_flash_memory(device, timeout=60):
+    """ Restore config from local file using copy function
+        Args:
+            device (`obj`): Device object
+            timeout (`str`): timeout
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+         
+    """
+    log.debug("Restore config from local file using copy function")
+    
+    dialog = Dialog(
+        [
+            Statement(
+                pattern=r".*Destination filename.*",
+                action="sendline()",
+                loop_continue=False,
+                continue_timer=False,
+            )
+        ]
+    )
+    try:
+        device.execute(
+            "copy running-config flash:backup_config",
+            reply=dialog, timeout=timeout
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not copy saved configuration on {device}. Error:\n{e}")
+
+def unconfig_qos_rewrite_dscp(device):
+    """Unconfig qos rewrite ip dscp on Device
+        Args:
+            device (`obj`): Device object
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed unconfiguring qos rewrite ip dscp on device
+    """
+    log.debug("Unconfig qos rewrite ip dscp on Device")
+    try:
+        device.configure("no qos rewrite ip dscp")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to unconfig qos rewrite ip dscp.Error:\n{e}")
+
+def config_qos_rewrite_dscp(device):
+    """Config qos rewrite ip dscp on Device
+        Args:
+            device (`obj`): Device object
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed Configuring qos rewrite ip dscp on device
+    """
+    log.debug("Configuring qos rewrite ip dscp on Device")
+    try:
+        device.configure("qos rewrite ip dscp")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to config qos rewrite ip dscp.Error:\n{e}")
+
+def config_replace_to_flash_memory(device, timeout=60):
+    """ configure replace to flash memory
+        Args:
+            device (`obj`): Device object
+        Returns:
+            None
+        Raise:
+            SubCommandFailure: Failed to replace to flash memory
+    """
+    log.debug("configure replace to flash memory")
+    dialog = Dialog(
+        [
+            Statement(
+                pattern=r".*This will apply all necessary additions and deletions.*",
+                action="sendline(y)",
+                loop_continue=False,
+                continue_timer=False,
+            )
+        ]
+    )
+    try:
+        device.execute("configure replace flash:backup_config", reply=dialog, timeout=timeout)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure replace to flash on {device}. Error:\n{e}")
+

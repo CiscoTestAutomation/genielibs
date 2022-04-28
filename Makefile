@@ -45,9 +45,9 @@ CYTHON_CMD	  = compileAll
 # Development pkg requirements
 RELATED_PKGS = genie.libs.health genie.libs.clean genie.libs.conf genie.libs.ops genie.libs.robot genie.libs.sdk
 RELATED_PKGS += genie.libs.filetransferutils
-DEPENDENCIES = restview psutil Sphinx wheel asynctest pysnmp yang.connector
-DEPENDENCIES += sphinx-rtd-theme pyftpdlib tftpy\<0.8.1
-DEPENDENCIES += Cython requests ruamel.yaml grpcio\<=1.36.1 protobuf cisco-gnmi
+DEPENDENCIES = restview psutil Sphinx wheel asynctest pysnmp 
+DEPENDENCIES += sphinx-rtd-theme pyftpdlib tftpy\<0.8.1 robotframework\<5.0
+DEPENDENCIES += Cython requests ruamel.yaml grpcio protobuf cisco-gnmi
 
 # Internal variables.
 # (note - build examples & templates last because it will fail uploading to pypi
@@ -185,8 +185,8 @@ develop:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
 	@echo "Installing development dependencies"
-	@pip uninstall -y $(RELATED_PKGS) || true
 	@pip install $(DEPENDENCIES)
+	@pip uninstall -y $(RELATED_PKGS) || true
 	@echo ""
 	@echo "--------------------------------------------------------------------"
 	@echo "Setting up development environment"

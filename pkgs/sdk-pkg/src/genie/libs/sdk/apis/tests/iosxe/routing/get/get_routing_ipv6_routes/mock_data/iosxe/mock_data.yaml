@@ -1,0 +1,72 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: router1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: router1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ipv6 route:
+      response:
+      - "IPv6 Routing Table - default - 5 entries\r\nCodes: C - Connected, L - Local,\
+        \ S - Static, U - Per-user Static route\r\n       B - BGP, R - RIP, H - NHRP,\
+        \ I1 - ISIS L1\r\n       I2 - ISIS L2, IA - ISIS interarea, IS - ISIS summary,\
+        \ D - EIGRP\r\n       EX - EIGRP external, ND - ND Default, NDp - ND Prefix,\
+        \ DCE - Destination\r\n       NDr - Redirect, RL - RPL, O - OSPF Intra, OI\
+        \ - OSPF Inter\r\n       OE1 - OSPF ext 1, OE2 - OSPF ext 2, ON1 - OSPF NSSA\
+        \ ext 1\r\n       ON2 - OSPF NSSA ext 2, la - LISP alt, lr - LISP site-registrations\r\
+        \n       ld - LISP dyn-eid, lA - LISP away, le - LISP extranet-policy\r\n\
+        \       lp - LISP publications, ls - LISP destinations-summary, a - Application\r\
+        \n       m - OMP\r\nLC  2001:10::/128 [0/0]\r\n     via Loopback0, receive\r\
+        \nO   2001:10::10/128 [110/1]\r\n     via FE80::A8BB:CCFF:FE00:6900, BDI103\r\
+        \nC   2001:103::/64 [0/0]\r\n     via BDI103, directly connected\r\nL   2001:103::254/128\
+        \ [0/0]\r\n     via BDI103, receive\r\nL   FF00::/8 [0/0]\r\n     via Null0,\
+        \ receive"
+      response_type: circular
+    show ipv6 route vrf red:
+      response:
+      - "IPv6 Routing Table - red - 5 entries\r\nCodes: C - Connected, L - Local,\
+        \ S - Static, U - Per-user Static route\r\n       B - BGP, R - RIP, H - NHRP,\
+        \ I1 - ISIS L1\r\n       I2 - ISIS L2, IA - ISIS interarea, IS - ISIS summary,\
+        \ D - EIGRP\r\n       EX - EIGRP external, ND - ND Default, NDp - ND Prefix,\
+        \ DCE - Destination\r\n       NDr - Redirect, O - OSPF Intra, OI - OSPF Inter,\
+        \ OE1 - OSPF ext 1\r\n       OE2 - OSPF ext 2, ON1 - OSPF NSSA ext 1, ON2\
+        \ - OSPF NSSA ext 2\r\n       la - LISP alt, lr - LISP site-registrations,\
+        \ ld - LISP dyn-eid\r\n       lA - LISP away, le - LISP extranet-policy, lp\
+        \ - LISP publications\r\n       ls - LISP destinations-summary\r\nND  ::/0\
+        \ [2/0]\r\n     via FE80::A8BB:CCFF:FE00:6900, Ethernet0/0.103\r\n     via\
+        \ FE80::A8BB:CCFF:FE80:8EFF, Ethernet0/0.103\r\nNDp 2001:103::/64 [2/0]\r\n\
+        \     via Ethernet0/0.103, directly connected\r\nL   2001:103::A8BB:1FF:FE03:11/128\
+        \ [0/0]\r\n     via Ethernet0/0.103, receive\r\nLC  2001:103::C8F5:BBA:F6AF:B287/128\
+        \ [0/0]\r\n     via Ethernet0/0.103, receive\r\nL   FF00::/8 [0/0]\r\n   \
+        \  via Null0, receive"
+      response_type: circular
+    show ipv6 route vrf nonexist:
+      response:
+      - "% IPv6 routing table nonexist does not exist"
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: router1#

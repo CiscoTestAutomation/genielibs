@@ -1,0 +1,36 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    mdns-sd service-definition custom3: "mdns-sd service-definition custom3\r\n"
+    no logging console: ''
+    no service-type _ftp._tcp.local: "no service-type _ftp._tcp.local\r\n"
+  prompt: C9500H_Sathya(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: C9500H_Sathya(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: C9500H_Sathya#

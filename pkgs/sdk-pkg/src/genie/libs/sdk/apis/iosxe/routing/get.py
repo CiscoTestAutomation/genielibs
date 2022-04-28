@@ -183,7 +183,7 @@ def get_routing_routes(device, vrf, address_family):
 
         Args:
             device (`obj`): Device object
-            vrf (`str`): VRF name
+            vrf (`str`): VRF name or None
             address_family (`str`): Address family name
 
         Returns:
@@ -197,12 +197,18 @@ def get_routing_routes(device, vrf, address_family):
     # only accept ipv4 address family
     address_family = address_family.split()[0]
     try:
-        out = device.parse("show ip route vrf {}".format(vrf))
+        if vrf:
+            command = "show ip route vrf {}".format(vrf)
+        else:
+            command = "show ip route"
+        out = device.parse(command)
     except SchemaEmptyParserError:
         log.error(
             "Parser did not return any routes for vrf {vrf}".format(vrf=vrf))
         return None
     try:
+        if not vrf:
+            vrf = "default"
         routes_received = out["vrf"][vrf]["address_family"][address_family][
             "routes"]
     except KeyError as e:
@@ -335,7 +341,7 @@ def get_routing_ipv6_routes(device, vrf):
 
         Args:
             device (`obj`): Device object
-            vrf (`str`): VRF name
+            vrf (`str`): VRF name or None
 
         Returns:
             Dictionary: received routes
@@ -347,12 +353,18 @@ def get_routing_ipv6_routes(device, vrf):
 
     """
     try:
-        out = device.parse("show ipv6 route vrf {}".format(vrf))
+        if vrf:
+            command = "show ipv6 route vrf {}".format(vrf)
+        else:
+            command = "show ipv6 route"
+        out = device.parse(command)
     except SchemaEmptyParserError:
         log.error(
             "Parser did not return any routes for vrf {vrf}".format(vrf=vrf))
         return {}
     try:
+        if not vrf:
+            vrf = "default"
         routes_received = out["vrf"][vrf]["address_family"]['ipv6'][
             "routes"]
     except KeyError as e:

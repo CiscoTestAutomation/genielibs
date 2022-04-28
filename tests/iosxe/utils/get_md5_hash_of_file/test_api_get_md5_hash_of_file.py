@@ -1,3 +1,4 @@
+import os
 import unittest
 from textwrap import dedent
 from unittest.mock import Mock, call

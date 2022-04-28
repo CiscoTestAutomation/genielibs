@@ -1,0 +1,52 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface Tunnel0: "interface Tunnel0\r\n"
+    ip address 172.16.123.1 255.255.255.0: "ip address 172.16.123.1 255.255.255.0\r\
+      \n"
+    ip nhrp authentication DMVPN: "ip nhrp authentication DMVPN\r\n"
+    ip nhrp holdtime 180: "ip nhrp holdtime 180\r\n"
+    ip nhrp network-id 1: "ip nhrp network-id 1\r\n"
+    ip nhrp nhs 111.0.0.100 nbma 111.1.1.1 multicast: "ip nhrp nhs 111.0.0.100 nbma\
+      \ 111.1.1.1 multicast\r\n"
+    ipv6 enable: "ipv6 enable\r\n"
+    line console 0:
+      new_state: configure_line
+    no ip redirects: "no ip redirects\r\n"
+    no logging console: ''
+    tunnel destination 1.1.1.1: "tunnel destination 1.1.1.1\r\n"
+    tunnel key 100: "tunnel key 100\r\n"
+    tunnel mode ipsec dual-overlay: "tunnel mode ipsec dual-overlay\r\n"
+    tunnel protection ipsec profile vpnprof: "tunnel protection ipsec profile vpnprof\r\
+      \n"
+    tunnel source Loopback101: "tunnel source Loopback101\r\n"
+    tunnel vrf UNDERLAY: "tunnel vrf UNDERLAY\r\n"
+    vrf forwarding OVERLAY: "vrf forwarding OVERLAY\r\n"
+  prompt: ike-spoke2(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: ike-spoke2(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: ike-spoke2#
