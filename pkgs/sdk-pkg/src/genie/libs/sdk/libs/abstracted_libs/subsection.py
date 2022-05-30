@@ -445,6 +445,12 @@ def learn_system_defaults(self, testbed):
             summarize(summary, message=msg, device=dev.name)
             continue
 
+        if not dev.connected:
+            log.info(f"Device '{dev.name}' is not connected")
+            msg = f"    - Device '{dev.name}' is not connected"
+            summarize(summary, message=msg, device=dev.name)
+            continue
+
         try:
             self.parent.default_file_system[dev.name] = lookup.sdk.libs.\
                 abstracted_libs.subsection.get_default_dir(

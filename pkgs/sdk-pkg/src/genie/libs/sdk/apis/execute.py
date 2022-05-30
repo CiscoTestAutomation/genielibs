@@ -249,11 +249,14 @@ def free_up_disk_space(device, destination, required_size, skip_deletion,
         running_images = []
         log.info("Sending 'show version' to learn the current running images")
         running_image = device.api.get_running_image()
-        if isinstance(running_image, list):
-            for image in running_image:
-                running_images.append(os.path.basename(image))
+        if running_image:
+            if isinstance(running_image, list):
+                for image in running_image:
+                    running_images.append(os.path.basename(image))
+            else:
+                running_images.append(os.path.basename(running_image))
         else:
-            running_images.append(os.path.basename(running_image))
+            log.warning("Running image could not be determined. It may be deleted.")
 
         # convert to set for O(1) lookup
         protected_files = set(protected_files)

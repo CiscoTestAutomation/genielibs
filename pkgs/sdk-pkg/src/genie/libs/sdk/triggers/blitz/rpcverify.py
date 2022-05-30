@@ -475,7 +475,11 @@ class RpcVerify():
             else:
                 if not datatype:
                     value = str(value)
+                    if value.lower() in ['true', 'false']:
+                        value = value.lower()
                     fval = str(field.get('value'))
+                    if fval.lower() in ['true', 'false']:
+                        fval = fval.lower()
                     if (value.isnumeric() and not fval.isnumeric()) or \
                             (fval.isnumeric() and not value.isnumeric()):
                         # the eval_text will show the issue
@@ -558,6 +562,9 @@ class RpcVerify():
           bool: True if successful.
         """
         log_msg = 'ERROR: "{0}" Not found.'.format(field['xpath'])
+        datatype = ''
+        result = False
+
         for resp in response:
             for reply, reply_xpath in resp:
                 if self.et.iselement(reply):
@@ -577,26 +584,37 @@ class RpcVerify():
                     name = reply_xpath[reply_xpath.rfind('/') + 1:]
                 if 'xpath' in field and field['xpath'] == reply_xpath and \
                         name == field['name']:
+
                     datatype = field.get('datatype')
-                    if not datatype:
-                        log.warning(
-                            "{0} has no datatype; default to string".format(
-                                field['xpath']
-                            )
-                        )
-                    elif datatype == 'empty':
+                    if datatype == 'empty':
                         field['value'] = 'empty'
+
                     result, log_msg = self.check_opfield(value, field)
                     if result:
+                        if not datatype:
+                            log.warning(
+                                "{0} has no datatype; default to string".format(
+                                    field['xpath']
+                                )
+                            )
                         log.info(log_msg)
                         return True
+
         if key:
             log.info('Parent list key "{0} == {1}" not required.'.format(
                 field['name'], field['value']
             ))
             return True
+
+        if not datatype:
+            log.warning(
+                "{0} has no datatype; default to string".format(
+                    field['xpath']
+                )
+            )
+
         log.error(log_msg)
-        return False
+        return result
 
     def process_operational_state(self, response, returns, key=False, sequence=None):
         """Test NETCONF or GNMI operational state response.
@@ -632,22 +650,36 @@ class RpcVerify():
             log.info('RETURNS SEQUENCE ENFORCED')
             # To map the sequence with the first return value
             field = returns[0]
-            seq_count=0
+            seq_count = 0
             for resp in response:
                 for reply, reply_xpath in resp:
-                    seq_count+=1
+                    seq_count += 1
                     if self.et.iselement(reply):
                         # NETCONF response
                         value_state = self._process_values(reply, '')
                         value = value_state.get('reply_val', 'empty')
                         name = self.et.QName(reply).localname
+                    else:
+                        # GNMI response
+                        if reply is False:
+                            value = reply
+                        else:
+                            if reply == '':
+                                value = 'empty'
+                            else:
+                                value = reply
+                        name = reply_xpath[reply_xpath.rfind('/') + 1:]
 
                     if 'xpath' in field and field['xpath'] == reply_xpath and \
-                        name == field['name']:
+                            name == field['name']:
                         result, log_msg = self.check_opfield(value, field)
                         if result:
-                            # If the result matches, ignore the previous values
-                            response = [resp[seq_count-1:]]
+                            # Carve out the sequence from the response
+                            response = [
+                                resp[
+                                    seq_count - 1: seq_count - 1 + len(returns)
+                                ]
+                            ]
                             break
 
         for field in returns:

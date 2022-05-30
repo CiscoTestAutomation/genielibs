@@ -47,7 +47,9 @@ def version_info(*paths):
 # compute version range
 version = find_version('src', 'genie', 'libs', 'sdk', '__init__.py')
 
-install_requires = ['ruamel.yaml', 'cisco-gnmi', 'yang.connector']
+install_requires = [
+    'ruamel.yaml', 'protobuf <= 3.20.1', 'cisco-gnmi', 'yang.connector'
+]
 
 # launch setup
 setup(
@@ -90,7 +92,7 @@ setup(
     'Topic :: Software Development :: Libraries',
     'Topic :: Software Development :: Libraries :: Python Modules',
     ],
-    
+
     # project keywords
     keywords = 'genie pyats test automation',
 
@@ -131,8 +133,7 @@ setup(
                 'xmltodict',
                 'rest.connector',
                 'yang.connector',
-                'grpcio',
-                'protobuf'],
+                'grpcio'],
     },
 
     # external modules

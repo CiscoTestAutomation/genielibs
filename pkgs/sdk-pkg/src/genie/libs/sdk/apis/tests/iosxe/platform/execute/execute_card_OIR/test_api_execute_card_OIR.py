@@ -29,6 +29,6 @@ class TestExecuteCardOir(unittest.TestCase):
         )
 
     def test_execute_card_OIR(self):
-        result = execute_card_OIR(self.device, '6/0', None, 60)
+        result = execute_card_OIR(self.device, '1/0', None, 60)
         expected_output = None
         self.assertEqual(result, expected_output)

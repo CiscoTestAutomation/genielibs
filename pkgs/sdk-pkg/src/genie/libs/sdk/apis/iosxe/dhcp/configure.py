@@ -484,3 +484,107 @@ def disable_dhcp_smart_relay(device):
         raise SubCommandFailure(
             f"Could not disable DHCP smart-relay on device. Error:\n{e}"
             )
+
+def enable_dhcp_relay_information_option(device, vpn=False):
+    """ Enable DHCP relay information option 
+        Args:
+            device ('obj'): device to use
+            vpn ('str',optional): vpn option ,defaut is empty string
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to enable dhcp relay information option
+    """
+
+    cmd = "ip dhcp relay information option"
+
+    if vpn:
+        cmd = "ip dhcp relay information option vpn"
+
+    log.info("Enabling ip dhcp relay information option")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to enable ip dhcp relay information option"
+        )
+
+def disable_dhcp_relay_information_option(device, vpn=False):
+    """ Disable DHCP relay information option 
+        Args:
+            device ('obj'): device to use
+            vpn ('str',optional): vpn option ,defaut is empty string
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to disable dhcp relay information option
+    """
+
+    cmd = "no ip dhcp relay information option"
+    if vpn:
+
+        cmd = "no ip dhcp relay information option vpn"
+
+    log.info("Disabling ip dhcp relay information option")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed disable ip dhcp relay information option"
+        )
+
+def configure_dhcp_relay_short_lease(device, lease_time, interface=False):
+    """ Configure DHCP relay short lease
+        Args:
+            device ('obj'): device to use
+            lease_time ('int'): dhcp lease time
+            interface ('str',optional): interface name ,defaut is empty string 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure dhcp relay short lease
+    """
+
+    cmd = []
+    if interface:
+        cmd.append(f"interface {interface}")
+        cmd.append(f"ip dhcp relay short-lease {lease_time}")
+    else:
+        cmd.append(f"ip dhcp-relay short-lease {lease_time}")
+
+    log.info("Configuring dhcp relay short lease")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to configure dhcp relay short lease"
+        )
+
+def unconfigure_dhcp_relay_short_lease(device, lease_time, interface=False):
+    """ Unconfigure DHCP relay short lease
+        Args:
+            device ('obj'): device to use
+            lease_time ('int'): dhcp lease time
+            interface ('str',optional): interface name ,defaut is empty string
+            lease_time ('int'): dhcp lease time
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to disable dhcp relay short lease
+    """
+
+    cmd = []
+    if interface:
+        cmd.append(f"interface {interface}")
+        cmd.append(f"no ip dhcp relay short-lease {lease_time}")
+    else:
+        cmd.append(f"no ip dhcp-relay short-lease {lease_time}")
+
+    log.info("Unconfiguring dhcp relay short lease")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to unconfigure dhcp relay short lease"
+        )
+

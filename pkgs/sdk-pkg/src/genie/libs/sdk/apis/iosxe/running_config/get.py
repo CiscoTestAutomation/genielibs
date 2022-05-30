@@ -241,3 +241,20 @@ def get_valid_config_from_running_config(device, exclude=None, begin='version'):
         new_out += line + '\n'
 
     return new_out
+
+def get_show_derived_interface_dict(device, interface):
+    """ Get show derived config interface output 
+        Args:
+            device('obj'): Device object
+            interface('str'): Interface name
+        Returns:
+            config_dict ('dict'): dict of show derived config interface output
+    """
+    try:
+        config_dict = device.parse("show derived-config interface {interface}".format(interface=interface))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not get derived-config information "
+            "on device {device}".format(device=device.name)
+        )
+    return config_dict

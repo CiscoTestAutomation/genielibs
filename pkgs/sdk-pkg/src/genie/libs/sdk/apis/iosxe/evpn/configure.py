@@ -494,7 +494,7 @@ def unconfigure_evpn_l3_instance_vlan_association(device,vlan_id,vni_id):
             'Error:{e}'.format(e=e)
         )
 
-def configure_nve_interface(device,nve_num,src_intf,protocol,vni_id,replication_type,mcast_group=None):
+def configure_nve_interface(device,nve_num,src_intf,protocol,vni_id,replication_type,mcast_group=None, l3vni=False,vrf_name=None):
     """ Configure nve interface
 
         Args:
@@ -505,7 +505,9 @@ def configure_nve_interface(device,nve_num,src_intf,protocol,vni_id,replication_
             vni_id (`str`): vni id
             replication_type (`str`): replication type (static | ingress)
             mcast_group (`str`, optional): Multicast group address , default value is None
-
+            l3vni (`str`, optional): l3vni enable/disable , default value is False
+            vrf_name (`str`, optional): VRF Name , default value is None
+        
         Returns:
             None
 
@@ -517,15 +519,22 @@ def configure_nve_interface(device,nve_num,src_intf,protocol,vni_id,replication_
     configs.append("interface nve {nve_num}".format(nve_num=nve_num))
     configs.append("source-interface {intf}".format(intf=src_intf))
     configs.append("host-reachability protocol {protocol}".format(protocol=protocol))
-
-    if replication_type.lower() == 'static': 
-        if mcast_group is None:
-            raise Exception("missing required  argument: 'mcast_group'")
+    
+    if l3vni is True:
+        if vrf_name is None :
+            raise Exception("missing required  argument: 'vrf_name'")
         else:
-            configs.append("member vni {vni_id} mcast-group {mcast_group}".format(vni_id=vni_id, mcast_group=mcast_group))
-
+            configs.append("member vni {vni_id} vrf {vrf_name}".format(vni_id=vni_id, vrf_name=vrf_name))
+   
     else:
-        configs.append("member vni {vni_id} ingress-replication".format(vni_id=vni_id))
+        if replication_type.lower() == 'static': 
+            if mcast_group is None:
+                raise Exception("missing required  argument: 'mcast_group'")
+            else:
+                configs.append("member vni {vni_id} mcast-group {mcast_group}".format(vni_id=vni_id, mcast_group=mcast_group))
+
+        else:
+            configs.append("member vni {vni_id} ingress-replication".format(vni_id=vni_id))
 
     try:
         device.configure(configs)

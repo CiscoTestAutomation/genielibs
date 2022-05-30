@@ -1,0 +1,43 @@
+configure:
+  commands:
+    accept-dialin: "accept-dialin\r\n"
+    end:
+      new_state: execute
+    l2tp tunnel hello 0: "l2tp tunnel hello 0\r\n"
+    l2tp tunnel password 0 cisco: "l2tp tunnel password 0 cisco\r\n"
+    line console 0:
+      new_state: configure_line
+    local name lns1: "local name lns1\r\n"
+    no logging console: ''
+    protocol l2tp: "protocol l2tp\r\n"
+    virtual-template 1: "virtual-template 1\r\n"
+    vpdn authen-before-forward: "vpdn authen-before-forward\r\n"
+    vpdn enable: "vpdn enable\r\n"
+    vpdn-group 11: "vpdn-group 11\r\n"
+  prompt: BB_C8500-12X4QC(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: BB_C8500-12X4QC(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: BB_C8500-12X4QC#

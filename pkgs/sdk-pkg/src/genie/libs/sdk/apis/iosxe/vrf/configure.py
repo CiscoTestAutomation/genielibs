@@ -540,3 +540,97 @@ def unconfigure_vrf_definition_stitching(device, vrf_name, ip_version, stitching
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Failed to configure vrf definition in global configuration mode")
+
+def create_ip_vrf(device, vrf_name):
+    """ Create ip vrf
+        Args:
+            device ('obj'): device to use
+            vrf_name ('str'): vrf name 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+  
+    cmd = f"ip vrf {vrf_name}"
+
+    log.debug("Creating ip vrf")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to create ip vrf"
+        )
+
+
+def delete_ip_vrf(device, vrf_name):
+    """ Remove ip vrf
+        Args:
+            device ('obj'): device to use
+            vrf_name ('str'): vrf name 
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = f"no ip vrf {vrf_name}"
+
+    log.debug("Removing ip vrf")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(
+            "Failed to remove ip vrf"
+        )
+
+def configure_ip_vrf_forwarding_interface(device, interface, vrf_name):
+    """ Create ip vrf forwarding on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface name
+            vrf_name ('str'): vrf name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure ip vrf forwarding
+    """
+
+    cmd = []
+    cmd.append(f"interface {interface}")
+    cmd.append(f"ip vrf forwarding {vrf_name}")
+
+    log.info("Creating ip vrf forwarding on interface")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to configure ip vrf forwarding"
+        )
+
+def unconfigure_ip_vrf_forwarding_interface(device, interface, vrf_name):
+    """ Remove ip vrf forwarding on interface
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface name
+            vrf_name ('str'): vrf name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to unconfigure ip vrf forwarding
+    """
+
+    cmd = []
+    cmd.append(f"interface {interface}")
+    cmd.append(f"no ip vrf forwarding {vrf_name}")
+
+    log.info("Removing ip vrf forwarding")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to unconfigure ip vrf forwarding"
+        )
+

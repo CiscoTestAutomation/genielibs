@@ -1,0 +1,40 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: CE1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: CE1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    ping 131.1.1.1 df-bit size 1400 repeat 2:
+      response:
+      - "Type escape sequence to abort.\r\nSending 2, 1400-byte ICMP Echos to 131.1.1.1,\
+        \ timeout is 2 seconds:\r\nPacket sent with the DF bit set\r\n..\r\nSuccess\
+        \ rate is 0 percent (0/2)"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: CE1#

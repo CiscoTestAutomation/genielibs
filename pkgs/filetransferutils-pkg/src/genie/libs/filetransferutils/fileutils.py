@@ -36,7 +36,7 @@ FAIL_MSG = ['Permission denied[^,]', 'failed to copy', 'Unable to find', 'Error 
 class FileUtils(FileUtilsBase):
 
     def send_cli_to_device(self, cli, used_server=None, invalid=None,
-                           timeout_seconds=300, **kwargs):
+                           timeout_seconds=300, prompt_recovery=True, **kwargs):
         """ Send command to a particular device and deal with its result
 
             Parameters
@@ -200,9 +200,9 @@ class FileUtils(FileUtilsBase):
                         error_pattern.extend(append_error_pattern)
 
         output = device.execute(cli,
+                                prompt_recovery=prompt_recovery,
                                 timeout=timeout_seconds,
                                 reply=dialog,
-                                prompt_recovery=True,
                                 error_pattern=error_pattern)
 
         return output
@@ -223,7 +223,6 @@ class FileUtils(FileUtilsBase):
                 protocol source interface configuration to the device if provided)
 
         """
-
         device = kwargs.get('device') or getattr(self, 'device', None)
         if not device:
             raise AttributeError("Device object is missing, can't proceed with"

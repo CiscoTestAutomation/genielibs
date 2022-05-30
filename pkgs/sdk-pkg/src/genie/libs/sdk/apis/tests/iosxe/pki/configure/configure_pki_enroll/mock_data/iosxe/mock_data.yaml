@@ -1,22 +1,43 @@
 configure:
   commands:
-    crypto pki enroll client: "crypto pki enroll client\r\n%\r\n% Start certificate\
-      \ enrollment .. \r\n% Create a challenge password. You will need to verbally\
-      \ provide this\r\n   password to the CA Administrator in order to revoke your\
-      \ certificate.\r\n   For security reasons your password will not be saved in\
-      \ the configuration.\r\n   Please make a note of it.\r\n\r\nPassword: \r\nRe-enter\
-      \ password: \r\n\r\n% The subject name in the certificate will include: ipsec_reg8_new\r\
-      \n% Include the router serial number in the subject name? [yes/no]: no\r\n%\
-      \ Include an IP address in the subject name? [no]: no\r\nRequest certificate\
-      \ from CA? [yes/no]: yes\r\n% Certificate request sent to Certificate Authority\r\
-      \n% The 'show crypto pki certificate verbose client' commandwill show the fingerprint.\r\
-      \n\r\n"
+    crypto pki enroll client:
+      new_state: password
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
   prompt: ipsec_reg8_new(config)#
+password:
+  prompt: "crypto pki enroll client\r\n%\r\n% Start certificate\
+      \ enrollment .. \r\n% Create a challenge password. You will need to verbally\
+      \ provide this\r\n   password to the CA Administrator in order to revoke your\
+      \ certificate.\r\n   For security reasons your password will not be saved in\
+      \ the configuration.\r\n   Please make a note of it.\r\n\r\nPassword: "
+  commands:
+    "abcd1234":
+      new_state: reenter_password
+reenter_password:
+  prompt: "Re-enter password: "
+  commands:
+    "abcd1234":
+      new_state: include_router
+include_router:
+  prompt: "% The subject name in the certificate will include: ipsec_reg8_new\r\
+      \n% Include the router serial number in the subject name? [yes/no]: "
+  commands:
+    "no":
+      new_state: include_ip_address
+include_ip_address:
+  prompt: "% Include an IP address in the subject name? [no]: "
+  commands:
+    "no":
+      new_state: request_certificate
+request_certificate:
+  prompt: "Request certificate from CA? [yes/no]: "
+  commands:
+    "yes":
+      new_state: configure
 configure_line:
   commands:
     end:

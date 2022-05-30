@@ -1,0 +1,71 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: Switch(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Switch(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show platform hardware fed switch 3 qos queue config interface GigabitEthernet3/0/6:
+      response:
+      - "Asic:0 Core:1 DATA Port:5 GPN:198 LinkSpeed:0x1\r\nAFD:Disabled FlatAFD:Disabled\
+        \ QoSMap:0 HW Queues: 40 - 47\r\n  DrainFast:Disabled PortSoftStart:2 - 1800\
+        \  \r\n   DTS  Hardmax  Softmax   PortSMin  GlblSMin  PortStEnd   QEnable\r\
+        \n  ----- --------  --------  --------  --------  ---------  -------\r\n 0\
+        \   1  2   200   3   800  19   475   0     0   3  2400      En\r\n 1   1 \
+        \ 0     0   4  1200  19   712   8   300   3  2400      En\r\n 2   1  0   \
+        \  0   0     0   0     0   0     0   3  2400      En\r\n 3   1  0     0  \
+        \ 0     0   0     0   0     0   3  2400      En\r\n 4   1  0     0   0   \
+        \  0   0     0   0     0   3  2400      En\r\n 5   1  0     0   0     0  \
+        \ 0     0   0     0   3  2400      En\r\n 6   1  0     0   0     0   0   \
+        \  0   0     0   3  2400      En\r\n 7   1  0     0   0     0   0     0  \
+        \ 0     0   3  2400      En\r\n Priority   Shaped/shared   weight  shaping_step\
+        \  sharpedWeight\r\n --------   -------------   ------  ------------   -------------\r\
+        \n 0      0     Shared            50           0           0\r\n 1      0\
+        \     Shared            75           0           0\r\n 2      0     Shared\
+        \         10000           0           0\r\n 3      0     Shared         10000\
+        \           0           0\r\n 4      0     Shared         10000          \
+        \ 0           0\r\n 5      0     Shared         10000           0        \
+        \   0\r\n 6      0     Shared         10000           0           0\r\n 7\
+        \      0     Shared         10000           0           0\r\n Port       Port\
+        \            Port    Port\r\n Priority   Shaped/shared   weight  shaping_step\r\
+        \n --------   -------------   ------  ------------\r\n        2     Shaped\
+        \           254         255\r\n\r\n   Weight0 Max_Th0 Min_Th0 Weigth1 Max_Th1\
+        \ Min_Th1  Weight2 Max_Th2 Min_Th2\r\n   ------- ------- ------- ------- -------\
+        \ -------  ------- ------- ------\r\n 0       0     796       0       0  \
+        \   890       0       0    1000       0\r\n 1       0     956       0    \
+        \   0    1068       0       0    1200       0\r\n 2       0       0      \
+        \ 0       0       0       0       0       0       0\r\n 3       0       0\
+        \       0       0       0       0       0       0       0\r\n 4       0  \
+        \     0       0       0       0       0       0       0       0\r\n 5    \
+        \   0       0       0       0       0       0       0       0       0\r\n\
+        \ 6       0       0       0       0       0       0       0       0      \
+        \ 0\r\n 7       0       0       0       0       0       0       0       0\
+        \       0"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Switch#

@@ -1461,4 +1461,332 @@ def configure_mdns_service_peer_group(device,peer_grp_no,policy_name,peer_ip,loc
             "{peer_grp_no} for peer {peer_ip}, Error: {error}".format(
             peer_grp_no=peer_grp_no, peer_ip=peer_ip, error=e
             )
-        )     
+        )
+
+def configure_mdns_active_response_timer(device, timer):
+    """ Configure mDNS(Multicast Domain Name System) active response timer
+    
+        mdns-sd gateway
+        active-response timer 20
+        end
+    
+        Args:
+            device ('obj'): device to use
+            timer ('int'): 5-60 sec
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring mdns active response timer
+    """
+    log.debug(" Configuring mdns active response timer ")
+
+    try:
+        device.configure([
+            "mdns-sd gateway" ,
+            "active-response timer {}".format(timer)
+        ])
+    except SubCommandFailure as e:
+
+        raise SubCommandFailure(
+
+            "Could not configure mdns active response timer {e}"
+        )
+        
+def unconfigure_mdns_active_response_timer(device, timer):
+    """ Unconfigure mDNS(Multicast Domain Name System) active response timer
+    
+        mdns-sd gateway
+        no active-response timer 20
+        end
+    
+        Args:
+            device ('obj'): device to use
+            timer ('int'): 5-60 sec
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring mdns active response timer
+    """
+    log.debug(" Unconfiguring mdns active response timer ")
+
+    try:
+        device.configure([
+            "mdns-sd gateway" ,
+            "no active-response timer {}".format(timer)
+        ])
+    
+    except SubCommandFailure as e:
+
+        raise SubCommandFailure(
+
+            "Could not unconfigure mdns active response timer {e}"
+        )
+
+def configure_mdns_service_query_timer_periodicity(device, timer):
+    """ Configure mDNS(Multicast Domain Name System) service query timer periodicity
+    
+        mdns-sd gateway
+        active-response timer 20
+        end
+    
+        Args:
+            device ('obj'): device to use
+            timer ('int'): 5-36000 sec
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring mdns service query timer periodicity
+    """
+    log.debug(" Configuring mdns service query timer periodicity ")
+
+    try:
+        device.configure([
+            "mdns-sd gateway" ,
+            "service-query-timer periodicity {}".format(timer)
+        ])
+    except SubCommandFailure as e:
+
+        raise SubCommandFailure(
+
+            "Could not configure mdns service query timer periodicity {e}"
+        )
+        
+def clear_mdns_controller_statistics(device):
+    """ Clears mdns controller statistics on SDG
+        Args:
+            device (`obj`): Device object
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed clearing controller statistics
+    """
+
+    try:
+        device.execute("clear mdns-sd controller statistics")
+        
+    except SubCommandFailure as e:
+
+        raise SubCommandFailure(
+
+            "Could not clear mdns controller statistics on SDG {e}"
+        ) 
+        
+def configure_mdns_service_policy(device, name, service_list, direction):
+    """ Configure mDNS(Multicast Domain Name System) service-policy
+        Args:
+            device ('obj'): device to use
+            name ('str')
+            service_list ('list'):
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring mdns controller service-policy
+    """
+    log.debug("Configuring mdns service-policy with  name={},service_list={}".format(name, service_list, direction))
+
+    try:
+        device.configure([
+            "mdns-sd service-policy {}".format(name),
+            "service-list {} {}".format(service_list,direction)
+        ])
+    except SubCommandFailure as e:
+
+        raise SubCommandFailure(
+
+            "Could not configure mdns service-policy {e}"
+        )
+        
+def configure_default_mdns_controller(device, name,cont_addr,cont_src_intf,srvc_list,mat_option,cont_service_policy, msg_type):
+
+    """ Creating default mdns controller
+        Args:
+            device ('obj'): device to use
+            name ('str')
+            cont_addr ('str'): controller addresses to be configured
+            cont_service_policy ('str'): service-policy to configured
+            cont_src_intf ('str'): Default router ID
+            srvc_list ('str'):
+            mat_option ('str'):
+            msg_type ('str'):
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring mdns controller
+    """
+    log.info(
+        "Configuring default mdns controller with name={}, cont_addr={}, cont_service_policy={}, and "
+        "cont_src_intf {} srvc_list={} mat_option={} msg_type={}".format(name,cont_addr,cont_service_policy, cont_src_intf, srvc_list, mat_option, msg_type))
+
+    try:
+        device.configure([
+            "mdns-sd controller service-list {}".format(srvc_list),
+            "match {} message-type {}".format(mat_option,msg_type),
+            "mdns-sd controller service-policy {}".format(cont_service_policy),
+            "service-list {}".format(srvc_list),
+            "service-export mdns-sd controller {}".format(name),
+            "controller-address {}".format(cont_addr),
+            "controller-source-interface {}".format(cont_src_intf),
+            ])
+    except SubCommandFailure as e:
+
+        raise SubCommandFailure(
+
+            "Could not configure mdns controller {e}"
+        ) 
+
+def configure_controller_policy(device, name, service_list):
+    """ Configure mDNS(Multicast Domain Name System) controller service-policy
+        Args:
+            device ('obj'): device to use
+            name ('str')
+            service_list ('list'):
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring mdns controller service-policy
+    """
+    log.debug("Configuring mdns controller service-policy with  name={},service_list={}".format(name, service_list))
+
+    try:
+        device.configure([
+            "mdns-sd controller service-policy {}".format(name),
+            "service-list {}".format(service_list)
+        ])
+    except SubCommandFailure as e:
+
+        raise SubCommandFailure(
+
+            "Could not configure mdns controller service-policy {e}"
+        )
+
+def unconfigure_controller_policy_service_export(device, name, policy_name):
+    """ Unconfigure mDNS(Multicast Domain Name System) controller service-policy
+        Args:
+            device ('obj'): device to use
+            name ('str')
+            policy_name ('list'):
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring mdns controller service-policy
+    """
+    log.debug("Unconfiguring mdns controller service-policy with  name={},policy_name={}".format(name, policy_name))
+
+    try:
+        for type in policy_name:
+            device.configure([
+                "service-export mdns-sd controller {}".format(name),
+                "no controller-service-policy policy_name {}".format(type)
+            ])
+    except SubCommandFailure as e:
+
+        raise SubCommandFailure(
+
+            "Could not unconfigure mdns controller service-policy {e}"
+        )
+        
+def unconfigure_mdns_service_policy(device, policy):
+    """ Unconfigures mdns service policy
+
+        Args:
+            device (`obj`): Device object
+            policy ('str'): Policy name
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Unconfigures service policy")
+
+    try:
+        device.configure([
+            "no mdns-sd service-policy {policy}".format(policy=policy)
+        ])
+    except SubCommandFailure as e:
+
+        raise SubCommandFailure(
+
+            "Could not unconfigure service-policy {e}"
+        ) 
+        
+def unconfigure_mdns_service_policy_vlan(device, vlan, policy):
+    """ Unconfigures mdns service policy from vlan configuration
+
+        Args:
+            device (`obj`): Device object
+            vlan ('int'): Vlan ID
+            policy ('str'): Policy name
+
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Unconfigures service policy from vlan configuration")
+
+    try:
+        device.configure([
+            "vlan configuration {vlan_id}".format(vlan_id=vlan),
+            "mdns-sd gateway",
+            "no service-policy {policy}".format(policy=policy)
+        ])
+    except SubCommandFailure as e:
+
+        raise SubCommandFailure(
+
+            "Could not unconfigure service-policy from Vlan {e}"
+        )
+
+def unconfigure_mdns_gateway_globally(device):
+    """ Unconfigure mdns gateway globally
+        Args:
+            device (`obj`): Device object
+        Return:
+            None
+        Raise:
+            SubCommandFailure: Failed unconfiguring mdns gateway
+    """
+
+    try:
+        device.configure([
+            "no mdns-sd gateway"
+        ])
+                        
+    except SubCommandFailure as e:
+
+        raise SubCommandFailure(
+
+            "Could not configure mdns active response timer {e}"
+        )
+    
+def unconfigure_mdns_trust(device, interface):
+    """ Unconfiguring mdns trust on interface
+
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("Unconfiguring mdns-trust on interface")
+    try:
+        device.configure([
+            "interface {intf}".format(intf=interface),
+            "no mdns-sd trust"
+        ])
+    except SubCommandFailure as e:
+
+        raise SubCommandFailure(
+
+            "Could not unconfigure mdns_trust {e}"
+        )
+ 

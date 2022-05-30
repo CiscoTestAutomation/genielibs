@@ -112,7 +112,29 @@ class TestCopyToDevice(unittest.TestCase):
                             name='mycontextserver'):
                 self.device.execute = Mock()
                 self.device.api.copy_to_device(protocol='tftp',
-                                                server='mycontextserver',
-                                                remote_path='test.txt',
-                                                local_path='test.txt')
+                                               server='mycontextserver',
+                                               remote_path='test.txt',
+                                               local_path='test.txt')
             assert re.search(r'copy tftp://127.0.0.1:\d+/test.txt test.txt', str(self.device.execute.call_args))
+
+    def test_copy_to_device_path(self):
+        self.device.api.get_mgmt_ip_and_mgmt_src_ip_addresses = Mock(return_value=('127.0.0.1', ['127.0.0.1']))
+        self.device.execute = Mock(return_value='')
+        copy_to_device(self.device, '/tmp/test.txt')
+        assert re.search(r'copy http://\w+:\w+@127.0.0.1:\d+/test.txt flash:', str(self.device.execute.call_args))
+
+    def test_copy_to_device_http_server_path(self):
+        self.device.execute = Mock()
+        copy_to_device(self.device, '/tmp/test.txt', server='http')
+        assert re.search(r'copy http://127.0.0.1//tmp/test.txt flash:', str(self.device.execute.call_args))
+
+    def test_copy_to_device_tftp_server_path(self):
+        self.device.execute = Mock()
+        copy_to_device(self.device, '/tmp/test.txt', server='tftp')
+        assert re.search(r'copy tftp://127.0.0.1//tmp/test.txt flash:', str(self.device.execute.call_args))
+
+    def test_copy_to_device_tftp_server_path_dynamic(self):
+        self.device.api.get_mgmt_ip_and_mgmt_src_ip_addresses = Mock(return_value=('127.0.0.1', ['127.0.0.1']))
+        self.device.execute = Mock()
+        copy_to_device(self.device, '/tmp/test.txt', protocol='tftp')
+        assert re.search(r'copy tftp://127.0.0.1:\d+/test.txt flash:', str(self.device.execute.call_args))

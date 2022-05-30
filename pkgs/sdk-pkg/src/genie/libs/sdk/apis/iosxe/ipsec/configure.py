@@ -339,9 +339,9 @@ def configure_ipsec_tunnel(device,
                             tunnel_mode,
                             tunnel_dst_ip,
                             ipsec_profile_name,
+                            v6_overlay=False,
                             vrf=None,
-                            tunnel_vrf=None
-                            ):
+                            tunnel_vrf=None):
     """ Configures ipsec tunnel interface
         Args:
             device (`obj`): Device object
@@ -352,6 +352,7 @@ def configure_ipsec_tunnel(device,
             tunnel_mode ('str'): ipv4 or ipv6 or dual-overlay
             tunnel_dst_ip ('str'): tunnel destination IP
             ipsec_profile_name ('str'): IPSEC profile name
+            v6-overlay ('boolean', optional): True if v6-over-ipv4. Default is False
             vrf ('str',optional): overlay or ivrf of the tunnel, default is None
             tunnel_vrf ('str',optional): underlay or fvrf name, default is None
 
@@ -375,14 +376,15 @@ def configure_ipsec_tunnel(device,
     if tunnel_vrf:
         configs.append("tunnel vrf {tunnel_vrf}".format(tunnel_vrf=tunnel_vrf))
     configs.append("tunnel protection ipsec profile {ipsec_profile_name}".format(ipsec_profile_name=ipsec_profile_name))
+    if v6_overlay:
+        configs.append("tunnel mode ipsec {tunnel_mode} v6-overlay".format(tunnel_mode=tunnel_mode))
 
     try:
         device.configure(configs)
     except SubCommandFailure as e:
-        log.error("Failed to configure ipsec tunnel,"
-             "Error:\n{error}".format(error=e)
+        raise SubCommandFailure(
+            "Failed to configure ipsec tunnel, Error:\n{e}"
         )
-        raise
 
 def configure_crypto_ikev2_keyring(device, keyring_name, peer_name=None, preshare_key=None, address='0.0.0.0', mask='0.0.0.0', type='ipv4'):
     """ Configure Crypto Ikev2 Keyring
@@ -438,7 +440,9 @@ def unconfigure_crypto_ikev2_keyring(device,keyring):
 
 def configure_ikev2_profile_pre_share(device, profile_name, auth_local='pre-share', auth_remote='pre-share',
                                     keyring=None, address=None, mask='', protocol='ipv4',
-                                    dpd_interval=None, dpd_retry='2', dpd_type='periodic', fvrf=None):
+                                    dpd_interval=None, dpd_retry='2', dpd_type='periodic', 
+                                    fvrf=None, lifetime=None):
+
     """ Configure Ikev2 Profile with pre-share option
         Args:
             device ('obj')    : device to use
@@ -454,6 +458,7 @@ def configure_ikev2_profile_pre_share(device, profile_name, auth_local='pre-shar
             dpd_retry ('str',optional) DPD Retries (Default 2)
             dpd_type ('str',optional) DPD type (ie periodic or on-demand) (Default periodic)
             fvrf ('str',optional) FVRF name (Default None)
+            lifetime ('str',optional) lifetime in secs  (Default is None)
         Returns:
             None
         Raises:
@@ -479,6 +484,8 @@ def configure_ikev2_profile_pre_share(device, profile_name, auth_local='pre-shar
     if dpd_interval:
         config_list.append("dpd {interval} {retry} {type}".format(interval=dpd_interval,
                                                                   retry=dpd_retry, type=dpd_type))
+    if lifetime:
+        config_list.append("lifetime {lifetime}".format(lifetime=lifetime))
 
     try:
         device.configure(config_list)
@@ -871,6 +878,7 @@ def unconfigure_ipsec_sa_global(device,
              "Error:\n{error}".format(error=e)
         )
         raise
+
 def configure_crypto_ikev2_policy(device, policy_name, proposal_name):
     """ Configure crypto ikev2 policy ikev2policy
     Args:

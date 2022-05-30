@@ -94,7 +94,7 @@ def verify_changes_platform(device, platform_before, platform_after,
 def verify_file_exists(device, file, size=None, dir_output=None):
     '''Verify that the given file exist on device with the same name and size
         Args:
-            device (`obj`): Device object
+            device ('obj'): Device object
             file ('str'): File path on the device, i.e. bootflash:/path/to/file
             size('int'): Expected file size (Optional)
             dir_output ('str'): Output of 'dir' command
@@ -106,10 +106,16 @@ def verify_file_exists(device, file, size=None, dir_output=None):
     directory = ''.join([os.path.dirname(file), '/'])
 
     # 'dir' output
-    dir_out = device.parse('dir {}'.format(directory), output=dir_output)
+    try:
+        dir_out = device.parse('dir {}'.format(directory), output=dir_output)
+    except SchemaEmptyParserError:
+        log.info(
+            "Folder '{}' does not exist on {}"
+            .format(directory, device.name))
+        return False
 
     # Check if file exists
-    exist = filename in dir_out.get('dir').get(directory).get('files')
+    exist = filename in dir_out.get('dir').get(directory, {}).get('files', {})
 
     if not exist:
         log.info("File '{}' does not exist on {}".format(file, device.name))

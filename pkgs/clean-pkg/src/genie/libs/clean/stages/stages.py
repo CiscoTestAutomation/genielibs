@@ -496,6 +496,9 @@ copy_to_linux:
 
                     if rename_images:
                         new_filename = rename_images + '_' + str(index) if index else rename_images
+                    
+                    else:
+                        new_filename = None
 
                     try:
                         new_name = device.api.modify_filename(
@@ -706,7 +709,6 @@ copy_to_linux:
                     step.skipped("File has been copied correctly but cannot "
                                  "verify file size")
 
-
 class CopyToDevice(BaseStage):
     """This stage will copy an image to a device from a networked location.
 
@@ -790,6 +792,9 @@ copy_to_device:
         If multiple files exist then an incrementing number is also appended.
         Defaults to None
 
+    prompt_recovery(bool, optional): Enable the prompt recovery when the  execution
+        command timeout. Defaults to False.
+
 Example
 -------
 copy_to_device:
@@ -826,6 +831,7 @@ copy_to_device:
     UNIQUE_FILE_NAME = False
     UNIQUE_NUMBER = None
     RENAME_IMAGES = None
+    PROMPT_RECOVERY = False
 
 
     # ============
@@ -860,7 +866,8 @@ copy_to_device:
         Optional('interface'): str,
         Optional('unique_file_name'): bool,
         Optional('unique_number'): int,
-        Optional('rename_images'): str
+        Optional('rename_images'): str,
+        Optional('prompt_recovery'): bool
     }
 
     # ==============================
@@ -890,6 +897,7 @@ copy_to_device:
                        unique_file_name=UNIQUE_FILE_NAME,
                        unique_number=UNIQUE_NUMBER,
                        rename_images=RENAME_IMAGES,
+                       prompt_recovery=PROMPT_RECOVERY,
                        **kwargs
                        ):
         log.info("Section steps:\n1- Verify correct number of images provided"
@@ -1171,6 +1179,7 @@ copy_to_device:
                                                        use_kstack=use_kstack,
                                                        interface=interface,
                                                        overwrite=overwrite,
+                                                       prompt_recovery=prompt_recovery,
                                                        **kwargs)
                                 except Exception as e:
                                     # Retry attempt if user specified
@@ -1200,6 +1209,7 @@ copy_to_device:
                                                        use_kstack=use_kstack,
                                                        interface=interface,
                                                        overwrite=overwrite,
+                                                       prompt_recovery=prompt_recovery,
                                                        **kwargs)
                                 except Exception as e:
                                     # Retry attempt if user specified
@@ -1249,33 +1259,26 @@ copy_to_device:
                         with step.start("Verify image '{}' copied to {} on device {}".\
                                         format(image_data['dest_path'], dest, device.name)) as substep:
                             # if size is -1 it means it failed to get the size
-                            if image_data['size'] != -1:
-                                if not device.api.verify_file_exists(
-                                        file=image_data['dest_path'],
-                                        size=image_data['size'],
-                                        dir_output=dir_after):
-                                    substep.failed("Size of image file copied to device {} is "
-                                                   "not the same as remote server filesize".\
-                                                   format(device.name))
-                                else:
-                                    file_name = os.path.basename(file)
-                                    if file_name not in protected_files:
-                                        protected_files.append(file_name)
-                                    log.info('{file_name} added to protected list'.format(file_name=file_name))
-
-                                    substep.passed("Size of image file copied to device {} is "
-                                                   "the same as image filesize on remote server".\
-                                                   format(device.name))
-
+                            if not device.api.verify_file_exists(file=image_data['dest_path'],
+                                                                 size=image_data['size'],
+                                                                 dir_output=dir_after):
+                                substep.failed(
+                                    "Either the file failed to copy OR the local file size is different "
+                                    "than the origin file size on the device {}.".format(device.name))
                             else:
                                 file_name = os.path.basename(file)
                                 if file_name not in protected_files:
                                     protected_files.append(file_name)
                                 log.info('{file_name} added to protected list'.format(file_name=file_name))
-
-                                substep.skipped(
-                                    "Image file has been copied to device {} correctly"
-                                    " but cannot verify file size".format(device.name))
+                                if image_data['size'] != -1:
+                                    substep.passed(
+                                        "File was successfully copied to device {}. "
+                                        "Local file size is the same as the origin file size.".\
+                                        format(device.name))
+                                else:
+                                    substep.skipped(
+                                        "File has been copied to device {}.Cannot verify integrity as "
+                                        "the original file size is unknown.".format(device.name))
 
 
 class WriteErase(BaseStage):
@@ -2507,10 +2510,14 @@ power_cycle:
     boot_timeout (int, optional): Max time in seconds allowed for the
         device to boot. Defaults to 600.
 
+    sleep_after_connect (int, optional): Time to sleep after connecting
+        to the device. Defaults to 0 (no sleep).
+
 Example
 -------
 power_cycle:
     sleep_after_power_off: 5
+    sleep_after_connect: 10
 """
 
     # =================
@@ -2518,13 +2525,15 @@ power_cycle:
     # =================
     SLEEP_AFTER_POWER_OFF = 30
     BOOT_TIMEOUT = 600
+    SLEEP_AFTER_CONNECT = 0
 
     # ============
     # Stage Schema
     # ============
     schema = {
         Optional('sleep_after_power_off'): int,
-        Optional('boot_timeout'): int
+        Optional('boot_timeout'): int,
+        Optional('sleep_after_connect'): int,
     }
 
     # ==============================
@@ -2543,7 +2552,8 @@ power_cycle:
             except Exception as e:
                 step.failed("Failed to powercycle", from_exception=e)
 
-    def reconnect(self, steps, device, boot_timeout=BOOT_TIMEOUT):
+    def reconnect(self, steps, device, boot_timeout=BOOT_TIMEOUT,
+                  sleep_after_connect=SLEEP_AFTER_CONNECT):
 
         with steps.start(f"Reconnecting to '{device.name}'") as step:
 
@@ -2561,6 +2571,11 @@ power_cycle:
                     step.passed("Reconnected")
 
             step.failed("Could not reconnect", from_exception=connect_exception)
+
+        if sleep_after_connect:
+            with steps.start(f"Sleeping for {sleep_after_connect} seconds") as step:
+                time.sleep(sleep_after_connect)
+                step.passed(f'Waited {sleep_after_connect} seconds')
 
 
 class CopyRunToFlash(BaseStage):

@@ -1,4 +1,0 @@
-clear_errdisable_intf_vlan:
-    arguments:
-        - intf: gi3/0/48
-        - vlan: 12

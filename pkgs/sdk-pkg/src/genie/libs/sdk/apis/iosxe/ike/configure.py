@@ -992,10 +992,18 @@ def unconfigure_ikev2_profile(device,profile_name):
             )
         )
 
-def clear_crypto_session(device):
-    """ Clear all crypto session
+def clear_crypto_session(device,
+                active=False,
+                ikev2=False,
+                fvrf=None,
+                timeout=30):
+    """ Clear crypto session
         Args:
             device (`obj`): Device object
+            active('boolean', optional): clear active session, default is False
+            ikev2('boolean', optional): Clear ikev2 based sessions, default is False
+            fvrf('str', optional): Front door VRF name, default is None
+            timeout('int', optional): timeout for exec command execution, default is 30
         Returns:
             None
         Raises:
@@ -1004,14 +1012,23 @@ def clear_crypto_session(device):
     log.info(
         "Clearing crypto session"
     )
+    cmd = f"clear crypto session"
+    if active:
+        cmd += " active"
 
-    try:
-        device.execute("clear crypto session")
+    if ikev2:
+        cmd += " ikev2"
+
+    if fvrf is not None:
+        cmd += f" fvrf {fvrf}"
+
+    try:    
+        device.execute(cmd, 
+            error_pattern=[f' No VRF named {fvrf} exists','% Invalid input detected at \'\^\' marker\.'], 
+            timeout=timeout)
+
     except SubCommandFailure as e:
         raise SubCommandFailure(
-            "Failed to clear crypto session "
-            "on device {dev}. Error:\n{error}".format(
-                dev=device,
-                error=e,
-            )
+            "Could not clear crypto session on {device}. Error:\n{error}"
+                .format(device=device, error=e)
         )

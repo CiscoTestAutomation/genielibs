@@ -6,6 +6,7 @@ import logging
 # Genie
 from genie.utils.timeout import Timeout
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
+from genie.libs.parser.utils.common import Common
 
 log = logging.getLogger(__name__)
 
@@ -23,6 +24,8 @@ def verify_ipv6_pim_neighbor(device,interface,neighbor_address,max_time=15, chec
                 True
                 False
         """
+    interface = Common.convert_intf_name(interface)
+
     timeout = Timeout(max_time, check_interval)
     while timeout.iterate():
 

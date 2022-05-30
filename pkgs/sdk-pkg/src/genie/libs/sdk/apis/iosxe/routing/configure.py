@@ -113,10 +113,91 @@ def remove_routing_ip_route(
                 ip_address=ip_address, error=e
             )
         )
+def configure_routing_static_routev6(
+    device, routev6, mask, vrf=None, interface=None, destination_addressv6=None
+):
+    """ Configure static ip route on device
+
+        Args:
+            device ('str'): Device str
+            routev6 ('str'): ip address for route
+            mask (str): mask the ip address
+            vrf ('str',optional): Vrf for static route
+            interface ('str'): interface name to configure
+            destination_addressv6 ('str'): destination address to configure
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    if vrf and destination_addressv6:
+        configs.append(
+            f"ipv6 route vrf {vrf} {routev6}/{mask} {destination_addressv6}")
+    elif vrf and interface:
+        configs.append(
+             f"ipv6 route vrf {vrf} {routev6}/{mask} {interface}")
+    elif interface:
+        configs.append(
+            f"ipv6 route vrf {vrf} {routev6}/{mask} {interface}")
+    elif destination_addressv6:
+        configs.append(
+            f"ipv6 route vrf {vrf} {routev6}/{mask} {destination_addressv6}")
+    try:
+        device.configure(configs)
+        log.info("Configuration successful for {route} ".format(route=routev6))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Configuration failed for {route}.".format(route=routev6)
+        )
+
+def unconfigure_routing_static_routev6(
+    device, routev6, mask, vrf=None, interface=None, destination_addressv6=None
+):
+    """ Configure static ip route on device
+
+        Args:
+            device ('str'): Device str
+            routev6 ('str'): ip address for route
+            mask (str): mask the ip address
+            vrf ('str',optional): Vrf for static route
+            interface ('str'): interface name to configure
+            destination_addressv6 ('str'): destination address to configure
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    if vrf and destination_addressv6:
+        configs.append(
+            f"ipv6 route vrf {vrf} {routev6}/{mask} {destination_addressv6}")
+    elif vrf and interface:
+        configs.append(
+             f"ipv6 route vrf {vrf} {routev6}/{mask} {interface}")
+
+    elif interface:
+        configs.append(
+            f"ipv6 route vrf {vrf} {routev6}/{mask} {interface}")
+    elif destination_addressv6:
+        configs.append(
+            f"ipv6 route vrf {vrf} {routev6}/{mask} {destination_addressv6}")
+
+    try:
+        device.configure(configs)
+        log.info("Configuration successful for {route} ".format(route=routev6))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Configuration failed for {route}.".format(route=routev6)
+        )
 
 
 def configure_routing_static_route(
-    device, route, mask, interface=None, destination_address=None
+    device, route, mask, interface=None, destination_address=None, vrf=None
 ):
     """ Configure static ip route on device
 
@@ -126,6 +207,7 @@ def configure_routing_static_route(
             mask (str): mask the ip address
             interface ('str'): interface name to configure
             destination_address('str'): destination address to configure
+            vrf ('str',optional): Vrf for static route
 
         Returns:
             None
@@ -133,26 +215,66 @@ def configure_routing_static_route(
         Raises:
             SubCommandFailure
     """
+    configs = []
+    if interface and destination_address:
+        configs.append(
+            f"ip route {route} {mask} {interface} {destination_address}")
+    elif vrf and destination_address:
+        configs.append(
+            f"ip route vrf {vrf} {route} {mask} {destination_address}")
+    elif vrf and interface:
+        configs.append(
+            f"ip route vrf {vrf} {route} {mask} {interface}")
+    elif interface:
+        configs.append(
+            f"ip route {route} {mask} {interface}")
+    elif destination_address:
+        configs.append(
+            f"ip route {route} {mask} {destination_address}")
     try:
-        if interface and destination_address:
-            device.configure(
-                "ip route "
-                + route
-                + " "
-                + mask
-                + " "
-                + interface
-                + " "
-                + destination_address
-            )
-        elif interface:
-            device.configure(
-                "ip route " + route + " " + mask + " " + interface
-            )
-        elif destination_address:
-            device.configure(
-                "ip route " + route + " " + mask + " " + destination_address
-            )
+        device.configure(configs)
+        log.info("Configuration successful for {route} ".format(route=route))
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Configuration failed for {route}.".format(route=route)
+        )
+def unconfigure_routing_static_route(
+    device, route, mask, vrf=None, interface=None, destination_address=None
+):
+    """ Configure static ip route on device
+
+        Args:
+            device ('obj'): Device obj
+            route ('str'): ip address for route
+            mask (str): mask the ip address
+            vrf ('str',optional): Vrf for static route
+            interface ('str'): interface name to configure
+            destination_address('str'): destination address to configure
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    configs = []
+    if interface and destination_address:
+        configs.append(
+            f"no ip route {route} {mask} {interface} {destination_address}")
+    elif vrf and destination_address:
+        configs.append(
+            f"ip route {vrf} {route} {mask} {destination_address}")
+    elif vrf and interface:
+        configs.append(
+            f"ip route {vrf} {route} {mask} {interface}")
+    elif interface:
+        configs.append(
+            f"ip route {route} {mask} {interface}")
+    elif destination_address:
+        configs.append(
+            f"ip route {route} {mask} {destination_address}")
+    try:
+        device.configure(configs)
         log.info("Configuration successful for {route} ".format(route=route))
     except SubCommandFailure as e:
         raise SubCommandFailure(
@@ -587,7 +709,74 @@ def unconfigure_tftp_source_interface(
     except SubCommandFailure:
         log.error('Failed to Unconfigure tftp source interface')
         raise
-    
+
+def configure_ipv6_static_route(
+    device, route, mask, interface=None, destination_address=None
+):
+    """ Configure static ip route on device
+        Args:
+            device ('obj'): Device obj
+            route ('str'): ip address for route
+            mask (str): mask the ip address
+            interface ('str', optional): interface name to configure. Default is None
+            destination_address('str', optional): destination address to configure. Default is None
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = []
+    if interface:
+        cmd.append("ipv6 route {route}/{mask} {interface}".format(
+            route=route, mask=mask, interface=interface
+        ))
+    elif destination_address:
+        cmd.append("ipv6 route {route}/{mask} {destination_address}".format(
+            route=route, mask=mask, destination_address=destination_address
+        ))
+    else:
+        raise Exception("missing required argument: 'interface/destination_address'")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Configuration failed for {route}. Error:\n{error}".
+            format(route=route,error=e)
+        )
+
+def unconfigure_ipv6_static_route(
+    device, route, mask, interface=None, destination_address=None
+):
+    """ Configure static ip route on device
+        Args:
+            device ('obj'): Device obj
+            route ('str'): ip address for route
+            mask (str): mask the ip address
+            interface ('str', optional): interface name to configure. Default is False
+            destination_address('str', optional): destination address to configure. Default is False
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = []
+    if interface:
+        cmd.append("no ipv6 route {route}/{mask} {interface}".format(
+            route=route, mask=mask, interface=interface
+        ))
+    elif destination_address:
+        cmd.append("no ipv6 route {route}/{mask} {destination_address}".format(
+            route=route, mask=mask, destination_address=destination_address
+        ))
+    else:
+        raise Exception("missing required argument: 'interface/destination_address'")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Configuration failed for {route}.Error:\n{error}".
+            format(route=route,error=e)
+        )
 def configure_routing_ipv6_route(
     device, ipv6_address, interface=None, dest_add=None
 ):
@@ -753,3 +942,30 @@ def unconfigure_routing_ipv6_route_vrf(
                 Error:\n{error}".format(ipv6_address=ipv6_address, error=e
             )
         )
+
+def configure_stack_mac_persistent_timer(device, mac_timer):
+    """ configure stack-mac persistent timer on device
+
+        Args:
+            device ('str'): Device str
+            mac_timer ('str'): mac timer need to be set
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    log.info(
+        'configuring stack-mac persistent timer on device'
+    )
+
+    try:
+        device.configure(
+            "stack-mac persistent timer {mac_timer}".format(mac_timer=mac_timer)
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure mac timer on device. Error:\n{e}".format(e=e)
+        )
+

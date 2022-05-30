@@ -84,7 +84,6 @@ class Reconnect(unittest.TestCase):
         # Check that the result is expected
         self.assertEqual(Passed, steps.details[0].result)
 
-
     def test_fail_to_reconnect(self):
         # Make sure we have a unique Steps() object for result verification
         steps = Steps()
@@ -102,3 +101,18 @@ class Reconnect(unittest.TestCase):
         # Check the overall result is as expected
         self.assertEqual(Failed, steps.details[0].result)
 
+    def test_sleep_after_connect(self):
+        # Make sure we have a unique Steps() object for result verification
+        steps = Steps()
+
+        # To simulate pass case
+        self.device.connect = Mock()
+
+        # We expect this step to sleep
+        self.cls.reconnect(
+            steps=steps, device=self.device, boot_timeout=1, sleep_after_connect=0.1
+        )
+
+        # Check the step result is as expected
+        self.assertEqual(Passed, steps.details[1].result)
+        self.assertEqual('Sleeping for 0.1 seconds', steps.details[1].name)

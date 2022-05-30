@@ -1,0 +1,69 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: SF1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: SF1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show platform software fed active matm macTable vlan 10:
+      response:
+      - "VLAN   MAC                  Type  Seq#    EC_Bi  Flags  machandle       \
+        \    siHandle            riHandle            diHandle              *a_time\
+        \  *e_time  ports                                                        \
+        \ Con   \r\n------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\r\
+        \n10     0000.47d6.82b4  0x1000001       0      0     64  0x7fe778ea6058 \
+        \     0x7fe778ea5898      0x7fe778ea4f38      0x0                        \
+        \ 0   620941  VTEP 40.40.40.40 adj_id 2                                  \
+        \   No    \r\n\r\n\r\n10     00a7.42d6.bfd2  0x1000001       0      0    \
+        \ 64  0x7fe778eaa108      0x7fe778ea5898      0x7fe778ea4f38      0x0    \
+        \                     0   620941  VTEP 40.40.40.40 adj_id 2              \
+        \                       No    \r\n\r\n\r\n10     3c57.3104.6b42  0x5000001\
+        \       0      0     64  0x7fe778ea56a8      0x7fe778ea5898      0x7fe778ea4f38\
+        \      0x0                         0   620941  VTEP 40.40.40.40 adj_id 2 \
+        \                                    No    \r\n\r\n\r\n10     0000.1111.aaaa\
+        \  0x1000001       0      0     64  0x7fe778d7b468      0x7fe778eda818   \
+        \   0x7fe778eda598      0x0                         0   610656  VTEP 10.10.10.10\
+        \ adj_id 56                                    No    \r\n\r\n\r\n\r\nTotal\
+        \ Mac number of addresses:: 4\r\nSummary:\r\nTotal number of secure addresses::\
+        \ 0\r\nTotal number of drop addresses:: 0\r\nTotal number of lisp local addresses::\
+        \ 0\r\nTotal number of lisp remote addresses:: 4\r\n*a_time=aging_time(secs)\
+        \  *e_time=total_elapsed_time(secs)\r\nType:\r\nMAT_DYNAMIC_ADDR         \
+        \  0x1  MAT_STATIC_ADDR            0x2  MAT_CPU_ADDR               0x4  MAT_DISCARD_ADDR\
+        \           0x8\r\nMAT_ALL_VLANS             0x10  MAT_NO_FORWARD        \
+        \    0x20  MAT_IPMULT_ADDR           0x40  MAT_RESYNC                0x80\r\
+        \nMAT_DO_NOT_AGE           0x100  MAT_SECURE_ADDR          0x200  MAT_NO_PORT\
+        \              0x400  MAT_DROP_ADDR            0x800\r\nMAT_DUP_ADDR     \
+        \       0x1000  MAT_NULL_DESTINATION    0x2000  MAT_DOT1X_ADDR          0x4000\
+        \  MAT_ROUTER_ADDR         0x8000\r\nMAT_WIRELESS_ADDR      0x10000  MAT_SECURE_CFG_ADDR\
+        \    0x20000  MAT_OPQ_DATA_PRESENT   0x40000  MAT_WIRED_TUNNEL_ADDR  0x80000\r\
+        \nMAT_DLR_ADDR          0x100000  MAT_MRP_ADDR          0x200000  MAT_MSRP_ADDR\
+        \         0x400000  MAT_LISP_LOCAL_ADDR   0x800000\r\nMAT_LISP_REMOTE_ADDR\
+        \ 0x1000000  MAT_VPLS_ADDR        0x2000000  MAT_LISP_GW_ADDR     0x4000000"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: SF1#

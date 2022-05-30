@@ -174,8 +174,10 @@ def unconfigure_ptp_modes(device, mode):
             SubCommandFailure
     """
     configs = []
-    if mode == "dot1as" or mode == "g8275":
-        configs.append("no ptp profile")
+    if mode == "dot1as":
+        configs.append("no ptp profile")        
+    elif mode == "g8275":
+        configs.append("no ptp profile")        
     else:
         configs.append("no ptp mode")
 

@@ -9,7 +9,7 @@ from genie.libs.clean.stages.tests.utils import CommonStageTests, create_test_de
 
 
 from pyats.aetest.steps import Steps
-from pyats.results import Passed, Failed
+from pyats.results import Passed, Failed, Skipped
 from pyats.aetest.signals import TerminateStepSignal
 
 # Disable logging. It may be useful to comment this out when developing tests.
@@ -308,7 +308,7 @@ class Installimage(unittest.TestCase):
 
 class TestInstallImage(unittest.TestCase):
 
-    def test_iosxe_install_image(self):
+    def test_iosxe_install_image_pass(self):
         steps = Steps()
         cls = InstallImage()
         cls.history = MagicMock()
@@ -316,10 +316,17 @@ class TestInstallImage(unittest.TestCase):
 
         device = Mock()
         device.reload = Mock()
-
         cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'])
 
         device.reload.assert_has_calls([
             call('install add file sftp://server/image.bin activate commit', reply=ANY, timeout=500, append_error_pattern=['FAILED:.* '])])
-
         self.assertEqual(Passed, steps.details[0].result)
+
+    def test_iosxe_install_image_skip(self):
+        steps = Steps()
+        cls = InstallImage()
+        cls.history = MagicMock()
+        device = Mock()
+        device.api.get_running_image.return_value = 'sftp://server/image.bin'
+        cls.install_image(steps=steps, device=device, images=['sftp://server/image.bin'])
+        self.assertEqual(Skipped, steps.details[0].result)

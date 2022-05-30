@@ -2,24 +2,25 @@ configure:
   commands:
     end:
       new_state: execute
-    interface Tunnel60: "interface Tunnel60\r\n"
-    ipv6 address 1:2:3::4/64: "ipv6 address 1:2:3::4/64\r\n"
+    interface tunnel20: "interface tunnel20\r\n"
+    ip address 140.1.1.2 255.255.255.0: "ip address 140.1.1.2 255.255.255.0\r\n"
     keepalive 10: "keepalive 10\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    tunnel destination 77:12::2: "tunnel destination 77:12::2\r\n"
-    tunnel mode ipsec ipv6: "tunnel mode ipsec ipv6\r\n"
-    tunnel protection ipsec profile ipsecprofilev6overv6: "tunnel protection ipsec\
-      \ profile ipsecprofilev6overv6\r\n"
-    tunnel source 66:12::1: "tunnel source 66:12::1\r\n"
-  prompt: 9300x-A(config)#
+    tunnel destination 5.1.1.1: "tunnel destination 5.1.1.1\r\n"
+    tunnel protection ipsec profile dut1_dut2_v4IPsecProfile120: "tunnel protection\
+      \ ipsec profile dut1_dut2_v4IPsecProfile120\r\n"
+    tunnel source 5.1.1.2: "tunnel source 5.1.1.2\r\n"
+    tunnel vrf WAN-VRFv4: "tunnel vrf WAN-VRFv4\r\n"
+    vrf forwarding CLIENT-VRFv4: "vrf forwarding CLIENT-VRFv4\r\n"
+  prompt: Galaga-4(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: 9300x-A(config-line)#
+  prompt: Galaga-4(config-line)#
 connect:
   commands:
     ? ''
@@ -39,4 +40,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: 9300x-A#
+  prompt: Galaga-4#

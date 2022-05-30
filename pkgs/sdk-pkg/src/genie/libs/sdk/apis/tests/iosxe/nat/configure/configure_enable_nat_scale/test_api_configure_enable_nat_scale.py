@@ -17,7 +17,7 @@ class TestConfigureEnableNatScale(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: cat9k
+            platform: c9600
             type: c9600
         """
         self.testbed = loader.load(testbed)

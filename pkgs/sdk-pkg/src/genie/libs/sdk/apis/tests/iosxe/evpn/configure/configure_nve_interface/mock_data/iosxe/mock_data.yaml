@@ -4,11 +4,9 @@ configure:
       new_state: execute
     host-reachability protocol bgp: "host-reachability protocol bgp\r\n"
     interface nve 1: "interface nve 1\r\n"
-    line console:
-      new_state: configure_line
     line console 0:
       new_state: configure_line
-    member vni 10000 mcast-group 226.0.0.1: "member vni 10000 mcast-group 226.0.0.1\r\
+    member vni 11500 mcast-group 226.0.0.1: "member vni 11500 mcast-group 226.0.0.1\r\
       \n"
     no logging console: ''
     source-interface loopback1: "source-interface loopback1\r\n"
@@ -18,8 +16,6 @@ configure_line:
     end:
       new_state: execute
     exec-timeout 0: ''
-    line vty: ''
-    terminal width 511: ''
   prompt: VTEP1(config-line)#
 connect:
   commands:
@@ -40,6 +36,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-    term width 511: ''
-    terminal session-timeout 0: ''
   prompt: VTEP1#

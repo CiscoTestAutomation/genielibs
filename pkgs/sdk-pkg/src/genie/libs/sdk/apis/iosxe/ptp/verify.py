@@ -390,3 +390,37 @@ def verify_ptp_8275_holdover_spec_duration(
             return True
         timeout.sleep()            
     return False
+
+def verify_ptp_profile(
+    device, mode, max_time=15, check_interval=5
+):
+    """ Verify ptp state convergence in show ptp port interface 
+        Args:
+            device ('obj'): Device object
+            mode ('str'): Expected ptp mode or configured profile
+            max_time ('int'): Maximum wait time for the trigger,
+                            in second. Default: 15
+            check_interval (int): Wait time between iterations when looping is needed,
+                            in second. Default: 5
+        Returns:
+            True
+            False
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        try:
+            out = device.parse("show run | include ptp")
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue
+
+        ptp_profile = out['ptp']['ptp_mode']
+        if str(mode) == str(ptp_profile):
+            result = True
+        else:
+            result = False
+
+        if result:
+            return True
+    return False

@@ -236,3 +236,28 @@ def configure_shape_map(device,
                  )
         )
 
+def configure_policy_map_on_device(device, policy_map_name, class_map_name, target_bit_rate):
+    """ Configure policy-map type on Device
+    Args:
+        device (`obj`): Device object
+        policy_map_name ('str'): policy-map name to configure
+        class_map_name ('str'): class map name to configure
+        target_bit_rate ('str'): target bit rate to configure (in bits/sec)
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring policy-map on device
+    """
+    log.debug("Configuring policy-map on device")
+
+    try:
+        device.configure(
+            [
+                f"policy-map {policy_map_name}",
+                f"class {class_map_name}",
+                f"shape average {target_bit_rate}",
+            ]
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure("Could not configure policy-map on device")
+

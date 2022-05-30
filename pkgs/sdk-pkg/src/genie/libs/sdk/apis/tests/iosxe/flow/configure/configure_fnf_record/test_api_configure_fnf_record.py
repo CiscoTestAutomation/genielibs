@@ -29,6 +29,6 @@ class TestConfigureFnfRecord(unittest.TestCase):
         )
 
     def test_configure_fnf_record(self):
-        result = configure_fnf_record(self.device, 'flow_Po', 'protocol', None, None, None, 'destination-port', 'source-port', True, True, 'input', False, False, None, None, None, None, None, False)
+        result = configure_fnf_record(self.device, 'flow_Po', 'protocol', None, None, 'tos', 'destination-port', 'source-port', True, True, None, False, False, None, None, None, None, None, False)
         expected_output = None
         self.assertEqual(result, expected_output)

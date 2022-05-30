@@ -1080,23 +1080,26 @@ def verify_tacacs_packet(tacacs_json_dict, verfifydict):
     return final_verify
 
 
-def perform_ssh(device, testbed, enable_pass, timeout=60):
+def perform_ssh(device,hostname, ip_address, username, password, vrf=None, enable_pass='lab',timeout=60,port=22):
     """
     Restore config from local file using copy function
         Args:
             device (`obj`): Device object
-            testbed (`str`): Testbed object
+            hostname (`str') : hostname of the remote device
+            ip_address (`str`): IPv4/IPv6 address for remote device/server
             enable_pass (`str`): Enable password
+                            default 'lab'
+            username (`str`): username to login into remote device/server
+            password (`str`): password to login into remote device/server
             timeout (int): Optional timeout value
                            default value 60
-        Returns:
-            None
-    """
-    hostname = testbed.devices['uut'].name
-    username = testbed.custom['username']
-    password = testbed.custom['password']
-    ip_address = testbed.devices['uut'].custom['int_ipaddress']
+            vrf (`str1`) : vrf id if applicable
+            port (`int`) : port number for ssh i.e 22 for default, 830 for netconf
 
+        Returns:
+            True : When the connection establishment and termination succeeds
+            False : When either the connection establishment or termination or both fail
+    """
     ssh_dict = {
                 'pass_timeout_expire_flag': False,
                 'ssh_pass_case_flag': False,
@@ -1115,11 +1118,27 @@ def perform_ssh(device, testbed, enable_pass, timeout=60):
 
     def ssh_pass_case(spawn):
         ssh_dict['ssh_pass_case_flag'] = True
-        spawn.sendline(' exit')
+        if port == 830:
+            # command to kill the active netconf session on the device prompt itself.
+            cli_command = '''
+                <rpc message-id="101"
+                             xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+                          <kill-session> 
+                            <target>
+                              <running/>
+                            </target>
+                          </kill-session> 
+                </rpc>
+            '''
+        else:
+            # command to exit from the active ssh session from the device prompt itself.
+            cli_command = 'exit'  
+        spawn.sendline(cli_command)
 
     def send_enable(spawn):
         ssh_dict['enable_pass_flag'] = True
         spawn.sendline('enable')
+        # breakpoint
 
     dialog = Dialog([
 
@@ -1134,14 +1153,26 @@ def perform_ssh(device, testbed, enable_pass, timeout=60):
                       loop_continue=True),
             Statement(pattern=r""+hostname+"#",
                       action=ssh_pass_case,
-                      loop_continue=True),
+                      loop_continue=False),
+            Statement(pattern=r".*</hello>]]>]]>",
+                      action=ssh_pass_case,
+                      loop_continue=False),
 
     ])
+
     try:
-        device.execute('ssh -l {u} {i}'.format(u=username, i=ip_address),
-                       reply=dialog,
-                       prompt_recovery=True,
-                       timeout=timeout)
+        if vrf:
+            device.execute('ssh -l {u} -vrf {vrf} -p {port} {i}'.format(u=username, i=ip_address,vrf=vrf,port=port),
+                        reply=dialog,
+                        prompt_recovery=True,
+                        timeout=timeout)
+
+        else:
+            device.execute('ssh -l {u} -p {port} {i}'.format(u=username, i=ip_address,port=port),
+                        reply=dialog,
+                        prompt_recovery=True,
+                        timeout=timeout)
+
     except Exception as e:
         log.info(f"Error occurred while performing ssh : {e}")
 
@@ -1151,14 +1182,16 @@ def perform_ssh(device, testbed, enable_pass, timeout=60):
         return True
 
 
-def concurrent_ssh_sessions(concurrent_sessions, iteration_times, device, testbed,
-                            enable_pass):
+def concurrent_ssh_sessions(concurrent_sessions, device, ip_address, username, password,
+                            iteration_times, enable_pass):
     """
     Generates multiple ssh sessions
         Args:
             device (`obj`): Device object
-            testbed (`str`): Testbed object
-            enable_pass (`str`): enable password
+            ip_address (`str`): IPv4/IPv6 address for remote device/server
+            enable_pass (`str`): Enable password
+            username (`str`): username to login into remote device/server
+            password (`str`): password to login into remote device/server
             concurrent_sessions (`int`): count of ssh session to generate
             iteration_times (`int`): count of concurrent_sessions to repeat
         Returns:
@@ -1168,8 +1201,10 @@ def concurrent_ssh_sessions(concurrent_sessions, iteration_times, device, testbe
         log.info(f"generating sessions for iteration {iteration + 1}")
 
         p = Pcall(perform_ssh, device=[device]*concurrent_sessions,
-                  testbed=[testbed]*concurrent_sessions,
-                  enable_pass=[enable_pass]*concurrent_sessions)
+                  ip_address=[ip_address]*concurrent_sessions,
+                  enable_pass=[enable_pass]*concurrent_sessions,
+                  username=[username]*concurrent_sessions,
+                  password=[password]*concurrent_sessions)
 
         # start all child processes
         p.start()
@@ -1383,3 +1418,159 @@ def clear_port_security(device,interface=None):
         )
 
     return output
+
+def perform_telnet(device, hostname, ip_address, username, password, vrf=None, enable_pass='lab', timeout=60):
+    """
+    Restore config from local file using copy function
+        Args:
+            device (`obj`): Device object
+            hostname (`str') : hostname of the remote device
+            ip_address (`str`): IPv4/IPv6 address for remote device/server
+            enable_pass (`str`): Enable password
+                            default 'lab'
+            username (`str`): username to login into remote device/server
+            password (`str`): password to login into remote device/server
+            timeout (int): Optional timeout value
+                           default value 60
+            vrf (`str1`) : vrf id if applicable
+            
+        Returns:
+            True : When the connection establishment and termination succeeds
+            False : When either the connection establishment or termination or both fail
+    """
+    
+    telnet_dict = {
+                'pass_timeout_expire_flag': False,
+                'telnet_pass_case_flag': False,
+                'enable_pass_flag': False
+                }
+
+    def pass_timeout_expire():
+        telnet_dict['pass_timeout_expire_flag'] = True
+
+    def send_pass(spawn):
+        if telnet_dict['enable_pass_flag']:
+            spawn.sendline(enable_pass)
+            telnet_dict['enable_pass_flag'] = False
+        else:
+            spawn.sendline(password)
+    
+    def send_username(spawn):
+        spawn.sendline(username)
+
+    def telnet_pass_case(spawn):
+        telnet_dict['telnet_pass_case_flag'] = True
+        spawn.sendline(' exit')
+
+    def send_enable(spawn):
+        telnet_dict['enable_pass_flag'] = True
+        spawn.sendline('enable')
+
+    dialog = Dialog([
+
+            Statement(pattern=r".*timeout expired!",
+                      action=pass_timeout_expire,
+                      loop_continue=False),
+            Statement(pattern=r"Password:",
+                      action=send_pass,
+                      loop_continue=True),
+            Statement(pattern=r"Username:",
+                      action=send_username,
+                      loop_continue=True),
+            Statement(pattern=r""+hostname+">",
+                      action=send_enable,
+                      loop_continue=False),
+            Statement(pattern=r""+hostname+"#",
+                      action=telnet_pass_case,
+                      loop_continue=False),
+    ])
+    try:
+        if vrf:
+            device.execute('telnet {ip} /vrf {vrf}'.format(ip=ip_address,vrf=vrf),
+                        reply=dialog,
+                        prompt_recovery=True,
+                        timeout=timeout)
+        else:
+            device.execute('telnet {ip}'.format(ip=ip_address),
+                        reply=dialog,
+                        prompt_recovery=True,
+                        timeout=timeout)
+
+    except Exception as e:
+        log.info(f"Error occurred while performing telnet : {e}")
+
+    if telnet_dict['pass_timeout_expire_flag']:
+        return False
+    if telnet_dict['telnet_pass_case_flag']:
+        return True
+
+
+def verify_ospf_icmp_ping(
+    device, address=None, expected_max_success_rate=100,
+    expected_min_success_rate=0,vrf=None, max_time=60, repeat=None, check_interval=10,size=None):
+    """Verify ping
+    Args:
+            device ('obj'): Device object
+            address ('str'): Address value
+            expected_max_success_rate (int): Expected maximum success rate
+            expected_min_success_rate (int): Expected minimum success rate
+            vrf (`str`): vrf id
+            max_time (`int`): Max time, default: 30
+            check_interval (`int`): Check interval, default: 10
+            size('int'):size
+            repeat('int'):repeat
+    """
+
+    p = re.compile(r"Success +rate +is +(?P<rate>\d+) +percent.*")
+
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        if vrf and size and repeat:
+            cmd = 'ping vrf {vrf} {add} df-bit size {size} repeat {repeat}'.format(vrf=vrf,add=address,size=size,repeat=repeat)
+        elif vrf and size:
+            cmd = 'ping vrf {vrf} {add} df-bit size {size}'.format(vrf=vrf,add=address,size=size)
+        elif size and repeat:
+            cmd = 'ping {add} df-bit size {size} repeat {repeat}'.format(vrf=vrf,add=address,size=size,repeat=repeat)
+        elif size:
+            cmd = 'ping {add} df size {size}'.format(add=address,size=size)
+        else:
+            cmd = 'ping {add}'.format(add=address)
+
+        try:
+            out = device.execute(cmd,error_pattern=['% No valid source address for destination'])
+        except SubCommandFailure as e:
+            timeout.sleep()
+            continue
+
+        rate = int(p.search(out).groupdict().get('rate', 0))
+
+        if expected_max_success_rate >= rate >= expected_min_success_rate:
+            return True
+
+        timeout.sleep()
+    return False
+
+def clear_ip_traffic(device):
+    """ clear ip traffic
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.debug("clear ip traffic on {device}".format(device=device))
+
+    dialog = Dialog([Statement(pattern=r'\[confirm\].*',
+            action='sendline(\r)',
+            loop_continue=True,
+            continue_timer=False)])
+
+    try:
+        device.execute("clear ip traffic", reply=dialog)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not execute clear ip traffic on {device}. \
+            Error:\n{error}".format(device=device, error=e)
+        )
+

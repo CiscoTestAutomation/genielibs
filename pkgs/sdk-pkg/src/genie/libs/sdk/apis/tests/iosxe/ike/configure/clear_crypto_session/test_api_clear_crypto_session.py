@@ -9,7 +9,7 @@ class TestClearCryptoSession(unittest.TestCase):
     def setUpClass(self):
         testbed = """
         devices:
-          rad-vtep1:
+          kparames_csr1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -17,11 +17,11 @@ class TestClearCryptoSession(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9300
-            type: c9300
+            platform: iosxe
+            type: iosxe
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['rad-vtep1']
+        self.device = self.testbed.devices['kparames_csr1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -29,6 +29,6 @@ class TestClearCryptoSession(unittest.TestCase):
         )
 
     def test_clear_crypto_session(self):
-        result = clear_crypto_session(self.device)
+        result = clear_crypto_session(self.device, True, False, None, 30)
         expected_output = None
         self.assertEqual(result, expected_output)

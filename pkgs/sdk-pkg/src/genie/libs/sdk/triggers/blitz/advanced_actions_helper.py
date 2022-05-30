@@ -79,10 +79,6 @@ def _loop_dispatcher(self, steps, testbed, section, action_item, ret_list, name)
 
     actions = action_item.pop('actions')
 
-    # determine whether it is a range or an iterator value(list/dict) as input
-    iterator_item = _loop_iterator_item_update(
-                        self, section, action_item, steps)
-
     # values needs to be popped so markup vars wont get
     # replaced by get_variable()
     until = action_item.pop('until', None)
@@ -93,6 +89,10 @@ def _loop_dispatcher(self, steps, testbed, section, action_item, ret_list, name)
     action_item['section'] = section
     action_item = get_variable(**action_item)
     section_ = action_item.pop('section', None)
+
+    # determine whether it is a range or an iterator value(list/dict) as input
+    iterator_item = _loop_iterator_item_update(
+                        self, section, action_item, steps)
 
     # update the kwargs
     action_item.update({'steps': steps,

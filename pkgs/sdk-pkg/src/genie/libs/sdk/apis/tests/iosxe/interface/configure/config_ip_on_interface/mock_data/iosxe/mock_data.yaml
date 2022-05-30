@@ -1,0 +1,37 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface Fi1/0/5: "interface Fi1/0/5\r\n"
+    ip address 14.1.1.2 255.255.255.0: "ip address 14.1.1.2 255.255.255.0\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    vrf forwarding WAN-VRFv4: "vrf forwarding WAN-VRFv4\r\n"
+  prompt: Galaga-4(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Galaga-4(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Galaga-4#

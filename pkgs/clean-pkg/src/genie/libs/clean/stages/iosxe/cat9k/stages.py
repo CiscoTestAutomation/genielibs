@@ -164,6 +164,7 @@ There is more than one ip address, one for each supervisor.
     # Execution order of Stage steps
     # ==============================
     exec_order = [
+        'check_image_length',
         'delete_boot_variables',
         'write_memory',
         'enable_boot_manual',

@@ -67,6 +67,38 @@ def configure_ip_local_pool(device,name,start,end):
                 .format(device=device, error=e)
         )
 
+
+def configure_dope_wrsp(device, asic, core, idx, hi_value, lo_value):
+    """ Configures wrsp parameters in dope shell
+        Args:
+            device (`obj`): Device object
+            asic ('int'): Asic number to be configured
+            core ('int'): Core number to be configured
+            idx ('int'): IDX number to be configured
+            hi_value ('str'): WRSP Nfl High GlobalTime value
+            lo_value ('str'): WRSP Nfl Low GlobalTime value
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+
+    try:
+        with device.dope_shell() as shell:
+            shell.execute([f'asic {asic}',
+                    f'core {core}',
+                    f'wrsp NflGlobalTime globalTimeHi idx {idx} value {hi_value}',
+                    f'wrsp NflGlobalTime globalTimeLo idx {idx} value {lo_value}'
+                    ])
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure wrsp parameters in dope shell in {device}. Error:\n{e}"
+                        )
+
+
 def configure_bba_group(device,name,vt_number):
     """ bba-group
         Args:
@@ -101,7 +133,6 @@ def unconfigure_bba_group(device,name,vt_number):
         Raises:
             SubCommandFailure
     """
-
 
     cli = []
     cli.append(f"no bba-group pppoe {name}")

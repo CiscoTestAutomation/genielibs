@@ -4,6 +4,8 @@ import logging
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
+from unicon.eal.dialogs import Statement, Dialog
+from unicon.eal.dialogs import Dialog, Statement
 
 log = logging.getLogger(__name__)
 
@@ -493,27 +495,38 @@ def unconfigure_standard_access_list(
         log.error(e)
         raise SubCommandFailure("Could not UnConfigure standard access-list")
         
-def configure_enable_nat_scale(device):
+def configure_enable_nat_scale(device, timeout=60):
 
     """ Configure enable NAT scale
         Args:
             device (`obj`): Device object
+            timeout ('int', optional): Max time for enable nat scale.Defaults to 60
         Returns:
             None
         Raises:
             SubCommandFailure
     """
     
+    dialog = Dialog([
+             Statement(
+             pattern=r'.*% Are you sure you want to continue\? \[yes\]',
+             action='sendline(yes)',
+             loop_continue=False,
+             continue_timer=False)])
+    
+    command = [ "no ip nat create flow-entries",
+                "nat scale"]
+
     try:
-        device.configure(
-            [
-                "no ip nat create flow-entries",
-                "nat scale"           
-            ]
-        )
-    except SubCommandFailure as e:
-        log.error(e)
-        raise SubCommandFailure("Could not configure enable NAT scale") 
+       device.configure(
+       command,
+       reply=dialog,
+       timeout=timeout,
+       append_error_pattern=['.*Command cannot be executed.*'])
+       
+    except Exception as err:
+        log.error("Failed to configure nat scale: {err}".format(err=err))
+        raise Exception(err)  
         
 def configure_dynamic_nat_rule(
     device,
@@ -615,6 +628,7 @@ def unconfigure_static_nat_rule(
         Raises:
             SubCommandFailure: static NAT rule not unconfigured
     """
+    dialog = Dialog([Statement(pattern=r'\[no\].*', action='sendline(yes)',loop_continue=True,continue_timer=False)])
     cmd = ["no ip nat inside source static {} {}".format(
               inside_local_ip,inside_global_ip)]
     if l4_protocol:
@@ -624,7 +638,7 @@ def unconfigure_static_nat_rule(
             cmd = cmd + ' extendable'
 
     try:
-        device.configure(cmd)
+        device.configure(cmd,reply=dialog)
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not UnConfigure static NAT rule")
@@ -877,7 +891,6 @@ def configure_disable_nat_scale(device):
         log.error(e)
         raise SubCommandFailure("Could not configure disable NAT scale") 
         
-
 def configure_nat_translation_timeout(
     device, 
     protocol_timeout, 
@@ -922,4 +935,35 @@ def unconfigure_nat_translation_timeout(
         device.configure(cmd)
     except SubCommandFailure as e:
         log.error(e)
-        raise SubCommandFailure("Could not UnConfigure ip nat translation timeout")       
+        raise SubCommandFailure("Could not UnConfigure ip nat translation timeout")   
+        
+def force_unconfigure_static_nat_route_map_rule(device, inside_local_ip, inside_global_ip, route_map_name, timeout = 60):
+
+    """ Force UnConfigure static NAT route-map rule
+        Args:
+            device ('obj'): device to use
+            inside_local_ip ('str'): Inside local ip
+            inside_global_ip ('str'): Inside global ip
+            route_map_name ('str') : Name of route-map
+            timeout ('int', optional): Max time for force unconfigure static NAT route-map rule.Defaults to 60
+        Returns:
+            None
+        Raises:
+            Exception: static NAT route-map rule not force unconfigured
+    """
+    
+    dialog = Dialog([
+             Statement(
+             pattern=r'.*Static entry in use, do you want to delete child entries\? \[no\].*',
+             action='sendline(yes)',
+             loop_continue=True,
+             continue_timer=False)])
+    
+    cmd = ["no ip nat inside source static {} {} route-map {}".format(
+              inside_local_ip,inside_global_ip,route_map_name)]
+
+    try:
+       device.configure(cmd, reply=dialog, timeout=timeout, append_error_pattern=['.*Command cannot be executed.*'])
+    except Exception as err:
+        log.error("Failed to force unconfigure static NAT route-map rule: {err}".format(err=err))
+        raise Exception(err)

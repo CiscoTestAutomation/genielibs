@@ -440,3 +440,46 @@ def configure_private_vlan_on_vlan(device, vlan1, vlan2):
 
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure private vlan on {vlan1} {vlan2}. Error:\n{e}")
+
+def configure_ethernet_vlan_unlimited(device, subslot):
+    """ Configure ethernet vlan unlimited on subslot
+        Args:
+            device ('obj'): device to use
+            subslot ('str'): subslot to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure ethernet vlan unlimited
+    """
+
+    cmd = f"hw-module subslot {subslot} ethernet vlan unlimited"
+
+    log.info(f"Configuring ethernet vlan unlimited on subslot {subslot}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to configure ethernet vlan unlimited"
+        )
+
+def unconfigure_ethernet_vlan_unlimited(device, subslot):
+    """ Unconfigure ethernet vlan unlimited on subslot
+        Args:
+            device ('obj'): device to use
+            subslot ('str'): subslot to use
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to ubconfigure ethernet vlan unlimited
+    """
+
+    cmd = f"no hw-module subslot {subslot} ethernet vlan unlimited"
+
+    log.info(f"Unconfiguring ethernet vlan unlimited on subslot {subslot}")
+    try:
+        device.configure(cmd)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Failed to unconfigure ethernet vlan unlimited"
+        )
+

@@ -121,21 +121,30 @@ def execute_write_memory(device, timeout=300):
     ''' Execute 'write memory' on the device
         Args:
             device ('obj'): Device object
-            timeout ('int', optional): Max time to for write memory to complete in seconds
+            timeout ('int', optional): Max time for write memory to complete in seconds
                             Default is 300
     '''
 
     log.info("Executing 'write memory' on the device")
 
+    dialog = Dialog([
+        Statement(
+            pattern=r'Continue\? \[no\]:\s*$',
+            action='sendline(yes)',
+            loop_continue=True)
+    ])
+
     try:
-        output = device.execute("write memory", timeout=timeout)
+        output = device.execute("write memory", reply=dialog, timeout=timeout)
     except Exception as err:
+        log.error("Failed to execute 'write memory'\n{err}".format(err=err))
         raise Exception(err)
 
     if "[OK]" in output:
         log.info("Successfully executed 'write memory'")
     else:
         raise Exception("Failed to execute 'write memory'")
+
 
 def delete_unprotected_files(device,
                              directory,

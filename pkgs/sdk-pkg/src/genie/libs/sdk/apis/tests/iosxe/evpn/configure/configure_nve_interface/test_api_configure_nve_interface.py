@@ -17,8 +17,8 @@ class TestConfigureNveInterface(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c9500
-            type: c9500
+            platform: cat9k
+            type: c9300
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['VTEP1']
@@ -29,6 +29,6 @@ class TestConfigureNveInterface(unittest.TestCase):
         )
 
     def test_configure_nve_interface(self):
-        result = configure_nve_interface(self.device, '1', 'loopback1', 'bgp', '10000', 'static', '226.0.0.1')
+        result = configure_nve_interface(self.device, '1', 'loopback1', 'bgp', '11500', 'static', '226.0.0.1', 'True', 'red')
         expected_output = None
         self.assertEqual(result, expected_output)
