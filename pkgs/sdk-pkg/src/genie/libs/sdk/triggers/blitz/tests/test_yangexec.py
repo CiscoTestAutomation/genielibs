@@ -3,10 +3,13 @@
 import unittest
 import logging
 import sys
+import json
 
 from unittest.mock import patch
 from collections import OrderedDict
 import yang
+from cisco_gnmi import proto
+from google.protobuf import json_format
 
 # Genie Libs
 from genie.libs.sdk.triggers.blitz.yangexec import run_netconf, run_gnmi, run_restconf
@@ -16,6 +19,24 @@ from genie.libs.sdk.triggers.blitz.yangexec_helper import DictionaryToXML, dict_
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+
+
+class Service:
+    def __init__(self, response):
+        self.response = response
+
+    def Get(self, blah):
+        return self.response
+
+
+class Gnmi:
+    def __init__(self, response):
+        self.response = response
+        self.service = Service(response)
+
+class TestDevice:
+    def __init__(self, response):
+        self.gnmi = Gnmi(response)
 
 
 class TestYangExec(unittest.TestCase):
@@ -324,8 +345,7 @@ class TestYangExec(unittest.TestCase):
 
         self.assertEqual(result, True)
 
-    @patch('yang.connector.gnmi.Gnmi.get')
-    def test_run_gnmi(self, gnmi_get_mock):
+    def test_run_get_gnmi(self):
         """ Test run_gnmi with get action and range op """
         operation = 'get'
         steps = "STEP 1: Starting action yang on device 'ncs1004'"
@@ -339,7 +359,7 @@ class TestYangExec(unittest.TestCase):
                 'oc-sys': 'http://openconfig.net/yang/system'
             },
             'nodes': [{
-                'xpath': '/oc-sys:system'
+                'xpath': '/oc-sys:system/oc-sys:ssh-server/oc-sys:state/oc-sys:rate-limit'
             }]
         }
         returns = [{
@@ -351,52 +371,173 @@ class TestYangExec(unittest.TestCase):
             'value': '50 - 70',
             'xpath': '/system/ssh-server/state/rate-limit'
         }]
-        response = [{
-            'update': [[
-                (True, '/system/ssh-server/state/enable'),
-                ('V2', '/system/ssh-server/state/protocol-version'),
-                (30, '/system/ssh-server/state/timeout'),
-                (64, '/system/ssh-server/state/session-limit'),
-                (60, '/system/ssh-server/state/rate-limit'),
-                ('NONE', '/system/logging/console/selectors/selector/facility'),
-                ('DISABLE', '/system/logging/console/selectors/selector/severity'),
-                ('DISABLE', '/system/logging/console/selectors/selector/state/severity'),
-                (True, '/system/grpc-server/state/enable'),
-                (57400, '/system/grpc-server/state/port'),
-                (False, '/system/grpc-server/state/transport-security'),
-                ('SM/HW_ENVMON_FAN_ALARM/201#CHASSIS/LCC/1', '/system/alarms/alarm/id'),
-                ('SM/HW_ENVMON_FAN_ALARM/201#CHASSIS/LCC/1', '/system/alarms/alarm/state/id'),
-                ('0', '/system/alarms/alarm/state/resource'),
-                ('Fan: One or more LCs missing, running fans at max speed.', '/system/alarms/alarm/state/text'),
-                ('1612588606', '/system/alarms/alarm/state/time-created'),
-                ('openconfig-alarm-types:CRITICAL', '/system/alarms/alarm/state/severity'),
-                ('openconfig-alarm-types:HW_ENVMON_RM_LC_REMOVAL', '/system/alarms/alarm/state/type-id'),
-                ('SYSTEM/HW_ERROR/82#CHASSIS/LCC/1:CONTAINER/LC/1', '/system/alarms/alarm/id'),
-                ('SYSTEM/HW_ERROR/82#CHASSIS/LCC/1:CONTAINER/LC/1', '/system/alarms/alarm/state/id'),
-                ('0/0', '/system/alarms/alarm/state/resource'), ('Verification of SUDI Certificate Failed On LC.', '/system/alarms/alarm/state/text'),
-                ('1612590967', '/system/alarms/alarm/state/time-created'), ('openconfig-alarm-types:MAJOR', '/system/alarms/alarm/state/severity'),
-                ('openconfig-alarm-types:LC_SUDI_FAILURE', '/system/alarms/alarm/state/type-id'),
-                ('SYSTEM/HW_ERROR/12#CHASSIS/LCC/1:CONTAINER/LC/4', '/system/alarms/alarm/id'),
-                ('SYSTEM/HW_ERROR/12#CHASSIS/LCC/1:CONTAINER/LC/4', '/system/alarms/alarm/state/id'),
-                ('0/3', '/system/alarms/alarm/state/resource'),
-                ('LC_CPU_MOD_FW is corrupt, system booted with golden copy.', '/system/alarms/alarm/state/text'),
-                ('1612590967', '/system/alarms/alarm/state/time-created'),
-                ('openconfig-alarm-types:MAJOR', '/system/alarms/alarm/state/severity'),
-                ('openconfig-alarm-types:LC_CPU_CORRUPTION', '/system/alarms/alarm/state/type-id'),
-                ('root', '/system/aaa/authentication/users/user/username'),
-                ('root', '/system/aaa/authentication/users/user/state/username'),
-                ('root-lr', '/system/aaa/authentication/users/user/state/role'),
-                ('$6$O/qa30UhNVPK630.$fwZsgRvyIkhIAcwwhaaAEbQEggRCNaEMHbUayTvJzPb9MNBsxXjVVJ76R8.t2K/fkz6RnONCa8/EOff2XaxO7.', '/system/aaa/authentication/users/user/state/password-hashed')
-            ]]
-        }]
 
         format = {
             'auto-validate': False
         }
+        response = proto.gnmi_pb2.GetResponse()
+        upd = {
+          'path': {
+            'elem': [
+                {
+                'name': "system"
+                },
+                {
+                  'name': "ssh-server"
+                },
+                {
+                  'name': "state"
+                },
+                {
+                  'name': "rate-limit"
+                }
+            ]
+          }
+        }
+        update = json_format.ParseDict(
+            upd,
+            proto.gnmi_pb2.Update()
+        )
+        update.val.json_ietf_val = json.dumps(60).encode('utf-8')
+        notif = proto.gnmi_pb2.Notification()
+        notif.update.append(update)
+        response.notification.append(notif)
+        device = TestDevice(response)
 
-        gnmi_get_mock.return_value = response
         result = run_gnmi(
-            operation, self.gnmi_device, steps, datastore, rpc_data, returns, format=format
+            operation, device, steps, datastore, rpc_data, returns, format=format
+        )
+
+        self.assertEqual(result, True)
+
+    def test_run_get_config_gnmi(self):
+        """ Test run_gnmi with get-config action and range op """
+        operation = 'get-config'
+        steps = "STEP 1: Starting action yang on device 'ncs1004'"
+        datastore = {
+            'type': '',
+            'lock': False,
+            'retry': 10
+        }
+        rpc_data = {
+            'namespace': {
+                'oc-sys': 'http://openconfig.net/yang/system'
+            },
+            'nodes': [{
+                'xpath': '/oc-sys:system/oc-sys:ssh-server/oc-sys:state/oc-sys:rate-limit'
+            }]
+        }
+        returns = [{
+            'id': 1,
+            'name': 'rate-limit',
+            'op': 'range',
+            'selected': True,
+            'datatype': 'integer',
+            'value': '50 - 70',
+            'xpath': '/system/ssh-server/state/rate-limit'
+        }]
+
+        format = {
+            'auto-validate': False,
+            'get_type': 'CONFIG'
+        }
+        response = proto.gnmi_pb2.GetResponse()
+        upd = {
+          'path': {
+            'elem': [
+                {
+                'name': "system"
+                },
+                {
+                  'name': "ssh-server"
+                },
+                {
+                  'name': "state"
+                },
+                {
+                  'name': "rate-limit"
+                }
+            ]
+          }
+        }
+        update = json_format.ParseDict(
+            upd,
+            proto.gnmi_pb2.Update()
+        )
+        update.val.json_ietf_val = json.dumps(60).encode('utf-8')
+        notif = proto.gnmi_pb2.Notification()
+        notif.update.append(update)
+        response.notification.append(notif)
+        device = TestDevice(response)
+
+        result = run_gnmi(
+            operation, device, steps, datastore, rpc_data, returns, format=format
+        )
+
+        self.assertEqual(result, True)
+
+    def test_run_2_get_config_gnmi(self):
+        """ Test run_gnmi with get-config action and == op for Boolean Value Properties """
+        operation = 'get-config'
+        steps = "STEP 1: Starting action yang on device 'N9k1-Spine1'"
+        datastore = {
+            'type': '',
+            'lock': False,
+            'retry': 10
+        }
+        rpc_data = {
+            'namespace': {
+                'top': 'http://cisco.com/ns/yang/cisco-nx-os-device'
+            },
+            'nodes': [{
+                'xpath': '/top:System/top:igmp-items/top:inst-items/top:heavyTemplate'
+            }]
+        }
+        returns = [{
+            'id': 1,
+            'name': 'heavyTemplate',
+            'op': '==',
+            'selected': True,
+            'datatype': 'boolean',
+            'value': 'false',
+            'xpath': '/System/igmp-items/inst-items/heavyTemplate'
+        }]
+
+        format = {
+            'auto-validate': False,
+            'get_type': 'CONFIG'
+        }
+        response = proto.gnmi_pb2.GetResponse()
+        upd = {
+          'path': {
+            'elem': [
+                {
+                'name': "System"
+                },
+                {
+                  'name': "igmp-items"
+                },
+                {
+                  'name': "inst-items"
+                },
+                {
+                  'name': "heavyTemplate"
+                }
+            ]
+          }
+        }
+        update = json_format.ParseDict(
+            upd,
+            proto.gnmi_pb2.Update()
+        )
+        update.val.json_ietf_val = json.dumps(False).encode('utf-8')
+        notif = proto.gnmi_pb2.Notification()
+        notif.update.append(update)
+        response.notification.append(notif)
+        device = TestDevice(response)
+
+        result = run_gnmi(
+            operation, device, steps, datastore, rpc_data, returns, format=format
         )
 
         self.assertEqual(result, True)

@@ -913,29 +913,52 @@ def unconfigure_ip_prefix_list(device, prefix_list_name, seq, ip_address, subnet
             )
         )
 
-        
-def configure_route_map(device, route_map_name, permit, prefix_list_name):
+
+def configure_route_map(device, route_map_name, permit, prefix_list_name=None, acl_name=None, acl_namev6=None, ip=None, ipv6=None, interface=None):
 
     """ configure route map
 
         Args:
-            device (`obj`): device to execute on
-            route_map_name (`int`): route map name
-            permit (`int`): Sequence to insert to existing route-map entry
-            prefix_list_name (`str`): prefix-list name to be used
+            device ('obj'): device to execute on
+            route_map_name ('int'): route map name
+            permit ('int'): Sequence to insert to existing route-map entry
+            prefix_list_name ('str',optional): prefix-list name to be used
+            acl_name ('str',optional): IPv4 ACL to be used
+            acl_namev6 ('str',optional): IPv6 ACL to be used
+            ip ('str',optional): ip address
+            ipv6 ('str',optional): ipv6 address
+            interface ('str',optional): Interface to be used
+
         Return:
             None
 
         Raises:
             SubCommandFailure
     """
+    # Build config string
+    cfg_str = "route-map {route_map_name} permit {permit}\n".format(route_map_name=route_map_name, permit=permit)
+
+    if prefix_list_name:
+        cfg_str +="match ip address prefix-list {prefix_list_name}".format(
+                prefix_list_name=prefix_list_name)
+    if acl_name:
+        cfg_str +="match ip address {acl_name}\n".format(
+                acl_name=acl_name)
+    if acl_namev6:
+        cfg_str +="match ipv6 address {acl_namev6}\n".format(
+                acl_namev6=acl_namev6)
+    if interface:
+        cfg_str +="set interface {interface}\n".format(
+                interface=interface)
+    if ip:
+        cfg_str +="set ip next-hop {ip}\n".format(
+                ip=ip)
+    if ipv6:
+        cfg_str +="set ipv6 next-hop {ipv6}\n".format(
+                ipv6=ipv6)
     try:
-        device.configure([
-            "route-map {route_map_name} permit {permit}".format(
-                route_map_name=route_map_name, permit=permit),
-            "match ip address prefix-list {prefix_list_name}".format(
-                prefix_list_name=prefix_list_name)]     
-        )
+        device.configure(cfg_str)
+    
     except SubCommandFailure as e:
         raise SubCommandFailure(
             "Failed to configure route map {route_map_name}, Error: {error}"\
@@ -1380,3 +1403,59 @@ def configure_ospf_redistributed_static(device, ospf_process_id):
                error=e
             )
         )
+
+
+def configure_ip_ospf_mtu_ignore(device, interface):
+    """configure ip ospf mtu-ignore
+        Args:
+            device (`obj`): Device object
+            interface (`str`): interface to configure
+            ex.)
+                interface = 'tenGigabitEthernet0/4/0'
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+               "interface {interface}".format(interface=interface),
+               "ip ospf mtu-ignore"
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "ip Ospf mtu-ignore is not configured on device"
+            " {device} for interface {interface}, Error: {error}".format(
+               device=device.name, interface=interface, error=e
+            )
+        )
+
+def unconfigure_ip_ospf_mtu_ignore(device, interface):
+    """unconfigure ip ospf mtu-ignore
+        Args:
+            device (`obj`): Device object
+            interface (`str`): interface to configure
+            ex.)
+                interface = 'tenGigabitEthernet0/4/0'
+        Return:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [
+               "interface {interface}".format(interface=interface),
+               "no ip ospf mtu-ignore"
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "failed to remove the ip ospf mtu-ignore on device"
+            " {device} for interface {interface}, Error: {error}".format(
+               device=device.name, interface=interface, error=e
+            )
+        )
+

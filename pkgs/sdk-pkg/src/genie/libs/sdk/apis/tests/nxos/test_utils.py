@@ -30,4 +30,4 @@ class TestUtilsApi(unittest.TestCase):
         device.api.get_local_ip = Mock(return_value='127.0.0.1')
         device.execute = Mock()
         copy_to_device(device, remote_path='/tmp/test.txt')
-        assert re.search(r'curl -u \w+:\w+ http://127.0.0.1:\d+//tmp/test.txt -O', str(device.execute.call_args))
+        assert re.search(r'curl -u \w+:\w+ http://127.0.0.1:\d+/test.txt -O', str(device.execute.call_args))

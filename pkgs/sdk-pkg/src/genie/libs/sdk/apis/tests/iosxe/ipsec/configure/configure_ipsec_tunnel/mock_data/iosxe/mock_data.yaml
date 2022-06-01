@@ -2,25 +2,24 @@ configure:
   commands:
     end:
       new_state: execute
-    interface Tunnel1: "interface Tunnel1\r\n"
-    ip address 192.168.1.1 255.255.255.0: "ip address 192.168.1.1 255.255.255.0\r\n"
+    interface Tunnel2: "interface Tunnel2\r\n"
+    ip address 55.55.55.2 255.255.255.0: "ip address 55.55.55.2 255.255.255.0\r\n"
     line console 0:
       new_state: configure_line
     no logging console: ''
-    tunnel destination 30.30.30.2: "tunnel destination 30.30.30.2\r\n"
-    tunnel mode ipsec dual-overlay: "tunnel mode ipsec dual-overlay\r\n"
-    tunnel protection ipsec profile global_ipsec_profile: "tunnel protection ipsec\
-      \ profile global_ipsec_profile\r\n"
-    tunnel source G1: "tunnel source G1\r\n"
-    tunnel vrf UNDERLAY: "tunnel vrf UNDERLAY\r\n"
-    vrf forwarding OVERLAY: "vrf forwarding OVERLAY\r\n"
-  prompt: kparames_csr1(config)#
+    tunnel destination 71.71.71.71: "tunnel destination 71.71.71.71\r\n"
+    tunnel mode ipsec ipv4: "tunnel mode ipsec ipv4\r\n"
+    tunnel mode ipsec ipv4 v6-overlay: "tunnel mode ipsec ipv4 v6-overlay\r\n"
+    tunnel protection ipsec profile nil_ips: "tunnel protection ipsec profile nil_ips\r\
+      \n"
+    tunnel source 70.70.70.70: "tunnel source 70.70.70.70\r\n"
+  prompt: ARCADE1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: kparames_csr1(config-line)#
+  prompt: ARCADE1(config-line)#
 connect:
   commands:
     ? ''
@@ -40,4 +39,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: kparames_csr1#
+  prompt: ARCADE1#

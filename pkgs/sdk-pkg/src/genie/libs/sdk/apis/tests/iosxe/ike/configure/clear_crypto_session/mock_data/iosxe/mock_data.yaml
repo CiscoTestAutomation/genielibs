@@ -5,13 +5,13 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: rad-vtep1(config)#
+  prompt: kparames_csr1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: rad-vtep1(config-line)#
+  prompt: kparames_csr1(config-line)#
 connect:
   commands:
     ? ''
@@ -24,7 +24,7 @@ connect:
   prompt: ''
 execute:
   commands:
-    clear crypto session:
+    clear crypto session active:
       response:
       - ''
       response_type: circular
@@ -35,4 +35,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: rad-vtep1#
+  prompt: kparames_csr1#

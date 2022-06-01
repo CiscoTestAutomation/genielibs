@@ -130,7 +130,9 @@ class RommonDialog(TelnetDialog):
         log.info("Finding an entry that includes the string '{}'".
                  format(context['boot_image']))
 
-        lines = re.split(r'\s{3,}', spawn.buffer)
+        # lines start with a code like \x1b[3;3H or \x1b[4;3H which
+        # means 3rd and 4th line respectively
+        lines = re.split(r'\x1b\[\d+;3H', spawn.buffer)
 
         selected_line = None
         desired_line = None
@@ -185,6 +187,7 @@ class TftpRommonDialog(RommonDialog):
         subnet_mask = context['subnet_mask']
         gateway = context['gateway']
         image = context['image']
+        ether_port = context ['ether_port']
         if image[0][0] != '/':
             image[0] = '/' + image[0]
         tftp_server = context['tftp_server']
@@ -197,6 +200,8 @@ class TftpRommonDialog(RommonDialog):
             "sync",
             f"boot tftp://{tftp_server}{image[0]}"
         ]
+        if ether_port:
+            commands.append(f"ETHER_PORT={ether_port}")
 
         # This is getting double logged somehow??
         log.info("Configuring the network and booting the device")

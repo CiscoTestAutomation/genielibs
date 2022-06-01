@@ -197,6 +197,10 @@ tftp_boot:
 
     recovery_password (str): Enable password for device
         required after bootup. Defaults to None.
+
+    recovery_en_password (str): Enable password for device
+        required after bootup. Defaults to None.
+
     recovery_username (str): Enable username for device
         required after bootup. Defaults to None.
 
@@ -209,6 +213,11 @@ tftp_boot:
     config_reg_timeout (int, optional): Max time to set config-register.
         Defaults to 30.
 
+    image_length_limit(int, optinal): Maximum length of characters for image.
+        Defaults to 110.
+
+    ether_port(int, optional): port to set for tftp boot. Defaults to None.
+
 Example
 -------
 tftp_boot:
@@ -220,9 +229,12 @@ tftp_boot:
     tftp_server: 11.1.7.251
     recovery_password: nbv_12345
     recovery_username: user_12345
+    recovery_en_password: en
     save_system_config: False
     timeout: 600
     config_reg_timeout: 10
+    image_length_limit: 90
+    ether_port: 0
 
 There is more than one ip address, one for each supervisor.
 """
@@ -231,14 +243,15 @@ There is more than one ip address, one for each supervisor.
     # Argument Defaults
     # =================
     RECOVERY_PASSWORD = None
-    # RECOVERY_EN_PASSWORD=None
+    RECOVERY_EN_PASSWORD=None
     RECOVERY_USERNAME = None
     SAVE_SYSTEM_CONFIG = False
-    TIMEOUT = 600
+    TIMEOUT = 1200
     CONFIG_REG_TIMEOUT = 30
     CONFIG_REG_ROMMON = '0x0'
     CONFIG_REG_NORMAL = '0x2101'
-
+    IMAGE_LENGTH_LIMIT = 110
+    ETHER_PORT = None
     # ============
     # Stage Schema
     # ============
@@ -250,16 +263,19 @@ There is more than one ip address, one for each supervisor.
         'tftp_server': str,
         'recovery_password': str,
         'recovery_username': str,
-        Optional('recovery_en_pasword'): str,
+        Optional('recovery_en_password'): str,
         Optional('save_system_config'): bool,
         Optional('timeout'): int,
         Optional('config_reg_timeout'): int,
+        Optional('image_length_limit'): int,
+        Optional('ether_port') : int
     }
 
     # ==============================
     # Execution order of Stage steps
     # ==============================
     exec_order = [
+        'check_image_length',
         'set_config_register',
         'go_to_rommon',
         'tftp_boot',
@@ -267,6 +283,15 @@ There is more than one ip address, one for each supervisor.
         'reset_config_register',
         'write_memory'
     ]
+
+    def check_image_length(self ,steps, image, image_length_limit=IMAGE_LENGTH_LIMIT):
+
+        with steps.start("Check the length of image: {}".format(image[0])) as step:
+            if len(image[0]) > image_length_limit:
+                step.failed(f"The length of image path {image[0]} is more than the limit of"
+                            f" {image_length_limit} characters.")
+            else:
+                step.passed(f"The length of image {image[0]} is within the {image_length_limit} character limit.")
 
     def set_config_register(self, steps, device, config_reg_rommon=CONFIG_REG_ROMMON,
                             config_reg_timeout=CONFIG_REG_TIMEOUT):
@@ -322,7 +347,7 @@ There is more than one ip address, one for each supervisor.
 
     def tftp_boot(self, steps, device, ip_address, subnet_mask, gateway, tftp_server,
                   image, timeout=TIMEOUT, recovery_password=RECOVERY_PASSWORD,
-                  recovery_username=RECOVERY_USERNAME,recovery_en_pasword=None):
+                  recovery_username=RECOVERY_USERNAME,recovery_en_password=RECOVERY_EN_PASSWORD, ether_port=ETHER_PORT ):
         with steps.start("Begin TFTP boot of device {}".format(device.name)) as step:
 
             # Need to instantiate to get the device.start
@@ -333,7 +358,8 @@ There is more than one ip address, one for each supervisor.
                          'subnet_mask': subnet_mask,
                          'gateway': gateway,
                          'tftp_server': tftp_server,
-                         'image': image}
+                         'image': image,
+                         'ether_port':ether_port}
             try:
                 abstract = Lookup.from_device(device, packages={'clean': clean})
                 # Item is needed to be able to know in which parallel child
@@ -358,7 +384,7 @@ There is more than one ip address, one for each supervisor.
                                     'console_activity_pattern': '\\.\\.\\.\\.',
                                     'golden_image': None,
                                     'recovery_username': recovery_username,
-                                    'recovery_en_pasword':recovery_en_pasword,
+                                    'recovery_en_password':recovery_en_password,
                                     'recovery_password': recovery_password})
             except Exception as e:
                 log.error(str(e))
@@ -371,7 +397,6 @@ There is more than one ip address, one for each supervisor.
     def reconnect(self, steps, device):
         with steps.start("Reconnect to device {} after TFTP boot". \
                                  format(device.name)) as step:
-                                 
             if hasattr(device, 'chassis_type') and device.chassis_type.lower() == 'stack':
                 log.info("Sleep for 90 seconds in order to sync ")
                 time.sleep(90)
@@ -464,7 +489,6 @@ install_remove_inactive:
                 step.failed("Failed to remove inactive packages",
                             from_exception=e)
 
-
 class InstallImage(BaseStage):
     """This stage installs a provided image onto the device using the install
 CLI. It also handles the automatic reloading of your device after the
@@ -535,6 +559,10 @@ install_image:
             # Figure out the directory that the image files get unpacked to
             directory = get_default_dir(device=device)
 
+            # create packages.conf, if it does not exist
+            create_packages_file = 'sh clock | append ' + directory+'packages.conf'
+            device.execute(create_packages_file)
+
             # packages.conf is hardcoded because install mode boots using an
             # unpacked packages.conf file
             self.new_boot_var = directory+'packages.conf'
@@ -565,6 +593,9 @@ install_image:
     def install_image(self, steps, device, images, save_system_config=SAVE_SYSTEM_CONFIG,
                       install_timeout=INSTALL_TIMEOUT):
         with steps.start(f"Installing image '{images[0]}'") as step:
+            current_image = device.api.get_running_image()
+            if current_image == images[0]:
+                step.skipped('Images is already installed on the device.')
 
             install_add_one_shot_dialog = Dialog([
                 Statement(pattern=r".*Press Quit\(q\) to exit, you may save "

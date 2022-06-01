@@ -1,5 +1,6 @@
 import os
 import json
+from threading import Thread
 import time
 import json
 import logging
@@ -18,7 +19,7 @@ from genie.harness.standalone import run_genie_sdk
 
 from pkg_resources import get_distribution
 from .maple import maple, maple_search
-from .yangexec import run_netconf, run_gnmi, run_restconf, notify_wait
+from .yangexec import run_netconf, run_gnmi, run_restconf
 from .actions_helper import (configure_handler, api_handler, learn_handler,
                              parse_handler, execute_handler, _get_exclude,
                              _condition_validator, rest_handler,
@@ -305,8 +306,6 @@ def configure(self,
 
         output = configure_handler(**kwargs)
 
-    notify_wait(steps, device)
-
     return output
 
 
@@ -348,8 +347,6 @@ def configure_dual(self,
                        'expected_failure': expected_failure})
 
         output = configure_handler(**kwargs)
-
-    notify_wait(steps, device)
 
     return output
 
@@ -409,8 +406,6 @@ def parse(self,
 
         output = parse_handler(**handler_kwargs)
 
-    notify_wait(steps, device)
-
     return output
 
 
@@ -463,8 +458,6 @@ def execute(self,
         })
 
         output = execute_handler(**kwargs)
-
-    notify_wait(steps, device)
 
     return output
 
@@ -521,8 +514,6 @@ def api(self,
                        'blitz_obj': self})
 
         output = api_handler(**kwargs)
-
-    notify_wait(steps, device)
 
     log.debug('api return value: {o}'.format(o=output))
     return output
@@ -781,14 +772,16 @@ def yang(self,
                 }
 
             result = yang_handler(**handler_kwargs)
+            if operation == 'subscribe' and isinstance(result, Thread):
+                while not result.stopped():
+                    log.info('Waiting for notification...')
+                    time.sleep(1)
+                result = result.result
     else:
         result = None
 
     if not result:
         steps.failed('Yang action has failed')
-
-    if operation != 'subscribe':
-        notify_wait(steps, device)
 
     # steps.result will only change to result_status if it is passed.
     if result_status and steps.result.name == "passed":

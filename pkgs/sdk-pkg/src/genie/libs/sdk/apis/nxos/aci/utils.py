@@ -107,6 +107,7 @@ def copy_to_device(device,
                 raise
 
     remote_path_parent = str(pathlib.PurePath(remote_path).parent)
+    remote_filename = pathlib.PurePath(remote_path).name
 
     mgmt_src_ip_addresses = device.api.get_mgmt_src_ip_addresses()
 
@@ -155,9 +156,9 @@ def copy_to_device(device,
             cmd += ' -u {}:{}'.format(username, password)
 
         if mgmt_src_ip and proxy_port:
-            cmd += ' http://{}:{}/{}'.format(mgmt_src_ip, proxy_port, remote_path)
+            cmd += ' http://{}:{}/{}'.format(mgmt_src_ip, proxy_port, remote_filename)
         elif mgmt_src_ip:
-            cmd += ' http://{}:{}/{}'.format(mgmt_src_ip, local_port, remote_path)
+            cmd += ' http://{}:{}/{}'.format(mgmt_src_ip, local_port, remote_filename)
         else:
             log.error('Unable to determine management IP address to use to download file')
             return False

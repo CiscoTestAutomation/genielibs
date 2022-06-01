@@ -9,7 +9,7 @@ class TestExecuteCardOirRemove(unittest.TestCase):
     def setUpClass(self):
         testbed = """
         devices:
-          intrepid-2:
+          intrepid-1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,10 +18,10 @@ class TestExecuteCardOirRemove(unittest.TestCase):
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: INTREPID
+            type: INTERPID
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['intrepid-2']
+        self.device = self.testbed.devices['intrepid-1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -29,6 +29,6 @@ class TestExecuteCardOirRemove(unittest.TestCase):
         )
 
     def test_execute_card_OIR_remove(self):
-        result = execute_card_OIR_remove(self.device, '6/0', None, 60)
+        result = execute_card_OIR_remove(self.device, '1/0', '1', 60)
         expected_output = None
         self.assertEqual(result, expected_output)

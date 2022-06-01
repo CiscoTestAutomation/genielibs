@@ -126,13 +126,21 @@ def execute_write_memory(device, timeout=300):
     ''' Execute 'write memory' on the device
         Args:
             device ('obj'): Device object
-            timeout ('int'): Max time to for write memory to complete in seconds
+            timeout ('int', optional): Max time for write memory to complete in seconds
+                            Default is 300
     '''
 
     log.info("Executing 'write memory' on the device")
 
+    dialog = Dialog([
+        Statement(
+            pattern=r'Continue\? \[no\]:\s*$',
+            action='sendline(yes)',
+            loop_continue=True)
+    ])
+
     try:
-        output = device.execute("write memory", timeout=timeout)
+        output = device.execute("write memory", reply=dialog, timeout=timeout)
     except Exception as err:
         log.error("Failed to execute 'write memory'\n{err}".format(err=err))
         raise Exception(err)
@@ -368,7 +376,7 @@ def execute_card_OIR(device, card_number, switch_id = None, timeout=60):
     # Unicon Statement/Dialog
     dialog = Dialog([
              Statement(
-             pattern=r"Proceed with power cycle of module? [confirm]",
+             pattern=r".*Proceed with power cycle of module? [confirm]",
              action='sendline()',
              loop_continue=True,
              continue_timer=False)
@@ -406,7 +414,7 @@ def execute_card_OIR_remove(device, card_number, switch_id = None, timeout=60):
     # Unicon Statement/Dialog
     dialog = Dialog([
              Statement(
-             pattern=r"Proceed with removal of module? [confirm]",
+             pattern=r".*Proceed with removal of module? [confirm]",
              action='sendline()',
              loop_continue=True,
              continue_timer=False)
@@ -445,7 +453,7 @@ def execute_card_OIR_insert(device, card_number, switch_id = None, timeout=60):
     # Unicon Statement/Dialog
     dialog = Dialog([
              Statement(
-             pattern=r"Proceed with insertion of module? [confirm]",
+             pattern=r".*Proceed with insertion of module? [confirm]",
              action='sendline()',
              loop_continue=True,
              continue_timer=False)
@@ -667,3 +675,48 @@ def execute_clear_platform_hardware_fed_active_qos_statistics_interface(device,i
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not clear active cpu-interface on device")
+
+
+def execute_diagnostic_start_switch_module_test(device,switch_num,mod_num,include):
+    """ execute diagnostic start switch 1 module 1 test all
+        Args:
+            device ('obj'): Device object
+            switch_num ('int'): Switch number(In case of SVL/Stack) on which diagnostic has to be performed
+            mod_num ('int'): Module number on which diagnostic has to be performed
+            include ('str'): test name(all) on which diagnostic has to be performed
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    
+    
+    cmd = f"diagnostic start switch {switch_num} module {mod_num} test {include}"
+    
+    try:
+       device.execute(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not execute diagnostic start switch {switch_num} module {mod_num} test {include} on device")
+
+
+def execute_diagnostic_start_module_test(device,mod_num,include):
+    """ execute diagnostic start module 1 test all
+        Args:
+            device ('obj'): Device object
+            mod_num ('int'): Module number on which diagnostic has to be performed
+            include ('str'): test name(all) on which diagnostic has to be performed
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    
+    
+    cmd = f"diagnostic start module {mod_num} test {include}"
+    
+    try:
+       device.execute(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not execute diagnostic start module {mod_num} test {include} on device")

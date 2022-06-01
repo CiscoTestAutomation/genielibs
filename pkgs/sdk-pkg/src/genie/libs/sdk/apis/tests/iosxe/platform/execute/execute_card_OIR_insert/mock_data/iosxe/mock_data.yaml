@@ -5,13 +5,13 @@ configure:
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: intrepid-2(config)#
+  prompt: intrepid-1(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: intrepid-2(config-line)#
+  prompt: intrepid-1(config-line)#
 connect:
   commands:
     ? ''
@@ -28,11 +28,11 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
-    hw-module subslot 6/0 oir insert:
+    hw-module switch 1 subslot 1/0 oir insert:
       response:
       - Proceed with insertion of module? [confirm]
       response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: intrepid-2#
+  prompt: intrepid-1#

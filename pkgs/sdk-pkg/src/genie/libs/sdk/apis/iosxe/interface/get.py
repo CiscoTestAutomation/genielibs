@@ -1411,3 +1411,25 @@ def get_trunk_interfaces_encapsulation(device, interfaces):
          log.error("No trunk interfaces configured on the device")
 
     return output
+
+def get_switch_qos_queue_config_on_interface(device, interface, switch_num):
+    """ Get platform hardware fed on switch and qos queue config on Interface
+
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface name
+            switch_num ('str'): switch number
+        Return:
+            Dictionary with running interface configuration
+        Raises:
+            None
+    """
+    log.debug(f"show platform hardware fed switch {switch_num} qos queue config interface {interface}")
+
+    try:
+        output = device.execute(f"show platform hardware fed switch {switch_num} qos queue config interface {interface}")
+    except SubCommandFailure:
+        return {}
+
+    return get_config_dict(output)
+

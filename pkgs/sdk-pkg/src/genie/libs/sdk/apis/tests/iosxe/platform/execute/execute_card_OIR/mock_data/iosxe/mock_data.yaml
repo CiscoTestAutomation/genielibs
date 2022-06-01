@@ -28,7 +28,7 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
-    hw-module subslot 6/0 oir power-cycle:
+    hw-module subslot 1/0 oir power-cycle:
       response:
       - Proceed with power cycle of module? [confirm]
       response_type: circular

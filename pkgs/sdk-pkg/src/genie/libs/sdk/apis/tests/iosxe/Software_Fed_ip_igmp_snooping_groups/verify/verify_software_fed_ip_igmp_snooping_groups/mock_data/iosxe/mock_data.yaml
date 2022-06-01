@@ -1,0 +1,41 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: SF1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: SF1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show platform software fed active ip igmp snooping groups vlan 20:
+      response:
+      - "Vlan:20\tGroup:224.0.1.40\r\n---------------------------------\r\nMember\
+        \ ports   :\r\nCCK_epoch      : 162\r\nFailure Flags  : 0\r\nDI handle   \
+        \   : 0x7fe998dce858\r\nREP RI handle  : 0x7fe9989f3848\r\nSI handle     \
+        \ : 0x7fe998d44328\r\nHTM handle     : 0x7fe998d5eea8"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: SF1#

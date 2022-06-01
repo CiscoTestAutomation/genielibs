@@ -3,13 +3,15 @@ import base64
 import json
 import sys
 import pdb
-import time
 from threading import Thread, Event
 import traceback
 from datetime import datetime
+import time
 from xml.etree.ElementPath import xpath_tokenizer_re
 from google.protobuf import json_format
 from six import string_types
+from pprint import pformat
+from pyats.log.utils import banner
 
 from cisco_gnmi import proto
 
@@ -56,9 +58,21 @@ class GnmiNotification(Thread):
         self.encoding = request.get('encoding')
         self.sample_interval = request.get('sample_interval', 0)
         self.stream_max = request.get('stream_max', 0)
+        if self.stream_max:
+            self.log.info('Notification MAX timeout {0} seconds.'.format(
+                    str(self.stream_max)
+                )
+            )
         self.time_delta = 0
-        self.result = None
-        self.event_triggered = False
+        self.results = []
+        self.negative_test = request.get('negative_test')
+        self.log.info(banner('GNMI Subscription reciever started'))
+
+    @property
+    def result(self):
+        if not self.results:
+            return False is not self.negative_test
+        return all(self.results)
 
     def process_opfields(self, response):
         """Decode response and verify result.
@@ -70,31 +84,37 @@ class GnmiNotification(Thread):
           response (proto.gnmi_pb2.Notification): Contains updates that
               have changes since last timestamp.
         """
-        resp = None
-        subscribe_resp = json_format.MessageToDict(response)
-        updates = subscribe_resp['update']
-        if isinstance(updates, dict):
-            if 'timestamp' not in updates:
-                self.log.warning('No timestamp in response.')
-            updates = updates.get('update', [])
-        if not isinstance(updates, list):
-            updates = [updates]
-        for update in updates:
-            resp = self.decode_response(update, self.namespace, self.log)
-            if resp:
-                if not self.returns:
-                    self.log.error('No notification values to check')
-                    self.result = False
-                    self.stop()
+        try:
+            json_dicts, opfields = self.decode_response(
+                response, self.namespace
+            )
+            if len(json_dicts):
+                for json_dict in json_dicts:
+                    if json_dict is not None:
+                        msg = 'JSON Decoded\n' + '=' * 12 + '\n' + json.dumps(
+                            json_dict, indent=2
+                        )
+                        self.log.info(msg)
+            if opfields and self.log.level == logging.DEBUG:
+                msg = 'Xpath/Value\n' + '=' * 11 + '\n' + pformat(opfields)
+                self.log.info(msg)
+            if opfields:
+                result = self.negative_test is not self.response_verify(
+                    opfields, self.returns.copy()
+                )
+                if self.negative_test:
+                    log.info(banner('NEGATIVE TEST'))
+                self.results.append(result)
+                if not result:
+                    self.log.error(banner('SUBSCIBE VERIFICATION FAILED'))
                 else:
-                    result = self.response_verify(resp, self.returns.copy())
-                    if self.event_triggered:
-                        self.result = result
-            else:
-                self.log.error('No values in subscribe response')
-
-        if resp and self.mode == 'ONCE':
-            self.log.info('Subscribe ONCE processed')
+                    self.log.info(banner('SUBSCIBE VERIFICATION PASSED'))
+            if self.mode in ['ONCE', 'POLL']:
+                self.log.info('Subscribe {0} processed'.format(self.mode))
+                self.stop()
+        except Exception as exc:
+            self.log.error(str(exc))
+            self.results.append(False)
             self.stop()
 
     def run(self):
@@ -102,15 +122,16 @@ class GnmiNotification(Thread):
         t1 = datetime.now()
         self.log.info('Subscribe notification active')
         try:
-            while True:
-                for response in self.responses:
-                    self.log.info("gNMI SUBSCRIBE Response\n" + "=" * 23 + "\n{}"
-                                  .format(response))
-                    if response.HasField('sync_response'):
-                        self.log.info('Subscribe sync_response')
-                    if response.HasField('update'):
-                        self.log.info('Processing returns...')
-                        self.process_opfields(response)
+            for response in self.responses:
+                if response.HasField('sync_response'):
+                    self.log.info('Subscribe sync_response')
+                if response.HasField('update'):
+                    self.log.info(
+                        "gNMI SUBSCRIBE Response\n" + "=" * 23 + "\n{}"
+                            .format(response)
+                    )
+                    self.log.info('Processing returns...')
+                    self.process_opfields(response)
 
                 if self.stopped():
                     self.time_delta = self.stream_max
@@ -120,11 +141,10 @@ class GnmiNotification(Thread):
                     t2 = datetime.now()
                     td = t2 - t1
                     self.time_delta = td.seconds
-                    if td.seconds > self.stream_max:
-                        self.log.info("Notification thread is done")
+                    if self.time_delta > self.stream_max:
+                        self.log.info("Notification MAX timeout")
                         self.stop()
                         break
-                time.sleep(.25)
 
         except Exception as exc:
             msg = ''
@@ -244,23 +264,26 @@ class GnmiMessage:
                 )
             except:
                 pass
-            decode_result = device.decode_notification(
+
+            json_dicts, opfields = GnmiMessage.decode_notification(
                 response, namespace
             )
             log.info(
                 'Get Response JSON value decoded\n' + '=' * 31 + '\n'
             )
-            for result in decode_result:
-                decode = result.get('decode')
+            if json_dicts:
                 try:
-                    iter(decode)
-                    for item in decode:
-                        if isinstance(item, dict):
-                            msg = json.dumps(item, indent=2)
+                    iter(json_dicts)
+                    for result in json_dicts:
+                        try:
+                            msg = json.dumps(result, indent=2)
                             log.info(msg)
+                        except Exception:
+                            log.error(str(result))
                 except TypeError:
-                    log.error(result)
-            return decode_result
+                    log.error(str(json_dicts))
+
+            return opfields
         except Exception as exc:
             log.error(traceback.format_exc())
             if hasattr(exc, 'details'):
@@ -268,19 +291,31 @@ class GnmiMessage:
             else:
                 log.error(str(exc))
 
-    @classmethod
-    def iter_subscribe_request(self, payload):
-        """Generator passed to Subscribe service to handle stream payloads.
+    @staticmethod
+    def get_opfields(val, xpath_str, opfields=[], namespace={}):
+        if isinstance(val, dict):
+            for name, dict_val in val.items():
+                opfields = GnmiMessage.get_opfields(
+                    dict_val,
+                    xpath_str + '/' + name,
+                    opfields,
+                    namespace
+                )
+        elif isinstance(val, list):
+            for item in val:
+                GnmiMessage.get_opfields(item, xpath_str, opfields, namespace)
+        else:
+            xpath_list = xpath_str.split('/')
+            name = xpath_list.pop()
+            for mod in namespace.values():
+                name = name.replace(mod + ':', '')
+            xpath_str = '/'.join(xpath_list)
+            opfields.append((val, xpath_str + '/' + name))
 
-        Args:
-          payload (proto.gnmi_pb2.SubscribeRequest)
-        """
-        subscribe_request = proto.gnmi_pb2.SubscribeRequest()
-        subscribe_request.subscribe.CopyFrom(payload.subscribe)
-        yield subscribe_request
+        return opfields
 
-    @classmethod
-    def path_elem_to_xpath(self, path_elem, namespace={}, opfields=[]):
+    @staticmethod
+    def path_elem_to_xpath(path_elem, prefix='', namespace={}, opfields=[]):
         """Convert a Path structure to an Xpath."""
         elems = path_elem.get('elem', [])
         xpath = []
@@ -297,83 +332,69 @@ class GnmiMessage:
                         value = str(value).replace(mod + ':', '')
                     opfields.append((
                         value,
-                        '/' + '/'.join(xpath) + '/' + name,
-
+                        prefix + '/' + '/'.join(xpath) + '/' + name
                     ))
-        return '/' + '/'.join(xpath)
-
-    @classmethod
-    def get_opfields(self, val, xpath_str, opfields=[], namespace={}):
-        if isinstance(val, dict):
-            for name, dict_val in val.items():
-                opfields = self.get_opfields(
-                    dict_val,
-                    xpath_str + '/' + name,
-                    opfields,
-                    namespace
-                )
-        elif isinstance(val, list):
-            for item in val:
-                self.get_opfields(item, xpath_str, opfields, namespace)
+        if(len(xpath)):
+            return prefix + '/' + '/'.join(xpath)
         else:
-            xpath_list = xpath_str.split('/')
-            name = xpath_list.pop()
-            for mod in namespace.values():
-                name = name.replace(mod + ':', '')
-            xpath_str = '/'.join(xpath_list)
-            opfields.append((val, xpath_str + '/' + name))
+            return ''
 
-        return opfields
+    @staticmethod
+    def decode_update(update, prefix=None, namespace={}, opfields=[]):
+        """Convert Update to Xpath, value, and datatype."""
+        pre_path = ''
+        xpath = ''
+        json_dict = None
 
-    @classmethod
-    def decode_opfields(self, update={}, namespace={}, log=log):
-        """Convert path/val to xpath/value fields."""
-        if not namespace:
-            log.warning('No namespace; returns may not decode properly')
-        opfields = []
-        xpath_str = self.path_elem_to_xpath(
-            update.get('path', {}),
-            namespace=namespace,
-            opfields=opfields
-        )
-        if not xpath_str:
-            log.error('Xpath not determined from response')
-            return []
-        # TODO: the val depends on the encoding type
-        val = update.get('val', {}).get('jsonIetfVal', '')
-        if not val:
-            val = update.get('val', {}).get('jsonVal', '')
-        if not val:
-            log.error('{0} has no values'.format(xpath_str))
-            return []
-        json_val = base64.b64decode(val).decode('utf-8')
-        update_val = json.loads(json_val)
-        if not isinstance(update_val, (dict, list)):
-            # Just one value returned
-            opfields.append((update_val, xpath_str))
-            return opfields
-        else:
-            # Reset opfields to avoid duplicates
-            opfields = []
-        if isinstance(update_val, dict):
-            opfields = self.get_opfields(
-                update_val,
-                xpath_str,
-                opfields,
-                namespace
+        if not isinstance(update, list):
+            update = [update]
+
+        if prefix is not None:
+            pre_path = GnmiMessage.path_elem_to_xpath(
+                prefix, pre_path, namespace, []
             )
-        elif isinstance(update_val, list):
-            for val_dict in update_val:
-                opfields = self.get_opfields(
-                    val_dict,
-                    xpath_str,
-                    opfields,
-                    namespace
-                )
-        return opfields
 
-    @classmethod
-    def decode_notification(self, update={}, namespace={}):
+        for upd in update:
+            if 'path' in upd:
+                xpath = GnmiMessage.path_elem_to_xpath(
+                    upd['path'], pre_path, namespace, opfields
+                )
+            val = upd.get('val', {})
+            if 'jsonIetfVal' in val:
+                val = val.get('jsonIetfVal', '')
+                if not val:
+                    log.info('"val" has no content')
+                    continue
+                json_val = base64.b64decode(val).decode('utf-8')
+                json_dict = json.loads(json_val, strict=False)
+            elif 'jsonVal' in val:
+                val = val.get('jsonVal', '')
+                if not val:
+                    log.info('"val" has no content')
+                    continue
+                json_val = base64.b64decode(val).decode('utf-8')
+                json_dict = json.loads(json_val, strict=False)
+            elif val:
+                datatype = next(iter(val))
+                value = val[datatype]
+                if 'int' in datatype:
+                    value = int(value)
+                elif 'float' in datatype or 'Decimal64' in datatype:
+                    value = float(value)
+                elif 'bytes' in datatype:
+                    value = bytes(value)
+
+                opfields.append((value, xpath))
+            else:
+                log.info('Update has no value')
+
+        if json_dict is not None:
+            GnmiMessage.get_opfields(json_dict, xpath, opfields, namespace)
+
+        return json_dict
+
+    @staticmethod
+    def decode_notification(response, namespace={}):
         """Convert JSON return to python dict for display or processing.
 
         Args:
@@ -384,55 +405,51 @@ class GnmiMessage:
           str
         """
         # Try to cover different return formats.
-        results = []
+        opfields = []
+        json_dicts = []
         log.info('Decoding notification')
-        if not isinstance(update, dict):
-            try:
-                update = json_format.MessageToDict(update)
-            except Exception:
-                return str(update)
-        if 'notification' in update:
-            update = update['notification']
-            notify_list = []
-            if isinstance(update, list):
-                for upd in update:
-                    if 'update' in upd:
-                        notify_list += upd['update']
-                    elif 'path' in upd:
-                        notify_list.append(upd)
-                update = notify_list
-        if 'update' in update:
-            update = update['update']
-        elif 'timestamp' in update:
-            update = [update]
-        elif 'val' in update:
-            val = update.get('val', {}).get('jsonIetfVal', '')
-            if not val:
-                val = update.get('val', {}).get('jsonVal', '')
-            json_val = base64.b64decode(val).decode('utf-8')
-            msg = 'JSON Decoded\n' + '=' * 12 + '\n' + json.dumps(
-                json.loads(json_val), indent=2
-            )
-            log.info(msg)
-            return msg
-        for upd in update:
-            msg = 'Subscribe Response\n' + '=' * 18 + '\n' + json.dumps(
-                upd, indent=2
-            )
-            msg += '\n'
-            val = upd.get('val', {}).get('jsonIetfVal', '')
-            if not val:
-                val = upd.get('val', {}).get('jsonVal', '')
-            if not val:
-                log.error('Update has no value')
-                return []
-            json_val = base64.b64decode(val).decode('utf-8')
-            msg += 'JSON Decoded\n' + '=' * 12 + '\n' + json.dumps(
-                json.loads(json_val), indent=2
-            )
-            results.append(msg)
-        log.info('\n'.join(results))
-        return '\n'.join(results)
+        if isinstance(response, proto.gnmi_pb2.SubscribeResponse):
+            notification = json_format.MessageToDict(response)
+            if 'update' not in notification:
+                raise GnmiMessageException('No update in SubscribeResponse')
+            update = notification['update']
+            prefix = update.get('prefix')
+            json_dicts.append(GnmiMessage.decode_update(
+                update['update'], prefix, namespace, opfields
+            ))
+        elif isinstance(response, proto.gnmi_pb2.GetResponse):
+            get_resp = json_format.MessageToDict(response)
+            if 'notification' not in get_resp:
+                raise GnmiMessageException('No notification in GetResponse')
+            notifications = get_resp['notification']
+            for notification in notifications:
+                if 'update' not in notification:
+                    raise GnmiMessageException('No update in GetResponse')
+                prefix = notification.get('prefix')
+                json_dicts.append(GnmiMessage.decode_update(
+                    notification['update'],
+                    prefix,
+                    namespace,
+                    opfields
+                ))
+        return (json_dicts, opfields)
+
+    @classmethod
+    def iter_subscribe_request(self, payloads, delay=0):
+        """Generator passed to Subscribe service to handle stream payloads.
+
+        Args:
+          payload (list): proto.gnmi_pb2.SubscribeRequest
+        """
+        for payload in payloads:
+            if delay:
+                time.sleep(delay)
+                if payload.HasField('poll'):
+                    log.info('gNMI SUBSCRIBE POLL\n' + '=' * 19 + '\n{0}'.format(
+                        str(payload)
+                        )
+                    )
+            yield payload
 
     @classmethod
     def run_subscribe(self, device, payload, request):
@@ -466,9 +483,13 @@ class GnmiMessage:
             gnmi_string
         ))
         try:
-            response = device.gnmi.service.Subscribe(
-                self.iter_subscribe_request(payload)
-            )
+            payloads = [payload]
+            delay = 0
+            if request['request_mode'] == 'POLL':
+                delay = 3
+                payloads.append(
+                    GnmiMessageConstructor.get_subscribe_poll()
+                )
 
             def verify(data, returns={}):
                 return data
@@ -479,26 +500,21 @@ class GnmiMessage:
                     log.info('"returns" will be ignored.')
             if request.get('decode') is None:
                 log.info('Default decoder used.')
-                request['decode'] = self.decode_opfields
+                request['decode'] = GnmiMessage.decode_notification
             request['log'] = log
+
+            response = device.gnmi.service.Subscribe(
+                self.iter_subscribe_request(payloads, delay)
+            )
 
             subscribe_thread = GnmiNotification(
                 response,
                 **request
             )
-            if request['request_mode'] in ['ONCE', 'POLL']:
-                subscribe_thread.event_triggered = True
             device.active_notifications[device] = subscribe_thread
             subscribe_thread.start()
 
-            # When request mode is ONCE or POLL, it is better to wait until
-            # subscribe_thread is finished.
-            if request['request_mode'] in ['ONCE', 'POLL']:
-                log.info('Subscribe request mode is ONCE or POLL, so wait for '
-                         'subscribe_thread to finish...')
-                subscribe_thread.join()
-
-            return True
+            return subscribe_thread
         except Exception as exc:
             log.error(traceback.format_exc())
             if hasattr(exc, 'details'):
@@ -816,17 +832,12 @@ class GnmiMessageConstructor:
                 subscription = proto.gnmi_pb2.Subscription()
                 sample_interval = self.cfg.get('sample_interval')
 
-                if mode != 'ONCE':
+                if sub_mode:
                     subscription.mode = proto.gnmi_pb2.SubscriptionMode.Value(
                         sub_mode
                     )
-                    if sample_interval:
-                        sample_interval = int(1e9) * int(sample_interval)
-                    else:
-                        log.info(
-                            'Setting sample_interval to default 10 seconds.'
-                        )
-                        sample_interval = int(1e9) * 10
+                if sub_mode == 'SAMPLE' and sample_interval:
+                    sample_interval = int(1e9) * int(sample_interval)
                     subscription.sample_interval = sample_interval
                 gnmi_path = self.parse_xpath_to_gnmi_path(subscribe)
                 subscription.path.CopyFrom(gnmi_path)
@@ -837,6 +848,13 @@ class GnmiMessageConstructor:
             self.payload.subscribe.CopyFrom(subscribe_list)
 
         return self.payload
+
+    @classmethod
+    def get_subscribe_poll(self):
+        """POLL subscribe requires a message to start polling."""
+        sub = proto.gnmi_pb2.SubscribeRequest()
+        sub.poll.SetInParent()
+        return sub
 
     def _trim_xpaths(self, xpaths, short_xp):
         # Helper function for get_shortest_common_path.

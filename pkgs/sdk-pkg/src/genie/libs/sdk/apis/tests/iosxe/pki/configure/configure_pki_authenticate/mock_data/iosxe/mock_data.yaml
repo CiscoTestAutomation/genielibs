@@ -1,16 +1,21 @@
 configure:
   commands:
-    crypto pki authenticate client: "crypto pki authenticate client\r\nCertificate\
-      \ has the following attributes:\r\n       Fingerprint MD5: 05D68688 A7AB3E9F\
-      \ 3E6D6524 09B06F8F \r\n      Fingerprint SHA1: 9390DE12 FB2F1F0F 9F9A3125 59549389\
-      \ DF7EC452 \r\n\r\n% Do you accept this certificate? [yes/no]: yes\r\nTrustpoint\
-      \ CA certificate accepted.\r\n"
+    crypto pki authenticate client:
+      new_state: confirm_operation
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
     no logging console: ''
   prompt: ipsec_reg8_new(config)#
+confirm_operation:
+  prompt: "crypto pki authenticate client\r\nCertificate\
+      \ has the following attributes:\r\n       Fingerprint MD5: 05D68688 A7AB3E9F\
+      \ 3E6D6524 09B06F8F \r\n      Fingerprint SHA1: 9390DE12 FB2F1F0F 9F9A3125 59549389\
+      \ DF7EC452 \r\n\r\n% Do you accept this certificate? [yes/no]: "
+  commands:
+    "yes":
+      new_state: configure
 configure_line:
   commands:
     end:

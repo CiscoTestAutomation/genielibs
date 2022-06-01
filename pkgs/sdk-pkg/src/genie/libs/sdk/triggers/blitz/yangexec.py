@@ -718,10 +718,7 @@ def run_gnmi(operation, device, steps,
         if 'returns' in rpc_data:
             if not rpc_verify.process_operational_state(resp, returns):
                 result = False
-    elif operation == 'get':
-        if not returns:
-            log.error(banner('No gNMI data to compare to GET'))
-            return False
+    elif operation in ['get', 'get-config']:
         if 'rpc' in rpc_data:
             # Assume we have a well-formed dict representing gNMI get
             payload = json.dumps(rpc_data.get('rpc', {}), indent=2)
@@ -736,45 +733,8 @@ def run_gnmi(operation, device, steps,
         if not response:
             result = False
         else:
-            for resp in response:
-                update = resp.get('update')
-                if not update:
-                    result = False
-                    continue
-                if not rpc_verify.process_operational_state(update, returns):
-                    result = False
-    elif operation == 'get-config':
-        if 'rpc' in rpc_data:
-            # Assume we have a well-formed dict representing gNMI get
-            payload = json.dumps(rpc_data.get('rpc', {}), indent=2)
-        else:
-            gmc = GnmiMessageConstructor('get', rpc_data, **format)
-            payload = gmc.payload
-            namespace_modules = gmc.namespace_modules
-        response = GnmiMessage.run_get(
-            device, payload, namespace_modules
-        )
-        deletes = False
-        updates = False
-        if not response:
-            log.error("NO RESPONSE")
-            result = False
-        else:
-            result = True
-
-        if response:
-            for resp in response:
-                if 'update' in resp:
-                    updates = True
-                    if not rpc_verify.process_operational_state(
-                            resp['update'], returns):
-                        result = False
-                if 'delete' in resp:
-                    deletes = True
-
-        if not updates and deletes:
-            log.info('All configs were deleted')
-            result = True
+            if not rpc_verify.process_operational_state(response, returns):
+                result = False
     elif operation == 'subscribe':
         rpc_data.update(format)
         rpc_data['returns'] = returns
@@ -785,6 +745,7 @@ def run_gnmi(operation, device, steps,
         else:
             gmc = GnmiMessageConstructor('subscribe', rpc_data, **format)
             payload = gmc.payload
+        # Returns subscribe thread and results are handled by caller
         return GnmiMessage.run_subscribe(device, payload, rpc_data)
     elif operation == 'capabilities':
         if not returns:
@@ -885,14 +846,3 @@ def run_restconf(operation, device, steps, datastore, rpc_data, returns, **kwarg
         return negative_test != result
 
     return False
-
-
-def notify_wait(steps, device):
-    if hasattr(device, 'netconf'):
-        if hasattr(device.netconf, 'notify_wait'):
-            device.netconf.notify_wait(steps)
-    if hasattr(device, 'gnmi'):
-        if hasattr(device.gnmi, 'notify_wait'):
-            device.gnmi.notify_wait(steps)
-    if hasattr(device, 'notify_wait'):
-        device.notify_wait(steps)

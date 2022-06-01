@@ -4,11 +4,16 @@ configure:
       new_state: execute
     line console 0:
       new_state: configure_line
-    no crypto pki server root: "CA certificate, Keypair, CRL and database files will\
-      \ be deleted. Do you wish to continue? [yes/no]: yes\r\nCertificate server 'remove\
-      \ server' event has been queued for processing.\r\n"
+    no crypto pki server root:
+      new_state: confirm_operation
     no logging console: ''
   prompt: vm5006(config)#
+confirm_operation:
+  prompt: "CA certificate, Keypair, CRL and database files will\
+      \ be deleted. Do you wish to continue? [yes/no]:"
+  commands:
+    "yes":
+      new_state: configure
 configure_line:
   commands:
     end:

@@ -1,0 +1,48 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: centi_48TX_1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: centi_48TX_1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show run | include ptp:
+      response:
+      - "ptp mode boundary delay-req\r\nkey chain ptp_macsec macsec\r\n ptp sync interval\
+        \ -3\r\n ptp delay-req interval -1\r\n ptp sync interval -3\r\n ptp delay-req\
+        \ interval -1\r\n ptp sync interval -3\r\n ptp delay-req interval -1\r\n ptp\
+        \ sync interval -3\r\n ptp delay-req interval -1\r\n ptp sync interval -3\r\
+        \n ptp delay-req interval -1\r\n ptp sync interval -3\r\n ptp delay-req interval\
+        \ -1\r\n ptp sync interval -3\r\n ptp delay-req interval -1\r\n ptp sync interval\
+        \ -3\r\n ptp delay-req interval -1\r\n ptp sync interval -3\r\n ptp delay-req\
+        \ interval -1\r\n ptp sync interval -3\r\n ptp delay-req interval -1\r\n ptp\
+        \ sync interval -3\r\n ptp delay-req interval -1\r\n ptp sync interval -3\r\
+        \n ptp delay-req interval -1\r\n ptp sync interval -3\r\n ptp delay-req interval\
+        \ -1\r\nip access-list extended ptp-udp"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: centi_48TX_1#

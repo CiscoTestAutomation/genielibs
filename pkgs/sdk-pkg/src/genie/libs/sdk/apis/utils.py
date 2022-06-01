@@ -887,18 +887,16 @@ def copy_to_device(device,
         fu = FileUtils.from_device(device, protocol=protocol)
 
     if server:
+        if protocol is None:
+            server_block = fu.get_server_block(server)
+            protocol = server_block.get('protocol', 'http')
 
         if vrf is not None:
             server = fu.get_hostname(server, device, vrf=vrf)
         else:
             server = fu.get_hostname(server, device)
 
-        if protocol is None:
-            server_block = fu.get_server_block(server)
-            protocol = server_block.get('protocol', 'http')
-
         # build the source address
-        remote_path = remote_path.lstrip('/')
         source = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
         try:
             if vrf is not None:
@@ -952,8 +950,11 @@ def copy_to_device(device,
         mgmt_src_ip = None
 
     remote_path_parent = str(pathlib.PurePath(remote_path).parent)
+    remote_filename = pathlib.PurePath(remote_path).name
 
-    with FileServer(protocol='http',
+    protocol = protocol or 'http'
+
+    with FileServer(protocol=protocol,
                     address=local_ip,
                     path=remote_path_parent,
                     custom=dict(http_auth=http_auth)) as fs:
@@ -962,7 +963,8 @@ def copy_to_device(device,
 
         proxy_port = None
         # Check if we are connected via proxy device
-        proxy = device.connections[device.via].get('proxy')
+        proxy = device.connections[device.via].get('proxy') or \
+            device.connections[device.via].get('sshtunnel', {}).get('host')
         if proxy and isinstance(proxy, str):
             log.info('Setting up port relay via proxy')
             proxy_dev = device.testbed.devices[proxy]
@@ -977,17 +979,17 @@ def copy_to_device(device,
                     mgmt_src_ip = proxy_ip
                     break
 
-        if http_auth:
+        if protocol == 'http' and http_auth:
             username = fs.get('credentials', {}).get('http', {}).get('username', '')
             password = to_plaintext(fs.get('credentials', {}).get('http', {}).get('password', ''))
             source = 'http://{}:{}@'.format(username, password)
         else:
-            source = 'http://'
+            source = f'{protocol}://'
 
         if mgmt_src_ip and proxy_port:
-            source += '{}:{}/{}'.format(mgmt_src_ip, proxy_port, remote_path)
+            source += '{}:{}/{}'.format(mgmt_src_ip, proxy_port, remote_filename)
         elif mgmt_src_ip:
-            source += '{}:{}/{}'.format(mgmt_src_ip, local_port, remote_path)
+            source += '{}:{}/{}'.format(mgmt_src_ip, local_port, remote_filename)
         else:
             log.error('Unable to determine management IP address to use to download file')
             return
@@ -995,12 +997,13 @@ def copy_to_device(device,
         try:
             fu.validate_and_update_url = lambda url, *args, **kwargs: url  # override to avoid url changes
             fu.get_server = lambda *args, **kwargs: None  # override to suppress log messages
-            return fu.copyfile(source=source,
-                        destination=local_path,
-                        timeout_seconds=timeout,
-                        device=device,
-                        vrf=vrf,
-                        interface=mgmt_interface)
+            return fu.copyfile(
+                source=source,
+                destination=local_path,
+                timeout_seconds=timeout,
+                device=device,
+                vrf=vrf,
+                interface=mgmt_interface)
 
         except Exception:
             log.error('Failed to transfer file', exc_info=True)
@@ -1126,7 +1129,8 @@ def copy_from_device(device,
 
         proxy_port = None
         # Check if we are connected via proxy device
-        proxy = device.connections[device.via].get('proxy')
+        proxy = device.connections[device.via].get('proxy') or \
+            device.connections[device.via].get('sshtunnel', {}).get('host')
         if proxy and isinstance(proxy, str):
             log.info('Setting up port relay via proxy')
             proxy_dev = device.testbed.devices[proxy]

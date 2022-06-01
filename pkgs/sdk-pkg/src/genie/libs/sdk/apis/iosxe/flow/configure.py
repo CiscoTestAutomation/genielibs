@@ -117,17 +117,17 @@ def clear_flow_monitor_statistics(device):
             'Could not clear flow monitor statistics'
         )
 
-def configure_fnf_exporter(device, exporter_name, dest_ip, source_int,
-                           udp_port, timeout):
+def configure_fnf_exporter(device, exporter_name, dest_ip, udp_port, source_int=None,
+                           timeout=None):
     
     """ Config Flow Exporter on Device 
         Args:
             device (`obj`): Device object
             exporter_name (`str`): Flow exporter name
             dest_ip (`str`): Destination IP
-            source_int('str'): Interface
+            source_int('str', Optional): Interface
             udp_port (`str`): UDP port
-            timeout ('int'): Timeout
+            timeout ('int', Optional): Timeout
             
         Return:
             None
@@ -135,26 +135,36 @@ def configure_fnf_exporter(device, exporter_name, dest_ip, source_int,
         Raise:
             SubCommandFailure: Failed configuring fnf exporter
     """
-    try:
-        device.configure([
-                          "flow exporter {exporter_name}".
-                          format(exporter_name=exporter_name),
-                          "destination {dest_ip}".format(dest_ip=dest_ip),
-                          "source {int}".format(int=source_int),
-                          "transport udp {udp_port}".format(udp_port=udp_port),
-                          "template data timeout {timeout}".
-                          format(timeout=timeout),
-                          "option vrf-table timeout {timeout}".
-                          format(timeout=timeout),
-                          "option sampler-table timeout {timeout}".
-                          format(timeout=timeout),
+    if source_int and timeout is not None:
+        try:
+            device.configure([
+                          f"flow exporter {exporter_name}",                          
+                          f"destination {dest_ip}",
+                          f"source {int}",
+                          f"transport udp {udp_port}",
+                          f"template data timeout {timeout}",
+                          f"option vrf-table timeout {timeout}",
+                          f"option sampler-table timeout {timeout}"
                           ])
 
-    except SubCommandFailure:
-        raise SubCommandFailure(
+        except SubCommandFailure:
+            raise SubCommandFailure(
                 'Could not configure fnf exporter {exporter_name}'.
                 format(exporter_name=exporter_name)
-        )
+            )
+    else:
+        try:
+            device.configure([
+                          f"flow exporter {exporter_name}",                          
+                          f"destination {dest_ip}",
+                          f"transport udp {udp_port}"
+                          ])
+        except SubCommandFailure:
+            raise SubCommandFailure(
+                'Could not configure fnf exporter {exporter_name}'.
+                format(exporter_name=exporter_name)
+            )
+
 
 def unconfigure_flow_exporter_monitor_record(device, exporter_name, monitor_name,
                                           record_name):
@@ -525,11 +535,13 @@ def configure_fnf_record(
                         f'match datalink {datalink_type_2}'])
     
     if match_flow_field is not None:
-                    configs.extend(f'match flow {match_flow_field}')
+                    configs.extend([f'match flow {match_flow_field}'])
     if match_int_field is not None:
-                    configs.extend(f'match interface {match_int_field}')
+                    configs.extend([f'match interface {match_int_field}'])
     if match_ipv4_field_2 is not None:
-                    configs.extend(f'match ipv4 {match_ipv4_field_2}')
+                    configs.extend([f'match ipv4 {match_ipv4_field_2}'])
+    if collect_int_field is not None:
+                    configs.extend([f'collect interface {collect_int_field}'])
     if collect_routing :
                     configs.extend(['collect routing source as peer 4-octet',
                                   'collect routing destination as peer 4-octet'])
@@ -550,7 +562,6 @@ def configure_fnf_record(
                 'match routing vrf input',
                 f'match transport {match_transport_field_1}',
                 f'match transport {match_transport_field_2}',
-                f'collect interface {collect_int_field}',
                 'collect transport tcp flags',
                 ])
              

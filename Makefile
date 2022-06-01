@@ -45,9 +45,9 @@ CYTHON_CMD	  = compileAll
 # Development pkg requirements
 RELATED_PKGS = genie.libs.health genie.libs.clean genie.libs.conf genie.libs.ops genie.libs.robot genie.libs.sdk
 RELATED_PKGS += genie.libs.filetransferutils
-DEPENDENCIES = restview psutil Sphinx wheel asynctest pysnmp 
-DEPENDENCIES += sphinx-rtd-theme pyftpdlib tftpy\<0.8.1 robotframework\<5.0
-DEPENDENCIES += Cython requests ruamel.yaml grpcio protobuf cisco-gnmi
+DEPENDENCIES = restview psutil Sphinx wheel asynctest pysnmp
+DEPENDENCIES += sphinx-rtd-theme pyftpdlib tftpy\<0.8.1 robotframework
+DEPENDENCIES += Cython requests ruamel.yaml grpcio protobuf\<=3.20.1 cisco-gnmi
 
 # Internal variables.
 # (note - build examples & templates last because it will fail uploading to pypi
