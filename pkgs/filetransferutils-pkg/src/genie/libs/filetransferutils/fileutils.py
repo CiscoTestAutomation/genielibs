@@ -3,6 +3,7 @@
 import re
 import logging
 import contextlib
+import ipaddress
 import time
 from functools import lru_cache
 
@@ -395,10 +396,12 @@ class FileUtils(FileUtilsBase):
         for item in new_list:
             parsed = self.parse_url(item)
             # Validate parsed address is a valid IP address
-            if parsed.hostname:
+            try:
                 # only include address, no port or credentials
-                used_server = parsed.hostname
+                used_server = str(ipaddress.ip_address(parsed.hostname))
                 break
+            except:
+                continue
 
         if not used_server:
             # If both URLS have no valid IP addres, raise an exception

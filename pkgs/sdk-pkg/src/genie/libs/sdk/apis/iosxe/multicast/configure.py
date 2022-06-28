@@ -7,6 +7,10 @@ from unicon.eal.dialogs import Statement, Dialog
 # Unicon
 from unicon.core.errors import SubCommandFailure
 
+# Genie
+from genie.libs.conf.base import IPv4Address
+from genie.libs.sdk.apis.utils import tftp_config
+
 log = logging.getLogger(__name__)
 
 
@@ -394,3 +398,133 @@ def unconfigure_ipv6_multicast_routing(device):
         raise SubCommandFailure(
             "Could not unconfigure Multicast routing. Error:\n{error}".format(error=e)
         )
+
+
+def configure_scale_igmp_groups_via_tftp(device,
+                                         server,
+                                         intf_name,
+                                         group_mode,
+                                         group_start,
+                                         group_step,
+                                         goup_count,
+                                         unconfig=False,
+                                         tftp=False):
+    """ configure ip igmp static/join group on device interface
+        Example :
+        interface GigabitEthernet4
+            ip igmp join-group 235.0.0.1
+            ip igmp join-group 235.0.0.2
+
+        Args:
+            device ('obj'): Device to use
+            server ('str'): Testbed.servers
+            intf_name ('str'): Interface name
+            group_mode ('str'): static-group or join-group
+            group_start ('str'): Start IP of multicast groups. eg.235.0.0.1
+            group_step ('str'): Size of multicast group step. eg.0.0.0.1
+            goup_count ('int'): How many groups
+            unconfig ('bool'): Unconfig or not
+            tftp ('bool'): Tftp config or not
+        Returns:
+            None
+            cmds_block str if not tftp configure
+    """
+    cmds = ''
+    if unconfig:
+        no_str = 'no'
+    else:
+        no_str = ''
+
+    mcast_group = IPv4Address(group_start)
+
+    for count in range(goup_count):
+        cmds += '''
+        interface {intf}
+            {no_str} ip igmp {group_mode} {mcast_group}
+        '''.format(intf=intf_name,
+                   no_str=no_str,
+                   group_mode=group_mode,
+                   mcast_group=mcast_group)
+
+        mcast_group += int(IPv4Address(group_step))
+
+    if tftp:
+        try:
+            tftp_config(device, server, cmds)
+        except Exception:
+            raise Exception('tftp_config failed.')
+    else:
+        return cmds
+
+
+def configure_scale_service_reflection_via_tftp(device,
+                                                server,
+                                                intf_name,
+                                                src_filter_intf,
+                                                dst_pre_trans,
+                                                dst_pre_trans_step,
+                                                dst_after_trans,
+                                                dst_after_trans_step,
+                                                mask_len,
+                                                src_after_trans,
+                                                src_after_trans_step,
+                                                sr_count,
+                                                unconfig=False,
+                                                tftp=False):
+    """ configure ip service reflection on device VIF interface
+        Example :
+        interface Vif1
+            ip service reflect GigabitEthernet0/0/2 destination 66.3.1.0 to 232.2.2.0 mask-len 24 source 110.1.0.4
+
+        Args:
+            device ('obj'): Device to use
+            server ('str'): Testbed.servers
+            intf_name ('str'): Interface name VIF1
+            src_filter_intf ('str'): Source filter interface GigabitEthernet0/0/2 or ''
+            dst_pre_trans ('str'): Dst ip before translation eg.66.3.1.0
+            dst_pre_trans_step ('str'): Step of dst ip before translation. eg.0.0.1.0
+            dst_after_trans ('str'): Dst ip after translation eg.232.2.2.0
+            dst_after_trans_step ('str'): Step of dst ip before translation. eg.0.0.1.0
+            mask_len ('int'): mask length of prefix. eg.24
+            src_after_trans ('str'): Src ip after translation eg.110.1.0.4
+            src_after_trans_step ('str'): Step of Src ip after translation. eg.0.0.0.1
+            sr_count ('int'): How many service reflection rules
+            unconfig ('bool'): Unconfig or not
+            tftp ('bool'): Tftp config or not
+        Returns:
+            None
+            cmds_block str if not tftp configure
+    """
+    cmds = ''
+    if unconfig:
+        no_str = 'no'
+    else:
+        no_str = ''
+
+    dst_prefix = IPv4Address(dst_pre_trans)
+    dst_mcast_group = IPv4Address(dst_after_trans)
+    translated_src = IPv4Address(src_after_trans)
+
+    for count in range(sr_count):
+        cmds += '''
+        interface {intfVIF}
+            {no_str} ip service reflect {sr_filter} destination {dst_prefix} to {dst_mcast_group} mask-len {mask} source {src}
+        '''.format(intfVIF=intf_name,
+                   sr_filter=src_filter_intf,
+                   dst_prefix=dst_prefix,
+                   dst_mcast_group=dst_mcast_group,
+                   mask=mask_len,
+                   src=translated_src,
+                   no_str=no_str)
+
+        dst_prefix += int(IPv4Address(dst_pre_trans_step))
+        dst_mcast_group += int(IPv4Address(dst_after_trans_step))
+        translated_src += int(IPv4Address(src_after_trans_step))
+
+    if tftp:
+        try:
+            tftp_config(device, server, cmds)
+        except Exception:
+            raise Exception('tftp_config failed.')
+    else:
+        return cmds

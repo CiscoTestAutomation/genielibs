@@ -77,6 +77,7 @@ class TestGetInterfaceInformation(unittest.TestCase):
                      'phys_address': '5e03.8002.0000',
                      'port_channel': {'port_channel_member': False},
                      'port_speed': '1000',
+                     'port_speed_unit': 'Mb/s',
                      'reliability': '254/255',
                      'rxload': '1/255',
                      'txload': '1/255',

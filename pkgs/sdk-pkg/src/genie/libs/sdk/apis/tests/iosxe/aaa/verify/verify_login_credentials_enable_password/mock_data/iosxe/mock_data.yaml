@@ -1,0 +1,45 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: 9300_stack(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: 9300_stack(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    enable 15:
+      response:
+      - 'Password:'
+      response_type: circular
+    exit:
+      response:
+      - "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\
+        \n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n9300_stack con0\
+        \ is now available\r\n\r\n\r\n\r\n\r\n\r\nPress RETURN to get started.\r\n\
+        \r\n\r\n\r\nUser Access Verification\r\n\r\nUsername: dnac\r\nPassword:"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: 9300_stack#

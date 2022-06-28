@@ -7,7 +7,7 @@ from unicon.core.errors import SubCommandFailure
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
+import re
 
 def configure_eap_method(device, server_config):
 
@@ -1487,3 +1487,328 @@ def unconfigure_coa(device):
         raise SubCommandFailure(
             'Could not remove dynamic-author config'
         )
+
+
+
+def enable_aaa_password_restriction(device):
+
+    """ configure 'aaa password restriction'
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd="aaa password restriction"
+    try:
+        device.configure(cmd)      
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure aaa password restriction:\n{e}'
+        )
+
+def disable_aaa_password_restriction(device):
+
+    """ configure 'no aaa password restriction'
+    Args:
+        device (`obj`): Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd="no aaa password restriction"
+    try:
+        device.configure(cmd)           
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure no aaa password restriction:\n{e}'
+        )
+
+
+def enable_login_password_reuse_interval(device,interval):
+
+    """ configure 'login password-reuse-interval 5'
+    Args:
+        device (`obj`)  : Device object
+        interval('int') : days ranging from 1 to 365.
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = f"login password-reuse-interval {interval}"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure login password-reuse-interval:\n{e}'
+        )
+
+
+def disable_login_password_reuse_interval(device):
+
+    """ configure 'no login password-reuse-interval'
+    Args:
+        device (`obj`)  : Device object
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd="no login password-reuse-interval"
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure no login password-reuse-interval:\n{e}'
+        )
+        
+        
+        
+def enable_aaa_authentication_login(device,auth_list,auth_db1,auth_db2=None):
+
+    """ configure 'aaa authentication login default local tacacs+'
+    Args:
+        device (`obj`)   : Device object
+        auth_list('str') : authentication list(default or named)
+        auth_db1('str')  : database local or radius or tacacs+
+        auth_db2('str')  : fall back database local or radius or tacacs+
+   
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    
+    cmd = f'aaa authentication login {auth_list} {auth_db1}'
+    if auth_db2:
+        cmd += f' {auth_db2}'   
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure aaa authentication login:\n{e}'
+        )
+
+        
+def disable_aaa_authentication_login(device,auth_list,auth_db1,auth_db2=None):
+
+    """ configure 'no aaa authentication login default local tacacs+'
+    Args:
+        device (`obj`)   : Device object
+        auth_list('str') : authentication list(default or named)
+        auth_db1('str')  : database local or radius or tacacs+
+        auth_db2('str')  : fall back database local or radius or tacacs+
+   
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd = f'no aaa authentication login {auth_list} {auth_db1}'
+    if auth_db2:
+        cmd += f' {auth_db2}'
+    try:
+        device.configure(cmd)    
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not configure no aaa authentication login:\n{e}'
+        )
+
+def enable_radius_automate_tester_probe_on(device,server_name,user_name,vrf=None):
+    """configure automate-tester username <name> probe-on vrf <vrf> under radius server
+    Args:
+        device (`obj`): Device object
+        server_name ('str'): Radius server name
+        user_name ('str'): Identity Username
+        vrf('str'): vrf name 
+    Return:
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """
+    cmd1=f"radius server {server_name}"
+    cmd2=f"automate-tester username {user_name} probe-on"
+    if vrf:
+        cmd2+=f" vrf {vrf}"  
+    try:
+        device.configure([cmd1,cmd2]) 
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not configure radius automate tester probe on:\n{e}"
+        )
+
+
+def configure_masked_unmasked_credentials (device, 
+                                  username,
+                                  password, 
+                                  privilege=None,
+                                  ccp_name=None, 
+                                  algorithm_type=None,
+                                  masked=True,
+                                  secret=True,):
+    
+    """ Configure masked or unmasked credentials with privilege,common criteria policy
+        and encryption algorithm type.
+        
+    Args:
+        device (`obj`):                   Device object
+        username (`str`):                 username
+        password (`str`):                 Password
+        privilege('int',optional):        specified privilege num else None 
+        ccp_name (`str`, optional):       specified Common Criteria Policy else None
+        algorithm_type ('str', optional): specified algorithm type else None
+        masked ('bool'):                  masked secret if True else unmasked.         
+        secret ('bool'):                  secret if True else plain-text 
+    Return :
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """   
+    cmd=f"username {username}" 
+    if privilege :
+        cmd+=f" privilege {privilege}"
+    if ccp_name :
+        cmd+=f" common-criteria-policy {ccp_name}"
+    if algorithm_type :
+        cmd+=f" algorithm-type {algorithm_type}"   
+    if masked :
+        cmd+=" masked-secret"
+    elif secret :    
+        cmd+=f" secret {password}"
+    else :
+        cmd+=f" password {password}" 
+    
+    masked_secret_dialog = Dialog(
+        [
+            Statement(
+                pattern=r".*Enter secret:.*",
+                action=f"sendline({password})",
+                loop_continue=True,
+                continue_timer=False,
+            ),
+            Statement(
+                pattern=r".*Confirm secret:.*",
+                action=f"sendline({password})",
+                loop_continue=True,
+                continue_timer=False,
+            ),
+        ]
+    )    
+    
+    try:
+       out=device.configure(cmd,reply=masked_secret_dialog)
+       if  re.search(r'[p|P]assword',out) and not(re.search(r'migrate',out)) :
+           raise SubCommandFailure(out)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure credentials for user {usr}"
+            "Error: {error}".format(usr=username,error=e)         
+        ) 
+        
+
+def configure_masked_unmasked_enable_secret_password (device, 
+                                  password, 
+                                  privilege=None,
+                                  ccp_name=None, 
+                                  algorithm_type=None,
+                                  masked=True,
+                                  secret=True,):
+    
+    """ Configure masked/unmasked enable password with the given encryption 
+    algorithm type,privilege level and common criteria policy
+       
+        
+    Args:
+        device (`obj`):                   Device object
+        password (`str`):                 Password
+        privilege('int',optional):        specified privilege num else None 
+        ccp_name (`str`, optional):       specified Common Criteria Policy else None
+        algorithm_type ('str', optional): specified algorithm type else None
+        masked ('bool'):                  masked secret if True else unmasked.         
+        secret ('bool'):                  secret if True else plain-text 
+    Return :
+        None
+    Raise:
+        SubCommandFailure: Failed configuring
+    """   
+    cmd="enable " 
+    if ccp_name :
+        cmd+=f" common-criteria-policy {ccp_name}"  
+    if algorithm_type :
+        cmd+=f" algorithm-type {algorithm_type}"   
+    if masked :
+        cmd+=" masked-secret"
+    elif secret :
+        cmd+=" secret"
+    else : 
+        cmd+=" password"    
+    if privilege:
+        cmd+=f" level {privilege}"
+    if not(masked) :
+        cmd+=f" {password}"  
+          
+    masked_secret_dialog = Dialog(
+        [
+            Statement(
+                pattern=r".*Enter secret:.*",
+                action=f"sendline({password})",
+                loop_continue=True,
+                continue_timer=False,
+            ),
+            Statement(
+                pattern=r".*Confirm secret:.*",
+                action=f"sendline({password})",
+                loop_continue=True,
+                continue_timer=False,
+            ),
+        ]
+    )    
+    
+    try:
+       out=device.configure(cmd,reply=masked_secret_dialog)
+       if  re.search(r'[p|P]assword',out) and not(re.search(r'migrate',out)):
+           raise SubCommandFailure(out)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure enable password"
+            "Error: {error}".format(error=e)         
+        ) 
+      
+              
+def unconfigure_enable_password(device,secret=True,privilege=None):
+ 
+    """Unconfigures enable password or secret            
+    
+    Args:
+        device (`obj`):                  Device object
+        secret (`bool`):                 'secret' if True else 'password'
+        privilege ('int'):               specified privilege level else None
+       
+    Return :
+        None
+    Raise:
+        SubCommandFailure: Failed unconfiguring enable password or secret
+    """ 
+    cmd="no enable"
+    if secret :
+        cmd+=" secret"
+    else :
+        cmd+=" password"    
+    if privilege :
+        cmd+=f" level {privilege}"
+    
+    try:
+        device.configure(cmd)         
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f'Could not unconfigure enable password or secret:\n{e}'
+        )
+        
+
+
+

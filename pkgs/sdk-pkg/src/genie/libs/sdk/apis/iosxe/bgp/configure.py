@@ -132,12 +132,12 @@ def configure_bgp_neighbor(
 
     cmd = []
     cmd.append("router bgp {bgp_as}".format(bgp_as=bgp_as))
-    if address_family and vrf:
-        cmd.append("address-family {address_family} vrf {vrf}".format(
-            address_family=address_family, vrf=vrf))
-    else:
-        cmd.append("address-family {address_family}".format(
-            address_family=address_family))
+    if address_family:
+        cmd2 = f"address-family {address_family}"
+        if vrf:
+            cmd2 += f" vrf {vrf}"
+        cmd.append(cmd2)
+
     cmd.append("neighbor {neighbor_address} remote-as {neighbor_as}".format(
         neighbor_address=neighbor_address, 
         neighbor_as=neighbor_as))
@@ -158,10 +158,10 @@ def configure_bgp_neighbor(
     log.info(log_msg)
     try:
         device.configure(cmd)
-    except SubCommandFailure:
+    except SubCommandFailure as e:
         raise SubCommandFailure(
             "Could not configure bgp neighbor {neighbor_as} "
-            "on router {bgp_as}".format(neighbor_as=neighbor_as, bgp_as=bgp_as)
+            "on router {bgp_as}.\nError: {e}".format(neighbor_as=neighbor_as, bgp_as=bgp_as, e=e)
         )
 
 
@@ -1526,5 +1526,126 @@ def configure_bgp_update_delay(device, bgp_as, delay):
         raise SubCommandFailure(
             "Could not configure update_delay {delay} on "
             "BGP router {bgp_as}".format(delay=delay, bgp_as=bgp_as)
+        )
+        
+def configure_bgp_router_id_peergroup_neighbor(device, bgp_as, neighborname, as_id):
+    """ Configures router-id on BGP router
+
+        Args:
+            device('obj'): device to configure on
+            bgp_as('str'): bgp id (autonomous system number) to configure
+            neighborname('str'): neighbor peer-group-name  to configure
+            as_id('str'): ASN of the peer group to configure
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+
+    log.info(
+        "Configuring router BGP on {hostname}\n"
+        "    -local AS number: {bgp_as}\n"
+        "    -bgp neighborname: {neighborname}"
+		"    -remote AS number: {as_id}".format(
+            hostname=device.hostname, bgp_as=bgp_as, neighborname=neighborname, as_id=as_id 
+        )
+    )
+    config = [
+                'router bgp {bgp_as}'.format(bgp_as=bgp_as),
+				'bgp log-neighbor-changes',
+                'neighbor {neighborname} peer-group'.format(neighborname=neighborname),
+				'neighbor {neighborname} remote-as {as_id}'.format(neighborname=neighborname, as_id=as_id)
+            ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure router-id {router_id} on "
+            "BGP router {bgp_as}:\n{e}".format(neighborname=neighborname, as_id=as_id, bgp_as=bgp_as, e=e)
+        )
+
+def configure_bgp_router_id_neighbor_ip_peergroup_neighbor(device, bgp_as, neighbor_ip, neighborname):
+    """ Configures router-id on BGP router
+
+        Args:
+            device('obj'): device to configure on
+            bgp_as('str'): bgp id (autonomous system number) to configure
+            neighbor_ip 'str'): neighbor_ip address to peer-group 
+            neighborname('str'): neighbor peer-group-name  to configure
+        Return:
+            None
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+
+    log.info(
+        "Configuring router BGP on {hostname}\n"
+        "    -local AS number: {bgp_as}\n"
+		"    -bgp neighbour_ip: {neighbor_ip}\n"
+        "    -bgp neighborname: {neighborname}".format(
+            hostname=device.hostname, bgp_as=bgp_as, neighbor_ip=neighbor_ip, neighborname=neighborname
+        )
+    )
+    config = [
+                'router bgp {bgp_as}'.format(bgp_as=bgp_as),
+				'neighbor {neighbor_ip} peer-group {neighborname}'.format(neighbor_ip=neighbor_ip, neighborname=neighborname)
+            ]
+    try:
+        device.configure(config)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure router-id {router_id} on "
+            "BGP router {bgp_as}:\n{e}".format(bgp_as=bgp_as, neighbor_ip=neighbor_ip, neighborname=neighborname, e=e)
+        )
+
+def configure_bgp_sso_route_refresh_enable(device, bgp_as):
+    """ Configures SSO route referesh on BGP router
+
+        Args:
+            device('obj'): device to configure on
+            bgp_as('str'): bgp_as to configure
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    try:
+        device.configure(
+            "router bgp {bgp_as}\n"
+            "bgp sso route-refresh-enable\n".format(
+                bgp_as=bgp_as
+            )
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not configure SSO route refersh enable "
+            "BGP router {bgp_as}".format(bgp_as=bgp_as)
+        )
+
+
+def configure_bgp_refresh_max_eor_time(device, bgp_as, max_eor_time):
+    """ Configures refersh max-eor-time on BGP router
+
+        Args:
+            device('obj'): device to configure on
+            bgp_as('str'): bgp_as to configure
+            max_eor_time('str): max_eor_time to configure
+        Return:
+            N/A
+        Raises:
+            SubCommandFailure: Failed executing command
+    """
+    try:
+        device.configure(
+            "router bgp {bgp_as}\n"
+            "bgp sso route-refresh-enable\n"
+            "bgp refresh max-eor-time {max_eor_time}\n".format(
+                bgp_as=bgp_as, max_eor_time=max_eor_time
+            )
+        )
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not configure bgp refresh max-eor-time "
+            "BGP router {bgp_as}".format(bgp_as=bgp_as)
         )
 

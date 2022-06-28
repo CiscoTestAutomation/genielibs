@@ -31,7 +31,7 @@ def get_software_version(device):
     ver_comp_date = version.get('compiled_date')
     ver_comp_by = version.get('compiled_by') 
     
-    return f"Cisco IOS Software {ver_loc}, {ver_platform} Software ({ver_imageid}), \
+    return f"Cisco IOS Software [{ver_loc}], {ver_platform} Software ({ver_imageid}), \
 Experimental Version {ver_ver} {ver_label}\nCopyright (c) {ver_copy} by Cisco Systems, \
 Inc.\nCompiled {ver_comp_date} by {ver_comp_by}"
 

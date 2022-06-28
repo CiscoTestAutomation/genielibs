@@ -2,20 +2,16 @@ configure:
   commands:
     end:
       new_state: execute
-    line console:
-      new_state: configure_line
     line console 0:
       new_state: configure_line
     no logging console: ''
-  prompt: HCR_pk(config)#
+  prompt: 9300_stack(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-    line vty: ''
-    terminal width 511: ''
-  prompt: HCR_pk(config-line)#
+  prompt: 9300_stack(config-line)#
 connect:
   commands:
     ? ''
@@ -32,13 +28,17 @@ execute:
       new_state: configure
     config-transaction:
       new_state: configure
-    enable: ''
-    exit: "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\
-      \r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\nHCR_pk con0 is now\
-      \ available\r\n\r\n\r\n\r\n\r\n\r\nPress RETURN to get started."
+    enable 15:
+      response:
+      - 'Password:'
+      response_type: circular
+    exit:
+      response:
+      - "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\
+        \n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n9300_stack con0\
+        \ is now available\r\n\r\n\r\n\r\n\r\n\r\nPress RETURN to get started."
+      response_type: circular
     show version: ''
     term length 0: ''
     term width 0: ''
-    term width 511: ''
-    terminal session-timeout 0: ''
-  prompt: HCR_pk#
+  prompt: 9300_stack#

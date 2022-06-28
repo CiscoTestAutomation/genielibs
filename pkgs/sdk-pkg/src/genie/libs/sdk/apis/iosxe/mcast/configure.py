@@ -6,6 +6,9 @@ import logging
 # Unicon
 from unicon.core.errors import SubCommandFailure
 
+# Genie
+from genie.libs.sdk.apis.utils import tftp_config
+
 log = logging.getLogger(__name__)
 
 def configure_ip_multicast_routing(device):
@@ -79,6 +82,53 @@ def unconfigure_ip_multicast_vrf_routing(device, vrf_name):
         raise SubCommandFailure(
             "Unconfigure ip multicast-routing vrf Error {e}".format(e=e)
         )
+
+
+def configure_scale_ip_multicast_vrf_distribute_tftp(device,
+                                                     server,
+                                                     vrf_name,
+                                                     vrf_name_step,
+                                                     vrf_count,
+                                                     unconfig=False,
+                                                     tftp=False):
+    """ configure ip multicast-routing vrf distributed on device
+        Example :
+        ip multicast-routing vrf 2 distributed
+        ip multicast-routing vrf 3 distributed
+
+        Args:
+            device ('obj'): Device to use
+            server ('str'): Testbed.servers
+            vrf_name ('int'): Start of vrf name. eg. 100
+            vrf_name_step ('int'): Size of vlan range step
+            vrf_count ('int'): How many vrfs
+            unconfig ('bool'): Unconfig or not
+            tftp ('bool'): Tftp config or not
+        Returns:
+            None
+            cmds_block str if not tftp configure
+    """
+    cmds = ''
+    if unconfig:
+        no_str = 'no'
+    else:
+        no_str = ''
+
+    for count in range(vrf_count):
+        cmds += '''
+        {no_str} ip multicast-routing vrf {vrf} distributed
+        '''.format(no_str=no_str, vrf=vrf_name)
+
+        vrf_name += vrf_name_step
+
+    if tftp:
+        try:
+            tftp_config(device, server, cmds)
+        except Exception:
+            raise Exception('tftp_config failed.')
+    else:
+        return cmds
+
 
 def configure_interface_pim(device,interface,pim_mode):
 

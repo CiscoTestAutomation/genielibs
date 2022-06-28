@@ -261,3 +261,71 @@ def configure_policy_map_on_device(device, policy_map_name, class_map_name, targ
     except SubCommandFailure:
         raise SubCommandFailure("Could not configure policy-map on device")
 
+def configure_bandwidth_remaining_policy_map(device,policy_names,
+                     class_names,bandwidth_list,shape_average):
+
+    """ Configures policy_map
+        Args:
+             device ('obj'): device to use
+             policy_names('list) : list of policy-maps i.e. parent and grandparent
+             class_names ('list') : list of classes inside policy-map i.e voice, video etc.
+             bandwidth_list ('list) : list of bandwidth remainin for each class.
+             shape_average ('str') : shaper percentage value for grandparent
+        example:
+             policy_names=['parent','grandparent']
+             class_names = ['voice','data','video','class-default']
+             bandwidth_list = [20,10,10,10,30]
+             shape_average = 100
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    counter = 0
+    cli = []
+    cli.append(f"policy-map {policy_names[0]}")
+
+    for class_val in class_names:
+        cli.append(f"class {class_val}")
+        cli.append(f"bandwidth remaining percent {bandwidth_list[counter]}")
+        counter += 1
+
+    cli.append(f"policy-map {policy_names[1]}")
+    cli.append(f"class class-default")
+    cli.append(f"shape average percent {shape_average}")
+    cli.append(f"service-policy {policy_names[0]}")
+
+    try:
+        device.configure(cli)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure policy-map. Error:\n{e}".format(e))
+
+def unconfigure_bandwidth_remaining_policy_map(device,policy_names):
+
+    """ Unconfigures policy_map
+        Args:
+             device ('obj'): device to use
+             policy_names('list) : list of policy-maps i.e. parent and grandparent  
+        example:
+             policy_names=['parent','grandparent']
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cli = []
+
+    for policy_val in policy_names:
+
+        cli.append(f"no policy-map {policy_val}")
+
+    try:
+        device.configure(cli)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure policy-map. Error:\n{e}".format(e))
+

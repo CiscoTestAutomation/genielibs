@@ -6,8 +6,8 @@ configure:
       new_state: configure_line
     line console 0:
       new_state: configure_line
-    no ip igmp snooping vlan 100 querier address 2: "no ip igmp snooping vlan 100\
-      \ querier address 2\r\n"
+    no ip igmp snooping vlan 100 querier version 2: "no ip igmp snooping vlan 100\
+      \ querier version 2\r\n"
     no logging console: ''
   prompt: Cat9300_VTEP1(config)#
 configure_line:

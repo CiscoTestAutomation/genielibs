@@ -720,3 +720,40 @@ def execute_diagnostic_start_module_test(device,mod_num,include):
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure(f"Could not execute diagnostic start module {mod_num} test {include} on device")
+
+def hardware_qfp_active_statistics_drop_clear(device):
+    """ execute clear harware qfp stats drop clear command
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = "show platform hardware qfp active statistics drop clear"
+    
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not execute cler qfp stats drop command")
+
+def hardware_qfp_active_ipsec_data_drop_clear(device):
+    """ execute clear harware active ipsec data drop clear command
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+
+    cmd = "show platform hardware qfp active feature ipsec data drop clear"
+
+    try:
+        device.execute(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure(f"Could not execute active ipsec data drop clear command")
+

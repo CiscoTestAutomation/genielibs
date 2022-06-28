@@ -14,8 +14,9 @@ from genie.libs.clean.utils import (
     _apply_configuration,
     find_clean_variable,
     verify_num_images_provided,
-    remove_string_from_image)
-from genie.metaparser.util.schemaengine import Optional, Any, Or
+    remove_string_from_image,
+    raise_)
+from genie.metaparser.util.schemaengine import Optional, Required, Any, Or
 
 # pyATS
 from pyats.utils.fileutils import FileUtils
@@ -65,10 +66,10 @@ connect:
     # Stage Schema
     # ============
     schema = {
-        Optional('via'): str,
-        Optional('timeout'): Or(str, int),
-        Optional('retry_timeout'): Or(str, int, float),
-        Optional('retry_interval'): Or(str, int, float),
+        Optional('via', description="Which connection to use from the testbed file. Uses the default connection if not specified."): str,
+        Optional('timeout', description=f"The timeout for the connection to complete in seconds. Defaults to {TIMEOUT}.", default=TIMEOUT): Or(str, int),
+        Optional('retry_timeout', description=f"Overall timeout for retry mechanism in seconds. Defaults to {RETRY_TIMEOUT} which means no retry.", default=RETRY_TIMEOUT): Or(str, int, float),
+        Optional('retry_interval', description=f"Interval for retry mechanism in seconds. Defaults to {RETRY_INTERVAL} which means no retry.", default=RETRY_INTERVAL): Or(str, int, float),
     }
 
     # ==============================
@@ -377,7 +378,7 @@ copy_to_linux:
             'directory': str,
             Optional('hostname'): str
         },
-        Optional('protocol'): str,
+        'protocol': str,
         Optional('timeout'): int,
         Optional('check_image_length'): bool,
         Optional('overwrite'): bool,
@@ -839,35 +840,35 @@ copy_to_device:
     # ============
     schema = {
         'origin': {
-            Optional('files'): list,
-            'hostname': str
+            Optional('files', description="Image files location on the server."): list,
+            Required('hostname', description="Hostname or address of the server."): str
         },
         'destination': {
-            'directory': str,
-            Optional('standby_directory'): str,
-            Optional('stack_directory'): list
+            Required('directory', description="Directory on the device to copy the images to."): str,
+            Optional('standby_directory', description="Standby directory on the device to copy the images to"): str,
+            Optional('stack_directory', description="Stack directories on the device to copy the images to"): list
         },
-        'protocol': str,
-        Optional('verify_num_images'): bool,
-        Optional('expected_num_images'): int,
-        Optional('vrf'): str,
-        Optional('timeout'): int,
-        Optional('compact'): bool,
-        Optional('use_kstack'): bool,
-        Optional('protected_files'): list,
-        Optional('overwrite'): bool,
-        Optional('skip_deletion'): bool,
-        Optional('copy_attempts'): int,
-        Optional('copy_attempts_sleep'): int,
-        Optional('check_file_stability'): bool,
-        Optional('stability_check_tries'): int,
-        Optional('stability_check_delay'): int,
-        Optional('min_free_space_percent'): int,
-        Optional('interface'): str,
-        Optional('unique_file_name'): bool,
-        Optional('unique_number'): int,
-        Optional('rename_images'): str,
-        Optional('prompt_recovery'): bool
+        Required('protocol', description="Protocol used for copy operation."): str,
+        Optional('verify_num_images', description="Verify number of images provided by user for clean is correct.", default=VERIFY_NUM_IMAGES): bool,
+        Optional('expected_num_images', description="Number of images expected to be provided by user for clean.", default=EXPECTED_NUM_IMAGES): int,
+        Optional('vrf', description="Vrf used to copy. Defaults to an empty string.", default=VRF): str,
+        Optional('timeout', description="Copy operation timeout in seconds.", default=TIMEOUT): int,
+        Optional('compact', description="Compact copy mode if supported by the device.", default=COMPACT): bool,
+        Optional('use_kstack', description="Use faster version of copy with limited options.", default=USE_KSTACK): bool,
+        Optional('protected_files', description="File patterns that should not be deleted.", default=PROTECTED_FILES): list,
+        Optional('overwrite', description="Overwrite the file if a file with the same name already exists.", default=OVERWRITE): bool,
+        Optional('skip_deletion', description="Do not delete any files even if there isn't any space on device.", default=SKIP_DELETION): bool,
+        Optional('copy_attempts', description="Number of times to attempt copying image files.", default=COPY_ATTEMPTS): int,
+        Optional('copy_attempts_sleep', description="Number of seconds to sleep between copy_attempts.", default=COPY_ATTEMPTS_SLEEP): int,
+        Optional('check_file_stability', description="Verifies that the file size is not changing. This ensures the image is not actively being copied.", default=CHECK_FILE_STABILITY): bool,
+        Optional('stability_check_tries', description="Max number of checks that can be done when checking file stability.", default=STABILITY_CHECK_TRIES): int,
+        Optional('stability_check_delay', description="Delay between tries when checking file stability in seconds.", default=STABILITY_CHECK_DELAY): int,
+        Optional('min_free_space_percent', description="Percentage of total disk space that must be free. If specified the percentage is not free then the stage will attempt to delete unprotected files to reach the minimum percentage.", default=MIN_FREE_SPACE_PERCENT): int,
+        Optional('interface', description="The interface to use for file transfers, may be needed for copying files on some IOSXE platforms, such as ASR1K when using a VRF.", default=INTERFACE): str,
+        Optional('unique_file_name', description="Appends a random six-digit number to the end of the image name.", default=UNIQUE_FILE_NAME): bool,
+        Optional('unique_number', description="Appends the provided number to the end of the image name. Requires unique_file_name is True to be applied.", default=UNIQUE_NUMBER): int,
+        Optional('rename_images', description="Rename the image to the provided name. If multiple files exist then an incrementing number is also appended.", default=RENAME_IMAGES): str,
+        Optional('prompt_recovery', description="Enable the prompt recovery when the  execution command timeout.", default=PROMPT_RECOVERY): bool
     }
 
     # ==============================
@@ -1457,12 +1458,32 @@ reload:
             except Exception:
                 log.warning("Failed to destroy the device connection but "
                             "attempting to continue", exc_info=True)
-
+            device.instantiate()
+            rommon_to_disable = None
+            try:
+                if device.is_ha and hasattr(device, 'subconnections'):
+                    rommon_to_disable = device.subconnections[0].state_machine.get_path('rommon', 'disable')
+                else:
+                    rommon_to_disable = device.state_machine.get_path('rommon', 'disable')
+            except ValueError:
+                log.warning('There is no path between rommon and disable states.')
+            except IndexError:
+                log.warning('There is no connection in device.subconnections')
+            if rommon_to_disable and hasattr(rommon_to_disable, 'command'):
+                original_command = rommon_to_disable.command
+                if device.is_ha:
+                    index = device.subconnections[0].state_machine.paths.index(rommon_to_disable)
+                    for subcon in device.subconnections:
+                        subcon.state_machine.paths[index].command = lambda state,spawn,context: raise_(Exception(f'Device {device.name} is still '
+                                                                    f'in rommon state after reload.'))
+                else:
+                    index = device.state_machine.paths.index(rommon_to_disable)
+                    device.state_machine.paths[index].command = lambda state,spawn,context: raise_(Exception(f'Device {device.name} is still '
+                                                                    f'in rommon state after reload.'))
             connect_kwargs = {
-                'learn_hostname': True,
-                'prompt_recovery': reload_service_args['prompt_recovery']
-            }
-
+                        'learn_hostname': True,
+                        'prompt_recovery': reload_service_args['prompt_recovery']
+                    }
             if reconnect_via:
                 connect_kwargs.update({'via': reconnect_via})
 
@@ -1470,6 +1491,14 @@ reload:
                 device.connect(**connect_kwargs)
             except Exception as e:
                 step.failed("Failed to reconnect", from_exception=e)
+            if rommon_to_disable and hasattr(rommon_to_disable, 'command'):
+                if device.is_ha:
+                    index = device.subconnections[0].state_machine.paths.index(rommon_to_disable)
+                    for subcon in device.subconnections:
+                        subcon.state_machine.paths[index].command = original_command
+                else:
+                    index = device.state_machine.paths.index(rommon_to_disable)
+                    device.state_machine.paths[index].command = original_command
 
     def check_modules(self, steps, device, check_modules=None):
 

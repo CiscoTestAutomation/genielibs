@@ -1,0 +1,39 @@
+connect:
+  prompt: ''
+  preface: "Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''."
+  commands:
+    ? ''
+    : new_state: execute
+execute:
+  prompt: R3_nx#
+  commands:
+    show cores:
+      response: "VDC  Module  Instance  Process-name     PID       Date(Year-Month-Day Time)\r\
+        \n---  ------  --------  ---------------  --------  -------------------------\r\
+        \n1    1       1         sysmgr           18436     2022-02-16 10:16:51"
+    clear cores: ''
+    show file: ''
+    'copy core://1/18436/1 scp://rcpuser@10.10.10.10/ vrf management':
+      new_state: enter_password
+enter_password:
+  prompt: "rcpuser@172.29.151.141's password:"
+  commands:
+    cisco123:
+      response: "1654498218_0x1b01_sysmgr_log.18436.tar.gz           100% 7673KB   8.4MB/s   00:00\r\
+        Copy complete, now saving to disk (please wait)...\r\
+        Copy complete."
+      new_state: file_copied
+    None: 
+      response: "Permission denied."
+      new_state: execute
+
+file_copied:
+  prompt: R3_nx#
+  commands:
+    clear cores: ''
+    show file:
+      response: 1654498218_0x1b01_sysmgr_log.18436.tar.gz

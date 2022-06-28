@@ -1040,4 +1040,28 @@ def interface_counter_check(device, interface_name, tx_packets, pkt_rate, direct
             result = False
             timeout.sleep()
     return result
+
+def verify_interface_status(
+    device, interface,status, max_time=60, check_interval=10
+):
+    """Verify interface status 
+        Args:
+            device (`obj`): Device object
+            interface (`str`): Interface name
+            status (`str`): Interface status
+            max_time (`int`): max time
+            check_interval (`int`): check interval
+        Returns:
+            result(`bool`): True if is up else False
+    """
+    timeout = Timeout(max_time, check_interval)
+
+    while timeout.iterate():
+        out = device.parse("show interfaces {} status".format(interface))
+        out_status = out['interfaces'][interface]['status']
+        if out_status == status:
+            return True
+        timeout.sleep()
+
+    return False
     

@@ -1,0 +1,88 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: ASR_2hx(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: ASR_2hx(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    clear crypto ikev2 stats:
+      response:
+      - Cleared crypto ikev2 statistics
+      response_type: circular
+    clear crypto ikev2 stats exchange:
+      response:
+      - ''
+      response_type: circular
+    clear crypto ikev2 stats ext-service:
+      response:
+      - ''
+      response_type: circular
+    clear crypto ikev2 stats timeout:
+      response:
+      - ''
+      response_type: circular
+    clear crypto kmi:
+      response:
+      - Cleared KMI Stats
+      response_type: circular
+    clear crypto socket stats:
+      response:
+      - ''
+      response_type: circular
+    clear crypto stats:
+      response:
+      - ''
+      response_type: circular
+    clear dmvpn statistics:
+      response:
+      - ''
+      response_type: circular
+    clear nhrp stats:
+      response:
+      - ''
+      response_type: circular
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show platform hardware qfp active feature ipsec datapath drops clear:
+      response:
+      - "------------------------------------------------------------------------\r\
+        \nDrop Type  Name                                     Packets            \
+        \ \r\n------------------------------------------------------------------------\r\
+        \n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\nIPSEC detailed dp drop counters\
+        \ cleared after display."
+      response_type: circular
+    show platform hardware qfp active statistics drop clear:
+      response:
+      - "Last clearing of QFP drops statistics : Mon Jun 20 23:37:15 2022\r\n\r\n\r\
+        \n-------------------------------------------------------------------------\r\
+        \nGlobal Drop Stats                         Packets                  Octets\
+        \  \r\n-------------------------------------------------------------------------\r\
+        \nIpv6NoRoute                                     1                      56\
+        \  \r\nUnconfiguredIpv4Fia                           450                 \
+        \  49500"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: ASR_2hx#
