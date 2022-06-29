@@ -1462,7 +1462,8 @@ reload:
             rommon_to_disable = None
             try:
                 if device.is_ha and hasattr(device, 'subconnections'):
-                    rommon_to_disable = device.subconnections[0].state_machine.get_path('rommon', 'disable')
+                    if hasattr(device.subconnections,'__getitem__'):
+                        rommon_to_disable = device.subconnections[0].state_machine.get_path('rommon', 'disable')
                 else:
                     rommon_to_disable = device.state_machine.get_path('rommon', 'disable')
             except ValueError:
