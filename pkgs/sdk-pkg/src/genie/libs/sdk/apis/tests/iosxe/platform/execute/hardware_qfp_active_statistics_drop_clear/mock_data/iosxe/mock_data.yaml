@@ -1,0 +1,40 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: GREENDAY(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: GREENDAY(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show platform hardware qfp active statistics drop clear:
+      response:
+      - "Last clearing of QFP drops statistics : Mon Jun  6 22:01:56 2022\r\n\r\n\r\
+        \nGlobal Drop Stats                         Packets        Octets \r\n----------------------------------------------------------------\r\
+        \n   The Global drop stats were all zero"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: GREENDAY#

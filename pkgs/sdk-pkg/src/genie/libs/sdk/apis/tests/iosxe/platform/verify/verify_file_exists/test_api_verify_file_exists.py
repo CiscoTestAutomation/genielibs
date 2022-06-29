@@ -10,7 +10,8 @@ class TestVerifyFileExists(unittest.TestCase):
     parsed_outputs = {
         'dir bootflash:/': {
             'dir': {
-                'bootflash:/': {
+                'dir': 'flash:/',
+                'flash:/': {
                     'files': {
                         'packages.conf': {'index': '1'}
                     }
@@ -19,8 +20,8 @@ class TestVerifyFileExists(unittest.TestCase):
         },
         'dir bootflash:/empty_folder/': {
             'dir': {
-                    'bootflash:/empty_folder/': {},
-                    'dir': 'bootflash:/empty_folder/'
+                    'flash:/empty_folder/': {},
+                    'dir': 'flash:/empty_folder/'
             }
         },
         'dir bootflash:/not_existing_folder/': {}
@@ -63,6 +64,13 @@ class TestVerifyFileExists(unittest.TestCase):
             self.device,
             'bootflash:/not_existing_folder/not_existing_file.zip')
         self.assertEqual(exist, False)
+
+    def test_verify_not_exsiting_device_folder(self):
+        exists = verify_file_exists(
+            self.device,
+            'bootflash:/not_existing_device_folder'
+        )
+        self.assertEqual(exists, False)
 
 
 if __name__ == '__main__':

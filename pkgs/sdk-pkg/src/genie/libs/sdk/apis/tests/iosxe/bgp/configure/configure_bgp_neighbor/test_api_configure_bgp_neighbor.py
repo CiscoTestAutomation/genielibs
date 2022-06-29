@@ -9,7 +9,7 @@ class TestConfigureBgpNeighbor(unittest.TestCase):
     def setUpClass(self):
         testbed = """
         devices:
-          kparames_csr10:
+          kparames_csr9:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -17,11 +17,11 @@ class TestConfigureBgpNeighbor(unittest.TestCase):
                 command: mock_device_cli --os iosxe --mock_data_dir mock_data --state connect
                 protocol: unknown
             os: iosxe
-            platform: c8000v
+            platform: iosxe
             type: iosxe
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['kparames_csr10']
+        self.device = self.testbed.devices['kparames_csr9']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -29,6 +29,16 @@ class TestConfigureBgpNeighbor(unittest.TestCase):
         )
 
     def test_configure_bgp_neighbor(self):
-        result = configure_bgp_neighbor(self.device, 64001, 64002, '192.168.1.2', 'GigabitEthernet8', 255, 'ipv4', None)
+        result = configure_bgp_neighbor(self.device, '64001', '64002', '192.168.1.2', 'Gig8', None, None, None)
+        expected_output = None
+        self.assertEqual(result, expected_output)
+
+    def test_configure_bgp_neighbor_1(self):
+        result = configure_bgp_neighbor(self.device, '64001', '64002', '192.168.1.2', 'Gig8', None, 'ipv4', None)
+        expected_output = None
+        self.assertEqual(result, expected_output)
+
+    def test_configure_bgp_neighbor_2(self):
+        result = configure_bgp_neighbor(self.device, '64001', '64002', '192.168.1.2', 'Gig8', None, 'ipv4', 'test')
         expected_output = None
         self.assertEqual(result, expected_output)

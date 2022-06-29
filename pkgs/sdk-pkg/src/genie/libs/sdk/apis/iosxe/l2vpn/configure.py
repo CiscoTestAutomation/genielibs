@@ -71,7 +71,7 @@ def configure_l2vpn_storm_control(
             )
         )
 
-def configure_l2vpn_vfi_context_vpls(device, vpn_id, pseudowire=None):
+def configure_l2vpn_vfi_context_vpls(device, vpn_id, pseudowire=None,auto_bgp=None):
     """
     Configures l2vpn vfi context vpls on device
 
@@ -80,6 +80,7 @@ def configure_l2vpn_vfi_context_vpls(device, vpn_id, pseudowire=None):
         vpn_id('str'): vpn_id to configure
         pseudowire('str', optional): pseudowire to configure,
                                      default value is None
+        auto_bgp('bool',optional): to configured autodiscovery bgp singalling ldp
 
     Returns:
         N/A
@@ -97,7 +98,8 @@ def configure_l2vpn_vfi_context_vpls(device, vpn_id, pseudowire=None):
     if pseudowire:
         for attr in pseudowire:
             config.append("member {attr}".format(attr=attr))
-
+    if auto_bgp:
+            config.append("autodiscovery bgp signaling ldp")
     try:
         device.configure(config)
     except SubCommandFailure as e:

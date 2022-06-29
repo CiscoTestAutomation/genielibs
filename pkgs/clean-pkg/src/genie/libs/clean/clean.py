@@ -333,7 +333,7 @@ class CleanTestcase(Testcase):
 
 class DeviceClean(BaseCleaner):
 
-    def clean(self, device, reporter, *args, **kwargs):
+    def clean(self, device, reporter=None, *args, **kwargs):
 
         # In this section we will convert to Genie Testbed
         testbed = load(device.testbed)
@@ -343,17 +343,24 @@ class DeviceClean(BaseCleaner):
             self, 'global_stage_reuse_limit', GLOBAL_STAGE_REUSE_LIMIT)
 
         clean_testcase = CleanTestcase(device, global_stage_reuse_limit)
-        clean_testcase.reporter = reporter.testcase(clean_testcase)
+        if reporter:
+            clean_testcase.reporter = reporter.testcase(clean_testcase)
+
         with clean_testcase:
             # 1. Figure out what section to run
             # 2. Run them
             result = clean_testcase()
 
             if not result:
+                # change back to defaults so consecutive runs in a script wont
+                # automatically block because of prior failure
+                aetest.executer.goto_result = results.Skipped
+                aetest.executer.goto = []
+
                 raise Exception("Clean {result}.".format(result=str(result)))
 
 
 class PyatsDeviceClean(DeviceClean):
 
-    def clean(self, device, reporter, *args, **kwargs):
+    def clean(self, device, reporter=None, *args, **kwargs):
         super().clean(device, reporter, *args, **kwargs)

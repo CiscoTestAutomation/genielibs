@@ -9,7 +9,7 @@ class TestVerifyEnablePassword(unittest.TestCase):
     def setUpClass(self):
         testbed = """
         devices:
-          HCR_pk:
+          9300_stack:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -18,10 +18,10 @@ class TestVerifyEnablePassword(unittest.TestCase):
                 protocol: unknown
             os: iosxe
             platform: cat9k
-            type: c9200
+            type: ng9k_stack
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['HCR_pk']
+        self.device = self.testbed.devices['9300_stack']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -29,6 +29,6 @@ class TestVerifyEnablePassword(unittest.TestCase):
         )
 
     def test_verify_enable_password(self):
-        result = verify_enable_password(device=self.device, password='Test12')
+        result = verify_enable_password(self.device, 'dnac1', 15)
         expected_output = True
         self.assertEqual(result, expected_output)

@@ -175,18 +175,18 @@ def get_platform_core(device,
             all_corefiles (`list`, `int`): List of found core files
                                                    or number of core files if num_of_cores=True
     '''
-    return device.api.health_core(default_dir,
-                                  output,
-                                  keyword,
-                                  num_of_cores,
-                                  decode,
-                                  decode_timeout,
-                                  remote_device,
-                                  remote_path,
-                                  remote_via,
-                                  vrf,
-                                  archive,
-                                  delete_core,
+    return device.api.health_core(default_dir=default_dir,
+                                  output=output,
+                                  keyword=keyword,
+                                  num_of_cores=num_of_cores,
+                                  decode=decode,
+                                  decode_timeout=decode_timeout,
+                                  remote_device=remote_device,
+                                  remote_path=remote_path,
+                                  remote_via=remote_via,
+                                  vrf=vrf,
+                                  archive=archive,
+                                  delete_core=delete_core,
                                   health=False)
 
 
@@ -267,10 +267,10 @@ def get_platform_cpu_load_detail(device,
                                          'NAT-ROUTE': 0.0,
                                      }
     '''
-    return device.api.health_cpu(command,
-                                 processes,
-                                 check_key,
-                                 output,
+    return device.api.health_cpu(command=command,
+                                 processes=processes,
+                                 check_key=check_key,
+                                 output=output,
                                  health=False)
 
 
@@ -365,10 +365,10 @@ def get_platform_memory_usage_detail(device,
                                             'inotifywait': 0.0012294695662956926,
                                         }
     '''
-    return device.api.health_memory(command,
-                                    processes,
-                                    check_key,
-                                    output,
+    return device.api.health_memory(command=command,
+                                    processes=processes,
+                                    check_key=check_key,
+                                    output=output,
                                     health=False)
 
 
@@ -465,11 +465,11 @@ def get_platform_logging(device,
             logs     (`list` or `int`): list of logging messages
                                         OR or number of core files if num_of_logs=True
     '''
-    return device.api.health_logging(command,
-                                     files,
-                                     keywords,
-                                     output,
-                                     num_of_logs,
+    return device.api.health_logging(command=command,
+                                     files=files,
+                                     keywords=keywords,
+                                     output=output,
+                                     num_of_logs=num_of_logs,
                                      health=False)
 
 

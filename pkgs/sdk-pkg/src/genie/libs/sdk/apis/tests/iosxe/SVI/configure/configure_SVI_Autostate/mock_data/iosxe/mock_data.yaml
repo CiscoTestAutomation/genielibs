@@ -1,0 +1,36 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    interface Vlan500: "interface Vlan500\r\n"
+    line console 0:
+      new_state: configure_line
+    no autostate: "no autostate\r\n"
+    no logging console: ''
+  prompt: gry48-l2-san(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: gry48-l2-san(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: gry48-l2-san#

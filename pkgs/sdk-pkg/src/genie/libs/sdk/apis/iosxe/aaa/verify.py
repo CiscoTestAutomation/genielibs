@@ -4,7 +4,7 @@
 import logging
 from genie.utils.timeout import Timeout
 from genie.libs.parser.iosxe.show_logging import ShowLogging
-
+import re
 # unicon
 from unicon.eal.dialogs import Dialog, Statement
 
@@ -112,12 +112,13 @@ def verify_test_aaa_cmd(device, servergrp, username, password, path):
     return output
 
 
-def verify_enable_password(device, password):
+def verify_enable_password(device, password,privilege_level=None):
     
     """ To verify enable password
     Args:
-        device (`obj`):   Device object
-        password (`str`): password
+        device (`obj`)         :   Device object
+        password (`str`)       :   password
+        privilege_level('int') :   privilege level
     Return:
         None
     Raise:
@@ -138,6 +139,8 @@ def verify_enable_password(device, password):
                               loop_continue = True,
                               continue_timer = False)])          
     cmd = 'enable'
+    if privilege_level :
+        cmd+=f" {privilege_level}"
     out = device.execute(cmd,reply=dialog,timeout=100,allow_state_change=True)
     
     if 'Access denied' not in out:
@@ -188,3 +191,71 @@ def verify_pattern_in_show_logging(device, pattern_list, exclude='', include='',
     logger.debug(f"Failed to verify the following regex patterns exist "
                 f"in show logging: {unmatched_pattern_list}")
     return False
+
+
+def verify_login_credentials_enable_password(device,username,password,enable_prompt=True,enable_password=None,enable_level=None):
+    """Verifies the device login with credentials and enable password
+        Args:
+            device (`obj`)         : Device object
+            username('str')        : username
+            password('str')        : password
+            enable_prompt('bool')  : default True.
+            enable_password('str') : enable password
+            enable_level('int')    : enable privilege level
+        Returns:
+            True if login succeeds.
+            False if login fails.
+    """  
+    login_dialog_1 = Dialog(
+        [
+            Statement(
+                pattern=r".*Press RETURN to get started.*",
+                action=f"sendline()",
+                loop_continue=True,
+                continue_timer=False,
+            ),
+            Statement(
+                pattern=r'^.*([Uu]sername|[Ll]ogin): ?$',
+                action=f"sendline({username})",
+                loop_continue=True,
+                continue_timer=False,
+            ),
+            Statement(
+                pattern=r'^.*[Pp]assword( for )?(S+)?: ?$',
+                action=f"sendline({password})",
+                loop_continue=True,
+                continue_timer=False,
+            ),
+        ]
+    ) 
+ 
+    try :
+        out=device.execute("exit",reply=login_dialog_1,timeout=10,allow_state_change=True)
+    except Exception as e :
+        logger.info(f"login failed:\nexception is :\n{e}")
+        return False            
+
+    if enable_prompt and enable_password != None :     
+        cmd1="enable"
+        if enable_level:
+             cmd1+=f" {enable_level}"
+        login_dialog_2 = Dialog(
+            [
+                Statement(
+                    pattern=r'^.*[Pp]assword( for )?(S+)?: ?$',
+                    action=f"sendline({enable_password})",
+                    loop_continue=True,
+                    continue_timer=False,
+                ),
+            ]
+        )
+        try :
+            out=device.execute(cmd1,reply=login_dialog_2,timeout=10,allow_state_change=True)
+            if re.search(r'Access denied',out)  :
+                logger.info("invalid enable password")      
+                return False
+        except Exception as e :    
+            logger.info(f"login failed for the enable password:\n{e}")   
+            return False 
+    return True
+

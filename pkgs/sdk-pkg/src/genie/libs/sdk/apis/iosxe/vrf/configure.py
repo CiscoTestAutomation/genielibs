@@ -6,8 +6,52 @@ import logging
 # Unicon
 from unicon.core.errors import SubCommandFailure
 
+# Genie
+from genie.libs.sdk.apis.utils import tftp_config
+
 
 log = logging.getLogger(__name__)
+
+
+def configure_vrf_rd_value(
+    device, vrf_name, rd_value, address_type, target_vpn_community,
+    target_vpn_asn_ip_value, route_target_value_optional=''
+):
+    """ Configure VRF & RD Value
+        Args:
+            device ('obj'): device to use
+            vrf_name ('str'): vrf name value (Ex: red)
+            rd_value ('str'): rd vlaue (Ex: 2:100)
+            address_type ('str'): address family vlaue (Ex: ipv4)
+            target_vpn_community ('str'): route target transaction type (Ex: import or export)
+            target_vpn_asn_ip_value ('str'): route target transaction value (Ex: 2:100, 1:100, etc)
+            route_target_value_optional ('str'): route target additional value after route_target_value (Ex: stitching or '')
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed to configure VRF & RD Value
+    """
+    log.info(
+        "Configuring VRF & RD Value={} ".format(vrf_name)
+    )
+
+    try:
+        device.configure([
+            "vrf definition {}".format(vrf_name),
+            "rd {}".format(rd_value),
+            "address-family {}".format(address_type),
+            "route-target {} {} {}".format(target_vpn_community,
+                                           target_vpn_asn_ip_value,
+                                           route_target_value_optional),
+            "exit-address-family",
+        ])
+
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            "Could not configure VRF & RD Value {defination}".format(
+                defination=vrf_name
+            )
+        )
 
 
 def configure_vrf_description(device, vrf, description):
@@ -35,7 +79,9 @@ def configure_vrf_description(device, vrf, description):
             "Could not configure description '{desc}' on "
             "vrf {vrf}".format(desc=description, vrf=vrf)
         )
-def unconfigure_vrf(device,vrf):
+
+
+def unconfigure_vrf(device, vrf):
 
     """Remove ospf on device
 
@@ -57,6 +103,7 @@ def unconfigure_vrf(device,vrf):
             "Failed in configuring, Please verify"
         ) from e
 
+
 def unconfigure_vrf_description(device, vrf):
     """Unconfigure vrf description
 
@@ -68,7 +115,7 @@ def unconfigure_vrf_description(device, vrf):
             None
 
         Raises:
-            SubCommandFailure            
+            SubCommandFailure
     """
     try:
         device.configure(
@@ -79,8 +126,8 @@ def unconfigure_vrf_description(device, vrf):
             "Could not remove description on " "vrf {vrf}".format(vrf=vrf)
         )
 
-def unconfigure_vrf_definition_on_device(
-    device, vrf_name):
+
+def unconfigure_vrf_definition_on_device(device, vrf_name):
     """ unconfig vrf definition on device
 
         Args:
@@ -101,6 +148,7 @@ def unconfigure_vrf_definition_on_device(
             'Could not unconfigure "vrf definition {vrf_name}" on device'.format(
                     vrf_name=vrf_name)
         )
+
 
 def configure_mdt_auto_discovery_mldp(device, vrf_name, address_family):
 
@@ -126,6 +174,7 @@ def configure_mdt_auto_discovery_mldp(device, vrf_name, address_family):
                     vrf_name=vrf_name)
         )
 
+
 def configure_mdt_overlay_use_bgp(device, vrf_name, address_family):
 
     """ Enables BGP as the overlay protocol
@@ -139,9 +188,11 @@ def configure_mdt_overlay_use_bgp(device, vrf_name, address_family):
         Raise:
             SubCommandFailure: Failed configuring vrf
     """
-    confg = ["vrf definition {vrf_name}".format(vrf_name=vrf_name),
-            "address-family {address_family}".format(address_family=address_family),
-            "mdt overlay use-bgp"]
+    confg = [
+        "vrf definition {vrf_name}".format(vrf_name=vrf_name),
+        "address-family {address_family}".format(
+            address_family=address_family),
+        "mdt overlay use-bgp"]
     try:
         device.configure(confg)
     except SubCommandFailure:
@@ -149,6 +200,7 @@ def configure_mdt_overlay_use_bgp(device, vrf_name, address_family):
             'Could not configure "mdt overlay use-bgp under vrf definition {vrf_name}" on device'.format(
                     vrf_name=vrf_name)
         )
+
 
 def unconfigure_mdt_auto_discovery_mldp(device, vrf_name, address_family):
 
@@ -174,6 +226,7 @@ def unconfigure_mdt_auto_discovery_mldp(device, vrf_name, address_family):
                     vrf_name=vrf_name)
         )
 
+
 def unconfigure_mdt_overlay_use_bgp(device, vrf_name, address_family):
 
     """ unconfigure BGP as the overlay protocol
@@ -187,9 +240,12 @@ def unconfigure_mdt_overlay_use_bgp(device, vrf_name, address_family):
         Raise:
             SubCommandFailure: Failed configuring interface
     """
-    confg = ["vrf definition {vrf_name}".format(vrf_name=vrf_name),
-            "address-family {address_family}".format(address_family=address_family),
-            "no mdt overlay use-bgp"]
+    confg = [
+        "vrf definition {vrf_name}".format(vrf_name=vrf_name),
+        "address-family {address_family}".format(address_family=address_family),
+        "no mdt overlay use-bgp"
+    ]
+
     try:
         device.configure(confg)
     except SubCommandFailure:
@@ -197,7 +253,8 @@ def unconfigure_mdt_overlay_use_bgp(device, vrf_name, address_family):
             'Could not configure "no mdt overlay use-bgp under vrf definition {vrf_name}" on device'.format(
                     vrf_name=vrf_name)
         )
-        
+
+
 def configure_vpn_id_in_vrf(device, vrf_name, vpn_id):
 
     """ configure vpn id in vrf
@@ -211,8 +268,11 @@ def configure_vpn_id_in_vrf(device, vrf_name, vpn_id):
         Raise:
             SubCommandFailure: Failed configuring interface
     """
-    confg = ["vrf definition {vrf_name}".format(vrf_name=vrf_name),
-            "vpn id {vpn_id}".format(vpn_id=vpn_id)]
+    confg = [
+        "vrf definition {vrf_name}".format(vrf_name=vrf_name),
+        "vpn id {vpn_id}".format(vpn_id=vpn_id)
+    ]
+
     try:
         device.configure(confg)
     except SubCommandFailure:
@@ -221,6 +281,7 @@ def configure_vpn_id_in_vrf(device, vrf_name, vpn_id):
                     vpn_id=vpn_id,
                     vrf_name=vrf_name)
         )
+
 
 def configure_mdt_preference_under_vrf(device, vrf_name, address_family, mdt_type):
 
@@ -236,9 +297,12 @@ def configure_mdt_preference_under_vrf(device, vrf_name, address_family, mdt_typ
         Raise:
             SubCommandFailure: Failed configuring interface
     """
-    confg = ["vrf definition {vrf_name}".format(vrf_name=vrf_name),
-            "address-family {address_family}".format(address_family=address_family),
-            "mdt preference {mdt_type}".format(mdt_type=mdt_type)]
+    confg = [
+        "vrf definition {vrf_name}".format(vrf_name=vrf_name),
+        "address-family {address_family}".format(address_family=address_family),
+        "mdt preference {mdt_type}".format(mdt_type=mdt_type)
+    ]
+
     try:
         device.configure(confg)
     except SubCommandFailure:
@@ -247,7 +311,8 @@ def configure_mdt_preference_under_vrf(device, vrf_name, address_family, mdt_typ
                     mdt_type=mdt_type,
                     vrf_name=vrf_name)
         )
-        
+
+
 def configure_default_mpls_mldp(device, vrf_name, address_family, default_mdt_group):
 
     """ configure mdt type in vrf
@@ -274,6 +339,7 @@ def configure_default_mpls_mldp(device, vrf_name, address_family, default_mdt_gr
                     vrf_name=vrf_name)
         )
 
+
 def configure_mdt_data_mpls_mldp(device, vrf_name, address_family, mdt_data):
 
     """ configure mdt data in vrf
@@ -288,9 +354,12 @@ def configure_mdt_data_mpls_mldp(device, vrf_name, address_family, mdt_data):
         Raise:
             SubCommandFailure: Failed configuring interface
     """
-    confg = ["vrf definition {vrf_name}".format(vrf_name=vrf_name),
-            "address-family {address_family}".format(address_family=address_family),
-            "mdt data mpls mldp {mdt_data}".format(mdt_data=mdt_data)]
+    confg = [
+        "vrf definition {vrf_name}".format(vrf_name=vrf_name),
+        "address-family {address_family}".format(address_family=address_family),
+        "mdt data mpls mldp {mdt_data}".format(mdt_data=mdt_data)
+    ]
+
     try:
         device.configure(confg)
     except SubCommandFailure:
@@ -299,7 +368,8 @@ def configure_mdt_data_mpls_mldp(device, vrf_name, address_family, mdt_data):
                     mdt_data=mdt_data,
                     vrf_name=vrf_name)
         )
-        
+
+
 def configure_multicast_routing_mvpn_vrf(device, vrf):
     """ Enables IP multicast routing for the MVPN VRF specified for the vrf-name argument.
         Args:
@@ -322,7 +392,8 @@ def configure_multicast_routing_mvpn_vrf(device, vrf):
                 error=e,
             )
         )
-        
+
+
 def configure_mdt_strict_rpf_interface_vrf(device, vrf, address_family):
     """ Enables per-PE LSPVIF interface to implement strict-RPF check.
         Args:
@@ -346,7 +417,8 @@ def configure_mdt_strict_rpf_interface_vrf(device, vrf, address_family):
                 error=e,
             )
         )
-        
+
+
 def configure_mdt_partitioned_mldp_p2mp(device, vrf, address_family):
     """ Enables both IPv4 and IPv6 address-families to be configured for partitioned MDT under vrf
         Args:
@@ -357,7 +429,7 @@ def configure_mdt_partitioned_mldp_p2mp(device, vrf, address_family):
         Raise:
             SubCommandFailure: Failed configuring interface
     """
- 
+
     configs = ["vrf definition {vrf}".format(vrf=vrf),
                "address-family {address_family}".format(address_family=address_family),
                "mdt partitioned mldp p2mp"]
@@ -371,7 +443,7 @@ def configure_mdt_partitioned_mldp_p2mp(device, vrf, address_family):
                 error=e,
             )
         )
-        
+
 def configure_mdt_data_threshold(device, vrf_name, address_family, threshold):
 
     """ configure mdt threshold in vrf
@@ -424,6 +496,7 @@ def unconfigure_mdt_data_threshold(device, vrf_name, address_family, threshold):
                     vrf_name=vrf_name)
         )
 
+
 def configure_vrf_definition_family(device,vrf,address_family=None,family_type=''):
     """ Configures Address Family on VRF
         Args:
@@ -454,7 +527,7 @@ def configure_vrf_definition_stitching(device, vrf_name, rd_value, ip_version, r
 
     """
     Configure vrf definition for stitching ipv4 and ipv6 address family
-    
+
     Args:
         device('obj'): Device object
         vrf_name('str'): Name of the vrf definition
@@ -464,10 +537,10 @@ def configure_vrf_definition_stitching(device, vrf_name, rd_value, ip_version, r
         stitching_value: Route-target Stitching value
     Returns:
         None
-    
+
     Raises:
         SubCommandFailure
-    
+
     Example of vrf definition for ipv4 address family and ipv6 address family
 
         vrf definition red
@@ -479,7 +552,7 @@ def configure_vrf_definition_stitching(device, vrf_name, rd_value, ip_version, r
           route-target export 1:1 stitching
           route-target import 1:1 stitching
           exit-address-family
-   
+
     """
     configs = []
     configs.append("vrf definition {}". format(vrf_name))
@@ -501,7 +574,7 @@ def unconfigure_vrf_definition_stitching(device, vrf_name, ip_version, stitching
 
     """
     Unconfigure stitching part for ipv4 and ipv6 address-family under vrf definition
-    
+
     Args:
         device('obj'): Device object
         vrf_name('str'): Name of the vrf definition
@@ -509,10 +582,10 @@ def unconfigure_vrf_definition_stitching(device, vrf_name, ip_version, stitching
         stitching_value: Route-target Stitching value, excample 1:1
     Returns:
         None
-    
+
     Raises:
         SubCommandFailure
-    
+
     Example of unconfigure stitching under vrf definition for ipv4 address family and ipv6 address family
 
         vrf definition red
@@ -526,7 +599,7 @@ def unconfigure_vrf_definition_stitching(device, vrf_name, ip_version, stitching
           no route-target export 1:1 stitching
           no route-target import 1:1 stitching
           exit-address-family
-   
+
     """
     unconfig = []
     unconfig.append("vrf definition {}". format(vrf_name))
@@ -545,13 +618,12 @@ def create_ip_vrf(device, vrf_name):
     """ Create ip vrf
         Args:
             device ('obj'): device to use
-            vrf_name ('str'): vrf name 
+            vrf_name ('str'): vrf name
         Returns:
             None
         Raises:
             SubCommandFailure
     """
-  
     cmd = f"ip vrf {vrf_name}"
 
     log.debug("Creating ip vrf")
@@ -568,7 +640,7 @@ def delete_ip_vrf(device, vrf_name):
     """ Remove ip vrf
         Args:
             device ('obj'): device to use
-            vrf_name ('str'): vrf name 
+            vrf_name ('str'): vrf name
         Returns:
             None
         Raises:
@@ -634,3 +706,57 @@ def unconfigure_ip_vrf_forwarding_interface(device, interface, vrf_name):
             "Failed to unconfigure ip vrf forwarding"
         )
 
+
+def configure_scale_vrf_via_tftp(
+    device,
+    server,
+    vrf_name,
+    vrf_name_step,
+    vrf_count,
+    unconfig=False,
+    tftp=False):
+    """ Configure scale vrfs via tftp config
+
+        Args:
+            device ('obj'): Device to use
+            server ('str'): Testbed.servers
+            vrf_name ('int'): Start of vrf name
+            vrf_name_step ('int'): Size of vlan range step
+            vrf_count ('int'): How many vrfs
+            unconfig ('bool'): Unconfig or not
+            tftp ('bool'): Tftp config or not
+
+        Raises:
+            Failure
+
+        Returns:
+            None
+            cmds_block str if not tftp configure
+
+    """
+    cmds = ''
+    if unconfig:
+        for count in range(vrf_count):
+            cmds += '''
+            no vrf definition {vrf}
+            '''.format(vrf=vrf_name)
+
+            vrf_name += vrf_name_step
+    else:
+        for count in range(vrf_count):
+            cmds += '''
+            vrf definition {vrf}
+                address-family ipv4
+                address-family ipv6
+            exit
+            '''.format(vrf=vrf_name)
+
+            vrf_name += vrf_name_step
+
+    if tftp:
+        try:
+            tftp_config(device, server, cmds)
+        except Exception:
+            raise Exception('tftp_config failed.')
+    else:
+        return cmds

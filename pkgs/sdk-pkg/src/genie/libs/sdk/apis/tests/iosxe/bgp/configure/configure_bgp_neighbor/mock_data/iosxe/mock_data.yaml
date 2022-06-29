@@ -1,24 +1,23 @@
 configure:
   commands:
     address-family ipv4: "address-family ipv4\r\n"
+    address-family ipv4 vrf test: "address-family ipv4 vrf test\r\n"
     end:
       new_state: execute
     line console 0:
       new_state: configure_line
-    neighbor 192.168.1.2 ebgp-multihop 255: "neighbor 192.168.1.2 ebgp-multihop 255\r\
-      \n"
     neighbor 192.168.1.2 remote-as 64002: "neighbor 192.168.1.2 remote-as 64002\r\n"
-    neighbor 192.168.1.2 update-source GigabitEthernet8: "neighbor 192.168.1.2 update-source\
-      \ GigabitEthernet8\r\n"
+    neighbor 192.168.1.2 update-source Gig8: "neighbor 192.168.1.2 update-source Gig8\r\
+      \n"
     no logging console: ''
     router bgp 64001: "router bgp 64001\r\n"
-  prompt: kparames_csr10(config)#
+  prompt: kparames_csr9(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: kparames_csr10(config-line)#
+  prompt: kparames_csr9(config-line)#
 connect:
   commands:
     ? ''
@@ -38,4 +37,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: kparames_csr10#
+  prompt: kparames_csr9#

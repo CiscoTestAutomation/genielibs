@@ -1,0 +1,39 @@
+configure:
+  commands:
+    address-family ipv4: "address-family ipv4\r\n"
+    end:
+      new_state: execute
+    exit-address-family: "exit-address-family\r\n"
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    rd 2:100: "rd 2:100\r\n"
+    route-target export 2:10 stitching: "route-target export 2:10 stitching\r\n"
+    vrf definition red: "vrf definition red\r\n"
+  prompt: gry48-l2-san(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: gry48-l2-san(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: gry48-l2-san#

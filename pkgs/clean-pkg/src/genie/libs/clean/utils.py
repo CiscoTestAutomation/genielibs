@@ -83,7 +83,6 @@ def verify_num_images_provided(image_list, expected_images=1):
 def _apply_configuration(device, configuration=None, configuration_from_file=None,
                          file=None, configure_replace=False, timeout=60,
                          copy_directly_to_startup=False):
-
     if configuration or configuration_from_file and not file:
         # Apply raw configuration using configure service
 
@@ -157,7 +156,7 @@ def _apply_configuration(device, configuration=None, configuration_from_file=Non
             try:
                 device.destroy()
             except Exception:
-                pass # This is fine as long as we can reconnect
+                pass  # This is fine as long as we can reconnect
 
             try:
                 device.connect(learn_hostname=True)
@@ -263,7 +262,7 @@ def get_clean_function(clean_name, clean_data, device):
     # For each consecutive iteration, remove the last token, checking every level
     # until there is nothing left to check or a stage is found.
     iterated_data = data
-    for i in reversed(range(1, len(tokens)+1)):
+    for i in reversed(range(1, len(tokens) + 1)):
 
         for token in tokens[:i]:
             if token not in iterated_data:
@@ -292,7 +291,7 @@ def get_clean_function(clean_name, clean_data, device):
         return getattr(_get_submodule(lookup.clean, iterated_data["module_name"]), name)
     except Exception:
         raise Exception(f"The clean stage '{name}' does not exist under the "
-                        f"following abstraction tokens: {['com']+tokens}") from None
+                        f"following abstraction tokens: {['com'] + tokens}") from None
 
 def _get_submodule(abs_mod, mods):
     """recursively find the submodule"""
@@ -316,12 +315,13 @@ def format_missing_key_msg(missing_list):
     for missing_key in missing_list:
         d = missing_dict
         for path in missing_key:
-                d = d.setdefault(path, {})
+            d = d.setdefault(path, {})
 
     return _pprint_missing_key(missing_dict, max_path_len, max_key_len, indent)
 
 def _pprint_missing_key(missing_dict, max_path_len, max_key_len, indent):
     """format missing key dict into a yaml-like human readable output"""
+
     def __pprint_missing_key(missing_dict, lines, level=0):
 
         for key, value in missing_dict.items():
@@ -333,12 +333,12 @@ def _pprint_missing_key(missing_dict, max_path_len, max_key_len, indent):
             if value:
 
                 lines.append(''.join(line))
-                __pprint_missing_key(value, lines, level=level+1)
+                __pprint_missing_key(value, lines, level=level + 1)
 
             else:
                 key_len = len(key)
                 line.extend([' '] * (
-                            indent * (max_path_len - level) + (max_key_len - key_len)))
+                        indent * (max_path_len - level) + (max_key_len - key_len)))
                 line.append('   <<<')
                 lines.append(''.join(line))
 
@@ -506,10 +506,9 @@ def validate_clean(clean_file, testbed_file, lint=True):
                 # If the device does not have custom.abstraction defined
                 # then we cannot load the correct stages to test the
                 # correct schema. Skip this device.
-                exceptions.append(Exception(dev.name+': '+str(e)))
+                exceptions.append(Exception(dev.name + ': ' + str(e)))
                 schema.update({Any(): Any()})
                 continue
-
 
         for section in clean_data:
 
@@ -543,11 +542,10 @@ def validate_clean(clean_file, testbed_file, lint=True):
                 schema.update({section: Any()})
                 continue
 
-
             # Add the stage schema to the base schema
             if hasattr(task, 'schema'):
-                snake_case_class = re.sub(r"([A-Z])", r"_\1", task.__name__)\
-                                     .strip('_').lower()
+                snake_case_class = re.sub(r"([A-Z])", r"_\1", task.__name__) \
+                    .strip('_').lower()
                 schema.update({Or(snake_case_class, task.__name__): task.schema})
     try:
         Schema(base_schema).validate(clean_dict)
@@ -555,7 +553,6 @@ def validate_clean(clean_file, testbed_file, lint=True):
         exceptions.append(pretty_schema_exception(e))
 
     return validation_results
-
 
 def remove_string_from_image(images, string):
     ''' Removes user given string from any provided image path
@@ -594,7 +591,6 @@ def deprecate_stage(deprecated_in, removed_in=None, details=None):
         details (str): Any extra details to log. For example a replacement stage
             to use.
     """
-
     def wrapper(cls):
 
         msg = f"Clean stage '{cls.__name__}' deprecated in v{deprecated_in}."
@@ -609,8 +605,6 @@ def deprecate_stage(deprecated_in, removed_in=None, details=None):
             log.warning(f"\nSleeping for 15 seconds.")
             time.sleep(15)
 
-
-
         setattr(cls, 'deprecate_msg', deprecate_msg)
         cls.exec_order.insert(0, 'deprecate_msg')
         cls.__doc__ = msg
@@ -618,3 +612,16 @@ def deprecate_stage(deprecated_in, removed_in=None, details=None):
         return cls
 
     return wrapper
+
+def get_clean_template(device, template='DEFAULT'):
+    """API to return the clean template as a loaded dictionary."""
+
+    abstract = Lookup.from_device(device, packages={'clean': clean})
+    return getattr(abstract.clean.templates.templates, template)
+
+def raise_(ex):
+    """ General purpose raiser.
+        Args:
+        ex(exception): the exeption to be raised.
+    """
+    raise ex

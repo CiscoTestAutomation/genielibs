@@ -15,11 +15,13 @@ import copy
 import operator
 import psutil
 import pathlib
+import glob
 
 from time import strptime
 from datetime import datetime
 from netaddr import IPAddress
 from ipaddress import IPv4Interface
+from urllib.parse import urlparse
 
 # pyATS
 from pyats.easypy import runtime
@@ -1056,20 +1058,24 @@ def copy_from_device(device,
     fu = FileUtils.from_device(device, protocol=protocol)
     if server:
 
-        if remote_path:
-            if pathlib.Path(remote_path).is_dir():
-                filename = pathlib.Path(os.path.basename(local_path.split(':')[-1]))
-                remote_path = pathlib.Path(remote_path) /str(slugify((filename.stem.split('.')[0]))+''.join(filename.suffixes))
-
+        if urlparse(local_path).scheme == 'core':
+            filename = ''
         else:
             filename = pathlib.Path(os.path.basename(local_path.split(':')[-1]))
-            remote_path =str(slugify((filename.stem.split('.')[0]))) + ''.join(filename.suffixes)
+            filename = str(slugify((filename.stem.split('.')[0]))) + ''.join(filename.suffixes)
+
+        if remote_path:
+            if pathlib.Path(remote_path).is_dir():
+                remote_path = pathlib.Path(remote_path) / filename
+        else:
+            remote_path = filename
 
         if protocol is None:
             server_block = fu.get_server_block(server)
             protocol = server_block.get('protocol', 'http')
 
         destination = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
+
         if vrf is not None:
             return fu.copyfile(source=local_path,
                                destination=destination,
@@ -1397,6 +1403,63 @@ def _delete_file_on_server(server,
         return fu_session.deletefile(target=url, timeout_seconds=timeout)
     except Exception as e:
         raise Exception("Failed to delete file : {}".format(str(e)))
+
+
+def tftp_config(device, server, cfg_block):
+    """ tftp_config proc
+    Args:
+        device ('obj'): Device object
+        testbed ('obj'): testbed object containing the server info
+        server ('str"): Embedded pyATS File Transfer Server in testbed yaml
+        cfg_block ('str'): Configuration block
+    Returns:
+        None
+    """
+
+    try:
+        PATH = server.get('myftpserver').get('custom').get('scale_config_path')
+        proto = server.get('myftpserver').get('protocol')
+    except Exception:
+        raise Exception('custom.scale_config_path and protocol is mandatory.')
+
+    log.info('ftp/tftp server path: {}'.format(PATH))
+    FileName = device.alias + '_config_tmp_file'
+
+    try:
+        f = open(PATH + FileName, 'w')
+        f.write(cfg_block)
+        f.close()
+    except Exception:
+        f.close()
+        raise Exception('Error when writing config file {}.\
+            Check ftp_PATH.'.format(FileName))
+
+    try:
+        log.info(
+            'Copy config file {0} to device {1}'.format(
+                FileName, device.hostname))
+        device.api.copy_to_device(protocol=proto,
+                                  server='myftpserver',
+                                  remote_path=PATH + FileName,
+                                  local_path='bootflash:/')
+
+        log.info(
+            'Merge to running-config on device {0}'.format(
+                device.hostname))
+        device.api.copy_file_to_running_config(
+            'bootflash:', FileName, timeout=120)
+
+    except Exception:
+        raise Exception(
+            'TFTP config failed on device {}'.format(device.hostname))
+    finally:
+        log.info('Remove configuration files located at remote path')
+        file_list = glob.glob(PATH + FileName)
+        for f in file_list:
+            os.remove(f)
+
+        log.info('Delete local configuration files in bootflash')
+        device.execute('delete /force ' + FileName)
 
 
 def convert_server_to_linux_device(device, server):

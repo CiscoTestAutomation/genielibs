@@ -91,6 +91,7 @@ def verify_changes_platform(device, platform_before, platform_after,
 
     return False
 
+
 def verify_file_exists(device, file, size=None, dir_output=None):
     '''Verify that the given file exist on device with the same name and size
         Args:
@@ -114,8 +115,17 @@ def verify_file_exists(device, file, size=None, dir_output=None):
             .format(directory, device.name))
         return False
 
+    device_dir = dir_out.get('dir', {}).get('dir')
+
+    # Check device directory
+    if not device_dir:
+        log.warning(
+            "Device directory does not exists on {}".format(device.name)
+        )
+        return False
+
     # Check if file exists
-    exist = filename in dir_out.get('dir').get(directory, {}).get('files', {})
+    exist = filename in dir_out.get('dir').get(device_dir, {}).get('files', {})
 
     if not exist:
         log.info("File '{}' does not exist on {}".format(file, device.name))

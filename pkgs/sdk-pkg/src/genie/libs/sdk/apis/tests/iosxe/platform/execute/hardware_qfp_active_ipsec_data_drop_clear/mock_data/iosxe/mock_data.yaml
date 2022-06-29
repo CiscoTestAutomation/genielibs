@@ -1,0 +1,44 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: GREENDAY(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: GREENDAY(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show platform hardware qfp active feature ipsec data drop clear:
+      response:
+      - "------------------------------------------------------------------------\r\
+        \nDrop Type  Name                                     Packets            \
+        \ \r\n------------------------------------------------------------------------\r\
+        \n       12  IN_US_V6_PKT_SA_NOT_FOUND_SPI                            2321\r\
+        \n\r\n       38  OUT_V6_PKT_HIT_IKE_START_SP                             \
+        \   92\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\nIPSEC detailed dp drop counters\
+        \ cleared after display."
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: GREENDAY#

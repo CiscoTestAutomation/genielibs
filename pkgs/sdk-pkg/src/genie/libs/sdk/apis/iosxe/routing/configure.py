@@ -6,6 +6,9 @@ import logging
 
 # Genie
 from genie.conf.base import Interface
+from genie.libs.conf.base import IPv4Address, IPv6Address
+from genie.libs.conf.interface import IPv4Addr, IPv6Addr
+from genie.libs.sdk.apis.utils import tftp_config
 
 # Unicon
 from unicon.core.errors import SubCommandFailure
@@ -280,6 +283,78 @@ def unconfigure_routing_static_route(
         raise SubCommandFailure(
             "Configuration failed for {route}.".format(route=route)
         )
+
+
+def configure_scale_static_route_via_tftp(
+    device, server, scale_count,
+    network_start, network_step, netmask,
+    next_hop_start=None, next_hop_step=None, next_intf=None,
+    unconfig=False, tftp=False
+):
+    """ Configure scale static ip route on device via tftp
+        Examples:
+        ip route 192.168.1.0 255.255.255.0 10.0.0.1
+        ip route 192.168.2.0 255.255.255.0 10.0.1.1
+
+        Args:
+            device ('obj'): Device obj
+            server ('str'): Testbed.servers
+            scale_count (int): How many static routes
+            network_start ('str'): Prefix eg. 192.168.1.0
+            network_step ('str'): Prefix step eg. 0.0.1.0
+            netmask ('str'): Netmask of prefix eg. 255.255.255.0
+            next_hop_start ('str'): Next hop. eg. 10.0.0.1
+            next_hop_step ('str'): Step of next hop. eg. 0.0.1.0
+            next_intf ('str'): Next hop interface name. eg. G2
+            unconfig ('bool'): Unconfig or not
+            tftp ('bool'): Tftp config or not
+
+        Returns:
+            None
+            cmds_block str if not tftp configure
+
+        Raises:
+            Failure
+    """
+    if not next_hop_start and not next_intf:
+        raise Exception('Please specify either next_hop nor next_intf')
+    elif next_hop_start and not next_intf:
+        next_hop = IPv4Address(next_hop_start)
+        next_intf = ''
+    elif next_intf and not next_hop_start:
+        next_intf = next_intf
+        next_hop = ''
+    else:
+        next_hop = IPv4Address(next_hop_start)
+        next_intf = next_intf
+
+    cmds = ''
+    network = IPv4Address(network_start)
+
+    if unconfig:
+        no_str = 'no'
+    else:
+        no_str = ''
+
+    for count in range(scale_count):
+
+        cmds += '''
+        {no_str} ip route {network} {netmask} {next_hop} {next_intf}
+        '''.format(no_str=no_str, network=network, netmask=netmask,
+                   next_hop=next_hop, next_intf=next_intf)
+
+        network += int(IPv4Address(network_step))
+
+        if next_hop != '':
+            next_hop += int(IPv4Address(next_hop_step))
+
+    if tftp:
+        try:
+            tftp_config(device, server, cmds)
+        except Exception:
+            raise Exception('tftp_config failed.')
+    else:
+        return cmds
 
 
 def enable_routing_debug_static_route(device, route, mask):

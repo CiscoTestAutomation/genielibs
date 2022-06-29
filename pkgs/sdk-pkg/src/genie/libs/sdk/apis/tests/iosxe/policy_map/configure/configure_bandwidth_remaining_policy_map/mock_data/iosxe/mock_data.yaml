@@ -1,0 +1,44 @@
+configure:
+  commands:
+    bandwidth remaining percent 10: "bandwidth remaining percent 10\r\n"
+    bandwidth remaining percent 20: "bandwidth remaining percent 20\r\n"
+    class class-default: "class class-default\r\n"
+    class data: "class data\r\n"
+    class video: "class video\r\n"
+    class voice: "class voice\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    policy-map grandparent: "policy-map grandparent\r\n"
+    policy-map parent: "policy-map parent\r\n"
+    service-policy parent: "service-policy parent\r\n"
+    shape average percent 100: "shape average percent 100\r\n"
+  prompt: BB_2HX(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: BB_2HX(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: BB_2HX#

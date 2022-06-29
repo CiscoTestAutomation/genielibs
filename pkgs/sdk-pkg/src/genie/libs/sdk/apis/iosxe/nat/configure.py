@@ -967,3 +967,431 @@ def force_unconfigure_static_nat_route_map_rule(device, inside_local_ip, inside_
     except Exception as err:
         log.error("Failed to force unconfigure static NAT route-map rule: {err}".format(err=err))
         raise Exception(err)
+
+def configure_nat64_interface(device, interface):
+    """ Configure nat64 on interface 
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface/vlan/sub-interface
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: nat64 enable not configured
+    """
+    try:
+        device.configure(
+            [
+                "interface {}".format(interface),
+                "nat64 enable"           
+            ]
+        )
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not enable NAT64 on interface")
+        
+def unconfigure_nat64_interface(device, interface):
+    """ Unconfigure nat64 on interface 
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface/vlan/sub-interface
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: nat64 enable not unconfigured
+    """
+    try:
+        device.configure(
+            [
+                "interface {}".format(interface),
+                "no nat64 enable"           
+            ]
+        )
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure nat64 on interface")
+        
+def configure_nat64_prefix_stateful(device, prefix, prefix_length, interface = None):
+    """ Configure nat64 prefix stateful 
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface
+            prefix ('str'): prefix
+            prefix_lenght ('str'): prefix length
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: nat64 prefix not configured
+    """
+    cmd = []
+        
+    if interface:
+        cmd = [
+                "interface {}".format(interface),
+                "nat64 prefix stateful {}/{}".format(prefix,prefix_length)           
+              ]  
+    else:
+        cmd = "nat64 prefix stateful {}/{}".format(prefix,prefix_length)
+          
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not configure nat64 prefix stateful")
+        
+def unconfigure_nat64_prefix_stateful(device, interface=None, prefix=None, prefix_length=None):
+    """ Unconfigure nat64 prefix stateful 
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface
+            prefix ('str'): prefix
+            prefix_lenght ('str'): prefix length
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: nat64 prefix not unconfigured
+    """
+    cmd = []
+    
+    if interface:
+        cmd = [
+                "interface {}".format(interface),
+                "no nat64 prefix stateful {}/{}".format(prefix,prefix_length)           
+              ]                  
+    elif prefix:
+        cmd = ["no nat64 prefix stateful {}/{}".format(prefix,prefix_length)]        
+    else:
+        cmd = ["no nat64 prefix stateful"]
+                
+    try:
+        device.configure(cmd)        
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure nat64 prefix stateful")
+        
+def configure_nat64_v6v4_static(device, ipv6_address, ipv4_address):
+    """ Configure nat64 v6v4 static 
+        Args:
+            device ('obj'): device to use
+            ipv6_address ('str'): ipv6 address
+            ipv4_address ('str'): ipv4 address
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: nat64 v6v4 static not configured
+    """
+    cmd = ["nat64 v6v4 static {} {}".format(ipv6_address,ipv4_address)]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not configure nat64 v6v4 static")
+        
+def unconfigure_nat64_v6v4_static(device, ipv6_address, ipv4_address):
+    """ Unconfigure nat64 v6v4 static 
+        Args:
+            device ('obj'): device to use
+            ipv6_address ('str'): ipv6 address
+            ipv4_address ('str'): ipv4 address
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: nat64 v6v4 static not unconfigured
+    """
+    dialog = Dialog([
+             Statement(
+             pattern=r'.*Static entry in use, do you want to delete child entries\? \[no\].*',
+             action='sendline(yes)',
+             loop_continue=True,
+             continue_timer=False)])
+    cmd = ["no nat64 v6v4 static {} {}".format(ipv6_address,ipv4_address)]
+
+    try:
+        device.configure(cmd,reply=dialog)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure nat64 v6v4 static")
+        
+def configure_nat64_v6v4_static_protocol_port(
+    device, 
+    protocol, 
+    ipv6_address,
+    ipv6_port, 
+    ipv4_address, 
+    ipv4_port
+):
+    """ Configure nat64 v6v4 static protocl 
+        Args:
+            device ('obj'): device to use
+            protocol ('str'): protocol-tcp/udp
+            ipv6_address ('str'): ipv6 address
+            ipv6_port ('str'): ipv6 port number
+            ipv4_address ('str'): ipv4 address
+            ipv4_port ('str'): ipv4 port number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: nat64 v6v4 static protocol not configured
+    """
+    cmd = ["nat64 v6v4 static {} {} {} {} {}".format(protocol,ipv6_address,ipv6_port,ipv4_address,ipv4_port)]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not configure nat64 v6v4 static protocol")
+
+def unconfigure_nat64_v6v4_static_protocol_port(
+    device, 
+    protocol, 
+    ipv6_address, 
+    ipv6_port, 
+    ipv4_address, 
+    ipv4_port
+):
+    """ Unconfigure nat64 v6v4 static protocl 
+        Args:
+            device ('obj'): device to use
+            protocol ('str'): protocol-tcp/udp
+            ipv6_address ('str'): ipv6 address
+            ipv6_port ('str'): ipv6 port number
+            ipv4_address ('str'): ipv4 address
+            ipv4_port ('str'): ipv4 port number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: nat64 v6v4 static protocol not unconfigured
+    """
+    cmd = ["no nat64 v6v4 static {} {} {} {} {}".format(protocol,ipv6_address,ipv6_port,ipv4_address,ipv4_port)]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure nat64 v6v4 static protocol")
+        
+def configure_nat64_v4_pool(
+    device, 
+    pool_name, 
+    start_ipv4_address, 
+    end_ipv4_address
+):
+    """ Configure nat64 v4 pool 
+        Args:
+            device ('obj'): device to use
+            pool_name ('str'): any pool name
+            start_ipv4_address ('str'): ipv4 address
+            end_ipv4_address ('str'): ipv4 address
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: nat64 v4 pool not configured
+    """
+    cmd = ["nat64 v4 pool {} {} {}".format(pool_name,start_ipv4_address,end_ipv4_address)]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not configure nat64 v4 pool ")
+
+def unconfigure_nat64_v4_pool(
+    device, 
+    pool_name, 
+    start_ipv4_address, 
+    end_ipv4_address
+):
+    """ Unconfigure nat64 v4 pool 
+        Args:
+            device ('obj'): device to use
+            pool_name ('str'): any pool name
+            start_ipv4_address ('str'): ipv4 address
+            end_ipv4_address ('str'): ipv4 address
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: nat64 v4 pool not unconfigured
+    """
+    cmd = ["no nat64 v4 pool {} {} {}".format(pool_name,start_ipv4_address,end_ipv4_address)]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure nat64 v4 pool ")
+        
+def configure_nat64_v4_list_pool(
+    device, 
+    acl_list_number_name, 
+    pool_name
+):
+    """ Configure nat64 v4 list pool 
+        Args:
+            device ('obj'): device to use
+            acl_list_number_name ('str'): access list number or name
+            pool_name ('str'): any pool name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: nat64 v4 list pool not configured
+    """
+    cmd = ["nat64 v6v4 list {} pool {}".format(acl_list_number_name,pool_name)]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not configure nat64 v4 list pool ")
+        
+def unconfigure_nat64_v4_list_pool(
+    device, 
+    acl_list_number_name, 
+    pool_name
+):
+    """ Unconfigure nat64 v4 list pool 
+        Args:
+            device ('obj'): device to use
+            acl_list_number_name ('str'): access list number or name
+            pool_name ('str'): any pool name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: nat64 v4 list pool not unconfigured
+    """
+    cmd = ["no nat64 v6v4 list {} pool {}".format(acl_list_number_name,pool_name)]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure nat64 v4 list pool ")
+        
+def configure_nat64_v4_list_pool_overload(
+    device, 
+    acl_list_number_name, 
+    pool_name
+):
+    """ Configure nat64 v4 list pool overload
+        Args:
+            device ('obj'): device to use
+            acl_list_number_name ('str'): access list number or name
+            pool_name ('str'): any pool name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: nat64 v4 list pool overload not configured
+    """
+    cmd = ["nat64 v6v4 list {} pool {} overload".format(acl_list_number_name,pool_name)]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not configure nat64 v4 list pool overload")
+        
+def unconfigure_nat64_v4_list_pool_overload(
+    device, 
+    acl_list_number_name, 
+    pool_name
+):
+    """ Unconfigure nat64 v4 list pool overload 
+        Args:
+            device ('obj'): device to use
+            acl_list_number_name ('str'): access list number or name
+            pool_name ('str'): any pool name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: nat64 v4 list pool overload not unconfigured
+    """
+    cmd = ["no nat64 v6v4 list {} pool {} overload".format(acl_list_number_name,pool_name)]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure nat64 v4 list pool overload ")
+        
+def configure_nat64_translation_timeout(
+    device, 
+    protocol_name, 
+    timeout_value
+):
+    """ Configure nat64 translation timeout 
+        Args:
+            device ('obj'): device to use
+            protocol_name ('str'): protocols tcp,udp,icmp,bind
+            timeout_value ('str'): timeout value in seconds
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: nat64 translation timeout not configured
+    """
+    cmd = ["nat64 translation timeout {} {}".format(
+              protocol_name,timeout_value)]
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not Configure nat64 translation timeout")
+        
+def unconfigure_nat64_translation_timeout(
+    device, 
+    protocol_name, 
+    timeout_value = None
+):
+    """ Unconfigure nat64 translation timeout 
+        Args:
+            device ('obj'): device to use
+            protocol_name ('str'): protocols tcp,udp,icmp,bind
+            timeout_value ('str'): timeout value in seconds
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: nat64 translation timeout not unconfigured
+    """
+    cmd = []
+        
+    if timeout_value:
+        cmd = ["no nat64 translation timeout {} {}".format(
+              protocol_name,timeout_value)]
+    else:
+        cmd = "no nat64 translation timeout {}".format(protocol_name)
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure nat64 translation timeout")
+        
+def configure_nat_ipv6_acl(
+    device, 
+    acl_name, 
+    permission=None, 
+    ipv6_address=None, 
+    sequence_number=None
+):
+    """ Configure NAT ipv6 acl
+        Args:
+            device ('obj'): device to execute on
+            acl_name ('str'): acl name
+            permission ('str'): permit|deny
+            ipv6_address ('str'): IPv6 address
+            sequence_number ('str'): Sequence number
+        Return:
+            None
+        Raises:
+            SubCommandFailure    
+    """
+    configs=[]
+    configs.append("ipv6 access-list {}".format(acl_name))
+    
+    if permission:
+        configs.append("{} ipv6 {} any sequence {}".format(permission, ipv6_address, sequence_number))
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not Configure NAT ipv6 acl")

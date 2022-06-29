@@ -588,3 +588,53 @@ def unconfigure_dhcp_relay_short_lease(device, lease_time, interface=False):
             "Failed to unconfigure dhcp relay short lease"
         )
 
+
+
+def configure_ip_dhcp_snooping_information_option_allow_untrusted(device, interface):
+    """configure ip dhcp snooping information option allow-untrusted on device
+        Args:
+            device (`obj`): Device object
+            interface ('str'): interface to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring dhcp snooping information option allow-untrusted on device
+    """
+    log.info(f"configuring ip dhcp snooping information option allow-untrusted on {interface}")
+
+    config_list = []
+    config_list.append(f"interface {interface}")
+    config_list.append("ip dhcp snooping information option allow-untrusted")
+
+    try:
+        device.configure(config_list)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure ip dhcp snooping information option allow-untrusted. Error:\n{e}"
+        )
+
+
+def unconfigure_ip_dhcp_snooping_information_option_allow_untrusted(device, interface):
+    """ unconfigure ip dhcp snooping information option allow-untrusted on device
+        Args:
+            device (`obj`): Device object
+            interface ('str'): interface to configure
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed unconfiguring dhcp snooping information option allow-untrusted on device
+    """
+    log.info(f"unconfiguring ip dhcp snooping information option allow-untrusted on {interface}")
+
+    config_list = []
+    config_list.append(f"interface {interface}")
+    config_list.append("no ip dhcp snooping information option allow-untrusted")
+    try:
+        device.configure(config_list)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure dhcp snooping information option allow-untrusted. Error:\n{e}"
+        )
+

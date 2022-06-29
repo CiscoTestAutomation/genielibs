@@ -125,3 +125,67 @@ def clear_dmvpn_statistics(device,
             "Could not clear dmvpn statistics on {device}. Error:\n{error}"
                 .format(device=device, error=e)
         )
+
+def clear_dmvpn_crypto_nhrp_stats(device,timeout=30):
+    ''' clear dmpvn crypto and nhrp commands
+        Args:
+            device('obj'): Device object
+            timeout('int', optional): timeout for exec command execution, default is 30
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+
+    cmd_list = ['clear crypto ikev2 stats exchange','clear crypto ikev2 stats',
+                'clear crypto stats','clear crypto ikev2 stats ext-service',
+                'clear crypto socket stats','clear crypto kmi',
+                'clear crypto ikev2 stats timeout','clear nhrp stats',
+                'clear dmvpn statistics']
+
+    for cmd in cmd_list:
+        try:
+            device.execute(cmd,
+                    timeout=timeout)
+
+        except SubCommandFailure as e:
+            raise SubCommandFailure(
+                "Could not execute clear command on {device}. Error:\n{error}"
+                    .format(device=device, error=e)
+            )
+
+def clear_dmvpn_crypto_nhrp_ike_stats(device,timeout=30):
+    ''' clear dmpvn crypto, platform and nhrp commands
+        Args:
+            device('obj'): Device object
+            timeout('int', optional): timeout for exec command execution, default is 30
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    '''
+
+    cmd_list = ['clear crypto ikev2 stats',
+                'clear crypto ikev2 stats exchange',
+                'clear crypto stats',
+                'clear crypto ikev2 stats ext-service',
+                'clear crypto socket stats',
+                'clear crypto kmi',
+                'clear crypto ikev2 stats timeout',
+                'clear nhrp stats',
+                'clear dmvpn statistics',
+                'show platform hardware qfp active statistics drop clear',
+                'show platform hardware qfp active feature ipsec datapath drops clear']
+
+    for cmd in cmd_list:
+        try:
+            device.execute(cmd,
+                    timeout=timeout)
+
+        except SubCommandFailure as e:
+            raise SubCommandFailure(
+                "Could not execute clear command on {device}. Error:\n{error}"
+                    .format(device=device, error=e)
+            )
+
+

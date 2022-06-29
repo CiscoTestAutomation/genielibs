@@ -133,7 +133,7 @@ def unconfigure_ip_igmp_snooping_vlan_query_version(device, vlan_id, version_num
     Args:
         device('obj'): Device object
         vlan_id('int'): vlan id of the switch
-        version_num('int'): IP IGMP version number
+        version_num('int'): IP IGMP version number of the switch
             
     Returns:
         None
@@ -143,7 +143,7 @@ def unconfigure_ip_igmp_snooping_vlan_query_version(device, vlan_id, version_num
     
     """
     try:
-        device.configure("no ip igmp snooping vlan {} querier address {}".format(vlan_id, version_num))
+        device.configure("no ip igmp snooping vlan {} querier version {}".format(vlan_id, version_num))
 
     except SubCommandFailure as e:
         log.error(e)

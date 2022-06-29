@@ -145,3 +145,152 @@ def unconfigure_bba_group(device,name,vt_number):
                 .format(device=device, error=e)
         )
 
+def configure_platform_qos_port_channel_aggregate(device,portchannel_number):
+
+    """ platform qos port-channel-aggregate <portchannel_number>
+        Args:
+            device (`obj`): Device object
+            portchannel_number ('str') : Port-channel number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"platform qos port-channel-aggregate {portchannel_number}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure platform qos port-channel-aggregate on \
+            {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
+def unconfigure_platform_qos_port_channel_aggregate(device,portchannel_number):
+
+    """ platform qos port-channel-aggregate <portchannel_number>
+        Args:
+            device (`obj`): Device object
+            portchannel_number ('str') : Port-channel number
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    cmd = f"no platform qos port-channel-aggregate {portchannel_number}"
+
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure platform qos port-channel-aggregate on \
+            {device}. Error:\n{error}"
+                .format(device=device, error=e)
+        )
+
+def configure_call_admission(device, limit, cpu_limit, session_lifetime, per_session_charge):
+
+    """Common funtion to configure call admission new model
+        Args:
+            device ('obj'): device to use
+            limit('int'): call admission limit value 
+            cpu_limit('int'):call admission cpu limit value
+            session_lifetime('int'): call admission session lifetime value
+            per_session_charge('int'): call admission per session charge value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("configuring call admission ")
+    cli = [
+        "call admission new-model",
+        f"call admission limit {limit}",
+        f"call admission cpu-limit {cpu_limit}",
+        f"call admission pppoe {session_lifetime} {per_session_charge}",
+        f"call admission vpdn {per_session_charge} {session_lifetime}"
+    ]
+    try:
+        device.configure(cli)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not config call admission on {device}. Error:\n{e}")
+
+def unconfigure_call_admission(device, limit, cpu_limit, session_lifetime, per_session_charge):
+
+    """Common funtion to unconfigure call admission new model
+        Args:
+            device ('obj'): device to use
+            limit('int'): call admission limit value
+            cpu_limit('int'): call admission cpu limit value
+            session_lifetime('int'): call admission session lifetime value
+            per_session_charge('int'): call admission per session charge value
+        Returns:
+            None
+        Raises:
+            SubCommandFailure
+    """
+    log.info("unconfiguring call admission")
+    cli = [
+        "no call admission new-model",
+        f"no call admission limit {limit}",
+        f"no call admission cpu-limit {cpu_limit}",
+        f"no call admission pppoe {session_lifetime} {per_session_charge}",
+        f"no call admission vpdn {per_session_charge} {session_lifetime}"
+    ]
+    try:
+        device.configure(cli)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfig call admission on {device}. Error:\n{e}")
+
+def configure_broadband_aaa(device, server_name, interval):
+
+    """ Configure aaa configuration for broadband 
+        Args:
+            device (`obj`): Device object
+            server_name (`str`): aaa group server name
+            interval (`str`): Accounting time interval
+        Return:
+            None
+        Raise:
+            SubCommandFailure
+    """
+
+    cli = [
+        f"aaa authentication ppp default group {server_name}",
+        f"aaa authorization network default group {server_name}",
+        f"aaa authorization subscriber-service default group {server_name}",
+        f"aaa accounting network default start-stop group {server_name}",
+        f"aaa accounting update periodic {interval}"
+    ]
+    try:
+        device.configure(cli)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not configure aaa on {device}. Error:\n{e}")
+
+def unconfigure_broadband_aaa(device, server_name, interval):
+
+    """ Unconfigure aaa configuration for broadband 
+        Args:
+            device (`obj`): Device object
+            server_name (`str`): aaa group server name
+            interval (`str`): Accounting time interval
+        Return:
+            None
+        Raise:
+            SubCommandFailure
+    """
+
+    cli = [
+        f"no aaa authentication ppp default group {server_name}",
+        f"no aaa authorization network default group {server_name}",
+        f"no aaa authorization subscriber-service default group {server_name}",
+        f"no aaa accounting network default start-stop group {server_name}",
+        f"no aaa accounting update periodic {interval}"
+    ]
+    try:
+        device.configure(cli)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not unconfig aaa on {device}. Error:\n{e}")
+
+

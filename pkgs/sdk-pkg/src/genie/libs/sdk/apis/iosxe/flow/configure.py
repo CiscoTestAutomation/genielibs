@@ -589,5 +589,162 @@ def unconfigure_flow_record(device, record_name):
 
     except SubCommandFailure:
         raise SubCommandFailure(
-           f'Could not unconfigure flow record {record_name}'
-        )           
+           f'Could not unconfigure flow record {record_name}')
+
+
+def configure_active_timer_under_et_analytics(device, timer):
+
+    """ Configure active timer under  et-analytics
+        
+        Args:
+            device ('obj'): device to use
+            timer ('int'): timer value in seconds
+        
+        Return:
+            None
+        
+        Raise:
+            SubCommandFailure
+    """
+    log.debug("Configuring active timer under et-analytics")
+  
+
+    cmd = ["et-analytics",  f"active-timeout {timer}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure active timer. Error:\n{error}".format(error=e)
+        ) 
+
+def unconfigure_active_timer_under_et_analytics(device, timer):
+
+    """ unconfiguring active timer under  et-analytics
+        
+        Args:
+            device ('obj'): device to use
+            timer ('int'): timer value in seconds 
+       
+        Return:
+            None
+        
+        Raise:
+            SubCommandFailure
+    """
+    log.debug("Unconfiguring active timer under et-analytics")
+
+    cmd = ["et-analytics",  f"no active-timeout {timer}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure active timer. Error:\n{error}".format(error=e)
+        ) 
+
+
+def clear_flow_exporter_statistics(device):
+    """ Clear Flow exporter statistics on device
+        
+        Args:
+            device ('obj'): device to use
+
+        Return:
+            None
+
+        Raise:
+            SubCommandFailure: Failed configuring interface
+    """
+
+    try:
+        device.execute("clear flow exporter eta-exp statistics")
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            'Could not clear flow exporter statistics'
+        )
+
+
+def configure_et_analytics(device, dest_ip, udp_port):
+    """ Configure et-analytics
+        
+        Args:
+            device ('obj'): Device object
+            dest_ip ('str'): Destination IP
+            udp_port ('str'): UDP port
+        
+        Return:
+            None
+        
+        Raise:
+            SubCommandFailure: Failed configuring et-analytics
+    """
+    cmd = ["et-analytics",  f"ip flow-export destination {dest_ip} {udp_port}"]
+    try:
+        device.configure(cmd) 
+    except SubCommandFailure:
+        raise SubCommandFailure('Could not configure et_analytics')
+
+
+def disable_et_analytics(device, interface):
+    """ disable et-analytics
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface name to disable et-analytics
+        
+        Returns:
+            None 
+        
+        Raises: 
+            SubCommandFailure
+    """
+    log.debug("disabling et-analytics under {interface}".format(interface=interface))
+    cmd = [f"interface {interface}",  "no et-analytics enable"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to disable et-analytics under {interface}. Error:\n{error}".format(interface=interface, error=e)
+        )
+
+
+def enable_et_analytics(device, interface):
+    """ Enable et-analytics
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface name to enable et-analytics
+        
+        Returns:
+            None 
+        
+        Raises: 
+            SubCommandFailure
+    """
+    log.debug("enabling et-analytics under {interface}".format(interface=interface))
+    cmd = [f"interface {interface}", "et-analytics enable"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to enable et-analytics under {interface}. Error:\n{error}".format(interface=interface, error=e)
+        )
+
+
+def clear_flow_monitor_statistics_for_et_analytics(device):
+    """ Clears Flow Monitor statistics on device
+    
+        Args:
+            device ('obj'): Device object
+
+        Return:
+            None
+
+        Raise:
+            SubCommandFailure: Failed configuring interface
+    """
+
+    try:
+        device.execute(["clear flow monitor eta-mon cache",
+                        "clear flow monitor eta-mon statistics",
+                        "show platform software fed active fnf clear-et-analytics-stats"])
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Could not clear flow monitor statistics for et-analytics. Error:\n{e}")
+
