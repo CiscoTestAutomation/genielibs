@@ -22,7 +22,11 @@ class TestUnconfigStandardAclForIpPim(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['P1']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_unconfig_standard_acl_for_ip_pim(self):
         result = unconfig_standard_acl_for_ip_pim(self.device, 'vrf3001-BidigroupRP')

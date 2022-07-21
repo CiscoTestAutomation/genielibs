@@ -22,7 +22,11 @@ class TestGetRoutingVrfEntries(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['CGW-laas-c9500-5']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_get_routing_vrf_entries(self):
         result = get_routing_vrf_entries(self.device, '20.101.1.3', 'vrf101')

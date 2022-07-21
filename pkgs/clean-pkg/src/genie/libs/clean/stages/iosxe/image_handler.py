@@ -179,7 +179,10 @@ class ImageHandler(BaseImageHandler, ImageLoader):
     def update_tftp_boot(self, number=''):
         '''Update clean section 'tftp_boot' with image information'''
         tftp_boot = self.device.clean.setdefault('tftp_boot'+number, {})
-        tftp_boot.update({'image': self.image})
+        if self.override_stage_images:
+            tftp_boot.update({'image': self.image})
+        else:
+            tftp_boot.setdefault('image', self.image)
 
     def update_copy_to_linux(self, number=''):
         '''Update clean section 'copy_to_linux' with image information'''
@@ -203,13 +206,19 @@ class ImageHandler(BaseImageHandler, ImageLoader):
         '''Update clean stage 'change_boot_variable' with image information'''
 
         change_boot_variable = self.device.clean.setdefault('change_boot_variable'+number, {})
-        change_boot_variable.update({'images': self.image})
+        if self.override_stage_images:
+            change_boot_variable.update({'images': self.image})
+        else:
+            change_boot_variable.setdefault('images', self.image)
 
     def update_expand_image(self, number=''):
         '''Update clean stage 'expand_image' with image information'''
 
         expand_image = self.device.clean.setdefault('expand_image'+number, {})
-        expand_image.update({'image': self.image})
+        if self.override_stage_images:
+            expand_image.update({'image': self.image})
+        else:
+            expand_image.setdefault('image', self.image)
 
     def update_verify_running_image(self, number=''):
         '''Update clean stage 'verify_running_image' with image information'''
@@ -217,24 +226,40 @@ class ImageHandler(BaseImageHandler, ImageLoader):
             setdefault('verify_running_image' + number, {})
 
         if verify_running_image.get('verify_md5'):
-            verify_running_image.update({'images': self.original_image})
+            if self.override_stage_images:
+                verify_running_image.update({'images': self.original_image})
+            else:
+                verify_running_image.setdefault('images', self.original_image)
         else:
-            verify_running_image.update({'images': self.image})
+            if self.override_stage_images:
+                verify_running_image.update({'images': self.image})
+            else:
+                verify_running_image.setdefault('images', self.image)
 
     def update_install_image(self, number=''):
         '''Update clean stage 'install_image' with image information'''
 
         install_image = self.device.clean.setdefault('install_image'+number, {})
-        install_image.update({'images': self.image})
+        if self.override_stage_images:
+            install_image.update({'images': self.image})
+        else:
+            install_image.setdefault('images', self.image)
 
     def update_install_packages(self, number=''):
         '''Update clean stage 'install_packages' with package information'''
 
         install_packages = self.device.clean.setdefault('install_packages'+number, {})
-        install_packages.update({'packages': self.packages})
+        if self.override_stage_images:
+            install_packages.update({'packages': self.packages})
+        else:
+            install_packages.setdefault('packages', self.packages)
 
     def update_reload(self, number=''):
-        if self.image:
+        '''Update reload stage reload_service_args.image with image information
+
+        Only updates image info if `copy_to_device` stage was executed.
+        '''
+        if 'copy_to_device' in self.history and self.image:
             reload_service_args = self.device.clean.setdefault('reload'+number, {}).\
                 setdefault('reload_service_args', {})
-            reload_service_args['image_to_boot'] = self.image[0]
+            reload_service_args['image'] = self.image[0]

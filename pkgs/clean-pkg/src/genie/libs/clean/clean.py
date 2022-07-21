@@ -180,7 +180,7 @@ class CleanTestcase(Testcase):
 
                 # If image handler has a method to update this section - execute it
                 if self.image_handler:
-                    self.image_handler.update_section(stage)
+                    self.image_handler.update_section(stage, update_history=True)
 
                 cls = self.stages[stage]['func']
 
@@ -272,6 +272,11 @@ class CleanTestcase(Testcase):
         """
         clean_schema = {}
         clean_to_validate = {}
+
+        # pop the image_management config as its not a real stage
+        image_management_config = self.device.clean.pop('image_management', {})
+        if self.image_handler and image_management_config:
+            self.image_handler.override_stage_images = image_management_config.get('override_stage_images', True)
 
         # order is mandatory so verify schema
         clean_schema['order'] = list

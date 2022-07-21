@@ -1459,3 +1459,25 @@ def unconfigure_ip_ospf_mtu_ignore(device, interface):
             )
         )
 
+def configure_ospf_nsf_ietf(device, ospf_process_id):
+
+    """ configure nsf ietf under ospf
+        Args:
+            device ('obj'): device to execute on
+            ospf_process_id ('int'): process id of ospf
+        Return:
+            None
+        Raises:
+            SubCommandFailure :Failed to configure nsf ietf under ospf
+    """
+    log.debug(f"configure nsf ietf under ospf {ospf_process_id}")
+    
+    configs=[
+        f"router ospf {ospf_process_id}",
+        "nsf ietf"
+    ]
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure nsf ietf under ospf {ospf_process_id}. Error:\n{e}")
+        

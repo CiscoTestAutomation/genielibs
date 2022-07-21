@@ -22,7 +22,11 @@ class TestGetShowOutputSection(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['c2_core_sf']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_get_show_output_section(self):
         result = get_show_output_section(self.device, 'show run', 'ospf')

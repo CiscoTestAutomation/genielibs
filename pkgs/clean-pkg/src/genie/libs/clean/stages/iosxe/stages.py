@@ -557,11 +557,14 @@ install_image:
     def set_boot_variable(self, steps, device):
         with steps.start("Configure system boot variable for 'install mode'") as step:
             # Figure out the directory that the image files get unpacked to
-            directory = get_default_dir(device=device)
+            output = device.parse('dir')
+            directory = output['dir']['dir']
+            files = output.get('dir', {}).get(directory, {}).get('files', {})
 
-            # create packages.conf, if it does not exist
-            create_packages_file = 'sh clock | append ' + directory+'packages.conf'
-            device.execute(create_packages_file)
+            if not files.get('packages.conf'):
+                # create packages.conf, if it does not exist
+                with device.bash_console() as bash:
+                    bash.execute([f'cd {directory}'.strip(':/'), 'touch packages.conf'])
 
             # packages.conf is hardcoded because install mode boots using an
             # unpacked packages.conf file

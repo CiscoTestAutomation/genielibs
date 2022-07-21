@@ -178,13 +178,42 @@ remove_rpc_reply = """<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"
        <srv6>
         <evi>
          <vpn-id>32767</vpn-id>
-         <ignore-mtu-mismatch/>
         </evi>
        </srv6>
       </segment-routing>
      </evis>
     </evpn>
    </data>
+</rpc-reply>"""
+
+remove_response_fail = """<rpc-reply message-id="101" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+ <data>
+  <l2vpn xmlns="http://cisco.com/ns/yang/Cisco-IOS-XR-um-l2vpn-cfg">
+   <bridge>
+    <groups>
+     <group>
+      <group-name>BridgeGroup1</group-name>
+      <bridge-domains>
+       <bridge-domain>
+        <bridge-domain-name>BridgeDomain1</bridge-domain-name>
+        <neighbors>
+         <neighbor>
+          <address>10.10.10.10</address>
+          <pw-id>1</pw-id>
+          <mac>
+           <secure>
+            <logging/>
+           </secure>
+          </mac>
+         </neighbor>
+        </neighbors>
+       </bridge-domain>
+      </bridge-domains>
+     </group>
+    </groups>
+   </bridge>
+  </l2vpn>
+ </data>
 </rpc-reply>"""
 
 class TestRpcVerify(unittest.TestCase):
@@ -1084,20 +1113,36 @@ basic-mode=explicit&also-supported=report-all-tagged']
         self.assertTrue(result)
     
     def test_auto_validate_operation_remove_leaf(self):
-        """Test a removed leaf is ok with no data returned."""
+        """Test a remove operation on a leaf node with data returned."""
         rpc_data = {
             'nodes': [
                 {
                     'edit-op': 'remove',
                     'nodetype': 'leaf',
-                    'datatype': '',
-                    'value': '3',
-                    'xpath': '/segment-routing/um-segment-routing-traffic-eng-cfg:traffic-eng/um-segment-routing-traffic-eng-cfg:policies/um-segment-routing-traffic-eng-cfg:policy[um-segment-routing-traffic-eng-cfg:policy-id="1"]/um-segment-routing-traffic-eng-cfg:candidate-paths/um-segment-routing-traffic-eng-cfg:preferences/um-segment-routing-traffic-eng-cfg:preference[um-segment-routing-traffic-eng-cfg:preference-id="2"]/um-segment-routing-traffic-eng-cfg:per-flow/um-segment-routing-traffic-eng-cfg:forward-class/um-segment-routing-traffic-eng-cfg:default'
+                    'datatype': 'string',
+                    'value': 'Setting vpn-id',
+                    'xpath': '/evpn/evis/segment-routing/srv6/evi[vpn-id=32767]/description'
                 }
             ]
         }
         resp = self.rpcv.process_rpc_reply(remove_rpc_reply)
-        # we want this test to fail so we modify the response
+        result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
+        self.assertTrue(result)
+
+    def test_auto_validate_operation_remove_fail(self):
+        """Test for the failed remove operation on a node."""
+        rpc_data = {
+                'nodes': [
+                    {
+                        'edit-op': 'remove',
+                        'nodetype': 'container',
+                        'datatype': '',
+                        'value': '',
+                        'xpath': '/l2vpn/bridge/groups/group[group-name="BridgeGroup1"]/bridge-domains/bridge-domain[bridge-domain-name="BridgeDomain1"]/neighbors/neighbor[address="10.10.10.10"][pw-id=1]/mac/secure'
+                    }
+                ]
+        }
+        resp = self.rpcv.process_rpc_reply(remove_response_fail)
         result = self.rpcv.verify_rpc_data_reply(resp, rpc_data)
         self.assertFalse(result)
 

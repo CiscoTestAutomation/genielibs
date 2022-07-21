@@ -22,7 +22,11 @@ class TestConfigureIgmpVersion(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['P1']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_configure_igmp_version(self):
         result = configure_igmp_version(self.device, 'loopback3001', '3')

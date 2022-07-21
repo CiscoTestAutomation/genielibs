@@ -22,7 +22,11 @@ class TestVerifyBgpRt5Label(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['CGW-laas-c9500-5']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_verify_bgp_rt5_label(self):
         result = verify_bgp_rt5_label(self.device, 'l2vpn evpn', '0', '20.101.1.3', '32', '101', '3000101')

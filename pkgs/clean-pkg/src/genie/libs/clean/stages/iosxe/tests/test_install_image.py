@@ -87,6 +87,23 @@ class SetBootVariable(unittest.TestCase):
         # And we want the execute method to be mocked with device console output.
         self.device.execute = Mock(return_value = data['dir bootflash:/'])
 
+        def mock_execute(*args, **kwargs):
+            assert args == (['cd bootflash', 'touch packages.conf'],)
+
+        class ContextMgr:
+            def __enter__(self, *args, **kwargs):
+                return self
+
+            def __exit__(self, exc_type, exc_value, exc_tb):
+                return False
+
+            def __getattr__(self, attr):
+                if attr == 'execute':
+                    return mock_execute
+                return Mock()
+
+        self.device.bash_console = ContextMgr
+
         # And we want the execute_set_boot_variable api to be mocked.
         # This simulates the pass case.
         self.device.api.execute_set_boot_variable = Mock()
@@ -117,6 +134,23 @@ class SetBootVariable(unittest.TestCase):
 
         # And we want the execute method to be mocked with device console output.
         self.device.execute = Mock(return_value = data['dir bootflash:/'])
+
+        def mock_execute(*args, **kwargs):
+            assert args == (['cd bootflash', 'touch packages.conf'],)
+
+        class ContextMgr:
+            def __enter__(self, *args, **kwargs):
+                return self
+
+            def __exit__(self, exc_type, exc_value, exc_tb):
+                return False
+
+            def __getattr__(self, attr):
+                if attr == 'execute':
+                    return mock_execute
+                return Mock()
+
+        self.device.bash_console = ContextMgr
 
         # And we want the execute_set_boot_variable api to raise an exception when called.
         # This simulates the fail case.

@@ -22,7 +22,11 @@ class TestGetBgpRouteExtCommunity(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['R1_xe']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_get_bgp_route_ext_community(self):
         result = get_bgp_route_ext_community(self.device, 'VPNv4', '3.3.3.3', 'VRF1')

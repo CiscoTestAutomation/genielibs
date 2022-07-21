@@ -22,7 +22,11 @@ class TestConfigureLoggingConsoleErrors(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['c2_core_sf']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_configure_logging_console_errors(self):
         result = configure_logging_console_errors(self.device)

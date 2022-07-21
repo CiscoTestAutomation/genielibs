@@ -22,7 +22,11 @@ class TestExecuteClearDnsStatistics(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['uut1']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_execute_clear_dns_statistics(self):
         result = execute_clear_dns_statistics(self.device)

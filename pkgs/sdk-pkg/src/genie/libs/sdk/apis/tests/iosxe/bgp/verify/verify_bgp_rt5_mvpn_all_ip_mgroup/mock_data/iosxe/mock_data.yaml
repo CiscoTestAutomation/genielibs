@@ -1,0 +1,61 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: leaf1(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: leaf1(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show ip bgp ipv4 mvpn all:
+      response:
+      - "BGP table version is 48, local router ID is 1.1.1.1\r\nStatus codes: s suppressed,\
+        \ d damped, h history, * valid, > best, i - internal, \r\n              r\
+        \ RIB-failure, S Stale, m multipath, b backup-path, f RT-Filter, \r\n    \
+        \          x best-external, a additional-path, c RIB-compressed, \r\n    \
+        \          t secondary path, L long-lived-stale,\r\nOrigin codes: i - IGP,\
+        \ e - EGP, ? - incomplete\r\nRPKI validation codes: V valid, I invalid, N\
+        \ Not found\r\n\r\n     Network          Next Hop            Metric LocPrf\
+        \ Weight Path\r\nRoute Distinguisher: 1001:1\r\n *>   [5][1001:1][20.20.20.22][239.1.1.30]/18\r\
+        \n                      2.2.2.2                                0 1000 1001\
+        \ ?\r\nRoute Distinguisher: 1002:1 (default for vrf red)\r\n *>   [5][1002:1][20.20.20.21][239.1.1.1]/18\r\
+        \n                      0.0.0.0                            32768 ?\r\n *>\
+        \   [5][1002:1][20.20.20.22][239.1.1.30]/18\r\n                      2.2.2.2\
+        \                                0 1000 1001 ?\r\n *>   [7][1002:1][16843009][20.20.20.21/32][232.1.1.5/32]/22\r\
+        \n                      3.3.3.3                                0 1000 1003\
+        \ ?\r\n *>   [7][1002:1][16843009][20.20.20.21/32][239.1.1.1/32]/22\r\n  \
+        \                    2.2.2.2                                0 1000 1001 ?\r\
+        \nRoute Distinguisher: 1.1.1.1:1\r\n *>   [7][1.1.1.1:1][16843009][20.20.20.21/32][232.1.1.5/32]/22\r\
+        \n                      3.3.3.3                                0 1000 1003\
+        \ ?\r\n *>   [7][1.1.1.1:1][16843009][20.20.20.21/32][239.1.1.1/32]/22\r\n\
+        \                      2.2.2.2                                0 1000 1001\
+        \ ?\r\nRoute Distinguisher: 2.2.2.2:1\r\n *>   [7][2.2.2.2:1][33686018][20.20.20.22/32][232.1.1.6/32]/22\r\
+        \n                      0.0.0.0                            32768 ?\r\n *>\
+        \   [7][2.2.2.2:1][33686018][20.20.20.22/32][239.1.1.30/32]/22\r\n       \
+        \               0.0.0.0                            32768 ?"
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: leaf1#

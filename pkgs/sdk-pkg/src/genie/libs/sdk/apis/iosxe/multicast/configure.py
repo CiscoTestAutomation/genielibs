@@ -528,3 +528,50 @@ def configure_scale_service_reflection_via_tftp(device,
             raise Exception('tftp_config failed.')
     else:
         return cmds
+
+def configure_ip_pim_bsr_candidate(device, interface, mask_length):
+    """ Configure ip pim bsr-candidate on interface <interface>
+        Args:
+            device ('obj'): Device object
+            interface('str'): interface details on which we config
+            mask_length('int'): Hash Mask length for RP selection
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure : Failed to configure ip pim bsr-candidate on interface
+    """
+
+    log.debug(f"Configure ip pim bsr-candidate on interface {interface}")
+    
+    cmd = f"ip pim bsr-candidate {interface} {mask_length}"
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to Configure ip pim bsr-candidate on interface {interface}. Error:\n{e}"
+        )
+
+def configure_ip_pim_rp_candidate_priority(device, interface, priority_value):
+    """ Configure ip pim rp-candidate priority on device
+        Args:
+            device ('obj'): Device object
+            interface('str'): interface details on which we config
+            priority_value('int'): priority value to be set
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure : Failed to configure ip pim rp-candidate priority on device
+    """
+
+    log.debug(f"Configure ip pim rp-candidate priority on device")
+    
+    cmd = f"ip pim rp-candidate {interface} priority {priority_value}"
+    
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to Configure ip pim rp-candidate priority on device {device}. Error:\n{e}"
+        )
+        

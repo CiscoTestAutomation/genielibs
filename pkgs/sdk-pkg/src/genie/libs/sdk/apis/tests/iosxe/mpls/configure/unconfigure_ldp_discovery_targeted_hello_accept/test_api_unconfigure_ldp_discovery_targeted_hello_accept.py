@@ -22,7 +22,11 @@ class TestUnconfigureLdpDiscoveryTargetedHelloAccept(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['P1']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_unconfigure_ldp_discovery_targeted_hello_accept(self):
         result = unconfigure_ldp_discovery_targeted_hello_accept(self.device)

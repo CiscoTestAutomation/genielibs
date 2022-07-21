@@ -22,7 +22,11 @@ class TestExecuteDeleteBootVariable(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['II23-FCOECORE']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_execute_delete_boot_variable(self):
         result = execute_delete_boot_variable(self.device)

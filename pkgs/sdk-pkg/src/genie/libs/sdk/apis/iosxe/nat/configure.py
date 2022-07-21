@@ -575,6 +575,56 @@ def unconfigure_dynamic_nat_rule(
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not UnConfigure dynamic NAT rule") 
+
+def configure_static_nat_network_rule(
+    device,
+    inside_local_ip,
+    inside_global_ip,
+    mask 
+):
+    """ Configure static NAT network rule
+        Args:
+            device ('obj'): device to use
+            inside_local_ip ('str'): inside local ip
+            inside_global_ip ('str'): inside global ip
+            mask('str'):network mask
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: static NAT network rule not configured
+    """
+    cmd = "ip nat inside source static network {} {} {}".format(
+              inside_local_ip, inside_global_ip, mask)
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not Configure static NAT network rule")
+
+def unconfigure_static_nat_network_rule(
+    device,
+    inside_local_ip,
+    inside_global_ip,
+    mask
+):
+    """ UnConfigure static NAT network rule
+        Args:
+            device ('obj'): device to use
+            inside_local_ip ('str'): inside local ip
+            inside_global_ip ('str'): inside global ip
+            mask('str'):network mask
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: static NAT network rule not unconfigured
+    """
+    cmd = "no ip nat inside source static network {} {} {}".format(
+              inside_local_ip, inside_global_ip, mask)
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure static NAT network rule")
         
 def configure_static_nat_rule(
     device, 
@@ -935,7 +985,30 @@ def unconfigure_nat_translation_timeout(
         device.configure(cmd)
     except SubCommandFailure as e:
         log.error(e)
-        raise SubCommandFailure("Could not UnConfigure ip nat translation timeout")   
+        raise SubCommandFailure("Could not UnConfigure ip nat translation timeout")      
+
+def configure_nat_pool_overload_rule(
+    device,
+    acl_name,
+    pool_name
+):
+    """ Configure dynamic NAT pool overload rule
+        Args:
+            device ('obj'): device to use
+            acl_name ('str'): Acl name
+            pool_name ('str'): Pool name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: dynamic NAT rule not configured
+    """
+    cmd = ["ip nat inside source list {} pool {} overload".format(
+              acl_name, pool_name)]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not Configure ip nat pool overload")   
         
 def force_unconfigure_static_nat_route_map_rule(device, inside_local_ip, inside_global_ip, route_map_name, timeout = 60):
 
@@ -1242,6 +1315,29 @@ def configure_nat64_v4_list_pool(
     except SubCommandFailure as e:
         log.error(e)
         raise SubCommandFailure("Could not configure nat64 v4 list pool ")
+
+def unconfigure_nat_pool_overload_rule(
+    device,
+    acl_name,
+    pool_name
+):
+    """ UnConfigure dynamic NAT pool overload rule
+        Args:
+            device ('obj'): device to use
+            acl_name ('str'): Acl name
+            pool_name ('str'): Pool name
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: dynamic NAT rule not unconfigured
+    """
+    cmd = ["no ip nat inside source list {} pool {} overload".format(
+              acl_name, pool_name)]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        log.error(e)
+        raise SubCommandFailure("Could not unconfigure nat pool")
         
 def unconfigure_nat64_v4_list_pool(
     device, 

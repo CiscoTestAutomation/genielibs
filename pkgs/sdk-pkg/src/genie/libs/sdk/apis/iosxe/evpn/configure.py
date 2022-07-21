@@ -596,3 +596,62 @@ def change_nve_source_interface(device, nve_num, source_interface):
     except SubCommandFailure as e:
         raise SubCommandFailure(
             f"Failed to change source-interface for NVE. Error:\n{e}")
+            
+def enable_multicast_advertise_on_evi(device, evi, srvinst):
+    """ Enable multicast advertise on evi
+        Args:
+            device ('obj'): Device object
+            evi ('int'): evi id
+            srvinst ('str'): service instance type
+                              vlan-based|vlan-bundle|vlan-aware
+        Returns:
+            None
+        Raises:
+            SubCommandFailure : Failed to enable multicast advertise on evi
+    """
+    log.info(
+        f"Configuring 'l2vpn evpn evi instance - enable multicast advertise' on evi {evi}"
+    )
+
+    configs = [
+        f"l2vpn evpn instance {evi} {srvinst}",
+        "multicast advertise enable"
+    ]
+    try:
+        device.configure(configs)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"enable multicast advertise on evi {evi}. Error:\n{e}" 
+        )
+        
+def configure_replication_type_on_evi(device, evi, srvinst, replication_type):
+    """ Configure replication-type on evi
+        Args:
+            device ('obj'): Device object
+            evi ('int'): evi id
+            srvinst ('str'): service instance type
+                              vlan-based|vlan-bundle|vlan-aware
+            replication_type ('str'): replication type
+        Returns:
+            None
+        Raises:
+            SubCommandFailure : Failed to configure replication-type on evi
+    """
+    log.info(
+        f"Configuring 'l2vpn evpn evi instance - replication-type' on evi {evi}"
+    )
+
+    configs = [
+        f"l2vpn evpn instance {evi} {srvinst}",
+        f"replication-type {replication_type}"
+    ]
+    
+    try:
+        device.configure(configs)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"configure replication-type {replication_type} on evi {evi}. Error:\n{e}" 
+        )
+        

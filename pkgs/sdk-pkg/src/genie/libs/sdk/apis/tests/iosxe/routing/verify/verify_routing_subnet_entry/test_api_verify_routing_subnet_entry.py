@@ -22,7 +22,11 @@ class TestVerifyRoutingSubnetEntry(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['CGW-laas-c9500-5']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_verify_routing_subnet_entry(self):
         result = verify_routing_subnet_entry(self.device, '20.101.1.0', 'vrf101')

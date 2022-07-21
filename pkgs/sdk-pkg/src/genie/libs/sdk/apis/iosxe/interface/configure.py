@@ -4507,6 +4507,7 @@ def unconfigure_pppoe_enable_interface(device, interface, name):
             name (`str`): pppoe/bba group name
         Returns:
             None
+
         Raises:
             SubCommandFailure
     """
@@ -4646,4 +4647,162 @@ def unconfigure_mdns_on_interface_vlan(device, vlan):
         raise SubCommandFailure(
             f"Could not unconfigure mdns gateway on interface vlan. Error:\n{str(error)}"
         )
+
+def enable_switchport_trunk_on_interface(device, interface):
+    """ Enable switchport trunk on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface name to enable switchport trunk
+        Returns:
+            None 
+        Raises: 
+            SubCommandFailure : Failed to enable switchport trunk on interface
+    """
+    log.debug(f"Enable switchport mode trunk on interface {interface}")
+    
+    configs = [
+    f"interface {interface}",
+    "switchport mode trunk"
+    ]
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to enable switchport mode trunk under {interface}. Error:\n{e}"
+        )
+        
+def disable_autostate_on_interface(device, interface):
+    """ Disable autostate on interface
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface name to disable autostate
+        Returns:
+            None 
+        Raises: 
+            SubCommandFailure : Failed to disable autostate on interface
+    """
+    log.debug(f"Disable autostate on interface {interface}")
+    
+    configs = [
+        f"interface {interface}",
+        "no autostate"
+    ]
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to disable autostate under {interface}. Error:\n{e}"
+        )
+        
+
+def configure_ip_unnumbered_on_interface(device, interface, dest_interface):
+    """ configure ip unnumbered loopback on interface <interface>
+        Args:
+            device ('obj'): Device object
+            interfaces('str'): interface details on which we config
+            dest_interface('str'): Interface details on which ip unnumbered is going to apply (i.e - Loopback0)
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure : Failed to configure ip unnumbered loopback on interface
+    """
+
+    log.debug(f"Add ip unnumbered loopback on interface {interface}")
+    
+    configs = [
+        f"interface {interface}",
+        f"ip unnumbered {dest_interface}"
+    ]
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to add ip unnumbered loopback on interface {interface}. Error:\n{e}"
+        )
+        
+
+def configure_switchport_trunk_allowed_vlan(device, interface, vlan_id):
+    """ Configure switchport trunk allowed vlan on interface <interface>
+        Args:
+            device ('obj'): Device object
+            interface('str'): interface details on which we config
+            vlan_id('int'): VLAN IDs of the allowed VLANs
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure :Failed to Configure switchport trunk allowed vlan on interface
+    """
+
+    log.debug(f"Configure switchport trunk allowed vlan on interface {interface}")
+    
+    configs = [
+        f"interface {interface}",
+        f"switchport trunk allowed vlan {vlan_id}"
+    ]
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to Configure switchport trunk allowed vlan on interface {interface}. Error:\n{e}"
+        )
+        
+def configure_port_channel_lacp_max_bundle(device, port_channel_num, lacp_bundle_num):
+    
+    """ Configure lacp_max_bundle on the Port-channel interface
+
+        Args:
+            device (`obj`): Device object
+            port_channel_num('str'): Port-channel number for the Port-channel interface
+            lacp_bundle_num('str'): <1-8>  Max number of ports to bundle in this Port Channel
+            Example : interface Port-channel {100}
+                         lacp max-bundle {1}
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """
+    try:
+        device.configure(
+            [ 
+            f"interface Port-channel {port_channel_num}", 
+            f"lacp max-bundle {lacp_bundle_num}"
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure interface Port-channel {port_channel_num} lacp max_bundle {lacp_bundle_num} command"
+            )
+
+def unconfigure_port_channel_lacp_max_bundle(device, port_channel_num, lacp_bundle_num):
+    
+    """ UnConfigure lacp_max_bundle on the Port-channel interface
+
+        Args:
+            device (`obj`): Device object
+            port_channel_num('str'): Port-channel number for the Port-channel interface
+            lacp_bundle_num('str'): <1-8>  Max number of ports to bundle in this Port Channel
+            Example : interface Port-channel {100}
+                         no lacp max-bundle {1}
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure
+    """ 
+    try:
+        device.configure(
+            [
+            f"interface Port-channel {port_channel_num}",
+            f"no lacp max-bundle {lacp_bundle_num}"
+            ]
+        )
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure interface Port-channel {port_channel_num} lacp max_bundle {lacp_bundle_num} command"            
+            )
 

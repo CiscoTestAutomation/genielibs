@@ -22,7 +22,11 @@ class TestGetInterfaceNetmask(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['R1_xe']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_get_interface_netmask(self):
         result = get_interface_netmask('172.16.1.139')

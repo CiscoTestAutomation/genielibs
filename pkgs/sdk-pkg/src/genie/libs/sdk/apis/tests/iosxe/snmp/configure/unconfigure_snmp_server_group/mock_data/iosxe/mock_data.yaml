@@ -1,0 +1,47 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    no snmp-server group snmp_group v3 auth: "no snmp-server group snmp_group v3 auth\r\
+      \n"
+    no snmp-server group snmp_group v3 auth access ipv6 useracl useracl: "no snmp-server\
+      \ group snmp_group v3 auth access ipv6 useracl useracl\r\n"
+    no snmp-server group snmp_group v3 auth context context: "no snmp-server group\
+      \ snmp_group v3 auth context context\r\n"
+    no snmp-server group snmp_group v3 auth match exact: "no snmp-server group snmp_group\
+      \ v3 auth match exact\r\n"
+    no snmp-server group snmp_group v3 auth notify notify access useracl: "no snmp-server\
+      \ group snmp_group v3 auth notify notify access useracl\r\n"
+    no snmp-server group snmp_group v3 auth read readwrite access ipv6 useracl useracl: "no\
+      \ snmp-server group snmp_group v3 auth read readwrite access ipv6 useracl useracl\r\
+      \n"
+  prompt: UUT(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: UUT(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: UUT#

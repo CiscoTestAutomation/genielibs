@@ -22,7 +22,11 @@ class TestUnconfigureEvpnDefaultGatewayAdvertiseGlobal(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['NyqC']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_unconfigure_evpn_default_gateway_advertise_global(self):
         result = unconfigure_evpn_default_gateway_advertise_global(self.device)

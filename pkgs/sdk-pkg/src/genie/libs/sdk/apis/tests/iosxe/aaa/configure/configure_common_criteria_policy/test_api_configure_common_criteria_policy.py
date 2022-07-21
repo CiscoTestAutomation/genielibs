@@ -9,7 +9,7 @@ class TestConfigureCommonCriteriaPolicy(unittest.TestCase):
     def setUpClass(self):
         testbed = """
         devices:
-          HCR_pk:
+          VTP-PK1:
             connections:
               defaults:
                 class: unicon.Unicon
@@ -21,7 +21,7 @@ class TestConfigureCommonCriteriaPolicy(unittest.TestCase):
             type: c9200
         """
         self.testbed = loader.load(testbed)
-        self.device = self.testbed.devices['HCR_pk']
+        self.device = self.testbed.devices['VTP-PK1']
         self.device.connect(
             learn_hostname=True,
             init_config_commands=[],
@@ -29,6 +29,6 @@ class TestConfigureCommonCriteriaPolicy(unittest.TestCase):
         )
 
     def test_configure_common_criteria_policy(self):
-        result = configure_common_criteria_policy(device=self.device, policy_name='enable_test')
+        result = configure_common_criteria_policy(self.device, 'ABCD', 5, 0, 0, 1, 1, 20, 8, 0, 1, 5, True, 1)
         expected_output = None
         self.assertEqual(result, expected_output)

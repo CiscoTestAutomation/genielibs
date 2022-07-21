@@ -22,7 +22,11 @@ class TestConfigureSystemJumbomtu(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['CE1']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_configure_system_jumbomtu(self):
         result = configure_system_jumbomtu(self.device, 1900)

@@ -893,6 +893,9 @@ def copy_to_device(device,
             server_block = fu.get_server_block(server)
             protocol = server_block.get('protocol', 'http')
 
+        # re-instantiate FileUtils object now we have protocol
+        fu = FileUtils.from_device(device, protocol=protocol)
+
         if vrf is not None:
             server = fu.get_hostname(server, device, vrf=vrf)
         else:
@@ -1073,6 +1076,9 @@ def copy_from_device(device,
         if protocol is None:
             server_block = fu.get_server_block(server)
             protocol = server_block.get('protocol', 'http')
+
+        # re-instantiate FileUtils object, now we have protocol
+        fu = FileUtils.from_device(device, protocol=protocol)
 
         destination = '{p}://{s}/{f}'.format(p=protocol, s=server, f=remote_path)
 

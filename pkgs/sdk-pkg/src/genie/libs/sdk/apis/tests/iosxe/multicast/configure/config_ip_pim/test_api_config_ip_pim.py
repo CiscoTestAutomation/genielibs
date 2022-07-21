@@ -22,7 +22,11 @@ class TestConfigIpPim(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['P1']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_config_ip_pim(self):
         result = config_ip_pim(self.device, 'loopback3001', 'sparse-mode')

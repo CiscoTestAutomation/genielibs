@@ -22,7 +22,11 @@ class TestConfigureMdns(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['C9500H_Sathya']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_configure_mdns(self):
         result = configure_mdns(self.device, 'custom22', ['policie31', 'policie32', 'policie33', 'policie34'], ['IN', 'OUT', 'OUT', 'IN'], {'Policy41': ['policie31', 'IN'],

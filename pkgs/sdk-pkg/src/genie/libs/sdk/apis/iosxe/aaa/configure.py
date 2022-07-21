@@ -855,12 +855,14 @@ def configure_common_criteria_policy(device,
                                      char_changes=None,
                                      copy=None, 
                                      lifetime=None, 
-                                     lower_case=1, 
-                                     upper_case=1,
+                                     lower_case=None, 
+                                     upper_case=None,
                                      max_len=None, 
-                                     min_len=3, 
+                                     min_len=1, 
                                      no_value=None, 
-                                     num_count=1,
+                                     num_count=None,
+									 char_rep=None,
+									 restrict=False,
                                      special_case=None):
     
     """ Configure aaa common criteria policy
@@ -876,6 +878,8 @@ def configure_common_criteria_policy(device,
         min_len (`str`, optional):      Specify the minimum length of the password
         no_value (`dict`, optional):    value to unconfigure
         num_count (`str`, optional):    Number of numeric characters
+        char_rep (`str`, optional):     Maximum number of times a character can repeat consecutively in password
+        restrict (`bool`, optional):     Prohibit consecutive 4 characters or numbers from the keyboard
         special_case (`str`, optional): Number of special characters
 
     Return:
@@ -892,13 +896,13 @@ def configure_common_criteria_policy(device,
     if lifetime:
        for key in lifetime:
            configs.append("lifetime {attr} {val}".format(attr=key, val=lifetime[key])) 
-    if int(lower_case) > 1:
+    if int(lower_case) > 0:
         configs.append("lower-case {low}".format(low=lower_case))
-    if int(upper_case) > 1:
+    if int(upper_case) > 0:
         configs.append("upper-case {up}".format(up=upper_case))
     if max_len:
         configs.append("max-length {maxl}".format(maxl=max_len))
-    if int(min_len) > 3:
+    if int(min_len) > 1:
         configs.append("min-length {minl}".format(minl=min_len))
     if no_value:
         if 'lifetime' in no_value:
@@ -909,10 +913,14 @@ def configure_common_criteria_policy(device,
             for key in no_value:
                 configs.append("no {attr} {val}".format(attr=key,
                     val=no_value[key]))
-    if int(num_count) > 1:
+    if int(num_count) > 0:
         configs.append("numeric-count {num}".format(num=num_count))
     if special_case:
         configs.append("special-case {spcl}".format(spcl=special_case))
+    if char_rep:
+        configs.append("character-repetition {rep}".format(rep=char_rep))
+    if restrict:
+        configs.append("restrict-consecutive-letters")
 
     try:
         device.configure(configs)

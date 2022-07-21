@@ -22,7 +22,11 @@ class TestUnconfigureInterfaceSwitchportAccessVlan(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['sisf-c9500-21-8-26-2']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_unconfigure_interface_switchport_access_vlan(self):
         result = unconfigure_interface_switchport_access_vlan(self.device, 'te1/0/1', 251)

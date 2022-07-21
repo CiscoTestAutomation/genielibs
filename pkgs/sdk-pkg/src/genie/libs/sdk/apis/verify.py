@@ -25,6 +25,9 @@ def verify_connectivity(device):
     log.info("Verifying device connectivity")
     try:
         device.execute("show clock")
+        if device.state_machine.current_state == "rommon":
+            log.warning("Device is in rommon")
+            return False
     except Exception:
         # Nope!
         log.warning("Device is not connected")
