@@ -22,7 +22,11 @@ class TestConfigureTerminalExecPromptTimestamp(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['c2_core_sf']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_configure_terminal_exec_prompt_timestamp(self):
         result = configure_terminal_exec_prompt_timestamp(self.device)

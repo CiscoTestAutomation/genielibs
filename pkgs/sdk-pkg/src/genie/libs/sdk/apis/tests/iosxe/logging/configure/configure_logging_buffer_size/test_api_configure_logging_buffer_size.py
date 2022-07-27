@@ -22,7 +22,11 @@ class TestConfigureLoggingBufferSize(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['c2_core_sf']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_configure_logging_buffer_size(self):
         result = configure_logging_buffer_size(self.device, 2147483647)

@@ -22,7 +22,11 @@ class TestGetBgpRt5CommunityPathsLabel(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['CGW-laas-c9500-5']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_get_bgp_rt5_community_paths_label(self):
         result = get_bgp_rt5_community_paths_label(self.device, 'l2vpn evpn', '0', '20.101.1.3', '32', '101')

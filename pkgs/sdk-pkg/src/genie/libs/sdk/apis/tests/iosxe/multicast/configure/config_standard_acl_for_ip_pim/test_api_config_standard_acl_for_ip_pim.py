@@ -22,7 +22,11 @@ class TestConfigStandardAclForIpPim(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['P1']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_config_standard_acl_for_ip_pim(self):
         result = config_standard_acl_for_ip_pim(self.device, 'vrf3001-BidigroupRP', 'permit', '229.1.1.1', '0.0.255.255', 'vrf3001', '30.0.1.1', True)

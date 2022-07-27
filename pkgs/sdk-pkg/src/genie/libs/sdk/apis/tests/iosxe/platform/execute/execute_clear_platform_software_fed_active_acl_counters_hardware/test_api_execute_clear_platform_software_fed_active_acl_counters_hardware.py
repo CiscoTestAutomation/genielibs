@@ -22,7 +22,11 @@ class TestExecuteClearPlatformSoftwareFedActiveAclCountersHardware(unittest.Test
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['Authenticator_9400']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_execute_clear_platform_software_fed_active_acl_counters_hardware(self):
         result = execute_clear_platform_software_fed_active_acl_counters_hardware(self.device)

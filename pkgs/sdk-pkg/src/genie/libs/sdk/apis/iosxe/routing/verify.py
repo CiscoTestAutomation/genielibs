@@ -4,11 +4,13 @@
 import re
 import logging
 from prettytable import PrettyTable
+from time import sleep
 
 # pyATS
 from pyats.utils.objects import find, R
 
 # Genie
+from genie.libs.sdk.apis.iosxe.routing import util as util
 from genie.utils.timeout import Timeout
 from genie.libs.sdk.libs.utils.normalize import GroupKeys
 from genie.metaparser.util.exceptions import SchemaEmptyParserError
@@ -945,4 +947,263 @@ def verify_route_vrf_nexthop_with_source_protocol(
                                     return True
         timeout.sleep()
          
+    return False
+
+def verify_source_protocol(device, route, expected_source):
+    """
+    Verifies that route's source protocol matches that of expected_source.
+
+    Args:
+        device (): Device used to run commands
+        route ('str'): Route whose source protocol will be checked
+        expected_source ('str'): Source protocol that route is expected to match
+    
+    Returns True expected source protocol matches device source protocol, False otherwise
+    """
+    log.info("Checking that route {} has source protocol {}".format(route, expected_source))
+    device_source = device.api.get_routing_route_source_protocol(route)
+    if expected_source != device_source:
+        log.error("Route {} does not have source protocol {}. Has {} instead".format(route, expected_source, device_source))
+        return False
+    log.info("Route {} has source protocol {}.".format(route, expected_source))
+    return True
+
+def verify_source_protocols(device, routes, expected_source):
+    """
+    Verifies that multiple routes' source protocols match that of expected_source.
+
+    Args:
+        device (): Device used to run commands
+        routes ('list'): List of routes whose source protocols will be checked
+        expected_source ('str'): Source protocol that all routes are expected to match
+    
+    Returns True if all routes' souce protocols match the expected source protocol, False otherwise
+    """
+    success = True
+    for route in routes:
+        if not device.api.verify_source_protocol(route, expected_source):
+            success = False
+    return success
+
+def verify_next_hop(device, route, expected_next_hop):
+    """
+    Verifies that route's next hop matches that of expected_next_hop.
+
+    Args:
+        device (): Device used to run commands
+        route ('str'): Route whose next hop will be checked
+        expected_next_hop ('str'): Next hop that route is expected to match
+
+    Returns True if route's next hop matches expected_next_hop, False otherwise
+    """
+    log.info("Checking that route {} has next hop {}".format(route, expected_next_hop))
+    #device_next_hop = cef_get.get_cef_next_hop_ip_address(device, route)
+    device_next_hops = device.api.get_next_hops(route)
+    # Nesting because things aren't working as expected, trying things
+    if device_next_hops is not None:
+        if expected_next_hop in device_next_hops:
+            log.info("Route {} has next hop {}".format(route, expected_next_hop))
+            return True
+    log.error("Route {} does not have next hop {}\nHas next hops {}".format(route, expected_next_hop, device_next_hops))
+    return False
+
+def verify_next_hops(device, routes, expected_next_hop):
+    """
+    Verifies that the routes' next hops match that of expected_next_hop.
+
+    Args:
+        device (): Device used to run commands
+        routes ('list'): Routes whose next hops will be checked
+        expected_next_hop ('str'): Next hops that routes are expected to match
+    """
+    success = True
+    for route in routes:
+        if not verify_next_hop(device, route, expected_next_hop):
+            success = False
+    return success
+
+def verify_num_routes_equal_before_and_after_clear(device, show_cmd, clr_cmd):
+    """
+    Verifies that the number of routes before
+    and after running the clr_cmd are equal
+
+    Args:
+        device (): Device used to run commands
+        show_cmd ('str'): show command to run
+        clr_cmd ('str'): clear command to run
+
+    Returns True if number of routes before and after clear are equal, None if exception,
+    False otherwise
+    """ 
+    try:
+        # 1. Run show command
+        preclean_out = device.parse(show_cmd)
+        preclean_routes = util.get_routes_from_parsed(output=preclean_out)
+    except SchemaEmptyParserError as e:
+        # if SchemaEmptyParserError, set preclean_routes to empty list
+        log.error("A SchemaEmptyParserError exception has occurred\n{}".format(e))
+        preclean_routes = []
+    except Exception as e:
+        log.error("An exception has occurred\n{}".format(e))
+        return None
+
+    # 2. Run clear command
+    device.execute(clr_cmd)
+    sleep(10)
+
+    # 3. Run show 
+    try:
+        postclean_out = device.parse(show_cmd)
+        postclean_routes = util.get_routes_from_parsed(output=preclean_out)
+    except SchemaEmptyParserError as e:
+        # if SchemaEmptyParserError, set postclean_routes to empty list
+        log.error("A SchemaEmptyParserError exception has occurred\n{}".format(e))
+        postclean_routes = []
+    except Exception as e:
+        log.error("An exception has occurred\n{}".format(e))
+        return None
+
+    #if preclean_routes is not None and postclean_routes is not None:
+    num_preclean = len(preclean_routes)
+    num_postclean = len(postclean_routes)
+    log.info("# Preclean routes: {}\n# Postclean routes: {}".format(num_preclean, num_postclean))
+    return num_preclean == num_postclean
+
+def verify_ipv6_intf_ip_address(device, interface, address):
+    """
+    Verifies that the address is valid and exists in the interface given
+
+    Args:
+        device (): Device used to run commands
+        interface ('str'): interface on device
+        address ('str'): address to verify
+
+    Returns True if address exists in interface, false otherwise
+    """
+
+    log.info("Verifying that interface {} on device {} has address {}".format(interface, device.name, address))
+
+    try:
+        ipv6_addresses = device.api.get_ipv6_intf_valid_ip_addresses(interface)
+    except Exception as e:
+        log.error("Error: an exception occured\n{}".format(e))
+    if address in ipv6_addresses:
+        log.info("A valid Address: {} is found on interface {}".format(address, interface))
+        return True
+
+    log.error("Address: {} was not found on interface {}".format(address, interface))
+    return False
+
+def verify_linklocal_from_mac_address(device, linklocal_intf, mac_intf):
+    """
+    Verifies that the linklocal address in linklocal_intf is based
+    on the mac address of mac_intf.
+
+    Args:
+        device ('Device'): Device used to run commands
+        linklocal_intf ('str'): Interface whose linklocal address is being verified
+        mac_intf ('str'): Interface where linklocal_intf derives the MAC address to generate
+            linklocal address
+    
+    Returns True if linklocal address is based on the MAC address, False otherwise
+    """
+    log.info("Verifying that linklocal address of interface {} is based on the\n\
+    MAC address of interface {}".format(linklocal_intf, mac_intf))
+    # Get expected linklocal address: produced from function
+    #   - Get MAC address
+    #   - Compute linklocal address from MAC address
+    try:
+        expected_ll_addr = device.api.ipv6_build_linklocal(mac_intf)
+    except Exception as e:
+        log.error("Error: an exception occured\n{}".format(e))
+    # Get actual linklocal address: get from device
+    actual_ll_addr = device.api.get_ipv6_interface_ip_address(linklocal_intf, True)
+
+    # Compare expected and actual linklocal addresses
+    log.info("Expected linklocal address: {}\nActual linklocal address: {}".format(expected_ll_addr, actual_ll_addr))
+    if expected_ll_addr == actual_ll_addr:
+        return True
+    return False
+
+def verify_tunnel_linklocal_based_on_ipv4_addr(device, tunnel_intf, ipv4_intf, isatap=False):
+    """
+    Verifies that tunnel_intf's ipv6 linklocal address is based on
+    the ipv4 address of an ipv4_intf
+
+    Args:
+        device ('Device'): Device used to run commands
+        tunnel_intf ('str'): Tunnel interface whose linklocal address is being checked
+        ipv4_intf ('str'): IPv4 interface
+        isatap ('bool'): Checks for ISATAP address or not
+
+    Returns True if tunnel_intf's ipv6 linklocal address is based on ipv4_intf's address, False otherwise
+    """
+    try:
+        # Device Tunnel linklocal address (Actual linklocal)
+        actual_ll_addr = device.api.get_ipv6_interface_ip_address(tunnel_intf, True)
+        # Device ipv4 interface ip address
+        # ipv4_addr = device.api.get_interface_ip_address(ipv4_intf)
+        # Generated ipv6 linklocal address from ipv4 (Expected linklocal)
+        expected_ll_addr = device.api.get_ipv6_linklocal_addr_from_ipv4(ipv4_intf, isatap)
+    except Exception as e:
+        log.error("Error: an exception occured\n{}".format(e))
+    log.info("Actual linklocal address: {}\nExpected linklocal address: {}"\
+        .format(actual_ll_addr, expected_ll_addr))
+
+    if actual_ll_addr == expected_ll_addr:
+        log.info("The tunnel interface's linklocal address is based on the ipv4 interface's address.")
+        return True
+    log.error("The tunnel interface's linklocal address is NOT based on the ipv4 interface's address.")
+    return False
+
+def verify_ipv6_linklocal_address(device, interface, expected_linklocal):
+    """
+    Verifies that the expected_linklocal address is equal to the actual
+    linklocal address.
+
+    Args:
+        device ('Device'): Device used to run commands
+        interface ('str'): Interface to get linklocal address from
+        expected_linklocal ('str'): Expected linklocal address
+
+    Returns True if expected_linklocal matches actual linklocal address, False otherwise.
+    """
+    log.info("Verifying that expected linklocal address {} is True on interface {}\
+    on device {}".format(expected_linklocal, interface, device.name))
+    try:
+        actual_linklocal = device.api.get_ipv6_interface_ip_address(interface, True)
+    except Exception as e:
+        log.error("Error: an exception occured\n{}".format(e))
+    log.info("Expected linklocal address: {}\nActual linklocal address: {}".format(expected_linklocal, actual_linklocal))
+
+    if expected_linklocal == actual_linklocal:
+        log.info("Expected linklocal address is equal to the actual linklocal address.")
+        return True
+    log.error("Expected linklocal address is NOT equal to the actual linklocal address.")
+    return False
+
+def verify_ipv6_intf_autocfg_address(device, interface, prefix, subnet):
+    """
+    Verifies that the address matches an entry in the interface given
+
+    Args:
+        device (): Device used to run commands
+        interface ('str'): interface on device
+        prefix ('str'): address to verify
+        subnet ('int):  subnetmask
+
+    Returns True if address matches in interface, false otherwise
+    """
+
+    log.info("Verifying address {}/{} matches an auto configured address on device".format(prefix, subnet))
+    try:
+        auto_cfg = device.api.get_ipv6_intf_autocfg_address(interface)
+    except Exception as e:
+        log.error("Error: An exception occured\n{}".format(e))
+    for addr in auto_cfg:
+        pfx, nmask = addr.split('/')
+        if prefix in pfx and subnet == int(nmask):
+            return True
+
+    log.error("Given address {}/{} does not match any of the autocfg addresses {}".format(prefix, subnet, auto_cfg))
     return False

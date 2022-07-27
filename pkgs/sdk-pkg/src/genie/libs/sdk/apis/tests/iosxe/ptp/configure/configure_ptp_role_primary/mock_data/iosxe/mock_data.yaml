@@ -3,8 +3,6 @@ configure:
     end:
       new_state: execute
     interface te1/0/33: "interface te1/0/33\r\n"
-    line console:
-      new_state: configure_line
     line console 0:
       new_state: configure_line
     no logging console: ''
@@ -15,8 +13,6 @@ configure_line:
     end:
       new_state: execute
     exec-timeout 0: ''
-    line vty: ''
-    terminal width 511: ''
   prompt: centi_48TX_1(config-line)#
 connect:
   commands:
@@ -37,6 +33,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-    term width 511: ''
-    terminal session-timeout 0: ''
   prompt: centi_48TX_1#

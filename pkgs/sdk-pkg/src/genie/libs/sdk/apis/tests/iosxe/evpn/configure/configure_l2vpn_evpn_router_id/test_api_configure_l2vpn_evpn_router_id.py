@@ -22,7 +22,11 @@ class TestConfigureL2vpnEvpnRouterId(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['NyqC']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_configure_l2vpn_evpn_router_id(self):
         result = configure_l2vpn_evpn_router_id(self.device, 'loopback0')

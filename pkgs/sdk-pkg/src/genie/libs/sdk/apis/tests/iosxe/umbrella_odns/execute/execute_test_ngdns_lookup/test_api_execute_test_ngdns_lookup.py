@@ -22,7 +22,11 @@ class TestExecuteTestNgdnsLookup(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['uut1']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_execute_test_ngdns_lookup(self):
         result = execute_test_ngdns_lookup(self.device, 'www.facebook.com')

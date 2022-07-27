@@ -925,7 +925,7 @@ def configure_redistribute_connected(device, bgp_as, address_family, vrf=None):
             device ('obj'): device to use
             bgp_as ('str'): bgp as number
             address_family ('str'): address family under bgp 
-            vrf ('str'): vrf in address_family
+            vrf ('str'): vrf in address_family default to None
         Returns:
             None
         Raises:
@@ -1649,3 +1649,88 @@ def configure_bgp_refresh_max_eor_time(device, bgp_as, max_eor_time):
             "BGP router {bgp_as}".format(bgp_as=bgp_as)
         )
 
+def configure_bgp_router_id_interface(device, bgp_as, interface):
+    """ Configure bgp router-id interface on interface <interface>
+        Args:
+            device ('obj'): Device object
+            bgp_as('int'): bgp id
+            interface('str'): interface details on which we config
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure : Failed to configure bgp router-id on interface
+    """
+
+    log.debug(f"Configure bgp router-id interface on interface {interface}")
+    
+    configs = [
+        f"router bgp {bgp_as}",
+        f"bgp router-id interface {interface}"
+    ]
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure bgp router-id interface on interface {interface}. Error:\n{e}"
+        )
+
+def configure_bgp_redistribute_static(device, bgp_as, address_family, vrf=None):
+    """ configure redistribute static in bgp
+        Args:
+            device ('obj'): device to use
+            bgp_as ('int'): bgp as number
+            address_family ('str'): address family under bgp 
+            vrf ('str'): vrf in address_family
+        Returns:
+            None
+        Raises:
+            SubCommandFailure: Failed configuring redistribute
+                            static under bgp address_family
+    """
+    log.info(
+        f"configure redistribute static under bgp {bgp_as}"
+    )
+    confg = ["router bgp {}".format(bgp_as)]
+    if vrf:
+        confg.append(f"address-family {address_family} vrf {vrf}")
+    else:
+        confg.append(f"address-family {address_family}")
+    confg.append("redistribute static")              
+    try:
+        device.configure(confg)
+    except SubCommandFailure:
+        raise SubCommandFailure(
+            f"Could not configure redistribute static under bgp {bgp_as}"
+        )
+        
+
+def configure_bgp_advertise_l2vpn_evpn(device, bgp_as, address_family, vrf):
+    """ Configure bgp advertise l2vpn evpn on device <device>
+        Args:
+            device ('obj'): Device object
+            bgp_as('int'): bgp id
+            address_family('str'): address family (i.e - ipv4/ipv6)
+            vrf('str'): vrf for in the device
+        Returns:
+            None
+        Raises: 
+            SubCommandFailure : Failed to configure bgp advertise l2vpn evpn on device            
+
+    """
+
+    log.debug(f"Configure bgp advertise l2vpn evpn on device {device}")
+    
+    configs = [
+        f"router bgp {bgp_as}",
+        f"address-family {address_family} vrf {vrf}",
+        "advertise l2vpn evpn"
+    ]
+    
+    try:
+        device.configure(configs)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Failed to configure bgp advertise l2vpn evpn on device {device}. Error:\n{e}"
+        )
+        

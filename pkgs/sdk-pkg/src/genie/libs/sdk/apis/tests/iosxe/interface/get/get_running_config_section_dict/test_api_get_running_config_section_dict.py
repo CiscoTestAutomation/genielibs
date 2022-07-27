@@ -22,7 +22,11 @@ class TestGetRunningConfigSectionDict(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['R1_xe']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_get_running_config_section_dict(self):
         result = get_running_config_section_dict(self.device)

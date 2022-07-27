@@ -22,7 +22,11 @@ class TestStartPacketCapture(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['c2_core_sf']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_start_packet_capture(self):
         result = start_packet_capture(self.device, 'cap1', 'Fo1/0/5', 'in')

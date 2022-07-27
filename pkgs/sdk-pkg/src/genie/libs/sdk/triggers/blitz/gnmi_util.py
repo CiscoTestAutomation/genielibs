@@ -885,6 +885,16 @@ class GnmiMessageConstructor:
     def get_payload(self, update):
         """Construct dict that will be converted to json_val in Update.
 
+        dict will be in format of json {}
+
+        For all list having similar keys but different values, create a list of dictionaries.
+        This will allow to store every key value in a single json_val
+
+        Eg: xpath =  common_xpath/x-list[type="t1"]/val
+                     common_xpath/x-list[type="t2"]/val
+
+        json_val will be = "{"x-list": [{"type": "t1", "val": 10}, {"type": "t2", "val": 10}]}"
+        
         Args:
           update (list): dicts with xpath in gNMI format, nodetypes, values.
 
@@ -894,6 +904,7 @@ class GnmiMessageConstructor:
         json_val = {}
         processed_xp = []
         for node in update:
+            ind = 0
             xp = node['xpath']
             if xp.endswith(']'):
                 continue
@@ -903,17 +914,46 @@ class GnmiMessageConstructor:
             collect_key = False
             key_elem = None
             tokenized = xpath_tokenizer_re.findall(xp)
+            if len(tokenized) == 0:
+                continue
             for i, seg in enumerate(tokenized, 1):
                 token, elem = seg
                 if token in ['/', '=']:
                     continue
                 if not token and not collect_key and elem:
                     if len(tokenized) == i:
-                        jval[elem] = node['value']
+                        # If a node has only one element
+                        if len(jval) == 0:
+                            jval[elem] = node['value']
+                        else:
+                            # Check if jval is pointing to a list or dict to assign values
+                            if isinstance(jval, list):
+                                jval[ind][elem] = node['value']
+                            else:
+                                jval[elem] = node['value']
                     else:
+                        # Create a new list of dictionary / new key in dictionary if elem is not present
                         if elem not in jval:
-                            jval[elem] = {}
-                        jval = jval[elem]
+                            if isinstance(jval, list):
+                               if(elem not in jval[ind]):
+                                    if(len(jval) == 0 or {} in jval): 
+                                        ind=0
+                                    jval[ind][elem] = []
+                                    jval[ind][elem].append({})
+                            else:
+                                jval[elem] = []
+                                ind = 0
+                                jval[elem].append({})
+
+                        # For every interation point jval to the last list created.
+                        if isinstance(jval, list):
+                            if jval[ind][elem] == "":
+                                jval[ind][elem] = []
+                                jval[ind][elem].append({})
+                            jval = jval[ind][elem]
+                            ind = 0
+                        else:
+                            jval = jval[elem]
                     continue
                 if token == '[':
                     collect_key = True
@@ -922,7 +962,23 @@ class GnmiMessageConstructor:
                     collect_key = False
                     continue
                 if key_elem is not None and token:
-                    jval[key_elem] = token.strip('"')
+                    # Store key_elem only if it is not equal to prevous key_elem for the same list.
+                    if key_elem in jval[ind]:
+                        index=0
+                        f=0
+                        for j in jval:
+                            if j[key_elem] == token.strip('"'):
+                                f=1
+                                break
+                            index = index+1
+                        if f==0:
+                            ind = len(jval)
+                            jval.append({})
+                            jval[ind][key_elem] = token.strip('"')
+                        else:
+                            ind = index
+                    else: 
+                        jval[ind][key_elem] = token.strip('"')
                     key_elem = None
                     continue
                 if collect_key and elem:
@@ -930,7 +986,21 @@ class GnmiMessageConstructor:
                     continue
             processed_xp.append(xp)
 
+        self.format_json_val(json_val)
         return json_val
+
+    def format_json_val(self,json_val):
+        # Convert List of Dictionaries with only 1 one element to Dictionary
+        if not isinstance(json_val,dict):
+            return
+        for j in json_val:
+            if isinstance(json_val[j],list) and len(json_val[j]) == 1:
+                json_val[j] = json_val[j][0]
+                self.format_json_val(json_val[j])
+            else:
+                if isinstance(json_val[j],list):
+                    for i in json_val[j]:
+                        self.format_json_val(i)
 
     def _trim_nodes(self, nodes):
         # Prune list nodes if already in other nodes xpath

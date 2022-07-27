@@ -116,3 +116,35 @@ def unconfigure_cdp_interface(device, interface):
             "Could not unconfigure CDP on interface"
             "Error: {error}".format(error=e)
             )
+
+def configure_cdp_neighbors(device):
+    """ Enables cdp on target device globally on the device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+    """
+    command_list = ['cdp run']
+    try:
+        device.configure(command_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure CDP Globally"
+            "Error: {error}".format(error=e)
+        )
+
+def unconfigure_cdp_neighbors(device):
+    """ Disable cdp on target device globally on the device
+        Args:
+            device ('obj'): Device object
+        Returns:
+            None
+    """ 
+    command_list = ['no cdp run']
+    try:
+        device.configure(command_list)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not unconfigure CDP Globally"
+            "Error: {error}".format(error=e)
+        )

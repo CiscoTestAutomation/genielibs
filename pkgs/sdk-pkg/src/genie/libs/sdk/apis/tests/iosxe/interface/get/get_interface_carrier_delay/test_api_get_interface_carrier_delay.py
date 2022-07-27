@@ -22,7 +22,11 @@ class TestGetInterfaceCarrierDelay(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['R1_xe']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_get_interface_carrier_delay(self):
         result = get_interface_carrier_delay(self.device, 'GigabitEthernet1', 'up')

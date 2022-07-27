@@ -34,6 +34,9 @@ def _disconnect_reconnect(device):
         Returns:
             None
     '''
+    if device.state_machine.current_state == 'rommon':
+       log.warning("Device is in rommon")
+       return False
 
     # Disconnect from the device
     log.info("Disconnecting from device '{}'".format(device.name))

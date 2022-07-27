@@ -392,6 +392,204 @@ request4 = {
     }
 }
 
+format5 = {
+    'encoding': 'JSON',
+    'origin': ''
+}
+
+request_multiple_list = {
+  'nodes': [
+        {
+            'datatype': 'uint32',
+            'nodetype': 'leaf',
+            'value': '10',
+            'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items/top:Dom-list[top:name="default"]/top:eventHist-items/top:EventHistory-list[top:type="nbm"]/top:size'
+        },
+        {
+            'datatype': 'uint32',
+            'nodetype': 'leaf',
+            'value': '10',
+            'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items/top:Dom-list[top:name="default"]/top:eventHist-items/top:EventHistory-list[top:type="intfDebugs"]/top:size'
+        },
+        {
+            'datatype': 'uint32',
+            'nodetype': 'leaf',
+            'value': '10',
+            'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items/top:Dom-list[top:name="default"]/top:eventHist-items/top:EventHistory-list[top:type="vrf"]/top:size'
+        },
+
+    ],
+    'namespace_modules': {
+        'top': 'http://cisco.com/ns/yang/cisco-nx-os-device'
+    },
+    'namespace': {
+        'top': 'http://cisco.com/ns/yang/cisco-nx-os-device'
+    }
+}
+
+json_decoded_multiple_list = {
+  'update': 
+  [
+    {
+      'path': 
+      {
+        'elem': 
+        [
+          {
+            'name': 'System'
+          }, 
+          {
+            'name': 'igmp-items'
+          }, 
+          {
+            'name': 'inst-items'
+          }, 
+          {
+            'name': 'dom-items'
+          }, 
+          {
+            'name': 'Dom-list',
+            'key': 
+            {
+              'name': 'default'
+            }
+          }, 
+          {
+            'name': 'eventHist-items'
+          }
+        ]
+      }
+    }
+  ]
+}
+
+json_val_decoded_multiple_list = {
+  'EventHistory-list': 
+  [
+    {
+    'type': 'nbm',
+    'size': 10
+    }, 
+    {
+    'type': 'intfDebugs', 
+    'size': 10
+    },
+    {
+      'type': 'vrf', 'size': 10
+    }
+  ]
+}
+
+format6 = {
+    'encoding': 'JSON',
+    'origin': ''
+}
+
+request_nested_list = {
+  'nodes': [
+        {
+            'datatype': 'uint32',
+            'nodetype': 'leaf',
+            'value': '10',
+            'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items/top:Dom-list[top:name="default"]/top:eventHist-items/top:EventHistory-list[top:type="nbm"]/top:size'
+        },
+        {
+            'datatype': 'uint32',
+            'nodetype': 'leaf',
+            'value': '10',
+            'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items/top:Dom-list[top:name="abc"]/top:eventHist-items/top:EventHistory-list[top:type="intfDebugs"]/top:size'
+        },
+        {
+            'datatype': 'uint32',
+            'nodetype': 'leaf',
+            'value': '10',
+            'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items/top:Dom-list[top:name="cde"]/top:eventHist-items/top:EventHistory-list[top:type="vrf"]/top:size'
+        },
+        {
+            'datatype': 'uint32',
+            'nodetype': 'leaf',
+            'value': '10',
+            'xpath': '/top:System/top:igmp-items/top:inst-items/top:dom-items/top:Dom-list[top:name="tt"]/top:eventHist-items/top:EventHistory-list[top:type="groupDebugs"]/top:size'
+        },
+    ],
+    'namespace_modules': {
+        'top': 'http://cisco.com/ns/yang/cisco-nx-os-device'
+    },
+    'namespace': {
+        'top': 'http://cisco.com/ns/yang/cisco-nx-os-device'
+    }
+}
+
+json_decoded_nested_list = {
+  'update': 
+  [
+    {
+      'path': 
+      {
+        'elem': 
+        [
+          {
+            'name': 'System'
+          }, 
+          {
+            'name': 'igmp-items'
+          }, 
+          {
+            'name': 'inst-items'
+          }, 
+          {
+            'name': 'dom-items'
+          }
+        ]
+      }
+    }
+  ]
+}
+
+json_val_decoded_nested_list = {
+  "Dom-list": 
+  [
+    {
+      "name": "default",
+      "eventHist-items": {
+      "EventHistory-list": {
+        "type": "nbm", "size": 10
+        }
+      }
+    }, 
+    {
+      "name": "abc", 
+      "eventHist-items": 
+      {
+        "EventHistory-list": 
+        {
+          "type": "intfDebugs", "size": 10
+        }
+      }
+    }, 
+    {
+      "name": "cde", 
+      "eventHist-items": 
+      {
+        "EventHistory-list": 
+        {
+          "type": "vrf", "size": 10
+        }
+      }
+    }, 
+    {
+      "name": "tt", 
+      "eventHist-items": 
+      {
+        "EventHistory-list": 
+        {
+          "type": "groupDebugs", "size": 10
+        }
+      }
+    }
+  ]
+}
+
 raw_set_dict = {
   "update": [
     {
@@ -513,6 +711,24 @@ class TestGnmiTestRpc(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.maxDiff = None
+
+    def test_set_multiple_list(self):
+        """Verify a List with Multiple Key SET constructs json_val correct."""
+        r5 = deepcopy(request_multiple_list)
+        gmc = GnmiMessageConstructor('set', r5, **format5)
+        jdict = json_format.MessageToDict(gmc.payload)
+        jdict['update'][0].pop('val')
+        self.assertEqual(jdict, json_decoded_multiple_list)
+        self.assertEqual(gmc.json_val, json_val_decoded_multiple_list)
+
+    def test_set_nested_list(self):
+        """Verify a Nested List with Multiple Key SET constructs json_val correct."""
+        r5 = deepcopy(request_nested_list)
+        gmc = GnmiMessageConstructor('set', r5, **format6)
+        jdict = json_format.MessageToDict(gmc.payload)
+        jdict['update'][0].pop('val')
+        self.assertEqual(jdict, json_decoded_nested_list)
+        self.assertEqual(gmc.json_val, json_val_decoded_nested_list)
 
     def test_set_oc_net_instance(self):
         """Verify a complex SET constructs json_val correct."""

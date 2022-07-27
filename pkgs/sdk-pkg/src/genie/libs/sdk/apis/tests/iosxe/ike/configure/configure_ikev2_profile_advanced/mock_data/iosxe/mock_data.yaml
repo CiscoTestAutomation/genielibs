@@ -1,54 +1,19 @@
 configure:
   commands:
-    aaa accounting anyconnect-eap aaa1: "IKEv2 profile MUST have:\r\n"
-    aaa authentication anyconnect-eap aaa1: "   1. A local and a remote authentication\
-      \ method.\r\n"
-    aaa authorization group anyconnect-eap list aaa1: "   2. A match identity or a\
-      \ match certificate or match any statement.\r\n"
-    aaa authorization group override anyconnect-eap list aaa1: "aaa accounting anyconnect-eap\
-      \ aaa1\r\n"
-    anyconnect profile acvpn: "aaa authentication anyconnect-eap aaa1\r\n"
-    authentication local rsa-sig: "aaa authorization group anyconnect-eap list aa\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b$zation group anyconnect-eap list aaa         \b\b\b\b\b\b\b\b\
-      \b1\r\n"
-    authentication remote anyconnect-eap aggregate cert-request: "aaa authorization\
-      \ group override anyconnect-ea\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b$zation group override anyconnect-eap\
-      \         \b\b\b\b\b\b\b\b\b list aaa\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bup override anyconnect-eap\
-      \ list aaa1         \b\b\b\b\b\b\b\b\b\r\n"
-    config-exchange request: "anyconnect profile acvpn\r\n"
-    config-exchange set accept: "authentication local rsa-sig\r\n"
-    crypto ikev2 profile IKEv2_PRFOILE: "crypto ikev2 profile IKEv2_PRFOILE\r\n"
-    dpd 10 5 periodic: "authentication remote anyconnect-eap aggregate\b\b\b\b\b\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b$ion remote anyconnect-eap aggregate          \b\b\b\b\b\b\b\b\bcert-requ\b\
-      \b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\
-      \b\b\b\b\b\b anyconnect-eap aggregate cert-reque         \b\b\b\b\b\b\b\b\b\
-      st\r\n"
+    crypto ikev2 profile IKEv2_PROFILE: "crypto ikev2 profile IKEv2_PROFILE\r\n"
     end:
       new_state: execute
-    identity local address 1.1.1.1: "config-exchange request\r\n"
-    initial-contact force: "config-exchange set accept\r\n"
-    ivrf 10: "dpd 10 5 periodic\r\n"
-    lifetime 3600: "identity local address 1.1.1.1\r\n"
     line console 0:
       new_state: configure_line
-    match address local 2.2.2.2: "initial-contact force\r\n"
-    nat force-encap: "ivrf 10\r\n"
-    nat keepalive 100: "lifetime 3600\r\n"
     no logging console: ''
-    pki trustpoint ID1 verify: "match address local 2.2.2.2\r\n"
-    ppk dynamic test: "nat force-encap\r\n"
-    reconnect timeout 600: "nat keepalive 100\r\n"
-  prompt: TLS_Mad2(config)#
+    pki trustpoint client: "IKEv2 profile MUST have:\r\n"
+  prompt: RAMONES(config)#
 configure_line:
   commands:
     end:
       new_state: execute
     exec-timeout 0: ''
-  prompt: TLS_Mad2(config-line)#
+  prompt: RAMONES(config-line)#
 connect:
   commands:
     ? ''
@@ -68,4 +33,4 @@ execute:
     show version: ''
     term length 0: ''
     term width 0: ''
-  prompt: TLS_Mad2#
+  prompt: RAMONES#

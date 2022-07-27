@@ -1,0 +1,47 @@
+configure:
+  commands:
+    address 0.0.0.0 0.0.0.0: "address 0.0.0.0 0.0.0.0\r\n"
+    crypto ikev2 keyring dynamic: "crypto ikev2 keyring dynamic\r\n"
+    crypto ikev2 keyring dynamicrequired: "crypto ikev2 keyring dynamicrequired\r\n"
+    crypto ikev2 keyring manual: "crypto ikev2 keyring manual\r\n"
+    crypto ikev2 keyring manualrequired: "crypto ikev2 keyring manualrequired\r\n"
+    crypto ikev2 keyring preshare: "crypto ikev2 keyring preshare\r\n"
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+    peer 1: "peer 1\r\n"
+    ppk dynamic dynamic1: "ppk dynamic dynamic1\r\n"
+    ppk dynamic dynamic2 required: "ppk dynamic dynamic2 required\r\n"
+    ppk manual id ppk1 key cisco123: "ppk manual id ppk1 key cisco123\r\n"
+    ppk manual id ppk2 key cisco123 required: "ppk manual id ppk2 key cisco123 required\r\
+      \n"
+    pre-shared-key cisco123: "pre-shared-key cisco123\r\n"
+  prompt: Hub(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: Hub(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: Hub#

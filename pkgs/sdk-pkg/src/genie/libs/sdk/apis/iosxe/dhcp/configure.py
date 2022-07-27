@@ -485,6 +485,47 @@ def disable_dhcp_smart_relay(device):
             f"Could not disable DHCP smart-relay on device. Error:\n{e}"
             )
 
+
+def configure_dhcp_relay_information(device):
+
+    """ Enable dhcp relay information on device
+        Args:
+            device ('obj'): device to run on
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure : Failed enabling relay information on device
+    """
+    log.debug("Enabling DHCP relay information on device")
+    try:
+        device.configure("ip dhcp relay information trust-all")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not enable DHCP relay information on device. Error:\n{e}"
+            )
+
+def unconfigure_dhcp_relay_information(device):
+
+    """ Disable dhcp relay information on device
+        Args:
+            device ('obj'): device to run on
+
+        Returns:
+            None
+
+        Raises:
+            SubCommandFailure : Failed disabling relay information on device
+    """
+    log.debug("Disabling DHCP relay information on device")
+    try:
+        device.configure("no ip dhcp relay information trust-all")
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            f"Could not disable DHCP relay information on device. Error:\n{e}"
+            )
+
 def enable_dhcp_relay_information_option(device, vpn=False):
     """ Enable DHCP relay information option 
         Args:
@@ -587,7 +628,6 @@ def unconfigure_dhcp_relay_short_lease(device, lease_time, interface=False):
         raise SubCommandFailure(
             "Failed to unconfigure dhcp relay short lease"
         )
-
 
 
 def configure_ip_dhcp_snooping_information_option_allow_untrusted(device, interface):

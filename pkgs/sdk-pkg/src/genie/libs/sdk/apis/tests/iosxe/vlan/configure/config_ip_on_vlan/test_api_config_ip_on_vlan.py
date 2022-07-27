@@ -22,7 +22,11 @@ class TestConfigIpOnVlan(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['sisf-c9500-21-8-26-2']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_config_ip_on_vlan(self):
         result = config_ip_on_vlan(self.device, 251, '192.168.1.1', '255.255.255.0', '2001::3', 10)

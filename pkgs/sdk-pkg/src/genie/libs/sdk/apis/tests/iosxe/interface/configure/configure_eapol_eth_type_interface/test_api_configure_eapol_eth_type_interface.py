@@ -22,7 +22,11 @@ class TestConfigureEapolEthTypeInterface(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['LG-PK']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_configure_eapol_eth_type_interface(self):
         result = configure_eapol_eth_type_interface(self.device, 'GigabitEthernet1/0/10', '876F')

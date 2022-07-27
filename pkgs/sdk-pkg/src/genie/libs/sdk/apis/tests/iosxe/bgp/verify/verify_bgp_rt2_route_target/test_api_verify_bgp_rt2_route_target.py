@@ -22,7 +22,11 @@ class TestVerifyBgpRt2RouteTarget(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['leaf1-laas-c9500-4']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_verify_bgp_rt2_route_target(self):
         result = verify_bgp_rt2_route_target(self.device, 'l2vpn evpn', '0', '000011112222', '20.101.1.254', '101', 'RT:100:2000101')

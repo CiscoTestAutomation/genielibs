@@ -81,20 +81,19 @@ def configure_dhcpv6_guard_policy(device, policy_name, device_role):
             )
         )
 
-def remove_ipv6_raguard_policy(device, policy_name, device_role):
+def remove_ipv6_raguard_policy(device, policy_name):
     """ Configure IPv6 RA Guard Policy
         Args:
             device ('obj'): device to use
             policy_name ('str'): name of the policy to be removed
-            device_role ('str'): role of the  device
         Returns:
             None
         Raises:
             SubCommandFailure: Failed removing IPv6 RA guard policy
     """
-    log.info(
-        "Removing IPv6 RA Guard Policy with name={policy_name}, role={device_role} "
-        .format(policy_name=policy_name, device_role=device_role)
+    log.debug(
+        "Removing IPv6 RA Guard Policy with name={policy_name} "
+        .format(policy_name=policy_name)
     )
 
     try:
@@ -112,18 +111,17 @@ def remove_ipv6_raguard_policy(device, policy_name, device_role):
         )
 
 
-def remove_dhcpv6_guard_policy(device, policy_name, device_role):
+def remove_dhcpv6_guard_policy(device, policy_name):
     """ Configure DHCPv6 Guard Policy
         Args:
             device ('obj'): device to use
             policy_name ('str'): name of the policy to be removed
-            device_role ('str'): role of the  device
         Returns:
             None
         Raises:
             SubCommandFailure: Failed removing DHCPv6 guard policy
     """
-    log.info(
+    log.debug(
         "Removing DHCPv6 Guard Policy with name={policy_name}"
         .format(policy_name=policy_name)
     )

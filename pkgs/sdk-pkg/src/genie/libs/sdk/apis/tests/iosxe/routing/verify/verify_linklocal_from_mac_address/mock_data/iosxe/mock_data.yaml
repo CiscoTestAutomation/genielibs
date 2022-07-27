@@ -1,0 +1,70 @@
+configure:
+  commands:
+    end:
+      new_state: execute
+    line console 0:
+      new_state: configure_line
+    no logging console: ''
+  prompt: uut(config)#
+configure_line:
+  commands:
+    end:
+      new_state: execute
+    exec-timeout 0: ''
+  prompt: uut(config-line)#
+connect:
+  commands:
+    ? ''
+    : new_state: execute
+  preface: 'Trying mock_device ...
+
+    Connected to mock_device.
+
+    Escape character is ''^]''.'
+  prompt: ''
+execute:
+  commands:
+    config term:
+      new_state: configure
+    config-transaction:
+      new_state: configure
+    show interfaces Ethernet0/0:
+      response:
+      - "Ethernet0/0 is up, line protocol is up \r\n  Hardware is AmdP2, address is\
+        \ aabb.cc01.f400 (bia aabb.cc01.f400)\r\n  Internet address is 10.0.1.1/24\r\
+        \n  MTU 1500 bytes, BW 10000 Kbit/sec, DLY 1000 usec, \r\n     reliability\
+        \ 255/255, txload 1/255, rxload 1/255\r\n  Encapsulation ARPA, loopback not\
+        \ set\r\n  Keepalive set (10 sec)\r\n  ARP type: ARPA, ARP Timeout 04:00:00\r\
+        \n  Last input 00:00:19, output 00:00:04, output hang never\r\n  Last clearing\
+        \ of \"show interface\" counters never\r\n  Input queue: 0/75/0/0 (size/max/drops/flushes);\
+        \ Total output drops: 0\r\n  Queueing strategy: fifo\r\n  Output queue: 0/40\
+        \ (size/max)\r\n  5 minute input rate 0 bits/sec, 0 packets/sec\r\n  5 minute\
+        \ output rate 0 bits/sec, 0 packets/sec\r\n     264 packets input, 102897\
+        \ bytes, 0 no buffer\r\n     Received 264 broadcasts (0 IP multicasts)\r\n\
+        \     0 runts, 0 giants, 0 throttles \r\n     0 input errors, 0 CRC, 0 frame,\
+        \ 0 overrun, 0 ignored\r\n     0 input packets with dribble condition detected\r\
+        \n     702 packets output, 91050 bytes, 0 underruns\r\n     Output 161 broadcasts\
+        \ (0 IP multicasts)\r\n     0 output errors, 0 collisions, 2 interface resets\r\
+        \n     0 unknown protocol drops\r\n     0 babbles, 0 late collision, 0 deferred\r\
+        \n     0 lost carrier, 0 no carrier\r\n     0 output buffer failures, 0 output\
+        \ buffers swapped out"
+      response_type: circular
+    show ipv6 interface Ethernet0/0:
+      response:
+      - "Ethernet0/0 is up, line protocol is up\r\n  IPv6 is enabled, link-local address\
+        \ is FE80::A8BB:CCFF:FE01:F400 \r\n  No Virtual link-local address(es):\r\n\
+        \  Global unicast address(es):\r\n    2001::1, subnet is 2001::/64 \r\n  Joined\
+        \ group address(es):\r\n    FF02::1\r\n    FF02::2\r\n    FF02::1:FF00:1\r\
+        \n    FF02::1:FF01:F400\r\n  MTU is 1500 bytes\r\n  ICMP error messages limited\
+        \ to one every 100 milliseconds\r\n  ICMP redirects are enabled\r\n  ICMP\
+        \ unreachables are sent\r\n  ND DAD is enabled, number of DAD attempts: 1\r\
+        \n  ND reachable time is 30000 milliseconds (using 30000)\r\n  ND advertised\
+        \ reachable time is 0 (unspecified)\r\n  ND advertised retransmit interval\
+        \ is 0 (unspecified)\r\n  ND router advertisements are sent every 200 seconds\r\
+        \n  ND router advertisements live for 1800 seconds\r\n  ND advertised default\
+        \ router preference is Medium\r\n  Hosts use stateless autoconfig for addresses."
+      response_type: circular
+    show version: ''
+    term length 0: ''
+    term width 0: ''
+  prompt: uut#

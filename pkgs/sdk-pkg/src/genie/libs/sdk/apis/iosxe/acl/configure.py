@@ -244,10 +244,10 @@ def unconfigure_ace(
         acl_name,
         permission,
         protocol,
-        src_ip,
-        src_wildcard,
-        dst_ip,
-        dst_wildcard,
+        src_ip=None,
+        src_wildcard=None,
+        dst_ip=None,
+        dst_wildcard=None,
         acl_type=None,
         sequence_num=None
 ):
@@ -258,10 +258,10 @@ def unconfigure_ace(
             acl_name ('str'): acl name
             permission ('str'): (permit | deny)
             protocol ('str'): protocol
-            src_ip ('str'): source start ip
-            src_wildcard ('str'): source wildcard
-            dst_ip ('str'): destination start ip
-            dst_wildcard ('str'): destination wildcard
+            src_ip ('str', optional): source start ip
+            src_wildcard ('str', optional): source wildcard
+            dst_ip ('str', optional): destination start ip
+            dst_wildcard ('str', optional): destination wildcard
             acl_type ('str', optional): type of ACL like with or without host keyword, default value is None
             sequence_num ('str',optional): specific sequence number, default value is None
 

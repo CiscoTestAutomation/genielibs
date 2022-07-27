@@ -22,7 +22,11 @@ class TestConfigureClassMap(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['Startek']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_configure_class_map(self):
         result = configure_class_map(self.device, 'test1', 'cs1', 'dscp', '', '', 'match-all', False)

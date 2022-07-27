@@ -22,7 +22,11 @@ class TestConfigureMaximumPathUnderOspf(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['P1']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_configure_maximum_path_under_ospf(self):
         result = configure_maximum_path_under_ospf(self.device, '1', 5)

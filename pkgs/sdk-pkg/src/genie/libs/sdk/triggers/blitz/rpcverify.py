@@ -895,15 +895,21 @@ class RpcVerify():
                      'selected': True,
                      'op': '=='}
                 )
-
         if not response and not nodes and \
                 edit_op in ['delete', 'remove']:
             log.info('NO DATA RETURNED')
             return True
         elif response and not nodes and \
-                edit_op in ['remove']:
-            log.error(edit_op +' operation not performed')
-            return False
+                edit_op in ['delete', 'remove']:
+            # Check if node is removed in the response
+            if isinstance(response[0], tuple):
+                response = [response]
+                for resp in response:
+                    for reply, reply_path in resp:
+                        if xpath == reply_path:
+                            # node xpath still exists in the response
+                            log.error("Config not removed. {0} operation failed".format(edit_op))
+                            return False
         for node in nodes:
             if not self.process_operational_state(response, [node]):
                 result = False

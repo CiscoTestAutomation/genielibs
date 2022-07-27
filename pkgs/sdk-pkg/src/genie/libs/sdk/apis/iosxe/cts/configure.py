@@ -440,3 +440,47 @@ def clear_cts_counters(device):
         raise SubCommandFailure(
             "Failed to clear cts counters"
         )
+
+def configure_sap_pmk_on_cts(device, interface, key_string, method):
+
+    """ Configures sap pmk on cts
+        
+        Args:
+            device ('obj'): device to use
+            interface ('str'): interface to use
+            key_string ('str'): key chain to configure
+            method ('str'): encrption method to configure
+        
+        Return:
+            None
+        
+        Raise:
+            SubCommandFailure
+    """
+    cmd = [f"interface {interface}", "cts manual", f"sap pmk {key_string} mode-list {method}"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Could not configure sap pmk. Error:\n{error}".format(error=e)
+        ) 
+
+def unconfigure_cts_manual(device, interface):
+    """ unconfigures cts manual
+        Args:
+            device ('obj'): Device object
+            interface ('str'): interface to use
+        
+        Returns:
+            None 
+        
+        Raises: 
+            SubCommandFailure
+    """
+    cmd = [f"interface {interface}",  "no cts manual"]
+    try:
+        device.configure(cmd)
+    except SubCommandFailure as e:
+        raise SubCommandFailure(
+            "Failed to unconfigure cts manual. Error:\n{error}".format(error=e)
+        )

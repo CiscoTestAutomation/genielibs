@@ -22,7 +22,11 @@ class TestUnconfigureMkaPolicy(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['LG-PK']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_unconfigure_mka_policy(self):
         result = unconfigure_mka_policy(self.device, 'policy1', 'GigabitEthernet1/0/10')

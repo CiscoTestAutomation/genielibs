@@ -229,24 +229,25 @@ def configure_fnf_monitor_on_interface(device, interface, monitor_name, directio
         )
 
 
-def unconfigure_fnf_monitor_on_interface(device, interface, monitor_name):
+def unconfigure_fnf_monitor_on_interface(device, interface, monitor_name, sampler_name):
     """ Unconfig Flow Monitor on Interface
 
         Args:
             device (`obj`): Device object
             interface (`str`): Interface to be unconfigured
             monitor_name (`str`): Flow monitor name
+            sampler_name ('str'): Sampler name
+
         Return:
             None
+
         Raise:
             SubCommandFailure: Failed unconfiguring interface with flow monitor
     """
-
+    cmd = [f"interface {interface}",
+           f"no ip flow monitor {monitor_name} sampler {sampler_name} input"]
     try:
-        device.configure([
-                          "interface {interface}".format(interface=interface),
-                          "no ip flow monitor {monitor_name} input".
-                          format(monitor_name=monitor_name)])
+        device.configure(cmd)
 
     except SubCommandFailure:
         raise SubCommandFailure(
@@ -392,26 +393,30 @@ def configure_fnf_monitor_datalink_interface(device, interface, monitor_name, sa
         )
 
 
-def unconfigure_fnf_monitor_datalink_interface(device, interface, monitor_name):
+def unconfigure_fnf_monitor_datalink_interface(device, interface, monitor_name, sampler_name=None, direction=None):
     
     """ Unconfig Datalink Fnf Monitor on Interface
         Args:
             device (`obj`): Device object
             interface (`str`): Interface to be configured
             monitor_name (`str`): Flow monitor name
-                        
+            sampler_name ('str'): Sampler name
+            direction ('str'): Direction of monitor (input/output)
+            
         Return:
             None
             
         Raise:
             SubCommandFailure: Failed unconfiguring interface datalink flow monitor with sampler
     """
-
+    if sampler_name and direction:
+        cmd = [f"interface {interface}",
+               f"no datalink flow monitor {monitor_name} sampler {sampler_name} {direction}"]
+    else:
+        cmd = [f"interface {interface}",
+               f"no datalink flow monitor {monitor_name}"]
     try:
-        device.configure([
-                          f"interface {interface}",
-                          f"no datalink flow monitor {monitor_name}"
-                          ])
+        device.configure(cmd)
 
     except SubCommandFailure:
         raise SubCommandFailure(

@@ -22,7 +22,11 @@ class TestUnconfigureMkaPolicyDelayProtection(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['LG-PK']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_unconfigure_mka_policy_delay_protection(self):
         result = unconfigure_mka_policy_delay_protection(self.device, 'policy1', 'GigabitEthernet1/0/10')

@@ -15,7 +15,11 @@ def configure_ikev2_keyring(device,
                             peer_name,
                             peer_ip,
                             peer_mask,
-                            key):
+                            key=None,
+                            required=False,
+                            ppk_id=None,
+                            ppk_key=None,
+                            sks_client_config_block_name=None):
     """ Configures IKEV2 keyring or Preshared Key (PSK)
         Args:
             device (`obj`): Device object
@@ -23,7 +27,11 @@ def configure_ikev2_keyring(device,
             peer_name ('str'): peer name
             peer_ip ('str'): peer ip addr
             peer_mask ('str'): peer nw mask
-            key ('str'): preshared key
+            key ('str',optional): preshared key
+            required ('boolean',optional): Required option for PPK
+            ppk_id ('str',optional): ppk id for manual ppk
+            ppk_key ('str',optional): Post-quantum preshared key
+            sks_client_config_block_name ('str',optional): SKS client config block name
         Returns:
             None
         Raises:
@@ -37,8 +45,18 @@ def configure_ikev2_keyring(device,
     configs.append("crypto ikev2 keyring {keyring_name}".format(keyring_name=keyring_name))
     configs.append("peer {peer_name}".format(peer_name=peer_name))
     configs.append("address {peer_ip} {peer_mask}".format(peer_ip=peer_ip,peer_mask=peer_mask))
-    configs.append("pre-shared-key {key}".format(key=key))
-    
+    if key is not None:
+        configs.append("pre-shared-key {key}".format(key=key))
+    if ppk_key is not None:
+        if required:
+            configs.append("ppk manual id {ppk_id} key {ppk_key} required".format(ppk_key=ppk_key,ppk_id=ppk_id))
+        else:
+            configs.append("ppk manual id {ppk_id} key {ppk_key}".format(ppk_key=ppk_key,ppk_id=ppk_id))
+    if sks_client_config_block_name is not None:
+        if required:
+            configs.append("ppk dynamic {sks_client_config_block_name} required".format(sks_client_config_block_name=sks_client_config_block_name))
+        else:
+            configs.append("ppk dynamic {sks_client_config_block_name}".format(sks_client_config_block_name=sks_client_config_block_name))
 
     try:
         device.configure(configs)
@@ -47,8 +65,6 @@ def configure_ikev2_keyring(device,
              "Error:\n{error}".format(error=e)
         )
         raise
-
-
 
 
 def configure_ikev2_profile(device,
@@ -630,6 +646,8 @@ def configure_ikev2_profile_advanced(device,
     
     if nat_keepalive is not None:
         configs.append(f"nat keepalive {nat_keepalive}")
+    if trustpoint is not None and trustpoint_verify is False and trustpoint_sign is False:
+        configs.append(f"pki trustpoint {trustpoint}")
         
     if trustpoint is not None and trustpoint_verify:
         configs.append(f"pki trustpoint {trustpoint} verify")

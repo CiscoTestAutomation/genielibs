@@ -157,5 +157,107 @@ class InvalidStructures(unittest.TestCase):
             ImageHandler(self.device, images)
 
 
+class ImageOverride(unittest.TestCase):
+
+    def setUp(self):
+        self.device = Mock()
+        self.device.clean = {
+            'tftp_boot': {
+                'image': ['/path/to/my/image.bin']
+            },
+            'change_boot_variable': {
+                'images': ['/path/to/my/image.bin']
+            },
+            'expand_image': {
+                'image': ['/path/to/my/image.bin']
+            },
+            'verify_running_image': {
+                'images': ['/path/to/my/image.bin']
+            },
+            'install_image': {
+                'images': ['/path/to/my/image.bin']
+            },
+            'install_packages': {
+                'packages': ['/path/to/my/package.bin']
+            },
+        }
+
+        images = ['/path/to/image.bin', '/path/to/package.bin']
+
+        self.image_handler = ImageHandler(self.device, images)
+
+    def test_image_override_tftp_boot(self):
+        self.image_handler.override_stage_images = True
+        self.image_handler.update_section('tftp_boot')
+        self.assertEqual(self.image_handler.device.clean['tftp_boot'], {'image': ['/path/to/image.bin']})
+
+    def test_image_override_change_boot_variable(self):
+        self.image_handler.override_stage_images = True
+        self.image_handler.update_section('change_boot_variable')
+        self.assertEqual(self.image_handler.device.clean['change_boot_variable'], {'images': ['/path/to/image.bin']})
+
+    def test_image_override_expand_image(self):
+        self.image_handler.override_stage_images = True
+        self.image_handler.update_section('expand_image')
+        self.assertEqual(self.image_handler.device.clean['expand_image'], {'image': ['/path/to/image.bin']})
+
+    def test_image_override_verify_running_image(self):
+        self.image_handler.override_stage_images = True
+        self.image_handler.update_section('verify_running_image')
+        self.assertEqual(self.image_handler.device.clean['verify_running_image'], {'images': ['/path/to/image.bin']})
+
+        self.device.clean['verify_running_image']['verify_md5'] = True
+        self.image_handler.update_section('verify_running_image')
+        self.assertEqual(self.image_handler.device.clean['verify_running_image'],
+            {'images': ['/path/to/image.bin'], 'verify_md5': True})
+        self.device.clean['verify_running_image']['verify_md5'] = False
+
+    def test_image_override_install_image(self):
+        self.image_handler.override_stage_images = True
+        self.image_handler.update_section('install_image')
+        self.assertEqual(self.image_handler.device.clean['install_image'], {'images': ['/path/to/image.bin']})
+
+    def test_image_override_install_packages(self):
+        self.image_handler.override_stage_images = True
+        self.image_handler.update_section('install_packages')
+        self.assertEqual(self.image_handler.device.clean['install_packages'], {'packages': ['/path/to/package.bin']})
+
+
+    def test_image_no_override_tftp_boot(self):
+        self.image_handler.override_stage_images = False
+        self.image_handler.update_section('tftp_boot')
+        self.assertEqual(self.image_handler.device.clean['tftp_boot'], {'image': ['/path/to/my/image.bin']})
+
+    def test_image_no_override_change_boot_variable(self):
+        self.image_handler.override_stage_images = False
+        self.image_handler.update_section('change_boot_variable')
+        self.assertEqual(self.image_handler.device.clean['change_boot_variable'], {'images': ['/path/to/my/image.bin']})
+
+    def test_image_no_override_expand_image(self):
+        self.image_handler.override_stage_images = False
+        self.image_handler.update_section('expand_image')
+        self.assertEqual(self.image_handler.device.clean['expand_image'], {'image': ['/path/to/my/image.bin']})
+
+    def test_image_no_override_verify_running_image(self):
+        self.image_handler.override_stage_images = False
+        self.image_handler.update_section('verify_running_image')
+        self.assertEqual(self.image_handler.device.clean['verify_running_image'], {'images': ['/path/to/my/image.bin']})
+
+        self.device.clean['verify_running_image']['verify_md5'] = True
+        self.image_handler.update_section('verify_running_image')
+        self.assertEqual(self.image_handler.device.clean['verify_running_image'],
+            {'images': ['/path/to/my/image.bin'], 'verify_md5': True})
+        self.device.clean['verify_running_image']['verify_md5'] = False
+
+    def test_image_no_override_install_image(self):
+        self.image_handler.override_stage_images = False
+        self.image_handler.update_section('install_image')
+        self.assertEqual(self.image_handler.device.clean['install_image'], {'images': ['/path/to/my/image.bin']})
+
+    def test_image_no_override_install_packages(self):
+        self.image_handler.override_stage_images = False
+        self.image_handler.update_section('install_packages')
+        self.assertEqual(self.image_handler.device.clean['install_packages'], {'packages': ['/path/to/my/package.bin']})
+
 if __name__ == '__main__':
     unittest.main()

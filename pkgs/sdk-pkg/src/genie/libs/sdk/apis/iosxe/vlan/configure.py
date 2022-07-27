@@ -441,6 +441,54 @@ def configure_private_vlan_on_vlan(device, vlan1, vlan2):
     except SubCommandFailure as e:
         raise SubCommandFailure(f"Failed to configure private vlan on {vlan1} {vlan2}. Error:\n{e}")
 
+
+def configure_flow_monitor_vlan_configuration(device, vlan, monitor_name, sampler_name, direction):
+
+    """ configure flow monitor under vlan configuration
+        Args:
+            device ('obj'):       Device object
+            vlan ('str'):         vlan to be added to the port
+            monitor_name ('str'): Name of the flow monitor to be configured
+            sampler_name ('str'): Name of the sampler to be configured
+            direction ('str'):    Direction to be configured(input/output)
+
+        Returns:
+            None
+    """
+    log.debug("Configuring flow monitor under vlan configuration")
+     
+    cmd = [f"vlan configuration {vlan}",
+           f"ip flow monitor {monitor_name} sampler {sampler_name} {direction}"]
+    try:
+        device.configure(cmd)   
+        
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to configure flow monitor on vlan {vlan}. Error:\n{e}")
+
+
+def unconfigure_flow_monitor_vlan_configuration(device, vlan, monitor_name, sampler_name, direction):
+
+    """ unconfigure flow monitor under vlan configuration
+        Args:
+            device ('obj'):       Device object
+            vlan ('str'):         vlan to be added to the port
+            monitor_name ('str'): Name of the flow monitor to be configured
+            sampler_name ('str'): Name of the sampler to be configured
+            direction ('str'):    Direction to be configured(input/output)
+
+        Returns:
+            None
+    """
+    log.debug("Unconfiguring flow monitor under vlan configuration")
+
+    cmd = [f"vlan configuration {vlan}",
+           f"no ip flow monitor {monitor_name} sampler {sampler_name} {direction}"]
+    try:
+        device.configure(cmd)
+
+    except SubCommandFailure as e:
+        raise SubCommandFailure(f"Failed to unconfigure flow monitor on vlan {vlan}. Error:\n{e}")
+
 def configure_ethernet_vlan_unlimited(device, subslot):
     """ Configure ethernet vlan unlimited on subslot
         Args:
@@ -482,4 +530,5 @@ def unconfigure_ethernet_vlan_unlimited(device, subslot):
         raise SubCommandFailure(
             "Failed to unconfigure ethernet vlan unlimited"
         )
+
 

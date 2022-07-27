@@ -22,7 +22,11 @@ class TestUnconfigureIpPimVrfSsmDefault(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['P1']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_unconfigure_ip_pim_vrf_ssm_default(self):
         result = unconfigure_ip_pim_vrf_ssm_default(self.device, 'vrf3001')

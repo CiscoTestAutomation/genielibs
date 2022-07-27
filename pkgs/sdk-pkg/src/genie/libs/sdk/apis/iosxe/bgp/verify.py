@@ -3,6 +3,7 @@
 # Python
 import logging
 import copy
+import re
 
 from prettytable import PrettyTable
 
@@ -2387,5 +2388,318 @@ def verify_bgp_evi_mac_ipprefix(
                 if (actual_rd[0] == expected_rd) and ('mac' and 'ip_prefix' in nlr.keys()):
                     if (nlr['mac'] == expected_mac.upper()) and (nlr['ip_prefix'] == expected_ipprx):
                         return True
+    return False
+
+
+def verify_bgp_l2vpn_evpn_rt2_ipprefix(
+    device, expected_ipprefix, expected_rd=None, max_time=30, check_interval=10
+):
+    """ Verify bgp l2vpn evpn rt2 ip prefix related to particular rd  in 
+        'show ip/ipv6 bgp l2vpn evpn all'
+
+        Args:
+            device ('obj'): device to use
+            expected_ipprefix ('list'): expected ip prefix
+            expected_rd ('str'): expected rd 
+            max_time ('int', optional): maximum time to wait in seconds,
+                default is 30
+            check_interval ('int', optional): how often to check in seconds,
+                default is 10
+        Returns:
+            result ('bool'): verified result
+        Raises:
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse("show ip bgp l2vpn evpn all")
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue        
+        # collecting all the routes 
+        routes = out.q.get_values("routes")
+        route_type_2_prefixes = dict()
+        for route in routes:
+            # [2][1.1.1.1:1][0][48][DEC856540245][128][2000::DCC8:56FF:FE54:245]/36
+            # [2][1.1.1.1:1][0][48][A03D6EC594E4][0][*]/20
+            data_found = re.search("\[2\]\[(.*)\].*\[(.*)\]",route)
+            if data_found:
+                # 1.1.1.1:1][0][48]
+                rd_list=data_found.groups()[0].split("][")
+                # 1.1.1.1
+                if ':' in rd_list[0]:
+                    rd_ip = rd_list[0].split(":")
+                    rd = rd_ip[0]
+                else:
+                    rd = rd_list[0]
+                # 2000::DCC8:56FF:FE54:245
+                prfx=data_found.groups()[1]
+                # Adding to a dictionary
+                if rd not in route_type_2_prefixes.keys():
+                    route_type_2_prefixes[rd]=[]
+                # Appending prefixes to correspondin
+                route_type_2_prefixes[rd].append(prfx)  
+        # checking for matching list of routetype 2 prefixes related to RD        
+        if expected_rd and (expected_rd in route_type_2_prefixes.keys()): 
+            not_exists_ipprfx_list = [prfx for prfx in expected_ipprefix if \
+                prfx not in route_type_2_prefixes[expected_rd]]            
+            if len(not_exists_ipprfx_list) == 0:         
+                return True  
+        # checking for matching list of routetype 5 prefixes incase of no RD given
+        if (not expected_rd):
+            all_prfx = []
+            for each_record in route_type_2_prefixes.values():
+                if isinstance(each_record,list):
+                    for prefix in each_record:
+                        all_prfx.append(prefix)
+                else:
+                    all_prfx.append(each_record)
+            not_exists_ipprfx_list = [prfx for prfx in expected_ipprefix if prfx not in all_prfx]
+            if len(not_exists_ipprfx_list) == 0:         
+                return True
+        
+        timeout.sleep()
+
+    if out and expected_rd:
+        log.error("Unable to find route-type 2 expected ipprefix i.e {} for "\
+        " rd {} in actual list {}".format(not_exists_ipprfx_list,\
+            expected_rd,route_type_2_prefixes))
+    elif out and (not expected_rd):
+        log.error("Unable to find route-type 2 expected ipprefix i.e {} in "\
+        "actual list {}".format(not_exists_ipprfx_list,route_type_2_prefixes))
+    else:
+        log.error("Unable to get the parsed output")
+
+    return False
+
+
+def verify_bgp_l2vpn_evpn_rt5_ipprefix(
+    device, expected_ipprefix, expected_rd=None,max_time=30, check_interval=10
+):
+    """ Verify bgp l2vpn evpn rt2 ip prefix related to particular rd  in 
+        'show ip/ipv6 bgp l2vpn evpn all'
+
+        Args:
+            device ('obj'): device to use
+            expected_ipprefix ('str'): expected ip prefix
+            expected_rd ('str'): expected rd optional
+            max_time ('int', optional): maximum time to wait in seconds,
+                default is 30
+            check_interval ('int', optional): how often to check in seconds,
+                default is 10
+            Internally have a dictionary that have 'rd' as keys and 'ip prefixes' as values
+            example:
+                {
+                '1.1.1.1': ['*', '2000::22', '2000::21', '20.20.20.21', '2000::14F7:9FF:FE42:9AF5'], 
+                '2.2.2.2': ['20.20.20.21', '20.20.20.1', '2000::1', '*', '2000::14F7:9FF:FE42:9AF5']
+                }
+        Returns:
+            result ('bool'): verified result
+        Raises:
+            None
+    """
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse("show ip bgp l2vpn evpn all")
+        except SchemaEmptyParserError:
+            timeout.sleep()
+            continue        
+        # collecting all the routes 
+        routes = out.q.get_values("routes")
+        route_type_5_prefixes = dict()
+        for route in routes:
+            # [5][1002:1][0][24][6.6.6.0]/17
+            # [5][1002:1][0][64][2060::]/29
+            data_found = re.search("\[5\]\[(.*)\].*\[(.*)\]",route)
+            if data_found:
+                # 1002:1][0][64]
+                rd_list=data_found.groups()[0].split("][")
+                # 1002:1
+                if ':' in rd_list[0]:
+                    rd_ip = rd_list[0].split(":")
+                    rd = rd_ip[0]
+                else:
+                    rd=rd_list[0]
+                # 6.6.6.0
+                prfx=data_found.groups()[1]
+                if rd not in route_type_5_prefixes.keys():
+                    route_type_5_prefixes[rd]=[]
+                # appending prefixes to corresponding rd
+                route_type_5_prefixes[rd].append(prfx)
+                
+        
+        # checking for matching list of routetype 5 prefixes related to RD 
+        if expected_rd and (expected_rd in route_type_5_prefixes.keys()): 
+            not_exists_ipprfx_list = []           
+            not_exists_ipprfx_list = [prfx for prfx in expected_ipprefix if \
+                prfx not in route_type_5_prefixes[expected_rd]]
+            if len(not_exists_ipprfx_list) == 0:         
+                return True  
+        # checking for matching list of routetype 5 prefixes incase of no RD given
+        if (not expected_rd):
+            all_prfx = []
+            not_exists_ipprfx_list = []
+            for each_record in route_type_5_prefixes.values():
+                if isinstance(each_record,list):
+                    for prefix in each_record:
+                        all_prfx.append(prefix)
+                else:
+                    all_prfx.append(each_record)
+            not_exists_ipprfx_list = [prfx for prfx in expected_ipprefix if prfx not in all_prfx]
+            if len(not_exists_ipprfx_list) == 0:         
+                return True        
+                
+        timeout.sleep()
+
+    if out and expected_rd:
+        log.error("Unable to find route-type 5 expected ipprefix i.e {} for "\
+        " rd {} in actual list {}".format(not_exists_ipprfx_list,\
+            expected_rd,route_type_5_prefixes))
+    elif out and (not expected_rd):
+        log.error("Unable to find route-type 5 expected ipprefix i.e {} in "\
+        "actual list {}".format(not_exists_ipprfx_list,route_type_5_prefixes))
+    else:
+        log.error("Unable to get the parsed output")
+
+    return False
+
+
+def verify_bgp_rt5_mvpn_all_ip_mgroup(
+    device, ip_family,expected_ip, expected_mgroup, expected_rd=None,
+    max_time=30, check_interval=10
+):
+    """ Verify bgp rd(if given),ip and mgroup for routetype 5 route in 
+        'show ip bgp ipv4/ipv6 mvpn all'
+
+        Args:
+            device ('obj'): device to use
+            ip_family ('str'): ipv4 or ipv6
+            expected_ip ('str'): expected ip
+            expected_mgroup ('str'): expected multicast group
+            expected_rd ('str', optional): rd if given
+            vrf ('str', optional): vrf if given
+            max_time ('int', optional): maximum time to wait in seconds,
+                default is 30
+            check_interval ('int', optional): how often to check in seconds,
+                default is 10
+        Returns:
+            result ('bool'): verified result
+        Raises:
+            None
+    """
+    if ip_family != ('ipv4' or 'ipv6'):
+        log.error("Please provide ip_family either as ipv4 or ipv6,provided value is {}".format(ip_family))
+        return False
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse("show ip bgp {ip_family} mvpn all".format\
+                (ip_family=ip_family))
+        except SchemaEmptyParserError as e:
+            log.error("Failed to parse command 'show ip bgp {ip_family} "\
+                "mvpn all': {e}".format(ip_family=ip_family, e=str(e)))
+            timeout.sleep()
+            continue
+            
+        # incase of empty output
+        if out:
+            routes = out.q.get_values("routes")
+            for route in routes:                
+                data_found = re.search("\[5\]\[(.*)\]+",route)
+                if data_found:
+                    local_lis = []
+                    # 1002:1][16843009][20.20.20.22/32][232.1.1.6/32
+                    whole_data = (data_found.groups()[0]).split("][")
+                    entry_len = len(whole_data)
+                    # Adding rd, ip, mgroup ip
+                    data=[whole_data[0],whole_data[entry_len-2],whole_data[entry_len-1]]
+                    for values in data:
+                        # looking for any ip having subnet and removing mask
+                        if "/" in values:
+                            local_lis.append((values.split("/"))[0])
+                        elif ":" in values:
+                            local_lis.append((values.split(":"))[0])
+                        else:
+                            local_lis.append(values)
+                    if expected_rd :                        
+                        if (local_lis[0] == expected_rd) and (local_lis[1] == expected_ip)\
+                             and (local_lis[2] == expected_mgroup):
+                            return True
+                    if (not expected_rd):
+                        if (local_lis[1] == expected_ip) and \
+                            (local_lis[2] == expected_mgroup):
+                            return True
+        timeout.sleep()
+    return False
+
+
+def verify_bgp_rt7_mvpn_all_ip_mgroup(
+    device,ip_family, expected_ip, expected_mgroup, expected_rd=None,
+    max_time=30, check_interval=10
+):
+    """ Verify bgp rd(if given),ip and mgroup for routetype 7 route in 
+        'show ip bgp ipv4/ipv6 mvpn all'
+
+        Args:
+            device ('obj'): device to use
+            ip_family ('str'): either ipv4 or ipv6
+            expected_ip ('str'): expected ip
+            expected_mgroup ('str'): expected multicast group
+            expected_rd ('str', optional): rd if given
+            vrf ('str', optional): vrf if given
+            max_time ('int', optional): maximum time to wait in seconds,
+                default is 30
+            check_interval ('int', optional): how often to check in seconds,
+                default is 10
+        Returns:
+            result ('bool'): verified result
+        Raises:
+            None
+    """
+    if ip_family != ('ipv4' or 'ipv6'):
+        log.error("Please provide ip_family either as ipv4 or ipv6")
+        return False
+    timeout = Timeout(max_time, check_interval)
+    while timeout.iterate():
+        try:
+            out = device.parse("show ip bgp {ip_family} mvpn all".format\
+                (ip_family=ip_family))
+        except SchemaEmptyParserError as e:
+            log.error("Failed to parse command 'show ip bgp {ip_family} "\
+                "mvpn all': {e}".format(ip_family=ip_family, e=str(e)))
+            timeout.sleep()
+            continue
+            
+        # incase of empty output
+        if out:
+            routes = out.q.get_values("routes")
+            for route in routes:                
+                data_found = re.search("\[7\]\[(.*)\]+",route)
+                if data_found:
+                    local_lis = []
+                    # 1002:1][16843009][20.20.20.22/32][232.1.1.6/32
+                    whole_data = (data_found.groups()[0]).split("][")
+                    entry_len = len(whole_data)
+                    # Adding rd, ip, mgroup ip
+                    data=[whole_data[0],whole_data[entry_len-2],whole_data[entry_len-1]]
+                    for values in data:
+                        # looking for any ip having subnet and removing mask
+                        if "/" in values:
+                            local_lis.append((values.split("/"))[0])
+                        elif ":" in values:
+                            local_lis.append((values.split(":"))[0])
+                        else:
+                            local_lis.append(values)
+                    if expected_rd :                        
+                        if (local_lis[0] == expected_rd) and (local_lis[1] == expected_ip)\
+                             and (local_lis[2] == expected_mgroup):
+                            return True
+                    if (not expected_rd):
+                        if (local_lis[1] == expected_ip) and \
+                            (local_lis[2] == expected_mgroup):
+                            return True
+        timeout.sleep()
     return False
 

@@ -30,7 +30,11 @@ class TestScp(unittest.TestCase):
         """
         self.testbed = loader.load(testbed)
         self.device = self.testbed.devices['lnx']
-        self.device.connect()
+        self.device.connect(
+            learn_hostname=True,
+            init_config_commands=[],
+            init_exec_commands=[]
+        )
 
     def test_scp(self):
         result = scp(self.device, local_path='/tmp/test.txt', remote_path='/tmp/test2.txt', remote_device='R1', remote_via='vty')

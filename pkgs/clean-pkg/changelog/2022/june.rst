@@ -19,5 +19,4 @@
 
 * genie.libs.clean
     * Updated reload stage
-
-
+        * update the command for the path from rommon to diable, so the device will not boot from rommon and instead throw an exception. after the connect it will restore the original value for the rommon to diasable path command.

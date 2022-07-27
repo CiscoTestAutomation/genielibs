@@ -348,10 +348,10 @@ class TestCleanTestcase(unittest.TestCase):
         iterator = iter(clean_testcase)
 
         self.assertEqual('stage SomeStage', str(next(iterator)))
-        clean_testcase.image_handler.update_section.assert_called_with('SomeStage')
+        clean_testcase.image_handler.update_section.assert_called_with('SomeStage', update_history=True)
 
         self.assertEqual('stage SomeStage(2)', str(next(iterator)))
-        clean_testcase.image_handler.update_section.assert_called_with('SomeStage__2')
+        clean_testcase.image_handler.update_section.assert_called_with('SomeStage__2', update_history=True)
 
     @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
     @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
@@ -506,3 +506,69 @@ class TestCleanTestcase(unittest.TestCase):
 
         self.assertEqual('SomeOtherStage', stage.uid)
 
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
+    def test_discover_image_handler_image_override_false(self):
+        self.device.clean = {
+            'images': ['/my/image.bin'],
+            'SomeStage': {},
+            'order': ['SomeStage'],
+            'image_management': {
+                'override_stage_images': False
+            },
+        }
+
+        clean_testcase = CleanTestcase(
+            device=self.device,
+            global_stage_reuse_limit=self.global_stage_reuse_limit)
+
+        clean_testcase.discover()
+
+        self.assertEqual(clean_testcase.image_handler.override_stage_images, False)
+
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
+    def test_discover_image_handler_image_override_true(self):
+        self.device.clean = {
+            'images': ['/my/image.bin'],
+            'SomeStage': {
+                'source': {
+                    'pkg': 'genie.libs.clean',
+                    'class': 'stages.stages.SomeStage'
+                }
+            },
+            'order': ['SomeStage'],
+            'image_management': {
+                'override_stage_images': True
+            },
+        }
+
+        clean_testcase = CleanTestcase(
+            device=self.device,
+            global_stage_reuse_limit=self.global_stage_reuse_limit)
+
+        clean_testcase.discover()
+
+        self.assertEqual(clean_testcase.image_handler.override_stage_images, True)
+
+    @mock.patch('genie.libs.clean.clean.load_clean_json', mock.Mock(return_value=clean_json))
+    @mock.patch('genie.libs.clean.stages.stages.SomeStage', SomeStage, create=True)
+    def test_discover_image_handler_image_override_default(self):
+        self.device.clean = {
+            'images': ['/my/image.bin'],
+            'SomeStage': {
+                'source': {
+                    'pkg': 'genie.libs.clean',
+                    'class': 'stages.stages.SomeStage'
+                }
+            },
+            'order': ['SomeStage']
+        }
+
+        clean_testcase = CleanTestcase(
+            device=self.device,
+            global_stage_reuse_limit=self.global_stage_reuse_limit)
+
+        clean_testcase.discover()
+
+        self.assertEqual(clean_testcase.image_handler.override_stage_images, True)
